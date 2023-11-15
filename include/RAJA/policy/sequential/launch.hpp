@@ -20,7 +20,7 @@
 
 #include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/pattern/params/forall.hpp" 
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {
@@ -57,23 +57,25 @@ struct LaunchExecute<RAJA::seq_launch_t> {
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename ForallParam, typename BODY>
-  /*  Q - do need to handle the case of when it is empty
-  concepts::enable_if_t<void, 
-                        expt::type_traits::is_ForallParamPack<ForallParam>,
-                         concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-  */  
-  static void 
-  exec(LaunchParams const &params, ForallParam f_params, BODY const &body)
+  template<typename ReduceParams, typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
+       const char *RAJA_UNUSED_ARG(kernel_name), ReduceParams &&launch_reducers, BODY const &body)
   {
-
-    std::cout<<"using new reducers sequential policy "<<std::endl;
-    expt::ParamMultiplexer::init<seq_exec>(f_params);
+    expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
 
     LaunchContext ctx;
-    expt::invoke_body(f_params, body, ctx);
+    char *kernel_local_mem = new char[launch_params.shared_mem_size];
+    ctx.shared_mem_ptr = kernel_local_mem;
 
-    expt::ParamMultiplexer::resolve<seq_exec>(f_params);
+    expt::invoke_body(launch_reducers, body, ctx);
+
+    delete[] kernel_local_mem;
+    ctx.shared_mem_ptr = nullptr;
+
+    expt::ParamMultiplexer::resolve<seq_exec>(launch_reducers);
+
+    return resources::EventProxy<resources::Resource>(res);
   }
 
 };

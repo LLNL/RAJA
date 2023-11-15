@@ -223,30 +223,63 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     // _reductions_raja_seq_end
 
 //----------------------------------------------------------------------------//
-  
-  std::cout << "\n Seq | Running new RAJA reductions with launch...\n";
-
-#if defined(RAJA_ENABLE_CUDA)
+//Sequential always enabled
   {
+    std::cout << "\n SEQ | Running new RAJA reductions with launch...\n";
+    using seq_launch_pol = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+    using seq_loop_pol = RAJA::LoopPolicy<RAJA::seq_exec>;
+
+    test_new_launch_code<seq_launch_pol, seq_loop_pol>(arange, a, N);
+
+    RAJA::resources::Host host_res;
+    RAJA::resources::Cuda device_res;
+    RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::HOST);
+
+    test_new_resource_launch_code<seq_launch_pol, seq_loop_pol>(res, arange, a, N);
+  }
+//----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
+//OpenMP always enabled
+#if defined(RAJA_ENABLE_OPENMP)
+  {
+    std::cout << "\n OpenMP | Running new RAJA reductions with launch...\n";
+    using omp_launch_pol = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
+    using omp_loop_pol = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+
+    test_new_launch_code<omp_launch_pol, omp_loop_pol>(arange, a, N);
+
+    RAJA::resources::Host host_res;
+    RAJA::resources::Cuda device_res;
+    RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::HOST);
+
+    test_new_resource_launch_code<omp_launch_pol, omp_loop_pol>(res, arange, a, N);
+  }
+#endif
+//----------------------------------------------------------------------------//
+
+
+//----------------------------------------------------------------------------//
+  #if defined(RAJA_ENABLE_CUDA)
+  {
+    std::cout << "\n CUDA | Running new RAJA reductions with launch...\n";
     using gpu_launch_pol = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>;
     using gpu_loop_pol = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
-    
+
     test_new_launch_code<gpu_launch_pol, gpu_loop_pol>(arange, a, N);
-    
+
     RAJA::resources::Host host_res;
     RAJA::resources::Cuda device_res;
     RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::DEVICE);
-    
+
     test_new_resource_launch_code<gpu_launch_pol, gpu_loop_pol>(res, arange, a, N);
   }
-  
 #endif
+//----------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//  
 
-  
 
-  
+
 
 
 //
