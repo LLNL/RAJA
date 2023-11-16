@@ -8,10 +8,6 @@ raja_add_executable(
   SOURCES stage_launch_new_reductions.cpp)
 
 raja_add_executable(
-  NAME launch_new_reductions
-  SOURCES launch_new_reductions.cpp)
-
-raja_add_executable(
   NAME tut_launch_basic
   SOURCES tut_launch_basic.cpp)
 
@@ -26,6 +22,10 @@ raja_add_executable(
 raja_add_executable(
   NAME forall-param-reductions
   SOURCES forall-param-reductions.cpp)
+
+raja_add_executable(
+  NAME launch-param-reductions
+  SOURCES launch-param-reductions.cpp)
 
 raja_add_executable(
   NAME resource-dynamic-forall

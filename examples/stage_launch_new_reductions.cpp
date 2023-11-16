@@ -42,7 +42,13 @@ template<typename launch_pol, typename loop_pol>
   int new_launch_sum = 0;
   const int no_teams = (N-1)/DEVICE_BLOCK_SIZE + 1;
 
+#if defined(RAJA_ENABLE_CUDA)
   using reduce_policy = RAJA::cuda_reduce;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+  using reduce_policy = RAJA::hip_reduce;
+#endif
   RAJA::ReduceSum<reduce_policy, int> old_reducer_sum(0);
 
 
@@ -58,7 +64,7 @@ template<typename launch_pol, typename loop_pol>
            old_reducer_sum += a[i];
        });
 
-        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+        RAJA::loop<loop_pol>(ctx, arange, [&]  (int RAJA_UNUSED_ARG(i)) {
             _seq_sum += 1.0;
             old_reducer_sum += 1.0;
         });
@@ -78,7 +84,7 @@ template<typename launch_pol, typename loop_pol>
            old_reducer_sum += a[i];
        });
 
-        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+       RAJA::loop<loop_pol>(ctx, arange, [&]  (int RAJA_UNUSED_ARG(i)) {
             old_reducer_sum += 1.0;
         });
 
@@ -97,7 +103,15 @@ void test_new_resource_launch_code(RAJA::resources::Resource &res, RAJA::TypedRa
   int new_launch_sum = 0;
   const int no_teams = (N-1)/DEVICE_BLOCK_SIZE + 1;
 
+#if defined(RAJA_ENABLE_CUDA)
   using reduce_policy = RAJA::cuda_reduce;
+#endif
+
+#if defined(RAJA_ENABLE_HIP)
+  using reduce_policy = RAJA::hip_reduce;
+#endif
+
+
   RAJA::ReduceSum<reduce_policy, int> old_reducer_sum(0);
 
 
@@ -113,7 +127,7 @@ void test_new_resource_launch_code(RAJA::resources::Resource &res, RAJA::TypedRa
            old_reducer_sum += a[i];
        });
 
-        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+       RAJA::loop<loop_pol>(ctx, arange, [&]  (int RAJA_UNUSED_ARG(i) ) {
             _seq_sum += 1.0;
             old_reducer_sum += 1.0;
         });
@@ -133,7 +147,7 @@ void test_new_resource_launch_code(RAJA::resources::Resource &res, RAJA::TypedRa
            old_reducer_sum += a[i];
        });
 
-        RAJA::loop<loop_pol>(ctx, arange, [&]  (int i) {
+       RAJA::loop<loop_pol>(ctx, arange, [&]  (int RAJA_UNUSED_ARG(i)) {
             old_reducer_sum += 1.0;
         });
      });
@@ -213,7 +227,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     });
 
   RAJA::forall<EXEC_POL1>
-    (arange, RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum), [=](int i, int &_seq_sum) {
+    (arange, RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum), [=](int RAJA_UNUSED_ARG(i), int &_seq_sum) {
 
       _seq_sum += 1.0;
 
@@ -232,7 +246,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     test_new_launch_code<seq_launch_pol, seq_loop_pol>(arange, a, N);
 
     RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
     RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+    RAJA::resources::Hip device_res;
+#endif
     RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::HOST);
 
     test_new_resource_launch_code<seq_launch_pol, seq_loop_pol>(res, arange, a, N);
@@ -250,7 +269,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     test_new_launch_code<omp_launch_pol, omp_loop_pol>(arange, a, N);
 
     RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
     RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+    RAJA::resources::Hip device_res;
+#endif
+
     RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::HOST);
 
     test_new_resource_launch_code<omp_launch_pol, omp_loop_pol>(res, arange, a, N);
@@ -278,7 +303,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 
+//----------------------------------------------------------------------------//
+  #if defined(RAJA_ENABLE_HIP)
+  {
+    std::cout << "\n HIP | Running new RAJA reductions with launch...\n";
+    using gpu_launch_pol = RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>;
+    using gpu_loop_pol = RAJA::LoopPolicy<RAJA::hip_global_thread_x>;
 
+    test_new_launch_code<gpu_launch_pol, gpu_loop_pol>(arange, a, N);
+
+    RAJA::resources::Host host_res;
+    RAJA::resources::Hip device_res;
+    RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, RAJA::ExecPlace::DEVICE);
+
+    test_new_resource_launch_code<gpu_launch_pol, gpu_loop_pol>(res, arange, a, N);
+  }
+#endif
+//----------------------------------------------------------------------------//
 
 
 
