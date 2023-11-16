@@ -44,9 +44,8 @@ __global__ void launch_global_fcn(BODY body_in)
   body(ctx);
 }
 
-#if 1
-template <typename BODY, typename ForallParams>
-__global__ void launch_new_reduce_global_fcn(BODY body_in, ForallParams f_params)
+template <typename BODY, typename ReduceParams>
+__global__ void launch_new_reduce_global_fcn(BODY body_in, ReduceParams reduce_params)
 {
   LaunchContext ctx;
 
@@ -54,12 +53,15 @@ __global__ void launch_new_reduce_global_fcn(BODY body_in, ForallParams f_params
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
 
-  RAJA::expt::invoke_body( f_params, body, ctx );
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
+  RAJA::expt::invoke_body( reduce_params, body, ctx );
 
   //Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(f_params);
+  RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(reduce_params);
 }
-#endif
 
 template <bool async>
 struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>> {
@@ -113,29 +115,30 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  //Proof of concept code
-  template<typename ForallParam, typename BODY_IN>
-  static void
-  exec(RAJA::resources::Resource res, const LaunchParams &params, ForallParam &&f_params, BODY_IN && body_in)
-  {
-    std::cout<<"calling RAJA-HIP launch with f_params"<<std::endl;
 
+ //Version with explicit reduction parameters..
+  template <typename ReduceParams, typename BODY_IN>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, const LaunchParams &launch_params,
+       const char *kernel_name, ReduceParams &&launch_reducers, BODY_IN &&body_in)
+  {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = reinterpret_cast<const void*>(&launch_new_reduce_global_fcn<BODY, camp::decay<ForallParam> >);
+    auto func = reinterpret_cast<const void*>(launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams> >);
 
     resources::Hip hip_res = res.get<RAJA::resources::Hip>();
 
     //
     // Compute the number of blocks and threads
     //
-    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(params.teams.value[0]),
-                        static_cast<hip_dim_member_t>(params.teams.value[1]),
-                        static_cast<hip_dim_member_t>(params.teams.value[2]) };
 
-    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(params.threads.value[0]),
-                         static_cast<hip_dim_member_t>(params.threads.value[1]),
-                         static_cast<hip_dim_member_t>(params.threads.value[2]) };
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(launch_params.teams.value[0]),
+                        static_cast<hip_dim_member_t>(launch_params.teams.value[1]),
+                        static_cast<hip_dim_member_t>(launch_params.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(launch_params.threads.value[0]),
+                         static_cast<hip_dim_member_t>(launch_params.threads.value[1]),
+                         static_cast<hip_dim_member_t>(launch_params.threads.value[2]) };
 
     // Only launch kernel if we have something to iterate over
     constexpr hip_dim_member_t zero = 0;
@@ -148,36 +151,30 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
       launch_info.gridDim = gridSize;
       launch_info.blockDim = blockSize;
       launch_info.res = hip_res;
-      std::cout<<"HIP grid dim"<<std::endl;
-      std::cout<<launch_info.gridDim.x<<" "<<launch_info.gridDim.y<<" "<<launch_info.gridDim.z<<" "<<std::endl;
-      std::cout<<launch_info.blockDim.x<<" "<<launch_info.blockDim.y<<" "<<launch_info.blockDim.z<<" "<<std::endl;
-      {
 
+      {
         using EXEC_POL = RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params, launch_info);
+        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers, launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, launch_params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
-        void *args[] = {(void*)&body, (void*)&f_params};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, nullptr);
+        void *args[] = {(void*)&body, (void*)&launch_reducers};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, launch_params.shared_mem_size, hip_res, async, kernel_name);
 
-
-        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
-
+        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers, launch_info);
       }
 
       RAJA_FT_END;
     }
 
-    //
-
+    return resources::EventProxy<resources::Resource>(res);
   }
 
 };
@@ -199,6 +196,27 @@ void launch_global_fcn_fixed(BODY body_in)
 
   body(ctx);
 }
+
+template <typename BODY, int num_threads, typename ReduceParams>
+__launch_bounds__(num_threads, 1) __global__
+void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams reduce_params)
+{
+  LaunchContext ctx;
+
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
+  RAJA::expt::invoke_body( reduce_params, body, ctx );
+
+  //Using a flatten global policy as we may use all dimensions
+  RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(reduce_params);
+}
+
 
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
@@ -244,6 +262,67 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
         //
         void *args[] = {(void*)&body};
         RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, kernel_name);
+      }
+
+      RAJA_FT_END;
+    }
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+ //Version with explicit reduction parameters..
+  template <typename ReduceParams, typename BODY_IN>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, const LaunchParams &launch_params,
+       const char *kernel_name, ReduceParams &&launch_reducers, BODY_IN &&body_in)
+  {
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = reinterpret_cast<const void*>(launch_new_reduce_global_fcn_fixed<BODY, nthreads, camp::decay<ReduceParams> >);
+
+    resources::Hip hip_res = res.get<RAJA::resources::Hip>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    hip_dim_t gridSize{ static_cast<hip_dim_member_t>(launch_params.teams.value[0]),
+                        static_cast<hip_dim_member_t>(launch_params.teams.value[1]),
+                        static_cast<hip_dim_member_t>(launch_params.teams.value[2]) };
+
+    hip_dim_t blockSize{ static_cast<hip_dim_member_t>(launch_params.threads.value[0]),
+                         static_cast<hip_dim_member_t>(launch_params.threads.value[1]),
+                         static_cast<hip_dim_member_t>(launch_params.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr hip_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      RAJA::hip::detail::hipInfo launch_info;
+      launch_info.gridDim = gridSize;
+      launch_info.blockDim = blockSize;
+      launch_info.res = hip_res;
+
+      {
+        using EXEC_POL = RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
+        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers, launch_info);
+
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::hip::make_launch_body(
+            gridSize, blockSize, launch_params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&body, (void*)&launch_reducers};
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, launch_params.shared_mem_size, hip_res, async, kernel_name);
+
+        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers, launch_info);
       }
 
       RAJA_FT_END;

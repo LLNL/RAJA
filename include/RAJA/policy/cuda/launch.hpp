@@ -53,6 +53,10 @@ __global__ void launch_new_reduce_global_fcn(BODY body_in, ReduceParams reduce_p
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
 
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
   RAJA::expt::invoke_body( reduce_params, body, ctx );
 
   //Using a flatten global policy as we may use all dimensions
@@ -193,8 +197,8 @@ void launch_global_fcn_fixed(BODY body_in)
   body(ctx);
 }
 
-template <typename BODY, int num_threads, size_t BLOCKS_PER_SM, typename ForallParams>
-__global__ void launch_new_reduce_global_fcn_fixed(BODY body_in, ForallParams f_params)
+template <typename BODY, int num_threads, size_t BLOCKS_PER_SM, typename ReduceParams>
+__global__ void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams reduce_params)
 {
   LaunchContext ctx;
 
@@ -202,10 +206,14 @@ __global__ void launch_new_reduce_global_fcn_fixed(BODY body_in, ForallParams f_
   auto privatizer = thread_privatize(body_in);
   auto& body = privatizer.get_priv();
 
-  RAJA::expt::invoke_body( f_params, body, ctx );
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
+  RAJA::expt::invoke_body( reduce_params, body, ctx );
 
   //Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::combine<RAJA::cuda_flatten_global_xyz_direct>(f_params);
+  RAJA::expt::ParamMultiplexer::combine<RAJA::cuda_flatten_global_xyz_direct>(reduce_params);
 }
 
 template <bool async, int nthreads, size_t BLOCKS_PER_SM>
