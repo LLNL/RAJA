@@ -28,6 +28,8 @@ add_subdirectory(run-time-switch)
 #Adapted from forall test
 add_subdirectory(reduce-basic)
 
+add_subdirectory(reduce-params)
+
 add_subdirectory(segment)
 
 add_subdirectory(shared_mem)
