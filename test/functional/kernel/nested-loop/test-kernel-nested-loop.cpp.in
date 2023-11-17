@@ -67,21 +67,6 @@ using OpenMPTargetKernelNestedLoopExecPols = camp::list<
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
 
-#if defined(RAJA_ENABLE_TBB)
-
-using TBBKernelNestedLoopExecPols = camp::list<
-
-    // Depth 2 Exec Pols
-    NestedLoopData<DEPTH_2, RAJA::seq_exec,  RAJA::tbb_for_exec >,
-    NestedLoopData<DEPTH_2, RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
-
-    // Depth 3 Exec Pols
-    NestedLoopData<DEPTH_3, RAJA::seq_exec,  RAJA::tbb_for_exec, RAJA::tbb_for_exec >,
-    NestedLoopData<DEPTH_3, RAJA::tbb_for_exec, RAJA::tbb_for_exec, RAJA::tbb_for_exec >
-  >;
-
-#endif  // RAJA_ENABLE_TBB
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaKernelNestedLoopExecPols = camp::list<
 

@@ -34,8 +34,7 @@ enum class Policy {
   target_openmp,
   cuda,
   hip,
-  sycl,
-  tbb
+  sycl
 };
 
 enum class Pattern {
@@ -179,9 +178,6 @@ struct is_simd_policy : RAJA::policy_is<Pol, RAJA::Policy::simd> {
 };
 template <typename Pol>
 struct is_openmp_policy : RAJA::policy_is<Pol, RAJA::Policy::openmp> {
-};
-template <typename Pol>
-struct is_tbb_policy : RAJA::policy_is<Pol, RAJA::Policy::tbb> {
 };
 template <typename Pol>
 struct is_target_openmp_policy

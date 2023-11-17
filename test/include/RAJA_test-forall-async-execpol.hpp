@@ -30,13 +30,6 @@ using OpenMPAsyncForallAtomicExecPols = OpenMPForallAtomicExecPols;
 
 #endif  // RAJA_ENABLE_OPENMP
 
-#if defined(RAJA_ENABLE_TBB)
-using TBBAsyncForallExecPols = TBBForallExecPols;
-using TBBAsyncForallReduceExecPols = TBBForallReduceExecPols;
-using TBBAsyncForallAtomicExecPols = TBBForallAtomicExecPols;
-
-#endif
-
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetAsyncForallExecPols = OpenMPTargetForallExecPols;
 using OpenMPTargetAsyncForallReduceExecPols = OpenMPTargetForallReduceExecPols;

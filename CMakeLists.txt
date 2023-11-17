@@ -224,12 +224,6 @@ if (RAJA_ENABLE_SYCL)
     sycl)
 endif ()
 
-if (RAJA_ENABLE_TBB)
-  set(raja_depends
-    ${raja_depends}
-    tbb)
-endif ()
-
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)
   add_subdirectory(tpl/desul)
