@@ -16,8 +16,7 @@
 template <typename IDX_TYPE, typename DATA_TYPE,
           typename SEG_TYPE,
           typename LAUNCH_POLICY,
-          typename GLOBAL_THREAD_POLICY,
-          typename REDUCE_POLICY>
+          typename GLOBAL_THREAD_POLICY>
 void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
                                            const std::vector<IDX_TYPE>& seg_idx,
                                            camp::resources::Resource working_res)
@@ -52,9 +51,6 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-
-  //RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum(0);
-  //RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> sum2(2);
 
   DATA_TYPE sum(0), sum2(2);
 
@@ -114,7 +110,6 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
   using LAUNCH_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<3>>::type, camp::num<0>>::type;
   using GLOBAL_THREAD_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<3>>::type, camp::num<1>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
 
@@ -125,7 +120,7 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
   RAJA::getIndices(seg_idx, r1);
   LaunchParamExptReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                         RAJA::TypedRangeSegment<IDX_TYPE>,
-                                        LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+                                        LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
                                         r1, seg_idx, working_res);
      
   seg_idx.clear();
@@ -133,7 +128,7 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
   RAJA::getIndices(seg_idx, r2);
   LaunchParamExptReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                        RAJA::TypedRangeSegment<IDX_TYPE>,
-                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
                                        r2, seg_idx, working_res);
 
   seg_idx.clear();
@@ -141,7 +136,7 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
   RAJA::getIndices(seg_idx, r3);
   LaunchParamExptReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                        RAJA::TypedRangeSegment<IDX_TYPE>,
-                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
                                        r3, seg_idx, working_res);
 
 // Range-stride segment tests
@@ -150,7 +145,7 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
   RAJA::getIndices(seg_idx, r4);
   LaunchParamExptReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                        RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
                                        r4, seg_idx, working_res);
 
   seg_idx.clear();
@@ -158,7 +153,7 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
   RAJA::getIndices(seg_idx, r5);
   LaunchParamExptReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                        RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+                                       LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
                                        r5, seg_idx, working_res);
 
 // List segment tests
@@ -175,7 +170,7 @@ TYPED_TEST_P(LaunchParamExptReduceSumBasicTest, ReduceSumBasicForall)
                                        working_res );
   LaunchParamExptReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                        RAJA::TypedListSegment<IDX_TYPE>,
-                                      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+                                      LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
                                       l1, seg_idx, working_res);
 }
 
