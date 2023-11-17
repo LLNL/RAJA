@@ -15,20 +15,6 @@ if (RAJA_ENABLE_OPENMP)
   endif()
 endif()
 
-if (RAJA_ENABLE_TBB)
-  find_package(TBB)
-  if(TBB_FOUND)
-    blt_register_library(
-      NAME tbb
-      INCLUDES ${TBB_INCLUDE_DIRS}
-      LIBRARIES ${TBB_LIBRARIES})
-    message(STATUS "TBB Enabled")
-  else()
-    message(WARNING "TBB NOT FOUND")
-    set(RAJA_ENABLE_TBB Off CACHE BOOL "" FORCE)
-  endif()
-endif ()
-
 if (RAJA_ENABLE_CUDA)
   if (RAJA_ENABLE_EXTERNAL_CUB STREQUAL "VersionDependent")
     if (CUDA_VERSION_STRING VERSION_GREATER_EQUAL "11.0")
@@ -112,23 +98,8 @@ blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
 blt_list_append(TO TPL_DEPS ELEMENTS roctx IF RAJA_ENABLE_ROCTX)
 
-set(RAJA_NEEDS_BLT_TPLS False)
-if (RAJA_ENABLE_CUDA OR RAJA_ENABLE_HIP OR RAJA_ENABLE_OPENMP OR RAJA_ENABLE_MPI)
-  set(RAJA_NEEDS_BLT_TPLS True)
-endif ()
-
-if (RAJA_NEEDS_BLT_TPLS)
-  if (NOT BLT_EXPORTED)
-    set(BLT_EXPORTED On CACHE BOOL "" FORCE)
-  blt_import_library(NAME          blt_stub EXPORTABLE On)
-  set_target_properties(blt_stub PROPERTIES EXPORT_NAME blt::blt_stub)
-            install(TARGETS blt_stub
-                    EXPORT               bltTargets)
-    blt_export_tpl_targets(EXPORT bltTargets NAMESPACE blt)
-    install(EXPORT bltTargets
-      DESTINATION  lib/cmake/raja)
-  endif()
-endif ()
+# Install setup cmake files to allow users to configure TPL targets at configuration time.
+blt_install_tpl_setups(DESTINATION lib/cmake/raja)
 
 foreach(dep ${TPL_DEPS})
     # If the target is EXPORTABLE, add it to the export set

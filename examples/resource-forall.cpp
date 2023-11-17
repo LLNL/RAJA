@@ -149,34 +149,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(c, N);
 #endif
 
-#if defined(RAJA_ENABLE_TBB)
-//----------------------------------------------------------------------------//
-// RAJA::tbb_for_dynamic policy execution.... 
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA tbb_for_dynamic vector addition...\n";
-
-  RAJA::forall<RAJA::tbb_for_dynamic>(host, RAJA::RangeSegment(0, N),
-  [=] (int i) {
-    c[i] = a[i] + b[i]; 
-  });
-
-  checkResult(c, N);
-
-//----------------------------------------------------------------------------//
-// RAJA::tbb_for_static policy execution.... 
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA tbb_for_static<8> vector addition...\n";
-
-  RAJA::forall<RAJA::tbb_for_static<8>>(host, RAJA::RangeSegment(0, N),
-  [=] (int i) {
-    c[i] = a[i] + b[i]; 
-  });
-
-  checkResult(c, N);
-#endif
-
 
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)

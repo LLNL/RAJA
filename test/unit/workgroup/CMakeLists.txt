@@ -38,10 +38,6 @@ set(BACKENDS Sequential)
 # only need to test WorkStorage once
 set(WorkStorage_BACKENDS Sequential)
 
-if(RAJA_ENABLE_TBB)
-  list(APPEND BACKENDS TBB)
-endif()
-
 if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
 endif()

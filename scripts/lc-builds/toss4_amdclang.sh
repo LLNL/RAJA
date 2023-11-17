@@ -9,7 +9,7 @@
 
 if [[ $# -lt 2 ]]; then
   echo
-  echo "You must pass 2 or more arguments to the script (in this order): "
+  echo "You must pass 2 or more arguments to the script (in the following order): "
   echo "   1) compiler version number"
   echo "   2) HIP compute architecture"
   echo "   3...) optional arguments to cmake"

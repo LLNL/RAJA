@@ -32,10 +32,6 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON sycl)
   endif ()
 
-  if (RAJA_ENABLE_TBB)
-    list (APPEND arg_DEPENDS_ON tbb)
-  endif ()
-
   if (${arg_TEST})
     set (_output_dir ${CMAKE_BINARY_DIR}/test)
   elseif (${arg_REPRODUCER})
@@ -81,10 +77,6 @@ macro(raja_add_plugin_library)
     list (APPEND arg_DEPENDS_ON sycl)
   endif ()
 
-  if (RAJA_ENABLE_TBB)
-    list (APPEND arg_DEPENDS_ON tbb)
-  endif ()
-
   blt_add_library(
     NAME ${arg_NAME}
     SOURCES ${arg_SOURCES}
@@ -110,7 +102,7 @@ function(raja_set_failtest TESTNAME)
   set(test_name ${TESTNAME})
 
   # Chopping off backend from test name
-  string(REGEX REPLACE "\-Sequential|\-OpenMP|\-OpenMPTarget|\-TBB|\-CUDA|\-HIP" "" test_nobackend ${test_name})
+  string(REGEX REPLACE "\-Sequential|\-OpenMP|\-OpenMPTarget|\-CUDA|\-HIP" "" test_nobackend ${test_name})
 
   # Finding test source code
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/${test_nobackend}.hpp")

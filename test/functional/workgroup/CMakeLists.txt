@@ -35,10 +35,6 @@ endmacro()
 
 set(BACKENDS Sequential)
 
-if(RAJA_ENABLE_TBB)
-  list(APPEND BACKENDS TBB)
-endif()
-
 if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
 endif()

@@ -313,9 +313,7 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Min reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
+ * \brief  Min reducer class template.
  *
  ******************************************************************************
  */
@@ -338,7 +336,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  MinLoc reducer class template for use in tbb execution.
+ * \brief  MinLoc reducer class template.
  *
  **************************************************************************
  */
@@ -387,7 +385,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Max reducer class template for use in tbb execution.
+ * \brief  Max reducer class template.
  *
  **************************************************************************
  */
@@ -410,7 +408,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Sum reducer class template for use in tbb execution.
+ * \brief  Sum reducer class template.
  *
  **************************************************************************
  */
@@ -434,7 +432,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Bitwise OR reducer class template for use in tbb execution.
+ * \brief  Bitwise OR reducer class template.
  *
  **************************************************************************
  */
@@ -458,7 +456,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Bitwise AND reducer class template for use in tbb execution.
+ * \brief  Bitwise AND reducer class template.
  *
  **************************************************************************
  */
@@ -483,7 +481,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  MaxLoc reducer class template for use in tbb execution.
+ * \brief  MaxLoc reducer class template.
  *
  **************************************************************************
  */

@@ -11,7 +11,6 @@ set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 option(RAJA_ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
 option(RAJA_ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
 
-option(RAJA_ENABLE_TBB "Build TBB support" Off)
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
 
@@ -37,5 +36,3 @@ option(RAJA_ENABLE_DESUL_ATOMICS "Enable support of desul atomics" Off)
 set(DESUL_ENABLE_TESTS Off CACHE BOOL "")
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
-
-set(BLT_EXPORT_THIRDPARTY ON CACHE BOOL "")

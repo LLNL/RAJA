@@ -99,30 +99,6 @@ using OpenMPTargetKernelHyperplaneExecPols =
 
 #endif  // RAJA_ENABLE_TARGET_OPENMP
 
-#if defined(RAJA_ENABLE_TBB)
-
-using TBBKernelHyperplaneExecPols =
-  camp::list< 
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::tbb_for_exec,
-        RAJA::statement::Hyperplane<1, RAJA::seq_exec, RAJA::ArgList<2>, RAJA::seq_exec,
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >,
-
-    RAJA::KernelPolicy<
-      RAJA::statement::For<0, RAJA::tbb_for_exec,
-        RAJA::statement::Hyperplane<2, RAJA::seq_exec, RAJA::ArgList<1>, RAJA::seq_exec,
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >
-  >;
-
-#endif  // RAJA_ENABLE_TBB
-
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelHyperplaneExecPols =
