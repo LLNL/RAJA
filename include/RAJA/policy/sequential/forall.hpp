@@ -68,9 +68,6 @@ forall_impl(Resource res,
             Func &&body,
             ForallParam f_params)
 {
-
-  std::cout<<"forall with extra parameters"<<std::endl;
-  
   expt::ParamMultiplexer::init<seq_exec>(f_params);
 
   RAJA_EXTRACT_BED_IT(iter);
