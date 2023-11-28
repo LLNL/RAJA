@@ -17,7 +17,7 @@ xl_2022_08_19_gcc_8_3_1_cuda_11_2_0:
   variables:
     SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" %xl@16.1.1.12.gcc.8.3.1 ^cuda@11.2.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS} ^blt@git.6dc747989504adee075bbe2ebf703a230232bea5=develop"
     MODULE_LIST: "cuda/11.2.0"
-    LASSEN_JOB_ALLOC: "1 -W 120"
+    LASSEN_JOB_ALLOC: "1 -W 60"
   extends: .job_on_lassen
 
 
@@ -38,7 +38,7 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
   variables:
     SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^blt@git.6dc747989504adee075bbe2ebf703a230232bea5=develop"
     MODULE_LIST: "cuda/11.5.0"
-    LASSEN_JOB_ALLOC: "1 --atsdisable -W 60"
+    LASSEN_JOB_ALLOC: "1 --atsdisable -W 30"
 
 ##########
 # OTHERS
