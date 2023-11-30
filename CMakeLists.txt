@@ -13,7 +13,7 @@ endif()
 
 include(CMakeDependentOption)
 
-# Set version number
+# Set RAJA version number
 set(RAJA_VERSION_MAJOR 2023)
 set(RAJA_VERSION_MINOR 06)
 set(RAJA_VERSION_PATCHLEVEL 1)
