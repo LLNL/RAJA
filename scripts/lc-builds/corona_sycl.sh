@@ -13,7 +13,7 @@ if [[ $# -lt 1 ]]; then
   echo "   1) SYCL compiler installation path"
   echo
   echo "For example: "
-  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_hip_gcc10.2.1_rocm5.1.0/install"
+  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_a0117ab8692a_hip_gcc10.2.1_rocm5.6.0"
   exit
 fi
 
@@ -36,6 +36,7 @@ mkdir build_${BUILD_SUFFIX}_${USER} && cd build_${BUILD_SUFFIX}_${USER}
 DATE=$(printf '%(%Y-%m-%d)T\n' -1)
 
 export PATH=${SYCL_PATH}/bin:$PATH
+export LD_LIBRARY_PATH=${SYCL_PATH}/lib:${SYCL_PATH}/lib64:$LD_LIBRARY_PATH
 
 ## NOTE: RAJA tests are turned off due to compilation issues.
 
@@ -51,8 +52,8 @@ cmake \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_LINKER=clang++ \
-  -DCMAKE_CXX_STANDARD=17 \
-  -DENABLE_TESTS=Off \
+  -DBLT_CXX_STD=17 \
+  -DENABLE_TESTS=On \
   -DENABLE_EXAMPLES=On \
   "$@" \
   ..
