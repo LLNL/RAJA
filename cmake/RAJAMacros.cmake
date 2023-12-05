@@ -141,7 +141,7 @@ endfunction()
 
 macro(raja_add_test)
   set(options )
-  set(singleValueArgs NAME)
+  set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -159,6 +159,8 @@ macro(raja_add_test)
 
   blt_add_test(
     NAME ${arg_NAME}
+    NUM_MPI_TASKS ${arg_NUM_MPI_TASKS}
+    NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 
@@ -182,7 +184,7 @@ endmacro(raja_add_reproducer)
 
 macro(raja_add_benchmark)
   set(options )
-  set(singleValueArgs NAME)
+  set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -198,5 +200,7 @@ macro(raja_add_benchmark)
 
   blt_add_benchmark(
     NAME ${arg_NAME}
+    NUM_MPI_TASKS ${arg_NUM_MPI_TASKS}
+    NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_benchmark)
