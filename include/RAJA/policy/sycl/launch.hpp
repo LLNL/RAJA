@@ -96,6 +96,20 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     return resources::EventProxy<resources::Resource>(res);
   }
 
+ //If the launch lambda is trivially copyable and we have explcit reduction parameters
+  template <typename ReduceParams, typename BODY_IN,
+	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
+       ReduceParams &&launch_reducers, BODY_IN &&body_in)
+  {
+
+   RAJA_ABORT_OR_THROW("SYCL backend currently not supported in RAJA launch");
+
+   return resources::EventProxy<resources::Resource>(res);
+  }
+
+
   //If the launch lambda is not trivially copyable
   template <typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
@@ -168,6 +182,20 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     }
 
     return resources::EventProxy<resources::Resource>(res);
+  }
+
+
+  //If the launch lambda is not trivially copyable
+  template <typename ReduceParams, typename BODY_IN,
+	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
+        ReduceParams &&launch_reducers, BODY_IN &&body_in)
+  {
+
+   RAJA_ABORT_OR_THROW("SYCL backend currently not supported in RAJA launch");
+
+   return resources::EventProxy<resources::Resource>(res);
   }
 
 
