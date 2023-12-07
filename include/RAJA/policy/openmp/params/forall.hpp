@@ -8,12 +8,6 @@
 #ifndef RAJA_forall_param_openmp_HPP
 #define RAJA_forall_param_openmp_HPP
 
-#define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
-      _Pragma(" omp declare reduction( combine \
-        : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")\
-        //initializer(omp_priv = omp_in) ")
-
 namespace RAJA
 {
 

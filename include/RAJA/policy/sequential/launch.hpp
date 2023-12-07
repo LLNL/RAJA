@@ -20,7 +20,7 @@
 
 #include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
-
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {
@@ -53,6 +53,27 @@ struct LaunchExecute<RAJA::seq_launch_t> {
 
     delete[] kernel_local_mem;
     ctx.shared_mem_ptr = nullptr;
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+  template<typename ReduceParams, typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
+       const char *RAJA_UNUSED_ARG(kernel_name), ReduceParams &&launch_reducers, BODY const &body)
+  {
+    expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
+
+    LaunchContext ctx;
+    char *kernel_local_mem = new char[launch_params.shared_mem_size];
+    ctx.shared_mem_ptr = kernel_local_mem;
+
+    expt::invoke_body(launch_reducers, body, ctx);
+
+    delete[] kernel_local_mem;
+    ctx.shared_mem_ptr = nullptr;
+
+    expt::ParamMultiplexer::resolve<seq_exec>(launch_reducers);
 
     return resources::EventProxy<resources::Resource>(res);
   }
@@ -197,7 +218,7 @@ struct LoopICountExecute<seq_exec, SEGMENT> {
       }
     }
   }
-  
+
 };
 
 //Tile Execute + variants

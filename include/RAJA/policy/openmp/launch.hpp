@@ -21,7 +21,6 @@
 #include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 
-
 namespace RAJA
 {
 
@@ -46,6 +45,37 @@ struct LaunchExecute<RAJA::omp_launch_t> {
         free(ctx.shared_mem_ptr);
         ctx.shared_mem_ptr = nullptr;
     });
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+  template<typename ReduceParams, typename BODY>
+  static resources::EventProxy<resources::Resource>
+  exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
+       const char *RAJA_UNUSED_ARG(kernel_name),  ReduceParams &f_params, BODY const &body)
+  {
+
+    using EXEC_POL = RAJA::omp_launch_t;
+
+    expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+
+    //reducer object must be named f_params as expected by macro below
+    RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+
+   #pragma omp parallel reduction(combine : f_params)
+    {
+
+      LaunchContext ctx;
+
+      using RAJA::internal::thread_privatize;
+      auto loop_body = thread_privatize(body);
+
+      ctx.shared_mem_ptr = (char*) malloc(launch_params.shared_mem_size);
+
+      expt::invoke_body(f_params, loop_body.get_priv(), ctx);
+    }
+
+    expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
 
     return resources::EventProxy<resources::Resource>(res);
   }
