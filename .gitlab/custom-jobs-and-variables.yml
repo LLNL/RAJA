@@ -17,7 +17,7 @@ variables:
   RUBY_SHARED_ALLOC: "--exclusive --reservation=ci --time=30 --nodes=2"
 # Arguments for job level allocation
 # Note: We repeat the reservation, necessary when jobs are manually re-triggered.
-  RUBY_JOB_ALLOC: "--reservation=ci --qos=ci_ruby --time=8 --nodes=1"
+  RUBY_JOB_ALLOC: "--overlap --reservation=ci --time=14 --nodes=1"
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "~shared +openmp +tests"
 # Project specific deps for ruby
