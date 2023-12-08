@@ -132,22 +132,22 @@ namespace RAJA
   };
 
   template<>
-  struct get_resource<::RAJA::policy::sycl::omp_target_parallel_for_exec_nt>{
+  struct get_resource<::RAJA::policy::omp::omp_target_parallel_for_exec_nt>{
     using type = camp::resources::Omp;
   };
 
   template<size_t ThreadsPerTeam>
-  struct get_resource<::RAJA::policy::sycl::omp_target_parallel_for_exec<ThreadsPerTeam>>{
+  struct get_resource<::RAJA::policy::omp::omp_target_parallel_for_exec<ThreadsPerTeam>>{
     using type = camp::resources::Omp;
   };
 
   template<typename ISetIter>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::omp_target_parallel_for_exec_nt>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::omp::omp_target_parallel_for_exec_nt>>{
     using type = camp::resources::Omp;
   };
 
   template<typename ISetIter, size_t ThreadsPerTeam>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::omp_target_parallel_for_exec<ThreadsPerTeam>>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::omp::omp_target_parallel_for_exec<ThreadsPerTeam>>>{
     using type = camp::resources::Omp;
   };
 #endif
