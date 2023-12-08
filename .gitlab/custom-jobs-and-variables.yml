@@ -35,7 +35,7 @@ variables:
 
 # Corona
 # Arguments for top level allocation
-  CORONA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
+  CORONA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1 -o per-resource.count=2"
 # Arguments for job level allocation
   CORONA_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
 # Project specific variants for corona
@@ -45,7 +45,7 @@ variables:
 
 # Tioga
 # Arguments for top level allocation
-  TIOGA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1"
+  TIOGA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1 -o per-resource.count=2"
 # Arguments for job level allocation
   TIOGA_JOB_ALLOC: "--time-limit=45m --nodes=1 --begin-time=+5s"
 # Project specific variants for corona
