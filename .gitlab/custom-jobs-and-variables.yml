@@ -14,7 +14,7 @@ variables:
 
 # Ruby
 # Arguments for top level allocation
-  RUBY_SHARED_ALLOC: "--exclusive --reservation=ci --qos=ci_ruby --time=30 --nodes=2"
+  RUBY_SHARED_ALLOC: "--exclusive --reservation=ci --time=30 --nodes=2"
 # Arguments for job level allocation
 # Note: We repeat the reservation, necessary when jobs are manually re-triggered.
   RUBY_JOB_ALLOC: "--reservation=ci --qos=ci_ruby --time=8 --nodes=1"
