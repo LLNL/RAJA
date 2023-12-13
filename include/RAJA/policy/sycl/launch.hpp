@@ -32,10 +32,13 @@ template <bool async>
 struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
  //If the launch lambda is trivially copyable
-  template <typename BODY_IN,
+  template <typename ReduceParams, typename BODY_IN,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name,
+       BODY_IN &&body_in, ReduceParams /*launch_reducers*/)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -99,22 +102,26 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
  //If the launch lambda is trivially copyable and we have explcit reduction parameters
   template <typename ReduceParams, typename BODY_IN,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static resources::EventProxy<resources::Resource>
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
-       ReduceParams &&launch_reducers, BODY_IN &&body_in)
+       BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
 
-   RAJA_ABORT_OR_THROW("SYCL backend currently not supported in RAJA launch");
+   RAJA_ABORT_OR_THROW("SYCL trivially copyable lambda  backend currently not supported in RAJA launch");
 
    return resources::EventProxy<resources::Resource>(res);
   }
 
-
   //If the launch lambda is not trivially copyable
-  template <typename BODY_IN,
+  template <typename ReduceParams, typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name,
+       BODY_IN &&body_in, ReduceParams /*launch_reducers*/)
   {
 
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
@@ -188,12 +195,14 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   //If the launch lambda is not trivially copyable
   template <typename ReduceParams, typename BODY_IN,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
-        ReduceParams &&launch_reducers, BODY_IN &&body_in)
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+    exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
+         BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
 
-   RAJA_ABORT_OR_THROW("SYCL backend currently not supported in RAJA launch");
+   RAJA_ABORT_OR_THROW("SYCL non-trivially copyable lambda  backend currently not supported in RAJA launch");
 
    return resources::EventProxy<resources::Resource>(res);
   }
