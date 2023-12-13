@@ -65,7 +65,7 @@ struct LaunchExecute<RAJA::seq_launch_t> {
                                  RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
                                  concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
-       const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body, ReduceParams &&launch_reducers)
+       const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body, ReduceParams &launch_reducers)
   {
     expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
 
