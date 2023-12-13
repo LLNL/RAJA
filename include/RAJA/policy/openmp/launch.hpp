@@ -31,7 +31,7 @@ struct LaunchExecute<RAJA::omp_launch_t> {
   static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
                                RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body, ReduceParams /*launch_reducers*/)
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
 

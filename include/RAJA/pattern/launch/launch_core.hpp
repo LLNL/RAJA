@@ -279,41 +279,6 @@ void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_
   util::callPostLaunchPlugins(context);
 }
 
-
-/*
-//Policy based launch without name argument
-template <typename LAUNCH_POLICY, typename BODY>
-void launch(LaunchParams const &params, BODY const &body)
-{
-  launch<LAUNCH_POLICY>(params, nullptr, body);
-}
-
-//Policy based launch
-template <typename LAUNCH_POLICY, typename BODY>
-void launch(LaunchParams const &params, const char *kernel_name, BODY const &body)
-{
-  //Take the first policy as we assume the second policy is not user defined.
-  //We rely on the user to pair launch and loop policies correctly.
-  util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
-  util::callPreCapturePlugins(context);
-
-  using RAJA::util::trigger_updates_before;
-  auto p_body = trigger_updates_before(body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
-
-  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
-
-  launch_t::exec(Res::get_default(), params, kernel_name, p_body);
-
-  util::callPostLaunchPlugins(context);
-}
-*/
-
 //=================================================
 //Run time based policy launch
 //=================================================
@@ -350,14 +315,7 @@ void launch(ExecPlace place, const LaunchParams &params, const char *kernel_name
 //Run-time API for new reducer interface
 template <typename POLICY_LIST, typename... ReduceParams>
 void launch(ExecPlace place, const LaunchParams &launch_params, const char *kernel_name, ReduceParams&&... rest_of_launch_args)
-            //BODY const &body)
 {
-
-  //Get reducers
-  //auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
-
-  //auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
-
 
   //Forward to single policy launch API - simplifies testing of plugins
   switch (place) {
@@ -429,75 +387,6 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
   return RAJA::resources::Resource(host_res);
 }
 #endif
-
-
-/*
-//Launch API which takes team resource struct
-template <typename POLICY_LIST, typename BODY>
-resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res, LaunchParams const &params, BODY const &body)
-{
-  return launch<POLICY_LIST>(res, params, nullptr, body);
-}
-
-template <typename POLICY_LIST, typename BODY>
-resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res, LaunchParams const &params, const char *kernel_name, BODY const &body)
-{
-
-  ExecPlace place;
-  if(res.get_platform() == RAJA::Platform::host) {
-    place = RAJA::ExecPlace::HOST;
-  } else {
-    place = RAJA::ExecPlace::DEVICE;
-  }
-
-  //
-  //Configure plugins
-  //
-#if defined(RAJA_GPU_ACTIVE)
-  util::PluginContext context{place == ExecPlace::HOST ?
-      util::make_context<typename POLICY_LIST::host_policy_t>()
-      : util::make_context<typename POLICY_LIST::device_policy_t>()};
-#else
-  util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
-#endif
-
-  util::callPreCapturePlugins(context);
-
-  using RAJA::util::trigger_updates_before;
-  auto p_body = trigger_updates_before(body);
-
-  util::callPostCapturePlugins(context);
-
-  util::callPreLaunchPlugins(context);
-
-  switch (place) {
-    case ExecPlace::HOST: {
-      using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body);
-      util::callPostLaunchPlugins(context);
-      return e_proxy;
-    }
-#if defined(RAJA_GPU_ACTIVE)
-    case ExecPlace::DEVICE: {
-      using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, params, kernel_name, p_body);
-      util::callPostLaunchPlugins(context);
-      return e_proxy;
-    }
-#endif
-    default: {
-      RAJA_ABORT_OR_THROW("Unknown launch place or device is not enabled");
-    }
-  }
-
-  RAJA_ABORT_OR_THROW("Unknown launch place");
-
-  //^^ RAJA will abort before getting here
-  return resources::EventProxy<resources::Resource>(res);
-}
-*/
 
 //Launch API which takes team resource struct and supports new reducers
 template <typename POLICY_LIST, typename ... ReduceParams>

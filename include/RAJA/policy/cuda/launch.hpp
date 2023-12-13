@@ -71,7 +71,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, named_usa
                                RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
                                RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res, const LaunchParams &params,
-       const char *kernel_name, BODY_IN &&body_in, ReduceParams /*launch_reducers*/)
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -229,7 +229,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
                                RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
                                RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res, const LaunchParams &params,
-       const char *kernel_name, BODY_IN &&body_in, ReduceParams /*launch_reducers*/)
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
 
     using BODY = camp::decay<BODY_IN>;
