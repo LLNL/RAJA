@@ -278,7 +278,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
   }
 
   //Version with explicit reduction parameters..
-  template<typename ReduceParams, typename BODY_IN>
+  template<typename BODY_IN, typename ReduceParams>
     static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                  RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
                                  concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
