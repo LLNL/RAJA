@@ -27,9 +27,11 @@ namespace RAJA
 template <>
 struct LaunchExecute<RAJA::omp_launch_t> {
 
-  template <typename BODY>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body)
+  template <typename BODY, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body, ReduceParams /*launch_reducers*/)
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
 
@@ -50,9 +52,11 @@ struct LaunchExecute<RAJA::omp_launch_t> {
   }
 
   template<typename ReduceParams, typename BODY>
-  static resources::EventProxy<resources::Resource>
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
-       const char *RAJA_UNUSED_ARG(kernel_name),  ReduceParams &f_params, BODY const &body)
+       const char *RAJA_UNUSED_ARG(kernel_name),  BODY const &body, ReduceParams &f_params)
   {
 
     using EXEC_POL = RAJA::omp_launch_t;

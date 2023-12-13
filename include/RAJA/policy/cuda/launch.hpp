@@ -66,9 +66,12 @@ __global__ void launch_new_reduce_global_fcn(BODY body_in, ReduceParams reduce_p
 template <bool async>
 struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, named_usage::unspecified, named_usage::unspecified>> {
 
-  template <typename BODY_IN>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
+  template <typename BODY_IN, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, const LaunchParams &params,
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams /*launch_reducers*/)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -116,10 +119,12 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, named_usa
   }
 
   //Version with explicit reduction parameters..
-  template <typename ReduceParams, typename BODY_IN>
-  static resources::EventProxy<resources::Resource>
+  template <typename BODY_IN, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res, const LaunchParams &launch_params,
-       const char *kernel_name, ReduceParams &&launch_reducers, BODY_IN &&body_in)
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -219,9 +224,12 @@ __global__ void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams re
 template <bool async, int nthreads, size_t BLOCKS_PER_SM>
 struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
-  template <typename BODY_IN>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
+  template <typename BODY_IN, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, const LaunchParams &params,
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams /*launch_reducers*/)
   {
 
     using BODY = camp::decay<BODY_IN>;
@@ -271,9 +279,11 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
 
   //Version with explicit reduction parameters..
   template<typename ReduceParams, typename BODY_IN>
-  static resources::EventProxy<resources::Resource>
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res, const LaunchParams &launch_params,
-       const char *kernel_name, ReduceParams &&launch_reducers, BODY_IN && body_in)
+       const char *kernel_name, BODY_IN && body_in, ReduceParams &&launch_reducers)
   {
 
     using BODY = camp::decay<BODY_IN>;

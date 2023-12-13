@@ -32,7 +32,7 @@ template <bool async>
 struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
  //If the launch lambda is trivially copyable
-  template <typename ReduceParams, typename BODY_IN,
+  template <typename BODY_IN, typename ReduceParams,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
     static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                  RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -100,7 +100,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   }
 
  //If the launch lambda is trivially copyable and we have explcit reduction parameters
-  template <typename ReduceParams, typename BODY_IN,
+  template <typename BODY_IN, typename ReduceParams,
 	    typename std::enable_if<std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
     static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                  RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -115,7 +115,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   }
 
   //If the launch lambda is not trivially copyable
-  template <typename ReduceParams, typename BODY_IN,
+  template <typename BODY_IN, typename ReduceParams,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
     static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                  RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -193,7 +193,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
 
   //If the launch lambda is not trivially copyable
-  template <typename ReduceParams, typename BODY_IN,
+  template <typename BODY_IN, typename ReduceParams,
 	    typename std::enable_if<!std::is_trivially_copyable<BODY_IN>{},bool>::type = true>
     static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                  RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,

@@ -39,9 +39,12 @@ struct LaunchExecute<RAJA::null_launch_t> {
 template <>
 struct LaunchExecute<RAJA::seq_launch_t> {
 
-  template <typename BODY>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
+  template <typename BODY, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name),
+       BODY const &body, ReduceParams /*launch_reducers*/)
   {
 
     LaunchContext ctx;
@@ -57,10 +60,12 @@ struct LaunchExecute<RAJA::seq_launch_t> {
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename ReduceParams, typename BODY>
-  static resources::EventProxy<resources::Resource>
+  template<typename BODY, typename ReduceParams>
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
-       const char *RAJA_UNUSED_ARG(kernel_name), ReduceParams &&launch_reducers, BODY const &body)
+       const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body, ReduceParams &&launch_reducers)
   {
     expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
 
