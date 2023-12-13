@@ -240,7 +240,7 @@ void launch(LaunchParams const &launch_params, const char *kernel_name, ReducePa
 
   using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(Res::get_default(), launch_params, kernel_name, reducers, p_body);
+  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body, reducers);
 
   util::callPostLaunchPlugins(context);
 }
@@ -274,12 +274,13 @@ void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_
 
   using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(Res::get_default(), launch_params, kernel_name, reducers, p_body);
+  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body, reducers);
 
   util::callPostLaunchPlugins(context);
 }
 
 
+/*
 //Policy based launch without name argument
 template <typename LAUNCH_POLICY, typename BODY>
 void launch(LaunchParams const &params, BODY const &body)
@@ -311,6 +312,7 @@ void launch(LaunchParams const &params, const char *kernel_name, BODY const &bod
 
   util::callPostLaunchPlugins(context);
 }
+*/
 
 //=================================================
 //Run time based policy launch
@@ -429,6 +431,7 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
 #endif
 
 
+/*
 //Launch API which takes team resource struct
 template <typename POLICY_LIST, typename BODY>
 resources::EventProxy<resources::Resource>
@@ -494,6 +497,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &params, const char *ke
   //^^ RAJA will abort before getting here
   return resources::EventProxy<resources::Resource>(res);
 }
+*/
 
 //Launch API which takes team resource struct and supports new reducers
 template <typename POLICY_LIST, typename ... ReduceParams>
@@ -537,14 +541,14 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name, reducers, p_body);
+      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name, p_body, reducers);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
 #if defined(RAJA_GPU_ACTIVE)
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name, reducers, p_body);
+      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name,  p_body, reducers);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
