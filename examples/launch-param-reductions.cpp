@@ -233,7 +233,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                                                  int &_cuda_sum, int &_cuda_min, int &_cuda_max,
-                           int &_cuda_max, VALLOC_INT &_cuda_minloc, VALLOC_INT &_cuda_maxloc) {
+                           VALLOC_INT &_cuda_minloc, VALLOC_INT &_cuda_maxloc) {
 
 
       RAJA::loop<LOOP_POL3>(ctx, arange, [&] (int i) {
