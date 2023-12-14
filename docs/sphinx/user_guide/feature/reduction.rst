@@ -324,20 +324,20 @@ The usage of the experiemental reductions is similar to the forall example as il
   double rm = 1e100;
 
   RAJA::launch<EXEC_POL> ( Res,
-  RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
-  RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
-  "LaunchReductionKernel",
-  [=] RAJA_HOST_DEVICE (int i, double& _rs, double& _rm) {
+    RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
+    "LaunchReductionKernel",
+    [=] RAJA_HOST_DEVICE (int i, double& _rs, double& _rm) {
 
-    RAJA::loop<loop_pol>(ctx, Seg, [&] (int i) {
+      RAJA::loop<loop_pol>(ctx, Seg, [&] (int i) {
 
-      _rs += a[i];
-      _rm = RAJA_MIN(a[i], _rm);
+        _rs += a[i];
+        _rm = RAJA_MIN(a[i], _rm);
+
+        }
+      );
 
     }
-    );
-
-  }
   );
 
   std::cout << rs ...
