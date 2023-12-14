@@ -5,6 +5,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
+# Override reproducer section to define project specific variables.
+.lassen_reproducer_vars: &lassen_reproducer_vars
+    - |
+      echo -e "export MODULE_LIST=\"${MODULE_LIST}\""
+      echo -e "export SPEC=\"${SPEC//\"/\\\"}\""
+
 ########################
 # Overridden shared jobs
 ########################
