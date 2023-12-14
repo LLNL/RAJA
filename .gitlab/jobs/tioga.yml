@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #############################################################################
 
-# Override reproducer section to define RAJA specific variables.
+# Override reproducer section to define project specific variables.
 .tioga_reproducer_vars: &tioga_reproducer_vars
     - |
       echo -e "export MODULE_LIST=\"${MODULE_LIST}\""

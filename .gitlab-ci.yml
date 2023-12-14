@@ -28,7 +28,7 @@
 # We define the following GitLab pipeline variables:
 variables:
 ##### LC GITLAB CONFIGURATION
-# Use a LLNL service user to run CI. This prevents from running pipelines as an
+# Use an LLNL service user to run CI. This prevents from running pipelines as an
 # actual user.
   LLNL_SERVICE_USER: rajasa
 # Use the service user workspace. Solves permission issues, stores everything
