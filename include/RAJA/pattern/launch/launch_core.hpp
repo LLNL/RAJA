@@ -412,8 +412,8 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   //
 #if defined(RAJA_GPU_ACTIVE)
   util::PluginContext context{place == ExecPlace::HOST ?
-      util::make_context<typename POLICY_LIST::host_policy_t>()
-      : util::make_context<typename POLICY_LIST::device_policy_t>()};
+      util::make_context<typename POLICY_LIST::host_policy_t>() :
+      util::make_context<typename POLICY_LIST::device_policy_t>()};
 #else
   util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
 #endif
@@ -480,8 +480,8 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   //
 #if defined(RAJA_GPU_ACTIVE)
   util::PluginContext context{place == ExecPlace::HOST ?
-      util::make_context<typename POLICY_LIST::host_policy_t>()
-      : util::make_context<typename POLICY_LIST::device_policy_t>()};
+      util::make_context<typename POLICY_LIST::host_policy_t>() :
+      util::make_context<typename POLICY_LIST::device_policy_t>()};
 #else
   util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
 #endif
