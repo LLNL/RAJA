@@ -44,12 +44,34 @@ __global__ void launch_global_fcn(BODY body_in)
   body(ctx);
 }
 
+template <typename BODY, typename ReduceParams>
+__global__ void launch_new_reduce_global_fcn(BODY body_in, ReduceParams reduce_params)
+{
+  LaunchContext ctx;
+
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
+  RAJA::expt::invoke_body( reduce_params, body, ctx );
+
+  //Using a flatten global policy as we may use all dimensions
+  RAJA::expt::ParamMultiplexer::combine<RAJA::cuda_flatten_global_xyz_direct>(reduce_params);
+}
+
 template <bool async>
 struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, named_usage::unspecified, named_usage::unspecified>> {
 
-  template <typename BODY_IN>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
+  template <typename BODY_IN, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, const LaunchParams &params,
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
     using BODY = camp::decay<BODY_IN>;
 
@@ -96,6 +118,70 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, named_usa
     return resources::EventProxy<resources::Resource>(res);
   }
 
+  //Version with explicit reduction parameters..
+  template <typename BODY_IN, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+  exec(RAJA::resources::Resource res, const LaunchParams &launch_params,
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams &launch_reducers)
+  {
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = reinterpret_cast<const void*>(launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams> >);
+
+    resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    cuda_dim_t gridSize{ static_cast<cuda_dim_member_t>(launch_params.teams.value[0]),
+                         static_cast<cuda_dim_member_t>(launch_params.teams.value[1]),
+                         static_cast<cuda_dim_member_t>(launch_params.teams.value[2]) };
+
+    cuda_dim_t blockSize{ static_cast<cuda_dim_member_t>(launch_params.threads.value[0]),
+                          static_cast<cuda_dim_member_t>(launch_params.threads.value[1]),
+                          static_cast<cuda_dim_member_t>(launch_params.threads.value[2]) };
+
+    // Only launch kernel if we have something to iterate over
+    constexpr cuda_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      RAJA::cuda::detail::cudaInfo launch_info;
+      launch_info.gridDim = gridSize;
+      launch_info.blockDim = blockSize;
+      launch_info.res = cuda_res;
+
+      {
+        using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<async, named_usage::unspecified, named_usage::unspecified>;
+        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers, launch_info);
+
+
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::cuda::make_launch_body(
+            gridSize, blockSize, launch_params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&body, (void*)&launch_reducers};
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, launch_params.shared_mem_size, cuda_res, async, kernel_name);
+
+        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers, launch_info);
+      }
+
+      RAJA_FT_END;
+    }
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
 };
 
 
@@ -116,13 +202,36 @@ void launch_global_fcn_fixed(BODY body_in)
   body(ctx);
 }
 
+template <typename BODY, int num_threads, size_t BLOCKS_PER_SM, typename ReduceParams>
+__global__ void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams reduce_params)
+{
+  LaunchContext ctx;
+
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body = privatizer.get_priv();
+
+  //Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
+  RAJA::expt::invoke_body( reduce_params, body, ctx );
+
+  //Using a flatten global policy as we may use all dimensions
+  RAJA::expt::ParamMultiplexer::combine<RAJA::cuda_flatten_global_xyz_direct>(reduce_params);
+}
+
 template <bool async, int nthreads, size_t BLOCKS_PER_SM>
 struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>> {
 
-  template <typename BODY_IN>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name, BODY_IN &&body_in)
+  template <typename BODY_IN, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, const LaunchParams &params,
+       const char *kernel_name, BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
+
     using BODY = camp::decay<BODY_IN>;
 
     auto func = launch_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM>;
@@ -165,6 +274,70 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
       RAJA_FT_END;
     }
 
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+  //Version with explicit reduction parameters..
+  template<typename BODY_IN, typename ReduceParams>
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+  exec(RAJA::resources::Resource res, const LaunchParams &launch_params,
+       const char *kernel_name, BODY_IN && body_in, ReduceParams &launch_reducers)
+  {
+
+    using BODY = camp::decay<BODY_IN>;
+
+    auto func = reinterpret_cast<const void*>(launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams> >);
+
+    resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
+
+    //
+    // Compute the number of blocks and threads
+    //
+
+    cuda_dim_t gridSize{ static_cast<cuda_dim_member_t>(launch_params.teams.value[0]),
+                         static_cast<cuda_dim_member_t>(launch_params.teams.value[1]),
+                         static_cast<cuda_dim_member_t>(launch_params.teams.value[2]) };
+
+    cuda_dim_t blockSize{ static_cast<cuda_dim_member_t>(launch_params.threads.value[0]),
+                          static_cast<cuda_dim_member_t>(launch_params.threads.value[1]),
+                          static_cast<cuda_dim_member_t>(launch_params.threads.value[2]) };
+
+
+    // Only launch kernel if we have something to iterate over
+    constexpr cuda_dim_member_t zero = 0;
+    if ( gridSize.x  > zero && gridSize.y  > zero && gridSize.z  > zero &&
+         blockSize.x > zero && blockSize.y > zero && blockSize.z > zero ) {
+
+      RAJA_FT_BEGIN;
+
+      RAJA::cuda::detail::cudaInfo launch_info;
+      launch_info.gridDim = gridSize;
+      launch_info.blockDim = blockSize;
+      launch_info.res = cuda_res;
+      {
+
+        using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>;
+        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers, launch_info);
+
+        //
+        // Privatize the loop_body, using make_launch_body to setup reductions
+        //
+        BODY body = RAJA::cuda::make_launch_body(
+            gridSize, blockSize, launch_params.shared_mem_size, cuda_res, std::forward<BODY_IN>(body_in));
+
+        //
+        // Launch the kernel
+        //
+        void *args[] = {(void*)&body, (void*)&launch_reducers};
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, args, launch_params.shared_mem_size, cuda_res, async, kernel_name);
+
+        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers, launch_info);
+      }
+
+      RAJA_FT_END;
+    }
     return resources::EventProxy<resources::Resource>(res);
   }
 
