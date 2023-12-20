@@ -213,11 +213,11 @@ TEST(IndexLayout, View2DLayout)
    * the direct index used along the 0-axis and
    * the index list {1,2} used along the 1-axis and
    * pass to a 2D view of size 2x3 with the each entry being i*j
-   * for i,j in [0,2)x[0,3) (e.g. view(1,2) = 1*2, view(0,3) = 0*3, etc..)
+   * for i,j in [0,2)x[0,3) (e.g. view(1,2) = 1*2, view(0,2) = 0*2, etc..)
    * Examples: 
    *   (index layout index -> view index -> view at index)
    *   index_layout(0,1)   -> view(0,2)  -> 0
-   *   index_layout(2,0)   -> view(2,1)  -> 2
+   *   index_layout(1,0)   -> view(1,1)  -> 1
    */
 
   Index_type data[2][3];
