@@ -14,9 +14,9 @@
 ########################
 # Overridden shared jobs
 ########################
-# We duplicate the shared jobs description and add necessary changes for RAJA.
-# We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS} So that
-# the comparison with the original job is easier.
+# We duplicate the shared jobs description and add necessary changes for this
+# project. We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS}
+# So that the comparison with the original job is easier.
 
 # No overridden jobs so far.
 

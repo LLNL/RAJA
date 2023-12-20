@@ -164,10 +164,13 @@ then
       ${project_dir}
     if ! $cmake_exe --build . -j ${core_counts[$truehostname]}
     then
-        echo "ERROR: compilation failed, building with verbose output..."
+        echo "[Error]: compilation failed, building with verbose output..."
+        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        echo "~~~~~ Running make VERBOSE=1"
+        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         $cmake_exe --build . --verbose -j 1
     else
-        make install
+        $cmake_exe --install .
     fi
     date
 
@@ -186,7 +189,7 @@ then
 
     if [[ ! -d ${build_dir} ]]
     then
-        echo "ERROR: Build directory not found : ${build_dir}" && exit 1
+        echo "[Error]: Build directory not found : ${build_dir}" && exit 1
     fi
 
     cd ${build_dir}
@@ -198,7 +201,7 @@ then
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
     then
-        echo "ERROR: No tests were found" && exit 1
+        echo "[Error]: No tests were found" && exit 1
     fi
 
     echo "Copying Testing xml reports for export"
@@ -208,26 +211,26 @@ then
 
     if grep -q "Errors while running CTest" ./tests_output.txt
     then
-        echo "ERROR: failure(s) while running CTest" && exit 1
+        echo "[Error]: failure(s) while running CTest" && exit 1
     fi
 
     if grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
     then
-        echo "WARNING: not testing install with HIP"
+        echo "[Warning]: not testing install with HIP"
     else
         if [[ ! -d ${install_dir} ]]
         then
-            echo "ERROR: install directory not found : ${install_dir}" && exit 1
+            echo "[Error]: install directory not found : ${install_dir}" && exit 1
         fi
 
         cd ${install_dir}/examples/RAJA/using-with-cmake
         mkdir build && cd build
         if ! $cmake_exe -C ../host-config.cmake ..; then
-        echo "ERROR: running $cmake_exe for using-with-cmake test" && exit 1
+        echo "[Error]: running $cmake_exe for using-with-cmake test" && exit 1
         fi
 
         if ! make; then
-        echo "ERROR: running make for using-with-cmake test" && exit 1
+        echo "[Error]: running make for using-with-cmake test" && exit 1
         fi
     fi
 
