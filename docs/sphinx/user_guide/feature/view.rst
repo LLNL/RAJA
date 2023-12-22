@@ -333,21 +333,23 @@ indices by :math:`N`, ::
 Index Layout
 ^^^^^^^^^^^^
 
-``RAJA::IndexLayout`` is a layout that can use an index list to map
-input indices to an entry within a view.  Each dimension of the layout
-can have its own indexing strategy to determine this mapping.
+``RAJA::IndexLayout`` is a layout that can use an index list to map input
+indices to an entry within a view.  Each dimension of the layout can have its
+own indexing strategy to determine this mapping.
 
-Three indexing strategies are natively supported in RAJA:
-DirectIndex, IndexList, and ConditionalIndexList. DirectIndex maps an input
-index to itself, and does not take any arguments in its constructor.  The
-IndexList strategy takes a pointer to an array of indices.  With this strategy,
-a given input index is mapped to the entry in its list corresponding to that
-index.  Lastly, the ConditionalIndexStrategy takes a pointer to an array of
-indices. When the pointer is not a nullptr, the ConditionalIndex strategy is
-equivalent to that of the IndexList.  If the index list provided to
-the constructor is a null pointer, the ConditionalIndexList is
-identical to the DirectIndex strategy.  The ConditionalIndexList strategy
-is useful when the index list is not initialized for some situations.
+Three indexing strategies are natively supported in RAJA: ``RAJA::DirectIndex``,
+``RAJA::IndexList``, and ``RAJA::ConditionalIndexList``.  ``RAJA::DirectIndex``
+maps an input index to itself, and does not take any  arguments in its
+constructor.  The ``RAJA::IndexList`` strategy takes a pointer  to an array of
+indices.  With this strategy, a given input index is mapped to  the entry in its
+list corresponding to that index.  Lastly, the
+``RAJA::ConditionalIndexStrategy`` takes a pointer to an array of indices. When
+the pointer is not a nullptr, the ``RAJA::ConditionalIndex`` strategy is
+equivalent to that of the ``RAJA::IndexList``.  If the index list provided to
+the constructor is a null pointer, the ``RAJA::ConditionalIndexList`` is
+identical to the ``RAJA::DirectIndex`` strategy.  The
+``RAJA::ConditionalIndexList`` strategy is useful when the index list is not
+initialized for some situations.
 
 A simple illustrative example is shown below::
 
@@ -371,19 +373,20 @@ A simple illustrative example is shown below::
   assert( &view(1,1) == &data[1][2] );
 
 In the above example, a two-dimensional index layout is created with extents 2
-and 3 for the first and second dimension, respectively.  A DirectIndex strategy
-is implemented for the first dimension and an index list with the entries {1,2}
-is used for the second dimension.  With this layout, the view created above will
-choose the entry along the first dimension based on the first input index
-provided, and the second provided index will be mapped to that corresponding
-entry of the index_list for the second dimension.
+and 3 for the first and second dimension, respectively.  A ``RAJA::DirectIndex``
+strategy is implemented for the first dimension and ``RAJA::IndexList`` is used
+with the entries for the second dimension with the list {1,2}.  With this
+layout, the view created above will choose the entry along the first dimension
+based on the first input index provided, and the second provided index will be
+mapped to that corresponding entry of the index_list for the second dimension.
 
-.. note::  There is currently no bounds checking implemented for IndexLayout.
-	   When using the IndexList or ConditionalIndexList strategies, it is
-	   the user's responsibility to know the extents of the index lists
-	   when accessing data from a view.  It is also the user's
-	   responsibility to ensure the index lists being used reside in the
-	   same memory space as the data stored in the view.
+.. note::  There is currently no bounds checking implemented for
+	   ``RAJA::IndexLayout``.  When using the ``RAJA::IndexList`` or
+	   ``RAJA::ConditionalIndexList``  strategies, it is the user's
+	   responsibility to know the extents of the index lists when accessing
+	   data from a view.  It is also the  user's responsibility to ensure
+	   the index lists being used reside in  the same memory space as the
+	   data stored in the view.
 
 -------------------
 RAJA Index Mapping
