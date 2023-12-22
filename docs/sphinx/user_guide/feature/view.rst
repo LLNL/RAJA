@@ -333,21 +333,21 @@ indices by :math:`N`, ::
 Index Layout
 ^^^^^^^^^^^^
 
-``RAJA::IndexLayout`` is a layout that uses an indexing strategy for each
-dimension to determine how to map a given input index to an entry within a view.
+``RAJA::IndexLayout`` is a layout that can use an index list to map
+input indices to an entry within a view.  Each dimension of the layout
+can have its own indexing strategy to determine this mapping.
 
 Three indexing strategies are natively supported in RAJA:
 DirectIndex, IndexList, and ConditionalIndexList. DirectIndex maps an input
 index to itself, and does not take any arguments in its constructor.  The
-IndexList strategy takes a reference to an array containing the list of relevant
-indices to map.  With this strategy, a given input index is mapped to the entry
-in its list corresponding to that index.  Lastly, the ConditionalIndexStrategy
-takes a reference to an array containing an index list.  When the referenced
-index list is non-null, the ConditionalIndex strategy is equivalent to that
-of the IndexList.  Otherwise, if the index list provided to the constructor is a
-null pointer, the ConditionalIndexList maps an input index to itself (same as
-the DirectIndex strategy).  The ConditionalIndexList strategy is useful when the
-index list is not initialized for some situations.
+IndexList strategy takes a pointer to an array of indices.  With this strategy,
+a given input index is mapped to the entry in its list corresponding to that
+index.  Lastly, the ConditionalIndexStrategy takes a pointer to an array of
+indices. When the pointer is not a nullptr, the ConditionalIndex strategy is
+equivalent to that of the IndexList.  If the index list provided to
+the constructor is a null pointer, the ConditionalIndexList is
+identical to the DirectIndex strategy.  The ConditionalIndexList strategy
+is useful when the index list is not initialized for some situations.
 
 A simple illustrative example is shown below::
 
@@ -376,13 +376,14 @@ is implemented for the first dimension and an index list with the entries {1,2}
 is used for the second dimension.  With this layout, the view created above will
 choose the entry along the first dimension based on the first input index
 provided, and the second provided index will be mapped to that corresponding
-entry of the index_list for the second dimension. Some examples are shown in
-the last two lines above.
+entry of the index_list for the second dimension.
 
 .. note::  There is currently no bounds checking implemented for IndexLayout.
 	   When using the IndexList or ConditionalIndexList strategies, it is
 	   the user's responsibility to know the extents of the index lists
-	   when accessing data from a view.
+	   when accessing data from a view.  It is also the user's
+	   responsibility to ensure the index lists being used reside in the
+	   same memory space as the data stored in the view.
 
 -------------------
 RAJA Index Mapping
