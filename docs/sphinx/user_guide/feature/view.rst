@@ -367,8 +367,8 @@ A simple illustrative example is shown below::
   auto index_layout = RAJA::make_index_layout(index_tuple, 2, 3);
   auto view = RAJA::make_index_view(&data[0][0], index_layout);
 
-  int val0 = view(1,0); // val0 is entry in data[1][1]
-  int val1 = view(1,1); // val1 is entry in data[1][2]
+  assert( view(1,0) == data[1][1] );
+  assert( &view(1,1) == &data[1][2] );
 
 In the above example, a two-dimensional index layout is created with extents 2
 and 3 for the first and second dimension, respectively.  A DirectIndex strategy
