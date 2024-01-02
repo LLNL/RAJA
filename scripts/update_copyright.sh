@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,8 @@
 # as well.
 #
 # IMPORTANT: Since this file is not modified (it is running the shell 
-# script commands), you must EDIT THE COPYRIGHT DATES ABOVE MANUALLY.
+# script commands), you must EDIT THE COPYRIGHT DATES IN THE HEADER ABOVE 
+# MANUALLY.
 #
 # Edit the 'find' command below to change the set of files that will be
 # modified.
@@ -45,18 +46,18 @@ for i in `cat files2change`
 do
     echo $i
     cp $i $i.sed.bak
-    sed "s/Copyright (c) 2016-22/Copyright (c) 2016-23/" $i.sed.bak > $i
+    sed "s/Copyright (c) 2016-23/Copyright (c) 2016-24/" $i.sed.bak > $i
 done
 
 echo LICENSE
 cp LICENSE LICENSE.sed.bak
-sed "s/Copyright (c) 2016-2022/Copyright (c) 2016-2023/" LICENSE.sed.bak > LICENSE
+sed "s/Copyright (c) 2016-2023/Copyright (c) 2016-2024/" LICENSE.sed.bak > LICENSE
 
-for i in README.md RELEASE_NOTES.md CONTRIBUTING.md RELEASE 
+for i in README.md RELEASE_NOTES.md CONTRIBUTING.md RELEASE docs/conf.py
 do 
     echo $i
     cp $i $i.sed.bak
-    sed "s/2016-22/2016-23/" $i.sed.bak > $i
+    sed "s/2016-23/2016-24/" $i.sed.bak > $i
 done
 
 #=============================================================================
