@@ -164,7 +164,17 @@ public:
 namespace operators
 {
 template <typename T, typename IndexType, bool B>
-struct limits<::RAJA::reduce::detail::ValueLoc<T, IndexType, B>> : limits<T> {
+struct limits<::RAJA::reduce::detail::ValueLoc<T, IndexType, B>> {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr
+  ::RAJA::reduce::detail::ValueLoc<T, IndexType, B> min()
+  {
+    return ::RAJA::reduce::detail::ValueLoc<T, IndexType, B>(limits<T>::min());
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr
+  ::RAJA::reduce::detail::ValueLoc<T, IndexType, B> max()
+  {
+    return ::RAJA::reduce::detail::ValueLoc<T, IndexType, B>(limits<T>::max());
+  }
 };
 }  // namespace operators
 
