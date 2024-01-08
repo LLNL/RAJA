@@ -28,7 +28,7 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T>
   camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
   resolve(Reducer<OP, T>& red) {
-    *red.target = OP{}(red.val, *red.target);
+    *red.target = OP{}(*red.target, red.val);
   }
 
 #endif

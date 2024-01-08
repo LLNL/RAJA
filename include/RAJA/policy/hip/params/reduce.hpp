@@ -38,7 +38,7 @@ namespace detail {
   {
     // complete reduction
     hi.res.wait();
-    *red.target = OP{}(*red.devicetarget, *red.target);
+    *red.target = OP{}(*red.target, *red.devicetarget);
 
     // free memory
     RAJA::hip::device_zeroed_mempool_type::getInstance().free(red.device_count);
