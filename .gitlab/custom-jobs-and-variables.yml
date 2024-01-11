@@ -25,7 +25,7 @@ variables:
 
 # Poodle
 # Arguments for top level allocation
-  POODLE_SHARED_ALLOC: "--exclusive --partition=pdebug --time=30 --nodes=1"
+  POODLE_SHARED_ALLOC: "--exclusive --partition=pdebug --time=40 --nodes=1"
 # Arguments for job level allocation
   POODLE_JOB_ALLOC: "--overlap --nodes=1"
 # Project specific variants for poodle
