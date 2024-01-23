@@ -334,8 +334,8 @@ Index Layout
 ^^^^^^^^^^^^
 
 ``RAJA::IndexLayout`` is a layout that can use an index list to map input
-indices to an entry within a view.  Each dimension of the layout can have its
-own indexing strategy to determine this mapping.
+indices to an entry within a view.  Each dimension of the layout is required to
+have its own indexing strategy to determine this mapping.
 
 Three indexing strategies are natively supported in RAJA: ``RAJA::DirectIndex``,
 ``RAJA::IndexList``, and ``RAJA::ConditionalIndexList``.  ``DirectIndex``
@@ -344,7 +344,7 @@ constructor.  The ``IndexList`` strategy takes a pointer  to an array of
 indices.  With this strategy, a given input index is mapped to  the entry in its
 list corresponding to that index.  Lastly, the
 ``ConditionalIndexStrategy`` takes a pointer to an array of indices. When
-the pointer is not a nullptr, the ``ConditionalIndex`` strategy is
+the pointer is not a null pointer, the ``ConditionalIndex`` strategy is
 equivalent to that of the ``IndexList``.  If the index list provided to
 the constructor is a null pointer, the ``ConditionalIndexList`` is
 identical to the ``DirectIndex`` strategy.  The
