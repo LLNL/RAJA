@@ -365,7 +365,7 @@ A simple illustrative example is shown below::
 
   auto index_tuple = RAJA::tuple<RAJA::DirectIndex<>, RAJA::IndexList<>>(
                       RAJA::DirectIndex<>(), RAJA::IndexList<>{&index_list[0]});
-			   
+	   
   auto index_layout = RAJA::make_index_layout(index_tuple, 2, 3);
   auto view = RAJA::make_index_view(&data[0][0], index_layout);
 
