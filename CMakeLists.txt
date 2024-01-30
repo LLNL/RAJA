@@ -314,8 +314,6 @@ endif()
 
 install(FILES
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
-  include/RAJA/module.modulemap
-  include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
 
 
