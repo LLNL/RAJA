@@ -219,6 +219,7 @@ endif ()
 
 if (RAJA_ENABLE_SYCL)
   set (RAJA_ENABLE_DESUL_ATOMICS "On")
+  set (ENABLE_SYCL "On") # Enable SYCL atomics in Desul
   set (raja_depends
     ${raja_depends}
     sycl)
@@ -226,6 +227,10 @@ endif ()
 
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)
+  # NOTE: ENABLE_OPENMP in Desul implies OpenMP OFFLOAD
+  if (NOT RAJA_ENABLE_TARGET_OPENMP)
+    set (DESUL_ENABLE_OPENMP Off CACHE BOOL "Disable Desul OpenMP offload atomics to select builtin host atomics")
+  endif()
   add_subdirectory(tpl/desul)
   set(raja_depends
     ${raja_depends}

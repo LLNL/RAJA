@@ -20,24 +20,24 @@
 
 clang_14_0_6:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %clang@14.0.6 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared +openmp +omptask +tests %clang@14.0.6 ^blt@develop"
   extends: .job_on_ruby
 
 gcc_10_3_1:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %gcc@10.3.1 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared +openmp +omptask +tests %gcc@10.3.1 ^blt@develop"
     RUBY_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .job_on_ruby
 
 intel_19_1_2_gcc_10_3_1:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %intel@19.1.2.gcc.10.3.1 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared +openmp +omptask +tests %intel@19.1.2.gcc.10.3.1 ^blt@develop"
     RUBY_JOB_ALLOC: "--time=90 --nodes=1"
   extends: .job_on_ruby
 
 intel_2022_1_0:
   variables:
-    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@2022.1.0 ${PROJECT_RUBY_DEPS} ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@2022.1.0 ${PROJECT_RUBY_DEPS} ^blt@develop"
   allow_failure: true
   extends: .job_on_ruby
 
@@ -50,17 +50,17 @@ intel_2022_1_0:
 
 clang_14_0_6_openmp_off:
   variables:
-    SPEC: " ~shared ~openmp +tests %clang@14.0.6 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared ~openmp +tests %clang@14.0.6 ^blt@develop"
   extends: .job_on_ruby
 
 gcc_10_3_1_openmp_default:
   variables:
-    SPEC: " ~shared +tests %gcc@10.3.1 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared +tests %gcc@10.3.1 ^blt@develop"
     RUBY_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .job_on_ruby
 
 # OTHERS
 clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +desul %clang@14.0.6.gcc.10.3.1 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared +openmp +tests +desul %clang@14.0.6.gcc.10.3.1 ^blt@develop"
   extends: .job_on_ruby

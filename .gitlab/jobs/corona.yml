@@ -29,6 +29,6 @@
 
 rocmcc_5_7_0_hip_desul_atomics:
   variables:
-    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@5.7.0 ^hip@5.7.0 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@5.7.0 ^hip@5.7.0 ^blt@develop"
   extends: .job_on_corona
 
