@@ -983,7 +983,8 @@ using cuda_launch_explicit_t = policy::cuda::cuda_launch_explicit_t<Async, num_t
 
 //CUDA will emit warnings if we specify BLOCKS_PER_SM but not num of threads
 template <bool Async, int num_threads = named_usage::unspecified>
-using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, named_usage::unspecified>;
+using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads,
+    (num_threads == named_usage::unspecified) ? named_usage::unspecified : policy::cuda::MIN_BLOCKS_PER_SM>;
 
 
 // policies usable with kernel and launch
