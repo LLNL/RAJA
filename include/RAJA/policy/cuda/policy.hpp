@@ -981,8 +981,10 @@ using policy::cuda::cuda_synchronize;
 template <bool Async, int num_threads = named_usage::unspecified, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 using cuda_launch_explicit_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>;
 
+//CUDA will emit warnings if we specify BLOCKS_PER_SM but not num of threads
 template <bool Async, int num_threads = named_usage::unspecified>
-using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads, policy::cuda::MIN_BLOCKS_PER_SM>;
+using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads,
+    (num_threads == named_usage::unspecified) ? named_usage::unspecified : policy::cuda::MIN_BLOCKS_PER_SM>;
 
 
 // policies usable with kernel and launch
