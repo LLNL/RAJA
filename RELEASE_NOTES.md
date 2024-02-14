@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2024.02.0 -- Release date 2024-02-dd
+Version 2024.02.0 -- Release date 2024-02-14
 ============================================
 
 This release contains ...
