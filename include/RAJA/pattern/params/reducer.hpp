@@ -8,6 +8,8 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #elif defined(RAJA_HIP_ACTIVE)
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
+#elif defined(RAJA_SYCL_ACTIVE)
+#include "RAJA/policy/sycl/MemUtils_SYCL.hpp"
 #endif
 
 namespace RAJA
@@ -25,13 +27,11 @@ struct ValLoc {
   RAJA_HOST_DEVICE ValLoc(value_type v) : val(v) {}
   RAJA_HOST_DEVICE ValLoc(value_type v, RAJA::Index_type l) : val(v), loc(l) {}
 
-  RAJA_HOST_DEVICE void min(value_type v, index_type l) { if (v <  val) { val = v; loc = l; } }
-  RAJA_HOST_DEVICE void max(value_type v, index_type l) { if (v >  val) { val = v; loc = l; } }
+  RAJA_HOST_DEVICE void min(value_type v, index_type l) { if (v < val) { val = v; loc = l; } }
+  RAJA_HOST_DEVICE void max(value_type v, index_type l) { if (v > val) { val = v; loc = l; } }
 
-  bool constexpr operator < (const ValLoc& rhs) const { return val <= rhs.val; }
-  bool constexpr operator <=(const ValLoc& rhs) const { return val < rhs.val; }
-  bool constexpr operator > (const ValLoc& rhs) const { return val >= rhs.val; }
-  bool constexpr operator >=(const ValLoc& rhs) const { return val > rhs.val; }
+  bool constexpr operator<(const ValLoc& rhs) const { return val < rhs.val; }
+  bool constexpr operator>(const ValLoc& rhs) const { return val > rhs.val; }
 
   value_type getVal() {return val;}
   RAJA::Index_type getLoc() {return loc;}
@@ -74,6 +74,8 @@ namespace detail
   using device_mem_pool_t = RAJA::cuda::device_mempool_type;
 #elif defined(RAJA_HIP_ACTIVE)
   using device_mem_pool_t = RAJA::hip::device_mempool_type;
+#elif defined(RAJA_SYCL_ACTIVE)
+  using device_mem_pool_t = RAJA::sycl::device_mempool_type;
 #endif
 
   //
@@ -92,7 +94,7 @@ namespace detail
     value_type *target = nullptr;
     value_type val = op::identity();
 
-#if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE)
+#if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
     // Device related attributes.
     value_type * devicetarget = nullptr;
     RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;

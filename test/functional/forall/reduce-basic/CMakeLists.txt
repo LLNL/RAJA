@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,8 @@ endif()
 # expt-reduce tests.
 #
 if(RAJA_ENABLE_SYCL)
-  list(REMOVE_ITEM FORALL_BACKENDS Sycl)
+	list(REMOVE_ITEM REDUCETYPES ReduceMaxLoc)
+	list(REMOVE_ITEM REDUCETYPES ReduceMinLoc)
 endif()
 
 
@@ -58,6 +59,15 @@ unset( REDUCETYPES )
 set(REDUCETYPES ReduceBitAnd ReduceBitOr)
 
 set(DATATYPES BitwiseReductionDataTypeList)
+
+#
+# If building SYCL tests, remove the back-end from
+# from the list of tests to generate here for the 
+# expt-reduce tests.
+
+if(RAJA_ENABLE_SYCL)
+  list(REMOVE_ITEM FORALL_BACKENDS Sycl)
+endif()
 
 #
 # Generate bitwise reduction tests for each enabled RAJA back-end
@@ -104,6 +114,15 @@ if(RAJA_ENABLE_SYCL)
   list(APPEND FORALL_BACKENDS Sycl)
 endif()
 
+#
+# If building SYCL tests, remove the back-end from
+# from the list of tests to generate here for the
+# core reduction tests.
+#
+if(RAJA_ENABLE_SYCL)
+        list(REMOVE_ITEM REDUCETYPES ReduceMaxLoc)
+        list(REMOVE_ITEM REDUCETYPES ReduceMinLoc)
+endif()
 
 #
 # Generate core reduction tests for each enabled RAJA back-end

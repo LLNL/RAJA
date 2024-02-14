@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -152,7 +152,13 @@ Generating a host-config file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To generate a host-config file for a desired configuration, run the 
-``uberenv.py`` python script from the top-level RAJA directory. For example,
+``uberenv.py`` python script from the top-level RAJA directory. 
+
+.. important:: **Do not** run the ``uberenv.py`` script, which invokes Spack
+               in your LC home directory. Running Spack in your home directory 
+               may cause you to exceed your LC disk space quota.
+
+For example,
 
 .. code-block:: bash
 

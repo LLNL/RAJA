@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -126,6 +126,18 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
 
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
   (((dividend) + (divisor)-1) / (divisor))
+
+/*!
+ * OpenMP helper for the new RAJA reducer interface.
+ * Used in forall and launch
+ */
+#if defined(RAJA_ENABLE_OPENMP)
+#define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
+      _Pragma(" omp declare reduction( combine \
+        : typename std::remove_reference<decltype(f_params)>::type \
+        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")\
+        //initializer(omp_priv = omp_in) ")
+#endif
 
 
 RAJA_HOST_DEVICE

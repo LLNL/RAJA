@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,10 +9,6 @@ list(APPEND FORALL_BACKENDS Sequential)
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND FORALL_BACKENDS OpenMP)
-endif()
-
-if(RAJA_ENABLE_TBB)
-  list(APPEND FORALL_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_CUDA)
@@ -57,12 +53,6 @@ list(APPEND FORALL_ATOMIC_BACKENDS Sequential)
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND FORALL_ATOMIC_BACKENDS OpenMP)
-endif()
-
-if(RAJA_ENABLE_TBB)
-# TBB atomics are not available in RAJA currently
-# so built-in atomics are used
-  list(APPEND FORALL_ATOMIC_BACKENDS TBB)
 endif()
 
 if(RAJA_ENABLE_CUDA)

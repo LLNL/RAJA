@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -164,7 +164,17 @@ public:
 namespace operators
 {
 template <typename T, typename IndexType, bool B>
-struct limits<::RAJA::reduce::detail::ValueLoc<T, IndexType, B>> : limits<T> {
+struct limits<::RAJA::reduce::detail::ValueLoc<T, IndexType, B>> {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr
+  ::RAJA::reduce::detail::ValueLoc<T, IndexType, B> min()
+  {
+    return ::RAJA::reduce::detail::ValueLoc<T, IndexType, B>(limits<T>::min());
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr
+  ::RAJA::reduce::detail::ValueLoc<T, IndexType, B> max()
+  {
+    return ::RAJA::reduce::detail::ValueLoc<T, IndexType, B>(limits<T>::max());
+  }
 };
 }  // namespace operators
 
@@ -313,9 +323,7 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Min reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
+ * \brief  Min reducer class template.
  *
  ******************************************************************************
  */
@@ -338,7 +346,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  MinLoc reducer class template for use in tbb execution.
+ * \brief  MinLoc reducer class template.
  *
  **************************************************************************
  */
@@ -387,7 +395,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Max reducer class template for use in tbb execution.
+ * \brief  Max reducer class template.
  *
  **************************************************************************
  */
@@ -410,7 +418,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Sum reducer class template for use in tbb execution.
+ * \brief  Sum reducer class template.
  *
  **************************************************************************
  */
@@ -434,7 +442,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Bitwise OR reducer class template for use in tbb execution.
+ * \brief  Bitwise OR reducer class template.
  *
  **************************************************************************
  */
@@ -458,7 +466,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  Bitwise AND reducer class template for use in tbb execution.
+ * \brief  Bitwise AND reducer class template.
  *
  **************************************************************************
  */
@@ -483,7 +491,7 @@ public:
 /*!
  **************************************************************************
  *
- * \brief  MaxLoc reducer class template for use in tbb execution.
+ * \brief  MaxLoc reducer class template.
  *
  **************************************************************************
  */

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,10 +30,6 @@ macro(raja_add_executable)
 
   if (RAJA_ENABLE_SYCL)
     list (APPEND arg_DEPENDS_ON sycl)
-  endif ()
-
-  if (RAJA_ENABLE_TBB)
-    list (APPEND arg_DEPENDS_ON tbb)
   endif ()
 
   if (${arg_TEST})
@@ -81,10 +77,6 @@ macro(raja_add_plugin_library)
     list (APPEND arg_DEPENDS_ON sycl)
   endif ()
 
-  if (RAJA_ENABLE_TBB)
-    list (APPEND arg_DEPENDS_ON tbb)
-  endif ()
-
   blt_add_library(
     NAME ${arg_NAME}
     SOURCES ${arg_SOURCES}
@@ -110,7 +102,7 @@ function(raja_set_failtest TESTNAME)
   set(test_name ${TESTNAME})
 
   # Chopping off backend from test name
-  string(REGEX REPLACE "\-Sequential|\-OpenMP|\-OpenMPTarget|\-TBB|\-CUDA|\-HIP" "" test_nobackend ${test_name})
+  string(REGEX REPLACE "\-Sequential|\-OpenMP|\-OpenMPTarget|\-CUDA|\-HIP" "" test_nobackend ${test_name})
 
   # Finding test source code
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/${test_nobackend}.hpp")
@@ -149,7 +141,7 @@ endfunction()
 
 macro(raja_add_test)
   set(options )
-  set(singleValueArgs NAME)
+  set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -167,6 +159,8 @@ macro(raja_add_test)
 
   blt_add_test(
     NAME ${arg_NAME}
+    NUM_MPI_TASKS ${arg_NUM_MPI_TASKS}
+    NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
     #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 
@@ -190,7 +184,7 @@ endmacro(raja_add_reproducer)
 
 macro(raja_add_benchmark)
   set(options )
-  set(singleValueArgs NAME)
+  set(singleValueArgs NAME NUM_MPI_TASKS NUM_OMP_THREADS)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -206,5 +200,7 @@ macro(raja_add_benchmark)
 
   blt_add_benchmark(
     NAME ${arg_NAME}
+    NUM_MPI_TASKS ${arg_NUM_MPI_TASKS}
+    NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_benchmark)

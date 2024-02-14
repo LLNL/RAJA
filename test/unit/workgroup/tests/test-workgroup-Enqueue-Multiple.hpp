@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -145,10 +145,13 @@ TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest, BasicWorkGroupEnqueueMultipl
   using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());
-  std::uniform_int_distribution<size_t> dist(0, 128);
+  std::uniform_int_distribution<size_t> dist_rep(0, 16);
+  std::uniform_int_distribution<size_t> dist_num(0, 64);
 
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(Xargs{}, false, dist(rng), dist(rng));
-  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(Xargs{}, true, dist(rng), dist(rng));
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(
+      Xargs{}, false, dist_rep(rng), dist_num(rng));
+  testWorkGroupEnqueueMultiple< ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType, Allocator >{}(
+      Xargs{}, true, dist_rep(rng), dist_num(rng));
 }
 
 #endif  //__TEST_WORKGROUP_ENQUEUEMULTIPLE__

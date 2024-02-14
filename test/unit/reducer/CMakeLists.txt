@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,16 +12,6 @@ raja_add_test(
 raja_add_test(
   NAME test-reducer-reset-seq
   SOURCES test-reducer-reset-seq.cpp)
-
-if(RAJA_ENABLE_TBB)
-raja_add_test(
-  NAME test-reducer-constructors-tbb
-  SOURCES test-reducer-constructors-tbb.cpp)
-
-raja_add_test(
-  NAME test-reducer-reset-tbb
-  SOURCES test-reducer-reset-tbb.cpp)
-endif()
 
 if(RAJA_ENABLE_OPENMP)
 raja_add_test(

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,7 +57,6 @@ check_symbol_exists(_mm_malloc "" RAJA_HAVE_MM_MALLOC)
 # Set up RAJA_ENABLE prefixed options
 set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})
 set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
-set(RAJA_ENABLE_TBB ${ENABLE_TBB})
 set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
 set(RAJA_ENABLE_NV_TOOLS_EXT ${ENABLE_NV_TOOLS_EXT})
 set(RAJA_ENABLE_ROCTX ${ENABLE_ROCTX})

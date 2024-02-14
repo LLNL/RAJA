@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -79,7 +79,7 @@ The ``RAJA::launch`` API also supports loop tiling through specialized
 methods. The launch version of the code above is ::
 
   using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
-  using loop_t   = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_t   = RAJA::LoopPolicy<RAJA::seq_exec>;
 
   RAJA::launch<launch_t>(
     RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx) {
@@ -154,7 +154,7 @@ The launch API uses ``RAJA::tile_tcount`` and ``RAJA::loop_icount`` methods
 which has a second argument on the lambda for the index. We illustrate usage below::
 
   using launch_t = RAJA::LaunchPolicy<RAJA::seq_launch>;
-  using loop_t   = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using loop_t   = RAJA::LoopPolicy<RAJA::seq_exec>;
 
   RAJA::launch<launch_t>(
     RAJA::LaunchParams(), RAJA_HOST_DEVICE(RAJA::launchContext ctx) {

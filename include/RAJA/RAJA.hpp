@@ -17,7 +17,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -58,7 +58,9 @@
 #include "RAJA/policy/sequential.hpp"
 
 //
-// All platforms must support loop execution.
+// NOTE: LOOP POLCIES WERE DEPRECATED IN 2023.03.0 RELEASE.
+//       THEY ARE RE-ADDED HERE AT REQUEST OF USERS.
+//       THEY WILL BE REMOVED AGAIN IN THE FUTURE.
 //
 #include "RAJA/policy/loop.hpp"
 
@@ -68,10 +70,6 @@
 #include "RAJA/policy/simd.hpp"
 #if defined(RAJA_ENABLE_VECTORIZATION)
 #include "RAJA/policy/tensor.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-#include "RAJA/policy/tbb.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -123,6 +121,7 @@
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/StaticLayout.hpp"
+#include "RAJA/util/IndexLayout.hpp"
 #include "RAJA/util/View.hpp"
 
 

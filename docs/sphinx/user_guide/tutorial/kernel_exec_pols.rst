@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -133,7 +133,7 @@ and
    :language: C++
 
 The first of these, in which we parallelize the outer 'k' loop, replaces
-the ``RAJA::loop_exec`` loop execution policy with the 
+the ``RAJA::seq_exec`` loop execution policy with the 
 ``RAJA::omp_parallel_for_exec`` policy, which applies the same OpenMP
 directive to the outer loop used in the C-style variant.
 

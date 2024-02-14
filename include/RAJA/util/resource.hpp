@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -132,22 +132,22 @@ namespace RAJA
   };
 
   template<>
-  struct get_resource<::RAJA::policy::sycl::omp_target_parallel_for_exec_nt>{
+  struct get_resource<::RAJA::policy::omp::omp_target_parallel_for_exec_nt>{
     using type = camp::resources::Omp;
   };
 
   template<size_t ThreadsPerTeam>
-  struct get_resource<::RAJA::policy::sycl::omp_target_parallel_for_exec<ThreadsPerTeam>>{
+  struct get_resource<::RAJA::policy::omp::omp_target_parallel_for_exec<ThreadsPerTeam>>{
     using type = camp::resources::Omp;
   };
 
   template<typename ISetIter>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::omp_target_parallel_for_exec_nt>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::omp::omp_target_parallel_for_exec_nt>>{
     using type = camp::resources::Omp;
   };
 
   template<typename ISetIter, size_t ThreadsPerTeam>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::sycl::omp_target_parallel_for_exec<ThreadsPerTeam>>>{
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::omp::omp_target_parallel_for_exec<ThreadsPerTeam>>>{
     using type = camp::resources::Omp;
   };
 #endif

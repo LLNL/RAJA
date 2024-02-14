@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -193,7 +193,6 @@ are as follows (names are descriptive of what they enable):
       RAJA_ENABLE_CLANG_CUDA       Off
       (RAJA_)ENABLE_HIP            Off
       RAJA_ENABLE_TARGET_OPENMP    Off (when on, ENABLE_OPENMP must also be on)
-      RAJA_ENABLE_TBB              Off
       RAJA_ENABLE_SYCL             Off
       ==========================   ============================================
 

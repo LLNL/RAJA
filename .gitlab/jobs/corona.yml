@@ -1,0 +1,34 @@
+#############################################################################
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+#############################################################################
+
+# Override reproducer section to define project specific variables.
+.corona_reproducer_vars: &corona_reproducer_vars
+    - |
+      echo -e "export MODULE_LIST=\"${MODULE_LIST}\""
+      echo -e "export SPEC=\"${SPEC//\"/\\\"}\""
+
+########################
+# Overridden shared jobs
+########################
+# We duplicate the shared jobs description and add necessary changes for this
+# project. We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS}
+# So that the comparison with the original job is easier.
+
+# No overridden jobs so far.
+
+############
+# Extra jobs
+############
+# We do not recommend using ${PROJECT_<MACHINE>_VARIANTS} and
+# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
+# describe the spec here.
+
+rocmcc_5_7_0_hip_desul_atomics:
+  variables:
+    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@5.7.0 ^hip@5.7.0 ^blt@develop"
+  extends: .job_on_corona
+

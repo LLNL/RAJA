@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,8 +17,6 @@ fi
 COMP_VER=$1
 shift 1
 
-USE_TBB=Off
-
 BUILD_SUFFIX=lc_toss4-icpc-classic-${COMP_VER}
 
 echo
@@ -30,7 +28,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.21.1
+module load cmake/3.23.1
 
 ##
 # CMake option -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off used to speed up compile
@@ -45,7 +43,6 @@ cmake \
   -C ../host-configs/lc-builds/toss4/icpc-classic_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
-  -DRAJA_ENABLE_TBB=${USE_TBB} \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

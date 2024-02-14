@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -53,22 +53,6 @@ using OpenMPKernelExecPols = camp::list<
 
 >;
 #endif  // if defined(RAJA_ENABLE_OPENMP)
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBKernelExecPols = camp::list<
-
-  RAJA::KernelPolicy<
-    RAJA::statement::For<0, RAJA::tbb_for_exec,
-      RAJA::statement::For<1, RAJA::seq_exec,
-        RAJA::statement::For<2, RAJA::seq_exec,
-          RAJA::statement::Lambda<0, RAJA::Segs<0, 1, 2>>
-        >
-      >
-    >
-  >
-
->;
-#endif  // if defined(RAJA_ENABLE_TBB)
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetKernelExecPols = camp::list<

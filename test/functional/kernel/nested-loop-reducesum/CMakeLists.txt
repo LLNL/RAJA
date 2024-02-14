@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -45,7 +45,7 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
       if( ${NESTED_LOOP_TYPE} STREQUAL "ReduceSum" OR # allow all ReduceSum tests
           ((${NESTED_LOOP_BACKEND} STREQUAL "Sequential" OR ${NESTED_LOOP_BACKEND} STREQUAL "Cuda" OR ${NESTED_LOOP_BACKEND} STREQUAL "Hip" ) AND ${NESTED_LOOP_TYPE} STREQUAL "BlockReduceSum") # allow only certain BlockReduceSum tests
         )
-        # Note on BlockReduceSum: Inherent kernel reduction functionality does not exist for - OpenMP, OpenMPTarget, and TBB.
+        # Note on BlockReduceSum: Inherent kernel reduction functionality does not exist for - OpenMP and OpenMPTarget.
         configure_file( test-kernel-nested-loop.cpp.in
                         test-kernel${RESOURCE}nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
 

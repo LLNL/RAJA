@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -20,8 +20,8 @@ Requirements
 ============
 
 The primary requirement for using RAJA is a C++14 standard compliant compiler.
-Certain features, such as various programming model back-ends like CUDA or HIP, 
-msut be supported by the compiler you chose to use them. Available RAJA
+Certain features, such as programming model back-ends like CUDA or HIP,
+must be supported by the compiler you chose to use them. Available RAJA
 configuration options and how to enable or disable features are described 
 in :ref:`configopt-label`. 
 

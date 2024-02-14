@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -468,7 +468,7 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
-    return (lhs >= rhs) ? lhs : rhs;
+    return (lhs < rhs) ? rhs : lhs;
   }
   RAJA_HOST_DEVICE static constexpr Ret identity()
   {

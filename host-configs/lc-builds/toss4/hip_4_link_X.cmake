@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,5 @@ elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
 elseif(CMAKE_BUILD_TYPE MATCHES Debug)
   set(RAJA_HIPCC_FLAGS "-fPIC -g -O0 ${HIP_COMMON_DEBUG_FLAGS}" CACHE STRING "")
 endif()
-
-set(RAJA_DATA_ALIGN 64 CACHE STRING "")
 
 set(RAJA_HOST_CONFIG_LOADED On CACHE BOOL "")

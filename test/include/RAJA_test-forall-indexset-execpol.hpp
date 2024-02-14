@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,30 +33,6 @@ using OpenMPForallIndexSetExecPols =
 using OpenMPForallIndexSetReduceExecPols =
   camp::list< RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>,
               RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >;
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBForallIndexSetExecPols = 
-  camp::list< RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::simd_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::simd_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 2 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 4 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 8 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_dynamic> >;
-
-using TBBForallIndexSetReduceExecPols =
-  camp::list< RAJA::ExecPolicy<RAJA::tbb_for_exec, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::tbb_for_dynamic, RAJA::seq_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_exec>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 2 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 4 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_static< 8 >>,
-              RAJA::ExecPolicy<RAJA::seq_segit, RAJA::tbb_for_dynamic> >;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)

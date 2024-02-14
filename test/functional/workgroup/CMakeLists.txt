@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,10 +34,6 @@ endmacro()
 
 
 set(BACKENDS Sequential)
-
-if(RAJA_ENABLE_TBB)
-  list(APPEND BACKENDS TBB)
-endif()
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)

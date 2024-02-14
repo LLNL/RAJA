@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -99,7 +99,7 @@ and number of blocks to launch is determined by the implementation of the
 For ``RAJA::launch`` variants, we use ``RAJA::loop`` methods 
 to write a loop hierarchy within the kernel execution space. For a sequential 
 implementation, we pass the ``RAJA::seq_launch_t`` template parameter
-to the launch method and pass the ``RAJA::loop_exec`` parameter to the loop 
+to the launch method and pass the ``RAJA::seq_exec`` parameter to the loop 
 methods. The complete sequential ``RAJA::launch`` variant is:
 
 .. literalinclude:: ../../../../exercises/launch-matrix-transpose_solution.cpp

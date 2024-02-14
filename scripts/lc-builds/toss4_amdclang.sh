@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,7 +9,7 @@
 
 if [[ $# -lt 2 ]]; then
   echo
-  echo "You must pass 2 or more arguments to the script (in this order): "
+  echo "You must pass 2 or more arguments to the script (in the following order): "
   echo "   1) compiler version number"
   echo "   2) HIP compute architecture"
   echo "   3...) optional arguments to cmake"

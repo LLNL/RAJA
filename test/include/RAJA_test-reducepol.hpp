@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,10 +26,6 @@ using OpenMPReducePols =
 #else
   camp::list< RAJA::omp_reduce >;
 #endif
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-using TBBReducePols = camp::list< RAJA::tbb_reduce >;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)

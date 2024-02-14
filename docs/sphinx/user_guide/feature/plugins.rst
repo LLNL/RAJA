@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -212,7 +212,7 @@ After CHAI has been built with RAJA support enabled, applications can use CHAI
       array[i] = i * 2.0f;
   });
 
-  RAJA::forall<RAJA::loop_exec>(0, 1000, [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(0, 1000, [=] (int i) {
     std::cout << "array[" << i << "]  is " << array[i] << std::endl;
   });
 

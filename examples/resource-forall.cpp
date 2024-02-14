@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -142,34 +142,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA omp_for_dynamic_exec (chunksize = 16) vector addition...\n";
 
   RAJA::forall<RAJA::omp_parallel_for_dynamic_exec<16>>(host, RAJA::RangeSegment(0, N),
-  [=] (int i) {
-    c[i] = a[i] + b[i]; 
-  });
-
-  checkResult(c, N);
-#endif
-
-#if defined(RAJA_ENABLE_TBB)
-//----------------------------------------------------------------------------//
-// RAJA::tbb_for_dynamic policy execution.... 
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA tbb_for_dynamic vector addition...\n";
-
-  RAJA::forall<RAJA::tbb_for_dynamic>(host, RAJA::RangeSegment(0, N),
-  [=] (int i) {
-    c[i] = a[i] + b[i]; 
-  });
-
-  checkResult(c, N);
-
-//----------------------------------------------------------------------------//
-// RAJA::tbb_for_static policy execution.... 
-//----------------------------------------------------------------------------//
-
-  std::cout << "\n Running RAJA tbb_for_static<8> vector addition...\n";
-
-  RAJA::forall<RAJA::tbb_for_static<8>>(host, RAJA::RangeSegment(0, N),
   [=] (int i) {
     c[i] = a[i] + b[i]; 
   });

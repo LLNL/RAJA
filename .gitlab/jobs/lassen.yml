@@ -1,0 +1,69 @@
+##############################################################################
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# and RAJA project contributors. See the RAJA/LICENSE file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+##############################################################################
+
+# Override reproducer section to define project specific variables.
+.lassen_reproducer_vars: &lassen_reproducer_vars
+    - |
+      echo -e "export MODULE_LIST=\"${MODULE_LIST}\""
+      echo -e "export SPEC=\"${SPEC//\"/\\\"}\""
+
+########################
+# Overridden shared jobs
+########################
+# We duplicate the shared jobs description and add necessary changes for this
+# project. We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS}
+# So that the comparison with the original job is easier.
+
+# Overriding shared spec: Longer allocation + extra flags
+# Warning: allowed to fail because of a bug in Spack > 0.20.3
+xl_2022_08_19_gcc_8_3_1_cuda_11_2_0:
+  variables:
+    SPEC: "${PROJECT_LASSEN_VARIANTS} +cuda cxxflags==\"-qthreaded -std=c++14 -O3 -qstrict -qxlcompatmacros -qlanglvl=extended0x -qalias=noansi -qhot -qpic -qsmp=omp -qsuppress=1500-029 -qsuppress=1500-036\" %xl@16.1.1.12.gcc.8.3.1 ^cuda@11.2.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS} ^blt@develop"
+    MODULE_LIST: "cuda/11.2.0"
+    LASSEN_JOB_ALLOC: "1 -W 60 -q pci"
+  extends: .job_on_lassen
+  allow_failure: true
+
+############
+# Extra jobs
+############
+# We do not recommend using ${PROJECT_<MACHINE>_VARIANTS} and
+# ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
+# describe the spec here.
+
+gcc_8_3_1_omptask:
+  variables:
+    SPEC: " ~shared +openmp +omptask +tests %gcc@8.3.1 ^blt@develop"
+  extends: .job_on_lassen
+
+gcc_8_3_1_cuda_11_5_0_ats_disabled:
+  extends: .job_on_lassen
+  variables:
+    SPEC: " ~shared +openmp +tests +cuda %gcc@8.3.1 cuda_arch=70 ^cuda@11.5.0+allow-unsupported-compilers ^blt@develop"
+    MODULE_LIST: "cuda/11.5.0"
+    LASSEN_JOB_ALLOC: "1 --atsdisable -W 30 -q pci"
+
+##########
+# OTHERS
+##########
+
+clang_13_0_1_libcpp:
+  variables:
+    SPEC: " ~shared +openmp +tests %clang@13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\" ^blt@develop"
+  extends: .job_on_lassen
+
+#clang_14_0_5_asan:
+#  variables:
+#    SPEC: " ~shared +openmp +tests %clang@14.0.5 cxxflags==\"-fsanitize=address\" "
+#    ASAN_OPTIONS: "detect_leaks=1"
+#    LSAN_OPTIONS: "suppressions=${CI_PROJECT_DIR}/suppressions.asan"
+#  extends: .job_on_lassen
+
+gcc_8_3_1_cuda_10_1_243_desul_atomics:
+  variables:
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers ^blt@develop"
+  extends: .job_on_lassen
