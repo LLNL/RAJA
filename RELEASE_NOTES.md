@@ -23,7 +23,7 @@ Notable changes include:
 Version 2024.02.0 -- Release date 2024-02-14
 ============================================
 
-This release contains ...
+This release contains several RAJA improvements and submodule updates.
 
 Notable changes include:
 
