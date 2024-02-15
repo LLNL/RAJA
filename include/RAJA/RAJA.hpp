@@ -58,6 +58,13 @@
 #include "RAJA/policy/sequential.hpp"
 
 //
+// NOTE: LOOP POLCIES WERE DEPRECATED IN 2023.03.0 RELEASE.
+//       THEY ARE RE-ADDED HERE AT REQUEST OF USERS.
+//       THEY WILL BE REMOVED AGAIN IN THE FUTURE.
+//
+#include "RAJA/policy/loop.hpp"
+
+//
 // All platforms should support simd and vector execution.
 //
 #include "RAJA/policy/simd.hpp"
