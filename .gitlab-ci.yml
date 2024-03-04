@@ -107,4 +107,4 @@ include:
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
 
-# THIS WILL BE A DRAFT, REMOVE THIS LINE AFTER FIRST CI RUN.
+# THIS WILL BE A DRAFT, REMOVE THIS LINE AFTER FIRST CI RUN (V2).
