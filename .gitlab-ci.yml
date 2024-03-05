@@ -106,5 +106,3 @@ include:
     file: 'utilities/preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'
-
-# ADD A TAG TO TEST WHETHER GITLAB GETS FOOLED BY IT OR NOT
