@@ -29,10 +29,10 @@
 
 rocmcc_5_7_1_hip_desul_atomics:
   variables:
-    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.7.1 ^hip@5.7.1 ^blt@develop"
+    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@=5.7.1 ^hip@5.7.1 ^blt@develop"
   extends: .job_on_tioga
 
 rocmcc_5_7_1_hip_openmp:
   variables:
-    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@5.7.1 ^hip@5.7.1 ^blt@develop"
+    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@=5.7.1 ^hip@5.7.1 ^blt@develop"
   extends: .job_on_tioga
