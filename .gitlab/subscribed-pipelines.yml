@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC and RADIUSS
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC and RADIUSS
 # project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (MIT)
@@ -109,5 +109,3 @@ lassen-build-and-test:
     CI_MACHINE: "lassen"
   needs: [lassen-up-check, generate-job-lists]
   extends: [.build-and-test]
-
-

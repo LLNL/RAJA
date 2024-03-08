@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,11 +8,6 @@
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
-
-if (RAJA_ENABLE_MODULES)
-  message(WARNING "RAJA_ENABLE_MODULES is deprecated, please add the -fmodules flag manually if desired.")
-  set(RAJA_ENABLE_MODULES Off CACHE BOOL "" FORCE)
-endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)

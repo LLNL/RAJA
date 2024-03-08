@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -14,9 +14,9 @@ endif()
 include(CMakeDependentOption)
 
 # Set version number
-set(RAJA_VERSION_MAJOR 2023)
-set(RAJA_VERSION_MINOR 06)
-set(RAJA_VERSION_PATCHLEVEL 1)
+set(RAJA_VERSION_MAJOR 2024)
+set(RAJA_VERSION_MINOR 02)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -219,6 +219,7 @@ endif ()
 
 if (RAJA_ENABLE_SYCL)
   set (RAJA_ENABLE_DESUL_ATOMICS "On")
+  set (ENABLE_SYCL "On") # Enable SYCL atomics in Desul
   set (raja_depends
     ${raja_depends}
     sycl)
@@ -226,6 +227,10 @@ endif ()
 
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)
+  # NOTE: ENABLE_OPENMP in Desul implies OpenMP OFFLOAD
+  if (NOT RAJA_ENABLE_TARGET_OPENMP)
+    set (DESUL_ENABLE_OPENMP Off CACHE BOOL "Disable Desul OpenMP offload atomics to select builtin host atomics")
+  endif()
   add_subdirectory(tpl/desul)
   set(raja_depends
     ${raja_depends}
@@ -314,8 +319,6 @@ endif()
 
 install(FILES
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
-  include/RAJA/module.modulemap
-  include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
 
 

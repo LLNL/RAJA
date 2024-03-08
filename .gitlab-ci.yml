@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,8 +28,8 @@
 # We define the following GitLab pipeline variables:
 variables:
 ##### LC GITLAB CONFIGURATION
-# Use the umdev LLNL service user to run CI. This prevents from running
-# pipelines as an actual user.
+# Use an LLNL service user to run CI. This prevents from running pipelines as an
+# actual user.
   LLNL_SERVICE_USER: rajasa
 # Use the service user workspace. Solves permission issues, stores everything
 # at the same location whoever triggers a pipeline.
@@ -39,8 +39,8 @@ variables:
 
 ##### PROJECT VARIABLES
   MP_BRANCH: "develop"
-# We build the projects in the CI clone directory.
-# Used in script/gitlab/build_and_test.sh script.
+# We build the projects in the CI clone directory (used in
+# script/gitlab/build_and_test.sh script).
 # TODO: add a clean-up mechanism.
   BUILD_ROOT: ${CI_PROJECT_DIR}
 
@@ -49,7 +49,11 @@ variables:
   GITHUB_PROJECT_NAME: "RAJA"
   GITHUB_PROJECT_ORG: "LLNL"
 # Set the build-and-test command.
-  JOB_CMD: "./scripts/gitlab/build_and_test.sh"
+# Nested variables are allowed and useful to customize the job command. We
+# prevent variable expansion so that you can define them at job level.
+  JOB_CMD:
+    value: "./scripts/gitlab/build_and_test.sh"
+    expand: false
 # Override the pattern describing branches that will skip the "draft PR filter
 # test".  Add protected branches here. See default value in
 # preliminary-ignore-draft-pr.yml.
@@ -71,7 +75,7 @@ stages:
     include:
       - local: '.gitlab/custom-jobs-and-variables.yml'
       - project: 'radiuss/radiuss-shared-ci'
-        ref: 'v2023.10.0'
+        ref: 'v2023.12.0'
         file: 'pipelines/${CI_MACHINE}.yml'
       - artifact: '${CI_MACHINE}-jobs.yml'
         job: 'generate-job-lists'
@@ -98,7 +102,7 @@ trigger-rajaperf:
 include:
   # [Optional] checks preliminary to running the actual CI test
   - project: 'radiuss/radiuss-shared-ci'
-    ref: 'v2023.10.0'
+    ref: 'v2023.12.0'
     file: 'utilities/preliminary-ignore-draft-pr.yml'
   # pipelines subscribed by the project
   - local: '.gitlab/subscribed-pipelines.yml'

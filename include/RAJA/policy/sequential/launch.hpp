@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,7 @@
 
 #include "RAJA/pattern/launch/launch_core.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
-
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {
@@ -39,9 +39,12 @@ struct LaunchExecute<RAJA::null_launch_t> {
 template <>
 struct LaunchExecute<RAJA::seq_launch_t> {
 
-  template <typename BODY>
-  static resources::EventProxy<resources::Resource>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body)
+  template <typename BODY, typename ReduceParams>
+  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name),
+       BODY const &body, ReduceParams &RAJA_UNUSED_ARG(ReduceParams))
   {
 
     LaunchContext ctx;
@@ -53,6 +56,29 @@ struct LaunchExecute<RAJA::seq_launch_t> {
 
     delete[] kernel_local_mem;
     ctx.shared_mem_ptr = nullptr;
+
+    return resources::EventProxy<resources::Resource>(res);
+  }
+
+  template<typename BODY, typename ReduceParams>
+    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
+                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+  exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
+       const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body, ReduceParams &launch_reducers)
+  {
+    expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
+
+    LaunchContext ctx;
+    char *kernel_local_mem = new char[launch_params.shared_mem_size];
+    ctx.shared_mem_ptr = kernel_local_mem;
+
+    expt::invoke_body(launch_reducers, body, ctx);
+
+    delete[] kernel_local_mem;
+    ctx.shared_mem_ptr = nullptr;
+
+    expt::ParamMultiplexer::resolve<seq_exec>(launch_reducers);
 
     return resources::EventProxy<resources::Resource>(res);
   }
@@ -197,7 +223,7 @@ struct LoopICountExecute<seq_exec, SEGMENT> {
       }
     }
   }
-  
+
 };
 
 //Tile Execute + variants

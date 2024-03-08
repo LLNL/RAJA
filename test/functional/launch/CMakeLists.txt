@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,6 +27,8 @@ add_subdirectory(run-time-switch)
 
 #Adapted from forall test
 add_subdirectory(reduce-basic)
+
+add_subdirectory(reduce-params)
 
 add_subdirectory(segment)
 

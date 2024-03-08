@@ -1,16 +1,22 @@
 #############################################################################
-# Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #############################################################################
 
+# Override reproducer section to define project specific variables.
+.tioga_reproducer_vars: &tioga_reproducer_vars
+    - |
+      echo -e "export MODULE_LIST=\"${MODULE_LIST}\""
+      echo -e "export SPEC=\"${SPEC//\"/\\\"}\""
+
 ########################
 # Overridden shared jobs
 ########################
-# We duplicate the shared jobs description and add necessary changes for RAJA.
-# We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS} So that
-# the comparison with the original job is easier.
+# We duplicate the shared jobs description and add necessary changes for this
+# project. We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS}
+# So that the comparison with the original job is easier.
 
 # No overridden jobs so far.
 
@@ -21,12 +27,12 @@
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-rocmcc_5_6_0_hip_desul_atomics:
+rocmcc_5_7_1_hip_desul_atomics:
   variables:
-    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.6.0 ^hip@5.6.0 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@5.7.1 ^hip@5.7.1 ^blt@develop"
   extends: .job_on_tioga
 
-rocmcc_5_6_0_hip_openmp:
+rocmcc_5_7_1_hip_openmp:
   variables:
-    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@5.6.0 ^hip@5.6.0 ^blt@git.a7f0a6ecc4fdfa1724399b1454c3909b9ee02e81=develop"
+    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@5.7.1 ^hip@5.7.1 ^blt@develop"
   extends: .job_on_tioga

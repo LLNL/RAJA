@@ -1,0 +1,63 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-forall-execpol.hpp"
+#include "RAJA_test-reducepol.hpp"
+#include "RAJA_test-launch-execpol.hpp"
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-launch-basic-param-expt-@REDUCETYPE@.hpp"
+
+//
+// Data types for core reduction basic tests
+//
+using CoreReductionDataTypeList = camp::list< int,
+                                              float,
+                                              double >;
+
+//
+// Data types for bitwise reduction basic tests
+//
+using BitwiseReductionDataTypeList = camp::list< int,
+                                                 unsigned int >;
+
+
+//
+// These tests exercise only one index type. We parameterize here to 
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@LaunchParamExptReduceBasicTypes =
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                @DATATYPES@,
+                                @BACKEND@ResourceList,
+                                @BACKEND@_launch_policies,
+                                @BACKEND@ReducePols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               LaunchParamExpt@REDUCETYPE@BasicTest,
+                               @BACKEND@LaunchParamExptReduceBasicTypes);

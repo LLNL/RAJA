@@ -1,5 +1,5 @@
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2016-23, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2016-24, Lawrence Livermore National Security, LLC)
 [comment]: # (and RAJA project contributors. See the RAJA/LICENSE file)
 [comment]: # (for details.)
 [comment]: # 
@@ -20,26 +20,49 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2024.MM.PP -- Release date 2024-mm-dd
+Version 2024.02.0 -- Release date 2024-02-14
 ============================================
 
-This release contains ...
+This release contains several RAJA improvements and submodule updates.
 
 Notable changes include:
 
   * New features / API changes:
-     * BREAKING CHANGE: The loop_exec and associated policies such as 
-       loop_atomic, loop_reduce, etc. have been removed. They were deprecated 
-       in the v2023.06.0 release (please see the release notes for that 
-       version for details). Users should replace these with `seq_exec` and 
-       associated policies for sequential CPU execution.
+     * BREAKING CHANGE (ALMOST): The loop_exec and associated policies such as 
+       loop_atomic, loop_reduce, etc. were deprecated in the v2023.06.0 release
+       (please see the release notes for that version for details). Users
+       should replace these with `seq_exec` and associated policies for
+       sequential CPU execution. The code behavior will be identical to what
+       you observed with `loop_exec`, etc. However, due to a request from 
+       some users with special circumstances, the `loop_*` policies still
+       exist in this release as type aliases to their `seq_*` analogues. The
+       `loop_*` policies will be removed in a future release.
      * BREAKING CHANGE: RAJA TBB back-end support has been removed. It was 
        not feature complete and the TBB API has changed so that the code no 
-       longer compiles with newer Intel compilers. 
+       longer compiles with newer Intel compilers. Since it doesn't appear
+       that anyone depends on it, we have removed it.
+     * An `IndexLayout` concept was added, which allows for accessing elements
+       of a RAJA `View` via a collection of indicies and use a different 
+       indexing strategy along different dimensions of a multi-dimensional 
+       `View`. Please the RAJA User Guide for more information.
+     * Add support for SYCL reductions using the new RAJA reduction API.
+     * Add support for new reduction API for all back-ends in RAJA::launch.
 
   * Build changes/improvements:
+     * Update BLT submodule to v0.6.1 and incorporate its new macros for
+       managing TPL targets in CMake.
+     * Update camp submodule to v2024.02.0, which contains changes to support
+       ROCm 6.x compilers. 
+     * Update desul submodule to afbd448.
+     * Replace internal use of HIP and CUDA platform macros to their newer
+       versions to support latest compilers.
 
   * Bug fixes/improvements:
+     * Change internal memory allocation for HIP to use coarse-grained pinned
+       memory, which improves performance because it can be cached on a device.
+     * Fix compilation error resulting from incorrect namespacing of OpenMP
+       execution policy.
+     * Several fixes to internal implementaion of Reducers and Operators.
 
 
 Version 2023.06.1 -- Release date 2023-08-16

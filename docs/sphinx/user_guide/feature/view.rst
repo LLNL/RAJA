@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 .. ## and other RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -329,6 +329,64 @@ indices by :math:`N`, ::
       Ashift(x,y) = ...
     }
   }
+
+Index Layout
+^^^^^^^^^^^^
+
+``RAJA::IndexLayout`` is a layout that can use an index list to map input
+indices to an entry within a view.  Each dimension of the layout is required to
+have its own indexing strategy to determine this mapping.
+
+Three indexing strategies are natively supported in RAJA: ``RAJA::DirectIndex``,
+``RAJA::IndexList``, and ``RAJA::ConditionalIndexList``.  ``DirectIndex``
+maps an input index to itself, and does not take any  arguments in its
+constructor.  The ``IndexList`` strategy takes a pointer  to an array of
+indices.  With this strategy, a given input index is mapped to  the entry in its
+list corresponding to that index.  Lastly, the
+``ConditionalIndexStrategy`` takes a pointer to an array of indices. When
+the pointer is not a null pointer, the ``ConditionalIndex`` strategy is
+equivalent to that of the ``IndexList``.  If the index list provided to
+the constructor is a null pointer, the ``ConditionalIndexList`` is
+identical to the ``DirectIndex`` strategy.  The
+``ConditionalIndexList`` strategy is useful when the index list is not
+initialized for some situations.
+
+A simple illustrative example is shown below::
+
+  int data[2][3];
+
+  for (int i = 0; i < 2; i ++ ) {
+    for (int j = 0; j < 3; j ++ ) {
+      // fill data[i][j]...
+    }
+  }
+
+  int index_list[2] = {1,2};
+
+  auto index_tuple = RAJA::tuple<RAJA::DirectIndex<>, RAJA::IndexList<>>(
+                      RAJA::DirectIndex<>(), RAJA::IndexList<>{&index_list[0]});
+	   
+  auto index_layout = RAJA::make_index_layout(index_tuple, 2, 3);
+  auto view = RAJA::make_index_view(&data[0][0], index_layout);
+
+  assert( view(1,0) == data[1][1] );
+  assert( &view(1,1) == &data[1][2] );
+
+In the above example, a two-dimensional index layout is created with extents 2
+and 3 for the first and second dimension, respectively.  A ``DirectIndex``
+strategy is implemented for the first dimension and ``IndexList`` is used
+with the entries for the second dimension with the list {1,2}.  With this
+layout, the view created above will choose the entry along the first dimension
+based on the first input index provided, and the second provided index will be
+mapped to that corresponding entry of the index_list for the second dimension.
+
+.. note::  There is currently no bounds checking implemented for
+	   ``IndexLayout``.  When using the ``IndexList`` or
+	   ``ConditionalIndexList``  strategies, it is the user's
+	   responsibility to know the extents of the index lists when accessing
+	   data from a view.  It is also the  user's responsibility to ensure
+	   the index lists being used reside in  the same memory space as the
+	   data stored in the view.
 
 -------------------
 RAJA Index Mapping

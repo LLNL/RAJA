@@ -17,7 +17,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-23, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,6 +56,13 @@
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
+
+//
+// NOTE: LOOP POLCIES WERE DEPRECATED IN 2023.03.0 RELEASE.
+//       THEY ARE RE-ADDED HERE AT REQUEST OF USERS.
+//       THEY WILL BE REMOVED AGAIN IN THE FUTURE.
+//
+#include "RAJA/policy/loop.hpp"
 
 //
 // All platforms should support simd and vector execution.

@@ -38,7 +38,7 @@ namespace detail {
   {
     // complete reduction
     ci.res.wait();
-    *red.target = OP{}(*red.devicetarget, *red.target);
+    *red.target = OP{}(*red.target, *red.devicetarget);
 
     // free memory
     RAJA::cuda::device_zeroed_mempool_type::getInstance().free(red.device_count);
