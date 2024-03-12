@@ -6,7 +6,8 @@
 #############################################################################
 
 # Override reproducer section to define project specific variables.
-.tioga_reproducer_vars: &tioga_reproducer_vars
+.tioga_reproducer_vars:
+  script:
     - |
       echo -e "export MODULE_LIST=\"${MODULE_LIST}\""
       echo -e "export SPEC=\"${SPEC//\"/\\\"}\""
