@@ -9,7 +9,7 @@
 
 if [[ $# -lt 1 ]]; then
   echo
-  echo "You must pass 1 argument to the script (in this order): "
+  echo "You must pass 1 argument to the script: "
   echo "   1) SYCL compiler installation path"
   echo
   echo "For example: "
@@ -60,9 +60,13 @@ cmake \
 
 echo
 echo "***********************************************************************"
-echo
-echo "Remember to export PATH=${SYCL_PATH}/bin:\$PATH to obtain the correct compiler paths."
-echo
+echo 
 echo "cd into directory build_${BUILD_SUFFIX}_${USER} and run make to build RAJA"
+echo 
+echo "To run RAJA tests, exercises, etc. with the build, please set the"
+echo "LD_LIBRARY_PATH environment variable to "
+echo "  ${SYCL_PATH}/lib:${SYCL_PATH}/lib64:$LD_LIBRARY_PATH"
+echo 
+echo "where SYCL_PATH is the compiler installation path you passed to this script."
 echo
 echo "***********************************************************************"
