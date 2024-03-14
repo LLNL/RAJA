@@ -62,11 +62,16 @@ echo
 echo "***********************************************************************"
 echo 
 echo "cd into directory build_${BUILD_SUFFIX}_${USER} and run make to build RAJA"
-echo 
-echo "To run RAJA tests, exercises, etc. with the build, please set the"
-echo "LD_LIBRARY_PATH environment variable to "
-echo "  ${SYCL_PATH}/lib:${SYCL_PATH}/lib64:$LD_LIBRARY_PATH"
-echo 
-echo "where SYCL_PATH is the compiler installation path you passed to this script."
+echo
+echo "To run RAJA tests, exercises, etc. with the build, please do the following:"
+echo
+echo "   1) Load the ROCm module version matching the version in the compiler path"
+echo "      you passed to this script."
+echo
+echo "   2) Set the "LD_LIBRARY_PATH environment variable to "
+echo "        ${SYCL_PATH}/lib:${SYCL_PATH}/lib64:${LD_LIBRARY_PATH}"
+echo
+echo "      where SYCL_PATH is set to the compiler installation path you passed"
+echo "      to this script."
 echo
 echo "***********************************************************************"
