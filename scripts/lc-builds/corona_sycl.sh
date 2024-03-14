@@ -9,11 +9,11 @@
 
 if [[ $# -lt 1 ]]; then
   echo
-  echo "You must pass 1 argument to the script (in this order): "
+  echo "You must pass 1 argument to the script: "
   echo "   1) SYCL compiler installation path"
   echo
   echo "For example: "
-  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_hip_gcc10.2.1_rocm5.1.0/install"
+  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_a0117ab8692a_hip_gcc10.2.1_rocm5.6.0"
   exit
 fi
 
@@ -36,6 +36,7 @@ mkdir build_${BUILD_SUFFIX}_${USER} && cd build_${BUILD_SUFFIX}_${USER}
 DATE=$(printf '%(%Y-%m-%d)T\n' -1)
 
 export PATH=${SYCL_PATH}/bin:$PATH
+export LD_LIBRARY_PATH=${SYCL_PATH}/lib:${SYCL_PATH}/lib64:$LD_LIBRARY_PATH
 
 ## NOTE: RAJA tests are turned off due to compilation issues.
 
@@ -51,17 +52,26 @@ cmake \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
   -DCMAKE_LINKER=clang++ \
-  -DCMAKE_CXX_STANDARD=17 \
-  -DENABLE_TESTS=Off \
+  -DBLT_CXX_STD=c++17 \
+  -DENABLE_TESTS=On \
   -DENABLE_EXAMPLES=On \
   "$@" \
   ..
 
 echo
 echo "***********************************************************************"
-echo
-echo "Remember to export PATH=${SYCL_PATH}/bin:\$PATH to obtain the correct compiler paths."
-echo
+echo 
 echo "cd into directory build_${BUILD_SUFFIX}_${USER} and run make to build RAJA"
+echo
+echo "To run RAJA tests, exercises, etc. with the build, please do the following:"
+echo
+echo "   1) Load the ROCm module version matching the version in the compiler path"
+echo "      you passed to this script."
+echo
+echo "   2) Set the "LD_LIBRARY_PATH environment variable to "
+echo "        ${SYCL_PATH}/lib:${SYCL_PATH}/lib64:${LD_LIBRARY_PATH}"
+echo
+echo "      where SYCL_PATH is set to the compiler installation path you passed"
+echo "      to this script."
 echo
 echo "***********************************************************************"
