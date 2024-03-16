@@ -90,7 +90,7 @@ struct MessagePassingLitmus {
   {
     // Send action
     x[other_thread] = T{1};
-    RAJA::atomicExchange<SendPolicy>(&(flag[other_thread]), T{1});
+    RAJA::atomicAdd<SendPolicy>(&(flag[other_thread]), T{1});
     // Recv action
     a[this_thread] = RAJA::atomicAdd<RecvPolicy>(&(flag[this_thread]), T{0});
     b[this_thread] = x[this_thread];

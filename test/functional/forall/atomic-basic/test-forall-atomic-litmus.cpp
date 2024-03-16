@@ -27,13 +27,20 @@
 #include "test-forall-atomic-litmus-mp.hpp"
 
 using IdxType = size_t;
-constexpr int NUM_ITERS = 100;
-constexpr int MAX_SHUFFLE_LEN = 1024;
-constexpr int STRIDE = 8;
+constexpr int NUM_ITERS = 20;
+#ifdef RAJA_ENABLE_CUDA
+constexpr int STRIDE = 4;
+constexpr bool STRESS_BEFORE_TEST = false;
+constexpr bool NONTESTING_BLOCKS = true;
+#elif defined(RAJA_ENABLE_HIP)
+constexpr int STRIDE = 16;
+constexpr bool STRESS_BEFORE_TEST = true;
+constexpr bool NONTESTING_BLOCKS = true;
+#endif
 constexpr int DATA_STRESS_SIZE = 2048 * STRIDE;
 
-constexpr int PERMUTE_PRIME_BLOCK = 11;
-constexpr int PERMUTE_PRIME_GRID = 31;
+constexpr int PERMUTE_PRIME_BLOCK = 17;
+constexpr int PERMUTE_PRIME_GRID = 47;
 
 template <typename Func>
 __global__ void dummy_kernel(IdxType index, Func func)
@@ -115,7 +122,7 @@ public:
   // Run
   static void run()
   {
-    constexpr IdxType BLOCK_SIZE = 256;
+    constexpr IdxType BLOCK_SIZE = 128;
     int num_blocks = 0;
     {
       LitmusPolicy dummy_policy{};
@@ -151,11 +158,16 @@ public:
 #endif
     camp::resources::Resource work_res{ResourcePolicy()};
 
+    int num_testing_blocks = num_blocks;
+    if (NONTESTING_BLOCKS) {
+      num_testing_blocks = num_blocks / 4;
+    }
+
     TestData test_data;
-    test_data.allocate(work_res, num_blocks, BLOCK_SIZE, num_blocks);
+    test_data.allocate(work_res, num_blocks, BLOCK_SIZE, num_testing_blocks);
 
     LitmusPolicy litmus_test;
-    litmus_test.allocate(work_res, num_blocks * BLOCK_SIZE * STRIDE);
+    litmus_test.allocate(work_res, num_testing_blocks * BLOCK_SIZE * STRIDE);
 
 #ifdef RAJA_ENABLE_HIP
     using GPUExec = RAJA::hip_exec<BLOCK_SIZE>;
@@ -213,24 +225,26 @@ private:
       // is the number of blocks being tested, and k and n are coprime.
       int partner_idx = (block_idx * PERMUTE_PRIME_GRID) % param.testing_blocks;
 
-      // Pre-stress pattern - stressing memory accesses before the test may
-      // increase the rate of weak memory behaviors
-      // this->stress(param.data_stress, block_idx, param.grid_size, 128);
-
-      // Synchronize all blocks before testing, to increase the chance of
-      // interleaved requests.
-      this->sync(param.testing_blocks, thread_idx, param.barriers[0]);
-
       for (int i = 0; i < STRIDE; i++) {
         // Run specified test, matching threads between the two paired blocks.
         int other_data_idx =
             partner_idx * param.block_size + permute_thread_idx;
         other_data_idx *= STRIDE;
+
+        // Pre-stress pattern - stressing memory accesses before the test may
+        // increase the rate of weak memory behaviors
+        // Helps on AMD, doesn't seem to help on NVIDIA
+        if (STRESS_BEFORE_TEST) {
+          this->stress(
+              param.data_stress, block_idx, thread_idx, param.grid_size, 128);
+        }
+
+        // Synchronize all blocks before testing, to increase the chance of
+        // interleaved requests.
+        this->sync(param.testing_blocks, thread_idx, param.barriers[i]);
+
         test.run(data_idx + i, other_data_idx + i);
       }
-    } else {
-      // Blocks which aren't testing should just stress memory accesses.
-      // this->stress(param.data_stress, block_idx, param.grid_size, 1024);
     }
   };
 
@@ -261,6 +275,7 @@ private:
 
   RAJA_HOST_DEVICE void stress(IdxType* stress_data,
                                IdxType block_idx,
+                               IdxType thread_idx,
                                int grid_size,
                                int num_iters)
   {
@@ -268,7 +283,7 @@ private:
     for (int i = 0; i < num_iters; i++) {
       // Pseudo-randomly target a given stress data location.
       auto rand = get_rand(pcg_state);
-      auto target_line = rand % DATA_STRESS_SIZE;
+      auto target_line = (rand + thread_idx) % DATA_STRESS_SIZE;
 
       RAJA::atomicAdd<NormalAtomic>(&(stress_data[target_line]), rand);
     }
