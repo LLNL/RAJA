@@ -28,3 +28,26 @@ foreach( ATOMIC_BACKEND ${FORALL_ATOMIC_BACKENDS} )
   target_include_directories(test-forall-atomic-basic-unsigned-${ATOMIC_BACKEND}.exe
                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
+
+
+set(ENABLE_LITMUS_TESTS OFF)
+
+if(RAJA_ENABLE_DESUL_ATOMICS AND RAJA_ENABLE_CUDA)
+    set(LITMUS_BACKEND "Cuda")
+    set(ENABLE_LITMUS_TESTS ON)
+endif()
+
+if(RAJA_ENABLE_DESUL_ATOMICS AND RAJA_ENABLE_HIP)
+    set(LITMUS_BACKEND "Hip")
+    set(ENABLE_LITMUS_TESTS ON)
+endif()
+
+if (ENABLE_LITMUS_TESTS)
+  raja_add_test( NAME test-forall-atomic-litmus-${LITMUS_BACKEND}
+                 SOURCES test-forall-atomic-litmus.cpp)
+  target_include_directories(test-forall-atomic-litmus-${LITMUS_BACKEND}.exe
+                              PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+endif()
+
+unset(ENABLE_LITMUS_TESTS)
+unset(LITMUS_BACKEND)
