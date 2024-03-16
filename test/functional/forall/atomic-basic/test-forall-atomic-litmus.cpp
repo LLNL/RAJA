@@ -25,6 +25,7 @@
 #include <random>
 
 #include "test-forall-atomic-litmus-mp.hpp"
+#include "test-forall-atomic-litmus-sb.hpp"
 
 using IdxType = size_t;
 constexpr int NUM_ITERS = 20;
@@ -290,14 +291,14 @@ private:
   }
 };
 
-TYPED_TEST_SUITE_P(ForallAtomicLitmusTest);
+TYPED_TEST_SUITE_P(ForallAtomicLitmusTestMP);
 
 template <typename T>
-class ForallAtomicLitmusTest : public ::testing::Test
+class ForallAtomicLitmusTestMP : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ForallAtomicLitmusTest, MessagePassingTest)
+TYPED_TEST_P(ForallAtomicLitmusTestMP, MessagePassingTest)
 {
   using Type = typename camp::at<TypeParam, camp::num<0>>::type;
   using SendRecvPol = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -308,10 +309,34 @@ TYPED_TEST_P(ForallAtomicLitmusTest, MessagePassingTest)
   LitmusTestDriver<MPTest>::run();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTest, MessagePassingTest);
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTestMP, MessagePassingTest);
 
 using MessagePassingTestTypes = Test<MPLitmusTestPols>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
-                               ForallAtomicLitmusTest,
+                               ForallAtomicLitmusTestMP,
                                MessagePassingTestTypes);
+
+TYPED_TEST_SUITE_P(ForallAtomicLitmusTestSB);
+
+template <typename T>
+class ForallAtomicLitmusTestSB : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicLitmusTestSB, StoreBufferTest)
+{
+  using Type = typename camp::at<TypeParam, camp::num<0>>::type;
+  using AtomicPol = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  using SBTest = StoreBufferLitmus<Type, AtomicPol>;
+  LitmusTestDriver<SBTest>::run();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTestSB, StoreBufferTest);
+
+using StoreBufferTestTypes = Test<SBLitmusTestPols>::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
+                               ForallAtomicLitmusTestSB,
+                               StoreBufferTestTypes);
