@@ -55,8 +55,6 @@ public:
     // Array to shuffle block indices in a test kernel.
     IdxType* shuffle_block;
 
-    // Pattern to use for memory stressing.
-    IdxType* stress_pattern;
     // Barrier integers to synchronize testing threads.
     IdxType* barriers;
 
@@ -73,8 +71,7 @@ public:
       testing_blocks = num_testing_blocks;
 
       shuffle_block = work_res.allocate<IdxType>(grid_size);
-      stress_pattern = work_res.allocate<IdxType>(MAX_SHUFFLE_LEN);
-      barriers = work_res.allocate<IdxType>(grid_size / 2);
+      barriers = work_res.allocate<IdxType>(STRIDE);
       data_stress = work_res.allocate<IdxType>(DATA_STRESS_SIZE);
     }
 
@@ -93,20 +90,7 @@ public:
                       shuffle_block_host.data(),
                       sizeof(IdxType) * grid_size);
 
-      // Create a random sequence of 1's and 0's, equally balanced between the
-      // two
-      std::vector<IdxType> stress_host(MAX_SHUFFLE_LEN);
-      {
-        std::random_device rand_device;
-        std::shuffle(stress_host.begin(),
-                     stress_host.end(),
-                     std::mt19937{rand_device()});
-      }
-      work_res.memcpy(stress_pattern,
-                      stress_host.data(),
-                      sizeof(IdxType) * MAX_SHUFFLE_LEN);
-
-      work_res.memset(barriers, 0, sizeof(IdxType) * grid_size / 2);
+      work_res.memset(barriers, 0, sizeof(IdxType) * STRIDE);
       work_res.memset(data_stress, 0, sizeof(IdxType) * DATA_STRESS_SIZE);
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -121,7 +105,6 @@ public:
     void deallocate(camp::resources::Resource work_res)
     {
       work_res.deallocate(shuffle_block);
-      work_res.deallocate(stress_pattern);
       work_res.deallocate(barriers);
       work_res.deallocate(data_stress);
     }
