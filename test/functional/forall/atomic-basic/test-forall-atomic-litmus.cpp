@@ -168,7 +168,7 @@ public:
     test_data.allocate(work_res, num_blocks, BLOCK_SIZE, num_testing_blocks);
 
     LitmusPolicy litmus_test;
-    litmus_test.allocate(work_res, num_testing_blocks * BLOCK_SIZE * STRIDE);
+    litmus_test.allocate(work_res, num_testing_blocks * BLOCK_SIZE, STRIDE);
 
 #ifdef RAJA_ENABLE_HIP
     using GPUExec = RAJA::hip_exec<BLOCK_SIZE>;
@@ -217,7 +217,6 @@ private:
     block_idx = param.shuffle_block[block_idx];
 
     IdxType data_idx = block_idx * param.block_size + permute_thread_idx;
-    data_idx *= STRIDE;
 
     if (block_idx < (IdxType)param.testing_blocks) {
       // Block is a testing block.
@@ -230,7 +229,6 @@ private:
         // Run specified test, matching threads between the two paired blocks.
         int other_data_idx =
             partner_idx * param.block_size + permute_thread_idx;
-        other_data_idx *= STRIDE;
 
         // Pre-stress pattern - stressing memory accesses before the test may
         // increase the rate of weak memory behaviors
@@ -244,7 +242,7 @@ private:
         // interleaved requests.
         this->sync(param.testing_blocks, thread_idx, param.barriers[i]);
 
-        test.run(data_idx + i, other_data_idx + i);
+        test.run(data_idx, other_data_idx, i);
       }
     }
   };

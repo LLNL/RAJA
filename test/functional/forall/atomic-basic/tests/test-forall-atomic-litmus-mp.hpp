@@ -43,6 +43,7 @@ template <typename T, typename SendPolicy, typename RecvPolicy>
 struct MessagePassingLitmus {
   using RelaxedPolicy = RAJA::atomic_relaxed;
   size_t m_size;
+  int m_stride;
   T *x;
   T *flag;
   T *a;
@@ -53,13 +54,14 @@ struct MessagePassingLitmus {
   int interleaved_behavior{0};
   int weak_behavior{0};
 
-  void allocate(camp::resources::Resource work_res, size_t size)
+  void allocate(camp::resources::Resource work_res, size_t size, int stride)
   {
     m_size = size;
-    x = work_res.allocate<T>(size);
-    flag = work_res.allocate<T>(size);
-    a = work_res.allocate<T>(size);
-    b = work_res.allocate<T>(size);
+    m_stride = stride;
+    x = work_res.allocate<T>(size * stride);
+    flag = work_res.allocate<T>(size * stride);
+    a = work_res.allocate<T>(size * stride);
+    b = work_res.allocate<T>(size * stride);
   }
 
   void deallocate(camp::resources::Resource work_res)
@@ -72,10 +74,10 @@ struct MessagePassingLitmus {
 
   void pre_run(camp::resources::Resource work_res)
   {
-    work_res.memset(x, 0, sizeof(T) * m_size);
-    work_res.memset(flag, 0, sizeof(T) * m_size);
-    work_res.memset(a, 0, sizeof(T) * m_size);
-    work_res.memset(b, 0, sizeof(T) * m_size);
+    work_res.memset(x, 0, sizeof(T) * m_size * m_stride);
+    work_res.memset(flag, 0, sizeof(T) * m_size * m_stride);
+    work_res.memset(a, 0, sizeof(T) * m_size * m_stride);
+    work_res.memset(b, 0, sizeof(T) * m_size * m_stride);
 
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaDeviceSynchronize());
@@ -86,25 +88,28 @@ struct MessagePassingLitmus {
 #endif
   }
 
-  RAJA_HOST_DEVICE void run(int this_thread, int other_thread)
+  RAJA_HOST_DEVICE void run(int this_thread, int other_thread, int iter)
   {
+    int this_thread_idx = this_thread * m_stride + iter;
+    int other_thread_idx = other_thread * m_stride + iter;
     // Send action
-    x[other_thread] = T{1};
-    RAJA::atomicAdd<SendPolicy>(&(flag[other_thread]), T{1});
+    x[other_thread_idx] = T{1};
+    RAJA::atomicAdd<SendPolicy>(&(flag[other_thread_idx]), T{1});
     // Recv action
-    a[this_thread] = RAJA::atomicAdd<RecvPolicy>(&(flag[this_thread]), T{0});
-    b[this_thread] = x[this_thread];
+    a[this_thread_idx] =
+        RAJA::atomicAdd<RecvPolicy>(&(flag[this_thread_idx]), T{0});
+    b[this_thread_idx] = x[this_thread_idx];
   }
 
   void count_results(camp::resources::Resource work_res)
   {
     camp::resources::Resource host_res{camp::resources::Host()};
 
-    T *a_host = host_res.allocate<T>(m_size);
-    T *b_host = host_res.allocate<T>(m_size);
+    T *a_host = host_res.allocate<T>(m_size * m_stride);
+    T *b_host = host_res.allocate<T>(m_size * m_stride);
 
-    work_res.memcpy(a_host, a, m_size * sizeof(T));
-    work_res.memcpy(b_host, b, m_size * sizeof(T));
+    work_res.memcpy(a_host, a, m_size * m_stride * sizeof(T));
+    work_res.memcpy(b_host, b, m_size * m_stride * sizeof(T));
 
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaDeviceSynchronize());
@@ -113,7 +118,7 @@ struct MessagePassingLitmus {
 #if defined(RAJA_ENABLE_HIP)
     hipErrchk(hipDeviceSynchronize());
 #endif
-    for (size_t i = 0; i < m_size; i++) {
+    for (size_t i = 0; i < m_size * m_stride; i++) {
       if (a_host[i] == 0 && b_host[i] == 0) {
         // Strong behavior: neither store from test_send is observable
         strong_behavior_0++;
