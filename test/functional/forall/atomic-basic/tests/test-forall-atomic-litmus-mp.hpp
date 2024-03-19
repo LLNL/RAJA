@@ -41,7 +41,9 @@
 // Recv policy: Relaxed (Weak), Release, AcqRel, SeqCst
 template <typename T, typename SendPolicy, typename RecvPolicy>
 struct MessagePassingLitmus {
+  using DataType = T;
   using RelaxedPolicy = RAJA::atomic_relaxed;
+  constexpr static int PERMUTE_THREAD_FLAG = 97;
   size_t m_size;
   int m_stride;
   T *x;
@@ -49,10 +51,10 @@ struct MessagePassingLitmus {
   T *a;
   T *b;
 
-  int strong_behavior_0{0};
-  int strong_behavior_1{0};
-  int interleaved_behavior{0};
-  int weak_behavior{0};
+  size_t strong_behavior_0{0};
+  size_t strong_behavior_1{0};
+  size_t interleaved_behavior{0};
+  size_t weak_behavior{0};
 
   void allocate(camp::resources::Resource work_res, size_t size, int stride)
   {
@@ -90,70 +92,111 @@ struct MessagePassingLitmus {
 
   RAJA_HOST_DEVICE void run(int this_thread, int other_thread, int iter)
   {
-    int this_thread_idx = this_thread * m_stride + iter;
-    int other_thread_idx = other_thread * m_stride + iter;
+    bool send_first = (this_thread % 2 == 0);
     // Send action
-    x[other_thread_idx] = T{1};
-    RAJA::atomicAdd<SendPolicy>(&(flag[other_thread_idx]), T{1});
-    // Recv action
+    if (send_first) {
+      this->run_send(other_thread, iter);
+      this->run_recv(this_thread, iter);
+    } else {
+      this->run_recv(this_thread, iter);
+      this->run_send(other_thread, iter);
+    }
+  }
+
+  RAJA_HOST_DEVICE void run_send(int other_thread, int iter)
+  {
+    int other_thread_idx = other_thread * m_stride + iter;
+    int permute_other_thread = (other_thread * PERMUTE_THREAD_FLAG) % m_size;
+    int permute_idx = permute_other_thread * m_stride + iter;
+    RAJA::atomicAdd<RelaxedPolicy>(&(x[other_thread_idx]), T{1});
+    RAJA::atomicAdd<SendPolicy>(&(flag[permute_idx]), T{1});
+  }
+
+  RAJA_HOST_DEVICE void run_recv(int this_thread, int iter)
+  {
+    int this_thread_idx = this_thread * m_stride + iter;
+    int permute_this_thread = (this_thread * PERMUTE_THREAD_FLAG) % m_size;
+    int permute_idx = permute_this_thread * m_stride + iter;
     a[this_thread_idx] =
-        RAJA::atomicAdd<RecvPolicy>(&(flag[this_thread_idx]), T{0});
-    b[this_thread_idx] = x[this_thread_idx];
+        RAJA::atomicAdd<RecvPolicy>(&(flag[permute_idx]), T{0});
+    b[this_thread_idx] =
+        RAJA::atomicAdd<RelaxedPolicy>(&(x[this_thread_idx]), T{0});
   }
 
   void count_results(camp::resources::Resource work_res)
   {
-    camp::resources::Resource host_res{camp::resources::Host()};
 
-    T *a_host = host_res.allocate<T>(m_size * m_stride);
-    T *b_host = host_res.allocate<T>(m_size * m_stride);
-
-    work_res.memcpy(a_host, a, m_size * m_stride * sizeof(T));
-    work_res.memcpy(b_host, b, m_size * m_stride * sizeof(T));
-
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaDeviceSynchronize());
+#ifdef RAJA_ENABLE_HIP
+    using GPUExec = RAJA::hip_exec<256>;
+    using ReducePolicy = RAJA::hip_reduce;
 #endif
 
-#if defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipDeviceSynchronize());
+#ifdef RAJA_ENABLE_CUDA
+    using GPUExec = RAJA::cuda_exec<256>;
+    using ReducePolicy = RAJA::cuda_reduce;
 #endif
-    for (size_t i = 0; i < m_size * m_stride; i++) {
-      if (a_host[i] == 0 && b_host[i] == 0) {
+    RAJA::ReduceSum<ReducePolicy, size_t> strong_cnt_0(0);
+    RAJA::ReduceSum<ReducePolicy, size_t> strong_cnt_1(0);
+    RAJA::ReduceSum<ReducePolicy, size_t> interleaved_cnt(0);
+    RAJA::ReduceSum<ReducePolicy, size_t> weak_cnt(0);
+    RAJA::ReduceSum<ReducePolicy, size_t> unexpected_cnt(0);
+
+    T *a_local = a;
+    T *b_local = b;
+
+    auto forall_len = RAJA::TypedRangeSegment<int>(0, m_size * m_stride);
+
+    RAJA::forall<GPUExec>(forall_len, [=] RAJA_HOST_DEVICE(int i) {
+      if (a_local[i] == 0 && b_local[i] == 0) {
         // Strong behavior: neither store from test_send is observable
-        strong_behavior_0++;
-      } else if (a_host[i] == 1 && b_host[i] == 1) {
+        strong_cnt_0 += 1;
+      } else if (a_local[i] == 1 && b_local[i] == 1) {
         // Strong behavior: both stores from test_send are observable
-        strong_behavior_1++;
-      } else if (a_host[i] == 0 && b_host[i] == 1) {
+        strong_cnt_1 += 1;
+      } else if (a_local[i] == 0 && b_local[i] == 1) {
         // Strong behavior: stores interleaved with receives
-        interleaved_behavior++;
-      } else if (a_host[i] == 1 && b_host[i] == 0) {
+        interleaved_cnt += 1;
+      } else if (a_local[i] == 1 && b_local[i] == 0) {
         // Weak behavior: second store observed before first store
-        weak_behavior++;
+        weak_cnt += 1;
       } else {
-        FAIL() << "Unexpected result for index " << i;
+        unexpected_cnt += 1;
       }
-    }
+    });
 
-    host_res.deallocate(a_host);
-    host_res.deallocate(b_host);
+    EXPECT_EQ(unexpected_cnt.get(), 0);
+
+    strong_behavior_0 += strong_cnt_0.get();
+    strong_behavior_1 += strong_cnt_1.get();
+    interleaved_behavior += interleaved_cnt.get();
+    weak_behavior += weak_cnt.get();
   }
 
   void verify()
   {
-    std::cout << " - Strong behavior (a = 0, b = 0) = " << strong_behavior_0
+    std::cerr << " - Strong behavior (a = 0, b = 0) = " << strong_behavior_0
               << "\n";
-    std::cout << " - Strong behavior (a = 1, b = 1) = " << strong_behavior_1
+    std::cerr << " - Strong behavior (a = 1, b = 1) = " << strong_behavior_1
               << "\n";
-    std::cout << " - Strong behavior (a = 0, b = 1) = " << interleaved_behavior
+    std::cerr << " - Strong behavior (a = 0, b = 1) = " << interleaved_behavior
               << "\n";
-    std::cout << " - Weak behaviors = " << weak_behavior << "\n";
+    std::cerr << " - Weak behaviors = " << weak_behavior << "\n";
 
     if (std::is_same<SendPolicy, RAJA::atomic_relaxed>::value &&
         std::is_same<RecvPolicy, RAJA::atomic_relaxed>::value) {
       // In the relaxed case, we should observe some weak behaviors.
-      ASSERT_GT(weak_behavior, 0);
+      // Don't fail the test, but do print out a message.
+      if (weak_behavior == 0) {
+        std::cerr << "Warning - no weak behaviors detected in the control case."
+                  << "\nThis litmus test may be insufficient to exercise "
+                     "ordered memory atomics.\n";
+      } else {
+        double overall_behavior_counts = strong_behavior_0 + strong_behavior_1 +
+                                         interleaved_behavior + weak_behavior;
+        std::cerr << "\n Weak behaviors detected in "
+                  << 100 * (weak_behavior / overall_behavior_counts)
+                  << "% of cases.\n";
+      }
     } else {
       // We should not expect any weak behaviors if using a strong ordering.
       EXPECT_EQ(weak_behavior, 0);
