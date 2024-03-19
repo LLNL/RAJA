@@ -45,6 +45,7 @@ endif()
 set(FORALL_LITMUS_TESTS
     mp # Message Passing
     sb # Store Buffer
+    lb # Load Buffer
 )
 
 if (ENABLE_LITMUS_TESTS)
