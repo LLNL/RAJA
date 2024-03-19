@@ -46,6 +46,7 @@ set(FORALL_LITMUS_TESTS
     mp # Message Passing
     sb # Store Buffer
     lb # Load Buffer
+    store # Store
 )
 
 if (ENABLE_LITMUS_TESTS)
