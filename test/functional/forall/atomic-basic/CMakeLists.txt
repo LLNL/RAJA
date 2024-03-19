@@ -42,12 +42,20 @@ if(RAJA_ENABLE_DESUL_ATOMICS AND RAJA_ENABLE_HIP)
     set(ENABLE_LITMUS_TESTS ON)
 endif()
 
+set(FORALL_LITMUS_TESTS
+    mp # Message Passing
+    sb # Store Buffer
+)
+
 if (ENABLE_LITMUS_TESTS)
-  raja_add_test( NAME test-forall-atomic-litmus-${LITMUS_BACKEND}
-                 SOURCES test-forall-atomic-litmus.cpp)
-  target_include_directories(test-forall-atomic-litmus-${LITMUS_BACKEND}.exe
-                              PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+ foreach ( LITMUS_TEST ${FORALL_LITMUS_TESTS} )
+   raja_add_test( NAME test-forall-atomic-litmus-${LITMUS_BACKEND}-${LITMUS_TEST}
+                  SOURCES test-forall-atomic-litmus-${LITMUS_TEST}.cpp)
+   target_include_directories(test-forall-atomic-litmus-${LITMUS_BACKEND}-${LITMUS_TEST}.exe
+                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+ endforeach()
 endif()
 
+unset(FORALL_LITMUS_TESTS)
 unset(ENABLE_LITMUS_TESTS)
 unset(LITMUS_BACKEND)

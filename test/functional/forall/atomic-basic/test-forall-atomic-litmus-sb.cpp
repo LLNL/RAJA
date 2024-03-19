@@ -15,6 +15,8 @@
 #include "RAJA_test-forall-execpol.hpp"
 #include "RAJA_test-index-types.hpp"
 
+#include "test-forall-atomic-litmus-driver.hpp"
+
 // "Store buffer" litmus test for DESUL ordered atomic
 // ---------------------------------------------------
 // Initial state: x = 0 && y = 0
@@ -200,3 +202,27 @@ using SBLitmusTestOrderPols =
 
 using SBLitmusTestPols =
     camp::cartesian_product<AtomicDataTypeList, SBLitmusTestOrderPols>;
+
+TYPED_TEST_SUITE_P(ForallAtomicLitmusTest);
+
+template <typename T>
+class ForallAtomicLitmusTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicLitmusTest, StoreBufferTest)
+{
+  using Type = typename camp::at<TypeParam, camp::num<0>>::type;
+  using AtomicPol = typename camp::at<TypeParam, camp::num<1>>::type;
+
+  using SBTest = StoreBufferLitmus<Type, AtomicPol>;
+  LitmusTestDriver<SBTest>::run();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTest, StoreBufferTest);
+
+using StoreBufferTestTypes = Test<SBLitmusTestPols>::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
+                               ForallAtomicLitmusTest,
+                               StoreBufferTestTypes);

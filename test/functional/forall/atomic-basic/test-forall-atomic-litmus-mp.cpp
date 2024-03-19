@@ -15,6 +15,8 @@
 #include "RAJA_test-forall-execpol.hpp"
 #include "RAJA_test-index-types.hpp"
 
+#include "test-forall-atomic-litmus-driver.hpp"
+
 // "Message Passing" litmus test for DESUL ordered atomic
 // ------------------------------------------------------
 // Initial state: x = 0 && y = 0
@@ -210,7 +212,31 @@ using MPLitmusTestOrderPols =
                camp::list<RAJA::atomic_acq_rel, RAJA::atomic_acq_rel>,
                camp::list<RAJA::atomic_seq_cst, RAJA::atomic_seq_cst> >;
 
-using MPLitmusTestRecvPols = camp::list<RAJA::atomic_relaxed>;
-
 using MPLitmusTestPols =
     camp::cartesian_product<AtomicDataTypeList, MPLitmusTestOrderPols>;
+
+TYPED_TEST_SUITE_P(ForallAtomicLitmusTest);
+
+template <typename T>
+class ForallAtomicLitmusTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_P(ForallAtomicLitmusTest, MessagePassingTest)
+{
+  using Type = typename camp::at<TypeParam, camp::num<0>>::type;
+  using SendRecvPol = typename camp::at<TypeParam, camp::num<1>>::type;
+  using SendPol = typename camp::at<SendRecvPol, camp::num<0>>::type;
+  using RecvPol = typename camp::at<SendRecvPol, camp::num<1>>::type;
+
+  using MPTest = MessagePassingLitmus<Type, SendPol, RecvPol>;
+  LitmusTestDriver<MPTest>::run();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTest, MessagePassingTest);
+
+using MessagePassingTestTypes = Test<MPLitmusTestPols>::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
+                               ForallAtomicLitmusTest,
+                               MessagePassingTestTypes);

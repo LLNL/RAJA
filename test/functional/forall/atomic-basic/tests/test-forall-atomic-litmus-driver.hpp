@@ -24,9 +24,6 @@
 #include <numeric>
 #include <random>
 
-#include "test-forall-atomic-litmus-mp.hpp"
-#include "test-forall-atomic-litmus-sb.hpp"
-
 using IdxType = size_t;
 constexpr int NUM_ITERS = 100;
 #ifdef RAJA_ENABLE_CUDA
@@ -326,53 +323,3 @@ private:
     }
   }
 };
-
-TYPED_TEST_SUITE_P(ForallAtomicLitmusTestMP);
-
-template <typename T>
-class ForallAtomicLitmusTestMP : public ::testing::Test
-{
-};
-
-TYPED_TEST_P(ForallAtomicLitmusTestMP, MessagePassingTest)
-{
-  using Type = typename camp::at<TypeParam, camp::num<0>>::type;
-  using SendRecvPol = typename camp::at<TypeParam, camp::num<1>>::type;
-  using SendPol = typename camp::at<SendRecvPol, camp::num<0>>::type;
-  using RecvPol = typename camp::at<SendRecvPol, camp::num<1>>::type;
-
-  using MPTest = MessagePassingLitmus<Type, SendPol, RecvPol>;
-  LitmusTestDriver<MPTest>::run();
-}
-
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTestMP, MessagePassingTest);
-
-using MessagePassingTestTypes = Test<MPLitmusTestPols>::Types;
-
-INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
-                               ForallAtomicLitmusTestMP,
-                               MessagePassingTestTypes);
-
-TYPED_TEST_SUITE_P(ForallAtomicLitmusTestSB);
-
-template <typename T>
-class ForallAtomicLitmusTestSB : public ::testing::Test
-{
-};
-
-TYPED_TEST_P(ForallAtomicLitmusTestSB, StoreBufferTest)
-{
-  using Type = typename camp::at<TypeParam, camp::num<0>>::type;
-  using AtomicPol = typename camp::at<TypeParam, camp::num<1>>::type;
-
-  using SBTest = StoreBufferLitmus<Type, AtomicPol>;
-  LitmusTestDriver<SBTest>::run();
-}
-
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicLitmusTestSB, StoreBufferTest);
-
-using StoreBufferTestTypes = Test<SBLitmusTestPols>::Types;
-
-INSTANTIATE_TYPED_TEST_SUITE_P(Hip,
-                               ForallAtomicLitmusTestSB,
-                               StoreBufferTestTypes);
