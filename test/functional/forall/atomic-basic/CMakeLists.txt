@@ -47,6 +47,7 @@ set(FORALL_LITMUS_TESTS
     sb # Store Buffer
     lb # Load Buffer
     store # Store
+    read # Read
 )
 
 if (ENABLE_LITMUS_TESTS)
