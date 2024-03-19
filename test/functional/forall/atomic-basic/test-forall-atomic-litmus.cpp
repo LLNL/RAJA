@@ -28,20 +28,28 @@
 #include "test-forall-atomic-litmus-sb.hpp"
 
 using IdxType = size_t;
-constexpr int NUM_ITERS = 20;
+constexpr int NUM_ITERS = 100;
 #ifdef RAJA_ENABLE_CUDA
-constexpr int STRIDE = 4;
-constexpr bool STRESS_BEFORE_TEST = false;
-constexpr bool NONTESTING_BLOCKS = true;
-#elif defined(RAJA_ENABLE_HIP)
-constexpr int STRIDE = 16;
+constexpr int STRIDE = 32;
 constexpr bool STRESS_BEFORE_TEST = true;
 constexpr bool NONTESTING_BLOCKS = true;
+constexpr int WARP_SIZE = 32;
+constexpr int BLOCK_SIZE = 128;
+#elif defined(RAJA_ENABLE_HIP)
+constexpr int STRIDE = 32;
+constexpr bool STRESS_BEFORE_TEST = true;
+constexpr bool NONTESTING_BLOCKS = true;
+constexpr int WARP_SIZE = 64;
+constexpr int BLOCK_SIZE = 128;
 #endif
-constexpr int DATA_STRESS_SIZE = 2048 * STRIDE;
+
+constexpr int STRESS_STRIDE = 64;
+constexpr int NUM_STRESS_LINES = 2048;
+constexpr int DATA_STRESS_SIZE = NUM_STRESS_LINES * STRESS_STRIDE;
 
 constexpr int PERMUTE_PRIME_BLOCK = 17;
 constexpr int PERMUTE_PRIME_GRID = 47;
+constexpr int PERMUTE_STRESS = 977;
 
 template <typename Func>
 __global__ void dummy_kernel(IdxType index, Func func)
@@ -53,9 +61,15 @@ __global__ void dummy_kernel(IdxType index, Func func)
 template <typename LitmusPolicy>
 struct LitmusTestDriver {
 public:
+  using T = typename LitmusPolicy::DataType;
   struct TestData {
     int block_size;
     int grid_size;
+
+    int stride = STRIDE;
+
+    int pre_stress_iterations = 4;
+    int stress_iterations = 12;
 
     // Number of blocks to run the message-passing litmus test on.
     int testing_blocks;
@@ -66,7 +80,10 @@ public:
     // Barrier integers to synchronize testing threads.
     IdxType* barriers;
 
-    IdxType* data_stress;
+    int* data_stress;
+
+    int num_stress_index;
+    IdxType* stress_index;
 
     void allocate(camp::resources::Resource work_res,
                   int grid_size,
@@ -80,7 +97,10 @@ public:
 
       shuffle_block = work_res.allocate<IdxType>(grid_size);
       barriers = work_res.allocate<IdxType>(STRIDE);
-      data_stress = work_res.allocate<IdxType>(DATA_STRESS_SIZE);
+      data_stress = work_res.allocate<int>(DATA_STRESS_SIZE);
+
+      num_stress_index = 64;
+      stress_index = work_res.allocate<IdxType>(num_stress_index);
     }
 
     void pre_run(camp::resources::Resource work_res)
@@ -98,8 +118,26 @@ public:
                       shuffle_block_host.data(),
                       sizeof(IdxType) * grid_size);
 
+      std::vector<IdxType> stress_index_host(num_stress_index);
+      {
+        std::mt19937 gen{rand_device()};
+        std::uniform_int_distribution<IdxType> rnd_stress_offset(0,
+                                                                 STRESS_STRIDE);
+        std::uniform_int_distribution<IdxType> rnd_stress_dist(
+            0, NUM_STRESS_LINES - 1);
+        std::generate(stress_index_host.begin(),
+                      stress_index_host.end(),
+                      [&]() -> IdxType {
+                        return rnd_stress_dist(gen) * STRESS_STRIDE;
+                      });
+      }
+      work_res.memcpy(stress_index,
+                      stress_index_host.data(),
+                      sizeof(IdxType) * num_stress_index);
+
       work_res.memset(barriers, 0, sizeof(IdxType) * STRIDE);
-      work_res.memset(data_stress, 0, sizeof(IdxType) * DATA_STRESS_SIZE);
+      work_res.memset(data_stress, 0, sizeof(int) * DATA_STRESS_SIZE);
+
 
 #if defined(RAJA_ENABLE_CUDA)
       cudaErrchk(cudaDeviceSynchronize());
@@ -123,7 +161,6 @@ public:
   // Run
   static void run()
   {
-    constexpr IdxType BLOCK_SIZE = 128;
     int num_blocks = 0;
     {
       LitmusPolicy dummy_policy{};
@@ -216,16 +253,25 @@ private:
     // Shuffle the block ID randomly according to a permutation array.
     block_idx = param.shuffle_block[block_idx];
 
-    IdxType data_idx = block_idx * param.block_size + permute_thread_idx;
+    IdxType data_idx = block_idx * param.block_size + thread_idx;
 
-    if (block_idx < (IdxType)param.testing_blocks) {
-      // Block is a testing block.
-      // Each block acts as a "sender" to a unique "partner" block. This is done
-      // by permuting the block IDs with a function p(i) = i * k mod n, where n
-      // is the number of blocks being tested, and k and n are coprime.
-      int partner_idx = (block_idx * PERMUTE_PRIME_GRID) % param.testing_blocks;
+    for (int i = 0; i < param.stride; i++) {
 
-      for (int i = 0; i < STRIDE; i++) {
+      // Synchronize all blocks before testing, to increase the chance of
+      // interleaved requests.
+      this->sync(param.grid_size, thread_idx, param.barriers[i]);
+
+      if (block_idx < (IdxType)param.testing_blocks) {
+
+        // Block is a testing block.
+        //
+        // Each block acts as a "sender" to a unique "partner" block. This is
+        // done by permuting the block IDs with a function p(i) = i * k mod n,
+        // where n is the number of blocks being tested, and k and n are
+        // coprime.
+        int partner_idx =
+            (block_idx * PERMUTE_PRIME_GRID + i) % param.testing_blocks;
+
         // Run specified test, matching threads between the two paired blocks.
         int other_data_idx =
             partner_idx * param.block_size + permute_thread_idx;
@@ -234,15 +280,12 @@ private:
         // increase the rate of weak memory behaviors
         // Helps on AMD, doesn't seem to help on NVIDIA
         if (STRESS_BEFORE_TEST) {
-          this->stress(
-              param.data_stress, block_idx, thread_idx, param.grid_size, 128);
+          this->stress(block_idx, thread_idx, param, true);
         }
 
-        // Synchronize all blocks before testing, to increase the chance of
-        // interleaved requests.
-        this->sync(param.testing_blocks, thread_idx, param.barriers[i]);
-
         test.run(data_idx, other_data_idx, i);
+      } else {
+        this->stress(block_idx, thread_idx, param);
       }
     }
   };
@@ -252,8 +295,9 @@ private:
     if (thread_idx == 0) {
       IdxType result = RAJA::atomicAdd<NormalAtomic>(&barrier, IdxType{1});
       // Busy-wait until all blocks perform the above add.
-      while (result != num_blocks)
+      while (result != num_blocks) {
         result = RAJA::atomicAdd<NormalAtomic>(&barrier, IdxType{0});
+      }
     }
 
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_CODE__)
@@ -261,30 +305,24 @@ private:
 #endif
   }
 
-  RAJA_HOST_DEVICE uint64_t get_rand(uint64_t& pcg_state)
-  {
-    uint64_t oldstate = pcg_state;
-    // Advance internal state
-    pcg_state = oldstate * 6364136223846793005ULL + 0xda3e39cb94b95bdbULL;
-    // Calculate output function (XSH RR), uses old state for max ILP
-    uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
-    uint32_t rot = oldstate >> 59u;
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
-  }
-
-  RAJA_HOST_DEVICE void stress(IdxType* stress_data,
-                               IdxType block_idx,
+  RAJA_HOST_DEVICE void stress(IdxType block_idx,
                                IdxType thread_idx,
-                               int grid_size,
-                               int num_iters)
+                               const TestData& param,
+                               bool pre_stress = false)
   {
-    uint64_t pcg_state = block_idx;
-    for (int i = 0; i < num_iters; i++) {
-      // Pseudo-randomly target a given stress data location.
-      auto rand = get_rand(pcg_state);
-      auto target_line = (rand + thread_idx) % DATA_STRESS_SIZE;
-
-      RAJA::atomicAdd<NormalAtomic>(&(stress_data[target_line]), rand);
+    int num_iters =
+        (pre_stress ? param.pre_stress_iterations : param.stress_iterations);
+    int volatile* stress_data = param.data_stress;
+    if (thread_idx % WARP_SIZE == 0) {
+      int warp_idx = thread_idx / WARP_SIZE;
+      // int select_idx = block_idx * NUM_WARPS + warp_idx;
+      int select_idx = block_idx;
+      select_idx = (select_idx * PERMUTE_STRESS) % param.num_stress_index;
+      int stress_line = param.stress_index[select_idx];
+      for (int i = 0; i < num_iters; i++) {
+        int data = stress_data[stress_line];
+        stress_data[stress_line] = i + 1;
+      }
     }
   }
 };
