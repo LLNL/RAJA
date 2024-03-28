@@ -27,13 +27,11 @@ clang_14_0_6:
 gcc_10_3_1:
   variables:
     SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ^blt@develop"
-    RUBY_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .job_on_ruby
 
 intel_19_1_2_gcc_10_3_1:
   variables:
     SPEC: " ~shared +openmp +omptask +tests %intel@=19.1.2.gcc.10.3.1 ^blt@develop"
-    RUBY_JOB_ALLOC: "--time=90 --nodes=1"
   extends: .job_on_ruby
 
 intel_2022_1_0:
@@ -57,7 +55,6 @@ clang_14_0_6_openmp_off:
 gcc_10_3_1_openmp_default:
   variables:
     SPEC: " ~shared +tests %gcc@=10.3.1 ^blt@develop"
-    RUBY_JOB_ALLOC: "--time=60 --nodes=1"
   extends: .job_on_ruby
 
 # OTHERS
