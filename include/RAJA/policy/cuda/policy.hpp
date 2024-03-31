@@ -948,6 +948,22 @@ template <size_t BLOCK_SIZE, typename Fraction>
 using cuda_exec_occ_calc_fraction_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_occ_calc_recommended_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_occ_calc_recommended_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_occ_calc_recommended = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE>
+using cuda_exec_occ_calc_recommended_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
 // policies usable with WorkGroup
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
 using cuda_work_explicit = policy::cuda::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
