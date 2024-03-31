@@ -172,6 +172,25 @@ struct SizeList {
 };
 
 
+///
+/// Compile time fraction for use with integral types
+///
+template <typename int_t, int_t numerator, int_t denominator>
+struct Fraction
+{
+  static_assert(denominator != int_t(0), "denominator may not be zero");
+
+  using inverse = Fraction<int_t, denominator, numerator>;
+
+  static constexpr int_t multiply(int_t val) noexcept
+  {
+    return (val / denominator) * numerator +
+           (val % denominator) * numerator / denominator;
+  }
+
+};
+
+
 /*!
  ******************************************************************************
  *
