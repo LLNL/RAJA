@@ -47,20 +47,20 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : CudaStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 
@@ -103,20 +103,20 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : public CudaStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 
@@ -166,20 +166,20 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : public CudaStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 
@@ -226,7 +226,7 @@ struct CudaStatementExecutor<
     statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>,
     Types>
 : CudaStatementExecutor<Data, statement::ForICount<ArgumentId,
-      RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+      RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                      kernel_sync_requirement::none,
                                      cuda::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
       EnclosedStmts...>, Types>

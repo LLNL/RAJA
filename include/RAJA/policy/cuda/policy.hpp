@@ -883,53 +883,70 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 } // namespace cuda
 
 // policies usable with forall, scan, and sort
+
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_grid_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_grid_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using cuda_exec_grid = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using cuda_exec_grid_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::Direct<>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::Direct<>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using cuda_exec = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::Direct<>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::Direct<>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_occ_calc_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_occ_calc_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using cuda_exec_occ_calc = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_occ_calc_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Fraction, bool Async = false>
+using cuda_exec_occ_calc_fraction_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Fraction>
+using cuda_exec_occ_calc_fraction_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, typename Fraction, bool Async = false>
+using cuda_exec_occ_calc_fraction = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, typename Fraction>
+using cuda_exec_occ_calc_fraction_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 // policies usable with WorkGroup
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
@@ -960,11 +977,11 @@ using policy::cuda::cuda_block_reduce;
 using policy::cuda::cuda_warp_reduce;
 
 using cuda_warp_direct = RAJA::policy::cuda::cuda_indexer<
-    iteration_mapping::Direct,
+    iteration_mapping::Direct<>,
     kernel_sync_requirement::none,
     cuda::thread_x<RAJA::policy::cuda::WARP_SIZE>>;
 using cuda_warp_loop = RAJA::policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     cuda::thread_x<RAJA::policy::cuda::WARP_SIZE>>;
 
@@ -990,31 +1007,31 @@ using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<Async, num_threads,
 // policies usable with kernel and launch
 template < typename ... indexers >
 using cuda_indexer_direct = policy::cuda::cuda_indexer<
-    iteration_mapping::Direct,
+    iteration_mapping::Direct<>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using cuda_indexer_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using cuda_indexer_syncable_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::sync,
     indexers...>;
 
 template < typename ... indexers >
 using cuda_flatten_indexer_direct = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::Direct,
+    iteration_mapping::Direct<>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using cuda_flatten_indexer_loop = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 

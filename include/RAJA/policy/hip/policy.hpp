@@ -879,27 +879,35 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 // policies usable with forall, scan, and sort
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using hip_exec_grid = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using hip_exec_grid_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, Async>;
+    iteration_mapping::Direct<>, hip::global_x<BLOCK_SIZE>, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, true>;
+    iteration_mapping::Direct<>, hip::global_x<BLOCK_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_occ_calc = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_occ_calc_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>, true>;
+
+template <size_t BLOCK_SIZE, typename Fraction, bool Async = false>
+using hip_exec_occ_calc_fraction = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, hip::global_x<BLOCK_SIZE>, Async>;
+
+template <size_t BLOCK_SIZE, typename Fraction>
+using hip_exec_occ_calc_fraction_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, hip::global_x<BLOCK_SIZE>, true>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
@@ -923,11 +931,11 @@ using policy::hip::hip_block_reduce;
 using policy::hip::hip_warp_reduce;
 
 using hip_warp_direct = RAJA::policy::hip::hip_indexer<
-    iteration_mapping::Direct,
+    iteration_mapping::Direct<>,
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
 using hip_warp_loop = RAJA::policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
 
@@ -947,31 +955,31 @@ using policy::hip::hip_launch_t;
 // policies usable with kernel and launch
 template < typename ... indexers >
 using hip_indexer_direct = policy::hip::hip_indexer<
-    iteration_mapping::Direct,
+    iteration_mapping::Direct<>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using hip_indexer_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using hip_indexer_syncable_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::sync,
     indexers...>;
 
 template < typename ... indexers >
 using hip_flatten_indexer_direct = policy::hip::hip_flatten_indexer<
-    iteration_mapping::Direct,
+    iteration_mapping::Direct<>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 

@@ -67,6 +67,18 @@ enum struct kernel_sync_requirement : int
 namespace iteration_mapping
 {
 
+struct DirectBase {};
+struct LoopBase {};
+struct ContiguousLoopBase : LoopBase {};
+struct StridedLoopBase : LoopBase {};
+struct UnsizedLoopBase {};
+struct SizedLoopBase {};
+template < size_t t_max_iterations >
+struct SizedLoopSpecifyingBase : SizedLoopBase
+{
+  static constexpr size_t max_iterations = t_max_iterations;
+};
+
 ///
 /// Direct assumes the loop has enough iterations for all of the indices and
 /// maps directly from an iteration to an index.
@@ -88,7 +100,8 @@ namespace iteration_mapping
 ///   // 3 -> {3}
 ///   // 4 -> {}
 ///
-struct Direct {};
+template < typename ... Modifiers >
+struct Direct : DirectBase {};
 
 ///
 /// Contiguousloop assumes the loop has fewer iterations than indices and
@@ -115,7 +128,10 @@ struct Direct {};
 ///   // 1 -> {3, 4, 5}
 ///   // 2 -> {6, 7}
 ///
-struct Contiguousloop {};
+template < size_t max_iterations, typename ... Modifiers >
+struct Contiguousloop : ContiguousLoopBase,
+    std::conditional_t<(max_iterations != named_usage::unspecified),
+                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
 
 ///
 /// StridedLoop assumes the loop has fewer iterations than indices and
@@ -142,7 +158,10 @@ struct Contiguousloop {};
 ///   // 1 -> {1, 4, 7}
 ///   // 2 -> {2, 5}
 ///
-struct StridedLoop {};
+template < size_t max_iterations, typename ... Modifiers >
+struct StridedLoop : StridedLoopBase,
+    std::conditional_t<(max_iterations != named_usage::unspecified),
+                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
 
 } // namespace iteration_mapping
 
