@@ -229,7 +229,8 @@ struct unordered_hip_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic>
+template <bool maybe_atomic, size_t replication=named_usage::unspecified,
+                             size_t atomic_stride=named_usage::unspecified>
 struct hip_reduce_base
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::hip,
@@ -308,6 +309,7 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
+constexpr const RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE = 64; // 128 on gfx90a
 #if defined(__HIP_PLATFORM_AMD__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
 #elif defined(__HIP_PLATFORM_NVIDIA__)
