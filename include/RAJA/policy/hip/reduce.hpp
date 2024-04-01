@@ -363,23 +363,28 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce(T& val,
                 (gridDim.x * gridDim.y) * blockIdx.z;
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
 
-  int replicationId = (blockId%replication);
-  int atomicOffset = replicationId*atomic_stride;
+  int replicationId = blockId % replication;
+  int slotId = blockId / replication;
 
-  unsigned int wrap_around = (numBlocks / replication) -
-      ((replicationId < (numBlocks % replication)) ? 0 : 1);
+  int maxNumSlots = (numBlocks + replication - 1) / replication;
+  unsigned int numSlots = (numBlocks / replication) +
+      ((replicationId < (numBlocks % replication)) ? 1 : 0);
+
+  int atomicOffset = replicationId * atomic_stride;
+  int beginSlots = replicationId * maxNumSlots;
+  int blockSlot = beginSlots + slotId;
 
   T temp = block_reduce<Combiner>(val, identity);
 
   // one thread per block writes to device_mem
   __shared__ bool isLastBlock;
   if (threadId == 0) {
-    device_mem.set(blockId, temp);
+    device_mem.set(blockSlot, temp);
     // ensure write visible to all threadblocks
     __threadfence();
-    // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(&device_count[atomicOffset], wrap_around);
-    isLastBlock = (old_count == wrap_around);
+    // increment counter, (wraps back to zero if old count == (numSlots-1))
+    unsigned int old_count = ::atomicInc(&device_count[atomicOffset], (numSlots-1));
+    isLastBlock = (old_count == (numSlots-1));
   }
 
   // returns non-zero value if any thread passes in a non-zero value
@@ -389,10 +394,10 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce(T& val,
   if (isLastBlock) {
     temp = identity;
 
-    for (int i = replicationId + threadId*replication;
-             i < numBlocks;
-             i += numThreads*replication) {
-      Combiner{}(temp, device_mem.get(i));
+    for (unsigned int i = threadId;
+                      i < numSlots;
+                      i += numThreads) {
+      Combiner{}(temp, device_mem.get(beginSlots + i));
     }
 
     temp = block_reduce<Combiner>(temp, identity);
@@ -845,8 +850,8 @@ struct Reduce_Data {
     if (act) {
       hip_dim_t gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      size_t numSlots = ((numBlocks + replication - 1) / replication) * replication;
-      device.allocate(numSlots);
+      size_t maxNumSlots = (numBlocks + replication - 1) / replication;
+      device.allocate(maxNumSlots*replication);
       device_count = device_zeroed_mempool_type::getInstance()
                          .template malloc<unsigned int>(replication*atomic_stride);
       own_device_ptr = true;
