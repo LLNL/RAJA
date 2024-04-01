@@ -376,6 +376,13 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce(T& val,
 
   T temp = block_reduce<Combiner>(val, identity);
 
+  if (numSlots <= 1u) {
+    if (threadId == 0) {
+      val = temp;
+    }
+    return (threadId == 0) ? replicationId : replication;
+  }
+
   // one thread per block writes to device_mem
   __shared__ bool isLastBlock;
   if (threadId == 0) {
@@ -554,8 +561,16 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce_atomic(T& val,
   int replicationId = (blockId%replication);
   int atomicOffset = replicationId*atomic_stride;
 
-  unsigned int wrap_around = numBlocks / replication +
-      ((replicationId < (numBlocks % replication)) ? 2 : 1);
+  unsigned int numSlots = (numBlocks / replication) +
+      ((replicationId < (numBlocks % replication)) ? 1 : 0);
+
+  if (numSlots <= 1u) {
+    T temp = block_reduce<Combiner>(val, identity);
+    if (threadId == 0) {
+      val = temp;
+    }
+    return (threadId == 0) ? replicationId : replication;
+  }
 
   // the first block of each replication initializes device_mem
   if (threadId == 0) {
@@ -578,9 +593,9 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce_atomic(T& val,
     __threadfence();
     RAJA::reduce::hip::atomic<Combiner>{}(device_mem[atomicOffset], temp);
     __threadfence();
-    // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(&device_count[atomicOffset], wrap_around);
-    isLastBlock = (old_count == wrap_around);
+    // increment counter, (wraps back to zero if old count == (numSlots+1))
+    unsigned int old_count = ::atomicInc(&device_count[atomicOffset], (numSlots+1));
+    isLastBlock = (old_count == (numSlots+1));
 
     // the last block for each replication gets the value from device_mem
     if (isLastBlock) {
