@@ -271,13 +271,9 @@ policies have the prefix ``hip_``.
                                                          default. Note this can improve
                                                          reducer performance in kernels
                                                          with large iteration counts.
- cuda/hip_exec_occ_calc_recommended<BLOCK_SIZE> forall   The same as
-                                                         cuda/hip_exec_occ_calc<BLOCK_SIZE>
-                                                         except the grid size upper bound
-                                                         may be modified from the
-                                                         maximum occupancy to improve performance.
-                                                         Note this is the recommended
-                                                         policy to use with reducers.
+ cuda/hip_exec_rec_for_reduce<BLOCK_SIZE>  forall        The cuda/hip exec policy
+                                                         that is recommended for
+                                                         use with reducers.
  cuda/hip_launch_t                         launch        Launches a device kernel,
                                                          any code expressed within
                                                          the lambda is executed

@@ -910,12 +910,10 @@ using hip_exec_occ_calc_fraction_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified, typename Fraction::inverse>, hip::global_x<BLOCK_SIZE>, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using hip_exec_occ_calc_recommended = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop<named_usage::unspecified, Fraction<size_t, 2, 1>>, hip::global_x<BLOCK_SIZE>, Async>;
+using hip_exec_rec_for_reduce = hip_exec_occ_calc_fraction<BLOCK_SIZE, Fraction<size_t, 1, 2>, Async>;
 
 template <size_t BLOCK_SIZE>
-using hip_exec_occ_calc_recommended_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop<named_usage::unspecified, Fraction<size_t, 2, 1>>, hip::global_x<BLOCK_SIZE>, true>;
+using hip_exec_rec_for_reduce_async = hip_exec_occ_calc_fraction_async<BLOCK_SIZE, Fraction<size_t, 1, 2>>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
