@@ -6,7 +6,8 @@
 #############################################################################
 
 # Override reproducer section to define project specific variables.
-.corona_reproducer_vars: &corona_reproducer_vars
+.corona_reproducer_vars:
+  script:
     - |
       echo -e "export MODULE_LIST=\"${MODULE_LIST}\""
       echo -e "export SPEC=\"${SPEC//\"/\\\"}\""
@@ -29,6 +30,6 @@
 
 rocmcc_5_7_0_hip_desul_atomics:
   variables:
-    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@5.7.0 ^hip@5.7.0 ^blt@develop"
+    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@=5.7.0 ^hip@5.7.0 ^blt@develop"
   extends: .job_on_corona
 
