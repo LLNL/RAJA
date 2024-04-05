@@ -257,7 +257,7 @@ policies have the prefix ``hip_``.
                                                          Note that the thread-block
                                                          size and grid size must be
                                                          provided, there is no default.
- cuda/hip_exec_occ_calc<BLOCK_SIZE>        forall        Execute loop iterations
+ cuda/hip_exec_occ_max<BLOCK_SIZE>         forall        Execute loop iterations
                                                          mapped to global threads via
                                                          grid striding with multiple
                                                          iterations per global thread
@@ -265,12 +265,20 @@ policies have the prefix ``hip_``.
                                                          with given thread-block
                                                          size and grid size bounded
                                                          by the maximum occupancy of
-                                                         the kernel. Note that the
-                                                         thread-block size must
-                                                         be provided, there is no
-                                                         default. Note this can improve
-                                                         reducer performance in kernels
-                                                         with large iteration counts.
+                                                         the kernel.
+ cuda/hip_exec_occ_calc<BLOCK_SIZE>        forall        Similar to the occ_max
+                                                         policy but may use less
+                                                         than the maximum occupancy
+                                                         of the kernel for performance
+                                                         reasons.
+ cuda/hip_exec_occ_fraction<BLOCK_SIZE,    forall        Similar to the occ_max
+     RAJA::Fraction<size_t,                              policy but use a fraction
+        numerator, denominator>>                         of the maximum occupancy
+                                                         of the kernel.
+ cuda/hip_exec_occ_custom<BLOCK_SIZE,      forall        Similar to the occ_max
+     Concretizer>                                        policy but the grid size
+                                                         is determined by the
+                                                         concretizer.
  cuda/hip_exec_rec_for_reduce<BLOCK_SIZE>  forall        The cuda/hip exec policy
                                                          that is recommended for
                                                          use with reducers.
@@ -413,6 +421,39 @@ policies have the prefix ``hip_``.
                                            (Reduce)      across a single GPU
                                                          thread warp.
  ========================================= ============= =======================================
+
+When a cuda/hip policy leaves parameters like the block size and/or grid size
+unspecified a concretizer object is used to decide those parameters. The
+following concretizers are available to use in the cuda/hip_exec_occ_custom
+policies:
+
+=================================================== =========================================
+Execution Policy                                    Brief description
+=================================================== =========================================
+
+Cuda/HipDefaultConcretizer                          The default concretizer, expected to
+                                                    provide good performance in general.
+                                                    Note that it may not use max occupancy.
+
+Cuda/HipRecForReduceConcretizer                     Expected to provide good performance
+                                                    in loops with reducers.
+                                                    Note that it may not use max occupancy.
+
+Cuda/HipMaxOccupancyConcretizer                     Uses max occupancy.
+
+Cuda/HipAvoidDeviceMaxThreadOccupancyConcretizer    Avoids using the max occupancy of the
+                                                    device in terms of threads.
+                                                    Note that it may use the max occupancy
+                                                    of the function if that is below the max
+                                                    occupancy of the device.
+
+Cuda/HipFractionOffsetOccupancyConcretizer<         Uses a fraction and offset to choose an
+    Fraction<size_t, numerator, denomenator>,       occupancy based on the max occupancy
+    BLOCKS_PER_SM_OFFSET>                           Using the following formula.
+                                                    (Fraction * kernel_max_blocks_per_sm +
+                                                     BLOCKS_PER_SM_OFFSET) * sm_per_device
+
+=================================================== =========================================
 
 Several notable constraints apply to RAJA CUDA/HIP *direct* policies.
 
