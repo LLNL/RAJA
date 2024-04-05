@@ -968,7 +968,7 @@ using HipFractionOffsetOccupancyConcretizer = hip::FractionOffsetOccupancyConcre
 
 using HipMaxOccupancyConcretizer = hip::MaxOccupancyConcretizer;
 
-using HipRecForReduceConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
+using HipRecForReduceConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
 
 using HipDefaultConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
 
