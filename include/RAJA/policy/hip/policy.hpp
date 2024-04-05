@@ -997,10 +997,20 @@ using hip_exec_async = policy::hip::hip_exec<
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_occ_calc = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipMaxOccupancyConcretizer, Async>;
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_occ_calc_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_occ_max = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipMaxOccupancyConcretizer, Async>;
+
+template <size_t BLOCK_SIZE>
+using hip_exec_occ_max_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
     HipMaxOccupancyConcretizer, true>;
 
@@ -1014,15 +1024,15 @@ using hip_exec_occ_fraction_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
     HipFractionOffsetOccupancyConcretizer<Fraction, 0>, true>;
 
-template <size_t BLOCK_SIZE, bool Async = false>
-using hip_exec_occ_avoid_max = policy::hip::hip_exec<
+template <size_t BLOCK_SIZE, typename Concretizer, bool Async = false>
+using hip_exec_occ_custom = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipAvoidDeviceMaxThreadOccupancyConcretizer, Async>;
+    Concretizer, Async>;
 
-template <size_t BLOCK_SIZE>
-using hip_exec_occ_avoid_max_async = policy::hip::hip_exec<
+template <size_t BLOCK_SIZE, typename Concretizer>
+using hip_exec_occ_custom_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipAvoidDeviceMaxThreadOccupancyConcretizer, true>;
+    Concretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_rec_for_reduce = policy::hip::hip_exec<

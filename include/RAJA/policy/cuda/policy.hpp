@@ -1022,20 +1022,40 @@ using cuda_exec_async = policy::cuda::cuda_exec_explicit<
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_occ_calc_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaMaxOccupancyConcretizer, BLOCKS_PER_SM, Async>;
+    CudaDefaultConcretizer, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_occ_calc_explicit_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaMaxOccupancyConcretizer, BLOCKS_PER_SM, true>;
+    CudaDefaultConcretizer, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using cuda_exec_occ_calc = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaMaxOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_occ_calc_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_occ_max_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_occ_max_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_occ_max = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE>
+using cuda_exec_occ_max_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
     CudaMaxOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
@@ -1059,25 +1079,25 @@ using cuda_exec_occ_fraction_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
     CudaFractionOffsetOccupancyConcretizer<Fraction, 0>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
-using cuda_exec_occ_avoid_max_explicit = policy::cuda::cuda_exec_explicit<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Concretizer, bool Async = false>
+using cuda_exec_occ_custom_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaAvoidDeviceMaxThreadOccupancyConcretizer, BLOCKS_PER_SM, Async>;
+    Concretizer, BLOCKS_PER_SM, Async>;
 
-template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
-using cuda_exec_occ_avoid_max_explicit_async = policy::cuda::cuda_exec_explicit<
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Concretizer>
+using cuda_exec_occ_custom_explicit_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaAvoidDeviceMaxThreadOccupancyConcretizer, BLOCKS_PER_SM, true>;
+    Concretizer, BLOCKS_PER_SM, true>;
 
-template <size_t BLOCK_SIZE, bool Async = false>
-using cuda_exec_occ_avoid_max = policy::cuda::cuda_exec_explicit<
+template <size_t BLOCK_SIZE, typename Concretizer, bool Async = false>
+using cuda_exec_occ_custom = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaAvoidDeviceMaxThreadOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    Concretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
-template <size_t BLOCK_SIZE>
-using cuda_exec_occ_avoid_max_async = policy::cuda::cuda_exec_explicit<
+template <size_t BLOCK_SIZE, typename Concretizer>
+using cuda_exec_occ_custom_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaAvoidDeviceMaxThreadOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    Concretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_rec_for_reduce_explicit = policy::cuda::cuda_exec_explicit<
