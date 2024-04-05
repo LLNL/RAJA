@@ -154,7 +154,7 @@ then
     mkdir -p ${build_dir} && cd ${build_dir}
 
     date
-    if [[ "${truehostname}" == "corona" || "${truehostname}" == "tioga" ]]
+    if [[ "${truehostname}" == "tioga" ]]
     then
         module unload rocm
     fi
