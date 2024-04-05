@@ -45,7 +45,7 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::For<ArgumentId,
-                   RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                   RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                    EnclosedStmts...>,
     Types> {
 
@@ -60,7 +60,7 @@ struct CudaStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
-      RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>>;
+      RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)

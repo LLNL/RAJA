@@ -47,20 +47,20 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                         RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : HipStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                       RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = HipStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                     RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 

@@ -47,20 +47,20 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : CudaStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 

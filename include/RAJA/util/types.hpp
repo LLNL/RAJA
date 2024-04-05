@@ -100,7 +100,6 @@ struct SizedLoopSpecifyingBase : SizedLoopBase
 ///   // 3 -> {3}
 ///   // 4 -> {}
 ///
-template < typename ... Modifiers >
 struct Direct : DirectBase {};
 
 ///
@@ -128,7 +127,7 @@ struct Direct : DirectBase {};
 ///   // 1 -> {3, 4, 5}
 ///   // 2 -> {6, 7}
 ///
-template < size_t max_iterations, typename ... Modifiers >
+template < size_t max_iterations >
 struct Contiguousloop : ContiguousLoopBase,
     std::conditional_t<(max_iterations != named_usage::unspecified),
                        SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
@@ -158,7 +157,7 @@ struct Contiguousloop : ContiguousLoopBase,
 ///   // 1 -> {1, 4, 7}
 ///   // 2 -> {2, 5}
 ///
-template < size_t max_iterations, typename ... Modifiers >
+template < size_t max_iterations >
 struct StridedLoop : StridedLoopBase,
     std::conditional_t<(max_iterations != named_usage::unspecified),
                        SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
@@ -200,6 +199,9 @@ struct Fraction
   static_assert(denominator != int_t(0), "denominator may not be zero");
 
   using inverse = Fraction<int_t, denominator, numerator>;
+
+  template < typename new_int_t >
+  using rebind = Fraction<new_int_t, new_int_t(numerator), new_int_t(denominator)>;
 
   static constexpr int_t multiply(int_t val) noexcept
   {

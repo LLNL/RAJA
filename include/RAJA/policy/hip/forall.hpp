@@ -59,57 +59,6 @@ namespace impl
 /*!
  ******************************************************************************
  *
- * \brief  Hip grid dimension helper for strided loops template.
- *
- * \tparam MappingModifiers Decide how many blocks to use cased on the . For example StridedLoop uses a grid
- *         stride loop to run multiple iterates in a single thread.
- *
- ******************************************************************************
- */
-template<typename IterationMapping>
-struct GridStrideHelper;
-
-/// handle direct policies with no modifiers
-template<>
-struct GridStrideHelper<::RAJA::iteration_mapping::Direct<>>
-{
-  template < typename IdxT >
-  static constexpr IdxT get_grid_size(IdxT normal_grid_size, IdxT RAJA_UNUSED_ARG(max_grid_size))
-  {
-    return normal_grid_size;
-  }
-};
-
-/// handle strided loop policies with no modifiers
-template<>
-struct GridStrideHelper<::RAJA::iteration_mapping::StridedLoop<
-    named_usage::unspecified>>
-{
-  template < typename IdxT >
-  static constexpr IdxT get_grid_size(IdxT normal_grid_size, IdxT max_grid_size)
-  {
-    return std::min(normal_grid_size, max_grid_size);
-  }
-};
-
-/// handle strided loop policies with multiplier on iterates per thread
-template<typename FractionIdxT, FractionIdxT numerator, FractionIdxT demoninator>
-struct GridStrideHelper<::RAJA::iteration_mapping::StridedLoop<
-    named_usage::unspecified, Fraction<FractionIdxT, numerator, demoninator>>>
-{
-  template < typename IdxT >
-  static constexpr IdxT get_grid_size(IdxT normal_grid_size, IdxT max_grid_size)
-  {
-    // use inverse multiplier on max grid size to affect number of threads
-    using Frac = typename Fraction<IdxT, IdxT(numerator), IdxT(demoninator)>::inverse;
-    max_grid_size = Frac::multiply(max_grid_size);
-    return std::min(normal_grid_size, max_grid_size);
-  }
-};
-
-/*!
- ******************************************************************************
- *
  * \brief  Hip kernel block and grid dimension calculator template.
  *
  * \tparam IterationMapping Way of mapping from threads in the kernel to
@@ -122,21 +71,21 @@ struct GridStrideHelper<::RAJA::iteration_mapping::StridedLoop<
  *
  ******************************************************************************
  */
-template<typename IterationMapping, typename IterationGetter, typename UniqueMarker>
+template<typename IterationMapping, typename IterationGetter, typename Concretizer, typename UniqueMarker>
 struct ForallDimensionCalculator;
 
 // The general cases handle fixed BLOCK_SIZE > 0 and/or GRID_SIZE > 0
 // there are specializations for named_usage::unspecified
 // but named_usage::ignored is not supported so no specializations are provided
 // and static_asserts in the general case catch unsupported values
-template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct<MappingModifiers...>,
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
-  static_assert(sizeof...(MappingModifiers) == 0, "MappingModifiers not supported in this configuration");
 
   using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
@@ -144,8 +93,10 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct<MappingModifi
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
   {
-    if ( len > (static_cast<IdxT>(IndexGetter::block_size) *
-                static_cast<IdxT>(IndexGetter::grid_size)) ) {
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+
+    if ( len > (block_size * grid_size) ) {
       RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
     }
 
@@ -154,160 +105,168 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct<MappingModifi
   }
 };
 
-template<named_dim dim, int GRID_SIZE, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct<MappingModifiers...>,
+template<named_dim dim, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
-  static_assert(sizeof...(MappingModifiers) == 0, "MappingModifiers not supported in this configuration");
 
   using IndexGetter = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
-                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+                             const void* func, size_t dynamic_shmem_size)
   {
-    // BEWARE: if calculated block_size is too high then the kernel launch will fail
-    internal::set_hip_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::grid_size)));
-    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
+    ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
+
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT block_size = concretizer.get_block_size_to_fit_len(grid_size);
+
+    if ( block_size == IdxT(0) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+
+    internal::set_hip_dim<dim>(dims.threads, block_size);
+    internal::set_hip_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, int BLOCK_SIZE, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct<MappingModifiers...>,
+template<named_dim dim, int BLOCK_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
-  static_assert(sizeof...(MappingModifiers) == 0, "MappingModifiers not supported in this configuration");
 
   using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
-                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+                             const void* func, size_t dynamic_shmem_size)
   {
-    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
-    internal::set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::block_size)));
+    ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
+
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = concretizer.get_grid_size_to_fit_len(block_size);
+
+    internal::set_hip_dim<dim>(dims.threads, block_size);
+    internal::set_hip_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct<MappingModifiers...>,
+template<named_dim dim, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
-  static_assert(sizeof...(MappingModifiers) == 0, "MappingModifiers not supported in this configuration");
-
   using IndexGetter = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
-    internal::set_hip_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)));
+    const auto sizes = concretizer.get_block_and_grid_size_to_fit_len();
+
+    internal::set_hip_dim<dim>(dims.threads, sizes.first);
+    internal::set_hip_dim<dim>(dims.blocks, sizes.second);
   }
 };
 
-template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified, MappingModifiers...>,
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
-  static_assert(sizeof...(MappingModifiers) == 0, "MappingModifiers not supported in this configuration");
 
-  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT RAJA_UNUSED_ARG(len),
                              const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
   {
-    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+
+    internal::set_hip_dim<dim>(dims.threads, block_size);
+    internal::set_hip_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, int GRID_SIZE, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified, MappingModifiers...>,
+template<named_dim dim, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
-  static_assert(sizeof...(MappingModifiers) == 0, "MappingModifiers not supported in this configuration");
 
-  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    IdxT calculated_block_size = std::min(
-        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)),
-        static_cast<IdxT>(max_sizes.first));
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT block_size = concretizer.get_block_size_to_fit_device(grid_size);
 
-    internal::set_hip_dim<dim>(dims.threads, calculated_block_size);
-    internal::set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    internal::set_hip_dim<dim>(dims.threads, block_size);
+    internal::set_hip_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, int BLOCK_SIZE, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified, MappingModifiers...>,
+template<named_dim dim, int BLOCK_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
 
-  using IterationMapping = ::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified, MappingModifiers...>;
-  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_grid_size = oc.get_max_grid_size(dynamic_shmem_size,
-                                              static_cast<IdxT>(IndexMapper::block_size));
+    ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    IdxT calculated_grid_size = GridStrideHelper<IterationMapping>::get_grid_size(
-        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)),
-        static_cast<IdxT>(max_grid_size));
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = concretizer.get_grid_size_to_fit_device(block_size);
 
-    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    internal::set_hip_dim<dim>(dims.blocks, calculated_grid_size);
+    internal::set_hip_dim<dim>(dims.threads, block_size);
+    internal::set_hip_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, typename UniqueMarker, typename ... MappingModifiers>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified, MappingModifiers...>,
+template<named_dim dim, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
-  using IterationMapping = ::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified, MappingModifiers...>;
-  using IndexMapper = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+  using IndexGetter = ::RAJA::hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::HipDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::hip::HipOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    IdxT calculated_grid_size = GridStrideHelper<IterationMapping>::get_grid_size(
-        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)),
-        static_cast<IdxT>(max_sizes.second));
+    const auto sizes = concretizer.get_block_and_grid_size_to_fit_device();
 
-    internal::set_hip_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
-    internal::set_hip_dim<dim>(dims.blocks, calculated_grid_size);
+    internal::set_hip_dim<dim>(dims.threads, sizes.first);
+    internal::set_hip_dim<dim>(dims.blocks, sizes.second);
   }
 };
 
@@ -551,7 +510,7 @@ void forallp_hip_kernel(LOOP_BODY loop_body,
 
 template <typename Iterable, typename LoopBody,
           typename IterationMapping, typename IterationGetter,
-          bool Async,
+          typename Concretizer, bool Async,
           typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
@@ -559,7 +518,7 @@ concepts::enable_if_t<
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Hip hip_res,
-            ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>const&,
+            ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>const&,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
@@ -567,9 +526,9 @@ forall_impl(resources::Hip hip_res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>;
+  using EXEC_POL = ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, UniqueMarker>;
+  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -620,7 +579,7 @@ forall_impl(resources::Hip hip_res,
 
 template <typename Iterable, typename LoopBody,
           typename IterationMapping, typename IterationGetter,
-          bool Async,
+          typename Concretizer, bool Async,
           typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
@@ -628,7 +587,7 @@ concepts::enable_if_t<
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   concepts::negate< RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
 forall_impl(resources::Hip hip_res,
-            ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async> const&,
+            ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const&,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -636,9 +595,9 @@ forall_impl(resources::Hip hip_res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>;
+  using EXEC_POL = ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, UniqueMarker>;
+  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -716,11 +675,11 @@ forall_impl(resources::Hip hip_res,
  */
 template <typename LoopBody,
           typename IterationMapping, typename IterationGetter,
-          bool Async,
+          typename Concretizer, bool Async,
           typename... SegmentTypes>
 RAJA_INLINE resources::EventProxy<resources::Hip>
 forall_impl(resources::Hip r,
-            ExecPolicy<seq_segit, ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>>,
+            ExecPolicy<seq_segit, ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>>,
             const TypedIndexSet<SegmentTypes...>& iset,
             LoopBody&& loop_body)
 {
@@ -729,7 +688,7 @@ forall_impl(resources::Hip r,
     iset.segmentCall(r,
                      isi,
                      detail::CallForall(),
-                     ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, true>(),
+                     ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, true>(),
                      loop_body);
   }  // iterate over segments of index set
 

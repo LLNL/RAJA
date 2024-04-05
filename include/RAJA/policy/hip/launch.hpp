@@ -348,7 +348,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
    HIP generic loop implementations
 */
 template <typename SEGMENT, typename IndexMapper>
-struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
                    SEGMENT> {
@@ -371,7 +371,7 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direc
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1>,
@@ -399,7 +399,7 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direc
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1,
@@ -538,7 +538,7 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Strid
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {
@@ -560,7 +560,7 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
   }
 };
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1>,
@@ -590,7 +590,7 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1,
@@ -736,18 +736,18 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
    HIP generic flattened loop implementations
 */
 template<typename SEGMENT, kernel_sync_requirement sync, typename IndexMapper0>
-struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct,
                                                           sync,
                                                           IndexMapper0>,
                    SEGMENT>
-    :  LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+    :  LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   sync,
                                                   IndexMapper0>,
                    SEGMENT>
 {};
 
 template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct,
                                                           kernel_sync_requirement::none,
                                                           IndexMapper0,
                                                           IndexMapper1>,
@@ -777,7 +777,7 @@ struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mappin
 };
 
 template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct<>,
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct,
                                                           kernel_sync_requirement::none,
                                                           IndexMapper0,
                                                           IndexMapper1,
@@ -890,7 +890,7 @@ struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mappin
    HIP generic tile implementations
 */
 template <typename SEGMENT, typename IndexMapper>
-struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
                    SEGMENT> {
@@ -939,7 +939,7 @@ struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Strid
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct<>,
+struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {

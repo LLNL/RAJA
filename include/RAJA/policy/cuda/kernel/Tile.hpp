@@ -58,7 +58,7 @@ struct CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>,
+                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
   {
@@ -69,7 +69,7 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct<>, sync, IndexMapper>>;
+  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)

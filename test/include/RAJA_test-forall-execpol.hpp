@@ -109,7 +109,8 @@ using CudaForallExecPols = camp::list< RAJA::cuda_exec<128>,
                                        RAJA::cuda_exec_occ_calc<256>,
                                        RAJA::cuda_exec_grid<256, 64>,
                                        RAJA::cuda_exec_explicit<256,2>,
-                                       RAJA::cuda_exec_occ_calc_fraction<256, RAJA::Fraction<size_t,1,2>> >;
+                                       RAJA::cuda_exec_occ_fraction<256, RAJA::Fraction<size_t,1,2>>,
+                                       RAJA::cuda_exec_occ_avoid_max<256> >;
 
 using CudaForallReduceExecPols = CudaForallExecPols;
 
@@ -121,7 +122,8 @@ using CudaForallAtomicExecPols = CudaForallExecPols;
 using HipForallExecPols = camp::list< RAJA::hip_exec<128>,
                                       RAJA::hip_exec_occ_calc<256>,
                                       RAJA::hip_exec_grid<256, 64>,
-                                      RAJA::hip_exec_occ_calc_fraction<256, RAJA::Fraction<size_t,1,2>> >;
+                                      RAJA::hip_exec_occ_fraction<256, RAJA::Fraction<size_t,1,2>>,
+                                      RAJA::hip_exec_occ_avoid_max<256> >;
 
 using HipForallReduceExecPols = HipForallExecPols;
 

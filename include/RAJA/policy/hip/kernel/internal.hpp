@@ -217,7 +217,7 @@ struct KernelDimensionCalculator;
 
 // specialization for direct sequential policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>>>
 {
@@ -234,7 +234,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 
 // specialization for direct thread policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
 {
@@ -250,7 +250,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 };
 ///
 template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
 {
@@ -271,7 +271,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 
 // specialization for direct block policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
 {
@@ -286,7 +286,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 };
 ///
 template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
@@ -307,7 +307,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 
 // specialization for direct global policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
 {
@@ -323,7 +323,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 };
 ///
 template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
 {
@@ -343,7 +343,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 };
 ///
 template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
 {
@@ -362,7 +362,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mappin
 };
 ///
 template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct<>,
+struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
                                                     sync,
                                                     hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
 {
