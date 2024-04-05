@@ -961,19 +961,16 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 // contretizers used in forall, scan, and sort policies
 
-using HipDefaultAvoidMaxOccupancyConcretizer = hip::FractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 1>, -1>;
-
-template < typename AvoidMaxOccupancyConcretizer >
-using HipAvoidDeviceMaxThreadOccupancyConcretizer = hip::AvoidDeviceMaxThreadOccupancyConcretizer<AvoidMaxOccupancyConcretizer>;
+using HipAvoidDeviceMaxThreadOccupancyConcretizer = hip::AvoidDeviceMaxThreadOccupancyConcretizer<hip::FractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 1>, -1>>;
 
 template < typename Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
 using HipFractionOffsetOccupancyConcretizer = hip::FractionOffsetOccupancyConcretizer<Fraction, BLOCKS_PER_SM_OFFSET>;
 
 using HipMaxOccupancyConcretizer = hip::MaxOccupancyConcretizer;
 
-using HipRecForReduceConcretizer = hip::AvoidDeviceMaxThreadOccupancyConcretizer<HipDefaultAvoidMaxOccupancyConcretizer>;
+using HipRecForReduceConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
 
-using HipDefaultConcretizer = hip::MaxOccupancyConcretizer;
+using HipDefaultConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
 
 // policies usable with forall, scan, and sort
 
@@ -1017,15 +1014,15 @@ using hip_exec_occ_fraction_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
     HipFractionOffsetOccupancyConcretizer<Fraction, 0>, true>;
 
-template <size_t BLOCK_SIZE, typename AvoidMaxOccupancyConcretizer = HipDefaultAvoidMaxOccupancyConcretizer, bool Async = false>
+template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_occ_avoid_max = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipAvoidDeviceMaxThreadOccupancyConcretizer<AvoidMaxOccupancyConcretizer>, Async>;
+    HipAvoidDeviceMaxThreadOccupancyConcretizer, Async>;
 
-template <size_t BLOCK_SIZE, typename AvoidMaxOccupancyConcretizer = HipDefaultAvoidMaxOccupancyConcretizer>
+template <size_t BLOCK_SIZE>
 using hip_exec_occ_avoid_max_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipAvoidDeviceMaxThreadOccupancyConcretizer<AvoidMaxOccupancyConcretizer>, true>;
+    HipAvoidDeviceMaxThreadOccupancyConcretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_rec_for_reduce = policy::hip::hip_exec<
