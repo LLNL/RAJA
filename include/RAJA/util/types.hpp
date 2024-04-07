@@ -30,6 +30,9 @@
 
 #include "camp/helpers.hpp"
 
+#include "RAJA/util/macros.hpp"
+
+
 namespace RAJA
 {
 
@@ -862,6 +865,29 @@ using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 #error RAJA pointer type is undefined!
 
 #endif
+
+
+namespace detail {
+
+/*!
+ * \brief Abstracts access to memory using normal memory accesses.
+ */
+struct DefaultAccessor
+{
+  template < typename T >
+  static RAJA_HOST_DEVICE RAJA_INLINE T get(T* ptr, size_t i)
+  {
+    return ptr[i];
+  }
+
+  template < typename T >
+  static RAJA_HOST_DEVICE RAJA_INLINE void set(T* ptr, size_t i, T val)
+  {
+    ptr[i] = val;
+  }
+};
+
+}  // namespace detail
 
 }  // namespace RAJA
 
