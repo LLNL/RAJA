@@ -111,9 +111,34 @@ struct DeviceZeroedAllocator {
   }
 };
 
+//! Allocator for device pinned memory for use in basic_mempool
+struct DevicePinnedAllocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    int device;
+    cudaErrchk(cudaGetDevice(&device));
+    void* ptr;
+    cudaErrchk(cudaMallocManaged(&ptr, nbytes, cudaMemAttachGlobal));
+    cudaErrchk(cudaMemAdvise(ptr, nbytes, cudaMemAdviseSetPreferredLocation, device));
+    cudaErrchk(cudaMemAdvise(ptr, nbytes, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId));
+
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    cudaErrchk(cudaFree(ptr));
+    return true;
+  }
+};
+
 using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
 using device_zeroed_mempool_type =
     basic_mempool::MemPool<DeviceZeroedAllocator>;
+using device_pinned_mempool_type = basic_mempool::MemPool<DevicePinnedAllocator>;
 using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 
 namespace detail
