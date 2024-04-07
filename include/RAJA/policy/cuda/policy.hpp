@@ -159,6 +159,17 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   }
 };
 
+template < size_t t_replication, size_t t_atomic_stride,
+           bool t_maybe_atomic, bool t_avoid_fences, bool t_init_on_host >
+struct ReduceTuning
+{
+  static constexpr size_t replication = t_replication;
+  static constexpr size_t atomic_stride = t_atomic_stride;
+  static constexpr bool maybe_atomic = t_maybe_atomic;
+  static constexpr bool avoid_fences = t_avoid_fences;
+  static constexpr bool init_on_host = t_init_on_host;
+};
+
 }  // namespace cuda
 
 namespace policy
@@ -238,9 +249,8 @@ struct unordered_cuda_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic, size_t replication=named_usage::unspecified,
-                             size_t atomic_stride=named_usage::unspecified>
-struct cuda_reduce_base
+template < typename tuning >
+struct cuda_reduce_policy
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
                                                 RAJA::Pattern::reduce,
@@ -261,9 +271,28 @@ struct cuda_atomic_explicit{};
  */
 using cuda_atomic = cuda_atomic_explicit<seq_atomic>;
 
-using cuda_reduce = cuda_reduce_base<false>;
+template < bool maybe_atomic,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified,
+           bool init_on_host = false,
+           bool avoid_fences = false >
+using cuda_reduce_base = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
+    replication, atomic_stride,
+    maybe_atomic, init_on_host, avoid_fences> >;
 
-using cuda_reduce_atomic = cuda_reduce_base<true>;
+using cuda_reduce_with_fences = cuda_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, false>;
+
+using cuda_reduce_avoid_fences = cuda_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, true>;
+
+using cuda_reduce_atomic_with_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, false>;
+
+using cuda_reduce_atomic_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
+
+using cuda_reduce_atomic_host_init = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+
+using cuda_reduce = cuda_reduce_with_fences;
+
+using cuda_reduce_atomic = cuda_reduce_atomic_host_init;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -1142,6 +1171,11 @@ using policy::cuda::cuda_atomic;
 using policy::cuda::cuda_atomic_explicit;
 
 // policies usable with reducers
+using policy::cuda::cuda_reduce_with_fences;
+using policy::cuda::cuda_reduce_avoid_fences;
+using policy::cuda::cuda_reduce_atomic_with_fences;
+using policy::cuda::cuda_reduce_atomic_avoid_fences;
+using policy::cuda::cuda_reduce_atomic_host_init;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;

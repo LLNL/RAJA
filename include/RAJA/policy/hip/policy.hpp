@@ -154,6 +154,17 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   }
 };
 
+template < size_t t_replication, size_t t_atomic_stride,
+           bool t_maybe_atomic, bool t_avoid_fences, bool t_init_on_host >
+struct ReduceTuning
+{
+  static constexpr size_t replication = t_replication;
+  static constexpr size_t atomic_stride = t_atomic_stride;
+  static constexpr bool maybe_atomic = t_maybe_atomic;
+  static constexpr bool avoid_fences = t_avoid_fences;
+  static constexpr bool init_on_host = t_init_on_host;
+};
+
 }  // namespace hip
 
 namespace policy
@@ -229,9 +240,9 @@ struct unordered_hip_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic, size_t replication=named_usage::unspecified,
-                             size_t atomic_stride=named_usage::unspecified>
-struct hip_reduce_base
+
+template < typename tuning >
+struct hip_reduce_policy
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::hip,
                                                 RAJA::Pattern::reduce,
@@ -252,9 +263,32 @@ struct hip_atomic_explicit{};
  */
 using hip_atomic = hip_atomic_explicit<seq_atomic>;
 
-using hip_reduce = hip_reduce_base<false>;
+template < bool maybe_atomic,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified,
+           bool init_on_host = false,
+           bool avoid_fences = false >
+using hip_reduce_base = hip_reduce_policy< RAJA::hip::ReduceTuning<
+    replication, atomic_stride,
+    maybe_atomic, init_on_host, avoid_fences> >;
 
-using hip_reduce_atomic = hip_reduce_base<true>;
+using hip_reduce_with_fences = hip_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, false>;
+
+using hip_reduce_avoid_fences = hip_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, true>;
+
+using hip_reduce_atomic_with_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, false>;
+
+using hip_reduce_atomic_avoid_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
+
+using hip_reduce_atomic_host_init = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+
+#if defined(RAJA_USE_HIP_INTRINSICS)
+using hip_reduce = hip_reduce_avoid_fences;
+#else
+using hip_reduce = hip_reduce_with_fences;
+#endif
+
+using hip_reduce_atomic = hip_reduce_atomic_host_init;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -1059,6 +1093,11 @@ using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
 
 // policies usable with reducers
+using policy::hip::hip_reduce_with_fences;
+using policy::hip::hip_reduce_avoid_fences;
+using policy::hip::hip_reduce_atomic_with_fences;
+using policy::hip::hip_reduce_atomic_avoid_fences;
+using policy::hip::hip_reduce_atomic_host_init;
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;

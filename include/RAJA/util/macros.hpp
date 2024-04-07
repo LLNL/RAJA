@@ -56,6 +56,8 @@
 #define RAJA_HOST __host__
 #define RAJA_SUPPRESS_HD_WARN
 
+#define RAJA_USE_HIP_INTRINSICS
+
 #else
 
 #define RAJA_HOST_DEVICE

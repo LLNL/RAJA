@@ -887,6 +887,75 @@ struct DefaultAccessor
   }
 };
 
+
+/*!
+ * \brief Abstracts T into an equal or greater size array of integers whose
+ * size is between min_integer_type_size and max_interger_type_size inclusive.
+ */
+template <typename T,
+          size_t min_integer_type_size = 1,
+          size_t max_integer_type_size = sizeof(unsigned long long)>
+struct AsIntegerArray
+{
+  static_assert(min_integer_type_size <= max_integer_type_size,
+                "incompatible min and max integer type size");
+  using integer_type = typename std::conditional<
+      ((alignof(T) >= alignof(unsigned long long) &&
+        sizeof(unsigned long long) <= max_integer_type_size) ||
+       sizeof(unsigned long) < min_integer_type_size),
+      unsigned long long,
+      typename std::conditional<
+          ((alignof(T) >= alignof(unsigned long) &&
+            sizeof(unsigned long) <= max_integer_type_size) ||
+           sizeof(unsigned int) < min_integer_type_size),
+          unsigned long,
+          typename std::conditional<
+              ((alignof(T) >= alignof(unsigned int) &&
+                sizeof(unsigned int) <= max_integer_type_size) ||
+               sizeof(unsigned short) < min_integer_type_size),
+              unsigned int,
+              typename std::conditional<
+                  ((alignof(T) >= alignof(unsigned short) &&
+                    sizeof(unsigned short) <= max_integer_type_size) ||
+                   sizeof(unsigned char) < min_integer_type_size),
+                  unsigned short,
+                  typename std::conditional<
+                      ((alignof(T) >= alignof(unsigned char) &&
+                        sizeof(unsigned char) <= max_integer_type_size)),
+                      unsigned char,
+                      void>::type>::type>::type>::type>::type;
+  static_assert(!std::is_same<integer_type, void>::value,
+                "could not find a compatible integer type");
+  static_assert(sizeof(integer_type) >= min_integer_type_size,
+                "integer_type smaller than min integer type size");
+  static_assert(sizeof(integer_type) <= max_integer_type_size,
+                "integer_type greater than max integer type size");
+
+  static constexpr size_t num_integer_type =
+      (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
+
+  integer_type array[num_integer_type] = {0};
+
+  AsIntegerArray() = default;
+
+  RAJA_HOST_DEVICE constexpr size_t array_size() const
+  {
+    return num_integer_type;
+  }
+
+  RAJA_HOST_DEVICE constexpr T get_value() const
+  {
+    T value;
+    memcpy(&value, &array[0], sizeof(T));
+    return value;
+  }
+
+  RAJA_HOST_DEVICE constexpr void set_value(T value)
+  {
+    memcpy(&array[0], &value, sizeof(T));
+  }
+};
+
 }  // namespace detail
 
 }  // namespace RAJA

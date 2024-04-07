@@ -34,11 +34,19 @@ using OpenMPTargetReducePols =
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaReducePols = camp::list< RAJA::cuda_reduce >;
+using CudaReducePols = camp::list< RAJA::cuda_reduce_with_fences,
+                                   RAJA::cuda_reduce_avoid_fences,
+                                   RAJA::cuda_reduce_atomic_with_fences,
+                                   RAJA::cuda_reduce_atomic_avoid_fences,
+                                   RAJA::cuda_reduce_atomic_host_init >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipReducePols = camp::list< RAJA::hip_reduce >;
+using HipReducePols = camp::list< RAJA::hip_reduce_with_fences,
+                                  RAJA::hip_reduce_avoid_fences,
+                                  RAJA::hip_reduce_atomic_with_fences,
+                                  RAJA::hip_reduce_atomic_avoid_fences,
+                                  RAJA::hip_reduce_atomic_host_init >;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)
