@@ -284,13 +284,9 @@ using hip_reduce_atomic_host_with_fences = hip_reduce_base<true, named_usage::un
 
 using hip_reduce_atomic_host_avoid_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, true>;
 
-#if defined(RAJA_USE_HIP_INTRINSICS)
 using hip_reduce = hip_reduce_avoid_fences;
-#else
-using hip_reduce = hip_reduce_with_fences;
-#endif
 
-using hip_reduce_atomic = hip_reduce_atomic_host_init;
+using hip_reduce_atomic = hip_reduce_atomic_avoid_fences;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
