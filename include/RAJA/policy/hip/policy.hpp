@@ -270,7 +270,7 @@ template < bool maybe_atomic,
            bool avoid_fences = false >
 using hip_reduce_base = hip_reduce_policy< RAJA::hip::ReduceTuning<
     replication, atomic_stride,
-    maybe_atomic, init_on_host, avoid_fences> >;
+    maybe_atomic, avoid_fences, init_on_host> >;
 
 using hip_reduce_with_fences = hip_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, false>;
 
