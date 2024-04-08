@@ -280,7 +280,9 @@ using hip_reduce_atomic_with_fences = hip_reduce_base<true, named_usage::unspeci
 
 using hip_reduce_atomic_avoid_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
 
-using hip_reduce_atomic_host_init = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+using hip_reduce_atomic_host_with_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+
+using hip_reduce_atomic_host_avoid_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, true>;
 
 #if defined(RAJA_USE_HIP_INTRINSICS)
 using hip_reduce = hip_reduce_avoid_fences;

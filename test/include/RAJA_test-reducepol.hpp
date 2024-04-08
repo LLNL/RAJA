@@ -38,7 +38,8 @@ using CudaReducePols = camp::list< RAJA::cuda_reduce_with_fences,
                                    RAJA::cuda_reduce_avoid_fences,
                                    RAJA::cuda_reduce_atomic_with_fences,
                                    RAJA::cuda_reduce_atomic_avoid_fences,
-                                   RAJA::cuda_reduce_atomic_host_init >;
+                                   RAJA::cuda_reduce_atomic_host_with_fences,
+                                   RAJA::cuda_reduce_atomic_host_avoid_fences >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -46,7 +47,8 @@ using HipReducePols = camp::list< RAJA::hip_reduce_with_fences,
                                   RAJA::hip_reduce_avoid_fences,
                                   RAJA::hip_reduce_atomic_with_fences,
                                   RAJA::hip_reduce_atomic_avoid_fences,
-                                  RAJA::hip_reduce_atomic_host_init >;
+                                  RAJA::hip_reduce_atomic_host_with_fences,
+                                  RAJA::hip_reduce_atomic_host_avoid_fences >;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)

@@ -288,7 +288,9 @@ using cuda_reduce_atomic_with_fences = cuda_reduce_base<true, named_usage::unspe
 
 using cuda_reduce_atomic_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
 
-using cuda_reduce_atomic_host_init = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+using cuda_reduce_atomic_host_with_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+
+using cuda_reduce_atomic_host_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, true>;
 
 using cuda_reduce = cuda_reduce_with_fences;
 
