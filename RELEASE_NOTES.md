@@ -20,6 +20,25 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2024.02.1 -- Release date 2024-04-03
+============================================
+
+This release contains submodule updates and minor RAJA improvements.
+
+Notable changes include:
+
+  * New features / API changes:
+     * NONE.
+
+  * Build changes/improvements:
+     * Update BLT submodule to v0.6.2 release.
+     * Update camp submodule to v2024.02.1 release.
+
+  * Bug fixes/improvements:
+     * Various changes to quiet compiler warnings in SYCL builds related
+       to deprecated usage. 
+
+
 Version 2024.02.0 -- Release date 2024-02-14
 ============================================
 
