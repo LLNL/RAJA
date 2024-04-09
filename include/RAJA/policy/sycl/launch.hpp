@@ -73,8 +73,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       q->submit([&](cl::sycl::handler& h) {
 
-        auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (params.shared_mem_size, h);
+        auto s_vec = ::sycl::local_accessor<char, 1> (params.shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
@@ -84,7 +83,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
             ctx.itm = &itm;
 
             //Point to shared memory
-            ctx.shared_mem_ptr = s_vec.get_pointer().get();
+            ctx.shared_mem_ptr = s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
 
             body_in(ctx);
 
@@ -165,8 +164,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       q->submit([&](cl::sycl::handler& h) {
 
-        auto s_vec = cl::sycl::accessor<char, 1, cl::sycl::access::mode::read_write,
-                                        cl::sycl::access::target::local> (params.shared_mem_size, h);
+        auto s_vec = ::sycl::local_accessor<char, 1> (params.shared_mem_size, h);
 
         h.parallel_for
           (cl::sycl::nd_range<3>(gridSize, blockSize),
@@ -176,7 +174,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
             ctx.itm = &itm;
 
             //Point to shared memory
-            ctx.shared_mem_ptr = s_vec.get_pointer().get();
+            ctx.shared_mem_ptr = s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
 
             (*lbody)(ctx);
 
