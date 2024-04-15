@@ -181,7 +181,7 @@ public:
     shared_mem_offset += bytes*sizeof(T);
 
     //convert to desired type
-    return (T *) mem_ptr;
+    return static_cast<T*>(mem_ptr);
   }
 
   /*
