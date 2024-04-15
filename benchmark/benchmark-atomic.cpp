@@ -107,9 +107,7 @@ void TimeAtomicOp(const std::string& test_name, int num_iterations = 2, int arra
 
     for (int i = 0; i < num_iterations; ++i) {
         AtomicType* device_value = nullptr;
-        AtomicType zero = 0;
         int len_array = test_array ? array_size : 1;
-
         if (IsGPU<ExecPolicy>::value) {
 #if defined(RAJA_ENABLE_CUDA)
             cudaErrchk(cudaMalloc((void **)&device_value, len_array * sizeof(AtomicType)));
@@ -119,18 +117,16 @@ void TimeAtomicOp(const std::string& test_name, int num_iterations = 2, int arra
             hipMemset(device_value, 0, len_array * sizeof(AtomicType));
 #endif
         }
-        std::cout << "here 1\n";
         timer.start();
         RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, N),
         [=] RAJA_HOST_DEVICE(int tid)  {
-            printf("tid %d\n", tid);
             if (test_array) {
                 AtomicImpl(&(device_value[tid % array_size]), 1);
             } else {
                 AtomicImpl(device_value, 1);
             }
         });
-        std::cout << "here 2\n";
+
         timer.stop();
         if (IsGPU<ExecPolicy>::value) {
 #if defined(RAJA_ENABLE_CUDA)
@@ -139,7 +135,7 @@ void TimeAtomicOp(const std::string& test_name, int num_iterations = 2, int arra
             hipFree((void *)device_value);
 #endif
         }
-        std::cout << "here 3\n";
+
     }
 
     double t = timer.elapsed();
@@ -172,6 +168,8 @@ int main () {
     TimeAtomicOp<ExecPolicyGPU<256>::policy, int, GPUAtomicMax<int>>("CUDA Block size 256, RAJA builtin atomic max");
     TimeAtomicOp<ExecPolicyGPU<256>::policy, int, atomicWrapperDesul<int, typename GPUAtomic::policy, desul::atomic_fetch_max>>("CUDA Block size 256, DESUL atomic max");
     // OpenMP benchmarks
-    TimeAtomicOp<RAJA::omp_for_exec, int, OpenMPAtomicAdd<int>>("OpenMP, int, RAJA builtin atomic");
-    TimeAtomicOp<RAJA::omp_for_exec, int, atomicWrapperDesul<int, RAJA::policy::omp::omp_atomic, desul::atomic_fetch_add>>("OpenMP, desul atomic");
+    //TimeAtomicOp<RAJA::omp_for_exec, int, OpenMPAtomicAdd<int>>("OpenMP, int, RAJA builtin atomic");
+    //TimeAtomicOp<RAJA::omp_for_exec, int, atomicWrapperDesul<int, RAJA::policy::omp::omp_atomic, desul::atomic_fetch_add>>("OpenMP, desul atomic");
+
+    return 0;
 }
