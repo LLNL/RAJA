@@ -49,7 +49,7 @@ variables:
 # Arguments for job level allocation
   TIOGA_JOB_ALLOC: "--nodes=1 --begin-time=+5s"
 # Project specific variants for corona
-  PROJECT_TIOGA_VARIANTS: "~shared ~openmp +vectorization +tests"
+  PROJECT_TIOGA_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for corona
   PROJECT_TIOGA_DEPS: "^blt@develop "
 
