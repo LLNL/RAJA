@@ -176,7 +176,7 @@ public:
   {
 
     //Calculate offset in bytes with a char pointer
-    char* mem_ptr = static_cast<char*>(shared_mem_ptr) + shared_mem_offset;
+    void* mem_ptr = static_cast<char *>(shared_mem_ptr) + shared_mem_offset;
 
     shared_mem_offset += bytes*sizeof(T);
 
