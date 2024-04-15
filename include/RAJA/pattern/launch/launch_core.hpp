@@ -174,10 +174,14 @@ public:
   template<typename T>
   RAJA_HOST_DEVICE T* getSharedMemory(size_t bytes)
   {
-    T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
+
+    //Calculate offset in bytes with a char pointer
+    char* mem_ptr = (char*) shared_mem_ptr + shared_mem_offset;
 
     shared_mem_offset += bytes*sizeof(T);
-    return mem_ptr;
+
+    //convert to desired type
+    return (T *) mem_ptr;
   }
 
   /*
