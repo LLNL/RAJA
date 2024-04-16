@@ -279,6 +279,7 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   return return_type(std::forward<LOOP_BODY>(loop_body));
 }
 
+//! Get the properties of the current device
 RAJA_INLINE
 cudaDeviceProp get_device_prop()
 {
@@ -289,6 +290,7 @@ cudaDeviceProp get_device_prop()
   return prop;
 }
 
+//! Get a cached copy of the device properties
 RAJA_INLINE
 cudaDeviceProp& device_prop()
 {
@@ -297,12 +299,14 @@ cudaDeviceProp& device_prop()
 }
 
 
+//! Struct with the maximum theoretical occupancy of the device
 struct CudaFixedMaxBlocksData
 {
   int device_sm_per_device;
   int device_max_threads_per_sm;
 };
 
+//! Get the maximum theoretical occupancy of the device
 RAJA_INLINE
 CudaFixedMaxBlocksData cuda_max_blocks()
 {
@@ -313,6 +317,7 @@ CudaFixedMaxBlocksData cuda_max_blocks()
   return data;
 }
 
+//! Struct with the maximum occupancy of a kernel in simple terms
 struct CudaOccMaxBlocksThreadsData
 {
   size_t func_dynamic_shmem_per_block;
@@ -320,15 +325,18 @@ struct CudaOccMaxBlocksThreadsData
   int func_max_threads_per_block;
 };
 
+//! Get the maximum occupancy of a kernel with unknown threads per block
 template < typename RAJA_UNUSED_ARG(UniqueMarker) >
 RAJA_INLINE
 CudaOccMaxBlocksThreadsData cuda_occupancy_max_blocks_threads(const void* func,
     size_t func_dynamic_shmem_per_block)
 {
+  static constexpr int uninitialized_int = -1;
+  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
   static thread_local CudaOccMaxBlocksThreadsData data {
-      std::numeric_limits<size_t>::max(),
-      -1,
-      -1 };
+      uninitialized_size_t,
+      uninitialized_int,
+      uninitialized_int };
 
   if (data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block) {
 
@@ -342,6 +350,7 @@ CudaOccMaxBlocksThreadsData cuda_occupancy_max_blocks_threads(const void* func,
   return data;
 }
 
+//! Struct with the maximum occupancy of a kernel in specific terms
 struct CudaOccMaxBlocksData
 {
   size_t func_dynamic_shmem_per_block;
@@ -351,17 +360,20 @@ struct CudaOccMaxBlocksData
   int func_max_blocks_per_sm;
 };
 
+//! Get the maximum occupancy of a kernel with compile time threads per block
 template < typename RAJA_UNUSED_ARG(UniqueMarker), int func_threads_per_block >
 RAJA_INLINE
 CudaOccMaxBlocksData cuda_occupancy_max_blocks(const void* func,
     size_t func_dynamic_shmem_per_block)
 {
+  static constexpr int uninitialized_int = -1;
+  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
   static thread_local CudaOccMaxBlocksData data {
-      std::numeric_limits<size_t>::max(),
+      uninitialized_size_t,
       func_threads_per_block,
       cuda::device_prop().multiProcessorCount,
       cuda::device_prop().maxThreadsPerMultiProcessor,
-      -1 };
+      uninitialized_int };
 
   if (data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block) {
 
@@ -375,17 +387,20 @@ CudaOccMaxBlocksData cuda_occupancy_max_blocks(const void* func,
   return data;
 }
 
+//! Get the maximum occupancy of a kernel with runtime threads per block
 template < typename RAJA_UNUSED_ARG(UniqueMarker) >
 RAJA_INLINE
 CudaOccMaxBlocksData cuda_occupancy_max_blocks(const void* func,
     size_t func_dynamic_shmem_per_block, int func_threads_per_block)
 {
+  static constexpr int uninitialized_int = -1;
+  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
   static thread_local CudaOccMaxBlocksData data {
-      std::numeric_limits<size_t>::max(),
-      -1,
+      uninitialized_size_t,
+      uninitialized_int,
       cuda::device_prop().multiProcessorCount,
       cuda::device_prop().maxThreadsPerMultiProcessor,
-      -1 };
+      uninitialized_int };
 
   if ( data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block ||
        data.func_threads_per_block != func_threads_per_block ) {
@@ -401,16 +416,30 @@ CudaOccMaxBlocksData cuda_occupancy_max_blocks(const void* func,
   return data;
 }
 
+
 /*!
  ******************************************************************************
  *
- * \brief  Cuda Concretizer Implementation.
+ * \brief  Concretizer Implementation that chooses block size and/or grid
+ *         size when they has not been specified at compile time.
  *
  * \tparam IdxT Index type to use for integer calculations.
- * \tparam Concretizer Class the determines the max number of blocks to use when
- *         fitting for the device.
+ * \tparam Concretizer Class that determines the max number of blocks to use
+ *         when fitting for the device.
  * \tparam UniqueMarker A type that is unique to each global function, used to
  *         help cache the occupancy data for that global function.
+ *
+ * The methods come in two flavors:
+ * - The fit_len methods choose grid and block sizes that result in a total
+ *   number of threads of at least the len given in the constructor or 0 if
+ *   that is not possible.
+ * - The fit_device methods choose grid and block sizes that best fit the
+ *   occupancy of the global function according to the occupancy calculator and
+ *   the Concretizer class.
+ *
+ * Common terms:
+ * - block size - threads per block
+ * - grid size - blocks per device
  *
  ******************************************************************************
  */
@@ -423,7 +452,6 @@ struct ConcretizerImpl
     , m_len(len)
   { }
 
-  // Get the maximum block size
   IdxT get_max_block_size() const
   {
     auto data = cuda_occupancy_max_blocks_threads<UniqueMarker>(
@@ -432,8 +460,7 @@ struct ConcretizerImpl
     return func_max_threads_per_block;
   }
 
-  // Get a block size that combined with the given grid size is large enough
-  // to do len work, or 0 if not possible
+  //! Get a block size when grid size is specified
   IdxT get_block_size_to_fit_len(IdxT func_blocks_per_device) const
   {
     IdxT func_max_threads_per_block = this->get_max_block_size();
@@ -445,16 +472,14 @@ struct ConcretizerImpl
     }
   }
 
-  // Get a grid size that combined with the given block size is large enough
-  // to do len work
+  //! Get a grid size when block size is specified
   IdxT get_grid_size_to_fit_len(IdxT func_threads_per_block) const
   {
     IdxT func_blocks_per_device = RAJA_DIVIDE_CEILING_INT(m_len, func_threads_per_block);
     return func_blocks_per_device;
   }
 
-  // Get a block size and grid size that combined is large enough
-  // to do len work
+  //! Get a block size and grid size when neither is specified
   auto get_block_and_grid_size_to_fit_len() const
   {
     IdxT func_max_threads_per_block = this->get_max_block_size();
@@ -463,9 +488,7 @@ struct ConcretizerImpl
                           func_blocks_per_device);
   }
 
-  // Get a block size that combined with the given grid size is the smaller of
-  // the amount need to achieve maximum occupancy on the device or
-  // the amount needed to do len work
+  //! Get a block size when grid size is specified
   IdxT get_block_size_to_fit_device(IdxT func_blocks_per_device) const
   {
     IdxT func_max_threads_per_block = this->get_max_block_size();
@@ -473,9 +496,7 @@ struct ConcretizerImpl
     return std::min(func_threads_per_block, func_max_threads_per_block);
   }
 
-  // Get a grid size that combined with the given block size is the smaller of
-  // the amount need to achieve maximum occupancy on the device or
-  // the amount needed to do len work
+  //! Get a grid size when block size is specified
   IdxT get_grid_size_to_fit_device(IdxT func_threads_per_block) const
   {
     auto data = cuda_occupancy_max_blocks<UniqueMarker>(
@@ -485,9 +506,7 @@ struct ConcretizerImpl
     return std::min(func_blocks_per_device, func_max_blocks_per_device);
   }
 
-  // Get a block size and grid size that combined is the smaller of
-  // the amount need to achieve maximum occupancy on the device or
-  // the amount needed to do len work
+  //! Get a block size and grid size when neither is specified
   auto get_block_and_grid_size_to_fit_device() const
   {
     IdxT func_max_threads_per_block = this->get_max_block_size();
