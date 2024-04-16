@@ -431,7 +431,7 @@ policies have the prefix ``hip_``.
 
 When a cuda/hip policy leaves parameters like the block size and/or grid size
 unspecified a concretizer object is used to decide those parameters. The
-following concretizers are available to use in the cuda/hip_exec_occ_custom
+following concretizers are available to use in the ``cuda/hip_exec_occ_custom``
 policies:
 
 =================================================== =========================================
@@ -451,12 +451,12 @@ Cuda/HipMaxOccupancyConcretizer                     Uses max occupancy.
 Cuda/HipAvoidDeviceMaxThreadOccupancyConcretizer    Avoids using the max occupancy of the
                                                     device in terms of threads.
                                                     Note that it may use the max occupancy
-                                                    of the function if that is below the max
+                                                    of the kernel if that is below the max
                                                     occupancy of the device.
 
 Cuda/HipFractionOffsetOccupancyConcretizer<         Uses a fraction and offset to choose an
     Fraction<size_t, numerator, denomenator>,       occupancy based on the max occupancy
-    BLOCKS_PER_SM_OFFSET>                           Using the following formula.
+    BLOCKS_PER_SM_OFFSET>                           Using the following formula:
                                                     (Fraction * kernel_max_blocks_per_sm +
                                                      BLOCKS_PER_SM_OFFSET) * sm_per_device
 
