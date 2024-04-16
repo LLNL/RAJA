@@ -47,7 +47,7 @@ variables:
 # Arguments for top level allocation
   TIOGA_SHARED_ALLOC: "--exclusive --queue=pci --time-limit=60m --nodes=1 -o per-resource.count=2"
 # Arguments for job level allocation
-  TIOGA_JOB_ALLOC: "--queue=pci --nodes=1 --begin-time=+5s"
+  TIOGA_JOB_ALLOC: "--nodes=1 --begin-time=+5s"
 # Project specific variants for corona
   PROJECT_TIOGA_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for corona
