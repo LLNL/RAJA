@@ -269,6 +269,7 @@ policies have the prefix ``hip_``.
  cuda/hip_exec_occ_calc<BLOCK_SIZE>        forall        Similar to the occ_max
                                                          policy but may use less
                                                          than the maximum occupancy
+                                                         determined by the occupancy calculator
                                                          of the kernel for performance
                                                          reasons.
  cuda/hip_exec_occ_fraction<BLOCK_SIZE,    forall        Similar to the occ_max
@@ -281,7 +282,13 @@ policies have the prefix ``hip_``.
                                                          concretizer.
  cuda/hip_exec_rec_for_reduce<BLOCK_SIZE>  forall        The cuda/hip exec policy
                                                          that is recommended for
-                                                         use with reducers.
+                                                         use with reducers. In general using
+                                                         the occupancy calculator policies
+                                                         are better but exactly how much
+                                                         occupancy to use differs by platform
+                                                         so this policy provides a simple way
+                                                         to get what works best for that platform
+                                                         without having to know the details.
  cuda/hip_launch_t                         launch        Launches a device kernel,
                                                          any code expressed within
                                                          the lambda is executed
