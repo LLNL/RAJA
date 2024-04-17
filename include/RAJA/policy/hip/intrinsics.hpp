@@ -91,7 +91,7 @@ struct AccessorAvoidingFences
     auto ptr = const_cast<integer_type*>(reinterpret_cast<const integer_type*>(in_ptr + idx));
 
     for (size_t i = 0; i < u.array_size(); ++i) {
-#if defined(RAJA_USE_HIP_INTRINSICS)
+#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_load)
       u.array[i] = __hip_atomic_load(&ptr[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 #else
       u.array[i] = atomicAdd(&ptr[i], integer_type(0));
@@ -112,7 +112,7 @@ struct AccessorAvoidingFences
     auto ptr = reinterpret_cast<integer_type*>(in_ptr + idx);
 
     for (size_t i = 0; i < u.array_size(); ++i) {
-#if defined(RAJA_USE_HIP_INTRINSICS)
+#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_store)
       __hip_atomic_store(&ptr[i], u.array[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 #else
       atomicExch(&ptr[i], u.array[i]);
@@ -122,7 +122,7 @@ struct AccessorAvoidingFences
 
   static RAJA_DEVICE RAJA_INLINE void fence_acquire()
   {
-#if defined(RAJA_USE_HIP_INTRINSICS)
+#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_fence)
     __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "workgroup");
 #else
     __threadfence();
@@ -131,7 +131,8 @@ struct AccessorAvoidingFences
 
   static RAJA_DEVICE RAJA_INLINE void fence_release()
   {
-#if defined(RAJA_USE_HIP_INTRINSICS)
+#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_fence) && \
+                                        RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_s_waitcnt)
     __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
     // Wait until all vmem operations complete (s_waitcnt vmcnt(0))
     __builtin_amdgcn_s_waitcnt(/*vmcnt*/ 0 | (/*exp_cnt*/ 0x7 << 4) | (/*lgkmcnt*/ 0xf << 8));

@@ -66,6 +66,13 @@
 #define RAJA_SUPPRESS_HD_WARN
 #endif
 
+
+#if defined(__has_builtin)
+#define RAJA_INTERNAL_CLANG_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define RAJA_INTERNAL_CLANG_HAS_BUILTIN(x) 0
+#endif
+
 /*!
  *******************************************************************************
  * \def RAJA_USED_ARG(x)
