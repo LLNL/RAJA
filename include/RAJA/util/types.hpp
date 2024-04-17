@@ -196,7 +196,7 @@ struct SizeList {
 template <typename int_t, int_t numerator, int_t denominator>
 struct Fraction
 {
-  static_assert(denominator != int_t(0), "denominator may not be zero");
+  static_assert(denominator != int_t(0), "denominator must not be zero");
 
   using inverse = Fraction<int_t, denominator, numerator>;
 
