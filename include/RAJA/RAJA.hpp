@@ -33,6 +33,7 @@
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/math.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/Registry.hpp"
 #include "RAJA/util/for_each.hpp"
@@ -155,6 +156,11 @@
 // sort algorithms
 //
 #include "RAJA/util/sort.hpp"
+
+//
+// reduce algorithms
+//
+#include "RAJA/util/reduce.hpp"
 
 //
 // WorkPool, WorkGroup, WorkSite objects
