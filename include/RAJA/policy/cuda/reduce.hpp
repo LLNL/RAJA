@@ -35,6 +35,7 @@
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/reduce.hpp"
 
 #include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
@@ -995,12 +996,15 @@ public:
     auto end = tally_or_val_ptr.list->end();
     if (n != end) {
       tally_or_val_ptr.list->synchronize_resources();
+      ::RAJA::detail::HighAccuracyReduce<T, typename Combiner::operator_type>
+          reducer(std::move(val.value));
       for (; n != end; ++n) {
         T(&values)[tally_slots] = *n;
         for (size_t r = 0; r < tally_slots; ++r) {
-          Combiner{}(val.value, values[r]);
+          reducer.combine(std::move(values[r]));
         }
       }
+      val.value = reducer.get_and_clear();
       tally_or_val_ptr.list->free_list();
     }
     return val.value;
