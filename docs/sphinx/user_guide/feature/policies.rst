@@ -429,7 +429,7 @@ policies have the prefix ``hip_``.
                                                          thread warp.
  ========================================= ============= =======================================
 
-When a cuda/hip policy leaves parameters like the block size and/or grid size
+When a CUDA or HIP policy leaves parameters like the block size and/or grid size
 unspecified a concretizer object is used to decide those parameters. The
 following concretizers are available to use in the ``cuda/hip_exec_occ_custom``
 policies:
