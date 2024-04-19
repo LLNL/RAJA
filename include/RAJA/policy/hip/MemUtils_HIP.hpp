@@ -292,7 +292,7 @@ hipDeviceProp_t get_device_prop()
   return prop;
 }
 
-//! Get a cached copy of the device properties
+//! Get a copy of the device properties, this copy is cached on first use to speedup later calls
 RAJA_INLINE
 hipDeviceProp_t& device_prop()
 {
@@ -437,7 +437,7 @@ HipOccMaxBlocksData hip_occupancy_max_blocks(const void* func,
  ******************************************************************************
  *
  * \brief  Concretizer Implementation that chooses block size and/or grid
- *         size when they has not been specified at compile time.
+ *         size when one or both has not been specified at compile time.
  *
  * \tparam IdxT Index type to use for integer calculations.
  * \tparam Concretizer Class that determines the max number of blocks to use
