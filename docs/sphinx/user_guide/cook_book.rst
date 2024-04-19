@@ -14,8 +14,7 @@ RAJA Cook Book
 
 The following sections show common use case patterns and the recommended
 RAJA features and policies to use with them. They are intended
-for users to copy and paste into their code and provide guidance on
-which policy to use with each backend to get good performance.
+to provide users with complete beyond usage examples beyond what can be found in other parts of the RAJA User Guide. In particular, the examples and discussion provide guidance on RAJA execution policy selection to improve performance of user application codes.
 
 .. toctree::
    :maxdepth: 2

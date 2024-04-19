@@ -12,7 +12,7 @@
 Cooking with Reductions
 =======================
 
-Please see the following section for more info on RAJA reductions:
+Please see the following section for overview discussion about RAJA reductions:
 
  * :ref:`feat-reductions-label`.
 
@@ -50,10 +50,10 @@ The results of these operations will yield the following values:
 
 RAJA uses policy types to specify how things are implemented.
 
-The forall execution policy specifies how the loop is run in the forall.
-For example ``RAJA::seq_exec`` runs a c-style for loop. The
-``RAJA::cuda_exec_rec_for_reduce<256>`` runs the loop as a cuda kernel with
-256 threads per block and other cuda kernel launch parameters, like the
+The forall *execution policy* specifies how the loop is run by the ``RAJA::forall`` method. The following discussion includes examples of several other RAJA execution policies that could be applied.
+For example ``RAJA::seq_exec`` runs a C-style for loop sequentially on a CPU. The
+``RAJA::cuda_exec_rec_for_reduce<256>`` runs the loop as a CUDA GPU kernel with
+256 threads per block and other CUDA kernel launch parameters, like the
 number of blocks, optimized for performance with reducers.::
 
   using exec_policy = RAJA::seq_exec;
@@ -67,7 +67,7 @@ The reduction policy specifies how the reduction is done and must match the
 execution policy. For example ``RAJA::seq_reduce`` does a sequential reduction
 and can only be used with sequential execution policies. The
 ``RAJA::cuda_reduce_atomic`` policy uses atomics, if possible with the given
-data type, and can only be used with cuda execution policies.::
+data type, and can only be used with cuda execution policies. Similarly for other RAJA execution back-ends, such as HIP and OpenMP. Here are example RAJA reduction policies whose names are indicative of which execution policies they work with::
 
   using reduce_policy = RAJA::seq_reduce;
   // using reduce_policy = RAJA::omp_reduce;
