@@ -280,20 +280,41 @@ using cuda_reduce_base = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
     replication, atomic_stride,
     maybe_atomic, avoid_fences, init_on_host> >;
 
+// Policies for RAJA::Reduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results and falls back
+//   on a non-atomic policy when atomics can't be used with the given type. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run. The memory used with
+//   atomics is initialized on the device which can be expensive on some HW.
+//   On some HW this is faster overall than the non-atomic policies.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+// - *with_fences policies use normal memory accesses with device scope fences
+//                in the implementation. This works on all HW.
+// - *avoid_fences policies use special (atomic) memory accesses that only cache
+//                 in a cache shared by the whole device to avoid having to use
+//                 device scope fences. This improves performance on some HW but
+//                 is more difficult to code correctly.
 using cuda_reduce_with_fences = cuda_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, false>;
-
+///
 using cuda_reduce_avoid_fences = cuda_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, true>;
-
+///
 using cuda_reduce_atomic_with_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, false>;
-
+///
 using cuda_reduce_atomic_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
-
+///
 using cuda_reduce_atomic_host_with_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
-
+///
 using cuda_reduce_atomic_host_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, true>;
 
+// Policy for RAJA::Reduce* objects that gives the same answer every time when
+// used in the same way
 using cuda_reduce = cuda_reduce_with_fences;
 
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
 using cuda_reduce_atomic = cuda_reduce_atomic_host_with_fences;
 
 
