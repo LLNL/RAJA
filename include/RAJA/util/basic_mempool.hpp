@@ -309,6 +309,7 @@ public:
   }
 
 
+  /// Free all backing allocations, even if they are currently in use
   void free_chunks()
   {
 #if defined(RAJA_ENABLE_OPENMP)

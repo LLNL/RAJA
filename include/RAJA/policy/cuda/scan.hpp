@@ -44,6 +44,7 @@ namespace scan
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -52,7 +53,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 inclusive_inplace(
     resources::Cuda cuda_res,
-    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -96,6 +97,7 @@ inclusive_inplace(
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -105,7 +107,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 exclusive_inplace(
     resources::Cuda cuda_res,
-    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -152,6 +154,7 @@ exclusive_inplace(
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -161,7 +164,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 inclusive(
     resources::Cuda cuda_res,
-    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,
@@ -206,6 +209,7 @@ inclusive(
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           size_t BLOCKS_PER_SM,
           bool Async,
           typename InputIter,
@@ -216,7 +220,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Cuda>
 exclusive(
     resources::Cuda cuda_res,
-    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,

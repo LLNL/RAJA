@@ -131,14 +131,14 @@ struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public HipStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -146,7 +146,7 @@ struct HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 
@@ -209,14 +209,14 @@ struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public HipStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -224,7 +224,7 @@ struct HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 
@@ -281,7 +281,7 @@ struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
 : HipStatementExecutor<Data, statement::TileTCount<ArgumentId, ParamId, TPol,
-    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
+    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                    kernel_sync_requirement::none,
                                    hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
     EnclosedStmts...>, Types>

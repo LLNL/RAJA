@@ -74,6 +74,86 @@ struct IndexGlobal;
 template<typename ...indexers>
 struct IndexFlatten;
 
+/*!
+ * Use the max occupancy of a kernel on the current device when launch
+ * parameters are not fully determined.
+ * Note that the maximum occupancy of the kernel may be less than the maximum
+ * occupancy of the device in terms of total threads.
+ */
+struct MaxOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+
+    IdxT func_max_blocks_per_device = func_max_blocks_per_sm * device_sm_per_device;
+
+    return func_max_blocks_per_device;
+  }
+};
+
+/*!
+ * Use a fraction and an offset of the max occupancy of a kernel on the current
+ * device when launch parameters are not fully determined.
+ * The following formula is used, with care to avoid zero, to determine the
+ * maximum grid size:
+ * (Fraction * kernel_max_blocks_per_sm + BLOCKS_PER_SM_OFFSET) * device_sm
+ */
+template < typename t_Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
+struct FractionOffsetOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    using Fraction = typename t_Fraction::template rebind<IdxT>;
+
+    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+
+    if (Fraction::multiply(func_max_blocks_per_sm) > IdxT(0)) {
+      func_max_blocks_per_sm = Fraction::multiply(func_max_blocks_per_sm);
+    }
+
+    if (IdxT(std::ptrdiff_t(func_max_blocks_per_sm) + BLOCKS_PER_SM_OFFSET) > IdxT(0)) {
+      func_max_blocks_per_sm = IdxT(std::ptrdiff_t(func_max_blocks_per_sm) + BLOCKS_PER_SM_OFFSET);
+    }
+
+    IdxT func_max_blocks_per_device = func_max_blocks_per_sm * device_sm_per_device;
+
+    return func_max_blocks_per_device;
+  }
+};
+
+/*!
+ * Use an occupancy that is less than the max occupancy of the device when
+ * launch parameters are not fully determined.
+ * Use the MaxOccupancyConcretizer if the maximum occupancy of the kernel is
+ * below the maximum occupancy of the device.
+ * Otherwise use the given AvoidMaxOccupancyCalculator to determine the
+ * maximum grid size.
+ */
+template < typename AvoidMaxOccupancyConcretizer >
+struct AvoidDeviceMaxThreadOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    IdxT device_max_threads_per_sm = data.device_max_threads_per_sm;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+    IdxT func_threads_per_block = data.func_threads_per_block;
+
+    IdxT func_max_threads_per_sm = func_threads_per_block * func_max_blocks_per_sm;
+
+    if (func_max_threads_per_sm < device_max_threads_per_sm) {
+      return MaxOccupancyConcretizer::template get_max_grid_size<IdxT>(data);
+    } else {
+      return AvoidMaxOccupancyConcretizer::template get_max_grid_size<IdxT>(data);
+    }
+  }
+};
+
 }  // namespace hip
 
 namespace policy
@@ -93,7 +173,8 @@ struct hip_flatten_indexer : public RAJA::make_policy_pattern_launch_platform_t<
   using IterationGetter = RAJA::hip::IndexFlatten<_IterationGetters...>;
 };
 
-template <typename _IterationMapping, typename _IterationGetter, bool Async = false>
+template <typename _IterationMapping, typename _IterationGetter, typename _LaunchConcretizer,
+          bool Async = false>
 struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::forall,
@@ -101,6 +182,7 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
   using IterationMapping = _IterationMapping;
   using IterationGetter = _IterationGetter;
+  using LaunchConcretizer = _LaunchConcretizer;
 };
 
 template <bool Async, int num_threads = named_usage::unspecified>
@@ -816,6 +898,7 @@ struct IndexFlatten<x_index, y_index, z_index>
 
 };
 
+
 // helper to get just the thread indexing part of IndexGlobal
 template < typename index_global >
 struct get_index_thread;
@@ -876,30 +959,90 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 } // namespace hip
 
+// contretizers used in forall, scan, and sort policies
+
+using HipAvoidDeviceMaxThreadOccupancyConcretizer = hip::AvoidDeviceMaxThreadOccupancyConcretizer<hip::FractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 1>, -1>>;
+
+template < typename Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
+using HipFractionOffsetOccupancyConcretizer = hip::FractionOffsetOccupancyConcretizer<Fraction, BLOCKS_PER_SM_OFFSET>;
+
+using HipMaxOccupancyConcretizer = hip::MaxOccupancyConcretizer;
+
+using HipRecForReduceConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
+
+using HipDefaultConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
+
 // policies usable with forall, scan, and sort
+
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using hip_exec_grid = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE, GRID_SIZE>,
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using hip_exec_grid_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE, GRID_SIZE>,
+    HipDefaultConcretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, Async>;
+    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, true>;
+    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_occ_calc = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_occ_calc_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_occ_max = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipMaxOccupancyConcretizer, Async>;
+
+template <size_t BLOCK_SIZE>
+using hip_exec_occ_max_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipMaxOccupancyConcretizer, true>;
+
+template <size_t BLOCK_SIZE, typename Fraction, bool Async = false>
+using hip_exec_occ_fraction = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipFractionOffsetOccupancyConcretizer<Fraction, 0>, Async>;
+
+template <size_t BLOCK_SIZE, typename Fraction>
+using hip_exec_occ_fraction_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipFractionOffsetOccupancyConcretizer<Fraction, 0>, true>;
+
+template <size_t BLOCK_SIZE, typename Concretizer, bool Async = false>
+using hip_exec_occ_custom = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    Concretizer, Async>;
+
+template <size_t BLOCK_SIZE, typename Concretizer>
+using hip_exec_occ_custom_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    Concretizer, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_rec_for_reduce = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipRecForReduceConcretizer, Async>;
+
+template <size_t BLOCK_SIZE>
+using hip_exec_rec_for_reduce_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipRecForReduceConcretizer, true>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
@@ -927,7 +1070,7 @@ using hip_warp_direct = RAJA::policy::hip::hip_indexer<
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
 using hip_warp_loop = RAJA::policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
 
@@ -953,13 +1096,13 @@ using hip_indexer_direct = policy::hip::hip_indexer<
 
 template < typename ... indexers >
 using hip_indexer_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using hip_indexer_syncable_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::sync,
     indexers...>;
 
@@ -971,7 +1114,7 @@ using hip_flatten_indexer_direct = policy::hip::hip_flatten_indexer<
 
 template < typename ... indexers >
 using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
