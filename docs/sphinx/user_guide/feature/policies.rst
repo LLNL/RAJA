@@ -743,26 +743,42 @@ It is important to note the following constraints about RAJA reduction usage:
 
 The following table summarizes RAJA reduction policy types:
 
-======================= ============= ==========================================
-Reduction Policy        Loop Policies Brief description
-                        to Use With
-======================= ============= ==========================================
-seq_reduce              seq_exec,     Non-parallel (sequential) reduction.
-omp_reduce              any OpenMP    OpenMP parallel reduction.
-                        policy
-omp_reduce_ordered      any OpenMP    OpenMP parallel reduction with result
-                        policy        guaranteed to be reproducible.
-omp_target_reduce       any OpenMP    OpenMP parallel target offload reduction.
-                        target policy
-cuda/hip_reduce         any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
-                        policy        (device synchronization will occur when
-                                      reduction value is finalized).
-cuda/hip_reduce_atomic  any CUDA/HIP  Same as above, but reduction may use CUDA
-                        policy        atomic operations.
-sycl_reduce             any SYCL      Reduction in a SYCL kernel (device
-                        policy        synchronization will occur when the
-                                      reduction value is finalized).
-======================= ============= ==========================================
+======================================== ============= ==========================================
+Reduction Policy                         Loop Policies Brief description
+                                         to Use With
+======================================== ============= ==========================================
+seq_reduce                               seq_exec,     Non-parallel (sequential) reduction.
+omp_reduce                               any OpenMP    OpenMP parallel reduction.
+                                         policy
+omp_reduce_ordered                       any OpenMP    OpenMP parallel reduction with result
+                                         policy        guaranteed to be reproducible.
+omp_target_reduce                        any OpenMP    OpenMP parallel target offload reduction.
+                                         target policy
+cuda/hip_reduce                          any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
+                                         policy        (device synchronization will occur when
+                                                       reduction value is finalized).
+cuda/hip_reduce\*atomic\*                any CUDA/HIP  Same as above, but reduction may use
+                                         policy        atomic operations and initializes the
+                                                       memory used for atomics on the device.
+                                                       This works on all architectures but
+                                                       incurs higher overheads.
+cuda/hip_reduce\*atomic_host\*           any CUDA/HIP  Same as above, but reduction may use
+                                         policy        atomic operations and initializes the
+                                                       memory used for atomics on the host.
+                                                       This works on recent architectures and
+                                                       incurs lower overheads.
+cuda/hip_reduce\*with_fences             any CUDA/HIP  Same as above, and reduction uses normal
+                                         policy        memory accesses with device scope fences.
+                                                       This works on all architectures but
+                                                       incurs higher overheads.
+cuda/hip_reduce\*avoid_fences            any CUDA/HIP  Same as above, and reduction uses special
+                                         policy        memory accesses to allow it to avoid
+                                                       device scope fences. This improves
+                                                       performance on some architectures.
+sycl_reduce                              any SYCL      Reduction in a SYCL kernel (device
+                                         policy        synchronization will occur when the
+                                                       reduction value is finalized).
+======================================== ============= ==========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
           guaranteed to generate correct results. So they should not be used
