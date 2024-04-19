@@ -294,25 +294,27 @@ cudaDeviceProp get_device_prop()
 RAJA_INLINE
 cudaDeviceProp& device_prop()
 {
-  static cudaDeviceProp prop = get_device_prop();
+  static thread_local cudaDeviceProp prop = get_device_prop();
   return prop;
 }
 
 
+static constexpr int cuda_occupancy_uninitialized_int = -1;
+static constexpr size_t cuda_occupancy_uninitialized_size_t =
+    std::numeric_limits<size_t>::max();
+
 //! Struct with the maximum theoretical occupancy of the device
 struct CudaFixedMaxBlocksData
 {
-  int device_sm_per_device;
-  int device_max_threads_per_sm;
+  int device_sm_per_device = cuda::device_prop().multiProcessorCount;
+  int device_max_threads_per_sm = cuda::device_prop().maxThreadsPerMultiProcessor;
 };
 
 //! Get the maximum theoretical occupancy of the device
 RAJA_INLINE
 CudaFixedMaxBlocksData cuda_max_blocks()
 {
-  static thread_local CudaFixedMaxBlocksData data {
-      cuda::device_prop().multiProcessorCount,
-      cuda::device_prop().maxThreadsPerMultiProcessor };
+  static thread_local CudaFixedMaxBlocksData data;
 
   return data;
 }
@@ -320,9 +322,9 @@ CudaFixedMaxBlocksData cuda_max_blocks()
 //! Struct with the maximum occupancy of a kernel in simple terms
 struct CudaOccMaxBlocksThreadsData
 {
-  size_t func_dynamic_shmem_per_block;
-  int func_max_blocks_per_device;
-  int func_max_threads_per_block;
+  size_t func_dynamic_shmem_per_block = cuda_occupancy_uninitialized_size_t;
+  int func_max_blocks_per_device = cuda_occupancy_uninitialized_int;
+  int func_max_threads_per_block = cuda_occupancy_uninitialized_int;
 };
 
 //! Get the maximum occupancy of a kernel with unknown threads per block
@@ -331,19 +333,14 @@ RAJA_INLINE
 CudaOccMaxBlocksThreadsData cuda_occupancy_max_blocks_threads(const void* func,
     size_t func_dynamic_shmem_per_block)
 {
-  static constexpr int uninitialized_int = -1;
-  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
-  static thread_local CudaOccMaxBlocksThreadsData data {
-      uninitialized_size_t,
-      uninitialized_int,
-      uninitialized_int };
+  static thread_local CudaOccMaxBlocksThreadsData data;
 
   if (data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block) {
 
+    data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
+
     cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
         &data.func_max_blocks_per_device, &data.func_max_threads_per_block, func, func_dynamic_shmem_per_block));
-
-    data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
   }
 
@@ -351,13 +348,11 @@ CudaOccMaxBlocksThreadsData cuda_occupancy_max_blocks_threads(const void* func,
 }
 
 //! Struct with the maximum occupancy of a kernel in specific terms
-struct CudaOccMaxBlocksData
+struct CudaOccMaxBlocksData : CudaFixedMaxBlocksData
 {
-  size_t func_dynamic_shmem_per_block;
-  int func_threads_per_block;
-  int device_sm_per_device;
-  int device_max_threads_per_sm;
-  int func_max_blocks_per_sm;
+  size_t func_dynamic_shmem_per_block = cuda_occupancy_uninitialized_size_t;
+  int func_threads_per_block = cuda_occupancy_uninitialized_int;
+  int func_max_blocks_per_sm = cuda_occupancy_uninitialized_int;
 };
 
 //! Get the maximum occupancy of a kernel with compile time threads per block
@@ -366,18 +361,12 @@ RAJA_INLINE
 CudaOccMaxBlocksData cuda_occupancy_max_blocks(const void* func,
     size_t func_dynamic_shmem_per_block)
 {
-  static constexpr int uninitialized_int = -1;
-  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
-  static thread_local CudaOccMaxBlocksData data {
-      uninitialized_size_t,
-      func_threads_per_block,
-      cuda::device_prop().multiProcessorCount,
-      cuda::device_prop().maxThreadsPerMultiProcessor,
-      uninitialized_int };
+  static thread_local CudaOccMaxBlocksData data;
 
   if (data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block) {
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
+    data.func_threads_per_block = func_threads_per_block;
 
     cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
         &data.func_max_blocks_per_sm, func, func_threads_per_block, func_dynamic_shmem_per_block));
@@ -393,14 +382,7 @@ RAJA_INLINE
 CudaOccMaxBlocksData cuda_occupancy_max_blocks(const void* func,
     size_t func_dynamic_shmem_per_block, int func_threads_per_block)
 {
-  static constexpr int uninitialized_int = -1;
-  static constexpr size_t uninitialized_size_t = std::numeric_limits<size_t>::max();
-  static thread_local CudaOccMaxBlocksData data {
-      uninitialized_size_t,
-      uninitialized_int,
-      cuda::device_prop().multiProcessorCount,
-      cuda::device_prop().maxThreadsPerMultiProcessor,
-      uninitialized_int };
+  static thread_local CudaOccMaxBlocksData data;
 
   if ( data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block ||
        data.func_threads_per_block != func_threads_per_block ) {

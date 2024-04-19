@@ -296,25 +296,27 @@ hipDeviceProp_t get_device_prop()
 RAJA_INLINE
 hipDeviceProp_t& device_prop()
 {
-  static hipDeviceProp_t prop = get_device_prop();
+  static thread_local hipDeviceProp_t prop = get_device_prop();
   return prop;
 }
 
 
+static constexpr int hip_occupancy_uninitialized_int = -1;
+static constexpr size_t hip_occupancy_uninitialized_size_t =
+    std::numeric_limits<size_t>::max();
+
 //! Struct with the maximum theoretical occupancy of the device
 struct HipFixedMaxBlocksData
 {
-  int device_sm_per_device;
-  int device_max_threads_per_sm;
+  int device_sm_per_device = hip::device_prop().multiProcessorCount;
+  int device_max_threads_per_sm = hip::device_prop().maxThreadsPerMultiProcessor;
 };
 
 //! Get the maximum theoretical occupancy of the device
 RAJA_INLINE
 HipFixedMaxBlocksData hip_max_blocks()
 {
-  static thread_local HipFixedMaxBlocksData data {
-      hip::device_prop().multiProcessorCount,
-      hip::device_prop().maxThreadsPerMultiProcessor };
+  static thread_local HipFixedMaxBlocksData data;
 
   return data;
 }
@@ -322,9 +324,9 @@ HipFixedMaxBlocksData hip_max_blocks()
 //! Struct with the maximum occupancy of a kernel in simple terms
 struct HipOccMaxBlocksThreadsData
 {
-  size_t func_dynamic_shmem_per_block;
-  int func_max_blocks_per_device;
-  int func_max_threads_per_block;
+  size_t func_dynamic_shmem_per_block = hip_occupancy_uninitialized_size_t;
+  int func_max_blocks_per_device = hip_occupancy_uninitialized_int;
+  int func_max_threads_per_block = hip_occupancy_uninitialized_int;
 };
 
 //! Get the maximum occupancy of a kernel with unknown threads per block
@@ -333,12 +335,11 @@ RAJA_INLINE
 HipOccMaxBlocksThreadsData hip_occupancy_max_blocks_threads(const void* func,
     size_t func_dynamic_shmem_per_block)
 {
-  static thread_local HipOccMaxBlocksThreadsData data {
-      std::numeric_limits<size_t>::max(),
-      -1,
-      -1 };
+  static thread_local HipOccMaxBlocksThreadsData data;
 
   if (data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block) {
+
+    data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     hipErrchk(hipOccupancyMaxPotentialBlockSize(
@@ -350,21 +351,17 @@ HipOccMaxBlocksThreadsData hip_occupancy_max_blocks_threads(const void* func,
     data.func_max_threads_per_block = 1024;
 #endif
 
-    data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
-
   }
 
   return data;
 }
 
 //! Struct with the maximum occupancy of a kernel in specific terms
-struct HipOccMaxBlocksData
+struct HipOccMaxBlocksData : HipFixedMaxBlocksData
 {
-  size_t func_dynamic_shmem_per_block;
-  int func_threads_per_block;
-  int device_sm_per_device;
-  int device_max_threads_per_sm;
-  int func_max_blocks_per_sm;
+  size_t func_dynamic_shmem_per_block = hip_occupancy_uninitialized_size_t;
+  int func_threads_per_block = hip_occupancy_uninitialized_int;
+  int func_max_blocks_per_sm = hip_occupancy_uninitialized_int;
 };
 
 //! Get the maximum occupancy of a kernel with compile time threads per block
@@ -373,16 +370,12 @@ RAJA_INLINE
 HipOccMaxBlocksData hip_occupancy_max_blocks(const void* func,
     size_t func_dynamic_shmem_per_block)
 {
-  static thread_local HipOccMaxBlocksData data {
-      std::numeric_limits<size_t>::max(),
-      func_threads_per_block,
-      hip::device_prop().multiProcessorCount,
-      hip::device_prop().maxThreadsPerMultiProcessor,
-      -1 };
+  static thread_local HipOccMaxBlocksData data;
 
   if (data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block) {
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
+    data.func_threads_per_block = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
@@ -392,7 +385,6 @@ HipOccMaxBlocksData hip_occupancy_max_blocks(const void* func,
     data.func_max_blocks_per_sm = hip::device_prop().maxThreadsPerMultiProcessor/1024;
     if (data.func_max_blocks_per_sm <= 0) { data.func_max_blocks_per_sm = 1 }
 #endif
-
 
   }
 
@@ -405,12 +397,7 @@ RAJA_INLINE
 HipOccMaxBlocksData hip_occupancy_max_blocks(const void* func,
     size_t func_dynamic_shmem_per_block, int func_threads_per_block)
 {
-  static thread_local HipOccMaxBlocksData data {
-      std::numeric_limits<size_t>::max(),
-      -1,
-      hip::device_prop().multiProcessorCount,
-      hip::device_prop().maxThreadsPerMultiProcessor,
-      -1 };
+  static thread_local HipOccMaxBlocksData data;
 
   if ( data.func_dynamic_shmem_per_block != func_dynamic_shmem_per_block ||
        data.func_threads_per_block != func_threads_per_block ) {
