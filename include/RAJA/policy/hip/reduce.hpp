@@ -887,9 +887,9 @@ class Reduce
         : 1);
 
   using Accessor = std::conditional_t<(tuning::comm_mode == block_communication_mode::avoid_device_fence),
-      impl::AccessorAvoidingFences,
+      impl::AccessorDeviceScopeUseSharedCache,
       std::conditional_t<(tuning::comm_mode == block_communication_mode::device_fence),
-        impl::AccessorWithFences,
+        impl::AccessorDeviceScopeUseLocalCache,
         void>>;
 
   static constexpr bool atomic_policy =

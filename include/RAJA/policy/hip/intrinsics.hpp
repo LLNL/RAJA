@@ -46,9 +46,18 @@ namespace impl
 {
 
 /*!
- * \brief Abstracts access to memory using normal memory accesses.
+ * \brief Abstracts access to memory when coordinating between threads at
+ *       device scope. The fences provided here are to be used with relaxed
+ *       atomics in order to guarantee memory ordering and visibility of the
+ *       accesses done through this class.
+ *
+ * \Note This uses device scope fences to ensure ordering and to flush local
+ *       caches so that memory accesses become visible to the whole device.
+ * \Note This class uses normal memory accesses that are cached in local caches
+ *       so device scope fences are required to make memory accesses visible
+ *       to the whole device.
  */
-struct AccessorWithFences : RAJA::detail::DefaultAccessor
+struct AccessorDeviceScopeUseLocalCache : RAJA::detail::DefaultAccessor
 {
   static RAJA_DEVICE RAJA_INLINE void fence_acquire()
   {
@@ -64,18 +73,24 @@ struct AccessorWithFences : RAJA::detail::DefaultAccessor
 /*!
  ******************************************************************************
  *
- * \brief Abstracts access to memory using atomic memory accesses.
+ * \brief Abstracts access to memory when coordinating between threads at
+ *       device scope. The fences provided here are to be used with relaxed
+ *       atomics in order to guarantee memory ordering and visibility of the
+ *       accesses done through this class.
  *
- * \Note Memory access through this class does not guarantee safe access to a
- *       value that is accessed concurrently by other threads as it may split
- *       memory operations into multiple atomic instructions.
- * \Note Fences used through this class only guarantee ordering, they do not
- *       guarantee visiblity of non-atomic memory operations as it may not
- *       actually flush the cache.
+ * \Note This may use block scope fences to ensure ordering and avoid flushing
+ *       local caches so special memory accesses are used to ensure visibility
+ *       to the whole device.
+ * \Note This class uses device scope atomic memory accesses to bypass local
+ *       caches so memory accesses are visible to the whole device without
+ *       device scope fences.
+ * \Note A memory access may be split into multiple memory accesses, so
+ *       even though atomic instructions are used concurrent accesses between
+ *       different threads are not thread safe.
  *
  ******************************************************************************
  */
-struct AccessorAvoidingFences
+struct AccessorDeviceScopeUseSharedCache
 {
   // hip has 32 and 64 bit atomics
   static constexpr size_t min_atomic_int_type_size = sizeof(unsigned int);
