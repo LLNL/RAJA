@@ -63,7 +63,7 @@ struct PinnedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipHostFree(ptr));
@@ -82,7 +82,7 @@ struct DeviceAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipFree(ptr));
@@ -105,7 +105,7 @@ struct DeviceZeroedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipFree(ptr));
@@ -124,7 +124,7 @@ struct DevicePinnedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipFree(ptr));
