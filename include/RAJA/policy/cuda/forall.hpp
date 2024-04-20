@@ -70,16 +70,17 @@ namespace impl
  *
  ******************************************************************************
  */
-template<typename IterationMapping, typename IterationGetter, typename UniqueMarker>
+template<typename IterationMapping, typename IterationGetter, typename Concretizer, typename UniqueMarker>
 struct ForallDimensionCalculator;
 
 // The general cases handle fixed BLOCK_SIZE > 0 and/or GRID_SIZE > 0
 // there are specializations for named_usage::unspecified
 // but named_usage::ignored is not supported so no specializations are provided
 // and static_asserts in the general case catch unsupported values
-template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename UniqueMarker>
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
 struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
@@ -91,8 +92,10 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
                              const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
   {
-    if ( len > (static_cast<IdxT>(IndexGetter::block_size) *
-                static_cast<IdxT>(IndexGetter::grid_size)) ) {
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+
+    if ( len > (block_size * grid_size) ) {
       RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
     }
 
@@ -101,9 +104,10 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
   }
 };
 
-template<named_dim dim, int GRID_SIZE, typename UniqueMarker>
+template<named_dim dim, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
 struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
@@ -112,17 +116,26 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
 
   template < typename IdxT >
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
-                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+                             const void* func, size_t dynamic_shmem_size)
   {
-    // BEWARE: if calculated block_size is too high then the kernel launch will fail
-    internal::set_cuda_dim<dim>(dims.threads, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::grid_size)));
-    internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexGetter::grid_size));
+    ::RAJA::cuda::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
+
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT block_size = concretizer.get_block_size_to_fit_len(grid_size);
+
+    if ( block_size == IdxT(0) ) {
+      RAJA_ABORT_OR_THROW("len exceeds the size of the directly mapped index space");
+    }
+
+    internal::set_cuda_dim<dim>(dims.threads, block_size);
+    internal::set_cuda_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, int BLOCK_SIZE, typename UniqueMarker>
+template<named_dim dim, int BLOCK_SIZE, typename Concretizer, typename UniqueMarker>
 struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
@@ -131,16 +144,22 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
 
   template < typename IdxT >
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
-                             const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
+                             const void* func, size_t dynamic_shmem_size)
   {
-    internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexGetter::block_size));
-    internal::set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexGetter::block_size)));
+    ::RAJA::cuda::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
+
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = concretizer.get_grid_size_to_fit_len(block_size);
+
+    internal::set_cuda_dim<dim>(dims.threads, block_size);
+    internal::set_cuda_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, typename UniqueMarker>
+template<named_dim dim, typename Concretizer, typename UniqueMarker>
 struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
                                  ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
@@ -149,104 +168,104 @@ struct ForallDimensionCalculator<::RAJA::iteration_mapping::Direct,
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::cuda::CudaOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    ::RAJA::cuda::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
-    internal::set_cuda_dim<dim>(dims.blocks, RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)));
+    const auto sizes = concretizer.get_block_and_grid_size_to_fit_len();
+
+    internal::set_cuda_dim<dim>(dims.threads, sizes.first);
+    internal::set_cuda_dim<dim>(dims.blocks, sizes.second);
   }
 };
 
-template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename UniqueMarker>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
 
-  using IndexMapper = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
+  using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
   template < typename IdxT >
   static void set_dimensions(internal::CudaDims& dims, IdxT RAJA_UNUSED_ARG(len),
                              const void* RAJA_UNUSED_ARG(func), size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
   {
-    internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+
+    internal::set_cuda_dim<dim>(dims.threads, block_size);
+    internal::set_cuda_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, int GRID_SIZE, typename UniqueMarker>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+template<named_dim dim, int GRID_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(GRID_SIZE > 0, "grid size must be > 0 or named_usage::unspecified with forall");
 
-  using IndexMapper = ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+  using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template < typename IdxT >
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::cuda::CudaOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    ::RAJA::cuda::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    IdxT calculated_block_size = std::min(
-        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size)),
-        static_cast<IdxT>(max_sizes.first));
+    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT block_size = concretizer.get_block_size_to_fit_device(grid_size);
 
-    internal::set_cuda_dim<dim>(dims.threads, calculated_block_size);
-    internal::set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    internal::set_cuda_dim<dim>(dims.threads, block_size);
+    internal::set_cuda_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, int BLOCK_SIZE, typename UniqueMarker>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+template<named_dim dim, int BLOCK_SIZE, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
   static_assert(BLOCK_SIZE > 0, "block size must be > 0 or named_usage::unspecified with forall");
 
-  using IndexMapper = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+  using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::cuda::CudaOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_grid_size = oc.get_max_grid_size(dynamic_shmem_size,
-                                              static_cast<IdxT>(IndexMapper::block_size));
+    ::RAJA::cuda::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    IdxT calculated_grid_size = std::min(
-        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size)),
-        static_cast<IdxT>(max_grid_size));
+    const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
+    const IdxT grid_size = concretizer.get_grid_size_to_fit_device(block_size);
 
-    internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    internal::set_cuda_dim<dim>(dims.blocks, calculated_grid_size);
+    internal::set_cuda_dim<dim>(dims.threads, block_size);
+    internal::set_cuda_dim<dim>(dims.blocks, grid_size);
   }
 };
 
-template<named_dim dim, typename UniqueMarker>
-struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop,
+template<named_dim dim, typename Concretizer, typename UniqueMarker>
+struct ForallDimensionCalculator<::RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                  ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>,
+                                 Concretizer,
                                  UniqueMarker>
 {
-  using IndexMapper = ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+  using IndexGetter = ::RAJA::cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template < typename IdxT >
   static void set_dimensions(internal::CudaDims& dims, IdxT len,
                              const void* func, size_t dynamic_shmem_size)
   {
-    ::RAJA::cuda::CudaOccupancyCalculator<UniqueMarker> oc(func);
-    auto max_sizes = oc.get_max_block_size_and_grid_size(dynamic_shmem_size);
+    ::RAJA::cuda::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{func, dynamic_shmem_size, len};
 
-    IdxT calculated_grid_size = std::min(
-        RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(max_sizes.first)),
-        static_cast<IdxT>(max_sizes.second));
+    const auto sizes = concretizer.get_block_and_grid_size_to_fit_device();
 
-    internal::set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(max_sizes.first));
-    internal::set_cuda_dim<dim>(dims.blocks, calculated_grid_size);
+    internal::set_cuda_dim<dim>(dims.threads, sizes.first);
+    internal::set_cuda_dim<dim>(dims.blocks, sizes.second);
   }
 };
 
@@ -273,7 +292,7 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                std::is_base_of<iteration_mapping::DirectBase, IterationMapping>::value &&
                 (IterationGetter::block_size > 0),
               size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
@@ -298,7 +317,7 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                std::is_base_of<iteration_mapping::DirectBase, IterationMapping>::value &&
                 (IterationGetter::block_size <= 0),
               size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
@@ -324,7 +343,7 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                std::is_base_of<iteration_mapping::DirectBase, IterationMapping>::value &&
                 (IterationGetter::block_size > 0),
               size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
@@ -352,7 +371,7 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::Direct>::value &&
+                std::is_base_of<iteration_mapping::DirectBase, IterationMapping>::value &&
                 (IterationGetter::block_size <= 0),
               size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
@@ -379,7 +398,8 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                std::is_base_of<iteration_mapping::StridedLoopBase, IterationMapping>::value &&
+                std::is_base_of<iteration_mapping::UnsizedLoopBase, IterationMapping>::value &&
                 (IterationGetter::block_size > 0),
               size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
@@ -405,7 +425,8 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                std::is_base_of<iteration_mapping::StridedLoopBase, IterationMapping>::value &&
+                std::is_base_of<iteration_mapping::UnsizedLoopBase, IterationMapping>::value &&
                 (IterationGetter::block_size <= 0),
               size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
@@ -433,7 +454,8 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                std::is_base_of<iteration_mapping::StridedLoopBase, IterationMapping>::value &&
+                std::is_base_of<iteration_mapping::UnsizedLoopBase, IterationMapping>::value &&
                 (IterationGetter::block_size > 0),
               size_t > BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
@@ -462,7 +484,8 @@ template <typename EXEC_POL,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
           typename IterationGetter = typename EXEC_POL::IterationGetter,
           std::enable_if_t<
-                std::is_same<IterationMapping, iteration_mapping::StridedLoop>::value &&
+                std::is_base_of<iteration_mapping::StridedLoopBase, IterationMapping>::value &&
+                std::is_base_of<iteration_mapping::UnsizedLoopBase, IterationMapping>::value &&
                 (IterationGetter::block_size <= 0),
               size_t > RAJA_UNUSED_ARG(BlockSize) = 0>
 __global__
@@ -494,7 +517,7 @@ void forallp_cuda_kernel(LOOP_BODY loop_body,
 
 template <typename Iterable, typename LoopBody,
           typename IterationMapping, typename IterationGetter,
-          size_t BlocksPerSM, bool Async,
+          typename Concretizer, size_t BlocksPerSM, bool Async,
           typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
@@ -502,7 +525,7 @@ concepts::enable_if_t<
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Cuda cuda_res,
-            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>const&,
+            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>const&,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
@@ -510,9 +533,9 @@ forall_impl(resources::Cuda cuda_res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>;
+  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, UniqueMarker>;
+  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -563,7 +586,7 @@ forall_impl(resources::Cuda cuda_res,
 
 template <typename Iterable, typename LoopBody,
           typename IterationMapping, typename IterationGetter,
-          size_t BlocksPerSM, bool Async,
+          typename Concretizer, size_t BlocksPerSM, bool Async,
           typename ForallParam>
 RAJA_INLINE 
 concepts::enable_if_t<
@@ -571,7 +594,7 @@ concepts::enable_if_t<
   RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
   concepts::negate< RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
 forall_impl(resources::Cuda cuda_res,
-            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async> const&,
+            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async> const&,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -579,9 +602,9 @@ forall_impl(resources::Cuda cuda_res,
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>;
+  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter, camp::num<BlocksPerSM>, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, UniqueMarker>;
+  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping, IterationGetter, Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -659,11 +682,11 @@ forall_impl(resources::Cuda cuda_res,
  */
 template <typename LoopBody,
           typename IterationMapping, typename IterationGetter,
-          size_t BlocksPerSM, bool Async,
+          typename Concretizer, size_t BlocksPerSM, bool Async,
           typename... SegmentTypes>
 RAJA_INLINE resources::EventProxy<resources::Cuda>
 forall_impl(resources::Cuda r,
-            ExecPolicy<seq_segit, ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, Async>>,
+            ExecPolicy<seq_segit, ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>>,
             const TypedIndexSet<SegmentTypes...>& iset,
             LoopBody&& loop_body)
 {
@@ -672,7 +695,7 @@ forall_impl(resources::Cuda r,
     iset.segmentCall(r,
                      isi,
                      detail::CallForall(),
-                     ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BlocksPerSM, true>(),
+                     ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BlocksPerSM, true>(),
                      loop_body);
   }  // iterate over segments of index set
 

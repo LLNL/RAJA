@@ -108,7 +108,7 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::For<ArgumentId,
-                   RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>,
+                   RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
                    EnclosedStmts...>,
     Types> {
 
@@ -123,7 +123,7 @@ struct HipStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
-      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::sync, IndexMapper>>;
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>>;
 
 
   static inline RAJA_DEVICE
@@ -180,7 +180,7 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::For<ArgumentId,
-                   RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>,
+                   RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
                    EnclosedStmts...>,
     Types> {
 
@@ -195,7 +195,7 @@ struct HipStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
-      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop, kernel_sync_requirement::none, IndexMapper>>;
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>>;
 
 
   static inline RAJA_DEVICE
@@ -246,7 +246,7 @@ struct HipStatementExecutor<
     statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
     Types>
 : HipStatementExecutor<Data, statement::For<ArgumentId,
-      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop,
+      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                      kernel_sync_requirement::none,
                                      hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
       EnclosedStmts...>, Types>
