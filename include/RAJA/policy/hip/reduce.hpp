@@ -886,19 +886,28 @@ class Reduce
         ? RAJA_DIVIDE_CEILING_INT(policy::hip::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE, sizeof(T))
         : 1);
 
-  static constexpr bool use_atomic = tuning::maybe_atomic &&
-      RAJA::reduce::hip::hip_atomic_available<T>::value;
-
-  using Accessor = std::conditional_t<tuning::avoid_fences,
+  using Accessor = std::conditional_t<(tuning::comm_mode == block_communication_mode::avoid_device_fence),
       impl::AccessorAvoidingFences,
-      impl::AccessorWithFences>;
+      std::conditional_t<(tuning::comm_mode == block_communication_mode::device_fence),
+        impl::AccessorWithFences,
+        void>>;
+
+  static constexpr bool atomic_policy =
+      (tuning::algorithm == reduce_algorithm::init_first_block_finalize_block_atomic) ||
+      (tuning::algorithm == reduce_algorithm::init_host_finalize_block_atomic);
+  static constexpr bool atomic_available = RAJA::reduce::hip::hip_atomic_available<T>::value;
 
   //! hip reduction data storage class and folding algorithm
-  using reduce_data_type = std::conditional_t<use_atomic,
-      std::conditional_t<tuning::init_on_host,
-        hip::ReduceAtomicInitialized_Data<Combiner, T, replication, atomic_stride>,
-        hip::ReduceAtomic_Data<Combiner, Accessor, T, replication, atomic_stride>>,
-      hip::Reduce_Data<Combiner, Accessor, T, replication, atomic_stride>>;
+  using reduce_data_type = std::conditional_t<(tuning::algorithm == reduce_algorithm::finalize_last_block) ||
+                                              (atomic_policy && !atomic_available),
+      hip::Reduce_Data<Combiner, Accessor, T, replication, atomic_stride>,
+      std::conditional_t<atomic_available,
+        std::conditional_t<(tuning::algorithm == reduce_algorithm::init_first_block_finalize_block_atomic),
+          hip::ReduceAtomic_Data<Combiner, Accessor, T, replication, atomic_stride>,
+          std::conditional_t<(tuning::algorithm == reduce_algorithm::init_host_finalize_block_atomic),
+            hip::ReduceAtomicInitialized_Data<Combiner, T, replication, atomic_stride>,
+            void>>,
+        void>>;
 
   static constexpr size_t tally_slots = reduce_data_type::tally_slots;
 

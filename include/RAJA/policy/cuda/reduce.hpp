@@ -877,6 +877,7 @@ struct ReduceAtomic_Data
   }
 };
 
+
 //! Cuda Reduction entity -- generalize on reduction, and type
 template <typename Combiner, typename T, typename tuning>
 class Reduce
@@ -890,19 +891,28 @@ class Reduce
         ? RAJA_DIVIDE_CEILING_INT(policy::cuda::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE, sizeof(T))
         : 1);
 
-  static constexpr bool use_atomic = tuning::maybe_atomic &&
-      RAJA::reduce::cuda::cuda_atomic_available<T>::value;
-
-  using Accessor = std::conditional_t<tuning::avoid_fences,
+  using Accessor = std::conditional_t<(tuning::comm_mode == block_communication_mode::avoid_device_fence),
       impl::AccessorAvoidingFences,
-      impl::AccessorWithFences>;
+      std::conditional_t<(tuning::comm_mode == block_communication_mode::device_fence),
+        impl::AccessorWithFences,
+        void>>;
+
+  static constexpr bool atomic_policy =
+      (tuning::algorithm == reduce_algorithm::init_first_block_finalize_block_atomic) ||
+      (tuning::algorithm == reduce_algorithm::init_host_finalize_block_atomic);
+  static constexpr bool atomic_available = RAJA::reduce::cuda::cuda_atomic_available<T>::value;
 
   //! cuda reduction data storage class and folding algorithm
-  using reduce_data_type = std::conditional_t<use_atomic,
-      std::conditional_t<tuning::init_on_host,
-        cuda::ReduceAtomicInitialized_Data<Combiner, T, replication, atomic_stride>,
-        cuda::ReduceAtomic_Data<Combiner, Accessor, T, replication, atomic_stride>>,
-      cuda::Reduce_Data<Combiner, Accessor, T, replication, atomic_stride>>;
+  using reduce_data_type = std::conditional_t<(tuning::algorithm == reduce_algorithm::finalize_last_block) ||
+                                              (atomic_policy && !atomic_available),
+      cuda::Reduce_Data<Combiner, Accessor, T, replication, atomic_stride>,
+      std::conditional_t<atomic_available,
+        std::conditional_t<(tuning::algorithm == reduce_algorithm::init_first_block_finalize_block_atomic),
+          cuda::ReduceAtomic_Data<Combiner, Accessor, T, replication, atomic_stride>,
+          std::conditional_t<(tuning::algorithm == reduce_algorithm::init_host_finalize_block_atomic),
+            cuda::ReduceAtomicInitialized_Data<Combiner, T, replication, atomic_stride>,
+            void>>,
+        void>>;
 
   static constexpr size_t tally_slots = reduce_data_type::tally_slots;
 

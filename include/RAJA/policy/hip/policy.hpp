@@ -154,15 +154,28 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   }
 };
 
-template < size_t t_replication, size_t t_atomic_stride,
-           bool t_maybe_atomic, bool t_avoid_fences, bool t_init_on_host >
+
+enum struct reduce_algorithm : int
+{
+  finalize_last_block,
+  init_first_block_finalize_block_atomic,
+  init_host_finalize_block_atomic
+};
+
+enum struct block_communication_mode : int
+{
+  device_fence,
+  avoid_device_fence
+};
+
+template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
+           size_t t_replication, size_t t_atomic_stride >
 struct ReduceTuning
 {
+  static constexpr reduce_algorithm algorithm = t_algorithm;
+  static constexpr block_communication_mode comm_mode = t_comm_mode;
   static constexpr size_t replication = t_replication;
   static constexpr size_t atomic_stride = t_atomic_stride;
-  static constexpr bool maybe_atomic = t_maybe_atomic;
-  static constexpr bool avoid_fences = t_avoid_fences;
-  static constexpr bool init_on_host = t_init_on_host;
 };
 
 }  // namespace hip
@@ -263,14 +276,13 @@ struct hip_atomic_explicit{};
  */
 using hip_atomic = hip_atomic_explicit<seq_atomic>;
 
-template < bool maybe_atomic,
+
+template < RAJA::hip::reduce_algorithm algorithm,
+           RAJA::hip::block_communication_mode comm_mode,
            size_t replication = named_usage::unspecified,
-           size_t atomic_stride = named_usage::unspecified,
-           bool init_on_host = false,
-           bool avoid_fences = false >
-using hip_reduce_base = hip_reduce_policy< RAJA::hip::ReduceTuning<
-    replication, atomic_stride,
-    maybe_atomic, avoid_fences, init_on_host> >;
+           size_t atomic_stride = named_usage::unspecified >
+using hip_reduce_tuning = hip_reduce_policy< RAJA::hip::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
 
 // Policies for RAJA::Reduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results and falls back
@@ -289,17 +301,35 @@ using hip_reduce_base = hip_reduce_policy< RAJA::hip::ReduceTuning<
 //                 in a cache shared by the whole device to avoid having to use
 //                 device scope fences. This improves performance on some HW but
 //                 is more difficult to code correctly.
-using hip_reduce_with_fences = hip_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, false>;
+using hip_reduce_with_fences = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::finalize_last_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using hip_reduce_avoid_fences = hip_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, true>;
+using hip_reduce_avoid_fences = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::finalize_last_block,
+    RAJA::hip::block_communication_mode::avoid_device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using hip_reduce_atomic_with_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, false>;
+using hip_reduce_atomic_with_fences = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_first_block_finalize_block_atomic,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using hip_reduce_atomic_avoid_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
+using hip_reduce_atomic_avoid_fences = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_first_block_finalize_block_atomic,
+    RAJA::hip::block_communication_mode::avoid_device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using hip_reduce_atomic_host_with_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+using hip_reduce_atomic_host_with_fences = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_finalize_block_atomic,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using hip_reduce_atomic_host_avoid_fences = hip_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, true>;
+using hip_reduce_atomic_host_avoid_fences = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_finalize_block_atomic,
+    RAJA::hip::block_communication_mode::avoid_device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 
 // Policy for RAJA::Reduce* objects that gives the same answer every time when
 // used in the same way
@@ -308,6 +338,11 @@ using hip_reduce = hip_reduce_avoid_fences;
 // Policy for RAJA::Reduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
 using hip_reduce_atomic = hip_reduce_atomic_host_avoid_fences;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool maybe_atomic >
+using hip_reduce_base = std::conditional_t<maybe_atomic, hip_reduce_atomic, hip_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block

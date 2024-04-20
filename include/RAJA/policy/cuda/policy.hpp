@@ -159,15 +159,28 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   }
 };
 
-template < size_t t_replication, size_t t_atomic_stride,
-           bool t_maybe_atomic, bool t_avoid_fences, bool t_init_on_host >
+
+enum struct reduce_algorithm : int
+{
+  finalize_last_block,
+  init_first_block_finalize_block_atomic,
+  init_host_finalize_block_atomic
+};
+
+enum struct block_communication_mode : int
+{
+  device_fence,
+  avoid_device_fence
+};
+
+template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
+           size_t t_replication, size_t t_atomic_stride >
 struct ReduceTuning
 {
+  static constexpr reduce_algorithm algorithm = t_algorithm;
+  static constexpr block_communication_mode comm_mode = t_comm_mode;
   static constexpr size_t replication = t_replication;
   static constexpr size_t atomic_stride = t_atomic_stride;
-  static constexpr bool maybe_atomic = t_maybe_atomic;
-  static constexpr bool avoid_fences = t_avoid_fences;
-  static constexpr bool init_on_host = t_init_on_host;
 };
 
 }  // namespace cuda
@@ -271,14 +284,13 @@ struct cuda_atomic_explicit{};
  */
 using cuda_atomic = cuda_atomic_explicit<seq_atomic>;
 
-template < bool maybe_atomic,
+
+template < RAJA::cuda::reduce_algorithm algorithm,
+           RAJA::cuda::block_communication_mode comm_mode,
            size_t replication = named_usage::unspecified,
-           size_t atomic_stride = named_usage::unspecified,
-           bool init_on_host = false,
-           bool avoid_fences = false >
-using cuda_reduce_base = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
-    replication, atomic_stride,
-    maybe_atomic, avoid_fences, init_on_host> >;
+           size_t atomic_stride = named_usage::unspecified >
+using cuda_reduce_tuning = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
 
 // Policies for RAJA::Reduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results and falls back
@@ -297,17 +309,35 @@ using cuda_reduce_base = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
 //                 in a cache shared by the whole device to avoid having to use
 //                 device scope fences. This improves performance on some HW but
 //                 is more difficult to code correctly.
-using cuda_reduce_with_fences = cuda_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, false>;
+using cuda_reduce_with_fences = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::finalize_last_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_avoid_fences = cuda_reduce_base<false, named_usage::unspecified, named_usage::unspecified, false, true>;
+using cuda_reduce_avoid_fences = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::finalize_last_block,
+    RAJA::cuda::block_communication_mode::avoid_device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_with_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, false>;
+using cuda_reduce_atomic_with_fences = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_first_block_finalize_block_atomic,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, false, true>;
+using cuda_reduce_atomic_avoid_fences = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_first_block_finalize_block_atomic,
+    RAJA::cuda::block_communication_mode::avoid_device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_host_with_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, false>;
+using cuda_reduce_atomic_host_with_fences = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_finalize_block_atomic,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_host_avoid_fences = cuda_reduce_base<true, named_usage::unspecified, named_usage::unspecified, true, true>;
+using cuda_reduce_atomic_host_avoid_fences = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_finalize_block_atomic,
+    RAJA::cuda::block_communication_mode::avoid_device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
 
 // Policy for RAJA::Reduce* objects that gives the same answer every time when
 // used in the same way
@@ -316,6 +346,11 @@ using cuda_reduce = cuda_reduce_with_fences;
 // Policy for RAJA::Reduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
 using cuda_reduce_atomic = cuda_reduce_atomic_host_with_fences;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool maybe_atomic >
+using cuda_reduce_base = std::conditional_t<maybe_atomic, cuda_reduce_atomic, cuda_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
