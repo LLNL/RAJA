@@ -65,8 +65,9 @@ namespace RAJA
     using type = camp::resources::Cuda;
   };
 
-  template<typename IterationMapping, typename IterationGetter, size_t BLOCKS_PER_SM, bool Async>
-  struct get_resource<::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>>{
+  template<typename IterationMapping, typename IterationGetter,
+           typename Concretizer, size_t BLOCKS_PER_SM, bool Async>
+  struct get_resource<::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>>{
     using type = camp::resources::Cuda;
   };
 
@@ -75,8 +76,9 @@ namespace RAJA
     using type = camp::resources::Cuda;
   };
 
-  template<typename ISetIter, typename IterationMapping, typename IterationGetter, size_t BLOCKS_PER_SM, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, BLOCKS_PER_SM, Async>>>{
+  template<typename ISetIter, typename IterationMapping, typename IterationGetter,
+           typename Concretizer, size_t BLOCKS_PER_SM, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>>>{
     using type = camp::resources::Cuda;
   };
 #endif
@@ -87,8 +89,9 @@ namespace RAJA
     using type = camp::resources::Hip;
   };
 
-  template<typename IterationMapping, typename IterationGetter, bool Async>
-  struct get_resource<::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>>{
+  template<typename IterationMapping, typename IterationGetter,
+           typename Concretizer, bool Async>
+  struct get_resource<::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>>{
     using type = camp::resources::Hip;
   };
 
@@ -97,8 +100,9 @@ namespace RAJA
     using type = camp::resources::Hip;
   };
 
-  template<typename ISetIter, typename IterationMapping, typename IterationGetter, bool Async>
-  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>>>{
+  template<typename ISetIter, typename IterationMapping, typename IterationGetter,
+           typename Concretizer, bool Async>
+  struct get_resource<ExecPolicy<ISetIter, ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>>>{
     using type = camp::resources::Hip;
   };
 #endif
