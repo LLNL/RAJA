@@ -433,7 +433,7 @@ struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Dir
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
                    SEGMENT> {
@@ -457,7 +457,7 @@ struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Str
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1>,
@@ -493,7 +493,7 @@ struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Str
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1,
@@ -625,7 +625,7 @@ struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {
@@ -649,7 +649,7 @@ struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1>,
@@ -686,7 +686,7 @@ struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopICountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1,
@@ -810,18 +810,18 @@ struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapp
 };
 
 template<typename SEGMENT, kernel_sync_requirement sync, typename IndexMapper0>
-struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                           sync,
                                                           IndexMapper0>,
                    SEGMENT>
-    :  LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+    :  LoopExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                   sync,
                                                   IndexMapper0>,
                    SEGMENT>
 {};
 
 template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                           kernel_sync_requirement::none,
                                                           IndexMapper0,
                                                           IndexMapper1>,
@@ -852,7 +852,7 @@ struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapp
 };
 
 template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapping::StridedLoop,
+struct LoopExecute<RAJA::policy::cuda::cuda_flatten_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                           kernel_sync_requirement::none,
                                                           IndexMapper0,
                                                           IndexMapper1,
@@ -914,7 +914,7 @@ struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Dir
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
                    SEGMENT> {
@@ -964,7 +964,7 @@ struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 };
 
 template <typename SEGMENT, typename IndexMapper>
-struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop,
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {

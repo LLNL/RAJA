@@ -32,5 +32,6 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    using_raja
    config_options
    features
+   cook_book
    app_considerations
    tutorial
