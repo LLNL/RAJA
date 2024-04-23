@@ -19,7 +19,7 @@ variables:
 # Note: We repeat the reservation, necessary when jobs are manually re-triggered.
   RUBY_JOB_ALLOC: "--reservation=ci --nodes=1"
 # Project specific variants for ruby
-  PROJECT_RUBY_VARIANTS: "~shared +openmp +tests"
+  PROJECT_RUBY_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for ruby
   PROJECT_RUBY_DEPS: ""
 
@@ -29,7 +29,7 @@ variables:
 # Arguments for job level allocation
   POODLE_JOB_ALLOC: "--nodes=1"
 # Project specific variants for poodle
-  PROJECT_POODLE_VARIANTS: "~shared +openmp +tests"
+  PROJECT_POODLE_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for poodle
   PROJECT_POODLE_DEPS: ""
 
@@ -39,17 +39,17 @@ variables:
 # Arguments for job level allocation
   CORONA_JOB_ALLOC: "--nodes=1 --begin-time=+5s"
 # Project specific variants for corona
-  PROJECT_CORONA_VARIANTS: "~shared ~openmp +tests"
+  PROJECT_CORONA_VARIANTS: "~shared ~openmp +vectorization +tests"
 # Project specific deps for corona
   PROJECT_CORONA_DEPS: "^blt@develop "
 
 # Tioga
 # Arguments for top level allocation
-  TIOGA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1 -o per-resource.count=2"
+  TIOGA_SHARED_ALLOC: "--exclusive --queue=pci --time-limit=60m --nodes=1 -o per-resource.count=2"
 # Arguments for job level allocation
   TIOGA_JOB_ALLOC: "--nodes=1 --begin-time=+5s"
 # Project specific variants for corona
-  PROJECT_TIOGA_VARIANTS: "~shared ~openmp +tests"
+  PROJECT_TIOGA_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for corona
   PROJECT_TIOGA_DEPS: "^blt@develop "
 
@@ -58,7 +58,7 @@ variables:
 # Arguments for job level allocation
   LASSEN_JOB_ALLOC: "1 -W 30 -q pci"
 # Project specific variants for lassen
-  PROJECT_LASSEN_VARIANTS: "~shared +openmp +tests cuda_arch=70"
+  PROJECT_LASSEN_VARIANTS: "~shared +openmp +vectorization +tests cuda_arch=70"
 # Project specific deps for lassen
   PROJECT_LASSEN_DEPS: "^blt@develop "
 

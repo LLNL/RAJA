@@ -13,7 +13,7 @@ if [[ $# -lt 1 ]]; then
   echo "   1) SYCL compiler installation path"
   echo
   echo "For example: "
-  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_a0117ab8692a_hip_gcc10.2.1_rocm5.6.0"
+  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1"
   exit
 fi
 
