@@ -35,6 +35,7 @@
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/Registry.hpp"
+#include "RAJA/util/for_each.hpp"
 
 
 //
