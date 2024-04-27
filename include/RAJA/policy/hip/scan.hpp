@@ -230,7 +230,7 @@ inclusive(
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan<Config,
+  hipErrchk((::rocprim::inclusive_scan<Config,
                                       InputIter,
                                       OutputIter,
                                       Function,
@@ -240,7 +240,7 @@ inclusive(
                                                out,
                                                len,
                                                binary_op,
-                                               stream));
+                                               stream)));
 #elif defined(__CUDACC__)
   hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
                                              temp_storage_bytes,
@@ -256,7 +256,7 @@ inclusive(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan<Config,
+  hipErrchk((::rocprim::inclusive_scan<Config,
                                       InputIter,
                                       OutputIter,
                                       Function,
@@ -266,7 +266,7 @@ inclusive(
                                                out,
                                                len,
                                                binary_op,
-                                               stream));
+                                               stream)));
 #elif defined(__CUDACC__)
   hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
                                              temp_storage_bytes,
