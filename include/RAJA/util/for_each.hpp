@@ -54,7 +54,7 @@ RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each_type(camp::list<Ts...> const&, UnaryFunc func)
 {
   // braced init lists are evaluated in order
-  int seq_unused_array[] = {(func(Ts{}), 0)...};
+  int seq_unused_array[] = {0, (func(Ts{}), 0)...};
   RAJA_UNUSED_VAR(seq_unused_array);
 
   return func;
