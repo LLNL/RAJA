@@ -135,9 +135,12 @@ exclusive_inplace(
     InputIter begin,
     InputIter end,
     Function binary_op,
-    T init)
+    T init_in)
 {
   hipStream_t stream = hip_res.get_stream();
+
+  using AccType = typename std::iterator_traits<InputIter>::value_type;
+  auto init = static_cast<AccType>(init_in);
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
