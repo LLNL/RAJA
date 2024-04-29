@@ -69,7 +69,7 @@ template <typename T>
 struct atomic<sum<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicAdd<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicAdd(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -77,7 +77,7 @@ template <typename T>
 struct atomic<min<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMin<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicMin(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -85,7 +85,7 @@ template <typename T>
 struct atomic<max<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMax<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicMax(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -93,7 +93,7 @@ template <typename T>
 struct atomic<and_bit<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicAnd<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicAnd(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
@@ -101,7 +101,7 @@ template <typename T>
 struct atomic<or_bit<T>> {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicOr<T>(RAJA::cuda_atomic{}, &val, v);
+    RAJA::atomicOr(RAJA::cuda_atomic{}, &val, v);
   }
 };
 
