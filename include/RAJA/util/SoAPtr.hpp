@@ -46,7 +46,7 @@ template <typename T,
 class SoAPtr
 {
   template < typename, typename, typename >
-  friend class SoAPtr; // fiend other instantiations of this class
+  friend class SoAPtr; // friend other instantiations of this class
 
 public:
   using value_type = T;
