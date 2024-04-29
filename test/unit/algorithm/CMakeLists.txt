@@ -88,3 +88,8 @@ unset( SORT_BACKENDS )
 unset( SEQUENTIAL_UTIL_SORTS )
 unset( CUDA_UTIL_SORTS )
 unset( HIP_UTIL_SORTS )
+
+
+raja_add_test(
+  NAME test-algorithm-util-for_each
+  SOURCES test-algorithm-util-for_each.cpp)
