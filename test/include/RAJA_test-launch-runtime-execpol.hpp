@@ -52,8 +52,8 @@ using Sequential_launch_policies = camp::list<seq_hip_policies>;
 using seq_sycl_policies =
   camp::list<
              RAJA::LaunchPolicy<RAJA::seq_launch_t,RAJA::sycl_launch_t<true>>,
-             RAJA::LoopPolicy<RAJA::seq_exec, RAJA::sycl_group_0_direct>,
-             RAJA::LoopPolicy<RAJA::seq_exec,RAJA::sycl_local_0_loop>
+             RAJA::LoopPolicy<RAJA::seq_exec, RAJA::sycl_group_2_direct>,
+             RAJA::LoopPolicy<RAJA::seq_exec,RAJA::sycl_local_2_loop>
             >;
 
 using Sequential_launch_policies = camp::list<seq_sycl_policies>;
@@ -110,8 +110,8 @@ using OpenMP_launch_policies = camp::list<omp_hip_policies>;
 using omp_sycl_policies =
   camp::list<
              RAJA::LaunchPolicy<RAJA::omp_launch_t,RAJA::sycl_launch_t<false>>,
-             RAJA::LoopPolicy<RAJA::omp_for_exec, RAJA::sycl_group_0_direct>,
-             RAJA::LoopPolicy<RAJA::seq_exec,RAJA::sycl_local_0_loop>
+             RAJA::LoopPolicy<RAJA::omp_for_exec, RAJA::sycl_group_2_direct>,
+             RAJA::LoopPolicy<RAJA::seq_exec,RAJA::sycl_local_2_loop>
             >;
 
 using OpenMP_launch_policies = camp::list<omp_sycl_policies>;
