@@ -541,7 +541,7 @@ GPU Policies for SYCL
 	  When using RAJA launch thread and team configuration
 	  follows CUDA and HIP programming models and is always
 	  configured in three-dimensions. This means that dimension
-	  2 always exist and should be used as one would the
+	  2 always exists and should be used as one would use the
 	  x dimension for CUDA and HIP.
 
  ======================================== ============= ==============================
