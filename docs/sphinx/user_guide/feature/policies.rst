@@ -524,7 +524,6 @@ write more explicit policies.
             ignored. For example in cuda_thread_x_direct block_size is
             unspecified so a runtime number of threads is used, but grid_size is
             ignored so blocks are ignored when getting indices.
-
 	    
 GPU Policies for SYCL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -535,7 +534,9 @@ GPU Policies for SYCL
 	  that dimension 2 has the unit stride while
 	  dimension 0 has the longest stride. This is
 	  important to note as the ordering is reverse
-	  compared to the CUDA and HIP programming models.   
+	  compared to the CUDA and HIP programming models.
+	  CUDA and HIP employ a x/y/z ordering in which
+	  dimension x has the unit stride.
 
 	  When using RAJA launch thread and team configuration
 	  follows CUDA and HIP programming models and is always
