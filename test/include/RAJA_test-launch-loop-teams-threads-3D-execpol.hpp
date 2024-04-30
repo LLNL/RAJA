@@ -95,12 +95,12 @@ using Hip_launch_policies = camp::list<
 #if defined(RAJA_ENABLE_SYCL)
 using sycl_loop_policies = camp::list<
   RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
-  RAJA::LoopPolicy<RAJA::sycl_group_2_loop>,
+  RAJA::LoopPolicy<RAJA::sycl_group_0_loop>, //slowest index
   RAJA::LoopPolicy<RAJA::sycl_group_1_loop>,
-  RAJA::LoopPolicy<RAJA::sycl_group_0_loop>,
-  RAJA::LoopPolicy<RAJA::sycl_local_2_loop>,
+  RAJA::LoopPolicy<RAJA::sycl_group_2_loop>, //fastest index
+  RAJA::LoopPolicy<RAJA::sycl_local_0_loop>,
   RAJA::LoopPolicy<RAJA::sycl_local_1_loop>,
-  RAJA::LoopPolicy<RAJA::sycl_local_0_loop>
+  RAJA::LoopPolicy<RAJA::sycl_local_2_loop>
   >;
 
 using Sycl_launch_policies = camp::list<  

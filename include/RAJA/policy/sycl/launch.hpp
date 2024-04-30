@@ -56,13 +56,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     // Compute the number of blocks and threads
     //
 
-    const ::sycl::range<3> blockSize(params.threads.value[0],
+    const ::sycl::range<3> blockSize(params.threads.value[2],
 				     params.threads.value[1],
-				     params.threads.value[2]);
+				     params.threads.value[0]);
 
-    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+    const ::sycl::range<3> gridSize(params.threads.value[2] * params.teams.value[2],
 				    params.threads.value[1] * params.teams.value[1],
-				    params.threads.value[2] * params.teams.value[2]);
+				    params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
@@ -138,13 +138,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     // Compute the number of blocks and threads
     //
 
-    const ::sycl::range<3> blockSize(params.threads.value[0],
+    const ::sycl::range<3> blockSize(params.threads.value[2],
 				     params.threads.value[1],
-				     params.threads.value[2]);
+				     params.threads.value[0]);
 
-    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+    const ::sycl::range<3> gridSize(params.threads.value[2] * params.teams.value[2],
 				    params.threads.value[1] * params.teams.value[1],
-				    params.threads.value[2] * params.teams.value[2]);
+				    params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
