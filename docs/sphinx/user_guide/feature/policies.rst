@@ -280,15 +280,15 @@ policies have the prefix ``hip_``.
      Concretizer>                                        policy but the grid size
                                                          is determined by the
                                                          concretizer.
- cuda/hip_exec_rec_for_reduce<BLOCK_SIZE>  forall        The cuda/hip exec policy
-                                                         that is recommended for
-                                                         use with reducers. In general using
-                                                         the occupancy calculator policies
-                                                         are better but exactly how much
-                                                         occupancy to use differs by platform
-                                                         so this policy provides a simple way
-                                                         to get what works best for that platform
-                                                         without having to know the details.
+ cuda/hip_exec_reduce_default<BLOCK_SIZE>  forall        The cuda/hip exec policy that is
+                                                         recommended for use with reducers.
+                                                         In general using the occupancy
+                                                         calculator policies are better for
+                                                         reducers but exactly how much occupancy
+                                                         to use differs by platform so this policy
+                                                         provides a simple way to get what works
+                                                         best for a platform without having to
+                                                         know the details.
  cuda/hip_launch_t                         launch        Launches a device kernel,
                                                          any code expressed within
                                                          the lambda is executed
@@ -758,22 +758,26 @@ cuda/hip_reduce                          any CUDA/HIP  Parallel reduction in a C
                                          policy        (device synchronization will occur when
                                                        reduction value is finalized).
 cuda/hip_reduce\*atomic\*                any CUDA/HIP  Same as above, but reduction may use
-                                         policy        atomic operations and initializes the
-                                                       memory used for atomics on the device.
-                                                       This works on all architectures but
-                                                       incurs higher overheads.
-cuda/hip_reduce\*atomic_host\*           any CUDA/HIP  Same as above, but reduction may use
-                                         policy        atomic operations and initializes the
+                                         policy        atomic operations leading to run to run
+                                                       variability in the results.
+cuda/hip_reduce\*host_init\*             any CUDA/HIP  Same as above, but initializes the
                                                        memory used for atomics on the host.
                                                        This works on recent architectures and
                                                        incurs lower overheads.
-cuda/hip_reduce\*with_fences             any CUDA/HIP  Same as above, and reduction uses normal
-                                         policy        memory accesses with device scope fences.
+cuda/hip_reduce\*device_init\*           any CUDA/HIP  Same as above, but initializes the
+                                                       memory used for atomics on the device.
                                                        This works on all architectures but
                                                        incurs higher overheads.
-cuda/hip_reduce\*avoid_fences            any CUDA/HIP  Same as above, and reduction uses special
-                                         policy        memory accesses to allow it to avoid
-                                                       device scope fences. This improves
+cuda/hip_reduce\*device_fence            any CUDA/HIP  Same as above, and reduction uses normal
+                                         policy        memory accesses that are not visible across
+                                                       the whole device and device scope fences
+                                                       to ensure visibility and ordering.
+                                                       This works on all architectures but
+                                                       incurs higher overheads on some architectures.
+cuda/hip_reduce\*block_fence             any CUDA/HIP  Same as above, and reduction uses special
+                                         policy        memory accesses to a level of cache shared
+                                                       visible to the whole device and block scope
+                                                       fences to ensure ordering. This improves
                                                        performance on some architectures.
 sycl_reduce                              any SYCL      Reduction in a SYCL kernel (device
                                          policy        synchronization will occur when the

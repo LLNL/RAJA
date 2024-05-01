@@ -52,15 +52,15 @@ RAJA uses policy types to specify how things are implemented.
 
 The forall *execution policy* specifies how the loop is run by the ``RAJA::forall`` method. The following discussion includes examples of several other RAJA execution policies that could be applied.
 For example ``RAJA::seq_exec`` runs a C-style for loop sequentially on a CPU. The
-``RAJA::cuda_exec_rec_for_reduce<256>`` runs the loop as a CUDA GPU kernel with
+``RAJA::cuda_exec_reduce_default<256>`` runs the loop as a CUDA GPU kernel with
 256 threads per block and other CUDA kernel launch parameters, like the
 number of blocks, optimized for performance with reducers.::
 
   using exec_policy = RAJA::seq_exec;
   // using exec_policy = RAJA::omp_parallel_for_exec;
   // using exec_policy = RAJA::omp_target_parallel_for_exec<256>;
-  // using exec_policy = RAJA::cuda_exec_rec_for_reduce<256>;
-  // using exec_policy = RAJA::hip_exec_rec_for_reduce<256>;
+  // using exec_policy = RAJA::cuda_exec_reduce_default<256>;
+  // using exec_policy = RAJA::hip_exec_reduce_default<256>;
   // using exec_policy = RAJA::sycl_exec<256>;
 
 The reduction policy specifies how the reduction is done and must match the
