@@ -162,15 +162,15 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
 
 enum struct reduce_algorithm : int
 {
-  finalize_last_block,
-  init_first_block_finalize_block_atomic,
-  init_host_finalize_block_atomic
+  combine_last_block,
+  init_device_combine_atomic_block,
+  init_host_combine_atomic_block
 };
 
 enum struct block_communication_mode : int
 {
   device_fence,
-  avoid_device_fence
+  block_fence
 };
 
 template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
@@ -303,49 +303,49 @@ using cuda_reduce_tuning = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
 //   the memory used with atomics is initialized on the host which is
 //   significantly cheaper on some HW. On some HW this is faster overall than
 //   the non-atomic and atomic policies.
-// - *with_fences policies use normal memory accesses with device scope fences
+// - *device_fence policies use normal memory accesses with device scope fences
 //                in the implementation. This works on all HW.
-// - *avoid_fences policies use special (atomic) memory accesses that only cache
+// - *block_fence policies use special (atomic) memory accesses that only cache
 //                 in a cache shared by the whole device to avoid having to use
 //                 device scope fences. This improves performance on some HW but
 //                 is more difficult to code correctly.
-using cuda_reduce_with_fences = cuda_reduce_tuning<
-    RAJA::cuda::reduce_algorithm::finalize_last_block,
+using cuda_reduce_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::combine_last_block,
     RAJA::cuda::block_communication_mode::device_fence,
     named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_avoid_fences = cuda_reduce_tuning<
-    RAJA::cuda::reduce_algorithm::finalize_last_block,
-    RAJA::cuda::block_communication_mode::avoid_device_fence,
+using cuda_reduce_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::combine_last_block,
+    RAJA::cuda::block_communication_mode::block_fence,
     named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_with_fences = cuda_reduce_tuning<
-    RAJA::cuda::reduce_algorithm::init_first_block_finalize_block_atomic,
+using cuda_reduce_atomic_device_init_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_device_combine_atomic_block,
     RAJA::cuda::block_communication_mode::device_fence,
     named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_avoid_fences = cuda_reduce_tuning<
-    RAJA::cuda::reduce_algorithm::init_first_block_finalize_block_atomic,
-    RAJA::cuda::block_communication_mode::avoid_device_fence,
+using cuda_reduce_atomic_device_init_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::block_fence,
     named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_host_with_fences = cuda_reduce_tuning<
-    RAJA::cuda::reduce_algorithm::init_host_finalize_block_atomic,
+using cuda_reduce_atomic_host_init_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_combine_atomic_block,
     RAJA::cuda::block_communication_mode::device_fence,
     named_usage::unspecified, named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_host_avoid_fences = cuda_reduce_tuning<
-    RAJA::cuda::reduce_algorithm::init_host_finalize_block_atomic,
-    RAJA::cuda::block_communication_mode::avoid_device_fence,
+using cuda_reduce_atomic_host_init_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::block_fence,
     named_usage::unspecified, named_usage::unspecified>;
 
 // Policy for RAJA::Reduce* objects that gives the same answer every time when
 // used in the same way
-using cuda_reduce = cuda_reduce_with_fences;
+using cuda_reduce = cuda_reduce_device_fence;
 
 // Policy for RAJA::Reduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
-using cuda_reduce_atomic = cuda_reduce_atomic_host_with_fences;
+using cuda_reduce_atomic = cuda_reduce_atomic_host_init_device_fence;
 
 // Policy for RAJA::Reduce* objects that lets you select the default atomic or
 // non-atomic policy with a bool
@@ -1229,12 +1229,12 @@ using policy::cuda::cuda_atomic;
 using policy::cuda::cuda_atomic_explicit;
 
 // policies usable with reducers
-using policy::cuda::cuda_reduce_with_fences;
-using policy::cuda::cuda_reduce_avoid_fences;
-using policy::cuda::cuda_reduce_atomic_with_fences;
-using policy::cuda::cuda_reduce_atomic_avoid_fences;
-using policy::cuda::cuda_reduce_atomic_host_with_fences;
-using policy::cuda::cuda_reduce_atomic_host_avoid_fences;
+using policy::cuda::cuda_reduce_device_fence;
+using policy::cuda::cuda_reduce_block_fence;
+using policy::cuda::cuda_reduce_atomic_device_init_device_fence;
+using policy::cuda::cuda_reduce_atomic_device_init_block_fence;
+using policy::cuda::cuda_reduce_atomic_host_init_device_fence;
+using policy::cuda::cuda_reduce_atomic_host_init_block_fence;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;

@@ -121,7 +121,7 @@ namespace impl
 template <typename Combiner, typename Accessor,
           int replication, int atomic_stride,
           typename T, typename TempIterator>
-RAJA_DEVICE RAJA_INLINE int grid_reduce(T& val,
+RAJA_DEVICE RAJA_INLINE int grid_reduce_last_block(T& val,
                                         T identity,
                                         TempIterator in_device_mem,
                                         unsigned int* device_count)
@@ -323,7 +323,7 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red
 template <typename Combiner, typename Accessor,
           int replication, int atomic_stride,
           typename T>
-RAJA_DEVICE RAJA_INLINE int grid_reduce_atomic(T& val,
+RAJA_DEVICE RAJA_INLINE int grid_reduce_atomic_device_init(T& val,
                                                T identity,
                                                T* device_mem,
                                                unsigned int* device_count)
@@ -386,7 +386,7 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce_atomic(T& val,
 
 //! reduce values in block into thread 0 and atomically combines into device_mem
 template <typename Combiner, int replication, int atomic_stride, typename T>
-RAJA_DEVICE RAJA_INLINE void grid_reduce_atomic_initialized(T& val,
+RAJA_DEVICE RAJA_INLINE void grid_reduce_atomic_host_init(T& val,
                                                             T identity,
                                                             T* device_mem)
 {
@@ -600,7 +600,7 @@ private:
 //! pointer
 template <typename Combiner, typename Accessor, typename T,
           size_t replication, size_t atomic_stride>
-struct Reduce_Data
+struct ReduceLastBlock_Data
 {
   using tally_mempool_type = pinned_mempool_type;
   using data_mempool_type = device_mempool_type;
@@ -614,14 +614,14 @@ struct Reduce_Data
   RAJA::detail::SoAPtr<T, data_mempool_type> device;
   bool own_device_ptr;
 
-  Reduce_Data() : Reduce_Data(T(), T()){};
+  ReduceLastBlock_Data() : ReduceLastBlock_Data(T(), T()){};
 
   /*! \brief create from a default value and offload information
    *
    *  allocates PinnedTally to hold device values
    */
 
-  Reduce_Data(T initValue, T identity_)
+  ReduceLastBlock_Data(T initValue, T identity_)
       : value{initValue},
         identity{identity_},
         device_count{nullptr},
@@ -631,7 +631,7 @@ struct Reduce_Data
   }
 
   RAJA_HOST_DEVICE
-  Reduce_Data(const Reduce_Data& other)
+  ReduceLastBlock_Data(const ReduceLastBlock_Data& other)
       : value{other.identity},
         identity{other.identity},
         device_count{other.device_count},
@@ -640,7 +640,7 @@ struct Reduce_Data
   {
   }
 
-  Reduce_Data& operator=(const Reduce_Data&) = default;
+  ReduceLastBlock_Data& operator=(const ReduceLastBlock_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
@@ -657,7 +657,7 @@ struct Reduce_Data
   void grid_reduce(T* output)
   {
     T temp = value;
-    size_t replicationId = impl::grid_reduce<
+    size_t replicationId = impl::grid_reduce_last_block<
         Combiner, Accessor, replication, atomic_stride>(
           temp, identity, device, device_count);
     if (replicationId != replication) {
@@ -701,7 +701,7 @@ struct Reduce_Data
 //! Reduction data for Hip Offload -- stores value, host pointer
 template <typename Combiner, typename T,
           size_t replication, size_t atomic_stride>
-struct ReduceAtomicInitialized_Data
+struct ReduceAtomicHostInit_Data
 {
   using tally_mempool_type = device_pinned_mempool_type;
 
@@ -712,9 +712,9 @@ struct ReduceAtomicInitialized_Data
   bool is_setup;
   bool own_device_ptr;
 
-  ReduceAtomicInitialized_Data() : ReduceAtomicInitialized_Data(T(), T()){}
+  ReduceAtomicHostInit_Data() : ReduceAtomicHostInit_Data(T(), T()){}
 
-  ReduceAtomicInitialized_Data(T initValue, T identity_)
+  ReduceAtomicHostInit_Data(T initValue, T identity_)
       : value{initValue},
         identity{identity_},
         is_setup{false},
@@ -723,7 +723,7 @@ struct ReduceAtomicInitialized_Data
   }
 
   RAJA_HOST_DEVICE
-  ReduceAtomicInitialized_Data(const ReduceAtomicInitialized_Data& other)
+  ReduceAtomicHostInit_Data(const ReduceAtomicHostInit_Data& other)
       : value{other.identity},
         identity{other.identity},
         is_setup{other.is_setup},
@@ -731,7 +731,7 @@ struct ReduceAtomicInitialized_Data
   {
   }
 
-  ReduceAtomicInitialized_Data& operator=(const ReduceAtomicInitialized_Data&) = default;
+  ReduceAtomicHostInit_Data& operator=(const ReduceAtomicHostInit_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
@@ -749,7 +749,7 @@ struct ReduceAtomicInitialized_Data
   {
     T temp = value;
 
-    impl::grid_reduce_atomic_initialized<Combiner, replication, atomic_stride>(
+    impl::grid_reduce_atomic_host_init<Combiner, replication, atomic_stride>(
             temp, identity, output);
   }
 
@@ -781,7 +781,7 @@ struct ReduceAtomicInitialized_Data
 //! Reduction data for Hip Offload -- stores value, host pointer
 template <typename Combiner, typename Accessor, typename T,
           size_t replication, size_t atomic_stride>
-struct ReduceAtomic_Data
+struct ReduceAtomicDeviceInit_Data
 {
   using tally_mempool_type = pinned_mempool_type;
   using data_mempool_type = device_mempool_type;
@@ -795,9 +795,9 @@ struct ReduceAtomic_Data
   T* device;
   bool own_device_ptr;
 
-  ReduceAtomic_Data() : ReduceAtomic_Data(T(), T()){}
+  ReduceAtomicDeviceInit_Data() : ReduceAtomicDeviceInit_Data(T(), T()){}
 
-  ReduceAtomic_Data(T initValue, T identity_)
+  ReduceAtomicDeviceInit_Data(T initValue, T identity_)
       : value{initValue},
         identity{identity_},
         device_count{nullptr},
@@ -807,7 +807,7 @@ struct ReduceAtomic_Data
   }
 
   RAJA_HOST_DEVICE
-  ReduceAtomic_Data(const ReduceAtomic_Data& other)
+  ReduceAtomicDeviceInit_Data(const ReduceAtomicDeviceInit_Data& other)
       : value{other.identity},
         identity{other.identity},
         device_count{other.device_count},
@@ -816,7 +816,7 @@ struct ReduceAtomic_Data
   {
   }
 
-  ReduceAtomic_Data& operator=(const ReduceAtomic_Data&) = default;
+  ReduceAtomicDeviceInit_Data& operator=(const ReduceAtomicDeviceInit_Data&) = default;
 
   //! initialize output to identity to ensure never read
   //  uninitialized memory
@@ -834,7 +834,7 @@ struct ReduceAtomic_Data
   {
     T temp = value;
 
-    size_t replicationId = impl::grid_reduce_atomic<
+    size_t replicationId = impl::grid_reduce_atomic_device_init<
         Combiner, Accessor, replication, atomic_stride>(
           temp, identity, device, device_count);
     if (replicationId != replication) {
@@ -886,26 +886,26 @@ class Reduce
         ? RAJA_DIVIDE_CEILING_INT(policy::hip::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE, sizeof(T))
         : 1);
 
-  using Accessor = std::conditional_t<(tuning::comm_mode == block_communication_mode::avoid_device_fence),
-      impl::AccessorDeviceScopeUseSharedCache,
+  using Accessor = std::conditional_t<(tuning::comm_mode == block_communication_mode::block_fence),
+      impl::AccessorDeviceScopeUseBlockFence,
       std::conditional_t<(tuning::comm_mode == block_communication_mode::device_fence),
-        impl::AccessorDeviceScopeUseLocalCache,
+        impl::AccessorDeviceScopeUseDeviceFence,
         void>>;
 
   static constexpr bool atomic_policy =
-      (tuning::algorithm == reduce_algorithm::init_first_block_finalize_block_atomic) ||
-      (tuning::algorithm == reduce_algorithm::init_host_finalize_block_atomic);
+      (tuning::algorithm == reduce_algorithm::init_device_combine_atomic_block) ||
+      (tuning::algorithm == reduce_algorithm::init_host_combine_atomic_block);
   static constexpr bool atomic_available = RAJA::reduce::hip::hip_atomic_available<T>::value;
 
   //! hip reduction data storage class and folding algorithm
-  using reduce_data_type = std::conditional_t<(tuning::algorithm == reduce_algorithm::finalize_last_block) ||
+  using reduce_data_type = std::conditional_t<(tuning::algorithm == reduce_algorithm::combine_last_block) ||
                                               (atomic_policy && !atomic_available),
-      hip::Reduce_Data<Combiner, Accessor, T, replication, atomic_stride>,
+      hip::ReduceLastBlock_Data<Combiner, Accessor, T, replication, atomic_stride>,
       std::conditional_t<atomic_available,
-        std::conditional_t<(tuning::algorithm == reduce_algorithm::init_first_block_finalize_block_atomic),
-          hip::ReduceAtomic_Data<Combiner, Accessor, T, replication, atomic_stride>,
-          std::conditional_t<(tuning::algorithm == reduce_algorithm::init_host_finalize_block_atomic),
-            hip::ReduceAtomicInitialized_Data<Combiner, T, replication, atomic_stride>,
+        std::conditional_t<(tuning::algorithm == reduce_algorithm::init_device_combine_atomic_block),
+          hip::ReduceAtomicDeviceInit_Data<Combiner, Accessor, T, replication, atomic_stride>,
+          std::conditional_t<(tuning::algorithm == reduce_algorithm::init_host_combine_atomic_block),
+            hip::ReduceAtomicHostInit_Data<Combiner, T, replication, atomic_stride>,
             void>>,
         void>>;
 

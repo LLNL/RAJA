@@ -57,7 +57,7 @@ namespace impl
  *       so device scope fences are required to make memory accesses visible
  *       to the whole device.
  */
-struct AccessorDeviceScopeUseLocalCache : RAJA::detail::DefaultAccessor
+struct AccessorDeviceScopeUseDeviceFence : RAJA::detail::DefaultAccessor
 {
   static RAJA_DEVICE RAJA_INLINE void fence_acquire()
   {
@@ -90,7 +90,7 @@ struct AccessorDeviceScopeUseLocalCache : RAJA::detail::DefaultAccessor
  *
  ******************************************************************************
  */
-struct AccessorDeviceScopeUseSharedCache
+struct AccessorDeviceScopeUseBlockFence
 {
   // hip has 32 and 64 bit atomics
   static constexpr size_t min_atomic_int_type_size = sizeof(unsigned int);
