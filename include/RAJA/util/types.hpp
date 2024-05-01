@@ -899,31 +899,31 @@ struct AsIntegerArray
 {
   static_assert(min_integer_type_size <= max_integer_type_size,
                 "incompatible min and max integer type size");
-  using integer_type = typename std::conditional<
+  using integer_type = std::conditional_t<
       ((alignof(T) >= alignof(unsigned long long) &&
         sizeof(unsigned long long) <= max_integer_type_size) ||
        sizeof(unsigned long) < min_integer_type_size),
       unsigned long long,
-      typename std::conditional<
+      std::conditional_t<
           ((alignof(T) >= alignof(unsigned long) &&
             sizeof(unsigned long) <= max_integer_type_size) ||
            sizeof(unsigned int) < min_integer_type_size),
           unsigned long,
-          typename std::conditional<
+          std::conditional_t<
               ((alignof(T) >= alignof(unsigned int) &&
                 sizeof(unsigned int) <= max_integer_type_size) ||
                sizeof(unsigned short) < min_integer_type_size),
               unsigned int,
-              typename std::conditional<
+              std::conditional_t<
                   ((alignof(T) >= alignof(unsigned short) &&
                     sizeof(unsigned short) <= max_integer_type_size) ||
                    sizeof(unsigned char) < min_integer_type_size),
                   unsigned short,
-                  typename std::conditional<
+                  std::conditional_t<
                       ((alignof(T) >= alignof(unsigned char) &&
                         sizeof(unsigned char) <= max_integer_type_size)),
                       unsigned char,
-                      void>::type>::type>::type>::type>::type;
+                      void>>>>>;
   static_assert(!std::is_same<integer_type, void>::value,
                 "could not find a compatible integer type");
   static_assert(sizeof(integer_type) >= min_integer_type_size,
