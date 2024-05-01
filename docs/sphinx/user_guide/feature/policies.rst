@@ -280,7 +280,7 @@ policies have the prefix ``hip_``.
      Concretizer>                                        policy but the grid size
                                                          is determined by the
                                                          concretizer.
- cuda/hip_exec_reduce_default<BLOCK_SIZE>  forall        The cuda/hip exec policy that is
+ cuda/hip_exec_with_reduce<BLOCK_SIZE>     forall        The cuda/hip exec policy that is
                                                          recommended for use with reducers.
                                                          In general using the occupancy
                                                          calculator policies are better for

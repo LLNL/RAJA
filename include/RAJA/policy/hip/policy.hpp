@@ -1125,12 +1125,12 @@ using hip_exec_occ_custom_async = policy::hip::hip_exec<
     Concretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using hip_exec_reduce_default = policy::hip::hip_exec<
+using hip_exec_with_reduce = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
     HipReduceDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
-using hip_exec_reduce_default_async = policy::hip::hip_exec<
+using hip_exec_with_reduce_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
     HipReduceDefaultConcretizer, true>;
 
