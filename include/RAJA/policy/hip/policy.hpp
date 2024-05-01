@@ -1134,6 +1134,16 @@ using hip_exec_with_reduce_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
     HipReduceDefaultConcretizer, true>;
 
+template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_base = std::conditional_t<with_reduce,
+    hip_exec_with_reduce<BLOCK_SIZE, Async>,
+    hip_exec<BLOCK_SIZE, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE>
+using hip_exec_base_async = std::conditional_t<with_reduce,
+    hip_exec_with_reduce<BLOCK_SIZE>,
+    hip_exec<BLOCK_SIZE>>;
+
 // policies usable with WorkGroup
 using policy::hip::hip_work;
 

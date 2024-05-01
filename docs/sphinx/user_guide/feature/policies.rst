@@ -247,6 +247,18 @@ policies have the prefix ``hip_``.
                                                          Note that the thread-block
                                                          size must be provided,
                                                          there is no default.
+ cuda/hip_exec_with_reduce<BLOCK_SIZE>     forall        The cuda/hip exec policy that is
+                                                         recommended for use with reducers.
+                                                         In general using the occupancy
+                                                         calculator policies are better for
+                                                         reducers but exactly how much occupancy
+                                                         to use differs by platform so this policy
+                                                         provides a simple way to get what works
+                                                         best for a platform without having to
+                                                         know the details.
+ cuda/hip_exec_base<with_reduce,           forall        Choose between cuda/hip_exec and
+                    BLOCK_SIZE>                          cuda/hip_exec_with_reduce policies based on
+                                                         the with_reduce boolean.
  cuda/hip_exec_grid<BLOCK_SIZE, GRID_SIZE> forall,       Execute loop iterations
                                                          mapped to global threads via
                                                          grid striding with multiple
@@ -280,15 +292,6 @@ policies have the prefix ``hip_``.
      Concretizer>                                        policy but the grid size
                                                          is determined by the
                                                          concretizer.
- cuda/hip_exec_with_reduce<BLOCK_SIZE>     forall        The cuda/hip exec policy that is
-                                                         recommended for use with reducers.
-                                                         In general using the occupancy
-                                                         calculator policies are better for
-                                                         reducers but exactly how much occupancy
-                                                         to use differs by platform so this policy
-                                                         provides a simple way to get what works
-                                                         best for a platform without having to
-                                                         know the details.
  cuda/hip_launch_t                         launch        Launches a device kernel,
                                                          any code expressed within
                                                          the lambda is executed
@@ -757,9 +760,12 @@ omp_target_reduce                        any OpenMP    OpenMP parallel target of
 cuda/hip_reduce                          any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
                                          policy        (device synchronization will occur when
                                                        reduction value is finalized).
-cuda/hip_reduce\*atomic\*                any CUDA/HIP  Same as above, but reduction may use
+cuda/hip_reduce_atomic                   any CUDA/HIP  Same as above, but reduction may use
                                          policy        atomic operations leading to run to run
                                                        variability in the results.
+cuda/hip_reduce_base<maybe_atomic>       any CUDA/HIP  Choose between cuda/hip_reduce and
+                                         policy        cuda/hip_reduce_atomic policies based on
+                                                       the maybe_atomic boolean.
 cuda/hip_reduce\*host_init\*             any CUDA/HIP  Same as above, but initializes the
                                                        memory used for atomics on the host.
                                                        This works on recent architectures and

@@ -1208,6 +1208,26 @@ using cuda_exec_with_reduce_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
     CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
+template <bool with_reduce, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_base_explicit = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    cuda_exec<BLOCK_SIZE, BLOCKS_PER_SM, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_base_explicit_async = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE, BLOCKS_PER_SM>,
+    cuda_exec<BLOCK_SIZE, BLOCKS_PER_SM>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_base = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE, Async>,
+    cuda_exec<BLOCK_SIZE, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE>
+using cuda_exec_base_async = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE>,
+    cuda_exec<BLOCK_SIZE>>;
+
 
 // policies usable with WorkGroup
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
