@@ -1062,7 +1062,7 @@ using CudaFractionOffsetOccupancyConcretizer = cuda::FractionOffsetOccupancyConc
 
 using CudaMaxOccupancyConcretizer = cuda::MaxOccupancyConcretizer;
 
-using CudaRecForReduceConcretizer = CudaMaxOccupancyConcretizer;
+using CudaReduceDefaultConcretizer = CudaMaxOccupancyConcretizer;
 
 using CudaDefaultConcretizer = CudaMaxOccupancyConcretizer;
 
@@ -1189,24 +1189,24 @@ using cuda_exec_occ_custom_async = policy::cuda::cuda_exec_explicit<
     Concretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
-using cuda_exec_rec_for_reduce_explicit = policy::cuda::cuda_exec_explicit<
+using cuda_exec_reduce_default_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, BLOCKS_PER_SM, Async>;
+    CudaReduceDefaultConcretizer, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
-using cuda_exec_rec_for_reduce_explicit_async = policy::cuda::cuda_exec_explicit<
+using cuda_exec_reduce_default_explicit_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, BLOCKS_PER_SM, true>;
+    CudaReduceDefaultConcretizer, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using cuda_exec_rec_for_reduce = policy::cuda::cuda_exec_explicit<
+using cuda_exec_reduce_default = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
-using cuda_exec_rec_for_reduce_async = policy::cuda::cuda_exec_explicit<
+using cuda_exec_reduce_default_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 
 // policies usable with WorkGroup

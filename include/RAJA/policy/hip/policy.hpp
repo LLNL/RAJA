@@ -1058,7 +1058,7 @@ using HipFractionOffsetOccupancyConcretizer = hip::FractionOffsetOccupancyConcre
 
 using HipMaxOccupancyConcretizer = hip::MaxOccupancyConcretizer;
 
-using HipRecForReduceConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
+using HipReduceDefaultConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
 
 using HipDefaultConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
 
@@ -1125,14 +1125,14 @@ using hip_exec_occ_custom_async = policy::hip::hip_exec<
     Concretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using hip_exec_rec_for_reduce = policy::hip::hip_exec<
+using hip_exec_reduce_default = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipRecForReduceConcretizer, Async>;
+    HipReduceDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
-using hip_exec_rec_for_reduce_async = policy::hip::hip_exec<
+using hip_exec_reduce_default_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipRecForReduceConcretizer, true>;
+    HipReduceDefaultConcretizer, true>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
