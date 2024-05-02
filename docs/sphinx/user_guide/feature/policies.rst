@@ -242,7 +242,7 @@ policies have the prefix ``hip_``.
 | cuda/hip_exec<BLOCK_SIZE>                          | forall,       | Execute loop iterations         |
 |                                                    | scan,         | directly mapped to global       |
 |                                                    | sort          | threads in a GPU kernel         |
-|                                                    |               | launched with given threadblock | 
+|                                                    |               | launched with given threadblock |
 |                                                    |               | size and unbounded grid size.   |
 |                                                    |               | Note that the threadblock       |
 |                                                    |               | size must be provided.          |
@@ -295,9 +295,9 @@ policies have the prefix ``hip_``.
 |                                                    |               | performance reasons.            |
 +----------------------------------------------------+---------------+---------------------------------+
 | cuda/hip_exec_occ_fraction<BLOCK_SIZE,             | forall        | Similar to the occ_max policy   |
-|                            Fraction<size_t,        |               | but use a fraction of the       |
-|                                     numerator,     |               | maximum occupancy of the kernel.|
-|                                     denominator>>  |               |                                 | 
+| Fraction<size_t, numerator, denominator>>          |               | but use a fraction of the       |
+|                                                    |               | maximum occupancy of the kernel.|
+|                                                    |               |                                 |
 |                                                    |               |                                 |
 +----------------------------------------------------+---------------+---------------------------------+
 | cuda/hip_exec_occ_custom<BLOCK_SIZE, Concretizer>  | forall        | Similar to the occ_max policy   |
@@ -489,8 +489,8 @@ policies:
 |                                                    | occupancy of the device.                |
 +----------------------------------------------------+-----------------------------------------+
 | Cuda/HipFractionOffsetOccupancyConcretizer<        | Uses a fraction and offset to choose an |
-|   Fraction<size_t, numerator, denomenator>,        | occupancy based on the max occupancy    |
-|   BLOCKS_PER_SM_OFFSET>                            | Using the following formula:            |
+| Fraction<size_t, numerator, denomenator>,          | occupancy based on the max occupancy    |
+| BLOCKS_PER_SM_OFFSET>                              | Using the following formula:            |
 |                                                    | (Fraction * kernel_max_blocks_per_sm +  |
 |                                                    |  BLOCKS_PER_SM_OFFSET) * sm_per_device  |
 +----------------------------------------------------+-----------------------------------------+
@@ -794,49 +794,57 @@ It is important to note the following constraints about RAJA reduction usage:
 
 The following table summarizes RAJA reduction policy types:
 
-======================================== ============= ==========================================
-Reduction Policy                         Loop Policies Brief description
-                                         to Use With
-======================================== ============= ==========================================
-seq_reduce                               seq_exec,     Non-parallel (sequential) reduction.
-omp_reduce                               any OpenMP    OpenMP parallel reduction.
-                                         policy
-omp_reduce_ordered                       any OpenMP    OpenMP parallel reduction with result
-                                         policy        guaranteed to be reproducible.
-omp_target_reduce                        any OpenMP    OpenMP parallel target offload reduction.
-                                         target policy
-cuda/hip_reduce                          any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
-                                         policy        (device synchronization will occur when
-                                                       reduction value is finalized).
-cuda/hip_reduce_atomic                   any CUDA/HIP  Same as above, but reduction may use
-                                         policy        atomic operations leading to run to run
-                                                       variability in the results.
-cuda/hip_reduce_base<with_atomic>        any CUDA/HIP  Choose between cuda/hip_reduce and
-                                         policy        cuda/hip_reduce_atomic policies based on
-                                                       the with_atomic boolean.
-cuda/hip_reduce\*host_init\*             any CUDA/HIP  Same as above, but initializes the
-                                         policy        memory used for atomics on the host.
-                                                       This works on recent architectures and
-                                                       incurs lower overheads.
-cuda/hip_reduce\*device_init\*           any CUDA/HIP  Same as above, but initializes the
-                                         policy        memory used for atomics on the device.
-                                                       This works on all architectures but
-                                                       incurs higher overheads.
-cuda/hip_reduce_device_fence             any CUDA/HIP  Same as above, and reduction uses normal
-                                         policy        memory accesses that are not visible across
-                                                       the whole device and device scope fences
-                                                       to ensure visibility and ordering.
-                                                       This works on all architectures but
-                                                       incurs higher overheads on some architectures.
-cuda/hip_reduce_block_fence              any CUDA/HIP  Same as above, and reduction uses special
-                                         policy        memory accesses to a level of cache shared
-                                                       visible to the whole device and block scope
-                                                       fences to ensure ordering. This improves
-                                                       performance on some architectures.
-sycl_reduce                              any SYCL      Reduction in a SYCL kernel (device
-                                         policy        synchronization will occur when the
-                                                       reduction value is finalized).
-======================================== ============= ==========================================
+================================================= ============= ==========================================
+Reduction Policy                                  Loop Policies Brief description
+                                                  to Use With
+================================================= ============= ==========================================
+seq_reduce                                        seq_exec,     Non-parallel (sequential) reduction.
+omp_reduce                                        any OpenMP    OpenMP parallel reduction.
+                                                  policy
+omp_reduce_ordered                                any OpenMP    OpenMP parallel reduction with result
+                                                  policy        guaranteed to be reproducible.
+omp_target_reduce                                 any OpenMP    OpenMP parallel target offload reduction.
+                                                  target policy
+cuda/hip_reduce                                   any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel
+                                                  policy        (device synchronization will occur when
+                                                                reduction value is finalized).
+cuda/hip_reduce_atomic                            any CUDA/HIP  Same as above, but reduction may use
+                                                  policy        atomic operations leading to run to run
+                                                                variability in the results.
+cuda/hip_reduce_base<with_atomic>                 any CUDA/HIP  Choose between cuda/hip_reduce and
+                                                  policy        cuda/hip_reduce_atomic policies based on
+                                                                the with_atomic boolean.
+cuda/hip_reduce_device_fence                      any CUDA/HIP  Same as above, and reduction uses normal
+                                                  policy        memory accesses that are not visible across
+                                                                the whole device and device scope fences
+                                                                to ensure visibility and ordering.
+                                                                This works on all architectures but
+                                                                incurs higher overheads on some architectures.
+cuda/hip_reduce_block_fence                       any CUDA/HIP  Same as above, and reduction uses special
+                                                  policy        memory accesses to a level of cache
+                                                                visible to the whole device and block scope
+                                                                fences to ensure ordering. This improves
+                                                                performance on some architectures.
+cuda/hip_reduce_atomic_host_init_device_fence     any CUDA/HIP  Same as above with device fence, but
+                                                  policy        initializes the memory used for atomics
+                                                                on the host. This works well on recent
+                                                                architectures and incurs lower overheads.
+cuda/hip_reduce_atomic_host_init_block_fence      any CUDA/HIP  Same as above with block fence, but
+                                                  policy        initializes the memory used for atomics
+                                                                on the host. This works well on recent
+                                                                architectures and incurs lower overheads.
+cuda/hip_reduce_atomic_device_init_device_fence   any CUDA/HIP  Same as above with device fence, but
+                                                  policy        initializes the memory used for atomics
+                                                                on the device. This works on all architectures
+                                                                but incurs higher overheads.
+cuda/hip_reduce_atomic_device_init_block_fence    any CUDA/HIP  Same as above with block fence, but
+                                                  policy        initializes the memory used for atomics
+                                                                on the device. This works on all architectures
+                                                                but incurs higher overheads.
+sycl_reduce                                       any SYCL      Reduction in a SYCL kernel (device
+                                                  policy        synchronization will occur when the
+                                                                reduction value is finalized).
+================================================= ============= ==========================================
 
 .. note:: RAJA reductions used with SIMD execution policies are not
           guaranteed to generate correct results. So they should not be used
