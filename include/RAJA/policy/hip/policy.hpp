@@ -1141,8 +1141,8 @@ using hip_exec_base = std::conditional_t<with_reduce,
 
 template <bool with_reduce, size_t BLOCK_SIZE>
 using hip_exec_base_async = std::conditional_t<with_reduce,
-    hip_exec_with_reduce<BLOCK_SIZE>,
-    hip_exec<BLOCK_SIZE>>;
+    hip_exec_with_reduce_async<BLOCK_SIZE>,
+    hip_exec_async<BLOCK_SIZE>>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
