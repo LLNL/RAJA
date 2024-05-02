@@ -489,8 +489,8 @@ policies:
 |                                                    | occupancy of the device.                |
 +----------------------------------------------------+-----------------------------------------+
 | Cuda/HipFractionOffsetOccupancyConcretizer<        | Uses a fraction and offset to choose an |
-|   Fraction<size_t, numerator, denomenator>,        | occupancy based on the max occupancy    |
-|   BLOCKS_PER_SM_OFFSET>                            | Using the following formula:            |
+| Fraction<size_t, numerator, denomenator>,          | occupancy based on the max occupancy    |
+| BLOCKS_PER_SM_OFFSET>                              | Using the following formula:            |
 |                                                    | (Fraction * kernel_max_blocks_per_sm +  |
 |                                                    |  BLOCKS_PER_SM_OFFSET) * sm_per_device  |
 +----------------------------------------------------+-----------------------------------------+
