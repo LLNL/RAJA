@@ -797,20 +797,20 @@ cuda/hip_reduce_base<with_atomic>        any CUDA/HIP  Choose between cuda/hip_r
                                          policy        cuda/hip_reduce_atomic policies based on
                                                        the with_atomic boolean.
 cuda/hip_reduce\*host_init\*             any CUDA/HIP  Same as above, but initializes the
-                                                       memory used for atomics on the host.
+                                         policy        memory used for atomics on the host.
                                                        This works on recent architectures and
                                                        incurs lower overheads.
 cuda/hip_reduce\*device_init\*           any CUDA/HIP  Same as above, but initializes the
-                                                       memory used for atomics on the device.
+                                         policy        memory used for atomics on the device.
                                                        This works on all architectures but
                                                        incurs higher overheads.
-cuda/hip_reduce\*device_fence            any CUDA/HIP  Same as above, and reduction uses normal
+cuda/hip_reduce_device_fence             any CUDA/HIP  Same as above, and reduction uses normal
                                          policy        memory accesses that are not visible across
                                                        the whole device and device scope fences
                                                        to ensure visibility and ordering.
                                                        This works on all architectures but
                                                        incurs higher overheads on some architectures.
-cuda/hip_reduce\*block_fence             any CUDA/HIP  Same as above, and reduction uses special
+cuda/hip_reduce_block_fence              any CUDA/HIP  Same as above, and reduction uses special
                                          policy        memory accesses to a level of cache shared
                                                        visible to the whole device and block scope
                                                        fences to ensure ordering. This improves
