@@ -469,33 +469,31 @@ unspecified a concretizer object is used to decide those parameters. The
 following concretizers are available to use in the ``cuda/hip_exec_occ_custom``
 policies:
 
-=================================================== =========================================
-Execution Policy                                    Brief description
-=================================================== =========================================
-
-Cuda/HipDefaultConcretizer                          The default concretizer, expected to
-                                                    provide good performance in general.
-                                                    Note that it may not use max occupancy.
-
-Cuda/HipRecForReduceConcretizer                     Expected to provide good performance
-                                                    in loops with reducers.
-                                                    Note that it may not use max occupancy.
-
-Cuda/HipMaxOccupancyConcretizer                     Uses max occupancy.
-
-Cuda/HipAvoidDeviceMaxThreadOccupancyConcretizer    Avoids using the max occupancy of the
-                                                    device in terms of threads.
-                                                    Note that it may use the max occupancy
-                                                    of the kernel if that is below the max
-                                                    occupancy of the device.
-
-Cuda/HipFractionOffsetOccupancyConcretizer<         Uses a fraction and offset to choose an
-Fraction<size_t, numerator, denomenator>,           occupancy based on the max occupancy
-BLOCKS_PER_SM_OFFSET>                               Using the following formula:
-                                                    (Fraction * kernel_max_blocks_per_sm +
-                                                     BLOCKS_PER_SM_OFFSET) * sm_per_device
-
-=================================================== =========================================
++----------------------------------------------------+-----------------------------------------+
+| Execution Policy                                   | Brief description                       |
++====================================================+=========================================+
+| Cuda/HipDefaultConcretizer                         | The default concretizer, expected to    |
+|                                                    | provide good performance in general.    |
+|                                                    | Note that it may not use max occupancy. |
++----------------------------------------------------+-----------------------------------------+
+| Cuda/HipRecForReduceConcretizer                    | Expected to provide good performance    |
+|                                                    | in loops with reducers.                 |
+|                                                    | Note that it may not use max occupancy. |
++----------------------------------------------------+-----------------------------------------+
+| Cuda/HipMaxOccupancyConcretizer                    | Uses max occupancy.                     |
++----------------------------------------------------+-----------------------------------------+
+| Cuda/HipAvoidDeviceMaxThreadOccupancyConcretizer   | Avoids using the max occupancy of the   |
+|                                                    | device in terms of threads.             |
+|                                                    | Note that it may use the max occupancy  |
+|                                                    | of the kernel if that is below the max  |
+|                                                    | occupancy of the device.                |
++----------------------------------------------------+-----------------------------------------+
+| Cuda/HipFractionOffsetOccupancyConcretizer<        | Uses a fraction and offset to choose an |
+|   Fraction<size_t, numerator, denomenator>,        | occupancy based on the max occupancy    |
+|   BLOCKS_PER_SM_OFFSET>                            | Using the following formula:            |
+|                                                    | (Fraction * kernel_max_blocks_per_sm +  |
+|                                                    |  BLOCKS_PER_SM_OFFSET) * sm_per_device  |
++----------------------------------------------------+-----------------------------------------+
 
 Several notable constraints apply to RAJA CUDA/HIP *direct* policies.
 
