@@ -561,21 +561,40 @@ write more explicit policies.
 GPU Policies for SYCL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: SYCL uses C++-style ordering in which the right
-	  most index corresponds to having unit stride.
-	  In a three-dimensional compute grid this means
-	  that dimension 2 has the unit stride while
-	  dimension 0 has the longest stride. This is
-	  important to note as the ordering is reverse
-	  compared to the CUDA and HIP programming models.
-	  CUDA and HIP employ a x/y/z ordering in which
-	  dimension x has the unit stride.
+.. note:: SYCL uses C++-style ordering for its work group and global thread
+          dimension/indexing types. This is due, in part, to SYCL's closer
+          alignment with C++ multi-dimensional indexing, which is "row-major".
+          This is the reverse of the thread indexing used in CUDA or HIP,
+          which is "column-major". For example, suppose we have a thread-block 
+          or work-group where we specify the shape as (nx, ny, nz). Consider
+          an element in the thread-block or work-group with id (x, y, z).
+          In CUDA or HIP, the element index is x + y * nx + z * nx * ny. In 
+          SYCL, the element index is z + y * nz + x * nz * ny.
 
-	  When using RAJA::launch, thread and team configuration
+          In terms of the CUDA or HIP built-in variables to support threads,
+          we have::
+
+            Thread ID: threadIdx.x/y/z
+            Block ID: blockIdx.x/y/z
+            Block dimension: blockDim.x/y/z
+            Grid dimension: gridDim.x/y/z 
+
+          The analogues in SYCL are::
+
+            Thread ID: sycl::nd_item.get_local_id(2/1/0)
+            Work-group ID: sycl::nd_item.get_group(2/1/0)
+            Work-group dimensions: sycl::nd_item.get_local_range().get(2/1/0)
+            ND-range dimensions: sycl::nd_item.get_group_range(2/1/0) 
+
+	  When using ``RAJA::launch``, thread and block configuration
 	  follows CUDA and HIP programming models and is always
-	  configured in three-dimensions. This means that dimension
+	  configured in three-dimensions. This means that SYCL dimension
 	  2 always exists and should be used as one would use the
 	  x dimension for CUDA and HIP.
+
+          Similarly, ``RAJA::kernel`` uses a three-dimensional work-group
+          configuration. SYCL imension 2 always exists and should be used as
+          one would use the x dimension in CUDA and HIP.  
 
 ======================================== ============= ==============================
 SYCL Execution Policies                  Works with    Brief description
