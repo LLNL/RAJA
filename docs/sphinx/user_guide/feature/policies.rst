@@ -295,9 +295,9 @@ policies have the prefix ``hip_``.
 |                                                    |               | performance reasons.            |
 +----------------------------------------------------+---------------+---------------------------------+
 | cuda/hip_exec_occ_fraction<BLOCK_SIZE,             | forall        | Similar to the occ_max policy   |
-|                            Fraction<size_t,        |               | but use a fraction of the       |
-|                                     numerator,     |               | maximum occupancy of the kernel.|
-|                                     denominator>>  |               |                                 |
+| Fraction<size_t, numerator, denominator>>          |               | but use a fraction of the       |
+|                                                    |               | maximum occupancy of the kernel.|
+|                                                    |               |                                 |
 |                                                    |               |                                 |
 +----------------------------------------------------+---------------+---------------------------------+
 | cuda/hip_exec_occ_custom<BLOCK_SIZE, Concretizer>  | forall        | Similar to the occ_max policy   |
