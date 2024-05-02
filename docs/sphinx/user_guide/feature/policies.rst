@@ -257,7 +257,7 @@ policies have the prefix ``hip_``.
                                                          best for a platform without having to
                                                          know the details.
  cuda/hip_exec_base<with_reduce,           forall        Choose between cuda/hip_exec and
-                    BLOCK_SIZE>                          cuda/hip_exec_with_reduce policies based on
+ BLOCK_SIZE>                                             cuda/hip_exec_with_reduce policies based on
                                                          the with_reduce boolean.
  cuda/hip_exec_grid<BLOCK_SIZE, GRID_SIZE> forall,       Execute loop iterations
                                                          mapped to global threads via
@@ -285,11 +285,11 @@ policies have the prefix ``hip_``.
                                                          of the kernel for performance
                                                          reasons.
  cuda/hip_exec_occ_fraction<BLOCK_SIZE,    forall        Similar to the occ_max
-     RAJA::Fraction<size_t,                              policy but use a fraction
-        numerator, denominator>>                         of the maximum occupancy
+ RAJA::Fraction<size_t,                                  policy but use a fraction
+ numerator, denominator>>                                of the maximum occupancy
                                                          of the kernel.
  cuda/hip_exec_occ_custom<BLOCK_SIZE,      forall        Similar to the occ_max
-     Concretizer>                                        policy but the grid size
+ Concretizer>                                            policy but the grid size
                                                          is determined by the
                                                          concretizer.
  cuda/hip_launch_t                         launch        Launches a device kernel,
@@ -458,8 +458,8 @@ Cuda/HipAvoidDeviceMaxThreadOccupancyConcretizer    Avoids using the max occupan
                                                     occupancy of the device.
 
 Cuda/HipFractionOffsetOccupancyConcretizer<         Uses a fraction and offset to choose an
-    Fraction<size_t, numerator, denomenator>,       occupancy based on the max occupancy
-    BLOCKS_PER_SM_OFFSET>                           Using the following formula:
+Fraction<size_t, numerator, denomenator>,           occupancy based on the max occupancy
+BLOCKS_PER_SM_OFFSET>                               Using the following formula:
                                                     (Fraction * kernel_max_blocks_per_sm +
                                                      BLOCKS_PER_SM_OFFSET) * sm_per_device
 
