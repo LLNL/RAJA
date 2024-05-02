@@ -59,8 +59,8 @@ number of blocks, optimized for performance with reducers.::
   using exec_policy = RAJA::seq_exec;
   // using exec_policy = RAJA::omp_parallel_for_exec;
   // using exec_policy = RAJA::omp_target_parallel_for_exec<256>;
-  // using exec_policy = RAJA::cuda_exec_with_reduce<256>; // or RAJA::cuda_exec_base<true, 256>;
-  // using exec_policy = RAJA::hip_exec_with_reduce<256>; // or RAJA::hip_exec_base<true, 256>;
+  // using exec_policy = RAJA::cuda_exec_with_reduce<256>;
+  // using exec_policy = RAJA::hip_exec_with_reduce<256>;
   // using exec_policy = RAJA::sycl_exec<256>;
 
 The reduction policy specifies how the reduction is done and must match the
@@ -72,8 +72,8 @@ data type, and can only be used with cuda execution policies. Similarly for othe
   using reduce_policy = RAJA::seq_reduce;
   // using reduce_policy = RAJA::omp_reduce;
   // using reduce_policy = RAJA::omp_target_reduce;
-  // using reduce_policy = RAJA::cuda_reduce_atomic; // or RAJA::cuda_reduce_base<true>
-  // using reduce_policy = RAJA::hip_reduce_atomic; // or RAJA::hip_reduce_base<true>
+  // using reduce_policy = RAJA::cuda_reduce_atomic;
+  // using reduce_policy = RAJA::hip_reduce_atomic;
   // using reduce_policy = RAJA::sycl_reduce;
 
 
@@ -91,3 +91,20 @@ Here a simple sum reduction is performed using RAJA::
 The results of these operations will yield the following values:
 
  * vsum.get() == 1000
+
+
+Another option for the execution policy when using the cuda or hip backends are
+the base policies which have a boolean parameter to choose between the general
+use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
+
+  // static constexpr bool with_reducers = ...;
+  // using exec_policy = RAJA::cuda_exec_base<with_reducers, 256>;
+  // using exec_policy = RAJA::hip_exec_base<with_reducers, 256>;
+
+Another option for the reduction policy when using the cuda or hip backends are
+the base policies which have a boolean parameter to choose between the atomic
+``cuda/hip_reduce_atomic`` policy and the non-atomic ``cuda/hip_reduce`` policy.::
+
+  // static constexpr bool maybe_atomic = ...;
+  // using reduce_policy = RAJA::cuda_reduce_base<maybe_atomic>;
+  // using reduce_policy = RAJA::hip_reduce_base<maybe_atomic>;
