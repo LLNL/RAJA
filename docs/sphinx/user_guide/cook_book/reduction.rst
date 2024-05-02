@@ -97,14 +97,14 @@ Another option for the execution policy when using the cuda or hip backends are
 the base policies which have a boolean parameter to choose between the general
 use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
 
-  // static constexpr bool with_reducers = ...;
-  // using exec_policy = RAJA::cuda_exec_base<with_reducers, 256>;
-  // using exec_policy = RAJA::hip_exec_base<with_reducers, 256>;
+  // static constexpr bool with_reduce = ...;
+  // using exec_policy = RAJA::cuda_exec_base<with_reduce, 256>;
+  // using exec_policy = RAJA::hip_exec_base<with_reduce, 256>;
 
 Another option for the reduction policy when using the cuda or hip backends are
 the base policies which have a boolean parameter to choose between the atomic
 ``cuda/hip_reduce_atomic`` policy and the non-atomic ``cuda/hip_reduce`` policy.::
 
-  // static constexpr bool maybe_atomic = ...;
-  // using reduce_policy = RAJA::cuda_reduce_base<maybe_atomic>;
-  // using reduce_policy = RAJA::hip_reduce_base<maybe_atomic>;
+  // static constexpr bool with_atomic = ...;
+  // using reduce_policy = RAJA::cuda_reduce_base<with_atomic>;
+  // using reduce_policy = RAJA::hip_reduce_base<with_atomic>;

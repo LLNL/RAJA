@@ -763,9 +763,9 @@ cuda/hip_reduce                          any CUDA/HIP  Parallel reduction in a C
 cuda/hip_reduce_atomic                   any CUDA/HIP  Same as above, but reduction may use
                                          policy        atomic operations leading to run to run
                                                        variability in the results.
-cuda/hip_reduce_base<maybe_atomic>       any CUDA/HIP  Choose between cuda/hip_reduce and
+cuda/hip_reduce_base<with_atomic>       any CUDA/HIP  Choose between cuda/hip_reduce and
                                          policy        cuda/hip_reduce_atomic policies based on
-                                                       the maybe_atomic boolean.
+                                                       the with_atomic boolean.
 cuda/hip_reduce\*host_init\*             any CUDA/HIP  Same as above, but initializes the
                                                        memory used for atomics on the host.
                                                        This works on recent architectures and

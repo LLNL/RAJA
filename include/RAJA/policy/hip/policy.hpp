@@ -341,8 +341,8 @@ using hip_reduce_atomic = hip_reduce_atomic_host_init_block_fence;
 
 // Policy for RAJA::Reduce* objects that lets you select the default atomic or
 // non-atomic policy with a bool
-template < bool maybe_atomic >
-using hip_reduce_base = std::conditional_t<maybe_atomic, hip_reduce_atomic, hip_reduce>;
+template < bool with_atomic >
+using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block

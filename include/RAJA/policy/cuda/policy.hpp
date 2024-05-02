@@ -349,8 +349,8 @@ using cuda_reduce_atomic = cuda_reduce_atomic_host_init_device_fence;
 
 // Policy for RAJA::Reduce* objects that lets you select the default atomic or
 // non-atomic policy with a bool
-template < bool maybe_atomic >
-using cuda_reduce_base = std::conditional_t<maybe_atomic, cuda_reduce_atomic, cuda_reduce>;
+template < bool with_atomic >
+using cuda_reduce_base = std::conditional_t<with_atomic, cuda_reduce_atomic, cuda_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
