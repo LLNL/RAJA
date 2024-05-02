@@ -46,7 +46,7 @@ Here a simple sum reduction is performed in a for loop::
 
 The results of these operations will yield the following values:
 
- * vsum == 1000
+ * ``vsum == 1000``
 
 RAJA uses policy types to specify how things are implemented.
 
@@ -90,7 +90,7 @@ Here a simple sum reduction is performed using RAJA::
 
 The results of these operations will yield the following values:
 
- * vsum.get() == 1000
+ * ``vsum.get() == 1000``
 
 
 Another option for the execution policy when using the cuda or hip backends are
