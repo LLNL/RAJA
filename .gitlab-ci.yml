@@ -28,6 +28,9 @@
 # We define the following GitLab pipeline variables:
 variables:
 ##### LC GITLAB CONFIGURATION
+include:
+  - project: 'lc-templates/id_tokens'
+    file: 'id_tokens.yml'
 # Use an LLNL service user to run CI. This prevents from running pipelines as an
 # actual user.
   LLNL_SERVICE_USER: rajasa
