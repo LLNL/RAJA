@@ -29,7 +29,7 @@ performance for GPU kernels with reductions.
 Notable changes include:
 
   * New features / API changes:
-     * New CPU execution policies for CUDA and HIP added which provide
+     * New GPU execution policies for CUDA and HIP added which provide
        improved performance for GPU kernels with reductions. Please see the 
        RAJA User Guide for more information. Short summary:
          * Option added to change max grid size in policies that use the
