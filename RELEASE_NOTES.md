@@ -20,6 +20,39 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2024.02.2 -- Release date 2024-05-08
+============================================
+
+This release contains a bugfix and new execution policies that improve
+performance for GPU kernels with reductions.
+
+Notable changes include:
+
+  * New features / API changes:
+     * New CPU execution policies for CUDA and HIP added which provide
+       improved performance for GPU kernels with reductions. Please see the 
+       RAJA User Guide for more information. Short summary:
+         * Option added to change max grid size in policies that use the
+           occupancy calculator.
+         * Policies added to run with max occupancy, a fraction of of the
+           max occupancy, and to run with a "concretizer" which allows a 
+           user to determine how to run based on what the occupancy 
+           calculator determines about a kernel.
+         * Additional options to tune kernels containing reductions, such as
+             * an option to initialize data on host for reductions that use
+               atomic operations
+             * an option to avoid device scope memory fences 
+     * Change ordering of SYCL thread index ordering in RAJA::launch to 
+       follow the SYCL "row-major" convention. Please see RAJA User Guide
+       for more information.
+
+  * Build changes/improvements:
+     * NONE.
+
+  * Bug fixes/improvements:
+     * Fixed issue in bump-style allocator used internally in RAJA::launch.
+
+
 Version 2024.02.1 -- Release date 2024-04-03
 ============================================
 
