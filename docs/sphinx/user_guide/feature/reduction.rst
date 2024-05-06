@@ -39,6 +39,10 @@ RAJA reductions:
 
  * :ref:`tut-reduction-label`.
 
+Please see the following cook book sections for guidance on policy usage:
+
+ * :ref:`cook-book-reductions-label`.
+
 
 ----------------
 Reduction Types

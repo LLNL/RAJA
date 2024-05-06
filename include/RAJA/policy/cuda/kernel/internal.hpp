@@ -388,7 +388,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 
 // specialization for strided loop sequential policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>>>
 {
@@ -402,7 +402,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 
 // specialization for strided loop thread policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
 {
@@ -418,7 +418,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 ///
 template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
 {
@@ -436,7 +436,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 
 // specialization for strided loop block policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
 {
@@ -451,7 +451,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 ///
 template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
@@ -469,7 +469,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 
 // specialization for strided loop global policies
 template<named_dim dim, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
 {
@@ -488,7 +488,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 ///
 template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
 {
@@ -508,7 +508,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 ///
 template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
 {
@@ -527,7 +527,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapp
 };
 ///
 template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
-struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop,
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
                                                     sync,
                                                     cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
 {

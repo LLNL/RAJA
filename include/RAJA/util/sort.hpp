@@ -26,31 +26,14 @@
 #include "RAJA/pattern/detail/algorithm.hpp"
 
 #include "RAJA/util/macros.hpp"
-
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/math.hpp"
 
 namespace RAJA
 {
 
 namespace detail
 {
-
-/*!
-    \brief evaluate log base 2 of N rounded down to the nearest integer >= 0
-*/
-RAJA_HOST_DEVICE RAJA_INLINE
-unsigned
-ulog2(size_t N)
-{
-  unsigned val = 0;
-
-  while (N > 1) {
-    val += 1;
-    N >>= 1;
-  }
-
-  return val;
-}
 
 /*!
     \brief unstable partition given range inplace using predicate function
@@ -426,7 +409,7 @@ intro_sort(Iter begin,
   auto N = end - begin;
 
   // set max depth to 2*lg(N)
-  unsigned max_depth = 2*detail::ulog2(N);
+  unsigned max_depth = 2*RAJA::log2(N);
 
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
   // limit max_depth statically in device code to allow compiler to remove recursion

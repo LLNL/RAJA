@@ -4,7 +4,7 @@
  * \file
  *
  * \brief   RAJA header file containing constructs used to run kernel::forall
- *          traversals on GPU with CUDA.
+ *          traversals on GPU with HIP.
  *
  ******************************************************************************
  */

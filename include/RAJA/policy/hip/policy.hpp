@@ -74,6 +74,110 @@ struct IndexGlobal;
 template<typename ...indexers>
 struct IndexFlatten;
 
+/*!
+ * Use the max occupancy of a kernel on the current device when launch
+ * parameters are not fully determined.
+ * Note that the maximum occupancy of the kernel may be less than the maximum
+ * occupancy of the device in terms of total threads.
+ */
+struct MaxOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+
+    IdxT func_max_blocks_per_device = func_max_blocks_per_sm * device_sm_per_device;
+
+    return func_max_blocks_per_device;
+  }
+};
+
+/*!
+ * Use a fraction and an offset of the max occupancy of a kernel on the current
+ * device when launch parameters are not fully determined.
+ * The following formula is used, with care to avoid zero, to determine the
+ * maximum grid size:
+ * (Fraction * kernel_max_blocks_per_sm + BLOCKS_PER_SM_OFFSET) * device_sm
+ */
+template < typename t_Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
+struct FractionOffsetOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    using Fraction = typename t_Fraction::template rebind<IdxT>;
+
+    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+
+    if (Fraction::multiply(func_max_blocks_per_sm) > IdxT(0)) {
+      func_max_blocks_per_sm = Fraction::multiply(func_max_blocks_per_sm);
+    }
+
+    if (IdxT(std::ptrdiff_t(func_max_blocks_per_sm) + BLOCKS_PER_SM_OFFSET) > IdxT(0)) {
+      func_max_blocks_per_sm = IdxT(std::ptrdiff_t(func_max_blocks_per_sm) + BLOCKS_PER_SM_OFFSET);
+    }
+
+    IdxT func_max_blocks_per_device = func_max_blocks_per_sm * device_sm_per_device;
+
+    return func_max_blocks_per_device;
+  }
+};
+
+/*!
+ * Use an occupancy that is less than the max occupancy of the device when
+ * launch parameters are not fully determined.
+ * Use the MaxOccupancyConcretizer if the maximum occupancy of the kernel is
+ * below the maximum occupancy of the device.
+ * Otherwise use the given AvoidMaxOccupancyCalculator to determine the
+ * maximum grid size.
+ */
+template < typename AvoidMaxOccupancyConcretizer >
+struct AvoidDeviceMaxThreadOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    IdxT device_max_threads_per_sm = data.device_max_threads_per_sm;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+    IdxT func_threads_per_block = data.func_threads_per_block;
+
+    IdxT func_max_threads_per_sm = func_threads_per_block * func_max_blocks_per_sm;
+
+    if (func_max_threads_per_sm < device_max_threads_per_sm) {
+      return MaxOccupancyConcretizer::template get_max_grid_size<IdxT>(data);
+    } else {
+      return AvoidMaxOccupancyConcretizer::template get_max_grid_size<IdxT>(data);
+    }
+  }
+};
+
+
+enum struct reduce_algorithm : int
+{
+  combine_last_block,
+  init_device_combine_atomic_block,
+  init_host_combine_atomic_block
+};
+
+enum struct block_communication_mode : int
+{
+  device_fence,
+  block_fence
+};
+
+template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
+           size_t t_replication, size_t t_atomic_stride >
+struct ReduceTuning
+{
+  static constexpr reduce_algorithm algorithm = t_algorithm;
+  static constexpr block_communication_mode comm_mode = t_comm_mode;
+  static constexpr size_t replication = t_replication;
+  static constexpr size_t atomic_stride = t_atomic_stride;
+};
+
 }  // namespace hip
 
 namespace policy
@@ -93,7 +197,8 @@ struct hip_flatten_indexer : public RAJA::make_policy_pattern_launch_platform_t<
   using IterationGetter = RAJA::hip::IndexFlatten<_IterationGetters...>;
 };
 
-template <typename _IterationMapping, typename _IterationGetter, bool Async = false>
+template <typename _IterationMapping, typename _IterationGetter, typename _LaunchConcretizer,
+          bool Async = false>
 struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::hip,
                        RAJA::Pattern::forall,
@@ -101,6 +206,7 @@ struct hip_exec : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::hip> {
   using IterationMapping = _IterationMapping;
   using IterationGetter = _IterationGetter;
+  using LaunchConcretizer = _LaunchConcretizer;
 };
 
 template <bool Async, int num_threads = named_usage::unspecified>
@@ -147,8 +253,9 @@ struct unordered_hip_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic>
-struct hip_reduce_base
+
+template < typename tuning >
+struct hip_reduce_policy
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::hip,
                                                 RAJA::Pattern::reduce,
@@ -169,9 +276,73 @@ struct hip_atomic_explicit{};
  */
 using hip_atomic = hip_atomic_explicit<seq_atomic>;
 
-using hip_reduce = hip_reduce_base<false>;
 
-using hip_reduce_atomic = hip_reduce_base<true>;
+template < RAJA::hip::reduce_algorithm algorithm,
+           RAJA::hip::block_communication_mode comm_mode,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified >
+using hip_reduce_tuning = hip_reduce_policy< RAJA::hip::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
+
+// Policies for RAJA::Reduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results and falls back
+//   on a non-atomic policy when atomics can't be used with the given type. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run. The memory used with
+//   atomics is initialized on the device which can be expensive on some HW.
+//   On some HW this is faster overall than the non-atomic policies.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+// - *device_fence policies use normal memory accesses with device scope fences
+//                in the implementation. This works on all HW.
+// - *block_fence policies use special (atomic) memory accesses that only cache
+//                 in a cache shared by the whole device to avoid having to use
+//                 device scope fences. This improves performance on some HW but
+//                 is more difficult to code correctly.
+using hip_reduce_device_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::combine_last_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_block_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::combine_last_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_device_init_device_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_device_init_block_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_host_init_device_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_host_init_block_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+
+// Policy for RAJA::Reduce* objects that gives the same answer every time when
+// used in the same way
+using hip_reduce = hip_reduce_block_fence;
+
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using hip_reduce_atomic = hip_reduce_atomic_host_init_block_fence;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool with_atomic >
+using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -226,6 +397,7 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
+constexpr const RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE = 64; // 128 on gfx90a
 #if defined(__HIP_PLATFORM_AMD__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
 #elif defined(__HIP_PLATFORM_NVIDIA__)
@@ -816,6 +988,7 @@ struct IndexFlatten<x_index, y_index, z_index>
 
 };
 
+
 // helper to get just the thread indexing part of IndexGlobal
 template < typename index_global >
 struct get_index_thread;
@@ -876,30 +1049,100 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 } // namespace hip
 
+// contretizers used in forall, scan, and sort policies
+
+using HipAvoidDeviceMaxThreadOccupancyConcretizer = hip::AvoidDeviceMaxThreadOccupancyConcretizer<hip::FractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 1>, -1>>;
+
+template < typename Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
+using HipFractionOffsetOccupancyConcretizer = hip::FractionOffsetOccupancyConcretizer<Fraction, BLOCKS_PER_SM_OFFSET>;
+
+using HipMaxOccupancyConcretizer = hip::MaxOccupancyConcretizer;
+
+using HipReduceDefaultConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
+
+using HipDefaultConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
+
 // policies usable with forall, scan, and sort
+
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using hip_exec_grid = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE, GRID_SIZE>,
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using hip_exec_grid_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE, GRID_SIZE>, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE, GRID_SIZE>,
+    HipDefaultConcretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, Async>;
+    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_async = policy::hip::hip_exec<
-    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>, true>;
+    iteration_mapping::Direct, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using hip_exec_occ_calc = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
 using hip_exec_occ_calc_async = policy::hip::hip_exec<
-    iteration_mapping::StridedLoop, hip::global_x<BLOCK_SIZE>, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipDefaultConcretizer, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_occ_max = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipMaxOccupancyConcretizer, Async>;
+
+template <size_t BLOCK_SIZE>
+using hip_exec_occ_max_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipMaxOccupancyConcretizer, true>;
+
+template <size_t BLOCK_SIZE, typename Fraction, bool Async = false>
+using hip_exec_occ_fraction = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipFractionOffsetOccupancyConcretizer<Fraction, 0>, Async>;
+
+template <size_t BLOCK_SIZE, typename Fraction>
+using hip_exec_occ_fraction_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipFractionOffsetOccupancyConcretizer<Fraction, 0>, true>;
+
+template <size_t BLOCK_SIZE, typename Concretizer, bool Async = false>
+using hip_exec_occ_custom = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    Concretizer, Async>;
+
+template <size_t BLOCK_SIZE, typename Concretizer>
+using hip_exec_occ_custom_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    Concretizer, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_with_reduce = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipReduceDefaultConcretizer, Async>;
+
+template <size_t BLOCK_SIZE>
+using hip_exec_with_reduce_async = policy::hip::hip_exec<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
+    HipReduceDefaultConcretizer, true>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_base = std::conditional_t<with_reduce,
+    hip_exec_with_reduce<BLOCK_SIZE, Async>,
+    hip_exec<BLOCK_SIZE, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE>
+using hip_exec_base_async = std::conditional_t<with_reduce,
+    hip_exec_with_reduce_async<BLOCK_SIZE>,
+    hip_exec_async<BLOCK_SIZE>>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
@@ -914,6 +1157,12 @@ using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
 
 // policies usable with reducers
+using policy::hip::hip_reduce_device_fence;
+using policy::hip::hip_reduce_block_fence;
+using policy::hip::hip_reduce_atomic_device_init_device_fence;
+using policy::hip::hip_reduce_atomic_device_init_block_fence;
+using policy::hip::hip_reduce_atomic_host_init_device_fence;
+using policy::hip::hip_reduce_atomic_host_init_block_fence;
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;
@@ -927,7 +1176,7 @@ using hip_warp_direct = RAJA::policy::hip::hip_indexer<
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
 using hip_warp_loop = RAJA::policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
 
@@ -953,13 +1202,13 @@ using hip_indexer_direct = policy::hip::hip_indexer<
 
 template < typename ... indexers >
 using hip_indexer_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using hip_indexer_syncable_loop = policy::hip::hip_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::sync,
     indexers...>;
 
@@ -971,7 +1220,7 @@ using hip_flatten_indexer_direct = policy::hip::hip_flatten_indexer<
 
 template < typename ... indexers >
 using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 

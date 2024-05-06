@@ -49,6 +49,7 @@ namespace scan
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           bool Async,
           typename InputIter,
           typename Function>
@@ -56,7 +57,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive_inplace(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -121,6 +122,7 @@ inclusive_inplace(
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           bool Async,
           typename InputIter,
           typename Function,
@@ -129,7 +131,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive_inplace(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -198,6 +200,7 @@ exclusive_inplace(
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -206,7 +209,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 inclusive(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,
@@ -271,6 +274,7 @@ inclusive(
 */
 template <typename IterationMapping,
           typename IterationGetter,
+          typename Concretizer,
           bool Async,
           typename InputIter,
           typename OutputIter,
@@ -280,7 +284,7 @@ RAJA_INLINE
 resources::EventProxy<resources::Hip>
 exclusive(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
     OutputIter out,

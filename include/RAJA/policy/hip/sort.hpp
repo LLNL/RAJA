@@ -73,7 +73,9 @@ namespace detail
 /*!
         \brief static assert unimplemented stable sort
 */
-template <typename IterationMapping, typename IterationGetter, bool Async, typename Iter, typename Compare>
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
+          typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       concepts::negate<concepts::all_of<
                         type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
@@ -83,7 +85,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 stable(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     Iter,
     Iter,
     Compare)
@@ -102,13 +104,15 @@ stable(
 /*!
         \brief stable sort given range in ascending order
 */
-template <typename IterationMapping, typename IterationGetter, bool Async, typename Iter>
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
+          typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 stable(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     Iter begin,
     Iter end,
     operators::less<RAJA::detail::IterVal<Iter>>)
@@ -190,13 +194,15 @@ stable(
 /*!
         \brief stable sort given range in descending order
 */
-template <typename IterationMapping, typename IterationGetter, bool Async, typename Iter>
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
+          typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 stable(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     Iter begin,
     Iter end,
     operators::greater<RAJA::detail::IterVal<Iter>>)
@@ -279,7 +285,9 @@ stable(
 /*!
         \brief static assert unimplemented sort
 */
-template <typename IterationMapping, typename IterationGetter, bool Async, typename Iter, typename Compare>
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
+          typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       concepts::negate<concepts::all_of<
                         type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
@@ -289,7 +297,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
 unstable(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     Iter,
     Iter,
     Compare)
@@ -308,13 +316,15 @@ unstable(
 /*!
         \brief sort given range in ascending order
 */
-template <typename IterationMapping, typename IterationGetter, bool Async, typename Iter>
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
+          typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 unstable(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async> p,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
     Iter begin,
     Iter end,
     operators::less<RAJA::detail::IterVal<Iter>> comp)
@@ -325,13 +335,15 @@ unstable(
 /*!
         \brief sort given range in descending order
 */
-template <typename IterationMapping, typename IterationGetter, bool Async, typename Iter>
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
+          typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
 unstable(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async> p,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
     Iter begin,
     Iter end,
     operators::greater<RAJA::detail::IterVal<Iter>> comp)
@@ -343,7 +355,8 @@ unstable(
 /*!
         \brief static assert unimplemented stable sort pairs
 */
-template <typename IterationMapping, typename IterationGetter, bool Async,
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
           typename KeyIter, typename ValIter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       concepts::negate<concepts::all_of<
@@ -355,7 +368,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
 stable_pairs(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     KeyIter,
     KeyIter,
     ValIter,
@@ -379,7 +392,8 @@ stable_pairs(
 /*!
         \brief stable sort given range of pairs in ascending order of keys
 */
-template <typename IterationMapping, typename IterationGetter, bool Async,
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
           typename KeyIter, typename ValIter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -387,7 +401,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<ValIter>>
 stable_pairs(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     KeyIter keys_begin,
     KeyIter keys_end,
     ValIter vals_begin,
@@ -483,7 +497,8 @@ stable_pairs(
 /*!
         \brief stable sort given range of pairs in descending order of keys
 */
-template <typename IterationMapping, typename IterationGetter, bool Async,
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
           typename KeyIter, typename ValIter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -491,7 +506,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<ValIter>>
 stable_pairs(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     KeyIter keys_begin,
     KeyIter keys_end,
     ValIter vals_begin,
@@ -588,7 +603,8 @@ stable_pairs(
 /*!
         \brief static assert unimplemented sort pairs
 */
-template <typename IterationMapping, typename IterationGetter, bool Async,
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
           typename KeyIter, typename ValIter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       concepts::negate<concepts::all_of<
@@ -600,7 +616,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                           camp::is_same<Compare, operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
 unstable_pairs(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async>,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     KeyIter,
     KeyIter,
     ValIter,
@@ -624,7 +640,8 @@ unstable_pairs(
 /*!
         \brief stable sort given range of pairs in ascending order of keys
 */
-template <typename IterationMapping, typename IterationGetter, bool Async,
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
           typename KeyIter, typename ValIter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -632,7 +649,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<ValIter>>
 unstable_pairs(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async> p,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
     KeyIter keys_begin,
     KeyIter keys_end,
     ValIter vals_begin,
@@ -644,7 +661,8 @@ unstable_pairs(
 /*!
         \brief stable sort given range of pairs in descending order of keys
 */
-template <typename IterationMapping, typename IterationGetter, bool Async,
+template <typename IterationMapping, typename IterationGetter,
+          typename Concretizer, bool Async,
           typename KeyIter, typename ValIter>
 concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -652,7 +670,7 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
                       std::is_pointer<ValIter>>
 unstable_pairs(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Async> p,
+    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
     KeyIter keys_begin,
     KeyIter keys_end,
     ValIter vals_begin,
