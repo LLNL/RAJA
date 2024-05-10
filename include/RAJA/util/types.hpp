@@ -30,6 +30,9 @@
 
 #include "camp/helpers.hpp"
 
+#include "RAJA/util/macros.hpp"
+
+
 namespace RAJA
 {
 
@@ -67,6 +70,18 @@ enum struct kernel_sync_requirement : int
 namespace iteration_mapping
 {
 
+struct DirectBase {};
+struct LoopBase {};
+struct ContiguousLoopBase : LoopBase {};
+struct StridedLoopBase : LoopBase {};
+struct UnsizedLoopBase {};
+struct SizedLoopBase {};
+template < size_t t_max_iterations >
+struct SizedLoopSpecifyingBase : SizedLoopBase
+{
+  static constexpr size_t max_iterations = t_max_iterations;
+};
+
 ///
 /// Direct assumes the loop has enough iterations for all of the indices and
 /// maps directly from an iteration to an index.
@@ -88,7 +103,7 @@ namespace iteration_mapping
 ///   // 3 -> {3}
 ///   // 4 -> {}
 ///
-struct Direct {};
+struct Direct : DirectBase {};
 
 ///
 /// Contiguousloop assumes the loop has fewer iterations than indices and
@@ -115,7 +130,10 @@ struct Direct {};
 ///   // 1 -> {3, 4, 5}
 ///   // 2 -> {6, 7}
 ///
-struct Contiguousloop {};
+template < size_t max_iterations >
+struct Contiguousloop : ContiguousLoopBase,
+    std::conditional_t<(max_iterations != named_usage::unspecified),
+                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
 
 ///
 /// StridedLoop assumes the loop has fewer iterations than indices and
@@ -142,7 +160,10 @@ struct Contiguousloop {};
 ///   // 1 -> {1, 4, 7}
 ///   // 2 -> {2, 5}
 ///
-struct StridedLoop {};
+template < size_t max_iterations >
+struct StridedLoop : StridedLoopBase,
+    std::conditional_t<(max_iterations != named_usage::unspecified),
+                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
 
 } // namespace iteration_mapping
 
@@ -169,6 +190,28 @@ const int UndefinedValue = -9999999;
 ///
 template <Index_type... Sizes>
 struct SizeList {
+};
+
+
+///
+/// Compile time fraction for use with integral types
+///
+template <typename int_t, int_t numerator, int_t denominator>
+struct Fraction
+{
+  static_assert(denominator != int_t(0), "denominator must not be zero");
+
+  using inverse = Fraction<int_t, denominator, numerator>;
+
+  template < typename new_int_t >
+  using rebind = Fraction<new_int_t, new_int_t(numerator), new_int_t(denominator)>;
+
+  static constexpr int_t multiply(int_t val) noexcept
+  {
+    return (val / denominator) * numerator +
+           (val % denominator) * numerator / denominator;
+  }
+
 };
 
 
@@ -822,6 +865,98 @@ using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 #error RAJA pointer type is undefined!
 
 #endif
+
+
+namespace detail {
+
+/*!
+ * \brief Abstracts access to memory using normal memory accesses.
+ */
+struct DefaultAccessor
+{
+  template < typename T >
+  static RAJA_HOST_DEVICE RAJA_INLINE T get(T* ptr, size_t i)
+  {
+    return ptr[i];
+  }
+
+  template < typename T >
+  static RAJA_HOST_DEVICE RAJA_INLINE void set(T* ptr, size_t i, T val)
+  {
+    ptr[i] = val;
+  }
+};
+
+
+/*!
+ * \brief Abstracts T into an equal or greater size array of integers whose
+ * size is between min_integer_type_size and max_interger_type_size inclusive.
+ */
+template <typename T,
+          size_t min_integer_type_size = 1,
+          size_t max_integer_type_size = sizeof(unsigned long long)>
+struct AsIntegerArray
+{
+  static_assert(min_integer_type_size <= max_integer_type_size,
+                "incompatible min and max integer type size");
+  using integer_type = std::conditional_t<
+      ((alignof(T) >= alignof(unsigned long long) &&
+        sizeof(unsigned long long) <= max_integer_type_size) ||
+       sizeof(unsigned long) < min_integer_type_size),
+      unsigned long long,
+      std::conditional_t<
+          ((alignof(T) >= alignof(unsigned long) &&
+            sizeof(unsigned long) <= max_integer_type_size) ||
+           sizeof(unsigned int) < min_integer_type_size),
+          unsigned long,
+          std::conditional_t<
+              ((alignof(T) >= alignof(unsigned int) &&
+                sizeof(unsigned int) <= max_integer_type_size) ||
+               sizeof(unsigned short) < min_integer_type_size),
+              unsigned int,
+              std::conditional_t<
+                  ((alignof(T) >= alignof(unsigned short) &&
+                    sizeof(unsigned short) <= max_integer_type_size) ||
+                   sizeof(unsigned char) < min_integer_type_size),
+                  unsigned short,
+                  std::conditional_t<
+                      ((alignof(T) >= alignof(unsigned char) &&
+                        sizeof(unsigned char) <= max_integer_type_size)),
+                      unsigned char,
+                      void>>>>>;
+  static_assert(!std::is_same<integer_type, void>::value,
+                "could not find a compatible integer type");
+  static_assert(sizeof(integer_type) >= min_integer_type_size,
+                "integer_type smaller than min integer type size");
+  static_assert(sizeof(integer_type) <= max_integer_type_size,
+                "integer_type greater than max integer type size");
+
+  static constexpr size_t num_integer_type =
+      (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
+
+  integer_type array[num_integer_type] = {0};
+
+  AsIntegerArray() = default;
+
+  RAJA_HOST_DEVICE constexpr size_t array_size() const
+  {
+    return num_integer_type;
+  }
+
+  RAJA_HOST_DEVICE constexpr T get_value() const
+  {
+    T value;
+    memcpy(&value, &array[0], sizeof(T));
+    return value;
+  }
+
+  RAJA_HOST_DEVICE constexpr void set_value(T value)
+  {
+    memcpy(&array[0], &value, sizeof(T));
+  }
+};
+
+}  // namespace detail
 
 }  // namespace RAJA
 

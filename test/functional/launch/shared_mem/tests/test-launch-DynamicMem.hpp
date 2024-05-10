@@ -36,11 +36,15 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
   for(s_type b=0; b<RAJA::stripIndexType(block_range); ++b) {
     for(s_type c=0; c<RAJA::stripIndexType(thread_range); ++c) {
       s_type idx = c + RAJA::stripIndexType(thread_range)*b;
-      test_array[idx] = INDEX_TYPE(idx);
+      test_array[idx] = INDEX_TYPE(idx) + INDEX_TYPE(c);
     }
   }
 
   size_t shared_mem_size = RAJA::stripIndexType(thread_range)*sizeof(INDEX_TYPE);
+
+  //Use an int type to test the bump style allocator.
+  //Key idea is that we are requesting different amounts.
+  shared_mem_size += RAJA::stripIndexType(thread_range)*sizeof(int);
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(RAJA::stripIndexType(block_range)),
@@ -52,7 +56,11 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
           INDEX_TYPE * tile_ptr = ctx.getSharedMemory<INDEX_TYPE>(RAJA::stripIndexType(thread_range));
           RAJA::View<INDEX_TYPE, RAJA::Layout<1>> Tile(tile_ptr, RAJA::stripIndexType(thread_range));
 
+          int * int_tile_ptr = ctx.getSharedMemory<int>(RAJA::stripIndexType(thread_range));
+          RAJA::View<int, RAJA::Layout<1>> Int_Tile(int_tile_ptr, RAJA::stripIndexType(thread_range));
+
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
+              Int_Tile(RAJA::stripIndexType(tid)) = RAJA::stripIndexType(tid);
               Tile(RAJA::stripIndexType(thread_range)-RAJA::stripIndexType(tid)-1) = thread_range-tid-1 + thread_range*bid;
             });
 
@@ -60,7 +68,7 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
 
           RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
               INDEX_TYPE idx = tid + thread_range * bid;
-              working_array[RAJA::stripIndexType(idx)] = Tile(RAJA::stripIndexType(tid));
+              working_array[RAJA::stripIndexType(idx)] = Tile(RAJA::stripIndexType(tid)) + Int_Tile(RAJA::stripIndexType(tid));
           });
 
           ctx.releaseSharedMemory();

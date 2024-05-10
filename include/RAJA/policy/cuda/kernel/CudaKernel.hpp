@@ -87,7 +87,7 @@ namespace statement
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct CudaKernelExt
-    : public internal::Statement<::RAJA::policy::cuda::cuda_exec_explicit<LaunchConfig, void, 0, true>, EnclosedStmts...> {
+    : public internal::Statement<::RAJA::policy::cuda::cuda_exec_explicit<LaunchConfig, void, void, 0, true>, EnclosedStmts...> {
 };
 
 
@@ -284,7 +284,7 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
   inline static void recommended_blocks_threads(size_t shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
-    auto func = kernelGetter_t::get();
+    auto func = reinterpret_cast<const void*>(kernelGetter_t::get());
 
     if (num_blocks <= 0) {
 
@@ -294,8 +294,10 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
         // determine blocks at runtime
         // determine threads at runtime
         //
-        ::RAJA::cuda::cuda_occupancy_max_blocks_threads<Self>(
-            func, shmem_size, recommended_blocks, recommended_threads);
+        auto data = ::RAJA::cuda::cuda_occupancy_max_blocks_threads<Self>(
+            func, shmem_size);
+        recommended_blocks = data.func_max_blocks_per_device;
+        recommended_threads = data.func_max_threads_per_block;
 
       } else {
 
@@ -305,8 +307,9 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
         //
         recommended_threads = num_threads;
 
-        ::RAJA::cuda::cuda_occupancy_max_blocks<Self, num_threads>(
-            func, shmem_size, recommended_blocks);
+        auto data = ::RAJA::cuda::cuda_occupancy_max_blocks<Self, num_threads>(
+            func, shmem_size);
+        recommended_blocks = data.func_max_blocks_per_sm * data.device_sm_per_device;
 
       }
 
@@ -360,7 +363,7 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
   inline static void max_blocks(size_t shmem_size,
       int &max_blocks, int actual_threads)
   {
-    auto func = kernelGetter_t::get();
+    auto func = reinterpret_cast<const void*>(kernelGetter_t::get());
 
     if (num_blocks <= 0) {
 
@@ -373,16 +376,18 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
         //
         // determine blocks when actual_threads != num_threads
         //
-        ::RAJA::cuda::cuda_occupancy_max_blocks<Self>(
-            func, shmem_size, max_blocks, actual_threads);
+        auto data = ::RAJA::cuda::cuda_occupancy_max_blocks<Self>(
+            func, shmem_size, actual_threads);
+        max_blocks = data.func_max_blocks_per_sm * data.device_sm_per_device;
 
       } else {
 
         //
         // determine blocks when actual_threads == num_threads
         //
-        ::RAJA::cuda::cuda_occupancy_max_blocks<Self, num_threads>(
-            func, shmem_size, max_blocks);
+        auto data = ::RAJA::cuda::cuda_occupancy_max_blocks<Self, num_threads>(
+            func, shmem_size);
+        max_blocks = data.func_max_blocks_per_sm * data.device_sm_per_device;
 
       }
 
