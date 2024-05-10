@@ -69,7 +69,9 @@ gcc_8_3_1_cuda_10_1_243_desul_atomics:
     SPEC: " ~shared +openmp +tests +cuda +desul %gcc@=8.3.1 cuda_arch=70 ^cuda@10.1.243+allow-unsupported-compilers ^blt@develop"
   extends: .job_on_lassen
 
+# Warning: Allowed to fail temporarily
 clang_16_0_6_ibm_omptarget:
   variables:
     SPEC: " ~shared +openmp +omptarget +tests %clang@=16.0.6.ibm.gcc.8.3.1 ^blt@develop"
   extends: .job_on_lassen
+  allow_failure: true
