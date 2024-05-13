@@ -42,8 +42,19 @@ namespace operators
 namespace detail
 {
 
+// truly associative (does not include fp add/multiply)
 struct associative_tag {
 };
+
+// associative up to floating point rounding differences
+struct fp_associative_tag : associative_tag {
+};
+
+// get associativity tag appropriate for the type
+template < typename T >
+using associative_or_fp_associative_tag =
+  std::conditional_t<std::is_floating_point<std::decay_t<T>>::value,
+                     fp_associative_tag, associative_tag>;
 
 template <typename Arg1, typename Arg2, typename Result>
 struct binary_function {
@@ -327,7 +338,7 @@ static_assert(check<unsigned long long>(),
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct plus : public detail::binary_function<Arg1, Arg2, Ret>,
-              detail::associative_tag {
+              detail::associative_or_fp_associative_tag<Ret> {
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
   {
@@ -347,7 +358,7 @@ struct minus : public detail::binary_function<Arg1, Arg2, Ret> {
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
-                    detail::associative_tag {
+                    detail::associative_or_fp_associative_tag<Ret> {
 
   RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
                                             const Arg2& rhs) const
@@ -567,6 +578,12 @@ template <typename T>
 struct is_associative {
   static constexpr const bool value =
       std::is_base_of<detail::associative_tag, T>::value;
+};
+
+template <typename T>
+struct is_fp_associative {
+  static constexpr const bool value =
+      std::is_base_of<detail::fp_associative_tag, T>::value;
 };
 
 template <typename Arg1, typename Arg2 = Arg1>

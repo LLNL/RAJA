@@ -30,6 +30,9 @@
 
 #include "camp/helpers.hpp"
 
+#include "RAJA/util/macros.hpp"
+
+
 namespace RAJA
 {
 
@@ -862,6 +865,98 @@ using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 #error RAJA pointer type is undefined!
 
 #endif
+
+
+namespace detail {
+
+/*!
+ * \brief Abstracts access to memory using normal memory accesses.
+ */
+struct DefaultAccessor
+{
+  template < typename T >
+  static RAJA_HOST_DEVICE RAJA_INLINE T get(T* ptr, size_t i)
+  {
+    return ptr[i];
+  }
+
+  template < typename T >
+  static RAJA_HOST_DEVICE RAJA_INLINE void set(T* ptr, size_t i, T val)
+  {
+    ptr[i] = val;
+  }
+};
+
+
+/*!
+ * \brief Abstracts T into an equal or greater size array of integers whose
+ * size is between min_integer_type_size and max_interger_type_size inclusive.
+ */
+template <typename T,
+          size_t min_integer_type_size = 1,
+          size_t max_integer_type_size = sizeof(unsigned long long)>
+struct AsIntegerArray
+{
+  static_assert(min_integer_type_size <= max_integer_type_size,
+                "incompatible min and max integer type size");
+  using integer_type = std::conditional_t<
+      ((alignof(T) >= alignof(unsigned long long) &&
+        sizeof(unsigned long long) <= max_integer_type_size) ||
+       sizeof(unsigned long) < min_integer_type_size),
+      unsigned long long,
+      std::conditional_t<
+          ((alignof(T) >= alignof(unsigned long) &&
+            sizeof(unsigned long) <= max_integer_type_size) ||
+           sizeof(unsigned int) < min_integer_type_size),
+          unsigned long,
+          std::conditional_t<
+              ((alignof(T) >= alignof(unsigned int) &&
+                sizeof(unsigned int) <= max_integer_type_size) ||
+               sizeof(unsigned short) < min_integer_type_size),
+              unsigned int,
+              std::conditional_t<
+                  ((alignof(T) >= alignof(unsigned short) &&
+                    sizeof(unsigned short) <= max_integer_type_size) ||
+                   sizeof(unsigned char) < min_integer_type_size),
+                  unsigned short,
+                  std::conditional_t<
+                      ((alignof(T) >= alignof(unsigned char) &&
+                        sizeof(unsigned char) <= max_integer_type_size)),
+                      unsigned char,
+                      void>>>>>;
+  static_assert(!std::is_same<integer_type, void>::value,
+                "could not find a compatible integer type");
+  static_assert(sizeof(integer_type) >= min_integer_type_size,
+                "integer_type smaller than min integer type size");
+  static_assert(sizeof(integer_type) <= max_integer_type_size,
+                "integer_type greater than max integer type size");
+
+  static constexpr size_t num_integer_type =
+      (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
+
+  integer_type array[num_integer_type] = {0};
+
+  AsIntegerArray() = default;
+
+  RAJA_HOST_DEVICE constexpr size_t array_size() const
+  {
+    return num_integer_type;
+  }
+
+  RAJA_HOST_DEVICE constexpr T get_value() const
+  {
+    T value;
+    memcpy(&value, &array[0], sizeof(T));
+    return value;
+  }
+
+  RAJA_HOST_DEVICE constexpr void set_value(T value)
+  {
+    memcpy(&array[0], &value, sizeof(T));
+  }
+};
+
+}  // namespace detail
 
 }  // namespace RAJA
 

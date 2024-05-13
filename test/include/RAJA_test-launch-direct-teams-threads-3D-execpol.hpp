@@ -100,12 +100,12 @@ using Hip_launch_policies = camp::list<hip_direct_policies>;
 using sycl_direct_policies = 
   camp::list<
              RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
-             RAJA::LoopPolicy<RAJA::sycl_group_2_direct>,
+             RAJA::LoopPolicy<RAJA::sycl_group_0_direct>, //slowest
              RAJA::LoopPolicy<RAJA::sycl_group_1_direct>,
-             RAJA::LoopPolicy<RAJA::sycl_group_0_direct>,
-             RAJA::LoopPolicy<RAJA::sycl_local_2_direct>,
+             RAJA::LoopPolicy<RAJA::sycl_group_2_direct>, //fastest
+             RAJA::LoopPolicy<RAJA::sycl_local_0_direct>,
              RAJA::LoopPolicy<RAJA::sycl_local_1_direct>,
-             RAJA::LoopPolicy<RAJA::sycl_local_0_direct>
+             RAJA::LoopPolicy<RAJA::sycl_local_2_direct>
             >;
 
 using Sycl_launch_policies = camp::list<sycl_direct_policies>;

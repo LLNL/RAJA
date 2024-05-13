@@ -1,0 +1,75 @@
+/*!
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing RAJA math templates.
+*
+******************************************************************************
+*/
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_util_math_HPP
+#define RAJA_util_math_HPP
+
+#include "RAJA/config.hpp"
+
+#include <type_traits>
+#include <climits>
+
+namespace RAJA
+{
+
+/*!
+    \brief evaluate log base 2 of n
+
+    For positive n calculate log base 2 of n, and round the result down to the
+    nearest integer.
+    For zero or negative n return 0
+
+*/
+template < typename T,
+           std::enable_if_t<std::is_integral<T>::value>* = nullptr >
+RAJA_HOST_DEVICE RAJA_INLINE
+constexpr T log2(T n) noexcept
+{
+  T result = 0;
+  if (n > 0) {
+    while(n >>= 1) {
+      ++result;
+    }
+  }
+  return result;
+}
+
+/*!
+    \brief "round up" to the next greatest power of 2
+
+    For a integer n,
+      if n is non-negative,
+        if n is a power of 2, return n
+        if n is not a power of 2, return the next greater power of 2
+      if n is negative, return 0
+*/
+template < typename T,
+           std::enable_if_t<std::is_integral<T>::value>* = nullptr >
+RAJA_HOST_DEVICE
+constexpr T next_pow2(T n) noexcept
+{
+  --n;
+  for (size_t s = 1; s < CHAR_BIT*sizeof(T); s *= 2) {
+    n |= n >> s;
+  }
+  ++n;
+  return n;
+}
+
+}  // namespace RAJA
+
+#endif

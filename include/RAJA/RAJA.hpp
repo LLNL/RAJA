@@ -33,8 +33,10 @@
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/math.hpp"
 #include "RAJA/util/plugins.hpp"
 #include "RAJA/util/Registry.hpp"
+#include "RAJA/util/for_each.hpp"
 
 
 //
@@ -56,13 +58,6 @@
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
-
-//
-// NOTE: LOOP POLCIES WERE DEPRECATED IN 2023.03.0 RELEASE.
-//       THEY ARE RE-ADDED HERE AT REQUEST OF USERS.
-//       THEY WILL BE REMOVED AGAIN IN THE FUTURE.
-//
-#include "RAJA/policy/loop.hpp"
 
 //
 // All platforms should support simd and vector execution.
@@ -154,6 +149,11 @@
 // sort algorithms
 //
 #include "RAJA/util/sort.hpp"
+
+//
+// reduce algorithms
+//
+#include "RAJA/util/reduce.hpp"
 
 //
 // WorkPool, WorkGroup, WorkSite objects
