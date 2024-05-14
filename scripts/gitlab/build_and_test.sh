@@ -25,7 +25,7 @@ hostconfig=${HOST_CONFIG:-""}
 spec=${SPEC:-""}
 module_list=${MODULE_LIST:-""}
 job_unique_id=${CI_JOB_ID:-""}
-use_dev_shm=${USE_DEV_SHM:-true}
+use_dev_shm=${USE_DEV_SHM:-false}
 
 if [[ -n ${module_list} ]]
 then
