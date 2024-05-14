@@ -70,6 +70,27 @@ constexpr T next_pow2(T n) noexcept
   return n;
 }
 
+/*!
+    \brief "round down" to the next smallest power of 2
+
+    For a integer n,
+      if n is non-negative,
+        if n is a power of 2, return n
+        if n is not a power of 2, return the next smaller power of 2
+      if n is negative, return 0
+*/
+template < typename T,
+           std::enable_if_t<std::is_integral<T>::value>* = nullptr >
+RAJA_HOST_DEVICE
+constexpr T prev_pow2(T n) noexcept
+{
+  if ( n < 0 ) return 0;
+  for (size_t s = 1; s < CHAR_BIT*sizeof(T); s *= 2) {
+    n |= n >> s;
+  }
+  return n - (n >> 1);
+}
+
 }  // namespace RAJA
 
 #endif
