@@ -91,6 +91,16 @@ constexpr T prev_pow2(T n) noexcept
   return n - (n >> 1);
 }
 
+/*!
+    \brief compute lhs mod rhs where lhs is non-negative and rhs is a power of 2
+*/
+template < typename L, typename R,
+           std::enable_if_t<std::is_integral<L>::value && std::is_integral<R>::value>* = nullptr >
+constexpr auto power_of_2_mod(L lhs, R rhs) noexcept
+{
+  return lhs & (rhs-R(1));
+}
+
 }  // namespace RAJA
 
 #endif
