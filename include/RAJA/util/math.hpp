@@ -71,9 +71,9 @@ constexpr T next_pow2(T n) noexcept
 }
 
 /*!
-    \brief "round down" to the next smallest power of 2
+    \brief "round down" to the largest power of 2 that is less than or equal to n
 
-    For a integer n,
+    For an integer n,
       if n is non-negative,
         if n is a power of 2, return n
         if n is not a power of 2, return the next smaller power of 2
