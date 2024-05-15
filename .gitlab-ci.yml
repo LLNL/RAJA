@@ -93,6 +93,7 @@ trigger-rajaperf:
   rules:
     - if: '$CI_COMMIT_BRANCH != $MP_BRANCH && $MULTI_PROJECT != "ON"' #never run unless
       when: never
+    - when: on_success
   variables:
     UPDATE_RAJA: ${MP_BRANCH}
   trigger:
