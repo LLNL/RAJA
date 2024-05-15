@@ -74,10 +74,10 @@ constexpr T next_pow2(T n) noexcept
     \brief "round down" to the largest power of 2 that is less than or equal to n
 
     For an integer n,
-      if n is non-negative,
-        if n is a power of 2, return n
-        if n is not a power of 2, return the next smaller power of 2
       if n is negative, return 0
+      else
+        if n is a power of 2, return n
+        else return the largest power of 2 that is less than n
 */
 template < typename T,
            std::enable_if_t<std::is_integral<T>::value>* = nullptr >
