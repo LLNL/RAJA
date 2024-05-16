@@ -159,7 +159,7 @@ annotate the job for this. For example:
 
 
 Building the Intel clang + SYCL HIP compiler for use in CI
-------------------------------------------------------
+----------------------------------------------------------
 
 The SYCL CI tests on corona rely on a custom Intel Clang SYCL compiler that we 
 build ourselves. This compiler lives in the ``/usr/workspace/raja-dev/`` folder so 
@@ -176,68 +176,65 @@ Building the Compiler
   In the event that it does not build, try checking out a different commit. On the intel/llvm GitHub page, one can see which of their 
   commits builds by checking the status badge next to each commit. Look for a commit that passes. 
 
-#. Load the version of GCC that you want to use. in this case, we are using LC's gcc/10.3.1-magic installation. 
 
-  .. code-block:: bash
+#. Load the version of GCC that you want to use. In this case, we are using LC's gcc/10.3.1-magic installation::
 
     module load gcc/10.3.1-magic
 
-#. Clone the "sycl" branch of intel's llvm compiler fork 
+#. Load the version of rocm that you want to use. In this case, we are using 5.7.1::
 
-  .. code-block:: bash
+    module load rocm/5.7.1 
+
+#. Clone the "sycl" branch of intel's llvm compiler fork::
 
     git clone https://github.com/intel/llvm -b sycl
 
-#. cd into that folder 
-
-  .. code-block:: bash
+#. cd into that folder:: 
     
     cd llvm
 
-  #. In the event that the head of the sycl branch does not build, run `git checkout <git sha>` to checkout a version that does build.
+   In the event that the head of the sycl branch does not build, run ``git checkout <git sha>`` to checkout a version that does build.
 
-#. Build the compiler. Note that in this example, we are using rocm5.7.1, but one can change the version they wish to use simply by changing the paths in the configure step.
+#. Build the compiler. 
 
-  #. Configure
+   Note that in this example, we are using rocm5.7.1, but one can change the version they wish to use simply by changing the paths in the configure step
 
-    .. code-block:: bash 
+   a. Configure
 
-      srun -n1 /usr/bin/python3 buildbot/configure.py --hip -o buildrocm5.7.1 \
-      --cmake-gen "Unix Makefiles" \
-      --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
-      --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_INCLUDE_DIR=/opt/rocm-5.7.1/include \
-      --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_LIB_DIR=/opt/rocm-5.7.1/lib \
-      --cmake-opt=-DSYCL_BUILD_PI_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
-      --cmake-opt=-DSYCL_BUILD_PI_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
-      --cmake-opt=-DSYCL_BUILD_PI_HIP_LIB_DIR=/opt/rocm-5.7.1/lib \
-      --cmake-opt=-DUR_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
-      --cmake-opt=-DUR_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
-      --cmake-opt=-DUR_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
-      --cmake-opt=-DUR_HIP_LIB_DIR=/opt/rocm-5.7.1/lib
-  
-  #. Build
+     .. code-block:: bash 
 
-    .. code-block:: bash 
+        srun -n1 /usr/bin/python3 buildbot/configure.py --hip -o buildrocm5.7.1 \
+        --cmake-gen "Unix Makefiles" \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_INCLUDE_DIR=/opt/rocm-5.7.1/include \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_LIB_DIR=/opt/rocm-5.7.1/lib \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_LIB_DIR=/opt/rocm-5.7.1/lib \
+        --cmake-opt=-DUR_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
+        --cmake-opt=-DUR_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
+        --cmake-opt=-DUR_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
+        --cmake-opt=-DUR_HIP_LIB_DIR=/opt/rocm-5.7.1/lib
+
+   b. Build
+
+     .. code-block:: bash
 
       srun -n1 /usr/bin/python3 buildbot/compile.py -o buildrocm5.7.1
 
 #. Test the compiler
 
-  Follow the steps in the next section "Using the compiler" to test this installation
+   Follow the steps in the next section "Using the compiler" to test this installation
 
 #. Install
 
-  #. The build step will install the compiler to the folder ``buildrocm<version>/install``. Simply copy this folder to the ``/usr/workspace/raja-dev/`` directory using the naming scheme ``clang_sycl_<git sha>_hip_gcc<version>_rocm<version>``
+  a. The build step will install the compiler to the folder ``buildrocm<version>/install``. Simply copy this folder to the ``/usr/workspace/raja-dev/`` directory using the naming scheme ``clang_sycl_<git sha>_hip_gcc<version>_rocm<version>``
 
-  #. Set the permissions of the folder, and everything in it to 750
-
-    .. code-block:: bash 
+  #. Set the permissions of the folder, and everything in it to 750::
 
       chmod 750 /usr/workspace/raja-dev/<foldername>/ -R  
 
-  #. Change the group of the folder and everything in it to raja-dev 
-
-    .. code-block:: bash 
+  #. Change the group of the folder and everything in it to raja-dev::
 
       chgrp raja-dev /usr/workspace/raja-dev/<foldername>/ -R  
 
@@ -245,38 +242,27 @@ Building the Compiler
 Using the compiler
 ^^^^^^^^^^^^^^^^^^
 
-#. Load the version of rocm that you used when building the compiler
-
-  .. code-block:: bash
+#. Load the version of rocm that you used when building the compiler::
 
     module load rocm/5.7.1
 
-#. Navigate to the root of your local checkout space of the RAJA repo
-
-  .. code-block:: bash 
+#. Navigate to the root of your local checkout space of the RAJA repo::
 
     cd /path/to/raja
 
-#. Run the test config script 
-
-  .. code-block:: bash
+#. Run the test config script::
 
     ./scripts/lc-builds/corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1
 
-  Note that at the time of writing, the newest compiler we had built was at ``clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1``
+   Note that at the time of writing, the newest compiler we had built was at ``clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1``
 
-#. cd into the auto generated build directory 
-
-  .. code-block:: bash
+#. cd into the auto generated build directory::
 
     cd {build directory}
 
-#. Run the tests
-
-  .. code-block:: bash
+#. Run the tests::
 
     make -j
-
 
 
 ==============
