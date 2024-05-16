@@ -224,7 +224,7 @@ Building the Compiler
 
 #. Test the compiler
 
-   Follow the steps in the next section "Using the compiler" to test this installation
+   Follow the steps in the `Using the compiler`_ section to test this installation
 
 #. Install
 
