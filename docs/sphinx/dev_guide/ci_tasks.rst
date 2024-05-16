@@ -162,43 +162,43 @@ Building the Intel clang + SYCL HIP compiler for use in CI
 ------------------------------------------------------
 
 The SYCL CI tests on corona rely on a custom Intel Clang SYCL compiler that we 
-build ourselves. This compiler lives in the /usr/workspace/raja-dev/ folder so 
+build ourselves. This compiler lives in the ``/usr/workspace/raja-dev/`` folder so 
 that it can be accessed by the gitlab CI system. Since the intel compiler does
 not do releases in the typical sense (they simply update their repo *every night*), 
 it may become necessary to periodically build a new version of the compiler to 
 ensure that we are using the most up-to-date version available. The steps for 
-building/installing/running are shown here.
+building, installing, and running are shown here.
 
 Building the Compiler
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. important:: Because intel update's their compiler repo daily, there is a nonzero possibility that the had of the sycl branch will build. 
-  In the event that it does not build, try checking out a different commit. On the intel/llvm github page, one can see which of their 
+.. important:: Because intel updates their compiler repo daily, there is a nonzero possibility that the head of the sycl branch will fail to build. 
+  In the event that it does not build, try checking out a different commit. On the intel/llvm GitHub page, one can see which of their 
   commits builds by checking the status badge next to each commit. Look for a commit that passes. 
 
-#. 1. Load the version of GCC that you want to use. in this case, we are using LC's gcc/10.3.1-magic installation. 
+#. Load the version of GCC that you want to use. in this case, we are using LC's gcc/10.3.1-magic installation. 
 
   .. code-block:: bash
 
     module load gcc/10.3.1-magic
 
-#. 2. Clone the "sycl" branch of intel's llvm compiler fork 
+#. Clone the "sycl" branch of intel's llvm compiler fork 
 
   .. code-block:: bash
 
     git clone https://github.com/intel/llvm -b sycl
 
-#. 3. cd into that folder 
+#. cd into that folder 
 
   .. code-block:: bash
     
     cd llvm
 
-  #. 3a. In the event that the head of the sycl branch does not build, run `git checkout <git sha>` to checkout a version that does build.
+  #. In the event that the head of the sycl branch does not build, run `git checkout <git sha>` to checkout a version that does build.
 
-#. 4. build the compiler. Note that in this example, we are using rocm5.7.1, but one can change the version they wish to use simply by changing the paths in the configure step.
+#. Build the compiler. Note that in this example, we are using rocm5.7.1, but one can change the version they wish to use simply by changing the paths in the configure step.
 
-  #. a. Configure
+  #. Configure
 
     .. code-block:: bash 
 
@@ -215,51 +215,66 @@ Building the Compiler
       --cmake-opt=-DUR_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
       --cmake-opt=-DUR_HIP_LIB_DIR=/opt/rocm-5.7.1/lib
   
-  #. b. Build
+  #. Build
 
     .. code-block:: bash 
 
       srun -n1 /usr/bin/python3 buildbot/compile.py -o buildrocm5.7.1
 
-#. 5. Test the compiler
+#. Test the compiler
 
   Follow the steps in the next section "Using the compiler" to test this installation
 
-#. 6. Install
+#. Install
 
-  #. a The build step will install the compiler to the folder buildrocm<version>/install. Simply copy this folder to the /usr/workspace/raja-dev/ 
-  directory using the naming scheme `clang_sycl_<git sha>_hip_gcc<version>_rocm<version>`
+  #. The build step will install the compiler to the folder ``buildrocm<version>/install``. Simply copy this folder to the ``/usr/workspace/raja-dev/`` directory using the naming scheme ``clang_sycl_<git sha>_hip_gcc<version>_rocm<version>``
 
-  #. b set the permissions of the folder, and everything in it to 750
+  #. Set the permissions of the folder, and everything in it to 750
 
     .. code-block:: bash 
 
       chmod 750 /usr/workspace/raja-dev/<foldername>/ -R  
 
+  #. Change the group of the folder and everything in it to raja-dev 
+
+    .. code-block:: bash 
+
+      chgrp raja-dev /usr/workspace/raja-dev/<foldername>/ -R  
+
 
 Using the compiler
 ^^^^^^^^^^^^^^^^^^
 
-#. 1. Load the version of rocm that you used when building the compiler
+#. Load the version of rocm that you used when building the compiler
+
   .. code-block:: bash
+
     module load rocm/5.7.1
 
-#. 2. Navigate to the root of your raja repo
+#. Navigate to the root of your local checkout space of the RAJA repo
+
   .. code-block:: bash 
+
     cd /path/to/raja
 
-#. 3. Run the test config script 
+#. Run the test config script 
+
   .. code-block:: bash
+
     ./scripts/lc-builds/corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1
 
-  note that at the time of writing, the newest compiler we had built was at clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1
+  Note that at the time of writing, the newest compiler we had built was at ``clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1``
 
-#. 4. cd into the auto generated build directory 
+#. cd into the auto generated build directory 
+
   .. code-block:: bash
+
     cd {build directory}
 
-#. 5 Run the test
-  .. code-bloc:: bash
+#. Run the tests
+
+  .. code-block:: bash
+
     make -j
 
 
