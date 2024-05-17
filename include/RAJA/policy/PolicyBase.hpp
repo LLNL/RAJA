@@ -42,6 +42,7 @@ enum class Pattern {
   forall,
   region,
   reduce,
+  multi_reduce,
   taskgraph,
   synchronize,
   workgroup,

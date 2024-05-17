@@ -284,6 +284,15 @@ struct omp_reduce_ordered
 };
 
 ///
+struct omp_multi_reduce : make_policy_pattern_t<Policy::openmp, Pattern::multi_reduce> {
+};
+
+///
+struct omp_multi_reduce_ordered
+    : make_policy_pattern_t<Policy::openmp, Pattern::multi_reduce, reduce::ordered> {
+};
+
+///
 struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
                                                       Pattern::synchronize,
                                                       Launch::sync> {
@@ -389,6 +398,10 @@ using policy::omp::omp_launch_t;
 using policy::omp::omp_reduce;
 ///
 using policy::omp::omp_reduce_ordered;
+///
+using policy::omp::omp_multi_reduce;
+///
+using policy::omp::omp_multi_reduce_ordered;
 
 ///
 /// Type aliases for omp reductions

@@ -28,6 +28,7 @@
 #include "RAJA/policy/sequential/kernel.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/sequential/reduce.hpp"
+#include "RAJA/policy/sequential/multi_reduce.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/sequential/sort.hpp"
 #include "RAJA/policy/sequential/launch.hpp"

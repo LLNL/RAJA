@@ -1,0 +1,23 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA multi-reducer reset.
+///
+
+#include "test-multi-reducer-reset.hpp"
+
+using @BACKEND@MultiReducerResetTypes =
+  Test< camp::cartesian_product< @BACKEND@MultiReducerPolicyList,
+                                 DataTypeList,
+                                 @BACKEND@UnitTestPolicyList > >::Types;
+
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@ResetTest,
+                               MultiReducerBasicResetUnitTest,
+                               @BACKEND@MultiReducerResetTypes);
+

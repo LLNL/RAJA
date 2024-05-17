@@ -79,7 +79,14 @@ struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
 ///////////////////////////////////////////////////////////////////////
 ///
 struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                          Pattern::forall,
+                                                          Pattern::reduce,
+                                                          Launch::undefined,
+                                                          Platform::host> {
+};
+
+///
+struct seq_multi_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                          Pattern::multi_reduce,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
@@ -100,6 +107,7 @@ struct seq_atomic {
 using policy::sequential::seq_atomic;
 using policy::sequential::seq_exec;
 using policy::sequential::seq_reduce;
+using policy::sequential::seq_multi_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_work;

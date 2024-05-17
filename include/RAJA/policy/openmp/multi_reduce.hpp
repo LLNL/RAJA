@@ -1,0 +1,288 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA reduction templates for
+ *          OpenMP execution.
+ *
+ *          These methods should work on any platform that supports OpenMP.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_omp_multi_reduce_HPP
+#define RAJA_omp_multi_reduce_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+#include <memory>
+#include <vector>
+
+#include <omp.h>
+
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/pattern/detail/multi_reduce.hpp"
+#include "RAJA/pattern/multi_reduce.hpp"
+
+#include "RAJA/policy/openmp/policy.hpp"
+
+namespace RAJA
+{
+
+namespace detail
+{
+
+/*!
+ **************************************************************************
+ *
+ * \brief  OMP multi-reduce data class template.
+ *
+ * In this class memory is owned by the
+ *
+ **************************************************************************
+ */
+template < typename T, typename t_MultiReduceOp >
+struct MultiReduceDataOMP
+{
+  using value_type = T;
+  using MultiReduceOp = t_MultiReduceOp;
+
+  MultiReduceDataOMP() = delete;
+
+  template < typename Container,
+             std::enable_if_t<!std::is_same<Container, MultiReduceDataOMP>::value>* = nullptr >
+  MultiReduceDataOMP(Container const& container, T identity)
+      : m_num_bins(container.size())
+      , m_identity(identity)
+      , m_data(create_data(container, m_num_bins))
+  { }
+
+  MultiReduceDataOMP(MultiReduceDataOMP const &other)
+      : m_parent(other.m_parent ? other.m_parent : &other)
+      , m_num_bins(other.m_num_bins)
+      , m_identity(other.m_identity)
+      , m_data(create_data(repeat_view<value_type>(other.m_identity, other.m_num_bins), other.m_num_bins))
+  { }
+
+  ~MultiReduceDataOMP()
+  {
+    if (m_data) {
+      if (m_parent) {
+#pragma omp critical(ompMultiReduceCritical)
+        for (size_t bin = 0; bin < m_num_bins; ++bin) {
+          MultiReduceOp{}(m_parent->m_data[bin], m_data[bin]);
+        }
+      }
+      destroy_data(m_data, m_num_bins);
+    }
+  }
+
+  template < typename Container >
+  void reset(Container const& container, T identity)
+  {
+    m_identity = identity;
+    size_t new_num_bins = container.size();
+    if (new_num_bins != m_num_bins) {
+      destroy_data(m_data, m_num_bins);
+      m_num_bins = new_num_bins;
+      m_data = create_data(container, m_num_bins);
+    } else {
+      size_t bin = 0;
+      for (auto const& value : container) {
+        m_data[bin] = value;
+        ++bin;
+      }
+    }
+  }
+
+  size_t num_bins() const { return m_num_bins; }
+
+  T identity() const { return m_identity; }
+
+  void combine(size_t bin, T const &val) { MultiReduceOp{}(m_data[bin], val); }
+
+  T get(size_t bin) const { return m_data[bin]; }
+
+private:
+  MultiReduceDataOMP const *m_parent = nullptr;
+  size_t m_num_bins;
+  T m_identity;
+  T* m_data;
+
+  template < typename Container >
+  static T* create_data(Container const& container, size_t num_bins)
+  {
+    auto data = static_cast<T*>(malloc(num_bins*sizeof(T)));
+    size_t bin = 0;
+    for (auto const& value : container) {
+      new(&data[bin]) T(value);
+      ++bin;
+    }
+    return data;
+  }
+
+  static void destroy_data(T*& data, size_t num_bins)
+  {
+    for (size_t bin = 0; bin < num_bins; ++bin) {
+      data[bin].~T();
+    }
+    free(data);
+  }
+};
+
+/*!
+ **************************************************************************
+ *
+ * \brief  OMP multi-reduce data class template.
+ *
+ * In this class memory is owned by the
+ *
+ **************************************************************************
+ */
+template < typename T, typename t_MultiReduceOp >
+struct MultiReduceOrderedDataOMP
+{
+  using value_type = T;
+  using MultiReduceOp = t_MultiReduceOp;
+
+  MultiReduceOrderedDataOMP() = delete;
+
+  template < typename Container,
+             std::enable_if_t<!std::is_same<Container, MultiReduceOrderedDataOMP>::value>* = nullptr >
+  MultiReduceOrderedDataOMP(Container const& container, T identity)
+      : m_max_threads(omp_get_max_threads())
+      , m_num_bins(container.size())
+      , m_identity(identity)
+      , m_data(create_data(container, identity, m_num_bins, m_max_threads))
+  { }
+
+  MultiReduceOrderedDataOMP(MultiReduceOrderedDataOMP const &other)
+      : m_parent(other.m_parent ? other.m_parent : &other)
+      , m_num_bins(other.m_num_bins)
+      , m_identity(other.m_identity)
+      , m_data(other.m_data)
+  { }
+
+  ~MultiReduceOrderedDataOMP()
+  {
+    if (m_data) {
+      if (!m_parent) {
+        destroy_data(m_data, m_num_bins, m_max_threads);
+      }
+    }
+  }
+
+  template < typename Container >
+  void reset(Container const& container, T identity)
+  {
+    m_identity = identity;
+    size_t new_num_bins = container.size();
+    if (new_num_bins != m_num_bins) {
+      destroy_data(m_data, m_num_bins, m_max_threads);
+      m_num_bins = new_num_bins;
+      m_data = create_data(container, identity, m_num_bins, m_max_threads);
+    } else {
+      if (m_max_threads > 0) {
+        {
+          size_t thread_idx = 0;
+          size_t bin = 0;
+          for (auto const& value : container) {
+            m_data[index_data(bin, thread_idx, m_num_bins, m_max_threads)] = value;
+            ++bin;
+          }
+        }
+        for (size_t thread_idx = 1; thread_idx < m_max_threads; ++thread_idx) {
+          for (size_t bin = 0; bin < m_num_bins; ++bin) {
+            m_data[index_data(bin, thread_idx, m_num_bins, m_max_threads)] = identity;
+          }
+        }
+      }
+    }
+  }
+
+  size_t num_bins() const { return m_num_bins; }
+
+  T identity() const { return m_identity; }
+
+  void combine(size_t bin, T const &val)
+  {
+    size_t thread_idx = omp_get_thread_num();
+    MultiReduceOp{}(m_data[index_data(bin, thread_idx, m_num_bins, m_max_threads)], val);
+  }
+
+  T get(size_t bin) const
+  {
+    T val = m_identity;
+    for (size_t thread_idx = 0; thread_idx < m_max_threads; ++thread_idx) {
+      MultiReduceOp{}(val, m_data[index_data(bin, thread_idx, m_num_bins, m_max_threads)]);
+    }
+    return val;
+  }
+
+private:
+  MultiReduceOrderedDataOMP const *m_parent = nullptr;
+  size_t m_max_threads;
+  size_t m_num_bins;
+  T m_identity;
+  T* m_data;
+
+  static size_t index_data(size_t bin, size_t thread_idx, size_t num_bins, size_t RAJA_UNUSED_ARG(max_threads))
+  {
+    return bin + thread_idx * num_bins;
+  }
+
+  template < typename Container >
+  static T* create_data(Container const& container, T identity, size_t num_bins, size_t max_threads)
+  {
+    auto data = static_cast<T*>(malloc(max_threads*num_bins*sizeof(T)));
+    if (max_threads > 0) {
+      {
+        size_t thread_idx = 0;
+        size_t bin = 0;
+        for (auto const& value : container) {
+          new(&data[index_data(bin, thread_idx, num_bins, max_threads)]) T(value);
+          ++bin;
+        }
+      }
+      for (size_t thread_idx = 1; thread_idx < max_threads; ++thread_idx) {
+        for (size_t bin = 0; bin < num_bins; ++bin) {
+          new(&data[index_data(bin, thread_idx, num_bins, max_threads)]) T(identity);
+        }
+      }
+    }
+    return data;
+  }
+
+  static void destroy_data(T*& data, size_t num_bins, size_t max_threads)
+  {
+    for (size_t thread_idx = 0; thread_idx < max_threads; ++thread_idx) {
+      for (size_t bin = 0; bin < num_bins; ++bin) {
+        data[index_data(bin, thread_idx, num_bins, max_threads)].~T();
+      }
+    }
+    free(data);
+  }
+};
+
+}  // namespace detail
+
+RAJA_DECLARE_ALL_MULTI_REDUCERS(omp_multi_reduce, detail::MultiReduceDataOMP)
+
+RAJA_DECLARE_ALL_MULTI_REDUCERS(omp_multi_reduce_ordered, detail::MultiReduceOrderedDataOMP)
+
+}  // namespace RAJA
+
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
+
+#endif  // closing endif for header file include guard

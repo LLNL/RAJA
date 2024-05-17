@@ -1,0 +1,189 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file providing RAJA reduction declarations.
+ *
+ ******************************************************************************
+ */
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_multi_reduce_HPP
+#define RAJA_multi_reduce_HPP
+
+#include "RAJA/config.hpp"
+
+#include "RAJA/util/Operators.hpp"
+#include "RAJA/util/macros.hpp"
+
+namespace RAJA
+{
+
+//
+// Forward declarations for multi reduction templates.
+// Actual classes appear in forall_*.hxx header files.
+//
+// IMPORTANT: multi reduction policy parameter must be consistent with loop
+//            execution policy type.
+//
+// Also, multiple multi reductions using different reduction operations may be
+// combined in a single RAJA forall() construct.
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Min multi reducer class template.
+ *
+ * Usage example:
+ *
+ * \verbatim
+
+   Real_ptr data = ...;
+   Index_ptr bins = ...;
+   Real_ptr min_vals = ...;
+   MultiReduceMin<multi_reduce_policy, Real_type> my_mins(num_bins, init_vals);
+
+   forall<exec_policy>( ..., [=] (Index_type i) {
+      my_mins[bins[i]].min(data[i]);
+   }
+
+   for (size_t bin = 0; bin < num_bins; ++bin) {
+      min_vals[bin] = my_mins.get(bin);
+   }
+
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename MULTI_REDUCE_POLICY_T, typename T>
+class MultiReduceMin;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Max multi reducer class template.
+ *
+ * Usage example:
+ *
+ * \verbatim
+
+   Real_ptr data = ...;
+   Index_ptr bins = ...;
+   Real_ptr max_vals = ...;
+   MultiReduceMax<multi_reduce_policy, Real_type> my_maxs(num_bins, init_vals);
+
+   forall<exec_policy>( ..., [=] (Index_type i) {
+      my_maxs[bins[i]].max(data[i]);
+   }
+
+   for (size_t bin = 0; bin < num_bins; ++bin) {
+      max_vals[bin] = my_maxs.get(bin);
+   }
+
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename MULTI_REDUCE_POLICY_T, typename T>
+class MultiReduceMax;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sum multi reducer class template.
+ *
+ * Usage example:
+ *
+ * \verbatim
+
+   Real_ptr data = ...;
+   Index_ptr bins = ...;
+   Real_ptr sum_vals = ...;
+   MultiReduceSum<multi_reduce_policy, Real_type> my_sums(num_bins, init_vals);
+
+   forall<exec_policy>( ..., [=] (Index_type i) {
+      my_sums[bins[i]] += (data[i]);
+   }
+
+   for (size_t bin = 0; bin < num_bins; ++bin) {
+      sum_vals[bin] = my_sums.get(bin);
+   }
+
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename MULTI_REDUCE_POLICY_T, typename T>
+class MultiReduceSum;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Bitwise OR multi reducer class template.
+ *
+ * Usage example:
+ *
+ * \verbatim
+
+   Real_ptr data = ...;
+   Index_ptr bins = ...;
+   Real_ptr bit_vals = ...;
+   MultiReduceBitOr<multi_reduce_policy, Real_type> my_bits(num_bins, init_vals);
+
+   forall<exec_policy>( ..., [=] (Index_type i) {
+      my_bits[bins[i]] |= (data[i]);
+   }
+
+   for (size_t bin = 0; bin < num_bins; ++bin) {
+      bit_vals[bin] = my_bits.get(bin);
+   }
+
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename MULTI_REDUCE_POLICY_T, typename T>
+class MultiReduceBitOr;
+ 
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Bitwise AND multi reducer class template.
+ *
+ * Usage example:
+ *
+ * \verbatim
+
+   Real_ptr data = ...;
+   Index_ptr bins = ...;
+   Real_ptr bit_vals = ...;
+   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins, init_vals);
+
+   forall<exec_policy>( ..., [=] (Index_type i) {
+      my_bits[bins[i]] &= (data[i]);
+   }
+
+   for (size_t bin = 0; bin < num_bins; ++bin) {
+      bit_vals[bin] = my_bits.get(bin);
+   }
+
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename MULTI_REDUCE_POLICY_T, typename T>
+class MultiReduceBitAnd;
+
+} //namespace RAJA
+
+
+#endif  // closing endif for header file include guard
