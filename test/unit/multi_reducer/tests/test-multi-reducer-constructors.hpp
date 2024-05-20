@@ -18,6 +18,7 @@
 
 #include <vector>
 #include <list>
+#include <set>
 
 template <typename T>
 class MultiReducerBasicConstructorUnitTest : public ::testing::Test
@@ -255,9 +256,9 @@ TYPED_TEST_P(MultiReducerContainerInitConstructorUnitTest, MultiReducerConstruct
 
   std::vector<NumericType> c0(0);
   std::vector<NumericType> c1(1, 3);
-  std::vector<NumericType> c2;
-  c2.emplace_back(5);
-  c2.emplace_back(8);
+  std::set<NumericType> c2;
+  c2.emplace(5);
+  c2.emplace(8);
   std::list<NumericType> c10;
   for (size_t bin = 0; bin < size_t(10); ++bin) {
     c10.emplace_front(NumericType(bin));
