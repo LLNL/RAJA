@@ -154,15 +154,15 @@ TYPED_TEST_P(MultiReducerBasicResetUnitTest, MultiReducerReset)
 template <  typename MultiReducePolicy,
             typename NumericType,
             typename ForOnePol  >
-void testMultiReducerSingleResetRegular(bool use_reducer, size_t num_bins, NumericType initVal)
+void testMultiReducerSingleResetRegular(bool use_reducer, size_t init_bins, size_t num_bins, NumericType initVal)
 {
-  RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(num_bins, initVal);
-  RAJA::MultiReduceMin<MultiReducePolicy, NumericType> multi_reduce_min(num_bins, initVal);
-  RAJA::MultiReduceMax<MultiReducePolicy, NumericType> multi_reduce_max(num_bins, initVal);
+  RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(init_bins, initVal);
+  RAJA::MultiReduceMin<MultiReducePolicy, NumericType> multi_reduce_min(init_bins, initVal);
+  RAJA::MultiReduceMax<MultiReducePolicy, NumericType> multi_reduce_max(init_bins, initVal);
 
   if (use_reducer) {
     forone<ForOnePol>( [=] RAJA_HOST_DEVICE() {
-      for (size_t bin = 0; bin < num_bins; ++bin) {
+      for (size_t bin = 0; bin < init_bins; ++bin) {
         multi_reduce_sum[bin] += initVal;
         multi_reduce_min[bin].min(initVal-1);
         multi_reduce_max[bin].max(initVal+1);
@@ -192,14 +192,14 @@ void testMultiReducerSingleResetRegular(bool use_reducer, size_t num_bins, Numer
 template <  typename MultiReducePolicy,
             typename NumericType,
             typename ForOnePol  >
-void testMultiReducerSingleResetBitwise(bool use_reducer, size_t num_bins, NumericType initVal)
+void testMultiReducerSingleResetBitwise(bool use_reducer, size_t init_bins, size_t num_bins, NumericType initVal)
 {
-  RAJA::MultiReduceBitAnd<MultiReducePolicy, NumericType> multi_reduce_and(num_bins, initVal);
-  RAJA::MultiReduceBitOr<MultiReducePolicy, NumericType> multi_reduce_or(num_bins, initVal);
+  RAJA::MultiReduceBitAnd<MultiReducePolicy, NumericType> multi_reduce_and(init_bins, initVal);
+  RAJA::MultiReduceBitOr<MultiReducePolicy, NumericType> multi_reduce_or(init_bins, initVal);
 
   if (use_reducer) {
     forone<ForOnePol>( [=] RAJA_HOST_DEVICE() {
-      for (size_t bin = 0; bin < num_bins; ++bin) {
+      for (size_t bin = 0; bin < init_bins; ++bin) {
         multi_reduce_and[bin] &= initVal-1;
         multi_reduce_or[bin] |= initVal+1;
       }
@@ -225,22 +225,32 @@ template <  typename MultiReducePolicy,
             typename NumericType,
             typename ForOnePol,
             std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr >
-void testMultiReducerSingleReset(size_t num_bins, NumericType initVal)
+void testMultiReducerSingleResetSize(size_t init_bins, size_t num_bins, NumericType initVal)
 {
-  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, num_bins, initVal);
-  testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, num_bins, initVal);
-  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins, initVal);
-  testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins, initVal);
+  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, num_bins, initVal);
+  testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, num_bins, initVal);
+  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
+  testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
 }
 ///
 template <  typename MultiReducePolicy,
             typename NumericType,
             typename ForOnePol,
             std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr >
+void testMultiReducerSingleResetSize(size_t init_bins, size_t num_bins, NumericType initVal)
+{
+  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, num_bins, initVal);
+  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
+}
+
+template <  typename MultiReducePolicy,
+            typename NumericType,
+            typename ForOnePol >
 void testMultiReducerSingleReset(size_t num_bins, NumericType initVal)
 {
-  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, num_bins, initVal);
-  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins, initVal);
+  testMultiReducerSingleResetSize< MultiReducePolicy, NumericType, ForOnePol >(0, num_bins, initVal);
+  testMultiReducerSingleResetSize< MultiReducePolicy, NumericType, ForOnePol >(4, num_bins, initVal);
+  testMultiReducerSingleResetSize< MultiReducePolicy, NumericType, ForOnePol >(num_bins, num_bins, initVal);
 }
 
 TYPED_TEST_P(MultiReducerSingleResetUnitTest, MultiReducerReset)
@@ -261,18 +271,18 @@ template <  typename MultiReducePolicy,
             typename NumericType,
             typename ForOnePol,
             typename Container  >
-void testMultiReducerContainerResetRegular(bool use_reducer, Container const& container)
+void testMultiReducerContainerResetRegular(bool use_reducer, size_t init_bins, Container const& container)
 {
   const size_t num_bins = container.size();
   NumericType initVal = NumericType(5);
 
-  RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(num_bins, initVal);
-  RAJA::MultiReduceMin<MultiReducePolicy, NumericType> multi_reduce_min(num_bins, initVal);
-  RAJA::MultiReduceMax<MultiReducePolicy, NumericType> multi_reduce_max(num_bins, initVal);
+  RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(init_bins, initVal);
+  RAJA::MultiReduceMin<MultiReducePolicy, NumericType> multi_reduce_min(init_bins, initVal);
+  RAJA::MultiReduceMax<MultiReducePolicy, NumericType> multi_reduce_max(init_bins, initVal);
 
   if (use_reducer) {
     forone<ForOnePol>( [=] RAJA_HOST_DEVICE() {
-      for (size_t bin = 0; bin < num_bins; ++bin) {
+      for (size_t bin = 0; bin < init_bins; ++bin) {
         multi_reduce_sum[bin] += initVal;
         multi_reduce_min[bin].min(initVal-1);
         multi_reduce_max[bin].max(initVal+1);
@@ -305,17 +315,17 @@ template <  typename MultiReducePolicy,
             typename NumericType,
             typename ForOnePol,
             typename Container >
-void testMultiReducerContainerResetBitwise(bool use_reducer, Container const& container)
+void testMultiReducerContainerResetBitwise(bool use_reducer, size_t init_bins, Container const& container)
 {
   const size_t num_bins = container.size();
   NumericType initVal = NumericType(5);
 
-  RAJA::MultiReduceBitAnd<MultiReducePolicy, NumericType> multi_reduce_and(num_bins, initVal);
-  RAJA::MultiReduceBitOr<MultiReducePolicy, NumericType> multi_reduce_or(num_bins, initVal);
+  RAJA::MultiReduceBitAnd<MultiReducePolicy, NumericType> multi_reduce_and(init_bins, initVal);
+  RAJA::MultiReduceBitOr<MultiReducePolicy, NumericType> multi_reduce_or(init_bins, initVal);
 
   if (use_reducer) {
     forone<ForOnePol>( [=] RAJA_HOST_DEVICE() {
-      for (size_t bin = 0; bin < num_bins; ++bin) {
+      for (size_t bin = 0; bin < init_bins; ++bin) {
         multi_reduce_and[bin] &= initVal-1;
         multi_reduce_or[bin] |= initVal+1;
       }
@@ -344,12 +354,12 @@ template <  typename MultiReducePolicy,
             typename ForOnePol,
             typename Container,
             std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr >
-void testMultiReducerContainerReset(Container const& container)
+void testMultiReducerContainerResetSize(size_t init_bins, Container const& container)
 {
-  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, container);
-  testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, container);
-  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, container);
-  testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, container);
+  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, container);
+  testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, container);
+  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
+  testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
 }
 ///
 template <  typename MultiReducePolicy,
@@ -357,10 +367,21 @@ template <  typename MultiReducePolicy,
             typename ForOnePol,
             typename Container,
             std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr >
+void testMultiReducerContainerResetSize(size_t init_bins, Container const& container)
+{
+  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, container);
+  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
+}
+
+template <  typename MultiReducePolicy,
+            typename NumericType,
+            typename ForOnePol,
+            typename Container >
 void testMultiReducerContainerReset(Container const& container)
 {
-  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, container);
-  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, container);
+  testMultiReducerContainerResetSize< MultiReducePolicy, NumericType, ForOnePol >(0, container);
+  testMultiReducerContainerResetSize< MultiReducePolicy, NumericType, ForOnePol >(4, container);
+  testMultiReducerContainerResetSize< MultiReducePolicy, NumericType, ForOnePol >(container.size(), container);
 }
 
 TYPED_TEST_P(MultiReducerContainerResetUnitTest, MultiReducerReset)
