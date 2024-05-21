@@ -16,10 +16,10 @@
 #include "camp/list.hpp"
 
 // Sequential reduction policy types
-using SequentialReducePols = camp::list< RAJA::seq_multi_reduce >;
+using SequentialMultiReducePols = camp::list< RAJA::seq_multi_reduce >;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPReducePols = 
+using OpenMPMultiReducePols =
 #if 1
   camp::list< RAJA::omp_multi_reduce,
               RAJA::omp_multi_reduce_ordered >;
@@ -29,20 +29,20 @@ using OpenMPReducePols =
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetReducePols =
+using OpenMPTargetMultiReducePols =
   camp::list< RAJA::omp_target_multi_reduce >;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaReducePols = camp::list< RAJA::cuda_multi_reduce_atomic >;
+using CudaMultiReducePols = camp::list< RAJA::cuda_multi_reduce_atomic >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipReducePols = camp::list< RAJA::hip_multi_reduce_atomic >;
+using HipMultiReducePols = camp::list< RAJA::hip_multi_reduce_atomic >;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)
-using SyclReducePols = camp::list< RAJA::sycl_multi_reduce >;
+using SyclMultiReducePols = camp::list< RAJA::sycl_multi_reduce >;
 #endif
 
 #endif  // __RAJA_test_multi_reducepol_HPP__

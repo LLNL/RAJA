@@ -12,6 +12,7 @@
 #include "RAJA_test-camp.hpp"
 
 #include "RAJA_unit-test-forone.hpp"
+#include "RAJA_test-multi-reduce-abstractor.hpp"
 
 //
 // Data types
@@ -38,14 +39,5 @@ using CudaMultiReducerPolicyList = camp::list< RAJA::cuda_multi_reduce >;
 #if defined(RAJA_ENABLE_HIP)
 using HipMultiReducerPolicyList = camp::list< RAJA::hip_multi_reduce >;
 #endif
-
-//
-// Get the identity value for the operation used by the given multi reducer
-//
-template < typename MultiReducer >
-inline auto get_op_identity(MultiReducer const& RAJA_UNUSED_ARG(multi_reduce))
-{
-  return MultiReducer::MultiReduceOp::identity();
-}
 
 #endif  // __TEST_MULTI_REDUCER_UTILS_HPP__
