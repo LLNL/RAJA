@@ -68,6 +68,7 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   const size_t num_bins = multi_init.size();
 
 
+  // use ints to initialize array here to avoid floating point precision issues
   std::uniform_int_distribution<int> array_distribution(0, modval-1);
   std::uniform_int_distribution<IDX_TYPE> bin_distribution(0, num_bins-1);
 
@@ -122,6 +123,29 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
 
     for (size_t bin = 0; bin < num_bins; ++bin) {
       ASSERT_EQ(static_cast<DATA_TYPE>(red[bin]), ref_vals[bin]);
+    }
+  }
+
+  if (ABSTRACTION::consistent(red)) {
+    std::vector<DATA_TYPE> ref_vals;
+
+    const int nloops = 10;
+    for (int j = 0; j < nloops; ++j) {
+      red.reset();
+
+      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+        ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
+      });
+
+      if (ref_vals.empty()) {
+        for (size_t bin = 0; bin < num_bins; ++bin) {
+          ref_vals.emplace_back(red.get(bin));
+        }
+      } else {
+        for (size_t bin = 0; bin < num_bins; ++bin) {
+          ASSERT_EQ(red.get(bin), ref_vals[bin]);
+        }
+      }
     }
   }
 

@@ -30,6 +30,10 @@ struct SumAbstractor
   template < typename DATA_TYPE >
   static constexpr bool supports() { return std::is_arithmetic<DATA_TYPE>::value; }
 
+  // TODO: test consistency based on policy as well as type
+  template < typename Reducer >
+  static bool consistent(Reducer const&) { return !std::is_floating_point<typename Reducer::value_type>::value; }
+
   template < typename policy, typename DATA_TYPE >
   using reducer = RAJA::ReduceSum<policy, DATA_TYPE>;
 
@@ -52,6 +56,9 @@ struct MinAbstractor
 {
   template < typename DATA_TYPE >
   static constexpr bool supports() { return std::is_arithmetic<DATA_TYPE>::value; }
+
+  template < typename Reducer >
+  static constexpr bool consistent(Reducer const&) { return true; }
 
   template < typename policy, typename DATA_TYPE >
   using reducer = RAJA::ReduceSum<policy, DATA_TYPE>;
@@ -76,6 +83,9 @@ struct MaxAbstractor
   template < typename DATA_TYPE >
   static constexpr bool supports() { return std::is_arithmetic<DATA_TYPE>::value; }
 
+  template < typename Reducer >
+  static constexpr bool consistent(Reducer const&) { return true; }
+
   template < typename policy, typename DATA_TYPE >
   using reducer = RAJA::ReduceSum<policy, DATA_TYPE>;
 
@@ -99,6 +109,9 @@ struct BitAndAbstractor
   template < typename DATA_TYPE >
   static constexpr bool supports() { return std::is_integral<DATA_TYPE>::value; }
 
+  template < typename Reducer >
+  static constexpr bool consistent(Reducer const&) { return true; }
+
   template < typename policy, typename DATA_TYPE >
   using reducer = RAJA::ReduceSum<policy, DATA_TYPE>;
 
@@ -121,6 +134,9 @@ struct BitOrAbstractor
 {
   template < typename DATA_TYPE >
   static constexpr bool supports() { return std::is_integral<DATA_TYPE>::value; }
+
+  template < typename Reducer >
+  static constexpr bool consistent(Reducer const&) { return true; }
 
   template < typename policy, typename DATA_TYPE >
   using reducer = RAJA::ReduceSum<policy, DATA_TYPE>;
