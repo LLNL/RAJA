@@ -142,6 +142,58 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _reductions_raja_seq_end
   
 
+//
+// Define RefLoc Type
+//
+
+  using REFLOC_INT = RAJA::expt::RefLoc<int, RAJA::operators::minimum>;
+//----------------------------------------------------------------------------//
+
+  std::cout << "\n Running RAJA sequential REF reductions...\n";
+
+  // _reductions_raja_seq_start
+  using EXEC_POL1R   = RAJA::seq_exec;
+ 
+  //int rseq_sum = 0;
+  //int rseq_min = std::numeric_limits<int>::max();
+  //int rseq_max = std::numeric_limits<int>::min();
+  REFLOC_INT rseq_minloc(std::numeric_limits<int>::max(), -1);
+  //REFLOC_INT rseq_maxloc(std::numeric_limits<int>::min(), -1);
+
+  RAJA::forall<EXEC_POL1R>(arange, 
+    //RAJA::expt::ReduceRef<RAJA::operators::plus>(&rseq_sum),
+    //RAJA::expt::ReduceRef<RAJA::operators::minimum>(&rseq_min),
+    //RAJA::expt::ReduceRef<RAJA::operators::maximum>(&rseq_max),
+    RAJA::expt::ReduceRef<RAJA::operators::minimum>(&rseq_minloc),
+    //RAJA::expt::ReduceRef<RAJA::operators::maximum>(&rseq_maxloc),
+    [=](int i, /*int &_rseq_sum,*/ /*int &_rseq_min,*/ /*int &_rseq_max,*/ REFLOC_INT &_rseq_minloc/*, REFLOC_INT &_rseq_maxloc*/) {
+    //[=](int i, int &_rseq_sum, int &_rseq_min, int &_rseq_max, REFLOC_INT &_rseq_minloc, REFLOC_INT &_rseq_maxloc) {
+      //_rseq_sum += a[i];
+
+      //_rseq_min.min(a[i]);
+      //_rseq_min = RAJA_MIN(a[i], _rseq_min);
+      //_rseq_max = RAJA_MAX(a[i], _rseq_max);
+
+      //_rseq_minloc = RAJA_MIN(REFLOC_INT(a[i], i), _rseq_minloc);
+      //_rseq_maxloc = RAJA_MAX(REFLOC_INT(a[i], i), _rseq_maxloc);
+      _rseq_minloc.min(a[i], i);
+      //_rseq_maxloc.max(a[i], i);
+      // Note : RAJA::expt::ValLoc<T> objects provide min() and max() methods 
+      //        that are equivalent to the assignments with RAJA_MIN and RAJA_MAX 
+      //        above.
+    }
+  );
+
+  //std::cout << "\tsum = " << rseq_sum << std::endl;
+  //std::cout << "\tmin = " << rseq_min << std::endl;
+  //std::cout << "\tmax = " << rseq_max << std::endl;
+  std::cout << "\tmin, loc = " << rseq_minloc.getVal() << " , " 
+                               << rseq_minloc.getLoc() << std::endl;
+  //std::cout << "\tmax, loc = " << rseq_maxloc.getVal() << " , " 
+  //                             << rseq_maxloc.getLoc() << std::endl;
+  // _reductions_raja_seq_end
+  
+
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)

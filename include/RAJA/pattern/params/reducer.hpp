@@ -18,6 +18,29 @@ namespace RAJA
 namespace expt
 {
 
+template<typename T, template <typename, typename, typename> class Op>
+struct RefLoc {
+  using index_type = RAJA::Index_type;
+  using value_type = T;
+
+  RAJA_HOST_DEVICE RefLoc() {}
+  RAJA_HOST_DEVICE RefLoc(value_type v) : val(v) {}
+  RAJA_HOST_DEVICE RefLoc(value_type v, RAJA::Index_type l) : val(v), loc(l) {}
+
+  RAJA_HOST_DEVICE void min(value_type v, index_type l) { if (v < val) { val = v; loc = l; } }
+  RAJA_HOST_DEVICE void max(value_type v, index_type l) { if (v > val) { val = v; loc = l; } }
+
+  bool constexpr operator<(const RefLoc& rhs) const { return val < rhs.val; }
+  bool constexpr operator>(const RefLoc& rhs) const { return val > rhs.val; }
+
+  value_type getVal() {return val;}
+  RAJA::Index_type getLoc() {return loc;}
+
+private:
+  value_type val;
+  index_type loc = -1;
+};
+
 template<typename T>
 struct ValLoc {
   using index_type = RAJA::Index_type;
@@ -45,6 +68,23 @@ private:
 
 namespace operators
 {
+
+//template <typename T, template <typename, typename, typename> class Op>
+//struct limits<RAJA::expt::RefLoc<T, RAJA::operators::minimum>> {
+//  RAJA_INLINE RAJA_HOST_DEVICE static constexpr RAJA::expt::RefLoc<T, RAJA::operators::minimum> min()
+//  {
+//    return RAJA::expt::RefLoc<T, RAJA::operators::minimum>(RAJA::operators::limits<T>::min());
+//  }
+//};
+
+//template <typename T, template <typename, typename, typename> class Op>
+//struct limits<RAJA::expt::RefLoc<T, RAJA::operators::maximum>> {
+//  RAJA_INLINE RAJA_HOST_DEVICE static constexpr RAJA::expt::RefLoc<T, RAJA::operators::maximum> max()
+//  {
+//    return RAJA::expt::RefLoc<T, RAJA::operators::maximum>(RAJA::operators::limits<T>::max());
+//  }
+//};
+
 
 template <typename T>
 struct limits<RAJA::expt::ValLoc<T>> {
@@ -80,6 +120,38 @@ namespace detail
 
   //
   //
+  // Ref Reducer
+  //
+  //
+  template <typename Op, template <typename, typename> class T, typename Type, typename minmax>
+  struct ReducerRef : public ForallParamBase {
+    using op = Op;
+    using temp1 = T<Type, minmax>;
+    using temp2 = minmax;
+    using value_type = Type;
+
+    RAJA_HOST_DEVICE ReducerRef() {}
+    ReducerRef(value_type *target_in) : target(target_in), val(op::identity()) {}
+
+    value_type *target = nullptr;
+    value_type val = op::identity();
+
+#if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
+    // Device related attributes.
+    value_type * devicetarget = nullptr;
+    RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;
+    unsigned int * device_count = nullptr;
+#endif
+
+    using ARG_TUP_T = camp::tuple<value_type*>;
+    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&val); }
+
+    using ARG_LIST_T = typename ARG_TUP_T::TList;
+    static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value ;
+  };
+
+  //
+  //
   // Basic Reducer
   //
   //
@@ -109,6 +181,25 @@ namespace detail
   };
 
 } // namespace detail
+
+//template <typename T, template <typename, typename, typename> class Op>
+//auto constexpr ReduceRef(T *target)
+//{
+//  return NewReducerRef<T, Op<T, T, T>>(target);
+//}
+
+template <template <typename, typename, typename> class Op, template <typename T, typename minmax> class Loc, typename T, typename minmax>
+auto constexpr ReduceRef(Loc<T,minmax> *target)
+{
+  return detail::Reducer<Op<ValLoc<T>, ValLoc<T>, ValLoc<T>>, T>(target);
+  //return detail::ReducerRef<Op<T, T, T>, T>(target);
+}
+
+//template <template <typename, typename, typename> class Op, typename T>
+//auto constexpr ReduceRef(T *target)
+//{
+//  return detail::ReducerRef<Op<T, T, T>, T>(target);
+//}
 
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T *target)
