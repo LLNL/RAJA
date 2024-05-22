@@ -86,7 +86,7 @@ struct LaunchDims {
     return result;
   }
 
-  cl::sycl::nd_range<3> fit_nd_range() {
+  cl::sycl::nd_range<3> fit_nd_range(::sycl::queue* q) {
 
     sycl_dim_3_t launch_global;
 
@@ -95,6 +95,7 @@ struct LaunchDims {
     launch_local.y = std::max(launch_local.y, local.y);
     launch_local.z = std::max(launch_local.z, local.z);
 
+#if 0 // RDH
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
@@ -102,6 +103,7 @@ struct LaunchDims {
       camp::resources::Resource sycl_res = camp::resources::Sycl();
       q = sycl_res.get<camp::resources::Sycl>().get_queue();
     }
+#endif
 
     cl::sycl::device dev = q->get_device();
 

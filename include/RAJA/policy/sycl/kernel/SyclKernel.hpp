@@ -142,7 +142,7 @@ struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
 
     qu->submit([&](cl::sycl::handler& h) {
  
-      h.parallel_for(launch_dims.fit_nd_range(),
+      h.parallel_for(launch_dims.fit_nd_range(qu),
                      [=] (cl::sycl::nd_item<3> item) {
         
         SyclKernelLauncher<Data, executor_t>(*m_data, item);
@@ -178,7 +178,7 @@ struct SyclLaunchHelper<true,sycl_launch<async0>,StmtList,Data,Types>
 
     qu->submit([&](cl::sycl::handler& h) {
  
-      h.parallel_for(launch_dims.fit_nd_range(),
+      h.parallel_for(launch_dims.fit_nd_range(qu),
                      [=] (cl::sycl::nd_item<3> item) {
 
         SyclKernelLauncher<Data, executor_t>(data, item);
@@ -217,6 +217,7 @@ struct StatementExecutor<
     LaunchDims launch_dims = executor_t::calculateDimensions(data);
     
     int shmem = 0;
+#if 1  // RDH
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
     // Global resource was not set, use the resource that was passed to forall
@@ -225,6 +226,10 @@ struct StatementExecutor<
       camp::resources::Resource res = camp::resources::Sycl();
       q = res.get<camp::resources::Sycl>().get_queue();
     }
+#else
+    camp::resources::Sycl res = data.get_resource();
+    ::sycl::queue* q = res.get_queue();;
+#endif
 
     //
     // Launch the kernels

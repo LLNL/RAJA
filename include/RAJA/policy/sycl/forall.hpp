@@ -121,12 +121,16 @@ forall_impl(resources::Sycl &sycl_res,
     sycl_dim_t blockSize{BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
+#if 0 // RDH
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
     if (!q) { 
       q = sycl_res.get_queue();
     }
+#else
+    ::sycl::queue* q = sycl_res.get_queue();
+#endif
 
     q->submit([&](::sycl::handler& h) {
 
@@ -168,6 +172,7 @@ resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
+
     // Note: We could fix an incorrect workgroup size.
     //       It would change what was specified.
     //       For now, leave the device compiler to error with invalid WG size.
@@ -178,14 +183,20 @@ resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
     sycl_dim_t blockSize{BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
+#if 0  // RDH
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
     if (!q) { 
       q = sycl_res.get_queue();
     }
+#else
+    ::sycl::queue* q = sycl_res.get_queue();
+#endif
+
     LOOP_BODY* lbody;
     Iterator* beg;
+
     RAJA_FT_BEGIN;
     //
     // Setup shared memory buffers
@@ -250,18 +261,23 @@ forall_impl(resources::Sycl &sycl_res,
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0) {
+
     //
     // Compute the number of blocks
     //
     sycl_dim_t blockSize{BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
+#if 0 // RDH
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
     if (!q) {
       q = sycl_res.get_queue();
     }
+#else
+    ::sycl::queue* q = sycl_res.get_queue();
+#endif
 
     auto combiner = []( ForallParam x, ForallParam y ) {
       RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( x, y );
@@ -332,12 +348,16 @@ forall_impl(resources::Sycl &sycl_res,
     sycl_dim_t blockSize{BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
 
+#if 0 // RDH
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
     // Global resource was not set, use the resource that was passed to forall
     // Determine if the default SYCL res is being used
     if (!q) {
       q = sycl_res.get_queue();
     }
+#else
+    ::sycl::queue* q = sycl_res.get_queue();
+#endif
 
     auto combiner = []( ForallParam x, ForallParam y ) {
       RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( x, y );
@@ -418,29 +438,6 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, sycl_exec<BlockSize, Async>>,
-                             const TypedIndexSet<SegmentTypes...>& iset,
-                             LoopBody&& loop_body)
-{
-  int num_seg = iset.getNumSegments();
-  for (int isi = 0; isi < num_seg; ++isi) {
-    iset.segmentCall(isi,
-                     detail::CallForall(),
-                     sycl_exec<BlockSize, true>(),
-                     loop_body);
-  }  // iterate over segments of index set
-
-  if (!Async) {
-    ::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-    q->wait();
-  };
-}
-
-
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
 RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &r,
                                                     ExecPolicy<seq_segit, sycl_exec<BlockSize, Async>>,
                                                     const TypedIndexSet<SegmentTypes...>& iset,
@@ -455,10 +452,15 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
                      loop_body);
   }  // iterate over segments of index set
 
+#if 0 // RDH
   if (!Async) {
     ::sycl::queue* q = ::RAJA::sycl::detail::getQueue(); 
     q->wait();
   }
+#else
+  ::sycl::queue* q = r.get_queue();
+  q->wait(); 
+#endif
 
   return resources::EventProxy<resources::Sycl>(r);
 }
