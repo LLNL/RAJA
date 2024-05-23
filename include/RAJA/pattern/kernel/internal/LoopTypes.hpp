@@ -3,8 +3,7 @@
  *
  * \file
  *
- * \brief   Header file for loop kernel internals: LoopData structure and
- *          related helper functions.
+ * \brief   Header file for loop kernel internals and related helper functions.
  *
  ******************************************************************************
  */
