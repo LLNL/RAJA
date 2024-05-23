@@ -30,9 +30,12 @@ struct SumAbstractor
   template < typename DATA_TYPE >
   static constexpr bool supports() { return std::is_arithmetic<DATA_TYPE>::value; }
 
-  // TODO: test consistency based on policy as well as type
   template < typename Reducer >
-  static bool consistent(Reducer const&) { return !std::is_floating_point<typename Reducer::value_type>::value; }
+  static bool consistent(Reducer const&)
+  {
+    return RAJA::policy_has_trait<typename Reducer::policy, RAJA::reduce::ordered>::value ||
+           !std::is_floating_point<typename Reducer::value_type>::value;
+  }
 
   template < typename policy, typename DATA_TYPE >
   using reducer = RAJA::ReduceSum<policy, DATA_TYPE>;

@@ -28,6 +28,7 @@
       : public reduce::detail::BaseMultiReduce##OP_NAME<DATA<T, RAJA::reduce::OP<T>>>    \
   {                                                                                      \
   public:                                                                                \
+    using policy = POL;                                                                  \
     using Base = reduce::detail::BaseMultiReduce##OP_NAME<DATA<T, RAJA::reduce::OP<T>>>; \
     using Base::Base;                                                                    \
     using typename Base::value_type;                                                     \

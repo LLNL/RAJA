@@ -69,11 +69,11 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
 
 
   // use ints to initialize array here to avoid floating point precision issues
-  std::uniform_int_distribution<int> array_distribution(0, modval-1);
+  std::uniform_int_distribution<int> array_int_distribution(0, modval-1);
   std::uniform_int_distribution<IDX_TYPE> bin_distribution(0, num_bins-1);
 
   for (IDX_TYPE i = 0; i < data_len; ++i) {
-    test_array[i] = DATA_TYPE(array_distribution(rngen));
+    test_array[i] = DATA_TYPE(array_int_distribution(rngen));
     test_bins[i] = bin_distribution(rngen);
   }
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
@@ -127,6 +127,21 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   }
 
   if (ABSTRACTION::consistent(red)) {
+
+    if /* constexpr */ (std::is_floating_point<DATA_TYPE>::value) {
+
+      // use floating point values to accentuate floating point precision issues
+      std::conditional_t<!std::is_floating_point<DATA_TYPE>::value,
+          std::uniform_int_distribution<DATA_TYPE>,
+          std::uniform_real_distribution<DATA_TYPE>> array_flt_distribution(0, modval-1);
+
+      for (IDX_TYPE i = 0; i < data_len; ++i) {
+        test_array[i] = DATA_TYPE(array_flt_distribution(rngen));
+      }
+      working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
+    }
+
+
     std::vector<DATA_TYPE> ref_vals;
 
     const int nloops = 10;
