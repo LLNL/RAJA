@@ -377,7 +377,7 @@ void launch(ExecPlace place, const LaunchParams &launch_params, ReduceParams&&..
 
 
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 template<typename T, typename U>
 RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::ExecPlace device){
   if(device == RAJA::ExecPlace::DEVICE) {return RAJA::resources::Resource(device_res);}
