@@ -154,19 +154,8 @@ using inner1 = RAJA::LoopPolicy<RAJA::seq_exec
 #endif
                                          >;
 
-template<typename T>
-void switch_ptrs(T *A, T *d_A)
-{
-  T *tmp_ptr;
-  tmp_ptr = d_A;
-  d_A = A;
-  A = tmp_ptr;
-}
-
 int main(int argc, char *argv[])
 {
-
-  std::cout << "\n\nRAJA matrix transpose example...\n";
 
   if(argc != 2) {
     RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device");
@@ -185,11 +174,10 @@ int main(int argc, char *argv[])
 
   RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA::launch matrix transpose example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; std::cout<<"Running RAJA::launch matrix transpose example on the host"<<std::endl; }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA::launch matrix transpose example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; std::cout<<"Running RAJA::launch matrix transpose example on the device" <<std::endl; }
 
-  std::cout<<"hello 1"<<std::endl;
   RAJA::resources::Host host_res;
 #if defined(RAJA_ENABLE_CUDA)
   RAJA::resources::Cuda device_res;
@@ -201,13 +189,11 @@ int main(int argc, char *argv[])
   RAJA::resources::Sycl device_res;
 #endif
 
-  std::cout<<"hello 2"<<std::endl;
 #if defined(RAJA_ENABLE_SYCL) || defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
   RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
   RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
-  std::cout<<"hello 2 a"<<std::endl;
   //
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
   //
@@ -224,10 +210,8 @@ int main(int argc, char *argv[])
   //
   // Allocate matrix data
   //
-  std::cout<<"hello 2 b"<<std::endl;
   int *A = host_res.allocate<int>(N_r * N_c);
   int *At = host_res.allocate<int>(N_r * N_c);
-  std::cout<<"hello 3"<<std::endl;
   //
   // In the following implementations of matrix transpose, we
   // use RAJA 'View' objects to access the matrix data. A RAJA view
@@ -239,7 +223,6 @@ int main(int argc, char *argv[])
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, N_c, N_r);
   // _dynamic_mattranspose_localarray_views_end
 
-  std::cout<<"hello 4"<<std::endl;
   //
   // Initialize matrix data
   //
@@ -320,16 +303,16 @@ int main(int argc, char *argv[])
   int *d_A = nullptr, *d_At = nullptr;
 
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
-    std::cout<<"allocating on device"<<std::endl;
+    
     d_A  =  device_res.allocate<int>(N_r * N_c);
     d_At = device_res.allocate<int>(N_r * N_c);
 
-    //device_res.memcpy(d_A, A, sizeof(int) * N_r * N_c);
-    //device_res.memcpy(d_At, At, sizeof(int) * N_r * N_c);
+    device_res.memcpy(d_A, A, sizeof(int) * N_r * N_c);
+    device_res.memcpy(d_At, At, sizeof(int) * N_r * N_c);
 
     //switch host/device pointers so we can reuse the views
-    switch_ptrs(d_A, A);
-    switch_ptrs(d_At, At);
+    Aview.set_data(d_A);
+    Atview.set_data(d_At);
   }
 #endif
 
@@ -361,7 +344,7 @@ int main(int argc, char *argv[])
 
                   // Bounds check
                   if (row < N_r && col < N_c) {
-                    Tile(ty,tx) = A[col + N_c*row];//Aview(row, col);
+                    Tile(ty,tx) = Aview(row, col);
                   }
 
                 });
@@ -378,7 +361,7 @@ int main(int argc, char *argv[])
 
                   // Bounds check
                   if (row < N_r && col < N_c) {
-                    //Atview(col, row) = Tile(ty, tx);
+                    Atview(col, row) = Tile(ty, tx);
                   }
 
                 });
@@ -397,11 +380,9 @@ int main(int argc, char *argv[])
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)  
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
-    //switch_ptrs(d_At, At);
-    //switch_ptrs(d_A, A);
 
-    //device_res.memcpy(A, d_A, sizeof(int) * N_r * N_c);
-    //device_res.memcpy(At, d_At, sizeof(int) * N_r * N_c);
+    device_res.memcpy(A, d_A, sizeof(int) * N_r * N_c);
+    device_res.memcpy(At, d_At, sizeof(int) * N_r * N_c);
   }
 #endif
 
