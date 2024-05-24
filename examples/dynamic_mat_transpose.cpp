@@ -11,7 +11,6 @@
 #include <iostream>
 
 #include "RAJA/RAJA.hpp"
-#include "memoryManager.hpp"
 
 /*
  *  Matrix Transpose Example
@@ -297,13 +296,16 @@ int main(int argc, char *argv[])
 
   std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
+  //Reset memory
+  std::memset(At, 0, N_r * N_c * sizeof(int));
+
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 
   //Allocate device side pointers
   int *d_A = nullptr, *d_At = nullptr;
 
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
-    
+
     d_A  =  device_res.allocate<int>(N_r * N_c);
     d_At = device_res.allocate<int>(N_r * N_c);
 
@@ -322,7 +324,7 @@ int main(int argc, char *argv[])
 
   // _dynamic_mattranspose_kernel_start
   RAJA::launch<launch_policy>
-    (res, RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc),
+    (res, RAJA::LaunchParams(RAJA::Teams(outer_Dimc, outer_Dimr),
                              RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
      "Matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
@@ -378,17 +380,33 @@ int main(int argc, char *argv[])
   });
   // _dynamic_mattranspose_kernel_end
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)  
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
 
     device_res.memcpy(A, d_A, sizeof(int) * N_r * N_c);
     device_res.memcpy(At, d_At, sizeof(int) * N_r * N_c);
+
+    Aview.set_data(A);
+    Atview.set_data(At);
   }
 #endif
 
 
   checkResult<int>(Atview, N_c, N_r);
+  //printResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
+
+  //Release data
+  host_res.deallocate(A);
+  host_res.deallocate(At);
+
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
+    device_res.deallocate(d_A);
+    device_res.deallocate(d_At);
+  }
+#endif
+
 
   return 0;
 }
