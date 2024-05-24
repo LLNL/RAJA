@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
   RAJA::resources::Sycl device_res;
 #endif
 
-#if defined(RAJA_ENABLE_SYCL) || defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_GPU_ACTIVE)
   RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
   RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
@@ -299,8 +299,7 @@ int main(int argc, char *argv[])
   //Reset memory
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
-
+#if defined(RAJA_GPU_ACTIVE)
   //Allocate device side pointers
   int *d_A = nullptr, *d_At = nullptr;
 
@@ -380,7 +379,7 @@ int main(int argc, char *argv[])
   });
   // _dynamic_mattranspose_kernel_end
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_ACTIVE)
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
 
     device_res.memcpy(A, d_A, sizeof(int) * N_r * N_c);
@@ -400,7 +399,7 @@ int main(int argc, char *argv[])
   host_res.deallocate(A);
   host_res.deallocate(At);
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_GPU_ACTIVE)
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
     device_res.deallocate(d_A);
     device_res.deallocate(d_At);

@@ -374,8 +374,6 @@ void launch(ExecPlace place, const LaunchParams &launch_params, ReduceParams&&..
 }
 
 
-
-
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 template<typename T, typename U>
@@ -383,14 +381,14 @@ RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::E
   if(device == RAJA::ExecPlace::DEVICE) {return RAJA::resources::Resource(device_res);}
   else { return RAJA::resources::Resource(host_res); }
 }
-#else
+#endif
+
 template<typename T>
 RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
   if(device == RAJA::ExecPlace::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
 
   return RAJA::resources::Resource(host_res);
 }
-#endif
 
 //Launch API which takes team resource struct and supports new reducers
 template <typename POLICY_LIST, typename ... ReduceParams>
