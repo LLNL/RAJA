@@ -41,21 +41,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
        BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
 
-#if 0 // RDH
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    /*Get the concrete resource */
-    resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      q = sycl_res.get_queue();
-    }
-#else
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
-#endif
 
     //
     // Compute the number of blocks and threads
@@ -130,21 +117,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
        BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
 
-#if 0 // RDH
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    /*Get the concrete resource */
-    resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      q = sycl_res.get_queue();
-    }
-#else
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
-#endif
 
     //
     // Compute the number of blocks and threads

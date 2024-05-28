@@ -95,16 +95,6 @@ struct LaunchDims {
     launch_local.y = std::max(launch_local.y, local.y);
     launch_local.z = std::max(launch_local.z, local.z);
 
-#if 0 // RDH
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      camp::resources::Resource sycl_res = camp::resources::Sycl();
-      q = sycl_res.get<camp::resources::Sycl>().get_queue();
-    }
-#endif
-
     cl::sycl::device dev = q->get_device();
 
     auto max_work_group_size = dev.get_info< ::cl::sycl::info::device::max_work_group_size>();

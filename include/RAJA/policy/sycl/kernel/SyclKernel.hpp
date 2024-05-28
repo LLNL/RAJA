@@ -48,19 +48,22 @@ namespace RAJA
  * work group and work items per group.
  */
 template <bool async0>
-struct sycl_launch {};
+struct sycl_launch : public RAJA::make_policy_pattern_launch_platform_t<
+                            RAJA::Policy::sycl,
+                            RAJA::Pattern::forall,
+                            detail::get_launch<async0>::value,
+                            RAJA::Platform::sycl>{
+};
 
 namespace statement
 {
 
-
-/*! RAJA::kernel statement that launches a SYCL kernel.
- *
- *
+/*
+ * ! RAJA::kernel statement that launches a SYCL kernel.
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct SyclKernelExt
-    : public internal::Statement<sycl_launch<0>, EnclosedStmts...> {
+    : public internal::Statement<LaunchConfig, EnclosedStmts...> {
 };
 
 /*
@@ -87,11 +90,7 @@ namespace internal
 {
 
 /*!
- * SYCL global function for launching SyclKernel policies
- * This is annotated to guarantee that device code generated
- * can be launched by a kernel with BlockSize number of threads.
- *
- * This launcher is used by the SyclKernel policies.
+ * SYCL global function for launching SyclKernel policies.
  */
 template <typename Data, typename Exec>
 void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)
@@ -211,25 +210,15 @@ struct StatementExecutor<
     using launch_t = SyclLaunchHelper<std::is_trivially_copyable<data_t>::value,
                                       LaunchConfig, stmt_list_t, data_t, Types>;
 
+    camp::resources::Sycl res = data.get_resource();
+    ::sycl::queue* q = res.get_queue();;
+
     //
     // Compute the requested kernel dimensions
     //
     LaunchDims launch_dims = executor_t::calculateDimensions(data);
     
     int shmem = 0;
-#if 1  // RDH
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      camp::resources::Resource res = camp::resources::Sycl();
-      q = res.get<camp::resources::Sycl>().get_queue();
-    }
-#else
-    camp::resources::Sycl res = data.get_resource();
-    ::sycl::queue* q = res.get_queue();;
-#endif
 
     //
     // Launch the kernels
