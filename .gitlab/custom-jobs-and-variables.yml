@@ -21,7 +21,7 @@ variables:
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for ruby
-  PROJECT_RUBY_DEPS: ""
+  PROJECT_RUBY_DEPS: "^blt@develop "
 
 # Poodle
 # Arguments for top level allocation
