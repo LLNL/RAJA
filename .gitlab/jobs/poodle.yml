@@ -17,26 +17,32 @@
 ########################
 # We duplicate the shared jobs description and add necessary changes for this
 # project. We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS}
-# So that the comparison with the original job is easier.
+# when possible so that the comparison with the original job is easier.
 
+# Identical to shared job, but use OpenMP tasks and no vectorization
 clang_14_0_6:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %clang@=14.0.6 ^blt@develop"
+    SPEC: " ~shared +openmp +omptask +tests %clang@=14.0.6 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
 
+# Identical to shared job, but use OpenMP tasks and no vectorization
 gcc_10_3_1:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ^blt@develop"
+    SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
 
+# Identical to shared job, but use OpenMP tasks and no vectorization
+# Deactivated (too long on poodle)
 intel_19_1_2_gcc_10_3_1:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %intel@=19.1.2.gcc.10.3.1 ^blt@develop"
+    ON_POODLE: "OFF"
+    SPEC: " ~shared +openmp +omptask +tests %intel@=19.1.2.gcc.10.3.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
 
+# Allowed to fail
 intel_2022_1_0:
   variables:
-    SPEC: "${PROJECT_POODLE_VARIANTS} %intel@=2022.1.0 ${PROJECT_POODLE_DEPS} ^blt@develop"
+    SPEC: "${PROJECT_POODLE_VARIANTS} %intel@=2022.1.0 ${PROJECT_POODLE_DEPS}"
   allow_failure: true
   extends: .job_on_poodle
 
