@@ -40,6 +40,26 @@ struct builtin_atomic {
 namespace detail
 {
 
+template <std::size_t BYTES>
+struct BuiltinAtomicTypeImpl {
+  static_assert(!(BYTES == sizeof(unsigned) ||
+                  BYTES == sizeof(unsigned long long)),
+                "Builtin atomic operations require targets that match the size of 'unsigned int' or 'unsigned long long' (usually 4 or 8 bytes).");
+};
+
+template <>
+struct BuiltinAtomicTypeImpl<sizeof(unsigned)> {
+  using type = unsigned;
+};
+
+template <>
+struct BuiltinAtomicTypeImpl<sizeof(unsigned long long)> {
+  using type = unsigned long long;
+};
+
+template <class T>
+using BuiltinAtomicType = typename BuiltinAtomicTypeImpl<sizeof(T)>::type;
+
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
 RAJA_DEVICE_HIP
@@ -189,13 +209,14 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
 #endif
-  T old = builtin_atomic_load(acc);
-  T assumed;
+  BuiltinAtomicType<T>* accConverted = (BuiltinAtomicType<T>*) acc;
+  BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
+  BuiltinAtomicType<T> expected;
 
   do {
-    assumed = old;
-    old = builtin_atomic_CAS(acc, assumed, oper(assumed));
-  } while (assumed != old);
+    expected = old;
+    old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
+  } while (expected != old);
 
   return old;
 #ifdef RAJA_COMPILER_MSVC
