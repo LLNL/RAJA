@@ -198,10 +198,10 @@ struct BuiltinAtomicCAS<4> {
     if (!sc(old)) {
       T assumed;
 
-      while ((assumed = builtin_atomic_CAS(acc, old, oper(old))) != old &&
-             !sc(assumed)) {
-        old = assumed;
-      }
+      do {
+        assumed = old;
+        old = builtin_atomic_CAS(acc, assumed, oper(assumed));
+      } while (assumed != old && !sc(old));
     }
 
     return old;
@@ -232,10 +232,10 @@ struct BuiltinAtomicCAS<8> {
     if (!sc(old)) {
       T assumed;
 
-      while ((assumed = builtin_atomic_CAS(acc, old, oper(old))) != old &&
-             !sc(assumed)) {
-        old = assumed;
-      }
+      do {
+        assumed = old;
+        old = builtin_atomic_CAS(acc, assumed, oper(assumed));
+      } while (assumed != old && !sc(old));
     }
 
     return old;
