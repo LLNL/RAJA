@@ -43,6 +43,19 @@ namespace detail
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
 RAJA_DEVICE_HIP
+RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+{
+  return RAJA::util::reinterp_A_as_B<long, unsigned>(_InterlockedOr((long volatile *)acc, 0));
+}
+
+RAJA_DEVICE_HIP
+RAJA_INLINE unsigned long long builtin_atomic_load(
+    unsigned long long volatile *acc)
+{
+  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long volatile *)acc, 0));
+}
+
+RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
                                         unsigned compare,
                                         unsigned value)
