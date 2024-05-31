@@ -216,9 +216,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
   do {
     expected = old;
     old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
-  } while (expected != old);
+  } while (old != expected);
 
-  return old;
+  return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( default : 4244 )  // Reenable warning
 #endif
@@ -235,20 +235,20 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
 #endif
-  T old = builtin_atomic_load(acc);
+  BuiltinAtomicType<T>* accConverted = (BuiltinAtomicType<T>*) acc;
+  BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
+  BuiltinAtomicType<T> expected;
 
-  if (sc(old)) {
-    return old;
+  if (sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old))) {
+    return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
   }
 
-  T assumed;
-
   do {
-    assumed = old;
-    old = builtin_atomic_CAS(acc, assumed, oper(assumed));
-  } while (assumed != old && !sc(old));
+    expected = old;
+    old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
+  } while (old != expected && !sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old)));
 
-  return old;
+  return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( default : 4244 )  // Reenable warning
 #endif
