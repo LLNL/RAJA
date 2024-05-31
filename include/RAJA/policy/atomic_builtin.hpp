@@ -78,6 +78,19 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 #else  // RAJA_COMPILER_MSVC
 
 RAJA_DEVICE_HIP
+RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+{
+  return __atomic_load_n(acc, __ATOMIC_RELAXED);
+}
+
+RAJA_DEVICE_HIP
+RAJA_INLINE unsigned long long builtin_atomic_load(
+    unsigned long long volatile *acc)
+{
+  return __atomic_load_n(acc, __ATOMIC_RELAXED);
+}
+
+RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
                                         unsigned compare,
                                         unsigned value)
@@ -100,6 +113,24 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 
 #endif  // RAJA_COMPILER_MSVC
 
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE
+    typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
+    builtin_atomic_load(T volatile *acc)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned, T>(
+      builtin_atomic_load((unsigned volatile *)acc));
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE
+    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
+    builtin_atomic_load(T volatile *acc)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
+      builtin_atomic_load((unsigned long long volatile *)acc));
+}
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE
@@ -151,7 +182,8 @@ struct BuiltinAtomicCAS<4> {
 #endif
     unsigned oldval, newval, readback;
 
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
+    oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(
+        builtin_atomic_load(acc));
     newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
         oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
 
@@ -187,7 +219,8 @@ struct BuiltinAtomicCAS<8> {
 #endif
     unsigned long long oldval, newval, readback;
 
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
+    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
+        builtin_atomic_load(acc));
     newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
         oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
 
@@ -258,9 +291,12 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
-  if (*acc < value) {
-    return *acc;
+  T old = detail::builtin_atomic_load(acc);
+
+  if (old < value) {
+    return old;
   }
+
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a < value ? a : value;
@@ -275,9 +311,12 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
-  if (*acc > value) {
-    return *acc;
+  T old = detail::builtin_atomic_load(acc);
+
+  if (old > value) {
+    return old;
   }
+
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a > value ? a : value;
