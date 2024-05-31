@@ -193,21 +193,18 @@ struct BuiltinAtomicCAS<4> {
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
 #endif
-    unsigned oldval, newval, readback;
+    T old = builtin_atomic_load(acc);
 
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-        builtin_atomic_load(acc));
-    newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-        oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
+    if (!sc(old)) {
+      T assumed;
 
-    while ((readback = builtin_atomic_CAS((unsigned *)acc, oldval, newval)) !=
-           oldval) {
-      if (sc(readback)) break;
-      oldval = readback;
-      newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-          oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
+      while ((assumed = builtin_atomic_CAS(acc, old, oper(old))) != old &&
+             !sc(assumed)) {
+        old = assumed;
+      }
     }
-    return RAJA::util::reinterp_A_as_B<unsigned, T>(oldval);
+
+    return old;
   }
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( default : 4244 )  // Reenable warning
@@ -230,24 +227,19 @@ struct BuiltinAtomicCAS<8> {
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
 #endif
-    unsigned long long oldval, newval, readback;
+    T old = builtin_atomic_load(acc);
 
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-        builtin_atomic_load(acc));
-    newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-        oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
+    if (!sc(old)) {
+      T assumed;
 
-    while ((readback = builtin_atomic_CAS((unsigned long long *)acc,
-                                          oldval,
-                                          newval)) != oldval) {
-      if (sc(readback)) break;
-      oldval = readback;
-      newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-          oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
+      while ((assumed = builtin_atomic_CAS(acc, old, oper(old))) != old &&
+             !sc(assumed)) {
+        old = assumed;
+      }
     }
-    return RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval);
-  }
 
+    return old;
+  }
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning( default : 4244 )  // Reenable warning
 #endif
@@ -304,12 +296,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
-  T old = detail::builtin_atomic_load(acc);
-
-  if (old < value) {
-    return old;
-  }
-
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a < value ? a : value;
@@ -324,12 +310,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
-  T old = detail::builtin_atomic_load(acc);
-
-  if (old > value) {
-    return old;
-  }
-
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a > value ? a : value;
