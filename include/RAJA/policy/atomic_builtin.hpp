@@ -167,86 +167,6 @@ RAJA_DEVICE_HIP RAJA_INLINE
       RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
 }
 
-
-template <size_t BYTES>
-struct BuiltinAtomicCAS;
-template <size_t BYTES>
-struct BuiltinAtomicCAS {
-  static_assert(!(BYTES == 4 || BYTES == 8),
-                "builtin atomic cas assumes 4 or 8 byte targets");
-};
-
-
-template <>
-struct BuiltinAtomicCAS<4> {
-
-  /*!
-   * Generic impementation of any atomic 32-bit operator.
-   * Implementation uses the existing builtin unsigned 32-bit CAS operator.
-   * Returns the OLD value that was replaced by the result of this operation.
-   */
-  template <typename T, typename OPER, typename ShortCircuit>
-  RAJA_DEVICE_HIP RAJA_INLINE T operator()(T volatile *acc,
-                                           OPER const &oper,
-                                           ShortCircuit const &sc) const
-  {
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
-#endif
-    T old = builtin_atomic_load(acc);
-
-    if (!sc(old)) {
-      T assumed;
-
-      do {
-        assumed = old;
-        old = builtin_atomic_CAS(acc, assumed, oper(assumed));
-      } while (assumed != old && !sc(old));
-    }
-
-    return old;
-  }
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default : 4244 )  // Reenable warning
-#endif
-};
-
-template <>
-struct BuiltinAtomicCAS<8> {
-
-  /*!
-   * Generic impementation of any atomic 64-bit operator.
-   * Implementation uses the existing builtin unsigned 64-bit CAS operator.
-   * Returns the OLD value that was replaced by the result of this operation.
-   */
-  template <typename T, typename OPER, typename ShortCircuit>
-  RAJA_DEVICE_HIP RAJA_INLINE T operator()(T volatile *acc,
-                                           OPER const &oper,
-                                           ShortCircuit const &sc) const
-  {
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
-#endif
-    T old = builtin_atomic_load(acc);
-
-    if (!sc(old)) {
-      T assumed;
-
-      do {
-        assumed = old;
-        old = builtin_atomic_CAS(acc, assumed, oper(assumed));
-      } while (assumed != old && !sc(old));
-    }
-
-    return old;
-  }
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default : 4244 )  // Reenable warning
-#endif
-
-};
-
-
 /*!
  * Generic impementation of any atomic 32-bit or 64-bit operator that can be
  * implemented using a compare and swap primitive.
@@ -257,8 +177,24 @@ template <typename T, typename OPER>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
                                                       OPER &&oper)
 {
-  BuiltinAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper), [](T const &) { return false; });
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8,
+                "builtin atomic cas assumes 4 or 8 byte targets");
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
+#endif
+  T old = builtin_atomic_load(acc);
+  T assumed;
+
+  do {
+    assumed = old;
+    old = builtin_atomic_CAS(acc, assumed, oper(assumed));
+  } while (assumed != old);
+
+  return old;
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4244 )  // Reenable warning
+#endif
 }
 
 template <typename T, typename OPER, typename ShortCircuit>
@@ -266,8 +202,27 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
                                                          OPER &&oper,
                                                          ShortCircuit const &sc)
 {
-  BuiltinAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper), sc);
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8,
+                "builtin atomic cas assumes 4 or 8 byte targets");
+
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
+#endif
+  T old = builtin_atomic_load(acc);
+
+  if (!sc(old)) {
+    T assumed;
+
+    do {
+      assumed = old;
+      old = builtin_atomic_CAS(acc, assumed, oper(assumed));
+    } while (assumed != old && !sc(old));
+  }
+
+  return old;
+#ifdef RAJA_COMPILER_MSVC
+#pragma warning( default : 4244 )  // Reenable warning
+#endif
 }
 
 
