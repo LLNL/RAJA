@@ -43,16 +43,22 @@ namespace detail
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
 RAJA_DEVICE_HIP
-RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+RAJA_INLINE unsigned builtin_atomic_load(unsigned *acc)
 {
-  return RAJA::util::reinterp_A_as_B<long, unsigned>(_InterlockedOr((long volatile *)acc, 0));
+  static_assert(sizeof(unsigned) == sizeof(long),
+                "builtin atomic load assumes unsigned and long are the same size");
+
+  return RAJA::util::reinterp_A_as_B<long, unsigned>(_InterlockedOr((long *)acc, 0));
 }
 
 RAJA_DEVICE_HIP
 RAJA_INLINE unsigned long long builtin_atomic_load(
-    unsigned long long volatile *acc)
+    unsigned long long *acc)
 {
-  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long volatile *)acc, 0));
+  static_assert(sizeof(unsigned long long) == sizeof(long long),
+                "builtin atomic load assumes unsigned long long and long long are the same size");
+
+  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long *)acc, 0));
 }
 
 RAJA_DEVICE_HIP
@@ -91,14 +97,14 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 #else  // RAJA_COMPILER_MSVC
 
 RAJA_DEVICE_HIP
-RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+RAJA_INLINE unsigned builtin_atomic_load(unsigned *acc)
 {
   return __atomic_load_n(acc, __ATOMIC_RELAXED);
 }
 
 RAJA_DEVICE_HIP
 RAJA_INLINE unsigned long long builtin_atomic_load(
-    unsigned long long volatile *acc)
+    unsigned long long *acc)
 {
   return __atomic_load_n(acc, __ATOMIC_RELAXED);
 }
@@ -130,19 +136,19 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE
     typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
-    builtin_atomic_load(T volatile *acc)
+    builtin_atomic_load(T *acc)
 {
   return RAJA::util::reinterp_A_as_B<unsigned, T>(
-      builtin_atomic_load((unsigned volatile *)acc));
+      builtin_atomic_load((unsigned *)acc));
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE
     typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
-    builtin_atomic_load(T volatile *acc)
+    builtin_atomic_load(T *acc)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
-      builtin_atomic_load((unsigned long long volatile *)acc));
+      builtin_atomic_load((unsigned long long *)acc));
 }
 
 template <typename T>
