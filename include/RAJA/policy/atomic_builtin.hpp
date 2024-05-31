@@ -216,14 +216,16 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
 #endif
   T old = builtin_atomic_load(acc);
 
-  if (!sc(old)) {
-    T assumed;
-
-    do {
-      assumed = old;
-      old = builtin_atomic_CAS(acc, assumed, oper(assumed));
-    } while (assumed != old && !sc(old));
+  if (sc(old)) {
+    return old;
   }
+
+  T assumed;
+
+  do {
+    assumed = old;
+    old = builtin_atomic_CAS(acc, assumed, oper(assumed));
+  } while (assumed != old && !sc(old));
 
   return old;
 #ifdef RAJA_COMPILER_MSVC
