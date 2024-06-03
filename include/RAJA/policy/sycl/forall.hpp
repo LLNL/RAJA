@@ -416,8 +416,10 @@ RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &
                      loop_body);
   }  // iterate over segments of index set
 
-  ::sycl::queue* q = r.get_queue();
-  q->wait(); 
+  if ( !Async ) {
+    ::sycl::queue* q = r.get_queue();
+    q->wait(); 
+  }
 
   return resources::EventProxy<resources::Sycl>(r);
 }
