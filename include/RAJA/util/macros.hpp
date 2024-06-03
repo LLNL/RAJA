@@ -56,12 +56,21 @@
 #define RAJA_HOST __host__
 #define RAJA_SUPPRESS_HD_WARN
 
+#define RAJA_USE_HIP_INTRINSICS
+
 #else
 
 #define RAJA_HOST_DEVICE
 #define RAJA_DEVICE
 #define RAJA_HOST
 #define RAJA_SUPPRESS_HD_WARN
+#endif
+
+
+#if defined(__has_builtin)
+#define RAJA_INTERNAL_CLANG_HAS_BUILTIN(x) __has_builtin(x)
+#else
+#define RAJA_INTERNAL_CLANG_HAS_BUILTIN(x) 0
 #endif
 
 /*!
@@ -144,7 +153,8 @@ RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
 #if defined(__SYCL_DEVICE_ONLY__)
-  abort();
+  //segfault here ran into linking problems
+  *((volatile char *)0) = 0;  // write to address 0
 #else
   printf ( "%s\n", str );
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)

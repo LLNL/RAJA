@@ -16,21 +16,21 @@
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-algorithm-util-sort.hpp"
+#include "test-algorithm-util-reduce.hpp"
 
 
 //
 // Cartesian product of types used in parameterized tests
 //
-using @ALG_BACKEND@@UTIL_ALG@SortTypes =
-  Test< camp::cartesian_product<@ALG_BACKEND@@UTIL_ALG@SortSorters,
+using @ALG_BACKEND@@UTIL_ALG@ReduceTypes =
+  Test< camp::cartesian_product<@ALG_BACKEND@@UTIL_ALG@ReduceReducers,
                                 @ALG_BACKEND@ResourceList,
-                                SortKeyTypeList,
-                                SortMaxNList@ALG_SIZE@ > >::Types;
+                                ReduceValTypeList,
+                                ReduceMaxNList@ALG_SIZE@ > >::Types;
 
 //
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P( @ALG_BACKEND@,
-                                SortUnitTest,
-                                @ALG_BACKEND@@UTIL_ALG@SortTypes );
+                                ReduceUnitTest,
+                                @ALG_BACKEND@@UTIL_ALG@ReduceTypes );

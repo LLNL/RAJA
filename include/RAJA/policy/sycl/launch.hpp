@@ -56,13 +56,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     // Compute the number of blocks and threads
     //
 
-    const ::sycl::range<3> blockSize(params.threads.value[0],
+    const ::sycl::range<3> blockSize(params.threads.value[2],
 				     params.threads.value[1],
-				     params.threads.value[2]);
+				     params.threads.value[0]);
 
-    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+    const ::sycl::range<3> gridSize(params.threads.value[2] * params.teams.value[2],
 				    params.threads.value[1] * params.teams.value[1],
-				    params.threads.value[2] * params.teams.value[2]);
+				    params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
@@ -91,6 +91,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       });
 
+    if (!async) { q->wait(); }
+
       RAJA_FT_END;
 
     }
@@ -108,7 +110,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
        BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
 
-   RAJA_ABORT_OR_THROW("SYCL trivially copyable lambda  backend currently not supported in RAJA launch");
+   RAJA_ABORT_OR_THROW("SYCL trivially copyable lambda with param pack currently not supported in RAJA launch");
 
    return resources::EventProxy<resources::Resource>(res);
   }
@@ -138,13 +140,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     // Compute the number of blocks and threads
     //
 
-    const ::sycl::range<3> blockSize(params.threads.value[0],
+    const ::sycl::range<3> blockSize(params.threads.value[2],
 				     params.threads.value[1],
-				     params.threads.value[2]);
+				     params.threads.value[0]);
 
-    const ::sycl::range<3> gridSize(params.threads.value[0] * params.teams.value[0],
+    const ::sycl::range<3> gridSize(params.threads.value[2] * params.teams.value[2],
 				    params.threads.value[1] * params.teams.value[1],
-				    params.threads.value[2] * params.teams.value[2]);
+				    params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
     constexpr size_t zero = 0;
@@ -180,7 +182,9 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
            });
 
-      });
+      }).wait(); // Need to wait for completion to free memory
+
+      cl::sycl::free(lbody, *q);
 
       RAJA_FT_END;
 
@@ -200,7 +204,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
          BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
 
-   RAJA_ABORT_OR_THROW("SYCL non-trivially copyable lambda  backend currently not supported in RAJA launch");
+   RAJA_ABORT_OR_THROW("SYCL non-trivially copyable lambda with param pack currently not supported in RAJA launch");
 
    return resources::EventProxy<resources::Resource>(res);
   }

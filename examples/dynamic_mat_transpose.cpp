@@ -11,7 +11,6 @@
 #include <iostream>
 
 #include "RAJA/RAJA.hpp"
-#include "memoryManager.hpp"
 
 /*
  *  Matrix Transpose Example
@@ -96,7 +95,7 @@ using outer0 = RAJA::LoopPolicy<
 #endif
 #if defined(RAJA_ENABLE_SYCL)
                                        ,
-                                       RAJA::sycl_group_0_direct
+                                       RAJA::sycl_group_2_direct
 #endif
                                        >;
 
@@ -135,7 +134,7 @@ using inner0 = RAJA::LoopPolicy<
 #endif
 #if defined(RAJA_ENABLE_SYCL)
                                         ,
-                                         RAJA::sycl_local_0_direct
+                                         RAJA::sycl_local_2_direct
 #endif
                                          >;
 
@@ -154,19 +153,8 @@ using inner1 = RAJA::LoopPolicy<RAJA::seq_exec
 #endif
                                          >;
 
-template<typename T>
-void switch_ptrs(T *A, T *d_A)
-{
-  T *tmp_ptr;
-  tmp_ptr = d_A;
-  d_A = A;
-  A = tmp_ptr;
-}
-
 int main(int argc, char *argv[])
 {
-
-  std::cout << "\n\nRAJA matrix transpose example...\n";
 
   if(argc != 2) {
     RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device");
@@ -185,17 +173,26 @@ int main(int argc, char *argv[])
 
   RAJA::ExecPlace select_cpu_or_gpu;
   if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA::launch reductions example on the host \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; std::cout<<"Running RAJA::launch matrix transpose example on the host"<<std::endl; }
   if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA::launch reductions example on the device \n"); }
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; std::cout<<"Running RAJA::launch matrix transpose example on the device" <<std::endl; }
 
-
-
+  RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip device_res;
+#endif
 #if defined(RAJA_ENABLE_SYCL)
-  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
-  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
+  RAJA::resources::Sycl device_res;
 #endif
 
+#if defined(RAJA_GPU_ACTIVE)
+  RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+#else
+  RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
+#endif
   //
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
   //
@@ -212,9 +209,8 @@ int main(int argc, char *argv[])
   //
   // Allocate matrix data
   //
-  int *A = memoryManager::allocate<int>(N_r * N_c);
-  int *At = memoryManager::allocate<int>(N_r * N_c);
-
+  int *A = host_res.allocate<int>(N_r * N_c);
+  int *At = host_res.allocate<int>(N_r * N_c);
   //
   // In the following implementations of matrix transpose, we
   // use RAJA 'View' objects to access the matrix data. A RAJA view
@@ -300,20 +296,24 @@ int main(int argc, char *argv[])
 
   std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
-#if defined(RAJA_ENABLE_HIP)
+  //Reset memory
+  std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  //Hip requires device side pointers
+#if defined(RAJA_GPU_ACTIVE)
+  //Allocate device side pointers
   int *d_A = nullptr, *d_At = nullptr;
 
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
-    d_A =  memoryManager::allocate_gpu<int>(N_r * N_c);
-    d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
-    hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+    d_A  =  device_res.allocate<int>(N_r * N_c);
+    d_At = device_res.allocate<int>(N_r * N_c);
+
+    device_res.memcpy(d_A, A, sizeof(int) * N_r * N_c);
+    device_res.memcpy(d_At, At, sizeof(int) * N_r * N_c);
 
     //switch host/device pointers so we can reuse the views
-    switch_ptrs(d_A, A);
-    switch_ptrs(d_At, At);
+    Aview.set_data(d_A);
+    Atview.set_data(d_At);
   }
 #endif
 
@@ -323,13 +323,11 @@ int main(int argc, char *argv[])
 
   // _dynamic_mattranspose_kernel_start
   RAJA::launch<launch_policy>
-    (select_cpu_or_gpu,
-     RAJA::LaunchParams(RAJA::Teams(outer_Dimr, outer_Dimc),
-                        RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
+    (res, RAJA::LaunchParams(RAJA::Teams(outer_Dimc, outer_Dimr),
+                             RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
      "Matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
-
     RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
         RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
@@ -378,23 +376,36 @@ int main(int argc, char *argv[])
             ctx.releaseSharedMemory();
           });
       });
-
   });
   // _dynamic_mattranspose_kernel_end
 
-
-#if defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_GPU_ACTIVE)
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
-    switch_ptrs(d_At, At);
-    switch_ptrs(d_A, A);
 
-    hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+    device_res.memcpy(A, d_A, sizeof(int) * N_r * N_c);
+    device_res.memcpy(At, d_At, sizeof(int) * N_r * N_c);
+
+    Aview.set_data(A);
+    Atview.set_data(At);
   }
 #endif
 
 
   checkResult<int>(Atview, N_c, N_r);
+  //printResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
+
+  //Release data
+  host_res.deallocate(A);
+  host_res.deallocate(At);
+
+#if defined(RAJA_GPU_ACTIVE)
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
+    device_res.deallocate(d_A);
+    device_res.deallocate(d_At);
+  }
+#endif
+
 
   return 0;
 }
