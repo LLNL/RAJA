@@ -62,7 +62,6 @@ using BuiltinAtomicType = typename BuiltinAtomicTypeImpl<sizeof(T)>::type;
 
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
-RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_load(unsigned *acc)
 {
   static_assert(sizeof(unsigned) == sizeof(long),
@@ -71,7 +70,6 @@ RAJA_INLINE unsigned builtin_atomic_load(unsigned *acc)
   return RAJA::util::reinterp_A_as_B<long, unsigned>(_InterlockedOr((long *)acc, 0));
 }
 
-RAJA_DEVICE_HIP
 RAJA_INLINE unsigned long long builtin_atomic_load(
     unsigned long long *acc)
 {
@@ -81,7 +79,6 @@ RAJA_INLINE unsigned long long builtin_atomic_load(
   return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long *)acc, 0));
 }
 
-RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
                                         unsigned compare,
                                         unsigned value)
@@ -95,7 +92,6 @@ RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
   return RAJA::util::reinterp_A_as_B<long, unsigned>(old);
 }
 
-RAJA_DEVICE_HIP
 RAJA_INLINE unsigned long long builtin_atomic_CAS(
     unsigned long long volatile *acc,
     unsigned long long compare,
