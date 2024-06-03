@@ -202,9 +202,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
   static_assert(sizeof(T) == 4 || sizeof(T) == 8,
                 "builtin atomic cas assumes 4 or 8 byte targets");
 
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
-#endif
   BuiltinAtomicType<T>* accConverted = (BuiltinAtomicType<T>*) acc;
   BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
   BuiltinAtomicType<T> expected;
@@ -215,9 +212,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
   } while (old != expected);
 
   return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default : 4244 )  // Reenable warning
-#endif
 }
 
 template <typename T, typename OPER, typename ShortCircuit>
@@ -228,9 +222,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
   static_assert(sizeof(T) == 4 || sizeof(T) == 8,
                 "builtin atomic cas assumes 4 or 8 byte targets");
 
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
-#endif
   BuiltinAtomicType<T>* accConverted = (BuiltinAtomicType<T>*) acc;
   BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
   BuiltinAtomicType<T> expected;
@@ -245,9 +236,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
   } while (old != expected && !sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old)));
 
   return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default : 4244 )  // Reenable warning
-#endif
 }
 
 
