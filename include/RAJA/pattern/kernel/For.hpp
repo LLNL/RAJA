@@ -145,4 +145,4 @@ struct StatementExecutor<
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_nested_HPP */
+#endif /* RAJA_pattern_kernel_For_HPP */

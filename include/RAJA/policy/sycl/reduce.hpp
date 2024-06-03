@@ -73,7 +73,7 @@ struct maxloc
 // Ideally, MaxNumTeams = ThreadsPerTeam in omp_target_parallel_for_exec.
 static int MaxNumTeams = 1;
 
-//! Information necessary for OpenMP offload to be considered
+//! Information necessary for SYCL offload to be considered
 struct Offload_Info 
 {
   int hostID{1};
@@ -88,7 +88,7 @@ struct Offload_Info
   }
 };
 
-//! Reduction data for OpenMP Offload -- stores value, host pointer, and device
+//! Reduction data for SYCL Offload -- stores value, host pointer, and device
 //! pointer
 template <typename T>
 struct Reduce_Data
@@ -195,7 +195,7 @@ struct Reduce_Data
 
 }  // end namespace sycl
 
-//! OpenMP Target Reduction entity -- generalize on # of teams, reduction, and
+//! SYCL Target Reduction entity -- generalize on # of teams, reduction, and
 //! type
 template <typename Reducer, typename T>
 struct TargetReduce 
@@ -285,7 +285,7 @@ private:
   T finalVal;
 };
 
-//! OpenMP Target Reduction Location entity -- generalize on # of teams,
+//! SYCL Target Reduction Location entity -- generalize on # of teams,
 //! reduction, and type
 template <typename Reducer, typename T, typename IndexType>
 struct TargetReduceLoc 
