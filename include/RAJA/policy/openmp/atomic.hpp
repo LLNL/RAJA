@@ -42,6 +42,7 @@ RAJA_INLINE T atomicLoad(omp_atomic, T volatile *acc)
 #pragma omp atomic capture
   {
     ret = *acc;  // capture old for return value
+    *acc += (T)0;
   }
   return ret;
 }
