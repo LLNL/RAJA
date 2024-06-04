@@ -97,7 +97,6 @@ trigger-rajaperf:
   trigger:
     project: radiuss/rajaperf
     branch: develop
-    strategy: depend
 
 include:
   - project: 'lc-templates/id_tokens'

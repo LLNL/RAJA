@@ -70,8 +70,11 @@ gcc_8_3_1_cuda_10_1_243_desul_atomics:
   extends: .job_on_lassen
 
 # Warning: Allowed to fail temporarily
+# Deactivated due to issues with OpenMP Target and various tests and compilers.
 clang_16_0_6_ibm_omptarget:
   variables:
     SPEC: " ~shared +openmp +omptarget +tests %clang@=16.0.6.ibm.gcc.8.3.1 ^blt@develop"
   extends: .job_on_lassen
+  ON_LASSEN: "OFF"
   allow_failure: true
+

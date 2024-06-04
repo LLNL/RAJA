@@ -175,25 +175,25 @@ unset( REDUCETYPES )
 #
 # If building a subset of openmp target tests, add tests to build here.
 #
-# if(RAJA_ENABLE_TARGET_OPENMP)
-#   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
-#     set(BACKEND OpenMPTarget)
-#     set(REDUCETYPES ReduceSum)
-#     set(DATATYPES CoreReductionDataTypeList)
+    set(BACKEND OpenMPTarget)
+    set(REDUCETYPES ReduceSum)
+    set(DATATYPES CoreReductionDataTypeList)
 
-#     foreach( REDUCETYPE ${REDUCETYPES} )
-#       configure_file( test-forall-basic-reduce.cpp.in
-#                       test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
-#       raja_add_test( NAME test-forall-basic-${REDUCETYPE}-${BACKEND}
-#                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
+    foreach( REDUCETYPE ${REDUCETYPES} )
+      configure_file( test-forall-basic-reduce.cpp.in
+                      test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
+      raja_add_test( NAME test-forall-basic-${REDUCETYPE}-${BACKEND}
+                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-forall-basic-${REDUCETYPE}-${BACKEND}.cpp )
 
-#       target_include_directories(test-forall-basic-${REDUCETYPE}-${BACKEND}.exe
-#                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-#     endforeach()
+      target_include_directories(test-forall-basic-${REDUCETYPE}-${BACKEND}.exe
+                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endforeach()
 
-#   endif()
-# endif()
+  endif()
+endif()
 
 unset( DATATYPES )
 unset( REDUCETYPES )

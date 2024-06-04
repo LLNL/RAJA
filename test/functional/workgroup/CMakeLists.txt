@@ -72,15 +72,14 @@ unset(BACKENDS)
 #
 # If building a subset of openmp target tests, add tests to build here.
 #
-# OpenMPTarget doesn't like unordered :(
-# if(RAJA_ENABLE_TARGET_OPENMP)
-#   if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
 
-#     set(BACKENDS OpenMPTarget)
-#     buildfunctionalworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${DISPATCHERS}" "${BACKENDS}")
+    set(BACKENDS OpenMPTarget)
+    buildfunctionalworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${DISPATCHERS}" "${BACKENDS}")
 
-#   endif()
-# endif()
+  endif()
+endif()
 
 unset(DISPATCHERS)
 unset(BACKENDS)
