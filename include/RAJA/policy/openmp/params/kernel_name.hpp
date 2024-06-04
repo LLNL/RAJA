@@ -7,6 +7,8 @@ namespace RAJA {
 namespace expt {
 namespace detail {
 
+#if defined(RAJA_ENABLE_OPENMP)
+
   // Init
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
@@ -16,10 +18,9 @@ namespace detail {
   }
 
   // Combine
-  template<typename EXEC_POL>
-  RAJA_HOST_DEVICE
+  template<typename EXEC_POL, typename T>
   camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
-  combine(KernelName&) {}
+  combine(KernelName&, T& /*place holder argument*/) {}
 
   // Resolve
   template<typename EXEC_POL>
@@ -28,6 +29,8 @@ namespace detail {
   {
     //TODO: Define kernel naming
   }
+
+#endif
 
 } //  namespace detail
 } //  namespace expt
