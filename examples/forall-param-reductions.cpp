@@ -252,7 +252,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
-    RAJA::expt::KernelName("RAJA Reduce Kernel"),
+    RAJA::expt::KernelName("RAJA Reduce CUDA Kernel"),
     [=] RAJA_DEVICE (int i, int &_cuda_sum, int &_cuda_min, int &_cuda_max, VALLOC_INT &_cuda_minloc, VALLOC_INT &_cuda_maxloc) {
       _cuda_sum += a[i];
 
@@ -300,6 +300,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_maxloc),
+    RAJA::expt::KernelName("RAJA Reduce HIP Kernel"),
     [=] RAJA_DEVICE (int i, int &_hip_sum, int &_hip_min, int &_hip_max, VALLOC_INT &_hip_minloc, VALLOC_INT &_hip_maxloc) {
       _hip_sum += d_a[i];
 
