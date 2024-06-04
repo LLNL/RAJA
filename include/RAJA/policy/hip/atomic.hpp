@@ -474,6 +474,19 @@ RAJA_INLINE __device__ T hip_atomicCAS( T volatile *acc, T compare, T val)
  *
  * These are atomic in hip device code and non-atomic otherwise
  */
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicLoad(hip_atomic_explicit<host_policy>, T volatile *acc)
+{
+#if defined(__HIP_DEVICE_COMPILE__)
+  return detail::hip_atomicOr(acc, 0);
+#else
+  return RAJA::atomicLoad(host_policy{}, acc);
+#endif
+}
+
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T

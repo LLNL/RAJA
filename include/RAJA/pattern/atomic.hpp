@@ -81,6 +81,19 @@ namespace RAJA
 
 
 /*!
+ * @brief Atomic load
+ * @param acc Pointer to location of value
+ * @return Returns value at acc
+ */
+RAJA_SUPPRESS_HD_WARN
+template <typename Policy, typename T>
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T volatile *acc)
+{
+  return RAJA::atomicAdd(Policy{}, acc);
+}
+
+
+/*!
  * @brief Atomic add
  * @param acc Pointer to location of result value
  * @param value Value to add to *acc

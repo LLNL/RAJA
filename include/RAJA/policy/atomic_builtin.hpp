@@ -243,13 +243,19 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
 
 
 template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE T atomicLoad(builtin_atomic,
+                                         T volatile *acc)
+{
+  return detail::builtin_atomic_load(acc);
+}
+
+template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicAdd(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
   return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a + value; });
 }
-
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicSub(builtin_atomic,
