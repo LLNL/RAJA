@@ -116,6 +116,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
+    RAJA::expt::KernelName("RAJA Reduce Seq Kernel"),
     [=](int i, int &_seq_sum, int &_seq_min, int &_seq_max, VALLOC_INT &_seq_minloc, VALLOC_INT &_seq_maxloc) {
       _seq_sum += a[i];
 
@@ -163,6 +164,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_maxloc),
+    RAJA::expt::KernelName("RAJA Reduce OpenMP Kernel"),
     [=](int i, int &_omp_sum, int &_omp_min, int &_omp_max, VALLOC_INT &_omp_minloc, VALLOC_INT &_omp_maxloc) {
       _omp_sum += a[i];
 
