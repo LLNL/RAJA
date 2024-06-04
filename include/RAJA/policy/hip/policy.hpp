@@ -176,6 +176,8 @@ struct ReduceTuning
   static constexpr block_communication_mode comm_mode = t_comm_mode;
   static constexpr size_t replication = t_replication;
   static constexpr size_t atomic_stride = t_atomic_stride;
+  static constexpr bool consistent =
+      (algorithm == reduce_algorithm::combine_last_block);
 };
 
 }  // namespace hip
@@ -260,7 +262,10 @@ struct hip_reduce_policy
           make_policy_pattern_launch_platform_t<RAJA::Policy::hip,
                                                 RAJA::Pattern::reduce,
                                                 detail::get_launch<false>::value,
-                                                RAJA::Platform::hip> {
+                                                RAJA::Platform::hip,
+                                                std::conditional_t<tuning::consistent,
+                                                                   reduce::ordered,
+                                                                   reduce::unordered>> {
 };
 
 /*!
