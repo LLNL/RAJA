@@ -481,7 +481,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T
 atomicLoad(hip_atomic_explicit<host_policy>, T volatile *acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
-  return detail::hip_atomicOr(acc, 0);
+  return detail::hip_atomicAdd(acc, (T)0);
 #else
   return RAJA::atomicLoad(host_policy{}, acc);
 #endif

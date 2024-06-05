@@ -651,7 +651,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T
 atomicLoad(cuda_atomic_explicit<host_policy>, T volatile *acc)
 {
 #ifdef __CUDA_ARCH__
-  return detail::cuda_atomicOr(acc, 0);
+  return detail::cuda_atomicAdd(acc, (T)0);
 #else
   return RAJA::atomicLoad(host_policy{}, acc);
 #endif
