@@ -16,10 +16,10 @@ namespace detail {
   }
 
   // Combine
-  template<typename EXEC_POL>
+  template<typename EXEC_POL, typename T>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  combine(KernelName&) {}
+  combine(KernelName&, T) {}
 
   // Resolve
   template<typename EXEC_POL>
