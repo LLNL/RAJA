@@ -9,8 +9,6 @@
 #include <iostream>
 #include <limits>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
 
 /*
@@ -198,6 +196,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
   std::cout << "\n Running RAJA OpenMP Target reductions...\n";
 
+  RAJA::resources::Omp omp_res;
+
   // _reductions_raja_omppolicy_start
   using EXEC_POL3   = RAJA::omp_target_parallel_for_exec_nt;
   // _reductions_raja_omppolicy_end
@@ -208,12 +208,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_t_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT omp_t_maxloc(std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange,
+  RAJA::forall<EXEC_POL3>(omp_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_maxloc),
+    RAJA::expt::KernelName("RAJA Reduce Target OpenMP Kernel"),
     [=](int i, int &_omp_t_sum, int &_omp_t_min, int &_omp_t_max, VALLOC_INT &_omp_t_minloc, VALLOC_INT &_omp_t_maxloc) {
       _omp_t_sum += a[i];
 
