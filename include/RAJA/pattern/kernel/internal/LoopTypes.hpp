@@ -3,8 +3,7 @@
  *
  * \file
  *
- * \brief   Header file for loop kernel internals: LoopData structure and
- *          related helper functions.
+ * \brief   Header file for loop kernel internals and related helper functions.
  *
  ******************************************************************************
  */
@@ -93,4 +92,4 @@ using setSegmentTypeFromData =
 }  // end namespace RAJA
 
 
-#endif /* RAJA_pattern_kernel_internal_LoopData_HPP */
+#endif /* RAJA_pattern_kernel_internal_LoopTypes_HPP */

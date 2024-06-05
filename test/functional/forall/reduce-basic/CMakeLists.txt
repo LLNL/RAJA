@@ -22,16 +22,6 @@ if(RAJA_ENABLE_TARGET_OPENMP)
   endif()
 endif()
 
-#
-# If building SYCL tests, remove the back-end from
-# from the list of tests to generate here for the 
-# expt-reduce tests.
-#
-if(RAJA_ENABLE_SYCL)
-	list(REMOVE_ITEM REDUCETYPES ReduceMaxLoc)
-	list(REMOVE_ITEM REDUCETYPES ReduceMinLoc)
-endif()
-
 
 #
 # Generate core reduction tests for each enabled RAJA back-end
