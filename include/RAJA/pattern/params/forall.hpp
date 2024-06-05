@@ -11,6 +11,7 @@
 #include "RAJA/policy/hip/params/reduce.hpp"
 #include "RAJA/policy/hip/params/kernel_name.hpp"
 #include "RAJA/policy/sycl/params/reduce.hpp"
+#include "RAJA/policy/sycl/params/kernel_name.hpp"
 
 #include "RAJA/util/CombiningAdapter.hpp"
 
