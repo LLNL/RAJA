@@ -108,7 +108,7 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
     RAJA::atomicDec<AtomicPolicy>(work_array + 5);
     RAJA::atomicExchange<AtomicPolicy>(work_array + 6, (T)i);
     RAJA::atomicCAS<AtomicPolicy>(work_array + 7, (T)i, (T)(i+1));
-    RAJA::atomicExchange<AtomicPolicy>(work_array + 8, RAJA::atomicLoad<AtomicPolicy>(work_array + 8));
+    RAJA::atomicStore<AtomicPolicy>(work_array + 8, RAJA::atomicLoad<AtomicPolicy>(work_array + 8));
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );

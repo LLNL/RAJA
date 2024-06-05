@@ -70,6 +70,12 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(auto_atomic, T volatile *acc)
 }
 
 template <typename T>
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(auto_atomic, T volatile *acc, T value)
+{
+  return atomicStore(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(auto_atomic, T volatile *acc, T value)
 {
   return atomicAdd(RAJA_AUTO_ATOMIC, acc, value);

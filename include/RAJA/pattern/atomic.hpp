@@ -94,6 +94,20 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T volatile *acc)
 
 
 /*!
+ * @brief Atomic store
+ * @param acc Pointer to location of value
+ * @param value Value to store at *acc
+ * @return Stores value at acc
+ */
+RAJA_SUPPRESS_HD_WARN
+template <typename Policy, typename T>
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(T volatile *acc, T value)
+{
+  return RAJA::atomicStore(Policy{}, acc, value);
+}
+
+
+/*!
  * @brief Atomic add
  * @param acc Pointer to location of result value
  * @param value Value to add to *acc

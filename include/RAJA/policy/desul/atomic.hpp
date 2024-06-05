@@ -31,10 +31,20 @@ template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
 atomicLoad(AtomicPolicy, T volatile *acc) {
-  return desul::atomic_fetch_add(const_cast<T*>(acc),
-                                 (T)0,
-                                 raja_default_desul_order{},
-                                 raja_default_desul_scope{});
+  return desul::atomic_load(const_cast<T*>(acc),
+                            raja_default_desul_order{},
+                            raja_default_desul_scope{});
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename AtomicPolicy, typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE void
+atomicStore(AtomicPolicy, T volatile *acc, T value) {
+  return desul::atomic_store(const_cast<T*>(acc),
+                             value,
+                             raja_default_desul_order{},
+                             raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN

@@ -489,6 +489,19 @@ atomicLoad(hip_atomic_explicit<host_policy>, T volatile *acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
+RAJA_INLINE RAJA_HOST_DEVICE void
+atomicStore(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+{
+#if defined(__HIP_DEVICE_COMPILE__)
+  detail::hip_atomicExchange(acc, value);
+  return;
+#else
+  return RAJA::atomicStore(host_policy{}, acc, value);
+#endif
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
 atomicAdd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
