@@ -89,7 +89,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T volatile *acc)
 {
-  return RAJA::atomicAdd(Policy{}, acc);
+  return RAJA::atomicLoad(Policy{}, acc);
 }
 
 
