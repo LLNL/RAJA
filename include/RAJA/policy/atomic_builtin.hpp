@@ -40,9 +40,45 @@ struct builtin_atomic {
 namespace detail
 {
 
+template <std::size_t BYTES>
+struct BuiltinAtomicTypeImpl {
+  static_assert(!(BYTES == sizeof(unsigned) ||
+                  BYTES == sizeof(unsigned long long)),
+                "Builtin atomic operations require targets that match the size of 'unsigned int' or 'unsigned long long' (usually 4 or 8 bytes).");
+};
+
+template <>
+struct BuiltinAtomicTypeImpl<sizeof(unsigned)> {
+  using type = unsigned;
+};
+
+template <>
+struct BuiltinAtomicTypeImpl<sizeof(unsigned long long)> {
+  using type = unsigned long long;
+};
+
+template <class T>
+using BuiltinAtomicType = typename BuiltinAtomicTypeImpl<sizeof(T)>::type;
+
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
-RAJA_DEVICE_HIP
+RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+{
+  static_assert(sizeof(unsigned) == sizeof(long),
+                "builtin atomic load assumes unsigned and long are the same size");
+
+  return RAJA::util::reinterp_A_as_B<long, unsigned>(_InterlockedOr((long *)acc, 0));
+}
+
+RAJA_INLINE unsigned long long builtin_atomic_load(
+    unsigned long long volatile *acc)
+{
+  static_assert(sizeof(unsigned long long) == sizeof(long long),
+                "builtin atomic load assumes unsigned long long and long long are the same size");
+
+  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long *)acc, 0));
+}
+
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
                                         unsigned compare,
                                         unsigned value)
@@ -56,7 +92,6 @@ RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
   return RAJA::util::reinterp_A_as_B<long, unsigned>(old);
 }
 
-RAJA_DEVICE_HIP
 RAJA_INLINE unsigned long long builtin_atomic_CAS(
     unsigned long long volatile *acc,
     unsigned long long compare,
@@ -68,7 +103,7 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
   long long long_compare =
       RAJA::util::reinterp_A_as_B<unsigned long long, long long>(compare);
 
-  long long old = _InterlockedCompareExchange64((long long volatile *)acc,
+  long long old = _InterlockedCompareExchange64((long long *)acc,
                                                 long_value,
                                                 long_compare);
 
@@ -76,6 +111,19 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 }
 
 #else  // RAJA_COMPILER_MSVC
+
+RAJA_DEVICE_HIP
+RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+{
+  return __atomic_load_n(acc, __ATOMIC_RELAXED);
+}
+
+RAJA_DEVICE_HIP
+RAJA_INLINE unsigned long long builtin_atomic_load(
+    unsigned long long volatile *acc)
+{
+  return __atomic_load_n(acc, __ATOMIC_RELAXED);
+}
 
 RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
@@ -104,6 +152,24 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE
     typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
+    builtin_atomic_load(T volatile *acc)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned, T>(
+      builtin_atomic_load((unsigned volatile*)acc));
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE
+    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
+    builtin_atomic_load(T volatile *acc)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
+      builtin_atomic_load((unsigned long long volatile *)acc));
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE
+    typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
     builtin_atomic_CAS(T volatile *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned, T>(
@@ -123,92 +189,6 @@ RAJA_DEVICE_HIP RAJA_INLINE
       RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
 }
 
-
-template <size_t BYTES>
-struct BuiltinAtomicCAS;
-template <size_t BYTES>
-struct BuiltinAtomicCAS {
-  static_assert(!(BYTES == 4 || BYTES == 8),
-                "builtin atomic cas assumes 4 or 8 byte targets");
-};
-
-
-template <>
-struct BuiltinAtomicCAS<4> {
-
-  /*!
-   * Generic impementation of any atomic 32-bit operator.
-   * Implementation uses the existing builtin unsigned 32-bit CAS operator.
-   * Returns the OLD value that was replaced by the result of this operation.
-   */
-  template <typename T, typename OPER, typename ShortCircuit>
-  RAJA_DEVICE_HIP RAJA_INLINE T operator()(T volatile *acc,
-                                           OPER const &oper,
-                                           ShortCircuit const &sc) const
-  {
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
-#endif
-    unsigned oldval, newval, readback;
-
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
-    newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-        oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
-
-    while ((readback = builtin_atomic_CAS((unsigned *)acc, oldval, newval)) !=
-           oldval) {
-      if (sc(readback)) break;
-      oldval = readback;
-      newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-          oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
-    }
-    return RAJA::util::reinterp_A_as_B<unsigned, T>(oldval);
-  }
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default : 4244 )  // Reenable warning
-#endif
-};
-
-template <>
-struct BuiltinAtomicCAS<8> {
-
-  /*!
-   * Generic impementation of any atomic 64-bit operator.
-   * Implementation uses the existing builtin unsigned 64-bit CAS operator.
-   * Returns the OLD value that was replaced by the result of this operation.
-   */
-  template <typename T, typename OPER, typename ShortCircuit>
-  RAJA_DEVICE_HIP RAJA_INLINE T operator()(T volatile *acc,
-                                           OPER const &oper,
-                                           ShortCircuit const &sc) const
-  {
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( disable : 4244 )  // Force msvc to not emit conversion warning
-#endif
-    unsigned long long oldval, newval, readback;
-
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
-    newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-        oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
-
-    while ((readback = builtin_atomic_CAS((unsigned long long *)acc,
-                                          oldval,
-                                          newval)) != oldval) {
-      if (sc(readback)) break;
-      oldval = readback;
-      newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-          oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
-    }
-    return RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval);
-  }
-
-#ifdef RAJA_COMPILER_MSVC
-#pragma warning( default : 4244 )  // Reenable warning
-#endif
-
-};
-
-
 /*!
  * Generic impementation of any atomic 32-bit or 64-bit operator that can be
  * implemented using a compare and swap primitive.
@@ -219,8 +199,19 @@ template <typename T, typename OPER>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
                                                       OPER &&oper)
 {
-  BuiltinAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper), [](T const &) { return false; });
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8,
+                "builtin atomic cas assumes 4 or 8 byte targets");
+
+  BuiltinAtomicType<T> volatile * accConverted = (BuiltinAtomicType<T> volatile *) acc;
+  BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
+  BuiltinAtomicType<T> expected;
+
+  do {
+    expected = old;
+    old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
+  } while (old != expected);
+
+  return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
 }
 
 template <typename T, typename OPER, typename ShortCircuit>
@@ -228,8 +219,23 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
                                                          OPER &&oper,
                                                          ShortCircuit const &sc)
 {
-  BuiltinAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper), sc);
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8,
+                "builtin atomic cas assumes 4 or 8 byte targets");
+
+  BuiltinAtomicType<T> volatile * accConverted = (BuiltinAtomicType<T> volatile *) acc;
+  BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
+  BuiltinAtomicType<T> expected;
+
+  if (sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old))) {
+    return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
+  }
+
+  do {
+    expected = old;
+    old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
+  } while (old != expected && !sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old)));
+
+  return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
 }
 
 
@@ -258,9 +264,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
-  if (*acc < value) {
-    return *acc;
-  }
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a < value ? a : value;
@@ -275,9 +278,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic,
                                         T volatile *acc,
                                         T value)
 {
-  if (*acc > value) {
-    return *acc;
-  }
   return detail::builtin_atomic_CAS_oper_sc(acc,
                                             [=](T a) {
                                               return a > value ? a : value;
