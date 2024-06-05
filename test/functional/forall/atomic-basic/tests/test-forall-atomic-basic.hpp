@@ -61,7 +61,7 @@ template <typename ExecPolicy,
 void ForallAtomicBasicTestImpl( IdxType seglimit )
 {
   // initialize an array
-  const int len = 9;
+  const int len = 10;
 
   camp::resources::Resource work_res{WORKINGRES()};
 
@@ -96,6 +96,7 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   test_array[6] = (T)seglimit;
   test_array[7] = (T)0;
   test_array[8] = (T)0;
+  test_array[9] = (T)0;
 
   work_res.memcpy( work_array, test_array, sizeof(T) * len );
 
@@ -108,7 +109,8 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
     RAJA::atomicDec<AtomicPolicy>(work_array + 5);
     RAJA::atomicExchange<AtomicPolicy>(work_array + 6, (T)i);
     RAJA::atomicCAS<AtomicPolicy>(work_array + 7, (T)i, (T)(i+1));
-    RAJA::atomicStore<AtomicPolicy>(work_array + 8, RAJA::atomicLoad<AtomicPolicy>(work_array + 8));
+    RAJA::atomicLoad<AtomicPolicy>(work_array + 8);
+    RAJA::atomicStore<AtomicPolicy>(work_array + 9, (T)1);
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
@@ -132,6 +134,7 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   EXPECT_LT((T)0, check_array[7]);
   EXPECT_GE((T)seglimit, check_array[7]);
   EXPECT_EQ((T)0, check_array[8]);
+  EXPECT_EQ((T)1, check_array[9]);
 
   deallocateForallTestData<T>(  work_res,
                                 work_array,
