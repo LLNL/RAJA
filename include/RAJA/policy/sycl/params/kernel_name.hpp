@@ -7,10 +7,12 @@ namespace RAJA {
 namespace expt {
 namespace detail {
 
+#if defined(RAJA_ENABLE_SYCL)  
+  
   // Init
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  init(KernelName& kn)
+  init(KernelName&)
   {
     //TODO: Define kernel naming
   }
@@ -28,6 +30,8 @@ namespace detail {
   {
     //TODO: Define kernel naming
   }
+
+#endif  
 
 } //  namespace detail
 } //  namespace expt

@@ -115,7 +115,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT seq_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT seq_maxloc(std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL1>(arange,
+  RAJA::forall<EXEC_POL1>(host_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
@@ -163,7 +163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT omp_maxloc(std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL2>(arange,
+  RAJA::forall<EXEC_POL2>(host_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
@@ -243,6 +243,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA reductions...\n";
 
+  RAJA::resources::Cuda cuda_res;
+
+  int* d_a = cuda_res.allocate<int>(N);
+  cuda_res.memcpy(d_a, a, sizeof(int) * N);
+
   // _reductions_raja_cudapolicy_start
   using EXEC_POL3   = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
   // _reductions_raja_cudapolicy_end
@@ -253,7 +258,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT cuda_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT cuda_maxloc(std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange,
+  RAJA::forall<EXEC_POL3>(cuda_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
@@ -261,13 +266,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
     RAJA::expt::KernelName("RAJA Reduce CUDA Kernel"),
     [=] RAJA_DEVICE (int i, int &_cuda_sum, int &_cuda_min, int &_cuda_max, VALLOC_INT &_cuda_minloc, VALLOC_INT &_cuda_maxloc) {
-      _cuda_sum += a[i];
+      _cuda_sum += d_a[i];
 
-      _cuda_min = RAJA_MIN(a[i], _cuda_min);
-      _cuda_max = RAJA_MAX(a[i], _cuda_max);
+      _cuda_min = RAJA_MIN(d_a[i], _cuda_min);
+      _cuda_max = RAJA_MAX(d_a[i], _cuda_max);
 
-      _cuda_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _cuda_minloc);
-      _cuda_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _cuda_maxloc);
+      _cuda_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _cuda_minloc);
+      _cuda_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _cuda_maxloc);
       //_cuda_minloc.min(a[i], i);
       //_cuda_maxloc.max(a[i], i);
     }
@@ -280,7 +285,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << cuda_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << cuda_maxloc.getVal() << " , "
                                << cuda_maxloc.getLoc() << std::endl;
-
+  cuda_res.deallocate(d_a);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -288,8 +293,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running RAJA HIP reductions...\n";
 
-  int* d_a = memoryManager::allocate_gpu<int>(N);
-  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  RAJA::resources::Hip hip_res;
+
+  int* d_a = hip_res.allocate<int>(N);
+  hip_res.memcpy(d_a, a, sizeof(int) * N);
 
   // _reductions_raja_hippolicy_start
   using EXEC_POL3   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
@@ -329,7 +336,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tmax, loc = " << hip_maxloc.getVal() << " , "
                                << hip_maxloc.getLoc() << std::endl;
 
-  memoryManager::deallocate_gpu(d_a);
+  hip_res.deallocate(d_a);
 #endif
 
 //----------------------------------------------------------------------------//

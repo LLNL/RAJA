@@ -12,7 +12,7 @@ namespace detail {
   // Init
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
-  init(KernelName& kn)
+  init(KernelName&)
   {
     //TODO: Define kernel naming
   }

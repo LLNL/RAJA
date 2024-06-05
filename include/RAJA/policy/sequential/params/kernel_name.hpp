@@ -10,7 +10,7 @@ namespace detail {
   // Init
   template<typename EXEC_POL>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  init(KernelName& kn)
+  init(KernelName&)
   {
     //TODO: Define kernel naming
   }
