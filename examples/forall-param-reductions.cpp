@@ -350,9 +350,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* d_a = sycl_res.allocate<int>(N);
   sycl_res.memcpy(d_a, a, sizeof(int) * N);
 
-  // _reductions_raja_hippolicy_start
+  // _reductions_raja_syclpolicy_start
   using EXEC_POL3   = RAJA::sycl_exec<SYCL_BLOCK_SIZE>;
-  // _reductions_raja_hippolicy_end
+  // _reductions_raja_syclpolicy_end
 
   int sycl_sum = 0;
   int sycl_min = std::numeric_limits<int>::max();
