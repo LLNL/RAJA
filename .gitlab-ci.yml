@@ -100,6 +100,7 @@ trigger-rajaperf:
     strategy: depend
 
 include:
+  # Sets ID tokens for every job using `default:`
   - project: 'lc-templates/id_tokens'
     file: 'id_tokens.yml'
   # [Optional] checks preliminary to running the actual CI test
