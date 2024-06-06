@@ -664,9 +664,8 @@ atomicStore(cuda_atomic_explicit<host_policy>, T volatile *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   detail::cuda_atomicExchange(acc, value);
-  return;
 #else
-  return RAJA::atomicStore(host_policy{}, acc, value);
+  RAJA::atomicStore(host_policy{}, acc, value);
 #endif
 }
 

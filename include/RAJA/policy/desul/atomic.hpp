@@ -41,10 +41,10 @@ template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE void
 atomicStore(AtomicPolicy, T volatile *acc, T value) {
-  return desul::atomic_store(const_cast<T*>(acc),
-                             value,
-                             raja_default_desul_order{},
-                             raja_default_desul_scope{});
+  desul::atomic_store(const_cast<T*>(acc),
+                      value,
+                      raja_default_desul_order{},
+                      raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN

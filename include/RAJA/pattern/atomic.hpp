@@ -103,7 +103,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(T volatile *acc, T value)
 {
-  return RAJA::atomicStore(Policy{}, acc, value);
+  RAJA::atomicStore(Policy{}, acc, value);
 }
 
 

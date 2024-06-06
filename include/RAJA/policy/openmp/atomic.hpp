@@ -58,8 +58,8 @@ RAJA_INLINE void atomicStore(omp_atomic, T volatile *acc, T value)
     ret = *acc;
     *acc = value;
   }
+  // Silence compiler warnings about ret being set but unused
   static_cast<void>(ret);
-  return;
 }
 
 RAJA_SUPPRESS_HD_WARN

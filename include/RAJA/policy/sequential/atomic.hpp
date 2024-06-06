@@ -39,7 +39,6 @@ RAJA_HOST_DEVICE
 RAJA_INLINE void atomicStore(seq_atomic, T volatile *acc, T value)
 {
   *acc = value;
-  return;
 }
 
 RAJA_SUPPRESS_HD_WARN

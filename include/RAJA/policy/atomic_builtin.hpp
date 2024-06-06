@@ -85,7 +85,6 @@ RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc, unsigned value)
                 "builtin atomic store assumes unsigned and long are the same size");
 
   _InterlockedExchange((long *)acc, RAJA::util::reinterp_A_as_B<unsigned, long>(value));
-  return;
 }
 
 RAJA_INLINE void builtin_atomic_store(
@@ -96,7 +95,6 @@ RAJA_INLINE void builtin_atomic_store(
                 "builtin atomic store assumes unsigned long long and long long are the same size");
 
   _InterlockedExchange64((long long *)acc, RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value));
-  return;
 }
 
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
@@ -149,7 +147,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc,
                                       unsigned value)
 {
-  return __atomic_store_n(acc, value, __ATOMIC_RELAXED);
+  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
 }
 
 RAJA_DEVICE_HIP
@@ -157,7 +155,7 @@ RAJA_INLINE void builtin_atomic_store(
     unsigned long long volatile *acc,
     unsigned long long value)
 {
-  return __atomic_store_n(acc, value, __ATOMIC_RELAXED);
+  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
 }
 
 RAJA_DEVICE_HIP
@@ -208,7 +206,7 @@ RAJA_DEVICE_HIP RAJA_INLINE
     typename std::enable_if<sizeof(T) == sizeof(unsigned), void>::type
     builtin_atomic_store(T volatile *acc, T value)
 {
-  return builtin_atomic_store((unsigned volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned>(value));
+  builtin_atomic_store((unsigned volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned>(value));
 }
 
 template <typename T>
@@ -216,7 +214,7 @@ RAJA_DEVICE_HIP RAJA_INLINE
     typename std::enable_if<sizeof(T) == sizeof(unsigned long long), void>::type
     builtin_atomic_store(T volatile *acc, T value)
 {
-  return builtin_atomic_store((unsigned long long volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned long long>(value));
+  builtin_atomic_store((unsigned long long volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned long long>(value));
 }
 
 template <typename T>
@@ -306,7 +304,7 @@ RAJA_DEVICE_HIP RAJA_INLINE void atomicStore(builtin_atomic,
                                              T volatile *acc,
                                              T value)
 {
-  return detail::builtin_atomic_store(acc, value);
+  detail::builtin_atomic_store(acc, value);
 }
 
 template <typename T>
