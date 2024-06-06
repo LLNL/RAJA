@@ -78,14 +78,6 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
                               &check_array,
                               &test_array );
 
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
-
   // use atomic add to reduce the array
   test_array[0] = (T)0;
   test_array[1] = (T)seglimit;
@@ -114,14 +106,7 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
+  work_res.wait();
 
   EXPECT_EQ((T)seglimit, check_array[0]);
   EXPECT_EQ((T)0, check_array[1]);
