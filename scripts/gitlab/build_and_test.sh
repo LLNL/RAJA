@@ -29,6 +29,20 @@ use_dev_shm=${USE_DEV_SHM:-true}
 spack_debug=${SPACK_DEBUG:-false}
 debug_mode=${DEBUG_MODE:-false}
 
+# REGISTRY_TOKEN allows you to provide your own personal access token to the CI
+# registry. Be sure to set the token with at least read access to the registry.
+registry_token=${REGISTRY_TOKEN:-""}
+ci_registry_user=${CI_REGISTRY_USER:-"${USER}"}
+ci_registry_image=${CI_REGISTRY_IMAGE:-"czregistry.llnl.gov:5050/radiuss/raja"}
+ci_registry_token=${CI_JOB_TOKEN:-"${registry_token}"}
+
+timed_message ()
+{
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~ $(date --rfc-3339=seconds) ~ ${1}"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+}
+
 if [[ ${debug_mode} == true ]]
 then
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -40,13 +54,6 @@ then
     use_dev_shm=false
     spack_debug=true
 fi
-
-# REGISTRY_TOKEN allows you to provide your own personal access token to the CI
-# registry. Be sure to set the token with at least read access to the registry.
-registry_token=${REGISTRY_TOKEN:-""}
-ci_registry_user=${CI_REGISTRY_USER:-"${USER}"}
-ci_registry_image=${CI_REGISTRY_IMAGE:-"czregistry.llnl.gov:5050/radiuss/raja"}
-ci_registry_token=${CI_JOB_TOKEN:-"${registry_token}"}
 
 if [[ -n ${module_list} ]]
 then
@@ -89,13 +96,6 @@ then
     uberenv_cmd="${uberenv_cmd} --spack-debug"
 fi
 
-timed_message()
-{
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~ $(date --rfc-3339=seconds) ~ ${1}"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-}
-
 # Dependencies
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
@@ -118,22 +118,16 @@ then
     mkdir -p ${spack_user_cache}
 
     # generate cmake cache file with uberenv and radiuss spack package
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Spack setup and environment "
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "Spack setup and environment"
     ${uberenv_cmd} --setup-and-env-only --spec="${spec}" ${prefix_opt}
 
     if [[ -n ${ci_registry_token} ]]
     then
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        echo "~~~~~ GitLab registry as Spack Build Cache "
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        timed_message "GitLab registry as Spack Buildcache"
         ${spack_cmd} -D ${spack_env_path} mirror add --unsigned --oci-username ${ci_registry_user} --oci-password ${ci_registry_token} gitlab_ci oci://${ci_registry_image}
     fi
 
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Spack build of dependencies "
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "Spack build of dependencies"
     ${uberenv_cmd} --skip-setup-and-env --spec="${spec}" ${prefix_opt}
 
     if [[ -n ${ci_registry_token} && ${debug_mode} == false ]]
@@ -230,7 +224,6 @@ fi
 # Test
 if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_TESTS.*ON" ${hostconfig_path}
 then
-    timed_message "Testing RAJA"
 
     if [[ ! -d ${build_dir} ]]
     then
@@ -239,9 +232,8 @@ then
 
     cd ${build_dir}
 
-    date
-    ctest --output-on-failure -T test 2>&1 | tee tests_output.txt
-    date
+    timed_message "Testing RAJA"
+    ctest --output-on-failure --no-compress-output -T test -VV 2>&1 | tee tests_output.txt
 
     no_test_str="No tests were found!!!"
     if [[ "$(tail -n 1 tests_output.txt)" == "${no_test_str}" ]]
@@ -249,7 +241,7 @@ then
         echo "[Error]: No tests were found" && exit 1
     fi
 
-    echo "Copying Testing xml reports for export"
+    timed_message "Preparing tests xml reports for export"
     tree Testing
     xsltproc -o junit.xml ${project_dir}/blt/tests/ctest-to-junit.xsl Testing/*/Test.xml
     mv junit.xml ${project_dir}/junit.xml
@@ -261,7 +253,7 @@ then
 
     if grep -q -i "ENABLE_HIP.*ON" ${hostconfig_path}
     then
-        echo "[Warning]: not testing install with HIP"
+        echo "[Warning]: Not testing install with HIP"
     else
         if [[ ! -d ${install_dir} ]]
         then
