@@ -70,12 +70,15 @@ then
     fi
 
     prefix="${prefix}-${job_unique_id}"
-    mkdir -p ${prefix}
 else
     # We set the prefix in the parent directory so that spack dependencies are not installed inside the source tree.
     prefix="$(pwd)/../spack-and-build-root"
-    mkdir -p ${prefix}
 fi
+
+echo "Creating directory ${prefix}"
+echo "project_dir: ${project_dir}"
+
+mkdir -p ${prefix}
 
 spack_cmd="${prefix}/spack/bin/spack"
 spack_env_path="${prefix}/spack_env"
@@ -86,16 +89,17 @@ then
     uberenv_cmd="${uberenv_cmd} --spack-debug"
 fi
 
+timed_message()
+{
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~ $(date --rfc-3339=seconds) ~ ${1}"
+    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+}
+
 # Dependencies
-date
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "~~~~~ Build and test started"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 if [[ "${option}" != "--build-only" && "${option}" != "--test-only" ]]
 then
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Building dependencies"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "Building dependencies"
 
     if [[ -z ${spec} ]]
     then
@@ -113,6 +117,7 @@ then
     export SPACK_USER_CACHE_PATH="${spack_user_cache}"
     mkdir -p ${spack_user_cache}
 
+    # generate cmake cache file with uberenv and radiuss spack package
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo "~~~~~ Spack setup and environment "
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -133,19 +138,14 @@ then
 
     if [[ -n ${ci_registry_token} && ${debug_mode} == false ]]
     then
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        echo "~~~~~ Push dependencies to Build Cache "
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        timed_message "Push dependencies to buildcache"
         ${spack_cmd} -D ${spack_env_path} buildcache push --only dependencies gitlab_ci
     fi
 
+    timed_message "Dependencies built"
 fi
-  echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-  echo "~~~~~ Dependencies built"
-  echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-date
 
-# Host config file
+# Find cmake cache file (hostconfig)
 if [[ -z ${hostconfig} ]]
 then
     # If no host config file was provided, we assume it was generated.
@@ -154,24 +154,24 @@ then
     if [[ ${#hostconfigs[@]} == 1 ]]
     then
         hostconfig_path=${hostconfigs[0]}
-        echo "Found host config file: ${hostconfig_path}"
     elif [[ ${#hostconfigs[@]} == 0 ]]
     then
-        echo "No result for: ${project_dir}/*.cmake"
-        echo "Spack generated host-config not found."
+        echo "[Error]: No result for: ${project_dir}/*.cmake"
+        echo "[Error]: Spack generated host-config not found."
         exit 1
     else
-        echo "More than one result for: ${project_dir}/*.cmake"
-        echo "${hostconfigs[@]}"
-        echo "Please specify one with HOST_CONFIG variable"
+        echo "[Error]: More than one result for: ${project_dir}/*.cmake"
+        echo "[Error]: ${hostconfigs[@]}"
+        echo "[Error]: Please specify one with HOST_CONFIG variable"
         exit 1
     fi
 else
     # Using provided host-config file.
-    hostconfig_path="${project_dir}/host-configs/${hostconfig}"
+    hostconfig_path="${project_dir}/${hostconfig}"
 fi
 
 hostconfig=$(basename ${hostconfig_path})
+echo "[Information]: Found hostconfig ${hostconfig_path}"
 
 # Build Directory
 # When using /dev/shm, we use prefix for both spack builds and source build, unless BUILD_ROOT was defined
@@ -185,17 +185,15 @@ cmake_exe=`grep 'CMake executable' ${hostconfig_path} | cut -d ':' -f 2 | xargs`
 # Build
 if [[ "${option}" != "--deps-only" && "${option}" != "--test-only" ]]
 then
-    date
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    echo "~~~~~ Prefix: ${prefix}"
     echo "~~~~~ Host-config: ${hostconfig_path}"
     echo "~~~~~ Build Dir:   ${build_dir}"
     echo "~~~~~ Project Dir: ${project_dir}"
     echo "~~~~~ Install Dir: ${install_dir}"
     echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
     echo ""
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Building RAJA"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "Cleaning working directory"
 
     # Map CPU core allocations
     declare -A core_counts=(["lassen"]=40 ["ruby"]=28 ["poodle"]=28 ["corona"]=32 ["rzansel"]=48 ["tioga"]=32)
@@ -207,7 +205,7 @@ then
     rm -rf ${build_dir} 2>/dev/null
     mkdir -p ${build_dir} && cd ${build_dir}
 
-    date
+    timed_message "Building RAJA"
     if [[ "${truehostname}" == "corona" || "${truehostname}" == "tioga" ]]
     then
         module unload rocm
@@ -219,27 +217,20 @@ then
     if ! $cmake_exe --build . -j ${core_counts[$truehostname]}
     then
         echo "[Error]: Compilation failed, building with verbose output..."
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        echo "~~~~~ Running make VERBOSE=1"
-        echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        timed_message "Re-building with --verbose"
         $cmake_exe --build . --verbose -j 1
     else
+        timed_message "Installing"
         $cmake_exe --install .
     fi
-    date
 
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ RAJA built"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "RAJA built and installed"
 fi
 
 # Test
 if [[ "${option}" != "--build-only" ]] && grep -q -i "ENABLE_TESTS.*ON" ${hostconfig_path}
 then
-    date
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Testing RAJA"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "Testing RAJA"
 
     if [[ ! -d ${build_dir} ]]
     then
@@ -288,18 +279,10 @@ then
         fi
     fi
 
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ RAJA tests complete"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    date
+    timed_message "RAJA tests completed"
 fi
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "~~~~~ CLEAN UP"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+timed_message "Cleaning up"
 make clean
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "~~~~~ Build and test completed"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-date
+timed_message "Build and test completed"
