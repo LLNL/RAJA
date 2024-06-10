@@ -250,7 +250,7 @@ public:
       return *this;
     }
 
-    operator value_type() const
+    value_type get() const
     {
       return m_base.get(m_bin);
     }
@@ -292,7 +292,7 @@ public:
       return *this;
     }
 
-    operator value_type() const
+    value_type get() const
     {
       return m_base.get(m_bin);
     }
@@ -334,7 +334,7 @@ public:
       return *this;
     }
 
-    operator value_type() const
+    value_type get() const
     {
       return m_base.get(m_bin);
     }
@@ -376,7 +376,7 @@ public:
       return *this;
     }
 
-    operator value_type() const
+    value_type get() const
     {
       return m_base.get(m_bin);
     }
@@ -418,7 +418,7 @@ public:
       return *this;
     }
 
-    operator value_type() const
+    value_type get() const
     {
       return m_base.get(m_bin);
     }
