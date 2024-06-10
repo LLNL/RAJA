@@ -99,17 +99,19 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
       RAJA_FT_BEGIN;
 
       {
+        size_t shared_mem_size = params.shared_mem_size;
+
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, kernel_name);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shared_mem_size, hip_res, async, kernel_name);
       }
 
       RAJA_FT_END;
@@ -152,9 +154,11 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
 
       RAJA_FT_BEGIN;
 
+      size_t shared_mem_size = launch_params.shared_mem_size;
       RAJA::hip::detail::hipInfo launch_info;
       launch_info.gridDim = gridSize;
       launch_info.blockDim = blockSize;
+      launch_info.dynamic_smem = &shared_mem_size;
       launch_info.res = hip_res;
 
       {
@@ -165,13 +169,13 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, launch_params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&body, (void*)&launch_reducers};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, launch_params.shared_mem_size, hip_res, async, kernel_name);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shared_mem_size, hip_res, async, kernel_name);
 
         RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers, launch_info);
       }
@@ -259,17 +263,18 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
       RAJA_FT_BEGIN;
 
       {
+        size_t shared_mem_size = params.shared_mem_size;
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&body};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, params.shared_mem_size, hip_res, async, kernel_name);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shared_mem_size, hip_res, async, kernel_name);
       }
 
       RAJA_FT_END;
@@ -311,9 +316,11 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
 
       RAJA_FT_BEGIN;
 
+      size_t shared_mem_size = launch_params.shared_mem_size;
       RAJA::hip::detail::hipInfo launch_info;
       launch_info.gridDim = gridSize;
       launch_info.blockDim = blockSize;
+      launch_info.dynamic_smem = &shared_mem_size;
       launch_info.res = hip_res;
 
       {
@@ -324,13 +331,13 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
         BODY body = RAJA::hip::make_launch_body(
-            gridSize, blockSize, launch_params.shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
+            gridSize, blockSize, shared_mem_size, hip_res, std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void *args[] = {(void*)&body, (void*)&launch_reducers};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, launch_params.shared_mem_size, hip_res, async, kernel_name);
+        RAJA::hip::launch((const void*)func, gridSize, blockSize, args, shared_mem_size, hip_res, async, kernel_name);
 
         RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers, launch_info);
       }

@@ -49,6 +49,25 @@ namespace RAJA
 namespace cuda
 {
 
+//! Get the properties of the current device
+RAJA_INLINE
+cudaDeviceProp get_device_prop()
+{
+  int device;
+  cudaErrchk(cudaGetDevice(&device));
+  cudaDeviceProp prop;
+  cudaErrchk(cudaGetDeviceProperties(&prop, device));
+  return prop;
+}
+
+//! Get a copy of the device properties, this copy is cached on first use to speedup later calls
+RAJA_INLINE
+cudaDeviceProp& device_prop()
+{
+  static thread_local cudaDeviceProp prop = get_device_prop();
+  return prop;
+}
+
 
 //! Allocator for pinned memory for use in basic_mempool
 struct PinnedAllocator {
@@ -148,6 +167,7 @@ namespace detail
 struct cudaInfo {
   cuda_dim_t gridDim{0, 0, 0};
   cuda_dim_t blockDim{0, 0, 0};
+  size_t* dynamic_smem = nullptr;
   ::RAJA::resources::Cuda res{::RAJA::resources::Cuda::CudaFromStream(0,0)};
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
@@ -275,9 +295,29 @@ bool setupReducers() { return detail::tl_status.setup_reducers; }
 RAJA_INLINE
 cuda_dim_t currentGridDim() { return detail::tl_status.gridDim; }
 
+//! get grid size of current launch
+RAJA_INLINE
+cuda_dim_member_t currentGridSize() { return detail::tl_status.gridDim.x *
+                                             detail::tl_status.gridDim.y *
+                                             detail::tl_status.gridDim.z; }
+
 //! get blockDim of current launch
 RAJA_INLINE
 cuda_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
+
+//! get block size of current launch
+RAJA_INLINE
+cuda_dim_member_t currentBlockSize() { return detail::tl_status.blockDim.x *
+                                              detail::tl_status.blockDim.y *
+                                              detail::tl_status.blockDim.z; }
+
+//! get dynamic shared memory for current launch, you may add to this
+RAJA_INLINE
+size_t& currentDynamicSmem() { return *detail::tl_status.dynamic_smem; }
+
+//! get maximum dynamic shared memory for current launch
+RAJA_INLINE
+size_t maxDynamicSmem() { return cuda::device_prop().sharedMemPerBlock; }
 
 //! get resource for current launch
 RAJA_INLINE
@@ -288,7 +328,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     cuda_dim_t gridDim,
     cuda_dim_t blockDim,
-    size_t RAJA_UNUSED_ARG(dynamic_smem),
+    size_t& dynamic_smem,
     ::RAJA::resources::Cuda res,
     LOOP_BODY&& loop_body)
 {
@@ -296,31 +336,14 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
       detail::tl_status.setup_reducers, true);
   detail::SetterResetter<::RAJA::resources::Cuda> res_srer(
       detail::tl_status.res, res);
+  detail::SetterResetter<size_t*> dynamic_smem_srer(
+      detail::tl_status.dynamic_smem, &dynamic_smem);
 
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 
   using return_type = typename std::remove_reference<LOOP_BODY>::type;
   return return_type(std::forward<LOOP_BODY>(loop_body));
-}
-
-//! Get the properties of the current device
-RAJA_INLINE
-cudaDeviceProp get_device_prop()
-{
-  int device;
-  cudaErrchk(cudaGetDevice(&device));
-  cudaDeviceProp prop;
-  cudaErrchk(cudaGetDeviceProperties(&prop, device));
-  return prop;
-}
-
-//! Get a copy of the device properties, this copy is cached on first use to speedup later calls
-RAJA_INLINE
-cudaDeviceProp& device_prop()
-{
-  static thread_local cudaDeviceProp prop = get_device_prop();
-  return prop;
 }
 
 
