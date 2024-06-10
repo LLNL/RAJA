@@ -188,20 +188,6 @@ using hip_atomicCommon_builtin_types = list<
      ,unsigned long long
     >;
 
-using hip_atomicLoad_builtin_types = list<
-#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
-      unsigned int
-     ,unsigned long long
-#endif
-    >;
-
-using hip_atomicStore_builtin_types = list<
-#if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
-      unsigned int
-     ,unsigned long long
-#endif
-    >;
-
 using hip_atomicAdd_builtin_types = list<
       int
      ,unsigned int
@@ -290,7 +276,8 @@ RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 }
 
 
-template <typename T, enable_if_is_none_of<T, hip_atomicStore_builtin_types>* = nullptr>
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 {
   hip_atomic_CAS_oper(acc, [=] __device__(T) {
@@ -298,7 +285,8 @@ RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
   });
 }
 
-template <typename T, enable_if_is_any_of<T, hip_atomicStore_builtin_types>* = nullptr>
+template <typename T,
+          std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 {
   __hip_atomic_store((T *)acc, val, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
