@@ -34,6 +34,8 @@
     using typename Base::value_type;                                                     \
     using typename Base::reference;                                                      \
                                                                                          \
+    RAJA_SUPPRESS_HD_WARN                                                                \
+    RAJA_HOST_DEVICE                                                                     \
     reference operator[](size_t bin) const                                               \
     {                                                                                    \
       return reference(*this, bin);                                                      \
