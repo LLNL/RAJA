@@ -57,9 +57,9 @@ void testBasicMultiReducerConstructorRegular(size_t num_bins)
     ASSERT_EQ(multi_reduce_min.get(bin), get_op_identity(multi_reduce_min));
     ASSERT_EQ(multi_reduce_max.get(bin), get_op_identity(multi_reduce_max));
 
-    ASSERT_EQ((NumericType)multi_reduce_sum[bin], get_op_identity(multi_reduce_sum));
-    ASSERT_EQ((NumericType)multi_reduce_min[bin], get_op_identity(multi_reduce_min));
-    ASSERT_EQ((NumericType)multi_reduce_max[bin], get_op_identity(multi_reduce_max));
+    ASSERT_EQ((NumericType)multi_reduce_sum[bin].get(), get_op_identity(multi_reduce_sum));
+    ASSERT_EQ((NumericType)multi_reduce_min[bin].get(), get_op_identity(multi_reduce_min));
+    ASSERT_EQ((NumericType)multi_reduce_max[bin].get(), get_op_identity(multi_reduce_max));
   }
 }
 
@@ -77,8 +77,8 @@ void testBasicMultiReducerConstructorBitwise(size_t num_bins)
     ASSERT_EQ(multi_reduce_or.get(bin), get_op_identity(multi_reduce_or));
     ASSERT_EQ(multi_reduce_and.get(bin), get_op_identity(multi_reduce_and));
 
-    ASSERT_EQ((NumericType)multi_reduce_or[bin], get_op_identity(multi_reduce_or));
-    ASSERT_EQ((NumericType)multi_reduce_and[bin], get_op_identity(multi_reduce_and));
+    ASSERT_EQ((NumericType)multi_reduce_or[bin].get(), get_op_identity(multi_reduce_or));
+    ASSERT_EQ((NumericType)multi_reduce_and[bin].get(), get_op_identity(multi_reduce_and));
   }
 }
 
@@ -128,9 +128,9 @@ void testMultiReducerSingleInitConstructorRegular(size_t num_bins, NumericType i
     ASSERT_EQ(multi_reduce_min.get(bin), initVal);
     ASSERT_EQ(multi_reduce_max.get(bin), initVal);
 
-    ASSERT_EQ((NumericType)multi_reduce_sum[bin], initVal);
-    ASSERT_EQ((NumericType)multi_reduce_min[bin], initVal);
-    ASSERT_EQ((NumericType)multi_reduce_max[bin], initVal);
+    ASSERT_EQ((NumericType)multi_reduce_sum[bin].get(), initVal);
+    ASSERT_EQ((NumericType)multi_reduce_min[bin].get(), initVal);
+    ASSERT_EQ((NumericType)multi_reduce_max[bin].get(), initVal);
   }
 }
 
@@ -148,8 +148,8 @@ void testMultiReducerSingleInitConstructorBitwise(size_t num_bins, NumericType i
     ASSERT_EQ(multi_reduce_or.get(bin), initVal);
     ASSERT_EQ(multi_reduce_and.get(bin), initVal);
 
-    ASSERT_EQ((NumericType)multi_reduce_or[bin], initVal);
-    ASSERT_EQ((NumericType)multi_reduce_and[bin], initVal);
+    ASSERT_EQ((NumericType)multi_reduce_or[bin].get(), initVal);
+    ASSERT_EQ((NumericType)multi_reduce_and[bin].get(), initVal);
   }
 }
 
@@ -201,9 +201,9 @@ void testMultiReducerContainerInitConstructorRegular(Container const& container)
     ASSERT_EQ(multi_reduce_min.get(bin), val);
     ASSERT_EQ(multi_reduce_max.get(bin), val);
 
-    ASSERT_EQ((NumericType)multi_reduce_sum[bin], val);
-    ASSERT_EQ((NumericType)multi_reduce_min[bin], val);
-    ASSERT_EQ((NumericType)multi_reduce_max[bin], val);
+    ASSERT_EQ((NumericType)multi_reduce_sum[bin].get(), val);
+    ASSERT_EQ((NumericType)multi_reduce_min[bin].get(), val);
+    ASSERT_EQ((NumericType)multi_reduce_max[bin].get(), val);
     ++bin;
   }
 }
@@ -224,8 +224,8 @@ void testMultiReducerContainerInitConstructorBitwise(Container const& container)
     ASSERT_EQ(multi_reduce_and.get(bin), val);
     ASSERT_EQ(multi_reduce_or.get(bin), val);
 
-    ASSERT_EQ((NumericType)multi_reduce_and[bin], val);
-    ASSERT_EQ((NumericType)multi_reduce_or[bin], val);
+    ASSERT_EQ((NumericType)multi_reduce_and[bin].get(), val);
+    ASSERT_EQ((NumericType)multi_reduce_or[bin].get(), val);
     ++bin;
   }
 }
