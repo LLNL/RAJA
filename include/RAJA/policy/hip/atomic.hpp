@@ -260,7 +260,8 @@ using hip_atomicExch_builtin_types = list<
 using hip_atomicCAS_builtin_types = hip_atomicCommon_builtin_types;
 
 template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value, bool> = true>
+          std::enable_if_t<!(std::is_arithmetic<T>::value ||
+                             std::is_enum<T>::value), bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -269,7 +270,8 @@ RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 }
 
 template <typename T,
-          std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+          std::enable_if_t<std::is_arithmetic<T>::value ||
+                           std::is_enum<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 {
   return __hip_atomic_load((T *)acc, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
@@ -277,7 +279,8 @@ RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 
 
 template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value, bool> = true>
+          std::enable_if_t<!(std::is_arithmetic<T>::value ||
+                             std::is_enum<T>::value), bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 {
   hip_atomic_CAS_oper(acc, [=] __device__(T) {
@@ -286,7 +289,8 @@ RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 }
 
 template <typename T,
-          std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+          std::enable_if_t<std::is_arithmetic<T>::value ||
+                           std::is_enum<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 {
   __hip_atomic_store((T *)acc, val, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
