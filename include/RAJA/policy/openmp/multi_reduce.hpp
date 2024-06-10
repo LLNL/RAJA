@@ -230,11 +230,12 @@ struct MultiReduceOrderedDataOMP
 
   T get(size_t bin) const
   {
-    T val = m_identity;
+    ::RAJA::detail::HighAccuracyReduce<T, typename Combiner::operator_type>
+        reducer(m_identity);
     for (size_t thread_idx = 0; thread_idx < m_max_threads; ++thread_idx) {
-      MultiReduceOp{}(val, m_data[index_data(bin, thread_idx, m_padded_bins, m_padded_threads)]);
+      reducer.combine(m_data[index_data(bin, thread_idx, m_padded_bins, m_padded_threads)]);
     }
-    return val;
+    return reducer.get_and_clear();
   }
 
 private:
