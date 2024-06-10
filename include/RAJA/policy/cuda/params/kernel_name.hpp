@@ -15,7 +15,7 @@ namespace detail {
   // Init
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  init(KernelName& kn, const RAJA::cuda::detail::cudaInfo & cs)
+  init(KernelName& kn, const RAJA::cuda::detail::cudaInfo &)
   {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
     nvtxRangePush(kn.name);
@@ -31,7 +31,7 @@ namespace detail {
   // Resolve
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  resolve(KernelName&)
+  resolve(KernelName&, const RAJA::cuda::detail::cudaInfo &)
   {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
     nvtxRangePop();
