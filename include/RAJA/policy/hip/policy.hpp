@@ -268,6 +268,18 @@ struct hip_reduce_policy
                                                                    reduce::unordered>> {
 };
 
+template < typename tuning >
+struct hip_multi_reduce_policy
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::hip,
+                                                RAJA::Pattern::multi_reduce,
+                                                detail::get_launch<false>::value,
+                                                RAJA::Platform::hip,
+                                                std::conditional_t<tuning::consistent,
+                                                                   reduce::ordered,
+                                                                   reduce::unordered>> {
+};
+
 /*!
  * Hip atomic policy for using hip atomics on the device and
  * the provided policy on the host
@@ -348,6 +360,28 @@ using hip_reduce_atomic = hip_reduce_atomic_host_init_block_fence;
 // non-atomic policy with a bool
 template < bool with_atomic >
 using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_reduce>;
+
+
+template < RAJA::hip::reduce_algorithm algorithm,
+           RAJA::hip::block_communication_mode comm_mode,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified >
+using hip_multi_reduce_tuning = hip_multi_reduce_policy< RAJA::hip::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
+
+// Policies for RAJA::MultiReduce* objects with specific behaviors.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+using hip_multi_reduce_atomic_host_init = hip_multi_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using hip_multi_reduce_atomic = hip_multi_reduce_atomic_host_init;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -1171,6 +1205,10 @@ using policy::hip::hip_reduce_atomic_host_init_block_fence;
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;
+
+// policies usable with multi_reducers
+using policy::hip::hip_multi_reduce_atomic_host_init;
+using policy::hip::hip_multi_reduce_atomic;
 
 // policies usable with kernel
 using policy::hip::hip_block_reduce;
