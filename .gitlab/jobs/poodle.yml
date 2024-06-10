@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ##############################################################################
 
-# Override reproducer section to define projet specific variables.
+# Override reproducer section to define project specific variables.
 .poodle_reproducer_vars:
   script:
     - !reference [.reproducer_vars, script]
