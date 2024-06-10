@@ -259,9 +259,12 @@ using hip_atomicExch_builtin_types = list<
 
 using hip_atomicCAS_builtin_types = hip_atomicCommon_builtin_types;
 
-template <typename T,
-          std::enable_if_t<!(std::is_arithmetic<T>::value ||
-                             std::is_enum<T>::value), bool> = true>
+template <typename T
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
+          , std::enable_if_t<!(std::is_arithmetic<T>::value ||
+                               std::is_enum<T>::value), bool> = true
+#endif
+         >
 RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 {
   return hip_atomic_CAS_oper(acc, [=] __device__(T a) {
@@ -269,6 +272,7 @@ RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
   });
 }
 
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
 template <typename T,
           std::enable_if_t<std::is_arithmetic<T>::value ||
                            std::is_enum<T>::value, bool> = true>
@@ -276,11 +280,15 @@ RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 {
   return __hip_atomic_load((T *)acc, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
+#endif
 
 
 template <typename T,
-          std::enable_if_t<!(std::is_arithmetic<T>::value ||
-                             std::is_enum<T>::value), bool> = true>
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
+          , std::enable_if_t<!(std::is_arithmetic<T>::value ||
+                               std::is_enum<T>::value), bool> = true
+#endif
+         >
 RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 {
   hip_atomic_CAS_oper(acc, [=] __device__(T) {
@@ -288,6 +296,7 @@ RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
   });
 }
 
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
 template <typename T,
           std::enable_if_t<std::is_arithmetic<T>::value ||
                            std::is_enum<T>::value, bool> = true>
@@ -295,6 +304,7 @@ RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 {
   __hip_atomic_store((T *)acc, val, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
+#endif
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
