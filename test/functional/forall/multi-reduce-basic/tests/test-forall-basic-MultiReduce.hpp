@@ -98,7 +98,7 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
 
     size_t bin = 0;
     for (auto init_val : multi_init) {
-      ASSERT_EQ(DATA_TYPE(red[bin]), ref_vals[bin]);
+      ASSERT_EQ(DATA_TYPE(red[bin].get()), ref_vals[bin]);
       ASSERT_EQ(red2.get(bin), ABSTRACTION::combine(ref_vals[bin], init_val));
     }
   }
@@ -122,7 +122,7 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     }
 
     for (size_t bin = 0; bin < num_bins; ++bin) {
-      ASSERT_EQ(static_cast<DATA_TYPE>(red[bin]), ref_vals[bin]);
+      ASSERT_EQ(static_cast<DATA_TYPE>(red[bin].get()), ref_vals[bin]);
     }
   }
 
