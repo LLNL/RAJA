@@ -294,9 +294,9 @@ hip_dim_t currentGridDim() { return detail::tl_status.gridDim; }
 
 //! get grid size of current launch
 RAJA_INLINE
-cuda_dim_member_t currentGridSize() { return detail::tl_status.gridDim.x *
-                                             detail::tl_status.gridDim.y *
-                                             detail::tl_status.gridDim.z; }
+hip_dim_member_t currentGridSize() { return detail::tl_status.gridDim.x *
+                                            detail::tl_status.gridDim.y *
+                                            detail::tl_status.gridDim.z; }
 
 //! get blockDim of current launch
 RAJA_INLINE
@@ -304,9 +304,9 @@ hip_dim_t currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get block size of current launch
 RAJA_INLINE
-cuda_dim_member_t currentBlockSize() { return detail::tl_status.blockDim.x *
-                                              detail::tl_status.blockDim.y *
-                                              detail::tl_status.blockDim.z; }
+hip_dim_member_t currentBlockSize() { return detail::tl_status.blockDim.x *
+                                             detail::tl_status.blockDim.y *
+                                             detail::tl_status.blockDim.z; }
 
 //! get dynamic shared memory for current launch, you may add to this
 RAJA_INLINE
