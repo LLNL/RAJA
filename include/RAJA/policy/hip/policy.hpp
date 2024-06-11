@@ -154,6 +154,30 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   }
 };
 
+
+enum struct reduce_algorithm : int
+{
+  combine_last_block,
+  init_device_combine_atomic_block,
+  init_host_combine_atomic_block
+};
+
+enum struct block_communication_mode : int
+{
+  device_fence,
+  block_fence
+};
+
+template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
+           size_t t_replication, size_t t_atomic_stride >
+struct ReduceTuning
+{
+  static constexpr reduce_algorithm algorithm = t_algorithm;
+  static constexpr block_communication_mode comm_mode = t_comm_mode;
+  static constexpr size_t replication = t_replication;
+  static constexpr size_t atomic_stride = t_atomic_stride;
+};
+
 }  // namespace hip
 
 namespace policy
@@ -229,8 +253,9 @@ struct unordered_hip_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic>
-struct hip_reduce_base
+
+template < typename tuning >
+struct hip_reduce_policy
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::hip,
                                                 RAJA::Pattern::reduce,
@@ -251,9 +276,73 @@ struct hip_atomic_explicit{};
  */
 using hip_atomic = hip_atomic_explicit<seq_atomic>;
 
-using hip_reduce = hip_reduce_base<false>;
 
-using hip_reduce_atomic = hip_reduce_base<true>;
+template < RAJA::hip::reduce_algorithm algorithm,
+           RAJA::hip::block_communication_mode comm_mode,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified >
+using hip_reduce_tuning = hip_reduce_policy< RAJA::hip::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
+
+// Policies for RAJA::Reduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results and falls back
+//   on a non-atomic policy when atomics can't be used with the given type. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run. The memory used with
+//   atomics is initialized on the device which can be expensive on some HW.
+//   On some HW this is faster overall than the non-atomic policies.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+// - *device_fence policies use normal memory accesses with device scope fences
+//                in the implementation. This works on all HW.
+// - *block_fence policies use special (atomic) memory accesses that only cache
+//                 in a cache shared by the whole device to avoid having to use
+//                 device scope fences. This improves performance on some HW but
+//                 is more difficult to code correctly.
+using hip_reduce_device_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::combine_last_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_block_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::combine_last_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_device_init_device_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_device_init_block_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_host_init_device_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_host_init_block_fence = hip_reduce_tuning<
+    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+
+// Policy for RAJA::Reduce* objects that gives the same answer every time when
+// used in the same way
+using hip_reduce = hip_reduce_block_fence;
+
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using hip_reduce_atomic = hip_reduce_atomic_host_init_block_fence;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool with_atomic >
+using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -308,6 +397,7 @@ struct hip_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for HIP warp size and max block size.
 //
+constexpr const RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE = 64; // 128 on gfx90a
 #if defined(__HIP_PLATFORM_AMD__)
 constexpr const RAJA::Index_type WARP_SIZE = 64;
 #elif defined(__HIP_PLATFORM_NVIDIA__)
@@ -968,7 +1058,7 @@ using HipFractionOffsetOccupancyConcretizer = hip::FractionOffsetOccupancyConcre
 
 using HipMaxOccupancyConcretizer = hip::MaxOccupancyConcretizer;
 
-using HipRecForReduceConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
+using HipReduceDefaultConcretizer = HipFractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 2>, 0>;
 
 using HipDefaultConcretizer = HipAvoidDeviceMaxThreadOccupancyConcretizer;
 
@@ -1035,14 +1125,24 @@ using hip_exec_occ_custom_async = policy::hip::hip_exec<
     Concretizer, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using hip_exec_rec_for_reduce = policy::hip::hip_exec<
+using hip_exec_with_reduce = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipRecForReduceConcretizer, Async>;
+    HipReduceDefaultConcretizer, Async>;
 
 template <size_t BLOCK_SIZE>
-using hip_exec_rec_for_reduce_async = policy::hip::hip_exec<
+using hip_exec_with_reduce_async = policy::hip::hip_exec<
     iteration_mapping::StridedLoop<named_usage::unspecified>, hip::global_x<BLOCK_SIZE>,
-    HipRecForReduceConcretizer, true>;
+    HipReduceDefaultConcretizer, true>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
+using hip_exec_base = std::conditional_t<with_reduce,
+    hip_exec_with_reduce<BLOCK_SIZE, Async>,
+    hip_exec<BLOCK_SIZE, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE>
+using hip_exec_base_async = std::conditional_t<with_reduce,
+    hip_exec_with_reduce_async<BLOCK_SIZE>,
+    hip_exec_async<BLOCK_SIZE>>;
 
 // policies usable with WorkGroup
 using policy::hip::hip_work;
@@ -1057,6 +1157,12 @@ using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
 
 // policies usable with reducers
+using policy::hip::hip_reduce_device_fence;
+using policy::hip::hip_reduce_block_fence;
+using policy::hip::hip_reduce_atomic_device_init_device_fence;
+using policy::hip::hip_reduce_atomic_device_init_block_fence;
+using policy::hip::hip_reduce_atomic_host_init_device_fence;
+using policy::hip::hip_reduce_atomic_host_init_block_fence;
 using policy::hip::hip_reduce_base;
 using policy::hip::hip_reduce;
 using policy::hip::hip_reduce_atomic;

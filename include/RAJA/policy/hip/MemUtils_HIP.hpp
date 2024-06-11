@@ -63,7 +63,7 @@ struct PinnedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipHostFree(ptr));
@@ -82,7 +82,7 @@ struct DeviceAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipFree(ptr));
@@ -105,7 +105,26 @@ struct DeviceZeroedAllocator {
     return ptr;
   }
 
-  // returns true on success, false on failure
+  // returns true on success, throws a run time error exception on failure
+  bool free(void* ptr)
+  {
+    hipErrchk(hipFree(ptr));
+    return true;
+  }
+};
+
+//! Allocator for device pinned memory for use in basic_mempool
+struct DevicePinnedAllocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    hipErrchk(hipMalloc(&ptr, nbytes));
+    return ptr;
+  }
+
+  // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
     hipErrchk(hipFree(ptr));
@@ -116,6 +135,7 @@ struct DeviceZeroedAllocator {
 using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
 using device_zeroed_mempool_type =
     basic_mempool::MemPool<DeviceZeroedAllocator>;
+using device_pinned_mempool_type = basic_mempool::MemPool<DevicePinnedAllocator>;
 using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 
 namespace detail

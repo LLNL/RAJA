@@ -63,6 +63,7 @@ cmake \
   -DROCM_ROOT_DIR="/opt/rocm-${COMP_VER}" \
   -DHIP_ROOT_DIR="/opt/rocm-${COMP_VER}/hip" \
   -DHIP_PATH=/opt/rocm-${COMP_VER}/bin \
+  -DRAJA_ENABLE_ROCTX=ON \
   -DCMAKE_C_COMPILER=/opt/rocm-${COMP_VER}/bin/hipcc \
   -DCMAKE_CXX_COMPILER=/opt/rocm-${COMP_VER}/bin/hipcc \
   -DCMAKE_HIP_ARCHITECTURES="${COMP_ARCH}" \

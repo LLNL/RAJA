@@ -46,21 +46,21 @@ Here a simple sum reduction is performed in a for loop::
 
 The results of these operations will yield the following values:
 
- * vsum == 1000
+ * ``vsum == 1000``
 
 RAJA uses policy types to specify how things are implemented.
 
 The forall *execution policy* specifies how the loop is run by the ``RAJA::forall`` method. The following discussion includes examples of several other RAJA execution policies that could be applied.
 For example ``RAJA::seq_exec`` runs a C-style for loop sequentially on a CPU. The
-``RAJA::cuda_exec_rec_for_reduce<256>`` runs the loop as a CUDA GPU kernel with
+``RAJA::cuda_exec_with_reduce<256>`` runs the loop as a CUDA GPU kernel with
 256 threads per block and other CUDA kernel launch parameters, like the
 number of blocks, optimized for performance with reducers.::
 
   using exec_policy = RAJA::seq_exec;
   // using exec_policy = RAJA::omp_parallel_for_exec;
   // using exec_policy = RAJA::omp_target_parallel_for_exec<256>;
-  // using exec_policy = RAJA::cuda_exec_rec_for_reduce<256>;
-  // using exec_policy = RAJA::hip_exec_rec_for_reduce<256>;
+  // using exec_policy = RAJA::cuda_exec_with_reduce<256>;
+  // using exec_policy = RAJA::hip_exec_with_reduce<256>;
   // using exec_policy = RAJA::sycl_exec<256>;
 
 The reduction policy specifies how the reduction is done and must match the
@@ -90,4 +90,21 @@ Here a simple sum reduction is performed using RAJA::
 
 The results of these operations will yield the following values:
 
- * vsum.get() == 1000
+ * ``vsum.get() == 1000``
+
+
+Another option for the execution policy when using the cuda or hip backends are
+the base policies which have a boolean parameter to choose between the general
+use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
+
+  // static constexpr bool with_reduce = ...;
+  // using exec_policy = RAJA::cuda_exec_base<with_reduce, 256>;
+  // using exec_policy = RAJA::hip_exec_base<with_reduce, 256>;
+
+Another option for the reduction policy when using the cuda or hip backends are
+the base policies which have a boolean parameter to choose between the atomic
+``cuda/hip_reduce_atomic`` policy and the non-atomic ``cuda/hip_reduce`` policy.::
+
+  // static constexpr bool with_atomic = ...;
+  // using reduce_policy = RAJA::cuda_reduce_base<with_atomic>;
+  // using reduce_policy = RAJA::hip_reduce_base<with_atomic>;

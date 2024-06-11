@@ -20,8 +20,11 @@
 
 #include "RAJA/config.hpp"
 
+#include <type_traits>
+
 // for RAJA::reduce::detail::ValueLoc
 #include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -38,17 +41,36 @@ namespace detail
  */
 template <typename T,
           typename mempool = RAJA::basic_mempool::MemPool<
-              RAJA::basic_mempool::generic_allocator> >
+              RAJA::basic_mempool::generic_allocator>,
+          typename accessor = DefaultAccessor >
 class SoAPtr
 {
-  using value_type = T;
+  template < typename, typename, typename >
+  friend class SoAPtr; // friend other instantiations of this class
 
 public:
+  using value_type = T;
+
+  template < typename rhs_accessor >
+  using rebind_accessor = SoAPtr<T, mempool, rhs_accessor>;
+
   SoAPtr() = default;
+  SoAPtr(SoAPtr const&) = default;
+  SoAPtr(SoAPtr &&) = default;
+  SoAPtr& operator=(SoAPtr const&) = default;
+  SoAPtr& operator=(SoAPtr &&) = default;
+
   explicit SoAPtr(size_t size)
       : mem(mempool::getInstance().template malloc<value_type>(size))
   {
   }
+
+  template < typename rhs_accessor,
+             std::enable_if_t<!std::is_same<accessor, rhs_accessor>::value>* = nullptr >
+  RAJA_HOST_DEVICE
+  explicit SoAPtr(SoAPtr<value_type, mempool, rhs_accessor> const& rhs)
+    : mem(rhs.mem)
+  { }
 
   SoAPtr& allocate(size_t size)
   {
@@ -65,8 +87,8 @@ public:
 
   RAJA_HOST_DEVICE bool allocated() const { return mem != nullptr; }
 
-  RAJA_HOST_DEVICE value_type get(size_t i) const { return mem[i]; }
-  RAJA_HOST_DEVICE void set(size_t i, value_type val) { mem[i] = val; }
+  RAJA_HOST_DEVICE value_type get(size_t i) const { return accessor::get(mem, i); }
+  RAJA_HOST_DEVICE void set(size_t i, value_type val) { accessor::set(mem, i, val); }
 
 private:
   value_type* mem = nullptr;
@@ -75,20 +97,40 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T, typename IndexType, bool doing_min, typename mempool>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool>
+template <typename T, typename IndexType, bool doing_min, typename mempool, typename accessor>
+class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, mempool, accessor>
 {
-  using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
   using second_type = IndexType;
 
+  template < typename, typename, typename >
+  friend class SoAPtr; // fiend other instantiations of this class
+
 public:
+  using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
+
+  template < typename rhs_accessor >
+  using rebind_accessor = SoAPtr<value_type, mempool, rhs_accessor>;
+
   SoAPtr() = default;
+  SoAPtr(SoAPtr const&) = default;
+  SoAPtr(SoAPtr &&) = default;
+  SoAPtr& operator=(SoAPtr const&) = default;
+  SoAPtr& operator=(SoAPtr &&) = default;
+
   explicit SoAPtr(size_t size)
       : mem(mempool::getInstance().template malloc<first_type>(size)),
         mem_idx(mempool::getInstance().template malloc<second_type>(size))
   {
   }
+
+  template < typename rhs_accessor,
+             std::enable_if_t<!std::is_same<accessor, rhs_accessor>::value>* = nullptr >
+  RAJA_HOST_DEVICE
+  explicit SoAPtr(SoAPtr<value_type, mempool, rhs_accessor> const& rhs)
+    : mem(rhs.mem)
+    , mem_idx(rhs.mem_idx)
+  { }
 
   SoAPtr& allocate(size_t size)
   {
@@ -110,12 +152,12 @@ public:
 
   RAJA_HOST_DEVICE value_type get(size_t i) const
   {
-    return value_type(mem[i], mem_idx[i]);
+    return value_type(accessor::get(mem, i), accessor::get(mem_idx, i));
   }
   RAJA_HOST_DEVICE void set(size_t i, value_type val)
   {
-    mem[i] = val;
-    mem_idx[i] = val.getLoc();
+    accessor::set(mem, i, first_type(val));
+    accessor::set(mem_idx, i, val.getLoc());
   }
 
 private:
