@@ -77,7 +77,7 @@ RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
   }
   return old;
 #else
-  // OpenMP doesn't define atomic trinary operators so use builtin atomics
+  // OpenMP doesn't define atomic ternary operators so use builtin atomics
   return atomicMin(builtin_atomic{}, acc, value);
 #endif
 }
@@ -96,7 +96,7 @@ RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
   }
   return old;
 #else
-  // OpenMP doesn't define atomic trinary operators so use builtin atomics
+  // OpenMP doesn't define atomic ternary operators so use builtin atomics
   return atomicMax(builtin_atomic{}, acc, value);
 #endif
 }
@@ -131,7 +131,7 @@ RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T value)
   }
   return old;
 #else
-  // OpenMP doesn't define atomic trinary operators so use builtin atomics
+  // OpenMP doesn't define atomic ternary operators so use builtin atomics
   return RAJA::atomicInc(builtin_atomic{}, acc, value);
 #endif
 }
@@ -166,7 +166,7 @@ RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T value)
   }
   return old;
 #else
-  // OpenMP doesn't define atomic trinary operators so use builtin atomics
+  // OpenMP doesn't define atomic ternary operators so use builtin atomics
   return RAJA::atomicDec(builtin_atomic{}, acc, value);
 #endif
 }
@@ -241,7 +241,7 @@ RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
   }
   return old;
 #else
-  // OpenMP doesn't define atomic trinary operators so use builtin atomics
+  // OpenMP doesn't define atomic ternary operators so use builtin atomics
   return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
 #endif
 }
