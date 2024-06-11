@@ -72,11 +72,7 @@ int main(int argc, char *argv[])
 
   for (int i = 0; i < N; ++i) {
     host_bins[i] = i % num_bins;
-    if ( i % 2 == 0 ) {
-      host_a[i] = 1;
-    } else {
-      host_a[i] = -1;
-    }
+    host_a[i] = (i % (2*num_bins)) - num_bins;
   }
 
   // _multi_reductions_array_init_end
@@ -85,11 +81,12 @@ int main(int argc, char *argv[])
 // Note: with this data initialization scheme, the following results will
 //       be observed for all reduction kernels below:
 //
-//  - the sum will be 100000 or -100000
-//  - the min will be 1 or -1
-//  - the max will be 1 or -1
-//  - the and will be 1 or -1
-//  - the or  will be 1 or -1
+// for bin in [0, num_bins)
+//  - the sum will be (bin - num_bins/2) * N / num_bins
+//  - the min will be bin - num_bins
+//  - the max will be bin
+//  - the and will be min & max
+//  - the or  will be min | max
 //
 
 //
@@ -141,6 +138,7 @@ int main(int argc, char *argv[])
       std::cout << "\tmax[" << bin << "] = " << multi_reduce_max.get(bin) << '\n';
       std::cout << "\tand[" << bin << "] = " << multi_reduce_and.get(bin) << '\n';
       std::cout << "\tor [" << bin << "] = " << multi_reduce_or .get(bin) << '\n';
+      std::cout << '\n';
     }
 
     res.deallocate(bins);
