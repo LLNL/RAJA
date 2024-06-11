@@ -60,6 +60,19 @@ UnaryFunc for_each_type(camp::list<Ts...> const&, UnaryFunc func)
   return func;
 }
 
+// compile time expansion applying func to a each type in the tuple in order
+template <typename Tuple, typename UnaryFunc, camp::idx_t... Is>
+RAJA_HOST_DEVICE RAJA_INLINE
+UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func, camp::idx_seq<Is...>)
+{
+  using camp::get;
+  // braced init lists are evaluated in order
+  int seq_unused_array[] = {0, (func(get<Is>(std::forward<Tuple>(t))), 0)...};
+  RAJA_UNUSED_VAR(seq_unused_array);
+
+  return func;
+}
+
 }  // namespace detail
 
 
@@ -88,6 +101,18 @@ RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each_type(camp::list<Ts...> const& c, UnaryFunc func)
 {
   return detail::for_each_type(c, std::move(func));
+}
+
+/*!
+  \brief Apply func to each object in the given tuple or tuple like type in order
+  using a compile-time expansion in O(N) operations and O(1) extra memory
+*/
+template <typename Tuple, typename UnaryFunc>
+RAJA_HOST_DEVICE RAJA_INLINE
+UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func)
+{
+  return detail::for_each_tuple(std::forward<Tuple>(t), std::move(func),
+      camp::make_idx_seq_t<std::tuple_size<camp::decay<Tuple>>::value>{});
 }
 
 }  // namespace RAJA
