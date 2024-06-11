@@ -33,9 +33,6 @@
 #include <cuda.h>
 
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/SoAArray.hpp"
-#include "RAJA/util/SoAPtr.hpp"
-#include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/math.hpp"
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
