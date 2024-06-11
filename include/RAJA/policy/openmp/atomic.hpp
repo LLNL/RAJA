@@ -73,7 +73,7 @@ RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = value < old ? value : old;
+    *acc = value < *acc ? value : *acc;
   }
   return old;
 #else
@@ -92,7 +92,7 @@ RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = old < value ? value : old;
+    *acc = *acc < value ? value : *acc;
   }
   return old;
 #else
@@ -122,18 +122,8 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T value)
 {
-#if _OPENMP >= 202011
-  T old;
-  #pragma omp atomic capture compare
-  {
-    old = *acc;
-    *acc = value <= old ? T(0) : (old + T(1));
-  }
-  return old;
-#else
-  // OpenMP doesn't define atomic ternary operators so use builtin atomics
+  // OpenMP doesn't define needed operations, so use builtin atomics
   return RAJA::atomicInc(builtin_atomic{}, acc, value);
-#endif
 }
 
 
@@ -157,18 +147,8 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T value)
 {
-#if _OPENMP >= 202011
-  T old;
-  #pragma omp atomic capture compare
-  {
-    old = *acc;
-    *acc = old == T(0) || value < old ? value : old - T(1);
-  }
-  return old;
-#else
-  // OpenMP doesn't define atomic ternary operators so use builtin atomics
+  // OpenMP doesn't define needed operations, so use builtin atomics
   return RAJA::atomicDec(builtin_atomic{}, acc, value);
-#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -237,7 +217,7 @@ RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = old == compare ? value : old;
+    *acc = *acc == compare ? value : *acc;
   }
   return old;
 #else
