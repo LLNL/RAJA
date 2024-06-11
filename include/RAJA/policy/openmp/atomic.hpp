@@ -73,7 +73,7 @@ RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = old < value ? old : value;
+    *acc = value < old ? value : old;
   }
   return old;
 #else
@@ -92,7 +92,7 @@ RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = value < old ? old : value;
+    *acc = old < value ? value : old;
   }
   return old;
 #else
