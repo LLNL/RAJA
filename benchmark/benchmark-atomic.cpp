@@ -31,7 +31,8 @@ struct IsGPU<RAJA::cuda_exec<M>> : public std::true_type {};
 
 template<int BLOCK_SZ>
 struct ExecPolicyGPU {
-    using policy = RAJA::cuda_exec<BLOCK_SZ>;
+    using policy = RAJA::cuda_exec<BLOCK_SZ, false>;
+    using sync = RAJA::policy::cuda::cuda_synchronize;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "CUDA execution with block size " << BLOCK_SZ;
@@ -63,7 +64,8 @@ struct IsGPU<RAJA::hip_exec<M>> : public std::true_type {};
 
 template<int BLOCK_SZ>
 struct ExecPolicyGPU {
-    using policy = RAJA::hip_exec<BLOCK_SZ>;
+    using policy = RAJA::hip_exec<BLOCK_SZ, false>;
+    using sync = RAJA::policy::hip::hip_synchronize;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "HIP execution with block size " << BLOCK_SZ;
@@ -92,6 +94,7 @@ void DeallocateDeviceAtomic(AtomicType* atomic) {
 #include "RAJA/util/Timer.hpp"
 
 #define N 1000000000
+#define BLOCK_SZ 256
 #define INDENT "  "
 using raja_default_desul_order = desul::MemoryOrderRelaxed;
 using raja_default_desul_scope = desul::MemoryScopeDevice;
@@ -133,6 +136,7 @@ struct AtomicMax {
 /// ExecPolicy wrapper for OpenMP
 struct ExecPolicyOMP {
     using policy = RAJA::omp_for_exec;
+    using sync = RAJA::policy::omp::omp_synchronize;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "OpenMP execution";
@@ -180,15 +184,20 @@ template <class ExecPolicy, typename AtomicType, bool test_array, typename Atomi
 void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t num_iterations = 2, int array_size = 100) {
     RAJA::Timer timer;
 
+    // Allocate memory
+    AtomicType* device_value = nullptr;
+    int len_array = test_array ? array_size : 1;
+    if (IsGPU<typename ExecPolicy::policy>::value) {
+        AllocateAtomicDevice(&device_value, len_array);
+    } else {
+        device_value = new AtomicType [len_array];
+    }
+
     for (int i = 0; i < num_iterations; ++i) {
-        AtomicType* device_value = nullptr;
-        int len_array = test_array ? array_size : 1;
-        if (IsGPU<typename ExecPolicy::policy>::value) {
-            AllocateAtomicDevice(&device_value, len_array);
-        } else {
-            device_value = new AtomicType [len_array];
+        // Don't time the first kernel launch
+        if (i == 1) {
+            timer.start();
         }
-        timer.start();
         RAJA::forall<typename ExecPolicy::policy>(RAJA::RangeSegment(0, N),
         [=] RAJA_HOST_DEVICE(int tid)  {
             if (test_array) {
@@ -197,16 +206,14 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t num_iterations = 2, int 
                 atomic_impl(device_value, AtomicType(1));
             }
         });
-
-        timer.stop();
-        if (IsGPU<typename ExecPolicy::policy>::value) {
-            DeallocateDeviceAtomic(device_value);
-        } else {
-            delete device_value;
-        }
-
     }
-
+    timer.stop();
+    RAJA::synchronize<typename ExecPolicy::sync>();
+    if (IsGPU<typename ExecPolicy::policy>::value) {
+        DeallocateDeviceAtomic(device_value);
+    } else {
+        delete device_value;
+    }
     double t = timer.elapsed();
     std::cout << INDENT << INDENT << t << "s" << INDENT;
     std::cout << GetImplName(atomic_impl) << ", ";
@@ -217,34 +224,25 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t num_iterations = 2, int 
 }
 
 int main () {
+
     // GPU benchmarks
     std::cout << "Executing CUDA benchmarks" << std::endl;
     std::cout << INDENT << "Executing atomic add integer benchmarks" << std::endl;
-    TimeAtomicOp<ExecPolicyGPU<64>, int,  true>(AtomicAdd<typename GPUAtomic::policy>{}, 4);
-    TimeAtomicOp<ExecPolicyGPU<64>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, 4);
-    TimeAtomicOp<ExecPolicyGPU<128>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, 4);
-    TimeAtomicOp<ExecPolicyGPU<128>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, 4);
-    TimeAtomicOp<ExecPolicyGPU<256>, int, true>(AtomicAdd<typename GPUAtomic::policy> {}, 4);
-    TimeAtomicOp<ExecPolicyGPU<256>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, 4);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int,  true>(AtomicAdd<typename GPUAtomic::policy>{}, 4);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, 4);
 
-    TimeAtomicOp<ExecPolicyGPU<128>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, 4, 10);
-    TimeAtomicOp<ExecPolicyGPU<128>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, 4, 10);
-    TimeAtomicOp<ExecPolicyGPU<256>, int, true>(AtomicAdd<typename GPUAtomic::policy> {}, 4, 10);
-    TimeAtomicOp<ExecPolicyGPU<256>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, 4, 10);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, 4, 10);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, 4, 10);
 
     std::cout << INDENT << "Executing atomic add double benchmarks" << std::endl;
 
-    TimeAtomicOp<ExecPolicyGPU<128>, double, false>(AtomicAdd<typename GPUAtomic::policy> {});
-    TimeAtomicOp<ExecPolicyGPU<128>, double, false>(atomicWrapperDesul<double, desul::atomic_fetch_add> {});
-    TimeAtomicOp<ExecPolicyGPU<256>, double, false>(AtomicAdd<typename GPUAtomic::policy> {});
-    TimeAtomicOp<ExecPolicyGPU<256>, double, false>(atomicWrapperDesul<double, desul::atomic_fetch_add> {});
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(AtomicAdd<typename GPUAtomic::policy> {});
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(atomicWrapperDesul<double, desul::atomic_fetch_add> {});
 
     std::cout << INDENT << "Executing atomic max benchmarks" << std::endl;
 
-    TimeAtomicOp<ExecPolicyGPU<128>, int, false>(AtomicMax<GPUAtomic::policy>{});
-    TimeAtomicOp<ExecPolicyGPU<128>, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_max> {});
-    TimeAtomicOp<ExecPolicyGPU<256>, int, false>(AtomicMax<GPUAtomic::policy> {});
-    TimeAtomicOp<ExecPolicyGPU<256>, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_max> {});
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, false>(AtomicMax<GPUAtomic::policy>{});
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_max> {});
 
     // OpenMP benchmarks
     std::cout << "Executing OpenMP benchmarks" << std::endl;
