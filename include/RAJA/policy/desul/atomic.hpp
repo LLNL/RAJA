@@ -30,7 +30,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
-atomicLoad(AtomicPolicy, T volatile *acc) {
+atomicLoad(AtomicPolicy, T volatile *acc)
+{
   return desul::atomic_load(const_cast<T*>(acc),
                             raja_default_desul_order{},
                             raja_default_desul_scope{});
@@ -40,7 +41,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE void
-atomicStore(AtomicPolicy, T volatile *acc, T value) {
+atomicStore(AtomicPolicy, T volatile *acc, T value)
+{
   desul::atomic_store(const_cast<T*>(acc),
                       value,
                       raja_default_desul_order{},
@@ -51,7 +53,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
-atomicAdd(AtomicPolicy, T volatile *acc, T value) {
+atomicAdd(AtomicPolicy, T volatile *acc, T value)
+{
   return desul::atomic_fetch_add(const_cast<T*>(acc),
                                  value,
                                  raja_default_desul_order{},
@@ -62,7 +65,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
-atomicSub(AtomicPolicy, T volatile *acc, T value) {
+atomicSub(AtomicPolicy, T volatile *acc, T value)
+{
   return desul::atomic_fetch_sub(const_cast<T*>(acc),
                                  value,
                                  raja_default_desul_order{},
