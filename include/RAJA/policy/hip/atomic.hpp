@@ -283,7 +283,7 @@ RAJA_INLINE __device__ T hip_atomicLoad(T volatile *acc)
 #endif
 
 
-template <typename T,
+template <typename T
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
           , std::enable_if_t<!(std::is_arithmetic<T>::value ||
                                std::is_enum<T>::value), bool> = true
