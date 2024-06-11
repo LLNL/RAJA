@@ -68,8 +68,18 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMin(omp_atomic, T volatile *acc, T value)
 {
+#if _OPENMP >= 202011
+  T ret;
+  #pragma omp atomic capture compare
+  {
+    ret = *acc;
+    *acc = value < *acc ? value : *acc;
+  }
+  return ret;
+#else
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
   return atomicMin(builtin_atomic{}, acc, value);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -77,8 +87,18 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMax(omp_atomic, T volatile *acc, T value)
 {
+#if _OPENMP >= 202011
+  T ret;
+  #pragma omp atomic capture compare
+  {
+    ret = *acc;
+    *acc = *acc < value ? value : *acc;
+  }
+  return ret;
+#else
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
   return atomicMax(builtin_atomic{}, acc, value);
+#endif
 }
 
 
