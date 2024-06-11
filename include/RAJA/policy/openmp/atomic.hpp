@@ -111,7 +111,7 @@ RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc)
 #pragma omp atomic capture
   {
     ret = *acc;  // capture old for return value
-    *acc += (T)1;
+    *acc += T(1);
   }
   return ret;
 }
@@ -127,7 +127,7 @@ RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T value)
   #pragma omp atomic capture compare
   {
     ret = *acc;
-    *acc = value <= ret ? (T)0 : (ret + (T)1);
+    *acc = value <= ret ? T(0) : (ret + T(1));
   }
   return ret;
 #else
@@ -146,7 +146,7 @@ RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc)
 #pragma omp atomic capture
   {
     ret = *acc;  // capture old for return value
-    *acc -= (T)1;
+    *acc -= T(1);
   }
   return ret;
 }
@@ -162,7 +162,7 @@ RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T value)
   #pragma omp atomic capture compare
   {
     ret = *acc;
-    *acc = ret == (T)0 || value < ret ? value : ret - (T)1;
+    *acc = ret == T(0) || value < ret ? value : ret - T(1);
   }
   return ret;
 #else
