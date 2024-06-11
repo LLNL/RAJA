@@ -25,23 +25,32 @@
  *
  */
 
-using example_policies = camp::list<
+template < typename t_exec_policy, typename t_multi_reduce_policy >
+struct Backend
+{
+  using exec_policy = t_exec_policy;
+  using multi_reduce_policy = t_multi_reduce_policy;
 
-      camp::list<RAJA::seq_exec, RAJA::seq_multi_reduce>
+  std::string name;
+};
+
+auto example_policies = camp::make_tuple(
+
+      Backend<RAJA::seq_exec, RAJA::seq_multi_reduce>{"Sequential"}
 
 #if defined(RAJA_ENABLE_OPENMP)
-    , camp::list<RAJA::omp_parallel_for_exec, RAJA::omp_multi_reduce>
+    , Backend<RAJA::omp_parallel_for_exec, RAJA::omp_multi_reduce>{"OpenMP"}
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-    , camp::list<RAJA::cuda_exec_async<256>, RAJA::cuda_multi_reduce_atomic>
+    , Backend<RAJA::cuda_exec_async<256>, RAJA::cuda_multi_reduce_atomic>{"Cuda"}
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-    , camp::list<RAJA::hip_exec_async<256>, RAJA::hip_multi_reduce_atomic>
+    , Backend<RAJA::hip_exec_async<256>, RAJA::hip_multi_reduce_atomic>{"Hip"}
 #endif
 
-    >;
+    );
 
 
 int main(int argc, char *argv[])
@@ -92,14 +101,14 @@ int main(int argc, char *argv[])
 
 //----------------------------------------------------------------------------//
 
-  RAJA::for_each_type(example_policies{}, [&](auto policies) {
+  RAJA::for_each_tuple(example_policies, [&](auto const& backend) {
 
-    using exec_policy = camp::at_v<decltype(policies), 0>;
-    using multi_reduce_policy = camp::at_v<decltype(policies), 1>;
+    std::cout << "Running " << backend.name << " policies" << '\n';
+
+    using exec_policy = typename std::decay_t<decltype(backend)>::exec_policy;
+    using multi_reduce_policy = typename std::decay_t<decltype(backend)>::multi_reduce_policy;
 
     auto res = RAJA::resources::get_default_resource<exec_policy>();
-
-    std::cout << "Running with policies from platform " << int(res.get_platform()) << '\n';
 
     int* bins = res.template allocate<int>(N);
     int* a   = res.template allocate<int>(N);
@@ -133,10 +142,11 @@ int main(int argc, char *argv[])
       std::cout << "\tand[" << bin << "] = " << multi_reduce_and.get(bin) << '\n';
       std::cout << "\tor [" << bin << "] = " << multi_reduce_or .get(bin) << '\n';
     }
-    std::cout << std::endl;
 
     res.deallocate(bins);
     res.deallocate(a   );
+
+    std::cout << std::endl;
   });
 
 //----------------------------------------------------------------------------//
