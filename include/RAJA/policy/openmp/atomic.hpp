@@ -111,7 +111,7 @@ RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc)
 #pragma omp atomic capture
   {
     ret = *acc;  // capture old for return value
-    *acc += 1;
+    *acc += (T)1;
   }
   return ret;
 }
@@ -122,8 +122,18 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(omp_atomic, T volatile *acc, T val)
 {
+#if _OPENMP >= 202011
+  T ret;
+  #pragma omp atomic capture compare
+  {
+    ret = *acc;
+    *acc = val <= ret ? (T)0 : (ret + (T)1);
+  }
+  return ret;
+#else
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
   return RAJA::atomicInc(builtin_atomic{}, acc, val);
+#endif
 }
 
 
@@ -136,7 +146,7 @@ RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc)
 #pragma omp atomic capture
   {
     ret = *acc;  // capture old for return value
-    *acc -= 1;
+    *acc -= (T)1;
   }
   return ret;
 }
@@ -147,8 +157,18 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(omp_atomic, T volatile *acc, T val)
 {
+#if _OPENMP >= 202011
+  T ret;
+  #pragma omp atomic capture compare
+  {
+    ret = *acc;
+    *acc = ret == (T)0 || val < ret ? val : ret - (T)1;
+  }
+  return ret;
+#else
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
   return RAJA::atomicDec(builtin_atomic{}, acc, val);
+#endif
 }
 
 RAJA_SUPPRESS_HD_WARN

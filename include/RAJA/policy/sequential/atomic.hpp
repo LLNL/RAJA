@@ -63,7 +63,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicMax(seq_atomic, T volatile *acc, T value)
 {
   T ret = *acc;
-  *acc = ret > value ? ret : value;
+  *acc = value < ret ? ret : value;
   return ret;
 }
 
@@ -74,7 +74,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(seq_atomic, T volatile *acc)
 {
   T ret = *acc;
-  (*acc) += 1;
+  (*acc) += (T)1;
   return ret;
 }
 
@@ -84,7 +84,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicInc(seq_atomic, T volatile *acc, T val)
 {
   T old = *acc;
-  (*acc) = ((old >= val) ? 0 : (old + 1));
+  *acc = val <= old ? 0 : old + 1;
   return old;
 }
 
@@ -94,7 +94,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(seq_atomic, T volatile *acc)
 {
   T ret = *acc;
-  (*acc) -= 1;
+  (*acc) -= (T)1;
   return ret;
 }
 
@@ -104,7 +104,7 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicDec(seq_atomic, T volatile *acc, T val)
 {
   T old = *acc;
-  (*acc) = (((old == 0) | (old > val)) ? val : (old - 1));
+  *acc = old == (T)0 || val < old ? val : old - (T)1;
   return old;
 }
 
