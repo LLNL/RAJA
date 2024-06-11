@@ -83,7 +83,7 @@ namespace RAJA
 /*!
  * @brief Atomic load
  * @param acc Pointer to location of value
- * @return Returns value at acc
+ * @return Value at acc
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
