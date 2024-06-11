@@ -212,18 +212,8 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T atomicCAS(omp_atomic, T volatile *acc, T compare, T value)
 {
-#if _OPENMP >= 202011
-  T old;
-  #pragma omp atomic capture compare
-  {
-    old = *acc;
-    *acc = *acc == compare ? value : *acc;
-  }
-  return old;
-#else
   // OpenMP doesn't define atomic ternary operators so use builtin atomics
   return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
-#endif
 }
 
 #endif // not defined RAJA_COMPILER_MSVC
