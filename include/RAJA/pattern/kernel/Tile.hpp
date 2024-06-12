@@ -169,13 +169,13 @@ struct IterableTiler {
     }
 
     RAJA_HOST_DEVICE
-    RAJA_INLINE bool operator!=(const IterableTiler &rhs) const
+    RAJA_INLINE bool operator!=(const IterableTiler::iterator &rhs) const
     {
       return block_id != rhs.block_id;
     }
 
     RAJA_HOST_DEVICE
-    RAJA_INLINE bool operator<(const IterableTiler &rhs) const
+    RAJA_INLINE bool operator<(const IterableTiler::iterator &rhs) const
     {
       return block_id < rhs.block_id;
     }
