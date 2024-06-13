@@ -36,6 +36,35 @@ namespace RAJA
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE
+RAJA_INLINE T atomicLoad(omp_atomic, T volatile *acc)
+{
+  T ret;
+#pragma omp atomic capture
+  {
+    ret = *acc;  // capture old for return value
+    *acc += (T)0;
+  }
+  return ret;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE void atomicStore(omp_atomic, T volatile *acc, T value)
+{
+  T ret;
+#pragma omp atomic capture
+  {
+    ret = *acc;
+    *acc = value;
+  }
+  // Silence compiler warnings about ret being set but unused
+  static_cast<void>(ret);
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
 RAJA_INLINE T atomicAdd(omp_atomic, T volatile *acc, T value)
 {
   T old;
