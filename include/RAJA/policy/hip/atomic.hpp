@@ -504,7 +504,7 @@ template <typename T, enable_if_is_none_of<T, hip_atomicDecReset_builtin_types>*
 RAJA_INLINE __device__ T hip_atomicDec(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T old) {
-    return old == static_cast<T>(0) || val < old ? val : old - static_cast<T>(1));
+    return old == static_cast<T>(0) || val < old ? val : old - static_cast<T>(1);
   });
 }
 
