@@ -44,6 +44,7 @@ RAJA_INLINE void atomicStore(seq_atomic, T *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE
+RAJA_INLINE T atomicAdd(seq_atomic, T *acc, T value)
 {
   T ret = *acc;
   *acc += value;
