@@ -138,57 +138,57 @@ using hip_atomicExch_builtin_types = list<
 
 using hip_atomicCAS_builtin_types = hip_atomicCommon_builtin_types;
 
+static_assert(sizeof(unsigned int) != sizeof(unsigned long long int),
+              "Current implementation of Hip atomicCAS expects unsigned int and unsigned long long int to be different sizes (e.g. 4 vs. 8 bytes)");
+
 /*!
- * Reinterprets the given type as a type that can be passed to Hip's
- * atomicCAS function. This specialization handles types that can be
- * passed directly.
+ * Provides a member called "type" when the size matches the size of a
+ * type that can be passed to Hip's atomicCAS function. Otherwise, a
+ * compile-time assert is triggered.
  */
-template <class T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) != sizeof(unsigned int) &&
-                           sizeof(T) != sizeof(unsigned long long int)> = true>
-struct hip_atomicCAS_reinterpret_cast {
+template <std::size_t BYTES>
+struct hip_atomicCAS_reinterpret_cast_impl {
   static_assert(false, "Unsupported type for atomicCAS");
 };
 
 /*!
- * Reinterprets the given type as a type that can be passed to Hip's
- * atomicCAS function. This specialization handles types that can be
- * passed directly.
+ * Provides a member called "type" when the size matches the size of a
+ * type that can be passed to Hip's atomicCAS function. Otherwise, a
+ * compile-time assert is triggered. Specialization for the size of
+ * unsigned int (usually 4 bytes).
  */
-template <class T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value> = true>
-struct hip_atomicCAS_reinterpret_cast {
-  using type = T;
-};
-
-/*!
- * Reinterprets the given type as a type that can be passed to Hip's
- * atomicCAS function. This specialization handles types that can be
- * reinterpreted as an unsigned int.
- */
-template <class T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           sizeof(T) == sizeof(unsigned int)> = true>
-struct hip_atomicCAS_reinterpret_cast {
+template <>
+struct hip_atomicCAS_reinterpret_cast_impl<sizeof(unsigned int)> {
   using type = unsigned int;
 };
 
 /*!
- * Reinterprets the given type as a type that can be passed to Hip's
- * atomicCAS function. This specialization handles types that can be
- * reinterpreted as an unsigned long long int.
+ * Provides a member called "type" when the size matches the size of a
+ * type that can be passed to Hip's atomicCAS function. Otherwise, a
+ * compile-time assert is triggered. Specialization for the size of
+ * unsigned long long int (usually 8 bytes).
  */
-template <class T,
-          std::enable_if_t<!std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned long long int)> = true>
-struct hip_atomicCAS_reinterpret_cast {
+template <>
+struct hip_atomicCAS_reinterpret_cast_impl<sizeof(unsigned long long int)> {
   using type = unsigned long long int;
+};
+
+/*!
+ * Reinterprets the given type as a type that can be passed to Hip's
+ * atomicCAS function.
+ */
+template <class T>
+struct hip_atomicCAS_reinterpret_cast {
+  using type = typename hip_atomicCAS_reinterpret_cast_impl<sizeof(T)>::type;
+};
+
+/*!
+ * Reinterprets the given type as a type that can be passed to Hip's
+ * atomicCAS function. This is a specialization for type int.
+ */
+template <>
+struct hip_atomicCAS_reinterpret_cast<int> {
+  using type = int;
 };
 
 /*!
@@ -196,7 +196,7 @@ struct hip_atomicCAS_reinterpret_cast {
  */
 template <class T>
 using hip_atomicCAS_reinterpret_cast_t =
-    typename hip_atomicCAS_reinterpret_cast::type;
+    typename hip_atomicCAS_reinterpret_cast<T>::type;
 
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
 
@@ -368,7 +368,7 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, OPER &&oper)
 
   do {
     expected = old;
-    old = hip_atomicCas(acc, expected, oper(expected));
+    old = hip_atomicCAS(acc, expected, oper(expected));
   } while (RAJA::util::reinterp_A_as_B<T, hip_atomicCAS_type>(old) !=
            RAJA::util::reinterp_A_as_B<T, hip_atomicCAS_type>(expected));
 
@@ -384,7 +384,7 @@ template <typename T
                                std::is_enum<T>::value), bool> = true
 #endif
          >
-RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
+RAJA_INLINE __device__ void hip_atomicStore(T *acc, T val)
 {
   hip_atomicCAS(acc, [=] __device__(T) {
     return val;
@@ -395,15 +395,15 @@ RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
 template <typename T,
           std::enable_if_t<std::is_arithmetic<T>::value ||
                            std::is_enum<T>::value, bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T volatile *acc, T val)
+RAJA_INLINE __device__ void hip_atomicStore(T *acc, T val)
 {
-  __hip_atomic_store((T *)acc, val, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+  __hip_atomic_store(acc, val, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
 #endif
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return a + value;
@@ -411,14 +411,14 @@ RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicAdd_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicAdd(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
-  return ::atomicAdd((T *)acc, value);
+  return ::atomicAdd(acc, value);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicSub_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return a - value;
@@ -429,23 +429,23 @@ RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
  * HIP atomicSub builtin implementation.
  */
 template <typename T, enable_if_is_any_of<T, hip_atomicSub_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
-  return ::atomicSub((T *)acc, value);
+  return ::atomicSub(acc, value);
 }
 
 /*!
  * HIP atomicSub via atomicAdd builtin implementation.
  */
 template <typename T, enable_if_is_any_of<T, hip_atomicSub_via_Add_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicSub(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
-  return ::atomicAdd((T *)acc, -value);
+  return ::atomicAdd(acc, -value);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicMin_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return value < a ? value : a;
@@ -453,14 +453,14 @@ RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicMin_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicMin(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 {
-  return ::atomicMin((T *)acc, value);
+  return ::atomicMin(acc, value);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicMax_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return value > a ? value : a;
@@ -468,14 +468,14 @@ RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicMax_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicMax(T volatile *acc, T value)
+RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 {
-  return ::atomicMax((T *)acc, value);
+  return ::atomicMax(acc, value);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicIncReset_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicInc(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T old) {
     return ((old >= val) ? (T)0 : (old + (T)1));
@@ -483,27 +483,27 @@ RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc, T val)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicIncReset_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicInc(T *acc, T val)
 {
-  return ::atomicInc((T *)acc, val);
+  return ::atomicInc(acc, val);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicInc_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc)
+RAJA_INLINE __device__ T hip_atomicInc(T *acc)
 {
   return hip_atomicAdd(acc, (T)1);
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicInc_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicInc(T volatile *acc)
+RAJA_INLINE __device__ T hip_atomicInc(T *acc)
 {
-  return ::atomicInc((T *)acc);
+  return ::atomicInc(acc);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicDecReset_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicDec(T *acc, T val)
 {
   // See:
   // http://docs.nvidia.com/hip/hip-c-programming-guide/index.html#atomicdec
@@ -513,27 +513,27 @@ RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc, T val)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicDecReset_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicDec(T *acc, T val)
 {
-  return ::atomicDec((T *)acc, val);
+  return ::atomicDec(acc, val);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicDec_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc)
+RAJA_INLINE __device__ T hip_atomicDec(T *acc)
 {
   return hip_atomicSub(acc, (T)1);
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicDec_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicDec(T volatile *acc)
+RAJA_INLINE __device__ T hip_atomicDec(T *acc)
 {
-  return ::atomicDec((T *)acc);
+  return ::atomicDec(acc);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicAnd_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return a & val;
@@ -541,14 +541,14 @@ RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T val)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicAnd_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicAnd(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T val)
 {
-  return ::atomicAnd((T *)acc, val);
+  return ::atomicAnd(acc, val);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicOr(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return a | val;
@@ -556,14 +556,14 @@ RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T val)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicOr_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicOr(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicOr(T *acc, T val)
 {
-  return ::atomicOr((T *)acc, val);
+  return ::atomicOr(acc, val);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicXor_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicXor(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
     return a ^ val;
@@ -571,14 +571,14 @@ RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T val)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicXor_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicXor(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicXor(T *acc, T val)
 {
-  return ::atomicXor((T *)acc, val);
+  return ::atomicXor(acc, val);
 }
 
 
 template <typename T, enable_if_is_none_of<T, hip_atomicExch_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T) {
     return val;
@@ -586,9 +586,9 @@ RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T val)
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicExch_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T val)
+RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T val)
 {
-  return ::atomicExch((T *)acc, val);
+  return ::atomicExch(acc, val);
 }
 
 
@@ -607,7 +607,7 @@ RAJA_INLINE __device__ T hip_atomicExchange(T volatile *acc, T val)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicLoad(hip_atomic_explicit<host_policy>, T volatile *acc)
+atomicLoad(hip_atomic_explicit<host_policy>, T *acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicLoad(acc);
@@ -619,7 +619,7 @@ atomicLoad(hip_atomic_explicit<host_policy>, T volatile *acc)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE void
-atomicStore(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicStore(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   detail::hip_atomicStore(acc, value);
@@ -631,7 +631,7 @@ atomicStore(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicAdd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicAdd(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAdd(acc, value);
@@ -643,7 +643,7 @@ atomicAdd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicSub(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicSub(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicSub(acc, value);
@@ -655,7 +655,7 @@ atomicSub(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicMin(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicMin(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMin(acc, value);
@@ -667,7 +667,7 @@ atomicMin(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicMax(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicMax(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMax(acc, value);
@@ -679,7 +679,7 @@ atomicMax(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
+atomicInc(hip_atomic_explicit<host_policy>, T *acc, T val)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc, val);
@@ -691,7 +691,7 @@ atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc)
+atomicInc(hip_atomic_explicit<host_policy>, T *acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc);
@@ -703,7 +703,7 @@ atomicInc(hip_atomic_explicit<host_policy>, T volatile *acc)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
+atomicDec(hip_atomic_explicit<host_policy>, T *acc, T val)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc, val);
@@ -715,7 +715,7 @@ atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc, T val)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc)
+atomicDec(hip_atomic_explicit<host_policy>, T *acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc);
@@ -727,7 +727,7 @@ atomicDec(hip_atomic_explicit<host_policy>, T volatile *acc)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicAnd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicAnd(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAnd(acc, value);
@@ -739,7 +739,7 @@ atomicAnd(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicOr(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicOr(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicOr(acc, value);
@@ -751,7 +751,7 @@ atomicOr(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicXor(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicXor(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicXor(acc, value);
@@ -763,7 +763,7 @@ atomicXor(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicExchange(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
+atomicExchange(hip_atomic_explicit<host_policy>, T *acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicExchange(acc, value);
@@ -775,7 +775,7 @@ atomicExchange(hip_atomic_explicit<host_policy>, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicCAS(hip_atomic_explicit<host_policy>, T volatile *acc, T compare, T value)
+atomicCAS(hip_atomic_explicit<host_policy>, T *acc, T compare, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicCAS(acc, compare, value);
