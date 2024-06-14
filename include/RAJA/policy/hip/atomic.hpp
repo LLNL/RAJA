@@ -22,6 +22,7 @@
 
 #if defined(RAJA_ENABLE_HIP)
 
+#include <cstdint>
 #include <stdexcept>
 #include <type_traits>
 #include "hip/hip_runtime.h"
@@ -44,128 +45,6 @@ namespace RAJA
 
 namespace detail
 {
-
-/*!
- * Generic impementation of atomic 32-bit or 64-bit compare and swap primitive.
- * Implementation uses the existing HIP supplied unsigned 32-bit and 64-bit
- * CAS operators.
- * Returns the value that was stored before this operation.
- */
-RAJA_INLINE __device__ unsigned hip_atomic_CAS(
-    unsigned volatile *acc,
-    unsigned compare,
-    unsigned value)
-{
-  return ::atomicCAS((unsigned *)acc, compare, value);
-}
-///
-RAJA_INLINE __device__ unsigned long long hip_atomic_CAS(
-    unsigned long long volatile *acc,
-    unsigned long long compare,
-    unsigned long long value)
-{
-  return ::atomicCAS((unsigned long long *)acc, compare, value);
-}
-///
-template <typename T>
-RAJA_INLINE __device__
-typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
-hip_atomic_CAS(T volatile *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned, T>(
-      hip_atomic_CAS((unsigned volatile *)acc,
-          RAJA::util::reinterp_A_as_B<T, unsigned>(compare),
-          RAJA::util::reinterp_A_as_B<T, unsigned>(value)));
-}
-///
-template <typename T>
-RAJA_INLINE __device__
-typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
-hip_atomic_CAS(T volatile *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
-      hip_atomic_CAS((unsigned long long volatile *)acc,
-          RAJA::util::reinterp_A_as_B<T, unsigned long long>(compare),
-          RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
-}
-
-template <size_t BYTES>
-struct HipAtomicCAS {
-};
-
-
-template <>
-struct HipAtomicCAS<4> {
-
-  /*!
-   * Generic impementation of any atomic 32-bit operator.
-   * Implementation uses the existing HIP supplied unsigned 32-bit CAS
-   * operator. Returns the OLD value that was replaced by the result of this
-   * operation.
-   */
-  template <typename T, typename OPER>
-  RAJA_INLINE __device__ T operator()(T volatile *acc, OPER const &oper) const
-  {
-    // asserts in RAJA::util::reinterp_T_as_u and RAJA::util::reinterp_u_as_T
-    // will enforce 32-bit T
-    unsigned oldval, newval, readback;
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
-    newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-        oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
-    while ((readback = hip_atomic_CAS((unsigned volatile*)acc, oldval, newval)) !=
-           oldval) {
-      oldval = readback;
-      newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
-          oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
-    }
-    return RAJA::util::reinterp_A_as_B<unsigned, T>(oldval);
-  }
-};
-
-template <>
-struct HipAtomicCAS<8> {
-
-  /*!
-   * Generic impementation of any atomic 64-bit operator.
-   * Implementation uses the existing HIP supplied unsigned 64-bit CAS
-   * operator. Returns the OLD value that was replaced by the result of this
-   * operation.
-   */
-  template <typename T, typename OPER>
-  RAJA_INLINE __device__ T operator()(T volatile *acc, OPER const &oper) const
-  {
-    // asserts in RAJA::util::reinterp_T_as_u and RAJA::util::reinterp_u_as_T
-    // will enforce 64-bit T
-    unsigned long long oldval, newval, readback;
-    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
-    newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-        oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
-    while (
-        (readback = hip_atomic_CAS((unsigned long long volatile*)acc, oldval, newval)) !=
-        oldval) {
-      oldval = readback;
-      newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
-          oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
-    }
-    return RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval);
-  }
-};
-
-
-/*!
- * Generic impementation of any atomic 32-bit or 64-bit operator that can be
- * implemented using a compare and swap primitive.
- * Implementation uses the existing HIP supplied unsigned 32-bit and 64-bit
- * CAS operators.
- * Returns the OLD value that was replaced by the result of this operation.
- */
-template <typename T, typename OPER>
-RAJA_INLINE __device__ T hip_atomic_CAS_oper(T volatile *acc, OPER &&oper)
-{
-  HipAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper));
-}
-
 
 template < typename T, typename TypeList >
 struct is_any_of;
@@ -258,6 +137,266 @@ using hip_atomicExch_builtin_types = list<
     >;
 
 using hip_atomicCAS_builtin_types = hip_atomicCommon_builtin_types;
+
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
+
+template <typename T,
+          std::enable_if_t<std::is_arithmetic<T>::value ||
+                           std::is_enum<T>::value, bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return __hip_atomic_load((T *)acc, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+}
+
+#if defined(UINT8_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint8_t), bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<uint8_t *>(acc));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(unsigned char) == 1 &&
+                           sizeof(T) == 1, bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<unsigned char *>(acc));
+}
+
+#endif
+
+#if defined(UINT16_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint16_t), bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<uint16_t *>(acc));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(unsigned short int) == 2 &&
+                           sizeof(T) == 2, bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<unsigned short int *>(acc));
+}
+
+#endif
+
+#if defined(UINT32_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint32_t), bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<uint32_t *>(acc));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(unsigned int) == 4 &&
+                           sizeof(T) == 4, bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<unsigned int *>(acc));
+}
+
+#endif
+
+#if defined(UINT64_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint64_t), bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<uint64_t *>(acc));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_arithmetic<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(unsigned long long int) == 8 &&
+                           sizeof(T) == 8, bool> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<unsigned long long int *>(acc));
+}
+
+#endif
+
+#else
+
+template <typename T,
+          enable_if_is_any_of<T, hip_atomicOr_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return ::atomicOr(acc, 0);
+}
+
+template <typename T,
+          enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr,
+          std::enable_if_t<sizeof(T) == sizeof(unsigned int)> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<unsigned int*>(acc));
+}
+
+template <typename T,
+          enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr,
+          std::enable_if_t<sizeof(T) == sizeof(unsigned long long)> = true>
+RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
+{
+  return hip_atomicLoad(reinterpret_cast<unsigned long long*>(acc));
+}
+
+#endif
+
+/*!
+ * Generic impementation of atomic 32-bit or 64-bit compare and swap primitive.
+ * Implementation uses the existing HIP supplied unsigned 32-bit and 64-bit
+ * CAS operators.
+ * Returns the value that was stored before this operation.
+ */
+RAJA_INLINE __device__ unsigned hip_atomic_CAS(
+    unsigned *acc,
+    unsigned compare,
+    unsigned value)
+{
+  return ::atomicCAS(acc, compare, value);
+}
+///
+RAJA_INLINE __device__ unsigned long long hip_atomic_CAS(
+    unsigned long long *acc,
+    unsigned long long compare,
+    unsigned long long value)
+{
+  return ::atomicCAS(acc, compare, value);
+}
+///
+template <typename T>
+RAJA_INLINE __device__
+typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
+hip_atomic_CAS(T *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned, T>(
+      hip_atomic_CAS((unsigned *)acc,
+          RAJA::util::reinterp_A_as_B<T, unsigned>(compare),
+          RAJA::util::reinterp_A_as_B<T, unsigned>(value)));
+}
+///
+template <typename T>
+RAJA_INLINE __device__
+typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
+hip_atomic_CAS(T *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
+      hip_atomic_CAS((unsigned long long *)acc,
+          RAJA::util::reinterp_A_as_B<T, unsigned long long>(compare),
+          RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
+}
+
+template <size_t BYTES>
+struct HipAtomicCAS {
+};
+
+
+template <>
+struct HipAtomicCAS<4> {
+
+  /*!
+   * Generic impementation of any atomic 32-bit operator.
+   * Implementation uses the existing HIP supplied unsigned 32-bit CAS
+   * operator. Returns the OLD value that was replaced by the result of this
+   * operation.
+   */
+  template <typename T, typename OPER>
+  RAJA_INLINE __device__ T operator()(T volatile *acc, OPER const &oper) const
+  {
+    // asserts in RAJA::util::reinterp_T_as_u and RAJA::util::reinterp_u_as_T
+    // will enforce 32-bit T
+    unsigned oldval, newval, readback;
+    unsigned oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
+    newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
+        oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
+    while ((readback = hip_atomic_CAS((unsigned *)acc, oldval, newval)) !=
+           oldval) {
+      oldval = readback;
+      newval = RAJA::util::reinterp_A_as_B<T, unsigned>(
+          oper(RAJA::util::reinterp_A_as_B<unsigned, T>(oldval)));
+    }
+    return RAJA::util::reinterp_A_as_B<unsigned, T>(oldval);
+  }
+};
+
+template <>
+struct HipAtomicCAS<8> {
+
+  /*!
+   * Generic impementation of any atomic 64-bit operator.
+   * Implementation uses the existing HIP supplied unsigned 64-bit CAS
+   * operator. Returns the OLD value that was replaced by the result of this
+   * operation.
+   */
+  template <typename T, typename OPER>
+  RAJA_INLINE __device__ T operator()(T volatile *acc, OPER const &oper) const
+  {
+    // asserts in RAJA::util::reinterp_T_as_u and RAJA::util::reinterp_u_as_T
+    // will enforce 64-bit T
+    unsigned long long oldval, newval, readback;
+    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
+    newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
+        oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
+    while (
+        (readback = hip_atomic_CAS((unsigned long long volatile*)acc, oldval, newval)) !=
+        oldval) {
+      oldval = readback;
+      newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
+          oper(RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval)));
+    }
+    return RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval);
+  }
+};
+
+
+/*!
+ * Generic impementation of any atomic 32-bit or 64-bit operator that can be
+ * implemented using a compare and swap primitive.
+ * Implementation uses the existing HIP supplied unsigned 32-bit and 64-bit
+ * CAS operators.
+ * Returns the OLD value that was replaced by the result of this operation.
+ */
+template <typename T, typename OPER>
+RAJA_INLINE __device__ T hip_atomic_CAS_oper(T volatile *acc, OPER &&oper)
+{
+  HipAtomicCAS<sizeof(T)> cas;
+  return cas(acc, std::forward<OPER>(oper));
+}
+
+
 
 template <typename T
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
