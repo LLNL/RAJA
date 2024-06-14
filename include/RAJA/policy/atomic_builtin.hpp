@@ -79,7 +79,25 @@ RAJA_INLINE unsigned long long builtin_atomic_load(
   return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long *)acc, 0));
 }
 
-RAJA_INLINE unsigned builtin_atomic_CAS(unsigned *acc,
+RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc, unsigned value)
+{
+  static_assert(sizeof(unsigned) == sizeof(long),
+                "builtin atomic store assumes unsigned and long are the same size");
+
+  _InterlockedExchange((long *)acc, RAJA::util::reinterp_A_as_B<unsigned, long>(value));
+}
+
+RAJA_INLINE void builtin_atomic_store(
+    unsigned long long volatile *acc,
+    unsigned long long value)
+{
+  static_assert(sizeof(unsigned long long) == sizeof(long long),
+                "builtin atomic store assumes unsigned long long and long long are the same size");
+
+  _InterlockedExchange64((long long *)acc, RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value));
+}
+
+RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
                                         unsigned compare,
                                         unsigned value)
 {
@@ -126,7 +144,22 @@ RAJA_INLINE unsigned long long builtin_atomic_load(
 }
 
 RAJA_DEVICE_HIP
-RAJA_INLINE unsigned builtin_atomic_CAS(unsigned *acc,
+RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc,
+                                      unsigned value)
+{
+  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
+}
+
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomic_store(
+    unsigned long long volatile *acc,
+    unsigned long long value)
+{
+  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
+}
+
+RAJA_DEVICE_HIP
+RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
                                         unsigned compare,
                                         unsigned value)
 {
@@ -134,6 +167,7 @@ RAJA_INLINE unsigned builtin_atomic_CAS(unsigned *acc,
       acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
   return compare;
 }
+
 
 RAJA_DEVICE_HIP
 RAJA_INLINE unsigned long long builtin_atomic_CAS(
@@ -165,6 +199,22 @@ RAJA_DEVICE_HIP RAJA_INLINE
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
       builtin_atomic_load((unsigned long long *)acc));
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE
+    typename std::enable_if<sizeof(T) == sizeof(unsigned), void>::type
+    builtin_atomic_store(T volatile *acc, T value)
+{
+  builtin_atomic_store((unsigned volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned>(value));
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE
+    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), void>::type
+    builtin_atomic_store(T volatile *acc, T value)
+{
+  builtin_atomic_store((unsigned long long volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned long long>(value));
 }
 
 template <typename T>
@@ -243,13 +293,27 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T *acc,
 
 
 template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE T atomicLoad(builtin_atomic,
+                                         T volatile *acc)
+{
+  return detail::builtin_atomic_load(acc);
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE void atomicStore(builtin_atomic,
+                                             T volatile *acc,
+                                             T value)
+{
+  detail::builtin_atomic_store(acc, value);
+}
+
+template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicAdd(builtin_atomic,
                                         T *acc,
                                         T value)
 {
   return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a + value; });
 }
-
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicSub(builtin_atomic,

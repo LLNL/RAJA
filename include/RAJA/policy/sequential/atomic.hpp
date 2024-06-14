@@ -28,7 +28,22 @@ namespace RAJA
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicAdd(seq_atomic, T *acc, T value)
+RAJA_INLINE T atomicLoad(seq_atomic, T volatile *acc)
+{
+  return *acc;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE void atomicStore(seq_atomic, T volatile *acc, T value)
+{
+  *acc = value;
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename T>
+RAJA_HOST_DEVICE
 {
   T ret = *acc;
   *acc += value;
