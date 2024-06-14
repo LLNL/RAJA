@@ -83,6 +83,7 @@ using hip_atomicAdd_builtin_types = list<
 using hip_atomicSub_types = list<
       int
      ,unsigned int
+     ,unsigned long long
      ,float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
      ,double
@@ -101,7 +102,8 @@ using hip_atomicSub_builtin_types = list<
  * to ensure these lists have different types.
  */
 using hip_atomicSub_via_Add_builtin_types = list<
-      float
+      unsigned long long
+     ,float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
      ,double
 #endif
@@ -111,15 +113,11 @@ using hip_atomicMin_builtin_types = hip_atomicCommon_builtin_types;
 
 using hip_atomicMax_builtin_types = hip_atomicCommon_builtin_types;
 
-using hip_atomicIncReset_builtin_types = list<
-      unsigned int
-    >;
+using hip_atomicIncReset_builtin_types = list< >;
 
 using hip_atomicInc_builtin_types = list< >;
 
-using hip_atomicDecReset_builtin_types = list<
-      unsigned int
-    >;
+using hip_atomicDecReset_builtin_types = list< >;
 
 using hip_atomicDec_builtin_types = list< >;
 
@@ -463,7 +461,7 @@ template <typename T, enable_if_is_none_of<T, hip_atomicMax_builtin_types>* = nu
 RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 {
   return hip_atomicCAS(acc, [=] __device__(T a) {
-    return value > a ? value : a;
+    return a < value ? value : a;
   });
 }
 
@@ -478,7 +476,7 @@ template <typename T, enable_if_is_none_of<T, hip_atomicIncReset_builtin_types>*
 RAJA_INLINE __device__ T hip_atomicInc(T *acc, T val)
 {
   return hip_atomicCAS(acc, [=] __device__(T old) {
-    return ((old >= val) ? (T)0 : (old + (T)1));
+    return val <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
 
@@ -492,7 +490,7 @@ RAJA_INLINE __device__ T hip_atomicInc(T *acc, T val)
 template <typename T, enable_if_is_none_of<T, hip_atomicInc_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicInc(T *acc)
 {
-  return hip_atomicAdd(acc, (T)1);
+  return hip_atomicAdd(acc, static_cast<T>(1));
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicInc_builtin_types>* = nullptr>
@@ -505,10 +503,8 @@ RAJA_INLINE __device__ T hip_atomicInc(T *acc)
 template <typename T, enable_if_is_none_of<T, hip_atomicDecReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicDec(T *acc, T val)
 {
-  // See:
-  // http://docs.nvidia.com/hip/hip-c-programming-guide/index.html#atomicdec
   return hip_atomicCAS(acc, [=] __device__(T old) {
-    return (((old == (T)0) | (old > val)) ? val : (old - (T)1));
+    return old == static_cast<T>(0) || val < old ? val : old - static_cast<T>(1));
   });
 }
 
@@ -522,7 +518,7 @@ RAJA_INLINE __device__ T hip_atomicDec(T *acc, T val)
 template <typename T, enable_if_is_none_of<T, hip_atomicDec_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicDec(T *acc)
 {
-  return hip_atomicSub(acc, (T)1);
+  return hip_atomicSub(acc, static_cast<T>(1));
 }
 
 template <typename T, enable_if_is_any_of<T, hip_atomicDec_builtin_types>* = nullptr>
