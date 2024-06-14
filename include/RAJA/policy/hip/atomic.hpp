@@ -150,7 +150,7 @@ template <class T,
                            sizeof(T) != sizeof(unsigned int) &&
                            sizeof(T) != sizeof(unsigned long long int)> = true>
 struct hip_atomicCAS_reinterpret_cast {
-  static_assert("atomicCAS is not supported for given type");
+  static_assert(false, "atomicCAS is not supported for given type");
 };
 
 /*!
