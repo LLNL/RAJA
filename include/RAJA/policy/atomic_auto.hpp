@@ -64,13 +64,13 @@ struct auto_atomic {
 };
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(auto_atomic, T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(auto_atomic, T *acc)
 {
   return atomicLoad(RAJA_AUTO_ATOMIC, acc);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(auto_atomic, T *acc, T value)
 {
   atomicStore(RAJA_AUTO_ATOMIC, acc, value);
 }

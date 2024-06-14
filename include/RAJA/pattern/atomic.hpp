@@ -87,7 +87,7 @@ namespace RAJA
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T *acc)
 {
   return RAJA::atomicLoad(Policy{}, acc);
 }
@@ -100,7 +100,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T volatile *acc)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
-RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(T *acc, T value)
 {
   RAJA::atomicStore(Policy{}, acc, value);
 }
