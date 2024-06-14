@@ -65,6 +65,7 @@ RAJA_INLINE void atomicStore(omp_atomic, T *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T>
 RAJA_HOST_DEVICE
+RAJA_INLINE T atomicAdd(omp_atomic, T *acc, T value)
 {
   T old;
 #pragma omp atomic capture

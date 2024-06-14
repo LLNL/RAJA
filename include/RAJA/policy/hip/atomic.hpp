@@ -159,7 +159,9 @@ struct hip_atomicCAS_reinterpret_cast {
  * passed directly.
  */
 template <class T,
-          enable_if_is_any_of<T, hip_atomicCAS_builtin_types>* = nullptr>
+          std::enable_if_t<std::is_same<T, int>::value ||
+                           std::is_same<T, unsigned int>::value ||
+                           std::is_same<T, unsigned long long int>::value> = true>
 struct hip_atomicCAS_reinterpret_cast {
   using type = T;
 };
