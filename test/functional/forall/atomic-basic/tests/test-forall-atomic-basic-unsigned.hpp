@@ -77,16 +77,6 @@ void ForallAtomicBasicUnsignedTestImpl( IdxType seglimit )
                               &check_array,
                               &test_array );
 
-  work_res.memcpy( work_array, test_array, sizeof(T) * len );
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
-
   test_array[0] = (T)0;
   test_array[1] = (T)0;
 
@@ -98,14 +88,7 @@ void ForallAtomicBasicUnsignedTestImpl( IdxType seglimit )
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
+  work_res.wait();
 
   EXPECT_EQ((T)4, check_array[0]);
   EXPECT_EQ((T)13, check_array[1]);
