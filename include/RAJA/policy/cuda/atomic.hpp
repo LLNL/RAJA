@@ -47,9 +47,6 @@ namespace RAJA
 namespace detail
 {
 
-// All CUDA atomic functions are checked for individual arch versions.
-// Most >= 200 checks can be deemed as >= 110 (except CAS 64-bit, Add 32-bit float, and Add 64-bit ULL), but using 200 for shared memory support.
-// If using < 350, certain atomics will be implemented with atomicCAS.
 
 template < typename T, typename TypeList >
 struct is_any_of;
@@ -87,8 +84,9 @@ template <typename T,
                            sizeof(T) == sizeof(unsigned int), bool> = true>
 RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
-  return cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                            RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
+  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
+    ::atomicExch(reinterpret_cast<unsigned int*>(acc),
+                 reinterpret_cast<unsigned int&>(value)));
 }
 
 template <typename T,
@@ -99,8 +97,9 @@ template <typename T,
                            sizeof(T) == sizeof(unsigned long long int), bool> = true>
 RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
-  return cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
-                            RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value));
+  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
+    ::atomicExch(reinterpret_cast<unsigned long long int*>(acc),
+                 reinterpret_cast<unsigned long long int&>(value)));
 }
 
 
@@ -113,7 +112,7 @@ template <typename T>
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
 {
   return cuda::atomic_ref<T, cuda::thread_scope_device>(*acc).load(
-    std::memory_order_relaxed{});
+    cuda::memory_order_relaxed{});
 }
 
 
@@ -121,7 +120,7 @@ template <typename T>
 RAJA_INLINE __device__ void cuda_atomicStore(T *acc, T value)
 {
   cuda::atomic_ref<T, cuda::thread_scope_device>(*acc).store(
-    value, std::memory_order_relaxed{});
+    value, cuda::memory_order_relaxed{});
 }
 
 #else
@@ -196,8 +195,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
     ::atomicCAS(reinterpret_cast<unsigned short int*>(acc),
-                RAJA::util::reinterp_A_as_B<T, unsigned short int>(compare),
-                RAJA::util::reinterp_A_as_B<T, unsigned short int>(value)));
+                reinterpret_cast<unsigned short int&>(compare),
+                reinterpret_cast<unsigned short int&>(value)));
 }
 #endif
 
@@ -214,8 +213,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     ::atomicCAS(reinterpret_cast<unsigned int*>(acc),
-                RAJA::util::reinterp_A_as_B<T, unsigned int>(compare),
-                RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
+                reinterpret_cast<unsigned int&>(compare),
+                reinterpret_cast<unsigned int&>(value)));
 }
 
 template <typename T,
@@ -231,8 +230,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
     ::atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
-                RAJA::util::reinterp_A_as_B<T, unsigned long long int>(compare),
-                RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
+                reinterpret_cast<unsigned long long int&>(compare),
+                reinterpret_cast<unsigned long long int&>(value)));
 }
 
 /*!
@@ -284,16 +283,6 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, OPER&& oper)
 
   return old;
 }
-
-
-/*!
- * Catch-all policy passes off to CUDA's builtin atomics.
- *
- * This catch-all will only work for types supported by the compiler.
- * Specialization below can adapt for some unsupported types.
- *
- * These are atomic in cuda device code and non-atomic otherwise
- */
 
 
 /*!
@@ -649,14 +638,14 @@ atomicMax(cuda_atomic_explicit<host_policy>, T *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicInc(cuda_atomic_explicit<host_policy>, T *acc, T val)
+atomicInc(cuda_atomic_explicit<host_policy>, T *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return detail::cuda_atomicInc(acc, val);
+  return detail::cuda_atomicInc(acc, value);
 #else
-  return RAJA::atomicInc(host_policy{}, acc, val);
+  return RAJA::atomicInc(host_policy{}, acc, value);
 #endif
 }
 
@@ -675,14 +664,14 @@ atomicInc(cuda_atomic_explicit<host_policy>, T *acc)
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicDec(cuda_atomic_explicit<host_policy>, T *acc, T val)
+atomicDec(cuda_atomic_explicit<host_policy>, T *acc, T value)
 {
 #ifdef __CUDA_ARCH__
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return detail::cuda_atomicDec(acc, val);
+  return detail::cuda_atomicDec(acc, value);
 #else
-  return RAJA::atomicDec(host_policy{}, acc, val);
+  return RAJA::atomicDec(host_policy{}, acc, value);
 #endif
 }
 
