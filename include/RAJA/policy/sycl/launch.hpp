@@ -41,16 +41,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
        BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
 
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    /*Get the concrete resource */
-    resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      q = sycl_res.get_queue();
-    }
+    /*Get the queue from concrete resource */
+    ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
     //
     // Compute the number of blocks and threads
@@ -91,6 +83,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       });
 
+    if (!async) { q->wait(); }
+
       RAJA_FT_END;
 
     }
@@ -108,7 +102,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
        BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
 
-   RAJA_ABORT_OR_THROW("SYCL trivially copyable lambda  backend currently not supported in RAJA launch");
+   RAJA_ABORT_OR_THROW("SYCL trivially copyable lambda with param pack currently not supported in RAJA launch");
 
    return resources::EventProxy<resources::Resource>(res);
   }
@@ -123,16 +117,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
        BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
 
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-
-    /*Get the concrete resource */
-    resources::Sycl sycl_res = res.get<RAJA::resources::Sycl>();
-
-    // Global resource was not set, use the resource that was passed to forall
-    // Determine if the default SYCL res is being used
-    if (!q) {
-      q = sycl_res.get_queue();
-    }
+    /*Get the queue from concrete resource */
+    ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
     //
     // Compute the number of blocks and threads
@@ -180,7 +166,9 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
            });
 
-      });
+      }).wait(); // Need to wait for completion to free memory
+
+      cl::sycl::free(lbody, *q);
 
       RAJA_FT_END;
 
@@ -200,7 +188,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
          BODY_IN &&body_in, ReduceParams &&launch_reducers)
   {
 
-   RAJA_ABORT_OR_THROW("SYCL non-trivially copyable lambda  backend currently not supported in RAJA launch");
+   RAJA_ABORT_OR_THROW("SYCL non-trivially copyable lambda with param pack currently not supported in RAJA launch");
 
    return resources::EventProxy<resources::Resource>(res);
   }

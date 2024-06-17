@@ -159,6 +159,30 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   }
 };
 
+
+enum struct reduce_algorithm : int
+{
+  combine_last_block,
+  init_device_combine_atomic_block,
+  init_host_combine_atomic_block
+};
+
+enum struct block_communication_mode : int
+{
+  device_fence,
+  block_fence
+};
+
+template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
+           size_t t_replication, size_t t_atomic_stride >
+struct ReduceTuning
+{
+  static constexpr reduce_algorithm algorithm = t_algorithm;
+  static constexpr block_communication_mode comm_mode = t_comm_mode;
+  static constexpr size_t replication = t_replication;
+  static constexpr size_t atomic_stride = t_atomic_stride;
+};
+
 }  // namespace cuda
 
 namespace policy
@@ -238,8 +262,8 @@ struct unordered_cuda_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic>
-struct cuda_reduce_base
+template < typename tuning >
+struct cuda_reduce_policy
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
                                                 RAJA::Pattern::reduce,
@@ -260,9 +284,73 @@ struct cuda_atomic_explicit{};
  */
 using cuda_atomic = cuda_atomic_explicit<seq_atomic>;
 
-using cuda_reduce = cuda_reduce_base<false>;
 
-using cuda_reduce_atomic = cuda_reduce_base<true>;
+template < RAJA::cuda::reduce_algorithm algorithm,
+           RAJA::cuda::block_communication_mode comm_mode,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified >
+using cuda_reduce_tuning = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
+
+// Policies for RAJA::Reduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results and falls back
+//   on a non-atomic policy when atomics can't be used with the given type. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run. The memory used with
+//   atomics is initialized on the device which can be expensive on some HW.
+//   On some HW this is faster overall than the non-atomic policies.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+// - *device_fence policies use normal memory accesses with device scope fences
+//                in the implementation. This works on all HW.
+// - *block_fence policies use special (atomic) memory accesses that only cache
+//                 in a cache shared by the whole device to avoid having to use
+//                 device scope fences. This improves performance on some HW but
+//                 is more difficult to code correctly.
+using cuda_reduce_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::combine_last_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::combine_last_block,
+    RAJA::cuda::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_device_init_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_device_init_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_host_init_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_host_init_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+
+// Policy for RAJA::Reduce* objects that gives the same answer every time when
+// used in the same way
+using cuda_reduce = cuda_reduce_device_fence;
+
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using cuda_reduce_atomic = cuda_reduce_atomic_host_init_device_fence;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool with_atomic >
+using cuda_reduce_base = std::conditional_t<with_atomic, cuda_reduce_atomic, cuda_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -317,6 +405,7 @@ struct cuda_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
+constexpr const RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE = 32;
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 constexpr const RAJA::Index_type MAX_BLOCK_SIZE = 1024;
 constexpr const RAJA::Index_type MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
@@ -973,7 +1062,7 @@ using CudaFractionOffsetOccupancyConcretizer = cuda::FractionOffsetOccupancyConc
 
 using CudaMaxOccupancyConcretizer = cuda::MaxOccupancyConcretizer;
 
-using CudaRecForReduceConcretizer = CudaMaxOccupancyConcretizer;
+using CudaReduceDefaultConcretizer = CudaMaxOccupancyConcretizer;
 
 using CudaDefaultConcretizer = CudaMaxOccupancyConcretizer;
 
@@ -1100,24 +1189,44 @@ using cuda_exec_occ_custom_async = policy::cuda::cuda_exec_explicit<
     Concretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
-using cuda_exec_rec_for_reduce_explicit = policy::cuda::cuda_exec_explicit<
+using cuda_exec_with_reduce_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, BLOCKS_PER_SM, Async>;
+    CudaReduceDefaultConcretizer, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
-using cuda_exec_rec_for_reduce_explicit_async = policy::cuda::cuda_exec_explicit<
+using cuda_exec_with_reduce_explicit_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, BLOCKS_PER_SM, true>;
+    CudaReduceDefaultConcretizer, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using cuda_exec_rec_for_reduce = policy::cuda::cuda_exec_explicit<
+using cuda_exec_with_reduce = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
-using cuda_exec_rec_for_reduce_async = policy::cuda::cuda_exec_explicit<
+using cuda_exec_with_reduce_async = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
-    CudaRecForReduceConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_base_explicit = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_base_explicit_async = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
+    cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_base = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE, Async>,
+    cuda_exec<BLOCK_SIZE, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE>
+using cuda_exec_base_async = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce_async<BLOCK_SIZE>,
+    cuda_exec_async<BLOCK_SIZE>>;
 
 
 // policies usable with WorkGroup
@@ -1140,6 +1249,12 @@ using policy::cuda::cuda_atomic;
 using policy::cuda::cuda_atomic_explicit;
 
 // policies usable with reducers
+using policy::cuda::cuda_reduce_device_fence;
+using policy::cuda::cuda_reduce_block_fence;
+using policy::cuda::cuda_reduce_atomic_device_init_device_fence;
+using policy::cuda::cuda_reduce_atomic_device_init_block_fence;
+using policy::cuda::cuda_reduce_atomic_host_init_device_fence;
+using policy::cuda::cuda_reduce_atomic_host_init_block_fence;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;

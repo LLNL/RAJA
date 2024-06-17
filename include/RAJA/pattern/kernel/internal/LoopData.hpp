@@ -214,7 +214,7 @@ struct GenericWrapper : GenericWrapperBase {
 
 
 /*!
- * Convenience object used to create thread-private a LoopData object.
+ * Convenience object used to create a thread-private LoopData object.
  */
 template <typename T>
 struct NestedPrivatizer {

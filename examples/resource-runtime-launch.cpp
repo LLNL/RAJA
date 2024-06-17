@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 #endif
 
   //Get typed erased resource - it will internally store if we are running on the host or device
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_GPU_ACTIVE) && !defined(RAJA_ENABLE_SYCL)
   RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
   RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
