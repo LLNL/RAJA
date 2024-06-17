@@ -67,14 +67,61 @@ using enable_if_is_none_of = std::enable_if_t<concepts::negate<is_any_of<T, Type
 
 
 /*!
- * Atomic load
+ * Atomic exchange
+ */
+template <typename T,
+          std::enable_if_t<std::is_same<T, int>::value ||
+                           std::is_same<T, unsigned int>::value ||
+                           std::is_same<T, unsigned long long int>::value ||
+                           std::is_same<T, float>::value, bool> = true>
+RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
+{
+  return ::atomicExch(acc, value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           !std::is_same<T, float>::value &&
+                           sizeof(T) == sizeof(unsigned int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
+{
+  return cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
+                            RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           !std::is_same<T, float>::value &&
+                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
+{
+  return cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
+                            RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value));
+}
+
+
+/*!
+ * Atomic load and store
  */
 #if __CUDA__ARCH__ >= 600 && __CUDACC_VER_MAJOR__ >= 11 && __CUDACC_VER_MINOR__ >= 6
 
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
 {
-  return cuda::atomic_ref<T, cuda::thread_scope_device>(*acc).load();
+  return cuda::atomic_ref<T, cuda::thread_scope_device>(*acc).load(
+    std::memory_order_relaxed{});
+}
+
+
+template <typename T>
+RAJA_INLINE __device__ void cuda_atomicStore(T *acc, T value)
+{
+  cuda::atomic_ref<T, cuda::thread_scope_device>(*acc).store(
+    value, std::memory_order_relaxed{});
 }
 
 #else
@@ -110,6 +157,13 @@ RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
     ::atomicOr(reinterpret_cast<unsigned long long int*>(acc),
                static_cast<unsigned long long int>(0)));
+}
+
+
+template <typename T>
+RAJA_INLINE __device__ void cuda_atomicStore(T *acc, T value)
+{
+  cuda_atomicExchange(acc, value);
 }
 
 #endif
@@ -509,44 +563,6 @@ RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 }
 
 
-/*!
- * Atomic exchange
- */
-template <typename T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value ||
-                           std::is_same<T, float>::value, bool> = true>
-RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
-{
-  return ::atomicExch(acc, value);
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           !std::is_same<T, float>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
-{
-  return cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                            RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           !std::is_same<T, float>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
-{
-  return cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
-                            RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value));
-}
-
-
 }  // namespace detail
 
 
@@ -564,7 +580,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T
 atomicLoad(cuda_atomic_explicit<host_policy>, T *acc)
 {
 #ifdef __CUDA_ARCH__
-  return detail::cuda_atomicAdd(acc, static_cast<T>(0));
+  return detail::cuda_atomicLoad(acc);
 #else
   return RAJA::atomicLoad(host_policy{}, acc);
 #endif
@@ -576,7 +592,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void
 atomicStore(cuda_atomic_explicit<host_policy>, T *acc, T value)
 {
 #ifdef __CUDA_ARCH__
-  detail::cuda_atomicExchange(acc, value);
+  detail::cuda_atomicStore(acc, value);
 #else
   RAJA::atomicStore(host_policy{}, acc, value);
 #endif
