@@ -43,13 +43,23 @@ namespace RAJA
 namespace detail
 {
 
-#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 350)  // baseline CUDA_ARCH sm_35 check
-#warning CUDA_ARCH is set too low in nvcc. Should set nvcc -arch=sm_35 or greater. COMPILING WITH DEFAULT atomicCAS!
-#endif
-
 // All CUDA atomic functions are checked for individual arch versions.
 // Most >= 200 checks can be deemed as >= 110 (except CAS 64-bit, Add 32-bit float, and Add 64-bit ULL), but using 200 for shared memory support.
 // If using < 350, certain atomics will be implemented with atomicCAS.
+
+template < typename T, typename TypeList >
+struct is_any_of;
+
+template < typename T, typename... Types >
+struct is_any_of<T, list<Types...>>
+  : concepts::any_of<camp::is_same<T, Types>...>
+{};
+
+template < typename T, typename TypeList >
+using enable_if_is_any_of = std::enable_if_t<is_any_of<T, TypeList>::value, T>;
+
+template < typename T, typename TypeList >
+using enable_if_is_none_of = std::enable_if_t<concepts::negate<is_any_of<T, TypeList>>::value, T>;
 
 #if __CUDA_ARCH__ >= 200
 /*!
@@ -167,14 +177,14 @@ struct CudaAtomicCAS<8> {
  * Returns the OLD value that was replaced by the result of this operation.
  */
 template <typename T, typename OPER>
-RAJA_INLINE __device__ T cuda_atomic_CAS_oper(T volatile *acc, OPER &&oper)
+RAJA_INLINE __device__ T cuda_atomic_CAS_oper(T *acc, OPER &&oper)
 {
   CudaAtomicCAS<sizeof(T)> cas;
-  return cas(acc, std::forward<OPER>(oper));
+  return cas((T volatile *)acc, std::forward<OPER>(oper));
 }
 #endif  // end CAS >= 200
 
-#if __CUDA_ARCH__ >= 200
+
 /*!
  * Catch-all policy passes off to CUDA's builtin atomics.
  *
@@ -183,456 +193,379 @@ RAJA_INLINE __device__ T cuda_atomic_CAS_oper(T volatile *acc, OPER &&oper)
  *
  * These are atomic in cuda device code and non-atomic otherwise
  */
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicAdd(T volatile *acc, T value)
-{
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a + value;
-  });
-}
-
-// 32-bit signed atomicAdd support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicAdd<int>(int volatile *acc,
-                                          int value)
-{
-  return ::atomicAdd((int *)acc, value);
-}
 
 
-// 32-bit unsigned atomicAdd support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicAdd<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicAdd((unsigned *)acc, value);
-}
-
-// 64-bit unsigned atomicAdd support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicAdd<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicAdd((unsigned long long *)acc, value);
-}
-
-
-// 32-bit float atomicAdd support by CUDA
-template <>
-RAJA_INLINE __device__ float cuda_atomicAdd<float>(float volatile *acc,
-                                              float value)
-{
-  return ::atomicAdd((float *)acc, value);
-}
-#endif
-
-
-// 64-bit double atomicAdd support added for sm_60
+/*!
+ * Atomic add
+ */
+using cuda_atomicAdd_builtin_types = list<
+      int
+     ,unsigned int
+     ,unsigned long long int
+     ,float
 #if __CUDA_ARCH__ >= 600
-template <>
-RAJA_INLINE __device__ double cuda_atomicAdd<double>(double volatile *acc,
-                                                double value)
-{
-  return ::atomicAdd((double *)acc, value);
-}
+     ,double
 #endif
+    >;
 
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicSub(T volatile *acc, T value)
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 {
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a - value;
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old + value;
   });
 }
 
-// 32-bit signed atomicSub support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicSub<int>(int volatile *acc,
-                                          int value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 {
-  return ::atomicSub((int *)acc, value);
+  return ::atomicAdd(acc, value);
 }
 
 
-// 32-bit unsigned atomicSub support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicSub<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicSub((unsigned *)acc, value);
-}
+/*!
+ * Atomic subtract
+ */
+using cuda_atomicSub_builtin_types = cuda_atomicAdd_builtin_types;
+
+using cuda_atomicSub_via_Sub_builtin_types = list<
+      int
+     ,unsigned int
+    >;
+
+using cuda_atomicSub_via_Add_builtin_types = list<
+      unsigned long long int
+     ,float
+#if __CUDA_ARCH__ >= 600
+     ,double
 #endif
+    >;
 
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicMin(T volatile *acc, T value)
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return value < a ? value : a;
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old - value;
   });
 }
 
-// 32-bit signed atomicMin support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicMin<int>(int volatile *acc,
-                                          int value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicSub_via_Sub_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
-  return ::atomicMin((int *)acc, value);
+  return ::atomicSub(acc, value);
+}
+
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicSub_via_Add_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
+{
+  return ::atomicAdd(acc, -value);
 }
 
 
-// 32-bit unsigned atomicMin support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicMin<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
-{
-  return ::atomicMin((unsigned *)acc, value);
-}
+/*!
+ * Atomic min/max
+ */
+using cuda_atomicMinMax_builtin_types = list<
+      int
+     ,unsigned int
+#if __CUDA_ARCH__ >= 500
+     ,long long int
+     ,unsigned long long int
 #endif
+    >;
 
-// 64-bit unsigned atomicMin support by CUDA sm_35 and later
-#if __CUDA_ARCH__ >= 350
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicMin<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicMin((unsigned long long *)acc, value);
-}
-#endif
 
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicMax(T volatile *acc, T value)
+/*!
+ * Atomic min
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return value > a ? value : a;
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return value < old ? value : old;
   });
 }
 
-// 32-bit signed atomicMax support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicMax<int>(int volatile *acc,
-                                          int value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
-  return ::atomicMax((int *)acc, value);
+  return ::atomicMin(acc, value);
 }
 
 
-// 32-bit unsigned atomicMax support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicMax<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+/*!
+ * Atomic max
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
-  return ::atomicMax((unsigned *)acc, value);
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old < value ? value : old;
+  });
 }
-#endif
 
-// 64-bit unsigned atomicMax support by CUDA sm_35 and later
-#if __CUDA_ARCH__ >= 350
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicMax<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
-  return ::atomicMax((unsigned long long *)acc, value);
+  return ::atomicMax(acc, value);
 }
-#endif
 
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicInc(T volatile *acc, T val)
+
+/*!
+ * Atomic increment/decrement with reset
+ */
+using cuda_atomicIncDecReset_builtin_types = list<
+      unsigned int
+    >;
+
+
+/*!
+ * Atomic increment with reset
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T old) {
-    return ((old >= val) ? 0 : (old + 1));
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
 
-// 32-bit unsigned atomicInc support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicInc<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 {
-  return ::atomicInc((unsigned *)acc, value);
+  return ::atomicInc(acc, value);
 }
 
+
+/*!
+ * Atomic increment (implemented in terms of atomic addition)
+ */
 template <typename T>
-RAJA_INLINE __device__ T cuda_atomicInc(T volatile *acc)
+RAJA_INLINE __device__ T cuda_atomicInc(T *acc)
 {
-  return cuda_atomic_CAS_oper(acc,
-                                      [=] __device__(T a) { return a + 1; });
+  return cuda_atomicAdd(acc, static_cast<T>(1));
 }
 
-// 32-bit signed atomicAdd support by CUDA, used as backend for atomicInc
-template <>
-RAJA_INLINE __device__ int cuda_atomicInc<int>(int volatile *acc)
-{
-  return ::atomicAdd((int *)acc, (int)1);
-}
 
-// 32-bit unsigned atomicAdd support by CUDA, used as backend for atomicInc
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicInc<unsigned>(unsigned volatile *acc)
-{
-  return ::atomicAdd((unsigned *)acc, (unsigned)1);
-}
-
-// 64-bit unsigned atomicAdd support by CUDA, used as backend for atomicInc
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicInc<unsigned long long>(
-    unsigned long long volatile *acc)
-{
-  return ::atomicAdd((unsigned long long *)acc, (unsigned long long)1);
-}
-
-// 32-bit float atomicAdd support by CUDA, used as backend for atomicInc
-template <>
-RAJA_INLINE __device__ float cuda_atomicInc<float>(float volatile *acc)
-{
-  return ::atomicAdd((float *)acc, (float)1);
-}
-#endif
-
-// 64-bit double atomicAdd support added for sm_60, used as backend for atomicInc
-#if __CUDA_ARCH__ >= 600
-template <>
-RAJA_INLINE __device__ double cuda_atomicInc<double>(double volatile *acc)
-{
-  return ::atomicAdd((double *)acc, (double)1);
-}
-#endif
-
-
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicDec(T volatile *acc, T val)
+/*!
+ * Atomic decrement with reset
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T old) {
-    return (((old == 0) | (old > val)) ? val : (old - 1));
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
   });
 }
 
-// 32-bit unsigned atomicDec support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicDec<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 {
-  return ::atomicDec((unsigned *)acc, value);
+  return ::atomicDec(acc, value);
 }
 
+
+/*!
+ * Atomic decrement (implemented in terms of atomic subtraction)
+ */
 template <typename T>
-RAJA_INLINE __device__ T cuda_atomicDec(T volatile *acc)
+RAJA_INLINE __device__ T cuda_atomicDec(T *acc)
 {
-  return cuda_atomic_CAS_oper(acc,
-                                      [=] __device__(T a) { return a - 1; });
+  return cuda_atomicSub(acc, static_cast<T>(1));
 }
 
-// 32-bit signed atomicSub support by CUDA, used as backend for atomicDec
-template <>
-RAJA_INLINE __device__ int cuda_atomicDec<int>(int volatile *acc)
-{
-  return ::atomicSub((int *)acc, (int)1);
-}
 
-// 32-bit unsigned atomicSub support by CUDA, used as backend for atomicDec
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicDec<unsigned>(unsigned volatile *acc)
-{
-  return ::atomicSub((unsigned *)acc, (unsigned)1);
-}
-#endif
+/*!
+ * Atomic bitwise functions (and, or, xor)
+ */
+using cuda_atomicBit_builtin_types = list<
+      int
+     ,unsigned int
+     ,unsigned long long int
+    >;
 
 
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicAnd(T volatile *acc, T value)
+/*!
+ * Atomic and
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 {
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a & value;
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old & value;
   });
 }
 
-// 32-bit signed atomicAnd support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicAnd<int>(int volatile *acc,
-                                          int value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 {
-  return ::atomicAnd((int *)acc, value);
+  return ::atomicAnd(acc, value);
 }
 
 
-// 32-bit unsigned atomicAnd support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicAnd<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+/*!
+ * Atomic or
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 {
-  return ::atomicAnd((unsigned *)acc, value);
-}
-#endif
-
-// 64-bit unsigned atomicAnd support by CUDA sm_35 and later
-#if __CUDA_ARCH__ >= 350
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicAnd<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicAnd((unsigned long long *)acc, value);
-}
-#endif
-
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicOr(T volatile *acc, T value)
-{
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a | value;
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old | value;
   });
 }
 
-// 32-bit signed atomicOr support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicOr<int>(int volatile *acc,
-                                         int value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 {
-  return ::atomicOr((int *)acc, value);
+  return ::atomicOr(acc, value);
 }
 
 
-// 32-bit unsigned atomicOr support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicOr<unsigned>(unsigned volatile *acc,
-                                                   unsigned value)
+/*!
+ * Atomic xor
+ */
+template <typename T,
+          enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 {
-  return ::atomicOr((unsigned *)acc, value);
-}
-#endif
-
-// 64-bit unsigned atomicOr support by CUDA sm_35 and later
-#if __CUDA_ARCH__ >= 350
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicOr<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicOr((unsigned long long *)acc, value);
-}
-#endif
-
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicXor(T volatile *acc, T value)
-{
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T a) {
-    return a ^ value;
+  return cuda_atomic_CAS_oper(acc, [value] __device__(T old) {
+    return old ^ value;
   });
 }
 
-// 32-bit signed atomicXor support by CUDA
-template <>
-RAJA_INLINE __device__ int cuda_atomicXor<int>(int volatile *acc,
-                                          int value)
+template <typename T,
+          enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 {
-  return ::atomicXor((int *)acc, value);
+  return ::atomicXor(acc, value);
 }
 
 
-// 32-bit unsigned atomicXor support by CUDA
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicXor<unsigned>(unsigned volatile *acc,
-                                                    unsigned value)
+/*!
+ * Atomic exchange
+ */
+template <typename T,
+          std::enable_if_t<std::is_same<T, int>::value ||
+                           std::is_same<T, unsigned int>::value ||
+                           std::is_same<T, unsigned long long int>::value ||
+                           std::is_same<T, float>::value, bool> = true>
+RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
-  return ::atomicXor((unsigned *)acc, value);
+  return ::atomicExch(acc, value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           !std::is_same<T, float>::value &&
+                           sizeof(T) == sizeof(unsigned int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
+{
+  return cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
+                            RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           !std::is_same<T, float>::value &&
+                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
+{
+  return cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
+                            RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value));
+}
+
+
+/*!
+ * Atomic compare and swap
+ */
+template <typename T,
+          std::enable_if_t<
+#if __CUDA_ARCH__ >= 700
+                           std::is_same<T, unsigned short int>::value ||
+#endif
+                           std::is_same<T, int>::value ||
+                           std::is_same<T, unsigned int>::value ||
+                           std::is_same<T, unsigned long long int>::value, bool> = true>
+RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
+{
+  return ::atomicCAS(acc, compare, value);
+}
+
+#if __CUDA_ARCH__ >= 700
+template <typename T,
+          std::enable_if_t<!std::is_same<T, unsigned short int>::value &&
+                           !std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           sizeof(T) == sizeof(unsigned short int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
+    ::atomicCAS(reinterpret_cast<unsigned short int*>(acc),
+                RAJA::util::reinterp_A_as_B<T, unsigned short int>(compare),
+                RAJA::util::reinterp_A_as_B<T, unsigned short int>(value)));
 }
 #endif
 
-// 64-bit unsigned atomicXor support by CUDA sm_35 and later
-#if __CUDA_ARCH__ >= 350
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicXor<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicXor((unsigned long long *)acc, value);
-}
+template <typename T,
+          std::enable_if_t<
+#if __CUDA_ARCH__ >= 700
+                           !std::is_same<T, unsigned short int>::value &&
 #endif
-
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicExchange(T volatile *acc, T value)
+                           !std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           sizeof(T) == sizeof(unsigned int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
-  return cuda_atomic_CAS_oper(acc, [=] __device__(T) {
-    return value;
-  });
+  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
+    ::atomicCAS(reinterpret_cast<unsigned int*>(acc),
+                RAJA::util::reinterp_A_as_B<T, unsigned int>(compare),
+                RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
-template <>
-RAJA_INLINE __device__ int cuda_atomicExchange<int>(
-    int volatile *acc, int value)
-{
-  return ::atomicExch((int *)acc, value);
-}
-
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicExchange<unsigned>(
-    unsigned volatile *acc, unsigned value)
-{
-  return ::atomicExch((unsigned *)acc, value);
-}
-
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicExchange<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long value)
-{
-  return ::atomicExch((unsigned long long *)acc, value);
-}
-
-template <>
-RAJA_INLINE __device__ float cuda_atomicExchange<float>(
-    float volatile *acc, float value)
-{
-  return ::atomicExch((float *)acc, value);
-}
+template <typename T,
+          std::enable_if_t<
+#if __CUDA_ARCH__ >= 700
+                           !std::is_same<T, unsigned short int>::value &&
 #endif
-
-
-#if __CUDA_ARCH__ >= 200
-template <typename T>
-RAJA_INLINE __device__ T cuda_atomicCAS(T volatile *acc, T compare, T value)
+                           !std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
+RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
-  return cuda_atomic_CAS(acc, compare, value);
+  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
+    ::atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
+                RAJA::util::reinterp_A_as_B<T, unsigned long long int>(compare),
+                RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
 }
 
-template <>
-RAJA_INLINE __device__ int cuda_atomicCAS<int>(
-    int volatile *acc, int compare, int value)
-{
-  return ::atomicCAS((int *)acc, compare, value);
-}
-
-template <>
-RAJA_INLINE __device__ unsigned cuda_atomicCAS<unsigned>(
-    unsigned volatile *acc, unsigned compare, unsigned value)
-{
-  return ::atomicCAS((unsigned *)acc, compare, value);
-}
-
-template <>
-RAJA_INLINE __device__ unsigned long long cuda_atomicCAS<unsigned long long>(
-    unsigned long long volatile *acc,
-    unsigned long long compare,
-    unsigned long long value)
-{
-  return ::atomicCAS((unsigned long long *)acc, compare, value);
-}
-#endif
 
 }  // namespace detail
 
