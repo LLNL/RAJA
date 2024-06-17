@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 /// This helper template is used to deduce if device memory allocations are necessary
 /// inside the body of the benchmark, using the type of the execution policy.
@@ -93,7 +94,6 @@ void DeallocateDeviceAtomic(AtomicType* atomic) {
 #include "desul/atomics.hpp"
 #include "RAJA/util/Timer.hpp"
 
-#define N 1000000000
 #define BLOCK_SZ 256
 #define INDENT "  "
 using raja_default_desul_order = desul::MemoryOrderRelaxed;
@@ -181,7 +181,7 @@ std::string GetImplName (const AtomicImplType& impl) {
 //}
 
 template <class ExecPolicy, typename AtomicType, bool test_array, typename AtomicImplType>
-void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t num_iterations = 2, int array_size = 100) {
+void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t N, uint64_t num_iterations = 4, int array_size = 100, bool print_to_output = true) {
     RAJA::Timer timer;
 
     // Allocate memory
@@ -193,11 +193,8 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t num_iterations = 2, int 
         device_value = new AtomicType [len_array];
     }
 
+    timer.start();
     for (int i = 0; i < num_iterations; ++i) {
-        // Don't time the first kernel launch
-        if (i == 1) {
-            timer.start();
-        }
         RAJA::forall<typename ExecPolicy::policy>(RAJA::RangeSegment(0, N),
         [=] RAJA_HOST_DEVICE(int tid)  {
             if (test_array) {
@@ -207,48 +204,64 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t num_iterations = 2, int 
             }
         });
     }
-    timer.stop();
+
     RAJA::synchronize<typename ExecPolicy::sync>();
+    timer.stop();
     if (IsGPU<typename ExecPolicy::policy>::value) {
         DeallocateDeviceAtomic(device_value);
     } else {
         delete device_value;
     }
     double t = timer.elapsed();
-    std::cout << INDENT << INDENT << t << "s" << INDENT;
-    std::cout << GetImplName(atomic_impl) << ", ";
-    std::cout << "Number of atomics under contention " << array_size << ", ";
-    std::cout << num_iterations * N << " many atomic operations" << ", ";
-    std::cout << ExecPolicy::PolicyName();
-    std::cout << std::endl;
+    if (print_to_output) {
+        std::cout << INDENT << INDENT << t << "s" << INDENT;
+        std::cout << GetImplName(atomic_impl) << ", ";
+        std::cout << "Number of atomics under contention " << array_size << ", ";
+        std::cout << num_iterations * N << " many atomic operations" << ", ";
+        std::cout << ExecPolicy::PolicyName();
+        std::cout << std::endl;
+    }
 }
 
-int main () {
-
+int main (int argc, char* argv[]) {
+    if (argc > 2) {
+        RAJA_ABORT_OR_THROW("Usage: ./benchmark-atomic.exe <N> where N is the optional size of the benchmark loop");
+    }
+    uint64_t N = 1000000000;
+    if (argc == 2) {
+        N = std::stoi(argv[1]);
+    }
+    // Perform an untimed initialization of both desul and RAJA atomics.
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
     // GPU benchmarks
     std::cout << "Executing CUDA benchmarks" << std::endl;
     std::cout << INDENT << "Executing atomic add integer benchmarks" << std::endl;
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int,  true>(AtomicAdd<typename GPUAtomic::policy>{}, 4);
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, 4);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 100, 10000);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, N, 100, 10000);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, N, 10, 1000);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 4);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, N, 4);
 
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, 4, 10);
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, 4, 10);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 4, 10);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, N, 4, 10);
 
     std::cout << INDENT << "Executing atomic add double benchmarks" << std::endl;
 
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(AtomicAdd<typename GPUAtomic::policy> {});
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(atomicWrapperDesul<double, desul::atomic_fetch_add> {});
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(AtomicAdd<typename GPUAtomic::policy> {}, N);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(atomicWrapperDesul<double, desul::atomic_fetch_add> {}, N);
 
     std::cout << INDENT << "Executing atomic max benchmarks" << std::endl;
 
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, false>(AtomicMax<GPUAtomic::policy>{});
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_max> {});
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, false>(AtomicMax<GPUAtomic::policy>{}, N, 20);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_max> {}, N, 20);
 
     // OpenMP benchmarks
     std::cout << "Executing OpenMP benchmarks" << std::endl;
     std::cout << INDENT << "Executing atomic add benchmarks" << std::endl;
-    TimeAtomicOp<ExecPolicyOMP, int, false>(AtomicAdd<RAJA::policy::omp::omp_atomic> {});
-    TimeAtomicOp<ExecPolicyOMP, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_add> {});
+    TimeAtomicOp<ExecPolicyOMP, int, false>(AtomicAdd<RAJA::policy::omp::omp_atomic> {}, N, 1);
+    TimeAtomicOp<ExecPolicyOMP, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, N, 1);
 
     return 0;
 }
