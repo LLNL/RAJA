@@ -7,7 +7,6 @@
 
 // RAJA/RAJA.hpp cannot be included here because the include logic will
 // default all atomic implementations to a desul backend.
-#include "RAJA/policy/loop/policy.hpp"
 #include "RAJA/policy/openmp/atomic.hpp"
 #include "RAJA/RAJA.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
@@ -17,18 +16,11 @@
 #include <sstream>
 #include <string>
 
-/// This helper template is used to deduce if device memory allocations are necessary
-/// inside the body of the benchmark, using the type of the execution policy.
-template<typename>
-struct IsGPU : public std::false_type {};
 
 /// Conditional compilation for CUDA benchmarks.
 #if defined RAJA_ENABLE_CUDA
 #include "RAJA/policy/cuda.hpp"
 #include "RAJA/policy/cuda/atomic.hpp"
-
-template<int M>
-struct IsGPU<RAJA::cuda_exec<M>> : public std::true_type {};
 
 template<int BLOCK_SZ>
 struct ExecPolicyGPU {
@@ -44,17 +36,6 @@ struct ExecPolicyGPU {
 struct GPUAtomic {
     using policy = RAJA::policy::cuda::cuda_atomic;
 };
-
-template<typename AtomicType>
-void AllocateAtomicDevice(AtomicType** atomic, int array_length) {
-    cudaErrchk(cudaMalloc((void **)atomic, array_length * sizeof(AtomicType)));
-    cudaMemset(*atomic, 0, array_length * sizeof(AtomicType));
-}
-
-template<typename AtomicType>
-void DeallocateDeviceAtomic(AtomicType* atomic) {
-    cudaErrchk(cudaFree((void *)atomic));
-}
 
 #elif defined RAJA_ENABLE_HIP
 #include "RAJA/policy/hip.hpp"
@@ -77,17 +58,6 @@ struct ExecPolicyGPU {
 struct GPUAtomic {
     using policy = RAJA::policy::hip::hip_atomic;
 };
-
-template<typename AtomicType>
-void AllocateAtomicDevice(AtomicType** atomic, int array_length) {
-    hipMalloc((void **)atomic, len_array * sizeof(AtomicType));
-    hipMemset(*atomic, 0, len_array * sizeof(AtomicType));
-}
-
-template<typename AtomicType>
-void DeallocateDeviceAtomic(AtomicType* atomic) {
-    hipFree((void *)atomic);
-}
 
 #endif
 
@@ -151,7 +121,7 @@ template<typename T, typename DesulAtomicSignature<T>::type atomic_impl>
 struct atomicWrapperDesul {
     /// Call operator overload template that allows invoking DESUL atomic with a (int*)(T*, T) signature
     RAJA_DEVICE T operator()(T * acc, T value) const {
-        return atomic_impl(acc, value, raja_default_desul_order{},
+        return desul::atomic_fetch_add(acc, value, raja_default_desul_order{},
                         raja_default_desul_scope{});
     }
 };
@@ -171,15 +141,6 @@ std::string GetImplName (const AtomicImplType& impl) {
     }
 }
 
-/// Helper to deduce if atomic implementation is using desul under the hood
-//bool isDesul(typename RajaAtomicSignature<AtomicType>::signature atomic_impl) {
-//    bool is_desul =
-//        atomic_impl == atomicWrapperDesul<AtomicType, typename GPUAtomic::policy, desul::atomic_fetch_add> ||
-//        atomic_impl == atomicWrapperDesul<AtomicType, typename GPUAtomic::policy, desul::atomic_fetch_sub> ||
-//        atomic_impl == atomicWrapperDesul<AtomicType, typename GPUAtomic::policy, desul::atomic_fetch_>
-//
-//}
-
 template <class ExecPolicy, typename AtomicType, bool test_array, typename AtomicImplType>
 void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t N, uint64_t num_iterations = 4, int array_size = 100, bool print_to_output = true) {
     RAJA::Timer timer;
@@ -187,11 +148,8 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t N, uint64_t num_iteratio
     // Allocate memory
     AtomicType* device_value = nullptr;
     int len_array = test_array ? array_size : 1;
-    if (IsGPU<typename ExecPolicy::policy>::value) {
-        AllocateAtomicDevice(&device_value, len_array);
-    } else {
-        device_value = new AtomicType [len_array];
-    }
+    camp::resources::Resource resource {RAJA::resources::get_resource<typename ExecPolicy::policy>::type::get_default()};
+    device_value = resource.allocate<AtomicType>(len_array);
 
     timer.start();
     for (int i = 0; i < num_iterations; ++i) {
@@ -207,11 +165,9 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t N, uint64_t num_iteratio
 
     RAJA::synchronize<typename ExecPolicy::sync>();
     timer.stop();
-    if (IsGPU<typename ExecPolicy::policy>::value) {
-        DeallocateDeviceAtomic(device_value);
-    } else {
-        delete device_value;
-    }
+
+    resource.deallocate(device_value);
+
     double t = timer.elapsed();
     if (print_to_output) {
         std::cout << INDENT << INDENT << t << "s" << INDENT;
@@ -231,6 +187,7 @@ int main (int argc, char* argv[]) {
     if (argc == 2) {
         N = std::stoi(argv[1]);
     }
+
     // Perform an untimed initialization of both desul and RAJA atomics.
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesul<int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
