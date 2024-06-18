@@ -93,7 +93,7 @@ RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     hip_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                       reinterpret_cast<unsigned int&>(value)));
+                       RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
 template <typename T,
@@ -106,7 +106,7 @@ RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
     hip_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
-                       reinterpret_cast<unsigned long long int&>(value)));
+                       RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
 }
 
 
@@ -281,7 +281,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<uint8_t*>(acc),
-                  reinterpret_cast<uint8_t&>(value));
+                  RAJA::util::reinterp_A_as_B<T, uint8_t>(value));
 }
 
 #else
@@ -294,7 +294,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<unsigned char*>(acc),
-                  reinterpret_cast<unsigned char&>(value));
+                  RAJA::util::reinterp_A_as_B<T, unsigned char>(value));
 }
 
 #endif
@@ -308,7 +308,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<uint16_t*>(acc),
-                  reinterpret_cast<uint16_t&>(value));
+                  RAJA::util::reinterp_A_as_B<T, uint16_t>(value));
 }
 
 #else
@@ -321,7 +321,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<unsigned short int*>(acc),
-                  reinterpret_cast<unsigned short int&>(value));
+                  RAJA::util::reinterp_A_as_B<T, unsigned short int>(value));
 }
 
 #endif
@@ -335,7 +335,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<uint32_t*>(acc),
-                  reinterpret_cast<uint32_t&>(value));
+                  RAJA::util::reinterp_A_as_B<T, uint32_t>(value));
 }
 
 #else
@@ -348,7 +348,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<unsigned int*>(acc),
-                  reinterpret_cast<unsigned int&>(value));
+                  RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
 }
 
 #endif
@@ -362,7 +362,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<uint64_t*>(acc),
-                  reinterpret_cast<uint64_t&>(value));
+                  RAJA::util::reinterp_A_as_B<T, uint64_t>(value));
 }
 
 #else
@@ -375,7 +375,7 @@ template <typename T,
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   hip_atomicStore(reinterpret_cast<unsigned long long int*>(acc),
-                  reinterpret_cast<unsigned long long int&>(value));
+                  RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value));
 }
 
 #endif
@@ -414,8 +414,8 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     hip_atomicCAS(reinterpret_cast<unsigned int*>(acc),
-                  reinterpret_cast<unsigned int&>(compare),
-                  reinterpret_cast<unsigned int&>(value)));
+                  RAJA::util::reinterp_A_as_B<T, unsigned int>(compare),
+                  RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
 template <typename T,
@@ -427,8 +427,8 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
     hip_atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
-                  reinterpret_cast<unsigned long long int&>(compare),
-                  reinterpret_cast<unsigned long long int&>(value)));
+                  RAJA::util::reinterp_A_as_B<T, unsigned long long int>(compare),
+                  RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
 }
 
 
@@ -453,8 +453,8 @@ template <typename T,
                            sizeof(T) == sizeof(unsigned int), bool> = true>
 RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
 {
-  return reinterpret_cast<const unsigned int&>(a) ==
-         reinterpret_cast<const unsigned int&>(b);
+  return RAJA::util::reinterp_A_as_B<T, unsigned int>(a) ==
+         RAJA::util::reinterp_A_as_B<T, unsigned int>(b);
 }
 
 template <typename T,
@@ -464,8 +464,8 @@ template <typename T,
                            sizeof(T) == sizeof(unsigned long long int), bool> = true>
 RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
 {
-  return reinterpret_cast<const unsigned long long int&>(a) ==
-         reinterpret_cast<const unsigned long long int&>(b);
+  return RAJA::util::reinterp_A_as_B<T, unsigned long long int>(a) ==
+         RAJA::util::reinterp_A_as_B<T, unsigned long long int>(b);
 }
 
 
