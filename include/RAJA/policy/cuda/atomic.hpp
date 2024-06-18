@@ -26,6 +26,10 @@
 #include <type_traits>
 
 #if __CUDA__ARCH__ >= 600 && __CUDACC_VER_MAJOR__ >= 11 && __CUDACC_VER_MINOR__ >= 6
+#define RAJA_ENABLE_CUDA_ATOMIC_REF
+#endif
+
+#if defined(RAJA_ENABLE_CUDA_ATOMIC_REF)
 #include <cuda/atomic>
 #endif
 
@@ -106,7 +110,7 @@ RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 /*!
  * Atomic load and store
  */
-#if __CUDA__ARCH__ >= 600 && __CUDACC_VER_MAJOR__ >= 11 && __CUDACC_VER_MINOR__ >= 6
+#if defined(RAJA_ENABLE_CUDA_ATOMIC_REF)
 
 template <typename T>
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
