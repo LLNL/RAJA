@@ -43,12 +43,26 @@ namespace detail
  *
  * \brief  Seq multi-reduce data class template.
  *
- * In this class memory is owned by the
+ * In this class memory is owned by the parent object
+ *
+ **************************************************************************
+ */
+template < typename T, typename t_MultiReduceOp, typename tuning >
+struct MultiReduceDataSeq;
+
+/*!
+ **************************************************************************
+ *
+ * \brief  Seq multi-reduce data class template using left_fold reductions.
+ *
+ * In this class memory is owned by the parent object
  *
  **************************************************************************
  */
 template < typename T, typename t_MultiReduceOp >
-struct MultiReduceDataSeq
+struct MultiReduceDataSeq<T, t_MultiReduceOp,
+    RAJA::sequential::MultiReduceTuning<
+      RAJA::sequential::multi_reduce_algorithm::left_fold>>
 {
   using value_type = T;
   using MultiReduceOp = t_MultiReduceOp;
@@ -134,7 +148,7 @@ private:
 
 }  // namespace detail
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(seq_multi_reduce, detail::MultiReduceDataSeq)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::sequential::seq_multi_reduce_policy, detail::MultiReduceDataSeq)
 
 }  // namespace RAJA
 

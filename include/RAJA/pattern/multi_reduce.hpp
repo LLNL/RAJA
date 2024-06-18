@@ -64,7 +64,7 @@ namespace RAJA
  ******************************************************************************
  */
 template <typename MULTI_REDUCE_POLICY_T, typename T>
-class MultiReduceMin;
+struct MultiReduceMin;
 
 /*!
  ******************************************************************************
@@ -93,7 +93,7 @@ class MultiReduceMin;
  ******************************************************************************
  */
 template <typename MULTI_REDUCE_POLICY_T, typename T>
-class MultiReduceMax;
+struct MultiReduceMax;
 
 /*!
  ******************************************************************************
@@ -122,7 +122,7 @@ class MultiReduceMax;
  ******************************************************************************
  */
 template <typename MULTI_REDUCE_POLICY_T, typename T>
-class MultiReduceSum;
+struct MultiReduceSum;
 
 /*!
  ******************************************************************************
@@ -151,7 +151,7 @@ class MultiReduceSum;
  ******************************************************************************
  */
 template <typename MULTI_REDUCE_POLICY_T, typename T>
-class MultiReduceBitOr;
+struct MultiReduceBitOr;
  
 
 /*!
@@ -181,7 +181,7 @@ class MultiReduceBitOr;
  ******************************************************************************
  */
 template <typename MULTI_REDUCE_POLICY_T, typename T>
-class MultiReduceBitAnd;
+struct MultiReduceBitAnd;
 
 } //namespace RAJA
 

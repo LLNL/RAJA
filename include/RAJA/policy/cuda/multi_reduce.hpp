@@ -180,11 +180,11 @@ RAJA_DEVICE RAJA_INLINE void grid_multi_reduce_shmem_to_global_atomic(int num_bi
 
 //! MultiReduction data for Cuda Offload -- stores value, host pointer
 template <typename Combiner, typename T>
-struct MultiReduceAtomicHostInit_Data
+struct MultiReduceBlockThenGridAtomicHostInit_Data
 {
   //! setup permanent settings, allocate and initialize tally memory
   template < typename Container >
-  MultiReduceAtomicHostInit_Data(Container const& container, T const& identity)
+  MultiReduceBlockThenGridAtomicHostInit_Data(Container const& container, T const& identity)
       : m_tally_mem(nullptr)
       , m_identity(identity)
       , m_num_bins(container.size())
@@ -197,7 +197,7 @@ struct MultiReduceAtomicHostInit_Data
   }
 
   RAJA_HOST_DEVICE
-  MultiReduceAtomicHostInit_Data(const MultiReduceAtomicHostInit_Data& other)
+  MultiReduceBlockThenGridAtomicHostInit_Data(const MultiReduceBlockThenGridAtomicHostInit_Data& other)
       : m_tally_mem(other.m_tally_mem)
       , m_identity(other.m_identity)
       , m_num_bins(other.m_num_bins)
@@ -208,9 +208,9 @@ struct MultiReduceAtomicHostInit_Data
   {
   }
 
-  MultiReduceAtomicHostInit_Data() = delete;
-  MultiReduceAtomicHostInit_Data& operator=(const MultiReduceAtomicHostInit_Data&) = default;
-  ~MultiReduceAtomicHostInit_Data() = default;
+  MultiReduceBlockThenGridAtomicHostInit_Data() = delete;
+  MultiReduceBlockThenGridAtomicHostInit_Data& operator=(const MultiReduceBlockThenGridAtomicHostInit_Data&) = default;
+  ~MultiReduceBlockThenGridAtomicHostInit_Data() = default;
 
 
   //! reset permanent settings, reallocate and reset tally memory
@@ -439,23 +439,34 @@ private:
  *
  * \brief  Cuda multi-reduce data class template.
  *
- * In this class memory is owned by the original object,
- * so copies may not outlive the original.
+ * This class manages synchronization, data lifetimes, and interaction with
+ * the runtime kernel launch info passing facilities.
+ *
+ * This class manages the lifetime of underlying reduce_data_type using
+ * calls to setup and teardown methods. This includes storage durations:
+ * - permanent, the lifetime of the parent object
+ * - launch, setup before a launch using the launch parameters and
+ *           teardown after the launch
+ * - device, setup all device threads in a kernel before any block work and
+ *           teardown all device threads after all block work is finished
  *
  **************************************************************************
  */
-template < typename T, typename t_MultiReduceOp > //, typename tuning > // TODO add tuning back in
-class MultiReduceDataCuda
+template < typename T, typename t_MultiReduceOp, typename tuning >
+struct MultiReduceDataCuda
 {
   static constexpr bool atomic_available = RAJA::reduce::cuda::cuda_atomic_available<T>::value;
 
   //! cuda reduction data storage class and folding algorithm
   using reduce_data_type =
-      cuda::MultiReduceAtomicHostInit_Data<t_MultiReduceOp, T>;
-      // std::conditional_t<(tuning::algorithm == reduce_algorithm::init_host_combine_atomic_block) &&
-      //                                         (atomic_available),
-      //   cuda::MultiReduceAtomicHostInit_Data<t_MultiReduceOp, T>,
-      // void>;
+      std::conditional_t<(atomic_available),
+        std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_block_then_grid_atomic),
+          cuda::MultiReduceBlockThenGridAtomicHostInit_Data<t_MultiReduceOp, T>,
+          std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_global_atomic),
+            void,
+            void>>,
+      void>;
+
 
   using SyncList = std::vector<resources::Cuda>;
 
@@ -597,7 +608,7 @@ private:
 
 }  // end namespace cuda
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(cuda_multi_reduce_atomic, cuda::MultiReduceDataCuda)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::cuda::cuda_multi_reduce_policy, cuda::MultiReduceDataCuda)
 
 }  // namespace RAJA
 

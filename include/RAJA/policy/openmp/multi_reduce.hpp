@@ -51,12 +51,25 @@ namespace detail
  *
  * \brief  OMP multi-reduce data class template.
  *
- * In this class memory is owned by the
+ * In this class memory is owned by the parent object
+ *
+ **************************************************************************
+ */
+template < typename T, typename t_MultiReduceOp, typename tuning >
+struct MultiReduceDataOMP;
+
+/*!
+ **************************************************************************
+ *
+ * \brief  OMP multi-reduce data class template using combine on destruction.
+ *
+ * In this class memory is owned by each copy of the object
  *
  **************************************************************************
  */
 template < typename T, typename t_MultiReduceOp >
-struct MultiReduceDataOMP
+struct MultiReduceDataOMP<T, t_MultiReduceOp,
+    RAJA::omp::MultiReduceTuning<RAJA::omp::multi_reduce_algorithm::combine_on_destruction>>
 {
   using value_type = T;
   using MultiReduceOp = t_MultiReduceOp;
@@ -83,8 +96,10 @@ struct MultiReduceDataOMP
     if (m_data) {
       if (m_parent) {
 #pragma omp critical(ompMultiReduceCritical)
-        for (size_t bin = 0; bin < m_num_bins; ++bin) {
-          MultiReduceOp{}(m_parent->m_data[bin], m_data[bin]);
+        {
+          for (size_t bin = 0; bin < m_num_bins; ++bin) {
+            MultiReduceOp{}(m_parent->m_data[bin], m_data[bin]);
+          }
         }
       }
       destroy_data(m_data, m_num_bins);
@@ -141,29 +156,31 @@ private:
       data[bin-1].~T();
     }
     free_aligned(data);
+    data = nullptr;
   }
 };
 
 /*!
  **************************************************************************
  *
- * \brief  OMP multi-reduce data class template.
+ * \brief  OMP multi-reduce data class template using combine on get.
  *
- * In this class memory is owned by the
+ * In this class memory is owned by each copy of the object
  *
  **************************************************************************
  */
 template < typename T, typename t_MultiReduceOp >
-struct MultiReduceOrderedDataOMP
+struct MultiReduceDataOMP<T, t_MultiReduceOp,
+    RAJA::omp::MultiReduceTuning<RAJA::omp::multi_reduce_algorithm::combine_on_get>>
 {
   using value_type = T;
   using MultiReduceOp = t_MultiReduceOp;
 
-  MultiReduceOrderedDataOMP() = delete;
+  MultiReduceDataOMP() = delete;
 
   template < typename Container,
-             std::enable_if_t<!std::is_same<Container, MultiReduceOrderedDataOMP>::value>* = nullptr >
-  MultiReduceOrderedDataOMP(Container const& container, T identity)
+             std::enable_if_t<!std::is_same<Container, MultiReduceDataOMP>::value>* = nullptr >
+  MultiReduceDataOMP(Container const& container, T identity)
       : m_max_threads(omp_get_max_threads())
       , m_num_bins(container.size())
       , m_padded_threads(pad_threads(m_max_threads))
@@ -172,7 +189,7 @@ struct MultiReduceOrderedDataOMP
       , m_data(create_data(container, identity, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads))
   { }
 
-  MultiReduceOrderedDataOMP(MultiReduceOrderedDataOMP const &other)
+  MultiReduceDataOMP(MultiReduceDataOMP const &other)
       : m_parent(other.m_parent ? other.m_parent : &other)
       , m_num_bins(other.m_num_bins)
       , m_padded_threads(other.m_padded_threads)
@@ -181,7 +198,7 @@ struct MultiReduceOrderedDataOMP
       , m_data(other.m_data)
   { }
 
-  ~MultiReduceOrderedDataOMP()
+  ~MultiReduceDataOMP()
   {
     if (m_data) {
       if (!m_parent) {
@@ -240,7 +257,7 @@ struct MultiReduceOrderedDataOMP
   }
 
 private:
-  MultiReduceOrderedDataOMP const *m_parent = nullptr;
+  MultiReduceDataOMP const *m_parent = nullptr;
   size_t m_max_threads;
   size_t m_num_bins;
   size_t m_padded_threads;
@@ -304,9 +321,7 @@ private:
 
 }  // namespace detail
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(omp_multi_reduce, detail::MultiReduceDataOMP)
-
-RAJA_DECLARE_ALL_MULTI_REDUCERS(omp_multi_reduce_ordered, detail::MultiReduceOrderedDataOMP)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::omp::omp_multi_reduce_policy, detail::MultiReduceDataOMP)
 
 }  // namespace RAJA
 

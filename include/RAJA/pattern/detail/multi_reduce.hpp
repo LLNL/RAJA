@@ -22,24 +22,25 @@
 #include "RAJA/util/types.hpp"
 
 
-#define RAJA_DECLARE_MULTI_REDUCER(OP_NAME, OP, POL, DATA)                               \
-  template <typename T>                                                                  \
-  class MultiReduce##OP_NAME<POL, T>                                                     \
-      : public reduce::detail::BaseMultiReduce##OP_NAME<DATA<T, RAJA::reduce::OP<T>>>    \
-  {                                                                                      \
-  public:                                                                                \
-    using policy = POL;                                                                  \
-    using Base = reduce::detail::BaseMultiReduce##OP_NAME<DATA<T, RAJA::reduce::OP<T>>>; \
-    using Base::Base;                                                                    \
-    using typename Base::value_type;                                                     \
-    using typename Base::reference;                                                      \
-                                                                                         \
-    RAJA_SUPPRESS_HD_WARN                                                                \
-    RAJA_HOST_DEVICE                                                                     \
-    reference operator[](size_t bin) const                                               \
-    {                                                                                    \
-      return reference(*this, bin);                                                      \
-    }                                                                                    \
+#define RAJA_DECLARE_MULTI_REDUCER(OP_NAME, OP, POL, DATA)    \
+  template <typename tuning, typename T>                      \
+  struct MultiReduce##OP_NAME<POL<tuning>, T>                 \
+      : reduce::detail::BaseMultiReduce##OP_NAME<             \
+            DATA<T, RAJA::reduce::OP<T>, tuning>>             \
+  {                                                           \
+    using policy = POL<tuning>;                               \
+    using Base = reduce::detail::BaseMultiReduce##OP_NAME<    \
+        DATA<T, RAJA::reduce::OP<T>, tuning>>;                \
+    using Base::Base;                                         \
+    using typename Base::value_type;                          \
+    using typename Base::reference;                           \
+                                                              \
+    RAJA_SUPPRESS_HD_WARN                                     \
+    RAJA_HOST_DEVICE                                          \
+    reference operator[](size_t bin) const                    \
+    {                                                         \
+      return reference(*this, bin);                           \
+    }                                                         \
   };
 
 #define RAJA_DECLARE_ALL_MULTI_REDUCERS(POL, DATA)            \
