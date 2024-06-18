@@ -22,6 +22,7 @@
 
 #include "RAJA/config.hpp"
 
+#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
 
 #include <type_traits>

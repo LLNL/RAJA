@@ -314,14 +314,15 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
  * Atomic addition
  */
 using cuda_atomicAdd_builtin_types = list<
-      int
-     ,unsigned int
-     ,unsigned long long int
-     ,float
+  int,
+  unsigned int,
+  unsigned long long int,
+  float
 #if __CUDA_ARCH__ >= 600
-     ,double
+  ,
+  double
 #endif
-    >;
+>;
 
 template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
@@ -346,17 +347,18 @@ RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 using cuda_atomicSub_builtin_types = cuda_atomicAdd_builtin_types;
 
 using cuda_atomicSub_via_Sub_builtin_types = list<
-      int
-     ,unsigned int
-    >;
+  int,
+  unsigned int
+>;
 
 using cuda_atomicSub_via_Add_builtin_types = list<
-      unsigned long long int
-     ,float
+  unsigned long long int,
+  float
 #if __CUDA_ARCH__ >= 600
-     ,double
+  ,
+  double
 #endif
-    >;
+>;
 
 template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* = nullptr>
@@ -386,13 +388,14 @@ RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
  * Atomic min/max
  */
 using cuda_atomicMinMax_builtin_types = list<
-      int
-     ,unsigned int
+  int,
+  unsigned int
 #if __CUDA_ARCH__ >= 500
-     ,long long int
-     ,unsigned long long int
+  ,
+  long long int,
+  unsigned long long int
 #endif
-    >;
+>;
 
 
 /*!
@@ -447,8 +450,8 @@ RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
  * Atomic increment/decrement with reset
  */
 using cuda_atomicIncDecReset_builtin_types = list<
-      unsigned int
-    >;
+  unsigned int
+>;
 
 
 /*!
@@ -519,10 +522,10 @@ RAJA_INLINE __device__ T cuda_atomicDec(T *acc)
  * Atomic bitwise functions (and, or, xor)
  */
 using cuda_atomicBit_builtin_types = list<
-      int
-     ,unsigned int
-     ,unsigned long long int
-    >;
+  int,
+  unsigned int,
+  unsigned long long int
+>;
 
 
 /*!

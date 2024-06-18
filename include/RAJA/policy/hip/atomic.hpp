@@ -49,10 +49,10 @@ namespace detail
 {
 
 using hip_atomicCommon_builtin_types = list<
-      int
-     ,unsigned int
-     ,unsigned long long
-    >;
+  int,
+  unsigned int,
+  unsigned long long
+>;
 
 
 /*
@@ -506,14 +506,15 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
  * Atomic addition
  */
 using hip_atomicAdd_builtin_types = list<
-      int
-     ,unsigned int
-     ,unsigned long long
-     ,float
+  int,
+  unsigned int,
+  unsigned long long,
+  float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-     ,double
+  ,
+  double
 #endif
-    >;
+>;
 
 template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
@@ -540,14 +541,15 @@ RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
  * List of types where HIP builtin atomics are used to implement atomicSub.
  */
 using hip_atomicSub_builtin_types = list<
-      int
-     ,unsigned int
-     ,unsigned long long
-     ,float
+  int,
+  unsigned int,
+  unsigned long long,
+  float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-     ,double
+  ,
+  double
 #endif
-    >;
+>;
 
 /*!
  * List of types where HIP builtin atomicSub is used to implement atomicSub.
@@ -556,9 +558,9 @@ using hip_atomicSub_builtin_types = list<
  * to ensure these lists have different types.
  */
 using hip_atomicSub_via_Sub_builtin_types = list<
-      int
-     ,unsigned int
-    >;
+  int,
+  unsigned int
+>;
 
 /*!
  * List of types where HIP builtin atomicAdd is used to implement atomicSub.
@@ -567,12 +569,13 @@ using hip_atomicSub_via_Sub_builtin_types = list<
  * to ensure these lists have different types.
  */
 using hip_atomicSub_via_Add_builtin_types = list<
-      unsigned long long
-     ,float
+  unsigned long long,
+  float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-     ,double
+  ,
+  double
 #endif
-    >;
+>;
 
 template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicSub_builtin_types>* = nullptr>
