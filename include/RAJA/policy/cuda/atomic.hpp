@@ -85,8 +85,8 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    ::atomicExch(reinterpret_cast<unsigned int*>(acc),
-                 reinterpret_cast<unsigned int&>(value)));
+    cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
+                        reinterpret_cast<unsigned int&>(value)));
 }
 
 template <typename T,
@@ -98,8 +98,8 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    ::atomicExch(reinterpret_cast<unsigned long long int*>(acc),
-                 reinterpret_cast<unsigned long long int&>(value)));
+    cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
+                        reinterpret_cast<unsigned long long int&>(value)));
 }
 
 
@@ -142,8 +142,7 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    ::atomicOr(reinterpret_cast<unsigned int*>(acc),
-               static_cast<unsigned int>(0)));
+    cuda_atomicLoad(reinterpret_cast<unsigned int*>(acc)));
 }
 
 template <typename T,
@@ -154,8 +153,7 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    ::atomicOr(reinterpret_cast<unsigned long long int*>(acc),
-               static_cast<unsigned long long int>(0)));
+    cuda_atomicLoad(reinterpret_cast<unsigned long long int*>(acc)));
 }
 
 
@@ -194,9 +192,9 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
-    ::atomicCAS(reinterpret_cast<unsigned short int*>(acc),
-                reinterpret_cast<unsigned short int&>(compare),
-                reinterpret_cast<unsigned short int&>(value)));
+    cuda_atomicCAS(reinterpret_cast<unsigned short int*>(acc),
+                   reinterpret_cast<unsigned short int&>(compare),
+                   reinterpret_cast<unsigned short int&>(value)));
 }
 #endif
 
@@ -212,9 +210,9 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    ::atomicCAS(reinterpret_cast<unsigned int*>(acc),
-                reinterpret_cast<unsigned int&>(compare),
-                reinterpret_cast<unsigned int&>(value)));
+    cuda_atomicCAS(reinterpret_cast<unsigned int*>(acc),
+                   reinterpret_cast<unsigned int&>(compare),
+                   reinterpret_cast<unsigned int&>(value)));
 }
 
 template <typename T,
@@ -229,19 +227,56 @@ template <typename T,
 RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    ::atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
-                reinterpret_cast<unsigned long long int&>(compare),
-                reinterpret_cast<unsigned long long int&>(value)));
+    cuda_atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
+                   reinterpret_cast<unsigned long long int&>(compare),
+                   reinterpret_cast<unsigned long long int&>(value)));
 }
 
+
 /*!
- * Generic impementation of any atomic 32-bit operator.
- * Implementation uses the existing CUDA supplied unsigned 32-bit CAS
+ * Equality comparison for compare and swap loop. Converts to the underlying
+ * integral type to avoid cases where the values will never compare equal
+ * (most notably, NaNs).
+ */
+template <typename T,
+          std::enable_if_t<std::is_same<T, int>::value ||
+                           std::is_same<T, unsigned int>::value ||
+                           std::is_same<T, unsigned long long int>::value, bool> = true>
+RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
+{
+  return a == b;
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           sizeof(T) == sizeof(unsigned int), bool> = true>
+RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
+{
+  return reinterpret_cast<const unsigned int&>(a) ==
+         reinterpret_cast<const unsigned int&>(b);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, int>::value &&
+                           !std::is_same<T, unsigned int>::value &&
+                           !std::is_same<T, unsigned long long int>::value &&
+                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
+RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
+{
+  return reinterpret_cast<const unsigned long long int&>(a) ==
+         reinterpret_cast<const unsigned long long int&>(b);
+}
+
+
+/*!
+ * Generic impementation of any atomic 32-bit or 64-bit operator.
+ * Implementation uses the existing CUDA supplied unsigned 32-bit or 64-bit CAS
  * operator. Returns the OLD value that was replaced by the result of this
  * operation.
  */
-template <typename T, typename OPER,
-          std::enable_if_t<sizeof(T) == sizeof(unsigned int), bool> = true>
+template <typename T, typename OPER>
 RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, OPER&& oper)
 {
   T old = cuda_atomicLoad(acc);
@@ -250,43 +285,14 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, OPER&& oper)
   do {
     expected = old;
     old = cuda_atomicCAS(acc, expected, oper(expected));
-  } while (reinterpret_cast<unsigned int&>(old) !=
-           reinterpret_cast<unsigned int&>(expected));
-
-  // The while conditional must use the underlying integral type to avoid
-  // cases like NaNs, which will never be equal.
-
-  return old;
-}
-
-/*!
- * Generic impementation of any atomic 64-bit operator.
- * Implementation uses the existing CUDA supplied unsigned 64-bit CAS
- * operator. Returns the OLD value that was replaced by the result of this
- * operation.
-*/
-template <typename T, typename OPER,
-          std::enable_if_t<sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, OPER&& oper)
-{
-  T old = cuda_atomicLoad(acc);
-  T expected;
-
-  do {
-    expected = old;
-    old = cuda_atomicCAS(acc, expected, oper(expected));
-  } while (reinterpret_cast<unsigned long long int&>(old) !=
-           reinterpret_cast<unsigned long long int&>(expected));
-
-  // The while conditional must use the underlying integral type to avoid
-  // cases like NaNs, which will never be equal.
+  } while (!cuda_atomicCAS_equal(old, expected));
 
   return old;
 }
 
 
 /*!
- * Atomic add
+ * Atomic addition
  */
 using cuda_atomicAdd_builtin_types = list<
       int
