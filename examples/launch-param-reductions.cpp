@@ -38,8 +38,8 @@ constexpr int HIP_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)
-constexpr int SYCL_BLOCK_SIZE = 151; //reductions have a limit of 151
-//constexpr int SYCL_BLOCK_SIZE = 256;
+//LC testing hardware has a limit of 151
+constexpr int SYCL_BLOCK_SIZE = 151;
 #endif
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
