@@ -312,7 +312,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old + value;
   });
 }
@@ -347,7 +347,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old - value;
   });
 }
@@ -387,7 +387,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return value < old ? value : old;
   });
 }
@@ -407,7 +407,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old < value ? value : old;
   });
 }
@@ -437,7 +437,7 @@ RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
@@ -469,7 +469,7 @@ RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
   });
 }
@@ -509,7 +509,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old & value;
   });
 }
@@ -529,7 +529,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old | value;
   });
 }
@@ -549,7 +549,7 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] __device__(T old) {
+  return cuda_atomicCAS(acc, [value] (T old) {
     return old ^ value;
   });
 }
