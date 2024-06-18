@@ -318,31 +318,34 @@ public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr explicit AtomicRef(value_type *value_ptr)
-      : m_value_ptr(value_ptr){};
+      : m_value_ptr(value_ptr) {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr AtomicRef(AtomicRef const&c)
-      : m_value_ptr(c.m_value_ptr){};
+  constexpr AtomicRef(AtomicRef const &c)
+      : m_value_ptr(c.m_value_ptr) {}
 
   AtomicRef& operator=(AtomicRef const&) = delete;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  value_type * getPointer() const { return m_value_ptr; }
+  value_type * getPointer() const
+  {
+    return m_value_ptr;
+  }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void store(value_type rhs) const
   {
-    *m_value_ptr = rhs;
+    RAJA::atomicStore<Policy>(m_value_ptr, rhs);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   value_type operator=(value_type rhs) const
   {
-    *m_value_ptr = rhs;
+    RAJA::atomicStore<Policy>(m_value_ptr, rhs);
     return rhs;
   }
 
@@ -350,14 +353,14 @@ public:
   RAJA_HOST_DEVICE
   value_type load() const
   {
-    return *m_value_ptr;
+    return RAJA::atomicLoad<Policy>(m_value_ptr);
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   operator value_type() const
   {
-    return *m_value_ptr;
+    return RAJA::atomicLoad<Policy>(m_value_ptr);
   }
 
   RAJA_INLINE
