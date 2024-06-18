@@ -188,7 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL2>
-    (RAJA::LaunchParams(), "OmpReductionKernel",
+    (host_res, RAJA::LaunchParams(), "OmpReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
@@ -231,6 +231,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running RAJA CUDA reductions...\n";
 
+  int* d_a = device_res.allocate<int>(N);
+  device_res.memcpy(d_a, a, sizeof(int) * N);
+
   // _reductions_raja_cudapolicy_start
   using LAUNCH_POL3   = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false /*async*/>>;
   using LOOP_POL3     = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
@@ -245,7 +248,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT cuda_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL3>
-    (RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(CUDA_BLOCK_SIZE)),
+    (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(CUDA_BLOCK_SIZE)),
      "CUDAReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
@@ -259,13 +262,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
       RAJA::loop<LOOP_POL3>(ctx, arange, [&] (int i) {
 
-          _cuda_sum += a[i];
+          _cuda_sum += d_a[i];
 
-          _cuda_min = RAJA_MIN(a[i], _cuda_min);
-          _cuda_max = RAJA_MAX(a[i], _cuda_max);
+          _cuda_min = RAJA_MIN(d_a[i], _cuda_min);
+          _cuda_max = RAJA_MAX(d_a[i], _cuda_max);
 
-          _cuda_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _cuda_minloc);
-          _cuda_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _cuda_maxloc);
+          _cuda_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _cuda_minloc);
+          _cuda_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _cuda_maxloc);
           //_cuda_minloc.min(a[i], i);
           //_cuda_maxloc.max(a[i], i);
 
@@ -284,6 +287,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tmax, loc = " << cuda_maxloc.getVal() << " , "
                                << cuda_maxloc.getLoc() << std::endl;
 
+  device_res.deallocate(d_a);
 #endif
 
 //----------------------------------------------------------------------------//
@@ -291,8 +295,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running RAJA HIP reductions...\n";
 
-  int* d_a = memoryManager::allocate_gpu<int>(N);
-  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
+  int* d_a = device_res.allocate<int>(N);
+  device_res.memcpy(d_a, a, sizeof(int) * N);
 
   // _reductions_raja_hippolicy_start
   using LAUNCH_POL3   = RAJA::LaunchPolicy<RAJA::hip_launch_t<false /*async*/>>;
@@ -308,7 +312,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT hip_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL3>
-    (RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(HIP_BLOCK_SIZE)),
+    (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(HIP_BLOCK_SIZE)),
      "HipReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus>(&hip_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_min),
@@ -346,7 +350,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\tmax, loc = " << hip_maxloc.getVal() << " , "
                                << hip_maxloc.getLoc() << std::endl;
 
-  memoryManager::deallocate_gpu(d_a);
+  device_res.deallocate(d_a);
 #endif
 
 //----------------------------------------------------------------------------//
