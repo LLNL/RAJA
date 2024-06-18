@@ -280,8 +280,8 @@ RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
  * operator. Returns the OLD value that was replaced by the result of this
  * operation.
  */
-template <typename T, typename OPER>
-RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, OPER&& oper)
+template <typename T, typename Oper>
+RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper)
 {
   T old = cuda_atomicLoad(acc);
   T expected;
@@ -290,6 +290,31 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, OPER&& oper)
     expected = old;
     old = cuda_atomicCAS(acc, expected, oper(expected));
   } while (!cuda_atomicCAS_equal(old, expected));
+
+  return old;
+}
+
+/*!
+ * Generic impementation of any atomic 32-bit or 64-bit operator with short-circuiting.
+ * Implementation uses the existing CUDA supplied unsigned 32-bit or 64-bit CAS
+ * operator. Returns the OLD value that was replaced by the result of this
+ * operation.
+ */
+template <typename T, typename Oper, typename ShortCircuit>
+RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
+{
+  T old = cuda_atomicLoad(acc);
+
+  if (sc(old)) {
+    return old;
+  }
+
+  T expected;
+
+  do {
+    expected = old;
+    old = cuda_atomicCAS(acc, expected, oper(expected));
+  } while (!cuda_atomicCAS_equal(old, expected) && !sc(old));
 
   return old;
 }
@@ -387,9 +412,13 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
-    return value < old ? value : old;
-  });
+  return cuda_atomicCAS(acc,
+                        [value] (T old) {
+                          return value < old ? value : old;
+                        },
+                        [value] (T current) {
+                          return current < value;
+                        });
 }
 
 template <typename T,
@@ -407,9 +436,13 @@ template <typename T,
           enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
-    return old < value ? value : old;
-  });
+  return cuda_atomicCAS(acc,
+                        [value] (T old) {
+                          return old < value ? value : old;
+                        },
+                        [value] (T current) {
+                          return value < current;
+                        });
 }
 
 template <typename T,
