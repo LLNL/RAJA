@@ -27,13 +27,14 @@
 #include <type_traits>
 #include "hip/hip_runtime.h"
 
+#include "camp/list.hpp"
+
 #include "RAJA/policy/sequential/atomic.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
-#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/EnableIf.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
@@ -48,7 +49,7 @@ namespace RAJA
 namespace detail
 {
 
-using hip_atomicCommon_builtin_types = list<
+using hip_atomicCommon_builtin_types = ::camp::list<
   int,
   unsigned int,
   unsigned long long
@@ -505,7 +506,7 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
 /*!
  * Atomic addition
  */
-using hip_atomicAdd_builtin_types = list<
+using hip_atomicAdd_builtin_types = ::camp::list<
   int,
   unsigned int,
   unsigned long long,
@@ -540,7 +541,7 @@ RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 /*!
  * List of types where HIP builtin atomics are used to implement atomicSub.
  */
-using hip_atomicSub_builtin_types = list<
+using hip_atomicSub_builtin_types = ::camp::list<
   int,
   unsigned int,
   unsigned long long,
@@ -557,7 +558,7 @@ using hip_atomicSub_builtin_types = list<
  * Avoid multiple definition errors by including the previous list type here
  * to ensure these lists have different types.
  */
-using hip_atomicSub_via_Sub_builtin_types = list<
+using hip_atomicSub_via_Sub_builtin_types = ::camp::list<
   int,
   unsigned int
 >;
@@ -568,7 +569,7 @@ using hip_atomicSub_via_Sub_builtin_types = list<
  * Avoid multiple definition errors by including the previous list type here
  * to ensure these lists have different types.
  */
-using hip_atomicSub_via_Add_builtin_types = list<
+using hip_atomicSub_via_Add_builtin_types = ::camp::list<
   unsigned long long,
   float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD

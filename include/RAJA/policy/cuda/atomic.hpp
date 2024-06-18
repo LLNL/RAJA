@@ -33,13 +33,14 @@
 #include <cuda/atomic>
 #endif
 
+#include "camp/list.hpp"
+
 #include "RAJA/policy/sequential/atomic.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
-#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/EnableIf.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
@@ -313,7 +314,7 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
 /*!
  * Atomic addition
  */
-using cuda_atomicAdd_builtin_types = list<
+using cuda_atomicAdd_builtin_types = ::camp::list<
   int,
   unsigned int,
   unsigned long long int,
@@ -346,12 +347,12 @@ RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
  */
 using cuda_atomicSub_builtin_types = cuda_atomicAdd_builtin_types;
 
-using cuda_atomicSub_via_Sub_builtin_types = list<
+using cuda_atomicSub_via_Sub_builtin_types = ::camp::list<
   int,
   unsigned int
 >;
 
-using cuda_atomicSub_via_Add_builtin_types = list<
+using cuda_atomicSub_via_Add_builtin_types = ::camp::list<
   unsigned long long int,
   float
 #if __CUDA_ARCH__ >= 600
@@ -387,7 +388,7 @@ RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 /*!
  * Atomic min/max
  */
-using cuda_atomicMinMax_builtin_types = list<
+using cuda_atomicMinMax_builtin_types = ::camp::list<
   int,
   unsigned int
 #if __CUDA_ARCH__ >= 500
@@ -449,7 +450,7 @@ RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 /*!
  * Atomic increment/decrement with reset
  */
-using cuda_atomicIncDecReset_builtin_types = list<
+using cuda_atomicIncDecReset_builtin_types = ::camp::list<
   unsigned int
 >;
 
@@ -521,7 +522,7 @@ RAJA_INLINE __device__ T cuda_atomicDec(T *acc)
 /*!
  * Atomic bitwise functions (and, or, xor)
  */
-using cuda_atomicBit_builtin_types = list<
+using cuda_atomicBit_builtin_types = ::camp::list<
   int,
   unsigned int,
   unsigned long long int
