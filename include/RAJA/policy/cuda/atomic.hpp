@@ -39,6 +39,7 @@
 #include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
+#include "RAJA/util/EnableIf.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
@@ -50,21 +51,6 @@ namespace RAJA
 
 namespace detail
 {
-
-
-template < typename T, typename TypeList >
-struct is_any_of;
-
-template < typename T, typename... Types >
-struct is_any_of<T, list<Types...>>
-  : concepts::any_of<camp::is_same<T, Types>...>
-{};
-
-template < typename T, typename TypeList >
-using enable_if_is_any_of = std::enable_if_t<is_any_of<T, TypeList>::value, T>;
-
-template < typename T, typename TypeList >
-using enable_if_is_none_of = std::enable_if_t<concepts::negate<is_any_of<T, TypeList>>::value, T>;
 
 
 /*!
@@ -334,7 +320,7 @@ using cuda_atomicAdd_builtin_types = list<
     >;
 
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 {
   return cuda_atomicCAS(acc, [value] (T old) {
@@ -343,7 +329,7 @@ RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 {
   return ::atomicAdd(acc, value);
@@ -369,7 +355,7 @@ using cuda_atomicSub_via_Add_builtin_types = list<
     >;
 
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
   return cuda_atomicCAS(acc, [value] (T old) {
@@ -378,14 +364,14 @@ RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicSub_via_Sub_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicSub_via_Sub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
   return ::atomicSub(acc, value);
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicSub_via_Add_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicSub_via_Add_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
   return ::atomicAdd(acc, -value);
@@ -409,7 +395,7 @@ using cuda_atomicMinMax_builtin_types = list<
  * Atomic min
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
   return cuda_atomicCAS(acc,
@@ -422,7 +408,7 @@ RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
   return ::atomicMin(acc, value);
@@ -433,7 +419,7 @@ RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
  * Atomic max
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
   return cuda_atomicCAS(acc,
@@ -446,7 +432,7 @@ RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
   return ::atomicMax(acc, value);
@@ -465,7 +451,7 @@ using cuda_atomicIncDecReset_builtin_types = list<
  * Atomic increment with reset
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 {
   // See:
@@ -476,7 +462,7 @@ RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 {
   return ::atomicInc(acc, value);
@@ -497,7 +483,7 @@ RAJA_INLINE __device__ T cuda_atomicInc(T *acc)
  * Atomic decrement with reset
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 {
   // See:
@@ -508,7 +494,7 @@ RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicIncDecReset_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 {
   return ::atomicDec(acc, value);
@@ -539,7 +525,7 @@ using cuda_atomicBit_builtin_types = list<
  * Atomic and
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 {
   return cuda_atomicCAS(acc, [value] (T old) {
@@ -548,7 +534,7 @@ RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 {
   return ::atomicAnd(acc, value);
@@ -559,7 +545,7 @@ RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
  * Atomic or
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 {
   return cuda_atomicCAS(acc, [value] (T old) {
@@ -568,7 +554,7 @@ RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 {
   return ::atomicOr(acc, value);
@@ -579,7 +565,7 @@ RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
  * Atomic xor
  */
 template <typename T,
-          enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 {
   return cuda_atomicCAS(acc, [value] (T old) {
@@ -588,7 +574,7 @@ RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 {
   return ::atomicXor(acc, value);
