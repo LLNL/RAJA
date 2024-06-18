@@ -39,10 +39,14 @@
 #include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
+#include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/EnableIf.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
+
+
+// TODO: When we can use if constexpr in C++17, this file can be cleaned up
 
 
 namespace RAJA

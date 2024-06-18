@@ -34,7 +34,7 @@
 #endif
 
 #include "RAJA/util/camp_aliases.hpp"
-#include "RAJA/util/concepts.hpp"
+#include "RAJA/util/EnableIf.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
@@ -44,23 +44,9 @@
 namespace RAJA
 {
 
+
 namespace detail
 {
-
-template < typename T, typename TypeList >
-struct is_any_of;
-
-template < typename T, typename... Types >
-struct is_any_of<T, list<Types...>>
-  : concepts::any_of<camp::is_same<T, Types>...>
-{};
-
-template < typename T, typename TypeList >
-using enable_if_is_any_of = std::enable_if_t<is_any_of<T, TypeList>::value, T>;
-
-template < typename T, typename TypeList >
-using enable_if_is_none_of = std::enable_if_t<concepts::negate<is_any_of<T, TypeList>>::value, T>;
-
 
 using hip_atomicCommon_builtin_types = list<
       int
@@ -530,7 +516,7 @@ using hip_atomicAdd_builtin_types = list<
     >;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return hip_atomicCAS(acc, [value] (T old) {
@@ -539,7 +525,7 @@ RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicAdd_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return ::atomicAdd(acc, value);
@@ -589,7 +575,7 @@ using hip_atomicSub_via_Add_builtin_types = list<
     >;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicSub_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicSub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
   return hip_atomicCAS(acc, [value] (T old) {
@@ -601,7 +587,7 @@ RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
  * HIP atomicSub builtin implementation.
  */
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicSub_via_Sub_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicSub_via_Sub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
   return ::atomicSub(acc, value);
@@ -611,7 +597,7 @@ RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
  * HIP atomicSub via atomicAdd builtin implementation.
  */
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicSub_via_Add_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicSub_via_Add_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
   return ::atomicAdd(acc, -value);
@@ -624,7 +610,7 @@ RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 using hip_atomicMin_builtin_types = hip_atomicCommon_builtin_types;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicMin_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicMin_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 {
   return hip_atomicCAS(acc,
@@ -637,7 +623,7 @@ RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicMin_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicMin_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 {
   return ::atomicMin(acc, value);
@@ -650,7 +636,7 @@ RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 using hip_atomicMax_builtin_types = hip_atomicCommon_builtin_types;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicMax_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 {
   return hip_atomicCAS(acc,
@@ -663,7 +649,7 @@ RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicMax_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 {
   return ::atomicMax(acc, value);
@@ -720,7 +706,7 @@ RAJA_INLINE __device__ T hip_atomicDec(T *acc)
 using hip_atomicAnd_builtin_types = hip_atomicCommon_builtin_types;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicAnd_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicAnd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T value)
 {
   return hip_atomicCAS(acc, [value] (T old) {
@@ -729,7 +715,7 @@ RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicAnd_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicAnd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T value)
 {
   return ::atomicAnd(acc, value);
@@ -742,7 +728,7 @@ RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T value)
 using hip_atomicOr_builtin_types = hip_atomicCommon_builtin_types;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
 {
   return hip_atomicCAS(acc, [value] (T old) {
@@ -751,7 +737,7 @@ RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicOr_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicOr_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
 {
   return ::atomicOr(acc, value);
@@ -764,7 +750,7 @@ RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
 using hip_atomicXor_builtin_types = hip_atomicCommon_builtin_types;
 
 template <typename T,
-          enable_if_is_none_of<T, hip_atomicXor_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicXor_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicXor(T *acc, T value)
 {
   return hip_atomicCAS(acc, [value] (T old) {
@@ -773,7 +759,7 @@ RAJA_INLINE __device__ T hip_atomicXor(T *acc, T value)
 }
 
 template <typename T,
-          enable_if_is_any_of<T, hip_atomicXor_builtin_types>* = nullptr>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicXor_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicXor(T *acc, T value)
 {
   return ::atomicXor(acc, value);
