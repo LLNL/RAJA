@@ -90,7 +90,7 @@ RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                        reinterpret_cast<unsigned int&>(value)));
+                        RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
 template <typename T,
@@ -103,7 +103,7 @@ RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
     cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
-                        reinterpret_cast<unsigned long long int&>(value)));
+                        RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
 }
 
 
@@ -197,8 +197,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
     cuda_atomicCAS(reinterpret_cast<unsigned short int*>(acc),
-                   reinterpret_cast<unsigned short int&>(compare),
-                   reinterpret_cast<unsigned short int&>(value)));
+                   RAJA::util::reinterp_A_as_B<T, unsigned short int>(compare),
+                   RAJA::util::reinterp_A_as_B<T, unsigned short int>(value)));
 }
 #endif
 
@@ -215,8 +215,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     cuda_atomicCAS(reinterpret_cast<unsigned int*>(acc),
-                   reinterpret_cast<unsigned int&>(compare),
-                   reinterpret_cast<unsigned int&>(value)));
+                   RAJA::util::reinterp_A_as_B<T, unsigned int>(compare),
+                   RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
 template <typename T,
@@ -232,8 +232,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
     cuda_atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
-                   reinterpret_cast<unsigned long long int&>(compare),
-                   reinterpret_cast<unsigned long long int&>(value)));
+                   RAJA::util::reinterp_A_as_B<T, unsigned long long int>(compare),
+                   RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
 }
 
 
@@ -258,8 +258,8 @@ template <typename T,
                            sizeof(T) == sizeof(unsigned int), bool> = true>
 RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
 {
-  return reinterpret_cast<const unsigned int&>(a) ==
-         reinterpret_cast<const unsigned int&>(b);
+  return RAJA::util::reinterp_A_as_B<T, unsigned int>(a) ==
+         RAJA::util::reinterp_A_as_B<T, unsigned int>(b);
 }
 
 template <typename T,
@@ -269,8 +269,8 @@ template <typename T,
                            sizeof(T) == sizeof(unsigned long long int), bool> = true>
 RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
 {
-  return reinterpret_cast<const unsigned long long int&>(a) ==
-         reinterpret_cast<const unsigned long long int&>(b);
+  return RAJA::util::reinterp_A_as_B<T, unsigned long long int>(a) ==
+         RAJA::util::reinterp_A_as_B<T, unsigned long long int>(b);
 }
 
 
