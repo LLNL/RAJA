@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     auto res = RAJA::resources::get_default_resource<exec_policy>();
 
     int* bins = res.template allocate<int>(N);
-    int* a   = res.template allocate<int>(N);
+    int* a    = res.template allocate<int>(N);
 
     res.memcpy(bins, host_bins, N*sizeof(int));
     res.memcpy(a   , host_a   , N*sizeof(int));
