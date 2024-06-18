@@ -23,6 +23,8 @@
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
 
+#include <cstdint>
+
 #if defined(RAJA_ENABLE_HIP)
 #define RAJA_DEVICE_HIP RAJA_HOST_DEVICE
 #else
@@ -130,33 +132,380 @@ RAJA_INLINE unsigned long long builtin_atomic_CAS(
 
 #else  // RAJA_COMPILER_MSVC
 
+template <typename T,
+          std::enable_if_t<(std::is_integral<T>::value ||
+                            std::is_enum<T>::value) &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
 RAJA_DEVICE_HIP
-RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
   return __atomic_load_n(acc, __ATOMIC_RELAXED);
 }
 
+template <typename T,
+          std::enable_if_t<(std::is_integral<T>::value ||
+                            std::is_enum<T>::value) &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
 RAJA_DEVICE_HIP
-RAJA_INLINE unsigned long long builtin_atomic_load(
-    unsigned long long volatile *acc)
-{
-  return __atomic_load_n(acc, __ATOMIC_RELAXED);
-}
-
-RAJA_DEVICE_HIP
-RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc,
-                                      unsigned value)
-{
-  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
-}
-
-RAJA_DEVICE_HIP
-RAJA_INLINE void builtin_atomic_store(
-    unsigned long long volatile *acc,
-    unsigned long long value)
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   __atomic_store_n(acc, value, __ATOMIC_RELAXED);
 }
+
+template <typename T,
+          std::enable_if_t<(std::is_integral<T>::value ||
+                            std::is_enum<T>::value) &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return __atomic_exchange_n(acc, value, __ATOMIC_RELAXED);
+}
+
+#if defined(UINT8_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint8_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<uint8_t, T>(
+    __atomic_load_n(reinterpret_cast<uint8_t*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint8_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<uint8_t*>(acc),
+                   reinterpret_cast<uint8_t&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint8_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<uint8_t, T>(
+    __atomic_exchange_n(reinterpret_cast<uint8_t*>(acc),
+                        reinterpret_cast<uint8_t&>(value),
+                        __ATOMIC_RELAXED));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned char) &&
+                           sizeof(unsigned char) == 1, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<unsigned char, T>(
+    __atomic_load_n(reinterpret_cast<unsigned char*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned char) &&
+                           sizeof(unsigned char) == 1, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<unsigned char*>(acc),
+                   reinterpret_cast<unsigned char&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned char) &&
+                           sizeof(unsigned char) == 1, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned char, T>(
+    __atomic_exchange_n(reinterpret_cast<unsigned char*>(acc),
+                        reinterpret_cast<unsigned char&>(value),
+                        __ATOMIC_RELAXED);
+}
+
+#endif
+
+#if defined(UINT16_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint16_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<uint16_t, T>(
+    __atomic_load_n(reinterpret_cast<uint16_t*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint16_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<uint16_t*>(acc),
+                   reinterpret_cast<uint16_t&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint16_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<uint16_t, T>(
+    __atomic_exchange_n(reinterpret_cast<uint16_t*>(acc),
+                        reinterpret_cast<uint16_t&>(value),
+                        __ATOMIC_RELAXED));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned short) &&
+                           sizeof(unsigned short) == 2, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<unsigned short, T>(
+    __atomic_load_n(reinterpret_cast<unsigned short*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned short) &&
+                           sizeof(unsigned short) == 2, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<unsigned short*>(acc),
+                   reinterpret_cast<unsigned short&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned short) &&
+                           sizeof(unsigned short) == 2, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned short, T>(
+    __atomic_exchange_n(reinterpret_cast<unsigned short*>(acc),
+                        reinterpret_cast<unsigned short&>(value),
+                        __ATOMIC_RELAXED);
+}
+
+#endif
+
+#if defined(UINT32_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint32_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<uint32_t, T>(
+    __atomic_load_n(reinterpret_cast<uint32_t*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint32_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<uint32_t*>(acc),
+                   reinterpret_cast<uint32_t&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint32_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<uint32_t, T>(
+    __atomic_exchange_n(reinterpret_cast<uint32_t*>(acc),
+                        reinterpret_cast<uint32_t&>(value),
+                        __ATOMIC_RELAXED));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned int) &&
+                           sizeof(unsigned int) == 4, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<unsigned int, T>(
+    __atomic_load_n(reinterpret_cast<unsigned int*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned int) &&
+                           sizeof(unsigned int) == 4, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<unsigned int*>(acc),
+                   reinterpret_cast<unsigned int&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned int) &&
+                           sizeof(unsigned int) == 4, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
+    __atomic_exchange_n(reinterpret_cast<unsigned int*>(acc),
+                        reinterpret_cast<unsigned int&>(value),
+                        __ATOMIC_RELAXED);
+}
+
+#endif
+
+#if defined(UINT64_MAX)
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint64_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<uint64_t, T>(
+    __atomic_load_n(reinterpret_cast<uint64_t*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint64_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<uint64_t*>(acc),
+                   reinterpret_cast<uint64_t&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(uint64_t), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<uint64_t, T>(
+    __atomic_exchange_n(reinterpret_cast<uint64_t*>(acc),
+                        reinterpret_cast<uint64_t&>(value),
+                        __ATOMIC_RELAXED));
+}
+
+#else
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned long long) &&
+                           sizeof(unsigned long long) == 8, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return RAJA::util_reinterp_A_as_B<unsigned long long, T>(
+    __atomic_load_n(reinterpret_cast<unsigned long long*>(acc),
+                    __ATOMIC_RELAXED));
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned long long) &&
+                           sizeof(unsigned long long) == 8, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(reinterpret_cast<unsigned long long*>(acc),
+                   reinterpret_cast<unsigned long long&>(value),
+                   __ATOMIC_RELAXED);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_integral<T>::value &&
+                           !std::is_enum<T>::value &&
+                           sizeof(T) == sizeof(unsigned long long) &&
+                           sizeof(unsigned long long) == 4, bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
+    __atomic_exchange_n(reinterpret_cast<unsigned long long*>(acc),
+                        reinterpret_cast<unsigned long long&>(value),
+                        __ATOMIC_RELAXED);
+}
+
+#endif
+
+
+
+
 
 RAJA_DEVICE_HIP
 RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
