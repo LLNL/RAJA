@@ -9,8 +9,6 @@
 #include <iostream>
 #include <limits>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
 
 /*
@@ -39,6 +37,11 @@ constexpr int CUDA_BLOCK_SIZE = 256;
 constexpr int HIP_BLOCK_SIZE = 256;
 #endif
 
+#if defined(RAJA_ENABLE_SYCL)
+constexpr int SYCL_BLOCK_SIZE = 151; //reductions have a limit of 151
+//constexpr int SYCL_BLOCK_SIZE = 256;
+#endif
+
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -51,9 +54,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 1000000;
 
 //
+// Use a resource to allocate memory
+//
+  RAJA::resources::Host host_res;
+#if defined(RAJA_ENABLE_CUDA)
+  RAJA::resources::Cuda device_res;
+#endif
+#if defined(RAJA_ENABLE_HIP)
+  RAJA::resources::Hip device_res;
+#endif
+#if defined(RAJA_ENABLE_SYCL)
+  RAJA::resources::Sycl device_res;
+#endif
+
+
+//
 // Allocate array data and initialize data to alternating sequence of 1, -1.
 //
-  int* a = memoryManager::allocate<int>(N);
+  int* a = host_res.allocate<int>(N);
 
   for (int i = 0; i < N; ++i) {
     if ( i % 2 == 0 ) {
@@ -111,9 +129,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT seq_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT seq_maxloc(std::numeric_limits<int>::min(), -1);
 
-  //RAJA::forall<EXEC_POL1>(arange,
   RAJA::launch<LAUNCH_POL1>
-    (RAJA::LaunchParams(), "SeqReductionKernel",
+    (host_res, RAJA::LaunchParams(), "SeqReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
@@ -334,10 +351,73 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 
+#if defined(RAJA_ENABLE_SYCL)
+  std::cout << "\n Running RAJA SYCL reductions...\n";
+
+  int* d_a = device_res.allocate<int>(N);
+  device_res.memcpy(d_a, a, sizeof(int) * N);
+
+  // _reductions_raja_syclpolicy_start
+  using LAUNCH_POL4   = RAJA::LaunchPolicy<RAJA::sycl_launch_t<false /*async*/>>;
+  using LOOP_POL4     = RAJA::LoopPolicy<RAJA::sycl_global_item_2>;
+  // _reductions_raja_syclpolicy_end
+
+  const int NUMBER_OF_TEAMS = (N-1)/SYCL_BLOCK_SIZE + 1;
+
+  int sycl_sum = 0;
+  int sycl_min = std::numeric_limits<int>::max();
+  int sycl_max = std::numeric_limits<int>::min();
+  VALLOC_INT sycl_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT sycl_maxloc(std::numeric_limits<int>::min(), -1);
+
+  RAJA::launch<LAUNCH_POL4>
+    (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(SYCL_BLOCK_SIZE)),
+     "SyclReductionKernel",
+    RAJA::expt::Reduce<RAJA::operators::plus>(&sycl_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
+     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
+                           int &_sycl_sum, int &_sycl_min,
+                           int &_sycl_max, VALLOC_INT &_sycl_minloc,
+                           VALLOC_INT &_sycl_maxloc) {
+
+      RAJA::loop<LOOP_POL4>(ctx, arange, [&] (int i) {
+
+          _sycl_sum += d_a[i];
+
+          _sycl_min = RAJA_MIN(d_a[i], _sycl_min);
+          _sycl_max = RAJA_MAX(d_a[i], _sycl_max);
+
+          _sycl_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _sycl_minloc);
+          _sycl_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _sycl_maxloc);
+          //_sycl_minloc.min(d_a[i], i);
+          //_sycl_maxloc.max(d_a[i], i);
+
+        }
+      );
+
+    }
+  );
+
+  std::cout << "\tsum = " << sycl_sum << std::endl;
+  std::cout << "\tmin = " << sycl_min << std::endl;
+  std::cout << "\tmax = " << sycl_max << std::endl;
+  std::cout << "\tmin, loc = " << sycl_minloc.getVal() << " , "
+                               << sycl_minloc.getLoc() << std::endl;
+  std::cout << "\tmax, loc = " << sycl_maxloc.getVal() << " , "
+                               << sycl_maxloc.getLoc() << std::endl;
+
+  device_res.deallocate(d_a);
+#endif
+
+//----------------------------------------------------------------------------//
+
 //
 // Clean up.
 //
-  memoryManager::deallocate(a);
+  host_res.deallocate(a);
 
   std::cout << "\n DONE!...\n";
 
