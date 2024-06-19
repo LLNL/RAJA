@@ -18,9 +18,10 @@
 template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
           typename DATA_TYPE, typename IDX_TYPE,
           typename SEG_TYPE, typename Container,
-          typename RandomGenerator,
-          std::enable_if_t<!ABSTRACTION::template supports<DATA_TYPE>()>* = nullptr>
-void ForallMultiReduceBasicTestImpl(const SEG_TYPE&,
+          typename RandomGenerator>
+// use enable_if in return type to appease nvcc 11.2
+std::enable_if_t<!ABSTRACTION::template supports<DATA_TYPE>()>
+ForallMultiReduceBasicTestImpl(const SEG_TYPE&,
                                     const Container&,
                                     const std::vector<IDX_TYPE>&,
                                     camp::resources::Resource,
@@ -30,9 +31,10 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE&,
 template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
           typename DATA_TYPE, typename IDX_TYPE,
           typename SEG_TYPE, typename Container,
-          typename RandomGenerator,
-          std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>* = nullptr>
-void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
+          typename RandomGenerator>
+// use enable_if in return type to appease nvcc 11.2
+std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>
+ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
                                     const Container& multi_init,
                                     const std::vector<IDX_TYPE>& seg_idx,
                                     camp::resources::Resource working_res,
