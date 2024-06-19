@@ -37,6 +37,7 @@ namespace detail
 {
 
 // runtime loop applying func to each element in the range in order
+RAJA_SUPPRESS_HD_WARN
 template<typename Iter, typename UnaryFunc>
 RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each(Iter begin, Iter end, UnaryFunc func)
@@ -49,6 +50,7 @@ UnaryFunc for_each(Iter begin, Iter end, UnaryFunc func)
 }
 
 // compile time expansion applying func to a each type in the list in order
+RAJA_SUPPRESS_HD_WARN
 template <typename UnaryFunc, typename... Ts>
 RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each_type(camp::list<Ts...> const&, UnaryFunc func)
@@ -61,6 +63,7 @@ UnaryFunc for_each_type(camp::list<Ts...> const&, UnaryFunc func)
 }
 
 // compile time expansion applying func to a each type in the tuple in order
+RAJA_SUPPRESS_HD_WARN
 template <typename Tuple, typename UnaryFunc, camp::idx_t... Is>
 RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func, camp::idx_seq<Is...>)
@@ -81,6 +84,7 @@ UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func, camp::idx_seq<Is...>)
   using a sequential for loop in O(N) operations and O(1) extra memory
     see https://en.cppreference.com/w/cpp/algorithm/for_each
 */
+RAJA_SUPPRESS_HD_WARN
 template <typename Container, typename UnaryFunc>
 RAJA_HOST_DEVICE RAJA_INLINE
 concepts::enable_if_t<UnaryFunc, type_traits::is_range<Container>>
@@ -96,6 +100,7 @@ concepts::enable_if_t<UnaryFunc, type_traits::is_range<Container>>
   \brief Apply func to each type in the given list in order
   using a compile-time expansion in O(N) operations and O(1) extra memory
 */
+RAJA_SUPPRESS_HD_WARN
 template <typename UnaryFunc, typename... Ts>
 RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each_type(camp::list<Ts...> const& c, UnaryFunc func)
@@ -107,6 +112,7 @@ UnaryFunc for_each_type(camp::list<Ts...> const& c, UnaryFunc func)
   \brief Apply func to each object in the given tuple or tuple like type in order
   using a compile-time expansion in O(N) operations and O(1) extra memory
 */
+RAJA_SUPPRESS_HD_WARN
 template <typename Tuple, typename UnaryFunc>
 RAJA_HOST_DEVICE RAJA_INLINE
 UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func)

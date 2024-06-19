@@ -168,10 +168,14 @@ struct BaseMultiReduce
       : data{container, identity}
   { }
 
+  RAJA_SUPPRESS_HD_WARN
   BaseMultiReduce(const BaseMultiReduce &copy) = default;
+  RAJA_SUPPRESS_HD_WARN
   BaseMultiReduce(BaseMultiReduce &&copy) = default;
   BaseMultiReduce &operator=(const BaseMultiReduce &) = delete;
   BaseMultiReduce &operator=(BaseMultiReduce &&) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  ~BaseMultiReduce() = default;
 
   void reset()
   {
@@ -239,6 +243,17 @@ public:
   using typename Base::value_type;
   using Base::Base;
 
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceMin(const BaseMultiReduceMin &copy) = default;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceMin(BaseMultiReduceMin &&copy) = default;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceMin &operator=(const BaseMultiReduceMin &) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceMin &operator=(BaseMultiReduceMin &&) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  ~BaseMultiReduceMin() = default;
+
   struct reference
   {
     RAJA_HOST_DEVICE
@@ -280,6 +295,15 @@ public:
   using typename Base::value_type;
 
   using Base::Base;
+
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceMax(const BaseMultiReduceMax &copy) = default;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceMax(BaseMultiReduceMax &&copy) = default;
+  BaseMultiReduceMax &operator=(const BaseMultiReduceMax &) = delete;
+  BaseMultiReduceMax &operator=(BaseMultiReduceMax &&) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  ~BaseMultiReduceMax() = default;
 
   struct reference
   {
@@ -323,6 +347,15 @@ public:
 
   using Base::Base;
 
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceSum(const BaseMultiReduceSum &copy) = default;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceSum(BaseMultiReduceSum &&copy) = default;
+  BaseMultiReduceSum &operator=(const BaseMultiReduceSum &) = delete;
+  BaseMultiReduceSum &operator=(BaseMultiReduceSum &&) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  ~BaseMultiReduceSum() = default;
+
   struct reference
   {
     RAJA_HOST_DEVICE
@@ -365,6 +398,15 @@ public:
 
   using Base::Base;
 
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceBitOr(const BaseMultiReduceBitOr &copy) = default;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceBitOr(BaseMultiReduceBitOr &&copy) = default;
+  BaseMultiReduceBitOr &operator=(const BaseMultiReduceBitOr &) = delete;
+  BaseMultiReduceBitOr &operator=(BaseMultiReduceBitOr &&) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  ~BaseMultiReduceBitOr() = default;
+
   struct reference
   {
     RAJA_HOST_DEVICE
@@ -406,6 +448,15 @@ public:
   using typename Base::value_type;
 
   using Base::Base;
+
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceBitAnd(const BaseMultiReduceBitAnd &copy) = default;
+  RAJA_SUPPRESS_HD_WARN
+  BaseMultiReduceBitAnd(BaseMultiReduceBitAnd &&copy) = default;
+  BaseMultiReduceBitAnd &operator=(const BaseMultiReduceBitAnd &) = delete;
+  BaseMultiReduceBitAnd &operator=(BaseMultiReduceBitAnd &&) = delete;
+  RAJA_SUPPRESS_HD_WARN
+  ~BaseMultiReduceBitAnd() = default;
 
   struct reference
   {
