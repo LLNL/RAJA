@@ -52,8 +52,39 @@ auto example_policies = camp::make_tuple(
 
     );
 
+template < typename exec_policy, typename multi_reduce_policy >
+void example_code(RAJA::RangeSegment arange, int num_bins, int* bins, int* a)
+{
+  RAJA::MultiReduceSum<multi_reduce_policy, int>    multi_reduce_sum(num_bins);
+  RAJA::MultiReduceMin<multi_reduce_policy, int>    multi_reduce_min(num_bins);
+  RAJA::MultiReduceMax<multi_reduce_policy, int>    multi_reduce_max(num_bins);
+  RAJA::MultiReduceBitAnd<multi_reduce_policy, int> multi_reduce_and(num_bins);
+  RAJA::MultiReduceBitOr<multi_reduce_policy, int>  multi_reduce_or(num_bins);
 
-int main(int argc, char *argv[])
+  RAJA::forall<exec_policy>(arange,
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
+
+    int bin = bins[i];
+
+    multi_reduce_sum[bin] +=  a[i];
+    multi_reduce_min[bin].min(a[i]);
+    multi_reduce_max[bin].max(a[i]);
+    multi_reduce_and[bin] &=  a[i];
+    multi_reduce_or [bin] |=  a[i];
+
+  });
+
+  for (int bin = 0; bin < num_bins; ++bin) {
+    std::cout << "\tsum[" << bin << "] = " << multi_reduce_sum.get(bin) << '\n';
+    std::cout << "\tmin[" << bin << "] = " << multi_reduce_min.get(bin) << '\n';
+    std::cout << "\tmax[" << bin << "] = " << multi_reduce_max.get(bin) << '\n';
+    std::cout << "\tand[" << bin << "] = " << multi_reduce_and.get(bin) << '\n';
+    std::cout << "\tor [" << bin << "] = " << multi_reduce_or .get(bin) << '\n';
+    std::cout << '\n';
+  }
+}
+
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
 
   // _multi_reductions_array_init_start
@@ -113,33 +144,7 @@ int main(int argc, char *argv[])
     res.memcpy(bins, host_bins, N*sizeof(int));
     res.memcpy(a   , host_a   , N*sizeof(int));
 
-    RAJA::MultiReduceSum<multi_reduce_policy, int>    multi_reduce_sum(num_bins);
-    RAJA::MultiReduceMin<multi_reduce_policy, int>    multi_reduce_min(num_bins);
-    RAJA::MultiReduceMax<multi_reduce_policy, int>    multi_reduce_max(num_bins);
-    RAJA::MultiReduceBitAnd<multi_reduce_policy, int> multi_reduce_and(num_bins);
-    RAJA::MultiReduceBitOr<multi_reduce_policy, int>  multi_reduce_or(num_bins);
-
-    RAJA::forall<exec_policy>(arange,
-        [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
-
-      int bin = bins[i];
-
-      multi_reduce_sum[bin] +=  a[i];
-      multi_reduce_min[bin].min(a[i]);
-      multi_reduce_max[bin].max(a[i]);
-      multi_reduce_and[bin] &=  a[i];
-      multi_reduce_or [bin] |=  a[i];
-
-    });
-
-    for (int bin = 0; bin < num_bins; ++bin) {
-      std::cout << "\tsum[" << bin << "] = " << multi_reduce_sum.get(bin) << '\n';
-      std::cout << "\tmin[" << bin << "] = " << multi_reduce_min.get(bin) << '\n';
-      std::cout << "\tmax[" << bin << "] = " << multi_reduce_max.get(bin) << '\n';
-      std::cout << "\tand[" << bin << "] = " << multi_reduce_and.get(bin) << '\n';
-      std::cout << "\tor [" << bin << "] = " << multi_reduce_or .get(bin) << '\n';
-      std::cout << '\n';
-    }
+    example_code<exec_policy, multi_reduce_policy>(arange, num_bins, bins, a);
 
     res.deallocate(bins);
     res.deallocate(a   );
