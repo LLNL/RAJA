@@ -88,7 +88,8 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     std::vector<DATA_TYPE> ref_vals(num_bins, ABSTRACTION::identity(red));
 
     for (IDX_TYPE i = 0; i < idx_len; ++i) {
-      ref_vals[test_bins[seg_idx[i]]] = ABSTRACTION::combine(ref_vals[test_bins[seg_idx[i]]], test_array[seg_idx[i]]);
+      IDX_TYPE idx = seg_idx[i];
+      ref_vals[test_bins[idx]] = ABSTRACTION::combine(ref_vals[test_bins[idx]], test_array[idx]);
     }
 
     RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
@@ -100,6 +101,7 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     for (auto init_val : multi_init) {
       ASSERT_EQ(DATA_TYPE(red[bin].get()), ref_vals[bin]);
       ASSERT_EQ(red2.get(bin), ABSTRACTION::combine(ref_vals[bin], init_val));
+      ++bin;
     }
   }
 
@@ -113,7 +115,8 @@ void ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     for (int j = 0; j < nloops; ++j) {
 
       for (IDX_TYPE i = 0; i < idx_len; ++i) {
-        ref_vals[test_bins[seg_idx[i]]] = ABSTRACTION::combine(ref_vals[test_bins[seg_idx[i]]], test_array[seg_idx[i]]);
+        IDX_TYPE idx = seg_idx[i];
+        ref_vals[test_bins[idx]] = ABSTRACTION::combine(ref_vals[test_bins[idx]], test_array[idx]);
       }
 
       RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {

@@ -155,7 +155,7 @@ private:
     for (size_t bin = num_bins; bin > 0; --bin) {
       data[bin-1].~T();
     }
-    free_aligned(data);
+    RAJA::free_aligned(data);
     data = nullptr;
   }
 };
@@ -315,7 +315,7 @@ private:
         data[index_data(bin-1, thread_idx-1, padded_bins, padded_threads)].~T();
       }
     }
-    free_aligned(data);
+    RAJA::free_aligned(data);
   }
 };
 
