@@ -333,7 +333,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic,
                                               return a < value ? a : value;
                                             },
                                             [=](T current) {
-                                              return current < value;
+                                              return current <= value;
                                             });
 }
 
@@ -347,7 +347,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic,
                                               return a > value ? a : value;
                                             },
                                             [=](T current) {
-                                              return current > value;
+                                              return value <= current;
                                             });
 }
 

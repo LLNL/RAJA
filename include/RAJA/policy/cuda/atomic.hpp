@@ -411,7 +411,7 @@ RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
                           return value < old ? value : old;
                         },
                         [value] (T current) {
-                          return current < value;
+                          return current <= value;
                         });
 }
 
@@ -435,7 +435,7 @@ RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
                           return old < value ? value : old;
                         },
                         [value] (T current) {
-                          return value < current;
+                          return value <= current;
                         });
 }
 
