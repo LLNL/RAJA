@@ -382,7 +382,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<uint8_t, T>(
+  return RAJA::util::reinterp_A_as_B<uint8_t, T>(
     builtin_atomicLoad(reinterpret_cast<uint8_t*>(acc)));
 }
 
@@ -443,7 +443,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<unsigned char, T>(
+  return RAJA::util::reinterp_A_as_B<unsigned char, T>(
     builtin_atomicLoad(reinterpret_cast<unsigned char*>(acc)));
 }
 
@@ -509,7 +509,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<uint16_t, T>(
+  return RAJA::util::reinterp_A_as_B<uint16_t, T>(
     builtin_atomicLoad(reinterpret_cast<uint16_t*>(acc)));
 }
 
@@ -570,7 +570,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<unsigned short, T>(
+  return RAJA::util::reinterp_A_as_B<unsigned short, T>(
     builtin_atomicLoad(reinterpret_cast<unsigned short*>(acc)));
 }
 
@@ -636,7 +636,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<uint32_t, T>(
+  return RAJA::util::reinterp_A_as_B<uint32_t, T>(
     builtin_atomicLoad(reinterpret_cast<uint32_t*>(acc)));
 }
 
@@ -697,7 +697,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<unsigned int, T>(
+  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     builtin_atomicLoad(reinterpret_cast<unsigned int*>(acc)));
 }
 
@@ -763,7 +763,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<uint64_t, T>(
+  return RAJA::util::reinterp_A_as_B<uint64_t, T>(
     builtin_atomicLoad(reinterpret_cast<uint64_t*>(acc)));
 }
 
@@ -824,7 +824,7 @@ template <typename T,
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util_reinterp_A_as_B<unsigned long long, T>(
+  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
     builtin_atomicLoad(reinterpret_cast<unsigned long long*>(acc)));
 }
 
@@ -1346,7 +1346,6 @@ template <typename T,
                            sizeof(T) == 2 ||
                            sizeof(T) == 4 ||
                            sizeof(T) == 8, bool> = true>
-template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc)
 {
   return builtin_atomicAdd(acc, static_cast<T>(1));
@@ -1391,7 +1390,7 @@ template <typename T,
                            sizeof(T) == 2 ||
                            sizeof(T) == 4 ||
                            sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicDec(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
     return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
@@ -1409,7 +1408,7 @@ template <typename T,
                             sizeof(T) == 2 ||
                             sizeof(T) == 4 ||
                             sizeof(T) == 8), bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicAnd(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 {
   return __atomic_fetch_and(acc, value, __ATOMIC_RELAXED);
 }
@@ -1421,7 +1420,7 @@ template <typename T,
                             sizeof(T) == 2 ||
                             sizeof(T) == 4 ||
                             sizeof(T) == 8), bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicAnd(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
     return old & value;
@@ -1439,7 +1438,7 @@ template <typename T,
                             sizeof(T) == 2 ||
                             sizeof(T) == 4 ||
                             sizeof(T) == 8), bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicOr(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 {
   return __atomic_fetch_or(acc, value, __ATOMIC_RELAXED);
 }
@@ -1451,7 +1450,7 @@ template <typename T,
                             sizeof(T) == 2 ||
                             sizeof(T) == 4 ||
                             sizeof(T) == 8), bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicOr(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
     return old | value;
@@ -1469,7 +1468,7 @@ template <typename T,
                             sizeof(T) == 2 ||
                             sizeof(T) == 4 ||
                             sizeof(T) == 8), bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicXor(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 {
   return __atomic_fetch_xor(acc, value, __ATOMIC_RELAXED);
 }
@@ -1481,7 +1480,7 @@ template <typename T,
                             sizeof(T) == 2 ||
                             sizeof(T) == 4 ||
                             sizeof(T) == 8), bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicXor(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
     return old ^ value;
@@ -1504,7 +1503,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicLoad(builtin_atomic, T *acc)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE void atomicStore(builtin_atomic, T *acc, T value)
 {
-  detail::builtin_atomic_store(acc, value);
+  detail::builtin_atomicStore(acc, value);
 }
 
 template <typename T>
@@ -1571,6 +1570,18 @@ template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicXor(builtin_atomic, T *acc, T value)
 {
   return detail::builtin_atomicXor(acc, value);
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE T atomicExchange(builtin_atomic, T *acc, T value)
+{
+  return detail::builtin_atomicExchange(acc, value);
+}
+
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(builtin_atomic, T *acc, T compare, T value)
+{
+  return detail::builtin_atomicCAS(acc, compare, value);
 }
 
 
