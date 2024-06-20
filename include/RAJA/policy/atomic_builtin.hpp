@@ -1014,107 +1014,6 @@ RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 }
 
 
-/*
- * Atomic minimum
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicMin(T *acc, T value)
-{
-  return builtin_atomicCAS(acc,
-                           [value] (T old) {
-                             return value < old ? value : old;
-                           },
-                           [value] (T current) {
-                             return current <= value;
-                           });
-}
-
-
-/*
- * Atomic maximum
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicMax(T *acc, T value)
-{
-  return builtin_atomicCAS(acc,
-                           [value] (T old) {
-                             return old < value ? value : old;
-                           },
-                           [value] (T current) {
-                             return value <= current;
-                           });
-}
-
-
-/*
- * Atomic increment
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc)
-{
-  return builtin_atomicAdd(acc, static_cast<T>(1));
-}
-
-
-/*
- * Atomic increment with reset
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc, T value)
-{
-  return builtin_atomicCAS(acc, [value] (T old) {
-    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
-  });
-}
-
-
-/*
- * Atomic decrement
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicDec(T *acc)
-{
-  return builtin_atomicSub(acc, static_cast<T>(1));
-}
-
-
-/*
- * Atomic decrement with reset
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(T *acc, T value)
-{
-  return builtin_atomicCAS(acc, [value] (T old) {
-    return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
-  });
-}
-
-
 /*!
  * Atomic and
  */
@@ -1299,106 +1198,6 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 
 
 /*
- * Atomic minimum
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicMin(T *acc, T value)
-{
-  return builtin_atomicCAS(acc,
-                           [value] (T old) {
-                             return value < old ? value : old;
-                           },
-                           [value] (T current) {
-                             return current <= value;
-                           });
-}
-
-
-/*
- * Atomic maximum
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicMax(T *acc, T value)
-{
-  return builtin_atomicCAS(acc,
-                           [value] (T old) {
-                             return old < value ? value : old;
-                           },
-                           [value] (T current) {
-                             return value <= current;
-                           });
-}
-
-
-/*
- * Atomic increment
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc)
-{
-  return builtin_atomicAdd(acc, static_cast<T>(1));
-}
-
-
-/*
- * Atomic increment with reset
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc, T value)
-{
-  return builtin_atomicCAS(acc, [value] (T old) {
-    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
-  });
-}
-
-
-/*
- * Atomic decrement
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicDec(T *acc)
-{
-  return builtin_atomicSub(acc, static_cast<T>(1));
-}
-
-
-/*
- * Atomic decrement with reset
- */
-template <typename T,
-          std::enable_if_t<sizeof(T) == 1 ||
-                           sizeof(T) == 2 ||
-                           sizeof(T) == 4 ||
-                           sizeof(T) == 8, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicDec(T *acc, T value)
-{
-  return builtin_atomicCAS(acc, [value] (T old) {
-    return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
-  });
-}
-
-
-/*
  * Atomic and
  */
 template <typename T,
@@ -1521,37 +1320,53 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicSub(builtin_atomic, T *acc, T value)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicMin(acc, value);
+  return detail::builtin_atomicCAS(acc,
+                                   [value] (T old) {
+                                     return value < old ? value : old;
+                                   },
+                                   [value] (T current) {
+                                     return current <= value;
+                                   });
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicMax(acc, value);
+  return detail::builtin_atomicCAS(acc,
+                                   [value] (T old) {
+                                     return old < value ? value : old;
+                                   },
+                                   [value] (T current) {
+                                     return value <= current;
+                                   });
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T *acc)
 {
-  return detail::builtin_atomicInc(acc);
+  return detail::builtin_atomicAdd(acc, static_cast<T>(1));
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicInc(acc, value);
+  return detail::builtin_atomicCAS(acc, [value] (T old) {
+    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
+  });
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T *acc)
 {
-  return detail::builtin_atomicDec(acc);
+  return detail::builtin_atomicSub(acc, static_cast<T>(1));
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicDec(acc, value);
+  return detail::builtin_atomicCAS(acc, [value] (T old) {
+    return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
+  });
 }
 
 template <typename T>
