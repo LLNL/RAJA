@@ -64,90 +64,90 @@ struct auto_atomic {
 };
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(auto_atomic, T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(auto_atomic, T *acc)
 {
   return atomicLoad(RAJA_AUTO_ATOMIC, acc);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(auto_atomic, T *acc, T value)
 {
   atomicStore(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(auto_atomic, T *acc, T value)
 {
   return atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(auto_atomic, T *acc, T value)
 {
   return atomicSub(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(auto_atomic, T *acc, T value)
 {
   return atomicMin(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(auto_atomic, T *acc, T value)
 {
   return atomicMax(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(auto_atomic, T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(auto_atomic, T *acc)
 {
   return atomicInc(RAJA_AUTO_ATOMIC, acc);
 }
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(auto_atomic,
-                                         T volatile *acc,
+                                         T *acc,
                                          T compare)
 {
   return atomicInc(RAJA_AUTO_ATOMIC, acc, compare);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(auto_atomic, T volatile *acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(auto_atomic, T *acc)
 {
   return atomicDec(RAJA_AUTO_ATOMIC, acc);
 }
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(auto_atomic,
-                                         T volatile *acc,
+                                         T *acc,
                                          T compare)
 {
   return atomicDec(RAJA_AUTO_ATOMIC, acc, compare);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(auto_atomic, T *acc, T value)
 {
   return atomicAnd(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(auto_atomic, T *acc, T value)
 {
   return atomicOr(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(auto_atomic, T volatile *acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(auto_atomic, T *acc, T value)
 {
   return atomicXor(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(auto_atomic,
-                                              T volatile *acc,
+                                              T *acc,
                                               T value)
 {
   return atomicExchange(RAJA_AUTO_ATOMIC, acc, value);
@@ -155,7 +155,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(auto_atomic,
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T
-atomicCAS(auto_atomic, T volatile *acc, T compare, T value)
+atomicCAS(auto_atomic, T *acc, T compare, T value)
 {
   return atomicCAS(RAJA_AUTO_ATOMIC, acc, compare, value);
 }
