@@ -171,7 +171,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 
 
 /*!
- * Atomic store (implemented using builtin_atomic exchange)
+ * Atomic store (implemented using atomic exchange)
  */
 template <typename T>
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
@@ -183,8 +183,10 @@ RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 /*!
  * Atomic compare and swap
  */
-
-// No 8 bit version
+RAJA_INLINE char builtin_atomicCAS(char *acc, char compare, char value)
+{
+  return _InterlockedCompareExchange8(acc, value, compare);
+}
 
 RAJA_INLINE short builtin_atomicCAS(short *acc, short compare, short value)
 {
@@ -199,6 +201,16 @@ RAJA_INLINE long builtin_atomicCAS(long *acc, long compare, long value)
 RAJA_INLINE long long builtin_atomicCAS(long long *acc, long long compare, long long value)
 {
   return _InterlockedCompareExchange64(acc, value, compare);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           sizeof(T) == sizeof(char), bool> = true>
+RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
+{
+  return RAJA::util::reinterp_A_as_B<char, T>(
+    builtin_atomicCAS(reinterpret_cast<char*>(acc),
+                      RAJA::util::reinterp_A_as_B<T, char>(value)));
 }
 
 template <typename T,
@@ -238,7 +250,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
  * (most notably, NaNs).
  */
 template <typename T,
-          std::enable_if_t<std::is_same<T, short>::value ||
+          std::enable_if_t<std::is_same<T, char>::value ||
+                           std::is_same<T, short>::value ||
                            std::is_same<T, long>::value ||
                            std::is_same<T, long long>::value, bool> = true>
 RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
@@ -246,6 +259,15 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
   return a == b;
 }
 
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           sizeof(T) == sizeof(char), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return RAJA::util::reinterp_A_as_B<T, char>(a) ==
+         RAJA::util::reinterp_A_as_B<T, char>(b);
+}
 
 template <typename T,
           std::enable_if_t<!std::is_same<T, short>::value &&
@@ -257,7 +279,6 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, short>(b);
 }
 
-
 template <typename T,
           std::enable_if_t<!std::is_same<T, long>::value &&
                            sizeof(T) == sizeof(long), bool> = true>
@@ -267,7 +288,6 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
   return RAJA::util::reinterp_A_as_B<T, long>(a) ==
          RAJA::util::reinterp_A_as_B<T, long>(b);
 }
-
 
 template <typename T,
           std::enable_if_t<!std::is_same<T, long long>::value &&
@@ -909,6 +929,313 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircui
 
   return old;
 }
+
+
+#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
+
+
+/*!
+ * Atomic addition
+ */
+RAJA_INLINE char builtin_atomicAdd(char *acc, char value)
+{
+  return _InterlockedExchangeAdd8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicAdd(short *acc, short value)
+{
+  return _InterlockedExchangeAdd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAdd(long *acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicAdd(long long *acc, long long value)
+{
+  return _InterlockedExchangeAdd64(acc, value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           !std::is_same<T, short>::value &&
+                           !std::is_same<T, long>::value &&
+                           !std::is_same<T, long long>::value &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
+RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return old + value;
+  });
+}
+
+
+/*!
+ * Atomic subtraction
+ */
+RAJA_INLINE char builtin_atomicSub(char *acc, char value)
+{
+  return _InterlockedExchangeAdd8(acc, -value);
+}
+
+RAJA_INLINE short builtin_atomicSub(short *acc, short value)
+{
+  return _InterlockedExchangeAdd16(acc, -value);
+}
+
+RAJA_INLINE long builtin_atomicSub(long *acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, -value);
+}
+
+RAJA_INLINE long long builtin_atomicSub(long long *acc, long long value)
+{
+  return _InterlockedExchangeAdd64(acc, -value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           !std::is_same<T, short>::value &&
+                           !std::is_same<T, long>::value &&
+                           !std::is_same<T, long long>::value &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
+RAJA_INLINE T builtin_atomicSub(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return old - value;
+  });
+}
+
+
+/*
+ * Atomic minimum
+ */
+template <typename T,
+          std::enable_if_t<sizeof(T) == 1 ||
+                           sizeof(T) == 2 ||
+                           sizeof(T) == 4 ||
+                           sizeof(T) == 8, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicMin(T *acc, T value)
+{
+  return builtin_atomicCAS(acc,
+                           [value] (T old) {
+                             return value < old ? value : old;
+                           },
+                           [value] (T current) {
+                             return current <= value;
+                           });
+}
+
+
+/*
+ * Atomic maximum
+ */
+template <typename T,
+          std::enable_if_t<sizeof(T) == 1 ||
+                           sizeof(T) == 2 ||
+                           sizeof(T) == 4 ||
+                           sizeof(T) == 8, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicMax(T *acc, T value)
+{
+  return builtin_atomicCAS(acc,
+                           [value] (T old) {
+                             return old < value ? value : old;
+                           },
+                           [value] (T current) {
+                             return value <= current;
+                           });
+}
+
+
+/*
+ * Atomic increment
+ */
+template <typename T,
+          std::enable_if_t<sizeof(T) == 1 ||
+                           sizeof(T) == 2 ||
+                           sizeof(T) == 4 ||
+                           sizeof(T) == 8, bool> = true>
+template <typename T>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc)
+{
+  return builtin_atomicAdd(acc, static_cast<T>(1));
+}
+
+
+/*
+ * Atomic increment with reset
+ */
+template <typename T,
+          std::enable_if_t<sizeof(T) == 1 ||
+                           sizeof(T) == 2 ||
+                           sizeof(T) == 4 ||
+                           sizeof(T) == 8, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicInc(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
+  });
+}
+
+
+/*
+ * Atomic decrement
+ */
+template <typename T,
+          std::enable_if_t<sizeof(T) == 1 ||
+                           sizeof(T) == 2 ||
+                           sizeof(T) == 4 ||
+                           sizeof(T) == 8, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicDec(T *acc)
+{
+  return builtin_atomicSub(acc, static_cast<T>(1));
+}
+
+
+/*
+ * Atomic decrement with reset
+ */
+template <typename T,
+          std::enable_if_t<sizeof(T) == 1 ||
+                           sizeof(T) == 2 ||
+                           sizeof(T) == 4 ||
+                           sizeof(T) == 8, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
+  });
+}
+
+
+/*!
+ * Atomic and
+ */
+RAJA_INLINE char builtin_atomicAnd(char *acc, char value)
+{
+  return _InterlockedAnd8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicAnd(short *acc, short value)
+{
+  return _InterlockedAnd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAnd(long *acc, long value)
+{
+  return _InterlockedAnd(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
+{
+  return _InterlockedAnd64(acc, value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           !std::is_same<T, short>::value &&
+                           !std::is_same<T, long>::value &&
+                           !std::is_same<T, long long>::value &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
+RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return old & value;
+  });
+}
+
+
+/*!
+ * Atomic or
+ */
+RAJA_INLINE char builtin_atomicOr(char *acc, char value)
+{
+  return _InterlockedOr8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicOr(short *acc, short value)
+{
+  return _InterlockedOr16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicOr(long *acc, long value)
+{
+  return _InterlockedOr(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
+{
+  return _InterlockedOr64(acc, value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           !std::is_same<T, short>::value &&
+                           !std::is_same<T, long>::value &&
+                           !std::is_same<T, long long>::value &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
+RAJA_INLINE T builtin_atomicOr(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return old | value;
+  });
+}
+
+
+/*!
+ * Atomic xor
+ */
+RAJA_INLINE char builtin_atomicXor(char *acc, char value)
+{
+  return _InterlockedXor8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicXor(short *acc, short value)
+{
+  return _InterlockedXor16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicXor(long *acc, long value)
+{
+  return _InterlockedXor(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
+{
+  return _InterlockedXor64(acc, value);
+}
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, char>::value &&
+                           !std::is_same<T, short>::value &&
+                           !std::is_same<T, long>::value &&
+                           !std::is_same<T, long long>::value &&
+                           (sizeof(T) == 1 ||
+                            sizeof(T) == 2 ||
+                            sizeof(T) == 4 ||
+                            sizeof(T) == 8), bool> = true>
+RAJA_INLINE T builtin_atomicXor(T *acc, T value)
+{
+  return builtin_atomicCAS(acc, [value] (T old) {
+    return old ^ value;
+  });
+}
+
+
+#else  // RAJA_COMPILER_MSVC
 
 
 /*
