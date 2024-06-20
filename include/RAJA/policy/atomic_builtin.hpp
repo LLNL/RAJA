@@ -207,7 +207,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<uint8_t*>(acc),
-                      reinterpret_cast<uint8_t&>(value));
+                      RAJA::util::reinterp_A_as_B<T, uint8_t>(value));
 }
 
 template <typename T,
@@ -219,7 +219,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint8_t, T>(
     builtin_atomicExchange(reinterpret_cast<uint8_t*>(acc),
-                           reinterpret_cast<uint8_t&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, uint8_t>(value)));
 }
 
 template <typename T,
@@ -231,8 +231,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint8_t, T>(
     builtin_atomicCAS(reinterpret_cast<uint8_t*>(acc),
-                      reinterpret_cast<uint8_t&>(compare),
-                      reinterpret_cast<uint8_t&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, uint8_t>(compare),
+                      RAJA::util::reinterp_A_as_B<T, uint8_t>(value)));
 }
 
 #else
@@ -258,7 +258,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<unsigned char*>(acc),
-                      reinterpret_cast<unsigned char&>(value));
+                      RAJA::util::reinterp_A_as_B<T, unsigned char>(value));
 }
 
 template <typename T,
@@ -271,7 +271,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned char, T>(
     builtin_atomicExchange(reinterpret_cast<unsigned char*>(acc),
-                           reinterpret_cast<unsigned char&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, unsigned char>(value)));
 }
 
 template <typename T,
@@ -284,8 +284,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned char, T>(
     builtin_atomicCAS(reinterpret_cast<unsigned char*>(acc),
-                      reinterpret_cast<unsigned char&>(compare),
-                      reinterpret_cast<unsigned char&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, unsigned char>(compare),
+                      RAJA::util::reinterp_A_as_B<T, unsigned char>(value)));
 }
 
 #endif
@@ -311,7 +311,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<uint16_t*>(acc),
-                      reinterpret_cast<uint16_t&>(value));
+                      RAJA::util::reinterp_A_as_B<T, uint16_t>(value));
 }
 
 template <typename T,
@@ -323,7 +323,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint16_t, T>(
     builtin_atomicExchange(reinterpret_cast<uint16_t*>(acc),
-                           reinterpret_cast<uint16_t&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, uint16_t>(value)));
 }
 
 template <typename T,
@@ -335,8 +335,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint16_t, T>(
     builtin_atomicCAS(reinterpret_cast<uint16_t*>(acc),
-                      reinterpret_cast<uint16_t&>(compare),
-                      reinterpret_cast<uint16_t&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, uint16_t>(compare),
+                      RAJA::util::reinterp_A_as_B<T, uint16_t>(value)));
 }
 
 #else
@@ -362,7 +362,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<unsigned short*>(acc),
-                      reinterpret_cast<unsigned short&>(value));
+                      RAJA::util::reinterp_A_as_B<T, unsigned short>(value));
 }
 
 template <typename T,
@@ -375,7 +375,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned short, T>(
     builtin_atomicExchange(reinterpret_cast<unsigned short*>(acc),
-                           reinterpret_cast<unsigned short&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, unsigned short>(value)));
 }
 
 template <typename T,
@@ -388,8 +388,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned short, T>(
     builtin_atomicCAS(reinterpret_cast<unsigned short*>(acc),
-                      reinterpret_cast<unsigned short&>(compare),
-                      reinterpret_cast<unsigned short&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, unsigned short>(compare),
+                      RAJA::util::reinterp_A_as_B<T, unsigned short>(value)));
 }
 
 #endif
@@ -415,7 +415,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<uint32_t*>(acc),
-                      reinterpret_cast<uint32_t&>(value));
+                      RAJA::util::reinterp_A_as_B<T, uint32_t>(value));
 }
 
 template <typename T,
@@ -427,7 +427,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint32_t, T>(
     builtin_atomicExchange(reinterpret_cast<uint32_t*>(acc),
-                           reinterpret_cast<uint32_t&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, uint32_t>(value)));
 }
 
 template <typename T,
@@ -439,8 +439,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint32_t, T>(
     builtin_atomicCAS(reinterpret_cast<uint32_t*>(acc),
-                      reinterpret_cast<uint32_t&>(compare),
-                      reinterpret_cast<uint32_t&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, uint32_t>(compare),
+                      RAJA::util::reinterp_A_as_B<T, uint32_t>(value)));
 }
 
 #else
@@ -466,7 +466,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<unsigned int*>(acc),
-                      reinterpret_cast<unsigned int&>(value));
+                      RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
 }
 
 template <typename T,
@@ -479,7 +479,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     builtin_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                           reinterpret_cast<unsigned int&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
 template <typename T,
@@ -492,8 +492,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned int, T>(
     builtin_atomicCAS(reinterpret_cast<unsigned int*>(acc),
-                      reinterpret_cast<unsigned int&>(compare),
-                      reinterpret_cast<unsigned int&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, unsigned int>(compare),
+                      RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
 }
 
 #endif
@@ -519,7 +519,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<uint64_t*>(acc),
-                      reinterpret_cast<uint64_t&>(value));
+                      RAJA::util::reinterp_A_as_B<T, uint64_t>(value));
 }
 
 template <typename T,
@@ -531,7 +531,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint64_t, T>(
     builtin_atomicExchange(reinterpret_cast<uint64_t*>(acc),
-                           reinterpret_cast<uint64_t&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, uint64_t>(value)));
 }
 
 template <typename T,
@@ -543,8 +543,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<uint64_t, T>(
     builtin_atomicCAS(reinterpret_cast<uint64_t*>(acc),
-                      reinterpret_cast<uint64_t&>(compare),
-                      reinterpret_cast<uint64_t&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, uint64_t>(compare),
+                      RAJA::util::reinterp_A_as_B<T, uint64_t>(value)));
 }
 
 #else
@@ -570,7 +570,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(reinterpret_cast<unsigned long long*>(acc),
-                      reinterpret_cast<unsigned long long&>(value));
+                      RAJA::util::reinterp_A_as_B<T, unsigned long long>(value));
 }
 
 template <typename T,
@@ -583,7 +583,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
     builtin_atomicExchange(reinterpret_cast<unsigned long long*>(acc),
-                           reinterpret_cast<unsigned long long&>(value)));
+                           RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
 }
 
 template <typename T,
@@ -596,8 +596,8 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
     builtin_atomicCAS(reinterpret_cast<unsigned long long*>(acc),
-                      reinterpret_cast<unsigned long long&>(compare),
-                      reinterpret_cast<unsigned long long&>(value)));
+                      RAJA::util::reinterp_A_as_B<T, unsigned long long>(compare),
+                      RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
 }
 
 #endif
