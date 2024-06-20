@@ -40,6 +40,9 @@ struct builtin_atomic {
 };
 
 
+namespace detail {
+
+
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
 
@@ -168,7 +171,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 
 
 /*!
- * Atomic store (implemented using atomic exchange)
+ * Atomic store (implemented using builtin_atomic exchange)
  */
 template <typename T>
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
@@ -193,9 +196,7 @@ RAJA_INLINE long builtin_atomicCAS(long *acc, long compare, long value)
   return _InterlockedCompareExchange(acc, value, compare);
 }
 
-RAJA_INLINE long long builtin_atomicCAS(long long *acc,
-                                        long long compare,
-                                        long long value)
+RAJA_INLINE long long builtin_atomicCAS(long long *acc, long long compare, long long value)
 {
   return _InterlockedCompareExchange64(acc, value, compare);
 }
@@ -230,43 +231,6 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
                       RAJA::util::reinterp_A_as_B<T, long long>(value)));
 }
 
-
-
-
-
-
-
-
-RAJA_INLINE unsigned builtin_atomicCAS(unsigned *acc,
-                                        unsigned compare,
-                                        unsigned value)
-{
-
-  long long_value = RAJA::util::reinterp_A_as_B<unsigned, long>(value);
-  long long_compare = RAJA::util::reinterp_A_as_B<unsigned, long>(compare);
-
-  long old = _InterlockedCompareExchange((long *)acc, long_value, long_compare);
-
-  return RAJA::util::reinterp_A_as_B<long, unsigned>(old);
-}
-
-RAJA_INLINE unsigned long long builtin_atomicCAS(
-    unsigned long long *acc,
-    unsigned long long compare,
-    unsigned long long value)
-{
-
-  long long long_value =
-      RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value);
-  long long long_compare =
-      RAJA::util::reinterp_A_as_B<unsigned long long, long long>(compare);
-
-  long long old = _InterlockedCompareExchange64((long long *)acc,
-                                                long_value,
-                                                long_compare);
-
-  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(old);
-}
 
 #else  // RAJA_COMPILER_MSVC
 
@@ -401,7 +365,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, uint8_t>(b);
 }
 
-#else
+#else  // UINT8_MAX
 
 template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
@@ -466,7 +430,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, unsigned char>(b);
 }
 
-#endif
+#endif  // UINT8_MAX
 
 #if defined(UINT16_MAX)
 
@@ -528,7 +492,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, uint16_t>(b);
 }
 
-#else
+#else  // UINT16_MAX
 
 template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
@@ -593,7 +557,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, unsigned short>(b);
 }
 
-#endif
+#endif  // UINT16_MAX
 
 #if defined(UINT32_MAX)
 
@@ -655,7 +619,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, uint32_t>(b);
 }
 
-#else
+#else  // UINT32_MAX
 
 template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
@@ -720,7 +684,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, unsigned int>(b);
 }
 
-#endif
+#endif  // UINT32_MAX
 
 #if defined(UINT64_MAX)
 
@@ -782,7 +746,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, uint64_t>(b);
 }
 
-#else
+#else  // UINT64_MAX
 
 template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
@@ -835,8 +799,6 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
                       RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
 }
 
-namespace detail {
-
 template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
                            !std::is_enum<T>::value &&
@@ -849,7 +811,10 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
          RAJA::util::reinterp_A_as_B<T, unsigned long long>(b);
 }
 
-#endif
+#endif  // UINT64_MAX
+
+
+#endif  // RAJA_COMPILER_MSVC
 
 
 /*!
@@ -858,15 +823,15 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
  * Returns the OLD value that was replaced by the result of this operation.
  */
 template <typename T, typename Oper>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(T *acc, Oper &&oper)
 {
-  T old = builtin_atomicLoad(acc);
+  T old = atomicLoad(acc);
   T expected;
 
   do {
     expected = old;
-    old = builtin_atomicCAS(acc, expected, oper(expected));
-  } while (!builtin_atomicCAS_equal(old, expected));
+    old = atomicCAS(acc, expected, oper(expected));
+  } while (!atomicCAS_equal(old, expected));
 
   return old;
 }
@@ -879,11 +844,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper)
  * Returns the OLD value that was replaced by the result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc,
-                                                Oper &&oper,
-                                                ShortCircuit &&sc)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(T *acc, Oper &&oper, ShortCircuit &&sc)
 {
-  T old = builtin_atomicLoad(acc);
+  T old = atomicLoad(acc);
 
   if (sc(old)) {
     return old;
@@ -893,8 +856,8 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc,
 
   do {
     expected = old;
-    old = builtin_atomicCAS(acc, expected, oper(expected));
-  } while (!builtin_atomicCAS_equal(old, expected) && !sc(old));
+    old = atomicCAS(acc, expected, oper(expected));
+  } while (!atomicCAS_equal(old, expected) && !sc(old));
 
   return old;
 }
