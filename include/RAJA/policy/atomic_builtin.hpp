@@ -232,6 +232,54 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 }
 
 
+/*!
+ * Equality comparison for compare and swap loop. Converts to the underlying
+ * integral type to avoid cases where the values will never compare equal
+ * (most notably, NaNs).
+ */
+template <typename T,
+          std::enable_if_t<std::is_same<T, short>::value ||
+                           std::is_same<T, long>::value ||
+                           std::is_same<T, long long>::value, bool> = true>
+RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return a == b;
+}
+
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, short>::value &&
+                           sizeof(T) == sizeof(short), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return RAJA::util::reinterp_A_as_B<T, short>(a) ==
+         RAJA::util::reinterp_A_as_B<T, short>(b);
+}
+
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, long>::value &&
+                           sizeof(T) == sizeof(long), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return RAJA::util::reinterp_A_as_B<T, long>(a) ==
+         RAJA::util::reinterp_A_as_B<T, long>(b);
+}
+
+
+template <typename T,
+          std::enable_if_t<!std::is_same<T, long long>::value &&
+                           sizeof(T) == sizeof(long long), bool> = true>
+RAJA_DEVICE_HIP
+RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return RAJA::util::reinterp_A_as_B<T, long long>(a) ==
+         RAJA::util::reinterp_A_as_B<T, long long>(b);
+}
+
+
 #else  // RAJA_COMPILER_MSVC
 
 
@@ -823,15 +871,15 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
  * Returns the OLD value that was replaced by the result of this operation.
  */
 template <typename T, typename Oper>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(T *acc, Oper &&oper)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper)
 {
-  T old = atomicLoad(acc);
+  T old = builtin_atomicLoad(acc);
   T expected;
 
   do {
     expected = old;
-    old = atomicCAS(acc, expected, oper(expected));
-  } while (!atomicCAS_equal(old, expected));
+    old = builtin_atomicCAS(acc, expected, oper(expected));
+  } while (!builtin_atomicCAS_equal(old, expected));
 
   return old;
 }
@@ -844,9 +892,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(T *acc, Oper &&oper)
  * Returns the OLD value that was replaced by the result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(T *acc, Oper &&oper, ShortCircuit &&sc)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircuit &&sc)
 {
-  T old = atomicLoad(acc);
+  T old = builtin_atomicLoad(acc);
 
   if (sc(old)) {
     return old;
@@ -856,8 +904,8 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(T *acc, Oper &&oper, ShortCircuit &&sc)
 
   do {
     expected = old;
-    old = atomicCAS(acc, expected, oper(expected));
-  } while (!atomicCAS_equal(old, expected) && !sc(old));
+    old = builtin_atomicCAS(acc, expected, oper(expected));
+  } while (!builtin_atomicCAS_equal(old, expected) && !sc(old));
 
   return old;
 }
