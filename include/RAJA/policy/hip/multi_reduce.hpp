@@ -202,11 +202,11 @@ RAJA_DEVICE RAJA_INLINE void grid_multi_reduce_shmem_to_global_atomic(int num_bi
 
 //! MultiReduction data for Hip Offload -- stores value, host pointer
 template <typename Combiner, typename T, typename tuning>
-struct MultiReduceGridAtomicHostInit_Data
+struct MultiReduceGridAtomicHostInit_TallyData
 {
   //! setup permanent settings, allocate and initialize tally memory
   template < typename Container >
-  MultiReduceGridAtomicHostInit_Data(Container const& container, T const& identity)
+  MultiReduceGridAtomicHostInit_TallyData(Container const& container, T const& identity)
       : m_tally_mem(nullptr)
       , m_identity(identity)
       , m_num_bins(container.size())
@@ -216,19 +216,12 @@ struct MultiReduceGridAtomicHostInit_Data
     m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins, m_tally_replication);
   }
 
-  RAJA_HOST_DEVICE
-  MultiReduceGridAtomicHostInit_Data(const MultiReduceGridAtomicHostInit_Data& other)
-      : m_tally_mem(other.m_tally_mem)
-      , m_identity(other.m_identity)
-      , m_num_bins(other.m_num_bins)
-      , m_tally_bins(other.m_tally_bins)
-      , m_tally_replication(other.m_tally_replication)
-  {
-  }
-
-  MultiReduceGridAtomicHostInit_Data() = delete;
-  MultiReduceGridAtomicHostInit_Data& operator=(const MultiReduceGridAtomicHostInit_Data&) = default;
-  ~MultiReduceGridAtomicHostInit_Data() = default;
+  MultiReduceGridAtomicHostInit_TallyData() = delete;
+  MultiReduceGridAtomicHostInit_TallyData(MultiReduceGridAtomicHostInit_TallyData const&) = default;
+  MultiReduceGridAtomicHostInit_TallyData(MultiReduceGridAtomicHostInit_TallyData &&) = delete;
+  MultiReduceGridAtomicHostInit_TallyData& operator=(MultiReduceGridAtomicHostInit_TallyData const&) = default;
+  MultiReduceGridAtomicHostInit_TallyData& operator=(MultiReduceGridAtomicHostInit_TallyData &&) = delete;
+  ~MultiReduceGridAtomicHostInit_TallyData() = default;
 
 
   //! reset permanent settings, reallocate and reset tally memory
@@ -272,54 +265,6 @@ struct MultiReduceGridAtomicHostInit_Data
   }
 
 
-  //! setup per launch, do nothing
-  void setup_launch(size_t RAJA_UNUSED_ARG(block_size),
-                    size_t& RAJA_UNUSED_ARG(current_shmem),
-                    size_t RAJA_UNUSED_ARG(max_shmem))
-  {
-  }
-
-  //! teardown per launch, do nothing
-  void teardown_launch()
-  {
-  }
-
-
-  //! setup on device, do nothing
-  RAJA_DEVICE
-  void setup_device()
-  {
-  }
-
-  //! finalize on device, do nothing
-  RAJA_DEVICE
-  void finalize_device()
-  {
-  }
-
-
-  //! combine value on device, combine a value into tally memory
-  RAJA_DEVICE
-  void combine_device(int bin, T value)
-  {
-    impl::block_multi_reduce_combine_global_atomic<Combiner>(
-        m_num_bins, m_identity,
-        bin, value,
-        m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
-  }
-
-  //! combine value on host, combine a value into the tally
-  void combine_host(int bin, T value)
-  {
-    int tally_rep = 0;
-#if defined(RAJA_ENABLE_OPENMP)
-    tally_rep = omp_get_thread_num();
-#endif
-    int tally_offset = GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication);
-    Combiner{}(m_tally_mem[tally_offset], value);
-  }
-
-
   //! get value for bin, assumes synchronization occurred elsewhere
   T get(int bin) const
   {
@@ -337,18 +282,22 @@ struct MultiReduceGridAtomicHostInit_Data
 
   T identity() const { return m_identity; }
 
+protected:
+  using GetTallyOffset = GetOffsetLeft;
+
+  T* m_tally_mem;
+  T m_identity;
+  int m_num_bins;
+  int m_tally_bins;
+  int m_tally_replication; // power of 2, at least the max number of omp threads
 
 private:
   using tally_mempool_type = device_pinned_mempool_type;
 
   using TallyAtomicReplicationConcretizer = typename tuning::GlobalAtomicReplicationConcretizer;
 
-  using GetTallyOffset = GetOffsetLeft;
-
-
   static constexpr size_t s_tally_alignment = std::max(size_t(policy::hip::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE),
                                                        size_t(RAJA::DATA_ALIGN));
-
 
   static int get_tally_bins(int num_bins)
   {
@@ -409,91 +358,107 @@ private:
     }
     tally_mempool_type::getInstance().free(tally_mem);
   }
+};
 
 
-  T* m_tally_mem;
-  T m_identity;
-  int m_num_bins;
-  int m_tally_bins;
-  int m_tally_replication; // power of 2, at least the max number of omp threads
+//! MultiReduction data for Hip Offload -- stores value, host pointer
+template <typename Combiner, typename T, typename tuning>
+struct MultiReduceGridAtomicHostInit_Data
+    : MultiReduceGridAtomicHostInit_TallyData<Combiner, T, tuning>
+{
+  using TallyData = MultiReduceGridAtomicHostInit_TallyData<Combiner, T, tuning>;
+
+  //! defer to tally data for some functions
+  using TallyData::TallyData;
+  using TallyData::reset_permanent;
+  using TallyData::teardown_permanent;
+  using TallyData::get;
+  using TallyData::num_bins;
+  using TallyData::identity;
+
+  //! setup per launch, do nothing
+  void setup_launch(size_t RAJA_UNUSED_ARG(block_size),
+                    size_t& RAJA_UNUSED_ARG(current_shmem),
+                    size_t RAJA_UNUSED_ARG(max_shmem))
+  { }
+
+  //! teardown per launch, do nothing
+  void teardown_launch()
+  { }
+
+
+  //! setup on device, do nothing
+  RAJA_DEVICE
+  void setup_device()
+  { }
+
+  //! finalize on device, do nothing
+  RAJA_DEVICE
+  void finalize_device()
+  { }
+
+
+  //! combine value on device, combine a value into the tally atomically
+  RAJA_DEVICE
+  void combine_device(int bin, T value)
+  {
+    impl::block_multi_reduce_combine_global_atomic<Combiner>(
+        m_num_bins, m_identity,
+        bin, value,
+        m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
+  }
+
+  //! combine value on host, combine a value into the tally
+  void combine_host(int bin, T value)
+  {
+    int tally_rep = 0;
+#if defined(RAJA_ENABLE_OPENMP)
+    tally_rep = omp_get_thread_num();
+#endif
+    int tally_offset = GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication);
+    Combiner{}(m_tally_mem[tally_offset], value);
+  }
+
+private:
+  using typename TallyData::GetTallyOffset;
+
+  using TallyData::m_tally_mem;
+  using TallyData::m_identity;
+  using TallyData::m_num_bins;
+  using TallyData::m_tally_bins;
+  using TallyData::m_tally_replication;
 };
 
 
 //! MultiReduction data for Hip Offload -- stores value, host pointer
 template <typename Combiner, typename T, typename tuning>
 struct MultiReduceBlockThenGridAtomicHostInit_Data
+    : MultiReduceGridAtomicHostInit_TallyData<Combiner, T, tuning>
 {
-  //! setup permanent settings, allocate and initialize tally memory
+  using TallyData = MultiReduceGridAtomicHostInit_TallyData<Combiner, T, tuning>;
+
+  //! setup permanent settings, defer to tally data
   template < typename Container >
   MultiReduceBlockThenGridAtomicHostInit_Data(Container const& container, T const& identity)
-      : m_tally_mem(nullptr)
-      , m_identity(identity)
-      , m_num_bins(container.size())
+      : TallyData(container, identity)
       , m_shared_offset(s_shared_offset_unknown)
       , m_shared_replication(0)
-      , m_tally_bins(get_tally_bins(m_num_bins))
-      , m_tally_replication(get_tally_replication())
-  {
-    m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins, m_tally_replication);
-  }
-
-  RAJA_HOST_DEVICE
-  MultiReduceBlockThenGridAtomicHostInit_Data(const MultiReduceBlockThenGridAtomicHostInit_Data& other)
-      : m_tally_mem(other.m_tally_mem)
-      , m_identity(other.m_identity)
-      , m_num_bins(other.m_num_bins)
-      , m_shared_offset(other.m_shared_offset)
-      , m_shared_replication(other.m_shared_replication)
-      , m_tally_bins(other.m_tally_bins)
-      , m_tally_replication(other.m_tally_replication)
-  {
-  }
+  { }
 
   MultiReduceBlockThenGridAtomicHostInit_Data() = delete;
-  MultiReduceBlockThenGridAtomicHostInit_Data& operator=(const MultiReduceBlockThenGridAtomicHostInit_Data&) = default;
+  MultiReduceBlockThenGridAtomicHostInit_Data(MultiReduceBlockThenGridAtomicHostInit_Data const&) = default;
+  MultiReduceBlockThenGridAtomicHostInit_Data(MultiReduceBlockThenGridAtomicHostInit_Data &&) = delete;
+  MultiReduceBlockThenGridAtomicHostInit_Data& operator=(MultiReduceBlockThenGridAtomicHostInit_Data const&) = default;
+  MultiReduceBlockThenGridAtomicHostInit_Data& operator=(MultiReduceBlockThenGridAtomicHostInit_Data &&) = delete;
   ~MultiReduceBlockThenGridAtomicHostInit_Data() = default;
 
 
-  //! reset permanent settings, reallocate and reset tally memory
-  template < typename Container >
-  void reset_permanent(Container const& container, T const& identity)
-  {
-    int new_num_bins = container.size();
-    if (new_num_bins != m_num_bins) {
-      teardown_permanent();
-      m_num_bins = new_num_bins;
-      m_tally_bins = get_tally_bins(m_num_bins);
-      m_tally_replication = get_tally_replication();
-      m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins, m_tally_replication);
-    } else {
-      if (m_tally_mem != nullptr) {
-        {
-          int tally_rep = 0;
-          int bin = 0;
-          for (auto const& value : container) {
-            m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication)] = value;
-            ++bin;
-          }
-        }
-        for (int tally_rep = 1; tally_rep < m_tally_replication; ++tally_rep) {
-          for (int bin = 0; bin < m_num_bins; ++bin) {
-            m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication)] = identity;
-          }
-        }
-      }
-    }
-    m_identity = identity;
-  }
-
-  //! teardown permanent settings, free tally memory
-  void teardown_permanent()
-  {
-    if (m_tally_mem != nullptr) {
-      destroy_tally(m_tally_mem, m_num_bins, m_tally_bins, m_tally_replication);
-      m_tally_mem = nullptr;
-    }
-  }
-
+  //! defer to tally data for some functions
+  using TallyData::reset_permanent;
+  using TallyData::teardown_permanent;
+  using TallyData::get;
+  using TallyData::num_bins;
+  using TallyData::identity;
 
   //! setup per launch, setup shared memory parameters
   void setup_launch(size_t block_size, size_t& current_shmem, size_t max_shmem)
@@ -575,109 +540,25 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     Combiner{}(m_tally_mem[tally_offset], value);
   }
 
-
-  //! get value for bin, assumes synchronization occurred elsewhere
-  T get(int bin) const
-  {
-    ::RAJA::detail::HighAccuracyReduce<T, typename Combiner::operator_type>
-          reducer(m_identity);
-    for (int tally_rep = 0; tally_rep < m_tally_replication; ++tally_rep) {
-      int tally_offset = GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication);
-      reducer.combine(m_tally_mem[tally_offset]);
-    }
-    return reducer.get_and_clear();
-  }
-
-
-  int num_bins() const { return m_num_bins; }
-
-  T identity() const { return m_identity; }
-
-
 private:
-  using tally_mempool_type = device_pinned_mempool_type;
-
   using SharedAtomicReplicationConcretizer = typename tuning::SharedAtomicReplicationConcretizer;
-  using TallyAtomicReplicationConcretizer = typename tuning::GlobalAtomicReplicationConcretizer;
 
   using GetSharedOffset = GetOffsetRight;
-  using GetTallyOffset = GetOffsetLeft;
+  using typename TallyData::GetTallyOffset;
 
 
-  static constexpr size_t s_tally_alignment = std::max(size_t(policy::hip::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE),
-                                                       size_t(RAJA::DATA_ALIGN));
   static constexpr int s_shared_offset_unknown = std::numeric_limits<int>::max();
   static constexpr int s_shared_offset_invalid = std::numeric_limits<int>::max() - 1;
 
 
-  static int get_tally_bins(int num_bins)
-  {
-    int num_cache_lines = RAJA_DIVIDE_CEILING_INT(num_bins*sizeof(T), s_tally_alignment);
-    return RAJA_DIVIDE_CEILING_INT(num_cache_lines * s_tally_alignment, sizeof(T));
-  }
+  using TallyData::m_tally_mem;
+  using TallyData::m_identity;
+  using TallyData::m_num_bins;
+  using TallyData::m_tally_bins;
+  using TallyData::m_tally_replication;
 
-  static int get_tally_replication()
-  {
-    int min_tally_replication = 1;
-#if defined(RAJA_ENABLE_OPENMP)
-    min_tally_replication = omp_get_max_threads();
-#endif
-
-    struct {
-      int func_min_global_replication;
-    } func_data{min_tally_replication};
-
-    return TallyAtomicReplicationConcretizer{}.template
-        get_global_replication<int>(func_data);
-  }
-
-  template < typename Container >
-  static T* create_tally(Container const& container, T const& identity,
-                         int num_bins, int tally_bins, int tally_replication)
-  {
-    T* tally_mem = tally_mempool_type::getInstance().template malloc<T>(
-        tally_replication*tally_bins, s_tally_alignment);
-
-    if (tally_replication > 0) {
-      {
-        int tally_rep = 0;
-        int bin = 0;
-        for (auto const& value : container) {
-          int tally_offset = GetTallyOffset{}(bin, tally_bins, tally_rep, tally_replication);
-          new(&tally_mem[tally_offset]) T(value);
-          ++bin;
-        }
-      }
-      for (int tally_rep = 1; tally_rep < tally_replication; ++tally_rep) {
-        for (int bin = 0; bin < num_bins; ++bin) {
-          int tally_offset = GetTallyOffset{}(bin, tally_bins, tally_rep, tally_replication);
-          new(&tally_mem[tally_offset]) T(identity);
-        }
-      }
-    }
-    return tally_mem;
-  }
-
-  static void destroy_tally(T* tally_mem,
-                            int num_bins, int tally_bins, int tally_replication)
-  {
-    for (int tally_rep = tally_replication+1; tally_rep > 0; --tally_rep) {
-      for (int bin = num_bins; bin > 0; --bin) {
-        int tally_offset = GetTallyOffset{}(bin-1, tally_bins, tally_rep-1, tally_replication);
-        tally_mem[tally_offset].~T();
-      }
-    }
-    tally_mempool_type::getInstance().free(tally_mem);
-  }
-
-
-  T* m_tally_mem;
-  T m_identity;
-  int m_num_bins;
   int m_shared_offset; // in bytes
   int m_shared_replication; // power of 2
-  int m_tally_bins;
-  int m_tally_replication; // power of 2, at least the max number of omp threads
 
 
   RAJA_DEVICE
