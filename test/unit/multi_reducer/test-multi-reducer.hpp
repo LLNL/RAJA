@@ -33,11 +33,15 @@ using OpenMPTargetMultiReducerPolicyList = camp::list< RAJA::omp_target_multi_re
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaMultiReducerPolicyList = camp::list< RAJA::cuda_multi_reduce_atomic >;
+using CudaMultiReducerPolicyList =
+  camp::list< RAJA::cuda_multi_reduce_block_then_grid_atomic_host_init,
+              RAJA::cuda_multi_reduce_global_atomic_host_init >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipMultiReducerPolicyList = camp::list< RAJA::hip_multi_reduce_atomic >;
+using HipMultiReducerPolicyList =
+  camp::list< RAJA::hip_multi_reduce_block_then_grid_atomic_host_init,
+              RAJA::hip_multi_reduce_global_atomic_host_init >;
 #endif
 
 #endif  // __TEST_MULTI_REDUCER_UTILS_HPP__
