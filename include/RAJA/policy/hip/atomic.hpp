@@ -97,126 +97,107 @@ RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
 }
 
 
+#if defined(__has_builtin) && \
+    (__has_builtin(__hip_atomic_load) || __has_builtin(__hip_atomic_store))
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using an intrinsic
+ */
+template <typename T>
+struct builtin_useIntrinsic {
+  static constexpr bool value =
+    (std::is_integral<T>::value || std::is_enum<T>::value) &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * by reinterpreting inputs to types that intrinsics support
+ */
+template <typename T>
+struct builtin_useReinterpret {
+  static constexpr bool value =
+    !std::is_integral<T>::value &&
+    !std::is_enum<T>::value &&
+    ((sizeof(T) == 1
+#if !defined(UINT8_MAX)
+      && sizeof(unsigned char) == 1
+#endif
+     ) ||
+     (sizeof(T) == 2
+#if !defined(UINT16_MAX)
+      && sizeof(unsigned short) == 2
+#endif
+     ) ||
+     (sizeof(T) == 4
+#if !defined(UINT32_MAX)
+      && sizeof(unsigned int) == 4
+#endif
+     ) ||
+     (sizeof(T) == 8
+#if !defined(UINT64_MAX)
+      && sizeof(unsigned long long) == 8
+#endif
+     ));
+
+  using type =
+    std::conditional_t<sizeof(T) == 1,
+#if defined(UINT8_MAX)
+                       uint8_t,
+#else
+                       unsigned char,
+#endif
+    std::conditional_t<sizeof(T) == 2,
+#if defined(UINT16_MAX)
+                       uint16_t,
+#else
+                       unsigned short,
+#endif
+    std::conditional_t<sizeof(T) == 4,
+#if defined(UINT32_MAX)
+                       uint32_t,
+#else
+                       unsigned int,
+#endif
+#if defined(UINT64_MAX)
+                       uint64_t>>>;
+#else
+                       unsigned long long>>>;
+#endif
+};
+
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
+template <typename T>
+using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
+
+#endif
+
+
 /*!
  * Atomic load
  */
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
 
 template <typename T,
-          std::enable_if_t<std::is_arithmetic<T>::value ||
-                           std::is_enum<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
   return __hip_atomic_load(acc, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
 
-#if defined(UINT8_MAX)
-
 template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint8_t), bool> = true>
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return RAJA::util::reinterp_A_as_B<uint8_t, T>(
-    hip_atomicLoad(reinterpret_cast<uint8_t*>(acc)));
+  using R = builtin_useReinterpret_t<T>;
+
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    hip_atomicLoad(reinterpret_cast<R*>(acc)));
 }
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned char) &&
-                           sizeof(unsigned char) == 1, bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned char, T>(
-    hip_atomicLoad(reinterpret_cast<unsigned char*>(acc)));
-}
-
-#endif
-
-#if defined(UINT16_MAX)
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint16_t), bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<uint16_t, T>(
-    hip_atomicLoad(reinterpret_cast<uint16_t*>(acc)));
-}
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned short int) &&
-                           sizeof(unsigned short int) == 2, bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
-    hip_atomicLoad(reinterpret_cast<unsigned short int*>(acc)));
-}
-
-#endif
-
-#if defined(UINT32_MAX)
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint32_t), bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<uint32_t, T>(
-    hip_atomicLoad(reinterpret_cast<uint32_t*>(acc)));
-}
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned int) &&
-                           sizeof(unsigned int) == 4, bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    hip_atomicLoad(reinterpret_cast<unsigned int*>(acc)));
-}
-
-#endif
-
-#if defined(UINT64_MAX)
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint64_t), bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<uint64_t, T>(
-    hip_atomicLoad(reinterpret_cast<uint64_t*>(acc)));
-}
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned long long int) &&
-                           sizeof(unsigned long long int) == 8, bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    hip_atomicLoad(reinterpret_cast<unsigned long long int*>(acc)));
-}
-
-#endif
 
 #else
 
@@ -260,120 +241,21 @@ RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
 
 template <typename T,
-          std::enable_if_t<std::is_arithmetic<T>::value ||
-                           std::is_enum<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   __hip_atomic_store(acc, value, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
 
-#if defined(UINT8_MAX)
-
 template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint8_t), bool> = true>
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
-  hip_atomicStore(reinterpret_cast<uint8_t*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, uint8_t>(value));
+  using R = builtin_useReinterpret_t<T>;
+
+  hip_atomicStore(reinterpret_cast<R*>(acc),
+                  RAJA::util::reinterp_A_as_B<T, R>(value));
 }
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned char) &&
-                           sizeof(unsigned char) == 1, bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<unsigned char*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, unsigned char>(value));
-}
-
-#endif
-
-#if defined(UINT16_MAX)
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint16_t), bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<uint16_t*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, uint16_t>(value));
-}
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned short int) &&
-                           sizeof(unsigned short int) == 2, bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<unsigned short int*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, unsigned short int>(value));
-}
-
-#endif
-
-#if defined(UINT32_MAX)
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint32_t), bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<uint32_t*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, uint32_t>(value));
-}
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned int) &&
-                           sizeof(unsigned int) == 4, bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<unsigned int*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, unsigned int>(value));
-}
-
-#endif
-
-#if defined(UINT64_MAX)
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(uint64_t), bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<uint64_t*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, uint64_t>(value));
-}
-
-#else
-
-template <typename T,
-          std::enable_if_t<!std::is_arithmetic<T>::value &&
-                           !std::is_enum<T>::value &&
-                           sizeof(T) == sizeof(unsigned long long int) &&
-                           sizeof(unsigned long long int) == 8, bool> = true>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicStore(reinterpret_cast<unsigned long long int*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value));
-}
-
-#endif
 
 #else
 
