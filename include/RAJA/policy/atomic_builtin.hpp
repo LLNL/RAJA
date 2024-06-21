@@ -308,6 +308,10 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 #else  // RAJA_COMPILER_MSVC
 
 
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using an intrinsic
+ */
 template <typename T>
 struct builtin_useIntrinsic {
   static constexpr bool value =
