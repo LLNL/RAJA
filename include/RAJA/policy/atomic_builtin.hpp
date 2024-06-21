@@ -849,7 +849,7 @@ template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
                            !std::is_enum<T>::value &&
                            sizeof(T) == sizeof(unsigned long long) &&
-                           sizeof(unsigned long long) == 4, bool> = true>
+                           sizeof(unsigned long long) == 8, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
