@@ -20,7 +20,6 @@ set(DATATYPES CoreReductionDataTypeList)
 # Note: LAUNCH_BACKENDS is defined in ../CMakeLists.txt
 #
 foreach( BACKEND ${LAUNCH_BACKENDS} )
-  if( NOT (BACKEND STREQUAL "Sycl"))
   foreach( REDUCETYPE ${REDUCETYPES} )
     configure_file( test-launch-basic-param-expt-reduce.cpp.in
                     test-launch-basic-param-expt-${REDUCETYPE}-${BACKEND}.cpp)
@@ -30,7 +29,6 @@ foreach( BACKEND ${LAUNCH_BACKENDS} )
     target_include_directories(test-launch-basic-param-expt-${REDUCETYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
-  endif()
 endforeach()
 
 unset( DATATYPES )
@@ -52,7 +50,6 @@ set(DATATYPES BitwiseReductionDataTypeList)
 # Note: LAUNCH_BACKENDS is defined in ../CMakeLists.txt
 #
 foreach( BACKEND ${LAUNCH_BACKENDS} )
-  if( NOT (BACKEND STREQUAL "Sycl"))
   foreach( REDUCETYPE ${REDUCETYPES} )
     configure_file( test-launch-basic-param-expt-reduce.cpp.in
                     test-launch-basic-param-expt-${REDUCETYPE}-${BACKEND}.cpp )
@@ -62,7 +59,6 @@ foreach( BACKEND ${LAUNCH_BACKENDS} )
     target_include_directories(test-launch-basic-param-expt-${REDUCETYPE}-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
   endforeach()
-  endif()
 endforeach()
 
 unset( DATATYPES )
