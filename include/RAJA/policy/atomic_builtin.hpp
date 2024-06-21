@@ -919,6 +919,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircui
 }
 
 
+/*!
+ * Atomics implemented using intrinsics
+ */
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
 
@@ -1045,7 +1048,7 @@ RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
 #else  // RAJA_COMPILER_MSVC
 
 
-/*
+/*!
  * Atomic addition
  */
 template <typename T,
@@ -1056,7 +1059,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
 }
 
 
-/*
+/*!
  * Atomic subtraction
  */
 template <typename T,
@@ -1067,7 +1070,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 }
 
 
-/*
+/*!
  * Atomic and
  */
 template <typename T,
@@ -1078,7 +1081,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 }
 
 
-/*
+/*!
  * Atomic or
  */
 template <typename T,
@@ -1089,7 +1092,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 }
 
 
-/*
+/*!
  * Atomic xor
  */
 template <typename T,
