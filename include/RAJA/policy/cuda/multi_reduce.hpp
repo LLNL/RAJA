@@ -484,7 +484,6 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
       current_shmem += align_offset + m_shared_replication * (m_num_bins * sizeof(T));
     } else {
       m_shared_offset = s_shared_offset_invalid;
-      RAJA_ABORT_OR_THROW("Couldn't get shared memory for MultiReducer");
     }
   }
 
@@ -501,9 +500,11 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   void setup_device()
   {
     T* shared_mem = get_shared_mem();
-    impl::block_multi_reduce_init_shmem(
-        m_num_bins, m_identity,
-        shared_mem, m_shared_replication);
+    if (shared_mem != nullptr) {
+      impl::block_multi_reduce_init_shmem(
+          m_num_bins, m_identity,
+          shared_mem, m_shared_replication);
+    }
   }
 
   //! finalize on device, combine values in shared memory into the tally
@@ -511,10 +512,12 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   void finalize_device()
   {
     T* shared_mem = get_shared_mem();
-    impl::grid_multi_reduce_shmem_to_global_atomic<Combiner>(
-        m_num_bins, m_identity,
-        shared_mem, GetSharedOffset{}, m_shared_replication,
-        m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
+    if (shared_mem != nullptr) {
+      impl::grid_multi_reduce_shmem_to_global_atomic<Combiner>(
+          m_num_bins, m_identity,
+          shared_mem, GetSharedOffset{}, m_shared_replication,
+          m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
+    }
   }
 
 
@@ -523,10 +526,17 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   void combine_device(int bin, T value)
   {
     T* shared_mem = get_shared_mem();
-    impl::block_multi_reduce_combine_shmem_atomic<Combiner>(
-        m_num_bins, m_identity,
-        bin, value,
-        shared_mem, GetSharedOffset{}, m_shared_replication);
+    if (shared_mem != nullptr) {
+      impl::block_multi_reduce_combine_shmem_atomic<Combiner>(
+          m_num_bins, m_identity,
+          bin, value,
+          shared_mem, GetSharedOffset{}, m_shared_replication);
+    } else {
+      impl::block_multi_reduce_combine_global_atomic<Combiner>(
+          m_num_bins, m_identity,
+          bin, value,
+          m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
+    }
   }
 
   //! combine value on host, combine a value into the tally
@@ -564,6 +574,9 @@ private:
   RAJA_DEVICE
   T* get_shared_mem() const
   {
+    if (m_shared_offset == s_shared_offset_invalid) {
+      return nullptr;
+    }
     extern __shared__ char shared_mem[];
     return reinterpret_cast<T*>(&shared_mem[m_shared_offset]);
   }
