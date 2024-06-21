@@ -590,7 +590,8 @@ RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
  * Returns the OLD value that was replaced by the result of this operation.
  */
 template <typename T, typename Oper>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T *acc,
+                                                     Oper &&oper)
 {
   T old = builtin_atomicLoad(acc);
   T expected;
@@ -611,7 +612,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper)
  * that was replaced by the result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircuit &&sc)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T *acc,
+                                                     Oper &&oper,
+                                                     ShortCircuit &&sc)
 {
   T old = builtin_atomicLoad(acc);
 
@@ -642,7 +645,7 @@ template <typename T,
           std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
 {
-  return builtin_atomicCAS(acc, [value] (T old) {
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
     return old + value;
   });
 }
@@ -655,7 +658,7 @@ template <typename T,
           std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 {
-  return builtin_atomicCAS(acc, [value] (T old) {
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
     return old - value;
   });
 }
@@ -668,7 +671,7 @@ template <typename T,
           std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 {
-  return builtin_atomicCAS(acc, [value] (T old) {
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
     return old & value;
   });
 }
@@ -681,7 +684,7 @@ template <typename T,
           std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 {
-  return builtin_atomicCAS(acc, [value] (T old) {
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
     return old | value;
   });
 }
@@ -694,7 +697,7 @@ template <typename T,
           std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 {
-  return builtin_atomicCAS(acc, [value] (T old) {
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
     return old ^ value;
   });
 }
@@ -730,25 +733,27 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicSub(builtin_atomic, T *acc, T value)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicCAS(acc,
-                                   [value] (T old) {
-                                     return value < old ? value : old;
-                                   },
-                                   [value] (T current) {
-                                     return current <= value;
-                                   });
+  return detail::builtin_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return value < old ? value : old;
+    },
+    [value] (T current) {
+      return current <= value;
+    });
 }
 
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicCAS(acc,
-                                   [value] (T old) {
-                                     return old < value ? value : old;
-                                   },
-                                   [value] (T current) {
-                                     return value <= current;
-                                   });
+  return detail::builtin_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return old < value ? value : old;
+    },
+    [value] (T current) {
+      return value <= current;
+    });
 }
 
 template <typename T>
@@ -760,7 +765,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T *acc)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicCAS(acc, [value] (T old) {
+  return detail::builtin_atomicCAS_loop(acc, [value] (T old) {
     return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
@@ -774,7 +779,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T *acc)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomicCAS(acc, [value] (T old) {
+  return detail::builtin_atomicCAS_loop(acc, [value] (T old) {
     return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
   });
 }
