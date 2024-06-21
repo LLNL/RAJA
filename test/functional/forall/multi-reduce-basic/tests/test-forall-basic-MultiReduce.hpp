@@ -20,13 +20,14 @@ template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
           typename SEG_TYPE, typename Container,
           typename RandomGenerator>
 // use enable_if in return type to appease nvcc 11.2
-std::enable_if_t<!ABSTRACTION::template supports<DATA_TYPE>()>
+// add bool return type to disambiguate signatures of these functions for MSVC
+std::enable_if_t<!ABSTRACTION::template supports<DATA_TYPE>(), bool>
 ForallMultiReduceBasicTestImpl(const SEG_TYPE&,
                                     const Container&,
                                     const std::vector<IDX_TYPE>&,
                                     camp::resources::Resource,
                                     RandomGenerator&)
-{ }
+{ return false; }
 ///
 template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
           typename DATA_TYPE, typename IDX_TYPE,
