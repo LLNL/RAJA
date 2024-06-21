@@ -876,7 +876,7 @@ template <typename T,
           std::enable_if_t<!std::is_integral<T>::value &&
                            !std::is_enum<T>::value &&
                            sizeof(T) == sizeof(unsigned long long) &&
-                           sizeof(unsigned long long) == 4, bool> = true>
+                           sizeof(unsigned long long) == 8, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
