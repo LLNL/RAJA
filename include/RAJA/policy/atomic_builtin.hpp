@@ -87,6 +87,26 @@ struct builtin_useReinterpret {
 
 
 /*!
+ * Type trait for determining if the operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct builtin_useCAS {
+  static constexpr bool value =
+    !std::is_same<T, char>::value &&
+    !std::is_same<T, short>::value &&
+    !std::is_same<T, long>::value &&
+    !std::is_same<T, long long>::value &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
+ * Atomics implemented using intrinsics
+ */
+
+
+/*!
  * Atomic load using intrinsics
  */
 RAJA_INLINE char builtin_atomicLoad(char *acc)
@@ -176,6 +196,126 @@ RAJA_INLINE long long builtin_atomicCAS(long long *acc, long long compare, long 
 }
 
 
+/*!
+ * Atomic addition using intrinsics
+ */
+RAJA_INLINE char builtin_atomicAdd(char *acc, char value)
+{
+  return _InterlockedExchangeAdd8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicAdd(short *acc, short value)
+{
+  return _InterlockedExchangeAdd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAdd(long *acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicAdd(long long *acc, long long value)
+{
+  return _InterlockedExchangeAdd64(acc, value);
+}
+
+
+/*!
+ * Atomic subtraction using intrinsics
+ */
+RAJA_INLINE char builtin_atomicSub(char *acc, char value)
+{
+  return _InterlockedExchangeAdd8(acc, -value);
+}
+
+RAJA_INLINE short builtin_atomicSub(short *acc, short value)
+{
+  return _InterlockedExchangeAdd16(acc, -value);
+}
+
+RAJA_INLINE long builtin_atomicSub(long *acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, -value);
+}
+
+RAJA_INLINE long long builtin_atomicSub(long long *acc, long long value)
+{
+  return _InterlockedExchangeAdd64(acc, -value);
+}
+
+
+/*!
+ * Atomic and using intrinsics
+ */
+RAJA_INLINE char builtin_atomicAnd(char *acc, char value)
+{
+  return _InterlockedAnd8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicAnd(short *acc, short value)
+{
+  return _InterlockedAnd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAnd(long *acc, long value)
+{
+  return _InterlockedAnd(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
+{
+  return _InterlockedAnd64(acc, value);
+}
+
+
+/*!
+ * Atomic or using intrinsics
+ */
+RAJA_INLINE char builtin_atomicOr(char *acc, char value)
+{
+  return _InterlockedOr8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicOr(short *acc, short value)
+{
+  return _InterlockedOr16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicOr(long *acc, long value)
+{
+  return _InterlockedOr(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
+{
+  return _InterlockedOr64(acc, value);
+}
+
+
+/*!
+ * Atomic xor using intrinsics
+ */
+RAJA_INLINE char builtin_atomicXor(char *acc, char value)
+{
+  return _InterlockedXor8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicXor(short *acc, short value)
+{
+  return _InterlockedXor16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicXor(long *acc, long value)
+{
+  return _InterlockedXor(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
+{
+  return _InterlockedXor64(acc, value);
+}
+
+
 #else  // RAJA_COMPILER_MSVC
 
 
@@ -258,6 +398,11 @@ struct builtin_useCAS {
     !std::is_integral<T>::value && !std::is_enum<T>::value &&
     (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
 };
+
+
+/*!
+ * Atomics implemented using intrinsics
+ */
 
 
 /*!
@@ -365,6 +510,11 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 
 
 /*!
+ * Atomics implemented using reinterpret cast
+ */
+
+
+/*!
  * Alias for determining the integral type of the same size as the given type
  */
 template <typename T>
@@ -427,9 +577,13 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 
 
 /*!
- * Equality comparison for compare and swap loop. Converts to the underlying
- * integral type to avoid cases where the values will never compare equal
- * (most notably, NaNs).
+ * Implementation of compare and swap loop
+ */
+
+
+/*!
+ * Equality comparison for compare and swap loop using types supported by
+ * intrinsics.
  */
 template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
@@ -439,12 +593,18 @@ RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 }
 
 
+/*!
+ * Equality comparison for compare and swap loop using reinterpret cast.
+ * Converts to the underlying integral type to avoid cases where the values
+ * will never compare equal (most notably, NaNs).
+ */
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
-  return RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(a) ==
-         RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(b);
+  return builtin_atomicCAS_equal(
+    RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(a),
+    RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(b));
 }
 
 
@@ -471,8 +631,8 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper)
 /*!
  * Generic impementation of any atomic 8, 16, 32, or 64 bit operator
  * that can be implemented using a builtin compare and swap primitive.
- * Short-circuits for improved efficiency.
- * Returns the OLD value that was replaced by the result of this operation.
+ * Uses short-circuiting for improved efficiency. Returns the OLD value
+ * that was replaced by the result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircuit &&sc)
@@ -495,163 +655,8 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircui
 
 
 /*!
- * Atomics implemented using intrinsics
- */
-#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
-
-
-/*!
- * Atomic addition
- */
-RAJA_INLINE char builtin_atomicAdd(char *acc, char value)
-{
-  return _InterlockedExchangeAdd8(acc, value);
-}
-
-RAJA_INLINE short builtin_atomicAdd(short *acc, short value)
-{
-  return _InterlockedExchangeAdd16(acc, value);
-}
-
-RAJA_INLINE long builtin_atomicAdd(long *acc, long value)
-{
-  return _InterlockedExchangeAdd(acc, value);
-}
-
-RAJA_INLINE long long builtin_atomicAdd(long long *acc, long long value)
-{
-  return _InterlockedExchangeAdd64(acc, value);
-}
-
-
-/*!
- * Atomic subtraction
- */
-RAJA_INLINE char builtin_atomicSub(char *acc, char value)
-{
-  return _InterlockedExchangeAdd8(acc, -value);
-}
-
-RAJA_INLINE short builtin_atomicSub(short *acc, short value)
-{
-  return _InterlockedExchangeAdd16(acc, -value);
-}
-
-RAJA_INLINE long builtin_atomicSub(long *acc, long value)
-{
-  return _InterlockedExchangeAdd(acc, -value);
-}
-
-RAJA_INLINE long long builtin_atomicSub(long long *acc, long long value)
-{
-  return _InterlockedExchangeAdd64(acc, -value);
-}
-
-
-/*!
- * Atomic and
- */
-RAJA_INLINE char builtin_atomicAnd(char *acc, char value)
-{
-  return _InterlockedAnd8(acc, value);
-}
-
-RAJA_INLINE short builtin_atomicAnd(short *acc, short value)
-{
-  return _InterlockedAnd16(acc, value);
-}
-
-RAJA_INLINE long builtin_atomicAnd(long *acc, long value)
-{
-  return _InterlockedAnd(acc, value);
-}
-
-RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
-{
-  return _InterlockedAnd64(acc, value);
-}
-
-
-/*!
- * Atomic or
- */
-RAJA_INLINE char builtin_atomicOr(char *acc, char value)
-{
-  return _InterlockedOr8(acc, value);
-}
-
-RAJA_INLINE short builtin_atomicOr(short *acc, short value)
-{
-  return _InterlockedOr16(acc, value);
-}
-
-RAJA_INLINE long builtin_atomicOr(long *acc, long value)
-{
-  return _InterlockedOr(acc, value);
-}
-
-RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
-{
-  return _InterlockedOr64(acc, value);
-}
-
-
-/*!
- * Atomic xor
- */
-RAJA_INLINE char builtin_atomicXor(char *acc, char value)
-{
-  return _InterlockedXor8(acc, value);
-}
-
-RAJA_INLINE short builtin_atomicXor(short *acc, short value)
-{
-  return _InterlockedXor16(acc, value);
-}
-
-RAJA_INLINE long builtin_atomicXor(long *acc, long value)
-{
-  return _InterlockedXor(acc, value);
-}
-
-RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
-{
-  return _InterlockedXor64(acc, value);
-}
-
-
-#else  // RAJA_COMPILER_MSVC
-
-
-
-
-#endif  // RAJA_COMPILER_MSVC
-
-
-/*!
  * Atomics implemented using compare and swap loop
  */
-
-
-/*!
- * Type trait for determining if the operator should be implemented
- * using a compare and swap loop
- */
-#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
-
-template <typename T>
-struct builtin_useCAS {
-  static constexpr bool value =
-    !std::is_same<T, char>::value &&
-    !std::is_same<T, short>::value &&
-    !std::is_same<T, long>::value &&
-    !std::is_same<T, long long>::value &&
-    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
-};
-#else  // RAJA_COMPILER_MSVC
-
-
-#endif  // RAJA_COMPILER_MSVC
 
 
 /*!
