@@ -309,7 +309,7 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 
 
 template <typename T>
-struct builtin_hasIntrinsic {
+struct builtin_useIntrinsic {
   static constexpr bool value =
     (std::is_integral<T>::value || std::is_enum<T>::value) &&
     (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
@@ -320,7 +320,7 @@ struct builtin_hasIntrinsic {
  * Atomic load, store, exchange, and compare and swap
  */
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
@@ -328,7 +328,7 @@ RAJA_INLINE T builtin_atomicLoad(T *acc)
 }
 
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
@@ -336,7 +336,7 @@ RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 }
 
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
@@ -344,7 +344,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 }
 
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
@@ -354,7 +354,7 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 }
 
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
@@ -1125,23 +1125,30 @@ RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 #else  // RAJA_COMPILER_MSVC
 
 
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct builtin_useCAS {
+  static constexpr bool value =
+    !std::is_integral<T>::value && !std::is_enum<T>::value &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
 /*
  * Atomic addition
  */
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
 {
   return __atomic_fetch_add(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_integral<T>::value &&
-                           !std::is_enum<T>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1154,19 +1161,14 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
  * Atomic subtraction
  */
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 {
   return __atomic_fetch_sub(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_integral<T>::value &&
-                           !std::is_enum<T>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1179,19 +1181,14 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
  * Atomic and
  */
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 {
   return __atomic_fetch_and(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_integral<T>::value &&
-                           !std::is_enum<T>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1204,19 +1201,14 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
  * Atomic or
  */
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 {
   return __atomic_fetch_or(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_integral<T>::value &&
-                           !std::is_enum<T>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1229,19 +1221,14 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
  * Atomic xor
  */
 template <typename T,
-          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 {
   return __atomic_fetch_xor(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_integral<T>::value &&
-                           !std::is_enum<T>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
