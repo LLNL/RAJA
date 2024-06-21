@@ -504,9 +504,10 @@ template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return RAJA::util::reinterp_A_as_B<builtin_useReinterpret_t<T>, T>(
-    builtin_atomicLoad(
-      reinterpret_cast<builtin_useReinterpret_t<T>*>(acc)));
+  using R = builtin_useReinterpret_t<T>;
+
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    builtin_atomicLoad(reinterpret_cast<R*>(acc)));
 }
 
 
@@ -517,9 +518,10 @@ template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
-  builtin_atomicStore(
-    reinterpret_cast<builtin_useReinterpret_t<T>*>(acc),
-    RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(value));
+  using R = builtin_useReinterpret_t<T>;
+
+  builtin_atomicStore(reinterpret_cast<R*>(acc),
+                      RAJA::util::reinterp_A_as_B<T, R>(value));
 }
 
 
@@ -530,10 +532,11 @@ template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
-  return RAJA::util::reinterp_A_as_B<builtin_useReinterpret_t<T>, T>(
-    builtin_atomicExchange(
-      reinterpret_cast<builtin_useReinterpret_t<T>*>(acc),
-      RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(value)));
+  using R = builtin_useReinterpret_t<T>;
+
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    builtin_atomicExchange(reinterpret_cast<R*>(acc),
+                           RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
 
 
@@ -544,11 +547,12 @@ template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
-  return RAJA::util::reinterp_A_as_B<builtin_useReinterpret_t<T>, T>(
-    builtin_atomicCAS(
-      reinterpret_cast<builtin_useReinterpret_t<T>*>(acc),
-      RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(compare),
-      RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(value)));
+  using R = builtin_useReinterpret_t<T>;
+
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    builtin_atomicCAS(reinterpret_cast<R*>(acc),
+                      RAJA::util::reinterp_A_as_B<T, R>(compare),
+                      RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
 
 
@@ -578,9 +582,10 @@ template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
-  return builtin_atomicCAS_equal(
-    RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(a),
-    RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(b));
+  using R = builtin_useReinterpret_t<T>;
+
+  return builtin_atomicCAS_equal(RAJA::util::reinterp_A_as_B<T, R>(a),
+                                 RAJA::util::reinterp_A_as_B<T, R>(b));
 }
 
 
