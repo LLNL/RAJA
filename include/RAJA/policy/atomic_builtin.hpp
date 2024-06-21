@@ -361,7 +361,7 @@ RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   __atomic_compare_exchange_n(
-      acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
+      acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
   return compare;
 }
 
