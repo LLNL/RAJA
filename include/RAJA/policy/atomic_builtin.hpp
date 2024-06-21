@@ -74,42 +74,6 @@ RAJA_INLINE long long builtin_atomicLoad(long long *acc)
   return _InterlockedOr64(acc, static_cast<long long>(0));
 }
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           sizeof(T) == sizeof(char), bool> = true>
-RAJA_INLINE T builtin_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<char, T>(
-    builtin_atomicLoad(reinterpret_cast<char*>(acc)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, short>::value &&
-                           sizeof(T) == sizeof(short), bool> = true>
-RAJA_INLINE T builtin_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<short, T>(
-    builtin_atomicLoad(reinterpret_cast<short*>(acc)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long>::value &&
-                           sizeof(T) == sizeof(long), bool> = true>
-RAJA_INLINE T builtin_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<long, T>(
-    builtin_atomicLoad(reinterpret_cast<long*>(acc)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long long>::value &&
-                           sizeof(T) == sizeof(long long), bool> = true>
-RAJA_INLINE T builtin_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<long long, T>(
-    builtin_atomicLoad(reinterpret_cast<long long*>(acc)));
-}
-
 
 /*!
  * Atomic exchange
@@ -132,46 +96,6 @@ RAJA_INLINE long builtin_atomicExchange(long *acc, long value)
 RAJA_INLINE long long builtin_atomicExchange(long long *acc, long long value)
 {
   return _InterlockedExchange64(acc, value);
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           sizeof(T) == sizeof(char), bool> = true>
-RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
-{
-  return RAJA::util::reinterp_A_as_B<char, T>(
-    builtin_atomicExchange(reinterpret_cast<char*>(acc),
-                           RAJA::util::reinterp_A_as_B<T, char>(value)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, short>::value &&
-                           sizeof(T) == sizeof(short), bool> = true>
-RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
-{
-  return RAJA::util::reinterp_A_as_B<short, T>(
-    builtin_atomicExchange(reinterpret_cast<short*>(acc),
-                           RAJA::util::reinterp_A_as_B<T, short>(value)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long>::value &&
-                           sizeof(T) == sizeof(long), bool> = true>
-RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
-{
-  return RAJA::util::reinterp_A_as_B<long, T>(
-    builtin_atomicExchange(reinterpret_cast<long*>(acc),
-                           RAJA::util::reinterp_A_as_B<T, long>(value)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long long>::value &&
-                           sizeof(T) == sizeof(long long), bool> = true>
-RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
-{
-  return RAJA::util::reinterp_A_as_B<long long, T>(
-    builtin_atomicExchange(reinterpret_cast<long long*>(acc),
-                           RAJA::util::reinterp_A_as_B<T, long long>(value)));
 }
 
 
@@ -208,46 +132,6 @@ RAJA_INLINE long long builtin_atomicCAS(long long *acc, long long compare, long 
   return _InterlockedCompareExchange64(acc, value, compare);
 }
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           sizeof(T) == sizeof(char), bool> = true>
-RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<char, T>(
-    builtin_atomicCAS(reinterpret_cast<char*>(acc),
-                      RAJA::util::reinterp_A_as_B<T, char>(value)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, short>::value &&
-                           sizeof(T) == sizeof(short), bool> = true>
-RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<short, T>(
-    builtin_atomicCAS(reinterpret_cast<short*>(acc),
-                      RAJA::util::reinterp_A_as_B<T, short>(value)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long>::value &&
-                           sizeof(T) == sizeof(long), bool> = true>
-RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<long, T>(
-    builtin_atomicCAS(reinterpret_cast<long*>(acc),
-                      RAJA::util::reinterp_A_as_B<T, long>(value)));
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long long>::value &&
-                           sizeof(T) == sizeof(long long), bool> = true>
-RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<long long, T>(
-    builtin_atomicCAS(reinterpret_cast<long long*>(acc),
-                      RAJA::util::reinterp_A_as_B<T, long long>(value)));
-}
-
 
 /*!
  * Equality comparison for compare and swap loop. Converts to the underlying
@@ -262,46 +146,6 @@ template <typename T,
 RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
   return a == b;
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           sizeof(T) == sizeof(char), bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
-{
-  return RAJA::util::reinterp_A_as_B<T, char>(a) ==
-         RAJA::util::reinterp_A_as_B<T, char>(b);
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, short>::value &&
-                           sizeof(T) == sizeof(short), bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
-{
-  return RAJA::util::reinterp_A_as_B<T, short>(a) ==
-         RAJA::util::reinterp_A_as_B<T, short>(b);
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long>::value &&
-                           sizeof(T) == sizeof(long), bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
-{
-  return RAJA::util::reinterp_A_as_B<T, long>(a) ==
-         RAJA::util::reinterp_A_as_B<T, long>(b);
-}
-
-template <typename T,
-          std::enable_if_t<!std::is_same<T, long long>::value &&
-                           sizeof(T) == sizeof(long long), bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
-{
-  return RAJA::util::reinterp_A_as_B<T, long long>(a) ==
-         RAJA::util::reinterp_A_as_B<T, long long>(b);
 }
 
 
@@ -325,32 +169,28 @@ struct builtin_useIntrinsic {
  */
 template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE T builtin_atomicLoad(T *acc)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
   return __atomic_load_n(acc, __ATOMIC_RELAXED);
 }
 
 template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   __atomic_store_n(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return __atomic_exchange_n(acc, value, __ATOMIC_RELAXED);
 }
 
 template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   __atomic_compare_exchange_n(
       acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
@@ -359,17 +199,39 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 
 template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
   return a == b;
 }
+
+
+#endif  // RAJA_COMPILER_MSVC
 
 
 /*!
  * Type trait for determining if the operator should be implemented
  * by reinterpreting inputs to types that intrinsics support
  */
+#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
+
+template <typename T>
+struct builtin_useReinterpret {
+  static constexpr bool value =
+    !std::is_integral<T>::value &&
+    !std::is_enum<T>::value &&
+    (sizeof(T) == 1 ||
+     sizeof(T) == 2 ||
+     sizeof(T) == 4 ||
+     sizeof(T) == 8);
+
+  using type =
+    std::conditional_t<sizeof(T) == 1, char,
+    std::conditional_t<sizeof(T) == 2, short,
+    std::conditional_t<sizeof(T) == 4, long, long long>>>;
+};
+
+#else
+
 template <typename T>
 struct builtin_useReinterpret {
   static constexpr bool value =
@@ -422,6 +284,8 @@ struct builtin_useReinterpret {
 #endif
 };
 
+#endif
+
 
 template <typename T>
 using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
@@ -429,8 +293,7 @@ using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
 
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE T builtin_atomicLoad(T *acc)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
   return RAJA::util::reinterp_A_as_B<builtin_useReinterpret_t<T>, T>(
     builtin_atomicLoad(
@@ -439,8 +302,7 @@ RAJA_INLINE T builtin_atomicLoad(T *acc)
 
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicStore(
     reinterpret_cast<builtin_useReinterpret_t<T>*>(acc),
@@ -449,8 +311,7 @@ RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
   return RAJA::util::reinterp_A_as_B<builtin_useReinterpret_t<T>, T>(
     builtin_atomicExchange(
@@ -460,8 +321,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   return RAJA::util::reinterp_A_as_B<builtin_useReinterpret_t<T>, T>(
     builtin_atomicCAS(
@@ -472,15 +332,11 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
-RAJA_DEVICE_HIP
-RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
   return RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(a) ==
          RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(b);
 }
-
-
-#endif  // RAJA_COMPILER_MSVC
 
 
 /*!
