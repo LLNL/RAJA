@@ -20,10 +20,15 @@
 
 #include "RAJA/config.hpp"
 
+#include <cstdint>
+
+#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
+#include <intrin.h>
+#endif
+
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
 
-#include <cstdint>
 
 #if defined(RAJA_ENABLE_HIP)
 #define RAJA_DEVICE_HIP RAJA_HOST_DEVICE
