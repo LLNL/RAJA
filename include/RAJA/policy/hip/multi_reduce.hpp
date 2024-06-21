@@ -278,6 +278,7 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
       current_shmem += align_offset + m_shared_replication * (m_num_bins * sizeof(T));
     } else {
       m_shared_offset = s_shared_offset_invalid;
+      RAJA_ABORT_OR_THROW("Couldn't get shared memory for MultiReducer");
     }
   }
 
