@@ -72,8 +72,7 @@ struct builtin_useIntrinsic {
 template <typename T>
 struct builtin_useReinterpret {
   static constexpr bool value =
-    !std::is_integral<T>::value &&
-    !std::is_enum<T>::value &&
+    !builtin_useIntrinsic<T>::value &&
     (sizeof(T) == 1 ||
      sizeof(T) == 2 ||
      sizeof(T) == 4 ||
@@ -93,10 +92,7 @@ struct builtin_useReinterpret {
 template <typename T>
 struct builtin_useCAS {
   static constexpr bool value =
-    !std::is_same<T, char>::value &&
-    !std::is_same<T, short>::value &&
-    !std::is_same<T, long>::value &&
-    !std::is_same<T, long long>::value &&
+    !builtin_useIntrinsic<T>::value &&
     (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
 };
 
