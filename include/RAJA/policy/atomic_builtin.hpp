@@ -249,6 +249,18 @@ struct builtin_useReinterpret {
 
 
 /*!
+ * Type trait for determining if the operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct builtin_useCAS {
+  static constexpr bool value =
+    !std::is_integral<T>::value && !std::is_enum<T>::value &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
  * Atomic load using intrinsic
  */
 template <typename T,
@@ -291,6 +303,61 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
   __atomic_compare_exchange_n(
       acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
   return compare;
+}
+
+
+/*!
+ * Atomic addition using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
+{
+  return __atomic_fetch_add(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic subtraction using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
+{
+  return __atomic_fetch_sub(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic and using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
+{
+  return __atomic_fetch_and(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic or using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
+{
+  return __atomic_fetch_or(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic xor using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
+{
+  return __atomic_fetch_xor(acc, value, __ATOMIC_RELAXED);
 }
 
 
@@ -556,59 +623,6 @@ RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
 #else  // RAJA_COMPILER_MSVC
 
 
-/*!
- * Atomic addition
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
-{
-  return __atomic_fetch_add(acc, value, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic subtraction
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
-{
-  return __atomic_fetch_sub(acc, value, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic and
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
-{
-  return __atomic_fetch_and(acc, value, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic or
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
-{
-  return __atomic_fetch_or(acc, value, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic xor
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
-{
-  return __atomic_fetch_xor(acc, value, __ATOMIC_RELAXED);
-}
 
 
 #endif  // RAJA_COMPILER_MSVC
@@ -636,12 +650,6 @@ struct builtin_useCAS {
 };
 #else  // RAJA_COMPILER_MSVC
 
-template <typename T>
-struct builtin_useCAS {
-  static constexpr bool value =
-    !std::is_integral<T>::value && !std::is_enum<T>::value &&
-    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
-};
 
 #endif  // RAJA_COMPILER_MSVC
 
