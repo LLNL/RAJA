@@ -32,6 +32,7 @@
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/math.hpp"
 
 namespace RAJA
 {
