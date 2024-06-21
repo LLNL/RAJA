@@ -353,7 +353,8 @@ RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
  * operation.
  */
 template <typename T, typename Oper>
-RAJA_INLINE __device__ T hip_atomicCAS(T *acc, Oper&& oper)
+RAJA_INLINE __device__ T hip_atomicCAS_loop(T *acc,
+                                            Oper&& oper)
 {
   T old = hip_atomicLoad(acc);
   T expected;
@@ -374,7 +375,9 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, Oper&& oper)
  * operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_INLINE __device__ T hip_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
+RAJA_INLINE __device__ T hip_atomicCAS_loop(T *acc,
+                                            Oper&& oper,
+                                            ShortCircuit&& sc)
 {
   T old = hip_atomicLoad(acc);
 
@@ -411,7 +414,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return old + value;
   });
 }
@@ -472,7 +475,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicSub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return old - value;
   });
 }
@@ -507,13 +510,14 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicMin_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMin(T *acc, T value)
 {
-  return hip_atomicCAS(acc,
-                       [value] (T old) {
-                         return value < old ? value : old;
-                       },
-                       [value] (T current) {
-                         return current <= value;
-                       });
+  return hip_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return value < old ? value : old;
+    },
+    [value] (T current) {
+      return current <= value;
+    });
 }
 
 template <typename T,
@@ -533,13 +537,14 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 {
-  return hip_atomicCAS(acc,
-                       [value] (T old) {
-                         return old < value ? value : old;
-                       },
-                       [value] (T current) {
-                         return value <= current;
-                       });
+  return hip_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return old < value ? value : old;
+    },
+    [value] (T current) {
+      return value <= current;
+    });
 }
 
 template <typename T,
@@ -556,7 +561,7 @@ RAJA_INLINE __device__ T hip_atomicMax(T *acc, T value)
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicInc(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
@@ -578,7 +583,7 @@ RAJA_INLINE __device__ T hip_atomicInc(T *acc)
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicDec(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
   });
 }
@@ -603,7 +608,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicAnd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAnd(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return old & value;
   });
 }
@@ -625,7 +630,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicOr_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return old | value;
   });
 }
@@ -647,7 +652,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicXor_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicXor(T *acc, T value)
 {
-  return hip_atomicCAS(acc, [value] (T old) {
+  return hip_atomicCAS_loop(acc, [value] (T old) {
     return old ^ value;
   });
 }
