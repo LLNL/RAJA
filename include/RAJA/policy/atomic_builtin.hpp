@@ -66,7 +66,28 @@ struct builtin_useIntrinsic {
 
 
 /*!
- * Atomic load
+ * Type trait for determining if the operator should be implemented
+ * by reinterpreting inputs to types that intrinsics support
+ */
+template <typename T>
+struct builtin_useReinterpret {
+  static constexpr bool value =
+    !std::is_integral<T>::value &&
+    !std::is_enum<T>::value &&
+    (sizeof(T) == 1 ||
+     sizeof(T) == 2 ||
+     sizeof(T) == 4 ||
+     sizeof(T) == 8);
+
+  using type =
+    std::conditional_t<sizeof(T) == 1, char,
+    std::conditional_t<sizeof(T) == 2, short,
+    std::conditional_t<sizeof(T) == 4, long, long long>>>;
+};
+
+
+/*!
+ * Atomic load using intrinsics
  */
 RAJA_INLINE char builtin_atomicLoad(char *acc)
 {
@@ -90,7 +111,7 @@ RAJA_INLINE long long builtin_atomicLoad(long long *acc)
 
 
 /*!
- * Atomic exchange
+ * Atomic exchange using intrinsics
  */
 RAJA_INLINE char builtin_atomicExchange(char *acc, char value)
 {
@@ -124,7 +145,7 @@ RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 
 
 /*!
- * Atomic compare and swap
+ * Atomic compare and swap using intrinsics
  */
 RAJA_INLINE char builtin_atomicCAS(char *acc, char compare, char value)
 {
@@ -163,91 +184,9 @@ struct builtin_useIntrinsic {
 
 
 /*!
- * Atomic load
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
-{
-  return __atomic_load_n(acc, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic store
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
-{
-  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic exchange
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
-{
-  return __atomic_exchange_n(acc, value, __ATOMIC_RELAXED);
-}
-
-
-/*!
- * Atomic compare and swap
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
-{
-  __atomic_compare_exchange_n(
-      acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
-  return compare;
-}
-
-
-#endif  // RAJA_COMPILER_MSVC
-
-
-/*!
- * Equality comparison for compare and swap loop. Converts to the underlying
- * integral type to avoid cases where the values will never compare equal
- * (most notably, NaNs).
- */
-template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
-{
-  return a == b;
-}
-
-
-/*!
  * Type trait for determining if the operator should be implemented
  * by reinterpreting inputs to types that intrinsics support
  */
-#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
-
-template <typename T>
-struct builtin_useReinterpret {
-  static constexpr bool value =
-    !std::is_integral<T>::value &&
-    !std::is_enum<T>::value &&
-    (sizeof(T) == 1 ||
-     sizeof(T) == 2 ||
-     sizeof(T) == 4 ||
-     sizeof(T) == 8);
-
-  using type =
-    std::conditional_t<sizeof(T) == 1, char,
-    std::conditional_t<sizeof(T) == 2, short,
-    std::conditional_t<sizeof(T) == 4, long, long long>>>;
-};
-
-#else
-
 template <typename T>
 struct builtin_useReinterpret {
   static constexpr bool value =
@@ -300,13 +239,63 @@ struct builtin_useReinterpret {
 #endif
 };
 
-#endif
+
+/*!
+ * Atomic load using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return __atomic_load_n(acc, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic store using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic exchange using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  return __atomic_exchange_n(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic compare and swap using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
+{
+  __atomic_compare_exchange_n(
+      acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+  return compare;
+}
+
+
+#endif  // RAJA_COMPILER_MSVC
 
 
 template <typename T>
 using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
 
 
+/*!
+ * Atomic load using reinterpret cast
+ */
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
@@ -316,6 +305,10 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
       reinterpret_cast<builtin_useReinterpret_t<T>*>(acc)));
 }
 
+
+/*!
+ * Atomic store using reinterpret cast
+ */
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
@@ -325,6 +318,10 @@ RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
     RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(value));
 }
 
+
+/*!
+ * Atomic exchange using reinterpret cast
+ */
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
@@ -335,6 +332,10 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
       RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(value)));
 }
 
+
+/*!
+ * Atomic compare and swap using reinterpret cast
+ */
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
@@ -345,6 +346,20 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
       RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(compare),
       RAJA::util::reinterp_A_as_B<T, builtin_useReinterpret_t<T>>(value)));
 }
+
+
+/*!
+ * Equality comparison for compare and swap loop. Converts to the underlying
+ * integral type to avoid cases where the values will never compare equal
+ * (most notably, NaNs).
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return a == b;
+}
+
 
 template <typename T,
           std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
