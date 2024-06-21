@@ -144,7 +144,7 @@ template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  return builtin_atomicLoad(acc, static_cast<T>(0));
+  return builtin_atomicOr(acc, static_cast<T>(0));
 }
 
 
