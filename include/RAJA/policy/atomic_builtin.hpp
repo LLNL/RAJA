@@ -308,16 +308,19 @@ RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 #else  // RAJA_COMPILER_MSVC
 
 
+template <typename T>
+struct builtin_hasIntrinsic {
+  static constexpr bool value =
+    (std::is_integral<T>::value || std::is_enum<T>::value) &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
 /*!
  * Atomic load, store, exchange, and compare and swap
  */
 template <typename T,
-          std::enable_if_t<(std::is_integral<T>::value ||
-                            std::is_enum<T>::value) &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
@@ -325,12 +328,7 @@ RAJA_INLINE T builtin_atomicLoad(T *acc)
 }
 
 template <typename T,
-          std::enable_if_t<(std::is_integral<T>::value ||
-                            std::is_enum<T>::value) &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
@@ -338,12 +336,7 @@ RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 }
 
 template <typename T,
-          std::enable_if_t<(std::is_integral<T>::value ||
-                            std::is_enum<T>::value) &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
@@ -351,12 +344,7 @@ RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 }
 
 template <typename T,
-          std::enable_if_t<(std::is_integral<T>::value ||
-                            std::is_enum<T>::value) &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
@@ -366,12 +354,7 @@ RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 }
 
 template <typename T,
-          std::enable_if_t<(std::is_integral<T>::value ||
-                            std::is_enum<T>::value) &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_hasIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP
 RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
 {
