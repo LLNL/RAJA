@@ -118,7 +118,8 @@ template <typename T,
                            sizeof(T) == sizeof(uint8_t), bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<uint8_t*>(acc));
+  return RAJA::util::reinterp_A_as_B<uint8_t, T>(
+    hip_atomicLoad(reinterpret_cast<uint8_t*>(acc)));
 }
 
 #else
@@ -130,7 +131,8 @@ template <typename T,
                            sizeof(unsigned char) == 1, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<unsigned char*>(acc));
+  return RAJA::util::reinterp_A_as_B<unsigned char, T>(
+    hip_atomicLoad(reinterpret_cast<unsigned char*>(acc)));
 }
 
 #endif
@@ -143,7 +145,8 @@ template <typename T,
                            sizeof(T) == sizeof(uint16_t), bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<uint16_t*>(acc));
+  return RAJA::util::reinterp_A_as_B<uint16_t, T>(
+    hip_atomicLoad(reinterpret_cast<uint16_t*>(acc)));
 }
 
 #else
@@ -155,7 +158,8 @@ template <typename T,
                            sizeof(unsigned short int) == 2, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<unsigned short int*>(acc));
+  return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
+    hip_atomicLoad(reinterpret_cast<unsigned short int*>(acc)));
 }
 
 #endif
@@ -168,7 +172,8 @@ template <typename T,
                            sizeof(T) == sizeof(uint32_t), bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<uint32_t*>(acc));
+  return RAJA::util::reinterp_A_as_B<uint32_t, T>(
+    hip_atomicLoad(reinterpret_cast<uint32_t*>(acc)));
 }
 
 #else
@@ -180,7 +185,8 @@ template <typename T,
                            sizeof(unsigned int) == 4, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<unsigned int*>(acc));
+  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
+    hip_atomicLoad(reinterpret_cast<unsigned int*>(acc)));
 }
 
 #endif
@@ -193,7 +199,8 @@ template <typename T,
                            sizeof(T) == sizeof(uint64_t), bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<uint64_t*>(acc));
+  return RAJA::util::reinterp_A_as_B<uint64_t, T>(
+    hip_atomicLoad(reinterpret_cast<uint64_t*>(acc)));
 }
 
 #else
@@ -205,7 +212,8 @@ template <typename T,
                            sizeof(unsigned long long int) == 8, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  return hip_atomicLoad(reinterpret_cast<unsigned long long int*>(acc));
+  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
+    hip_atomicLoad(reinterpret_cast<unsigned long long int*>(acc)));
 }
 
 #endif
