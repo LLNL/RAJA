@@ -107,26 +107,37 @@ struct builtin_useCAS {
 
 
 /*!
- * Atomic load using intrinsics
+ * Atomic or using intrinsics
  */
-RAJA_INLINE char builtin_atomicLoad(char *acc)
+RAJA_INLINE char builtin_atomicOr(char *acc, char value)
 {
-  return _InterlockedOr8(acc, static_cast<char>(0));
+  return _InterlockedOr8(acc, value);
 }
 
-RAJA_INLINE short builtin_atomicLoad(short *acc)
+RAJA_INLINE short builtin_atomicOr(short *acc, short value)
 {
-  return _InterlockedOr16(acc, static_cast<short>(0));
+  return _InterlockedOr16(acc, value);
 }
 
-RAJA_INLINE long builtin_atomicLoad(long *acc)
+RAJA_INLINE long builtin_atomicOr(long *acc, long value)
 {
-  return _InterlockedOr(acc, static_cast<long>(0));
+  return _InterlockedOr(acc, value);
 }
 
-RAJA_INLINE long long builtin_atomicLoad(long long *acc)
+RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
 {
-  return _InterlockedOr64(acc, static_cast<long long>(0));
+  return _InterlockedOr64(acc, value);
+}
+
+
+/*!
+ * Atomic load using atomic or
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_INLINE T builtin_atomicLoad(T *acc)
+{
+  return builtin_atomicLoad(acc, static_cast<T>(0));
 }
 
 
@@ -153,19 +164,12 @@ RAJA_INLINE long long builtin_atomicExchange(long long *acc, long long value)
   return _InterlockedExchange64(acc, value);
 }
 
+
 /*!
- * Forward declaration of atomic exchange using reinterpret cast.
- * Needed for builtin_atomicStore to be implemented using atomic exchange.
+ * Atomic store using atomic exchange
  */
 template <typename T,
-          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value);
-
-
-/*!
- * Atomic store (implemented using atomic exchange)
- */
-template <typename T>
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   builtin_atomicExchange(acc, value);
@@ -265,30 +269,6 @@ RAJA_INLINE long builtin_atomicAnd(long *acc, long value)
 RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
 {
   return _InterlockedAnd64(acc, value);
-}
-
-
-/*!
- * Atomic or using intrinsics
- */
-RAJA_INLINE char builtin_atomicOr(char *acc, char value)
-{
-  return _InterlockedOr8(acc, value);
-}
-
-RAJA_INLINE short builtin_atomicOr(short *acc, short value)
-{
-  return _InterlockedOr16(acc, value);
-}
-
-RAJA_INLINE long builtin_atomicOr(long *acc, long value)
-{
-  return _InterlockedOr(acc, value);
-}
-
-RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
-{
-  return _InterlockedOr64(acc, value);
 }
 
 
