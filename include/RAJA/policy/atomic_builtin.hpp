@@ -133,6 +133,14 @@ RAJA_INLINE long long builtin_atomicExchange(long long *acc, long long value)
   return _InterlockedExchange64(acc, value);
 }
 
+/*!
+ * Forward declaration of atomic exchange using reinterpret cast.
+ * Needed for builtin_atomicStore to be implemented using atomic exchange.
+ */
+template <typename T,
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value);
+
 
 /*!
  * Atomic store (implemented using atomic exchange)
