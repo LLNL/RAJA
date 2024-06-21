@@ -923,6 +923,21 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, Oper &&oper, ShortCircui
 
 
 /*!
+ * Type trait for determining if the operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct builtin_useCAS {
+  static constexpr bool value =
+    !std::is_same<T, char>::value &&
+    !std::is_same<T, short>::value &&
+    !std::is_same<T, long>::value &&
+    !std::is_same<T, long long>::value &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
  * Atomic addition
  */
 RAJA_INLINE char builtin_atomicAdd(char *acc, char value)
@@ -946,14 +961,7 @@ RAJA_INLINE long long builtin_atomicAdd(long long *acc, long long value)
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           !std::is_same<T, short>::value &&
-                           !std::is_same<T, long>::value &&
-                           !std::is_same<T, long long>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -986,14 +994,7 @@ RAJA_INLINE long long builtin_atomicSub(long long *acc, long long value)
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           !std::is_same<T, short>::value &&
-                           !std::is_same<T, long>::value &&
-                           !std::is_same<T, long long>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_INLINE T builtin_atomicSub(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1026,14 +1027,7 @@ RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           !std::is_same<T, short>::value &&
-                           !std::is_same<T, long>::value &&
-                           !std::is_same<T, long long>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1066,14 +1060,7 @@ RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           !std::is_same<T, short>::value &&
-                           !std::is_same<T, long>::value &&
-                           !std::is_same<T, long long>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_INLINE T builtin_atomicOr(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
@@ -1106,14 +1093,7 @@ RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, char>::value &&
-                           !std::is_same<T, short>::value &&
-                           !std::is_same<T, long>::value &&
-                           !std::is_same<T, long long>::value &&
-                           (sizeof(T) == 1 ||
-                            sizeof(T) == 2 ||
-                            sizeof(T) == 4 ||
-                            sizeof(T) == 8), bool> = true>
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
 RAJA_INLINE T builtin_atomicXor(T *acc, T value)
 {
   return builtin_atomicCAS(acc, [value] (T old) {
