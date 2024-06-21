@@ -179,7 +179,7 @@ RAJA_DEVICE RAJA_INLINE void grid_multi_reduce_shmem_to_global_atomic(int num_bi
 //
 
 //! MultiReduction data for Cuda Offload -- stores value, host pointer
-template <typename Combiner, typename T>
+template <typename Combiner, typename T, typename tuning>
 struct MultiReduceBlockThenGridAtomicHostInit_Data
 {
   //! setup permanent settings, allocate and initialize tally memory
@@ -255,7 +255,7 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
 
 
   //! setup per launch, setup shared memory parameters
-  void setup_launch(size_t RAJA_UNUSED_ARG(block_size), size_t& current_shmem, size_t max_shmem)
+  void setup_launch(size_t block_size, size_t& current_shmem, size_t max_shmem)
   {
     size_t align_offset = current_shmem % alignof(T);
     if (align_offset != size_t(0)) {
@@ -264,9 +264,14 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
 
     size_t max_shmem_size = max_shmem - (current_shmem + align_offset);
     size_t max_shared_replication = max_shmem_size / (m_num_bins * sizeof(T));
-    size_t preferred_shared_replication = 1; // TODO: get this from tuning and block_size
 
-    m_shared_replication = prev_pow2(std::min(preferred_shared_replication, max_shared_replication));
+    struct {
+      size_t func_threads_per_block;
+      size_t func_max_shared_replication_per_block;
+    } func_data{block_size, max_shared_replication};
+
+    m_shared_replication = SharedAtomicReplicationConcretizer{}.template
+        get_shared_replication<size_t>(func_data);
 
     if (m_shared_replication != 0) {
       m_shared_offset = static_cast<int>(current_shmem + align_offset);
@@ -350,6 +355,9 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
 private:
   using tally_mempool_type = device_pinned_mempool_type;
 
+  using SharedAtomicReplicationConcretizer = typename tuning::SharedAtomicReplicationConcretizer;
+  using TallyAtomicReplicationConcretizer = typename tuning::GlobalAtomicReplicationConcretizer;
+
   using GetSharedOffset = GetOffsetRight;
   using GetTallyOffset = GetOffsetLeft;
 
@@ -372,8 +380,13 @@ private:
 #if defined(RAJA_ENABLE_OPENMP)
     min_tally_replication = omp_get_max_threads();
 #endif
-    int preferred_tally_replication = 1; // TODO: get this from tuning
-    return next_pow2(std::max(preferred_tally_replication, min_tally_replication));
+
+    struct {
+      int func_min_global_replication;
+    } func_data{min_tally_replication};
+
+    return TallyAtomicReplicationConcretizer{}.template
+        get_global_replication<int>(func_data);
   }
 
   template < typename Container >
@@ -461,7 +474,7 @@ struct MultiReduceDataCuda
   using reduce_data_type =
       std::conditional_t<(atomic_available),
         std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_block_then_grid_atomic),
-          cuda::MultiReduceBlockThenGridAtomicHostInit_Data<t_MultiReduceOp, T>,
+          cuda::MultiReduceBlockThenGridAtomicHostInit_Data<t_MultiReduceOp, T, tuning>,
           std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_global_atomic),
             void,
             void>>,

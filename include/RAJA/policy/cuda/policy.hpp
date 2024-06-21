@@ -160,6 +160,84 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
 };
 
 
+/*!
+ * Get an amount of replication that is preferred_replication.
+ */
+template < size_t preferred_replication >
+struct ConstantPreferredReplicationConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_preferred_replication(Data const& RAJA_UNUSED_ARG(data))
+  {
+    return IdxT(preferred_replication);
+  }
+};
+
+/*!
+ * Get an amount of replication that is preferred_replication_before_cutoff if
+ * data.func_threads_per_block is less than t_cutoff or
+ * preferred_replication_after_cutoff otherwise.
+ */
+template < size_t t_cutoff, size_t preferred_replication_before_cutoff,
+                            size_t preferred_replication_after_cutoff >
+struct ThreadsPerBlockCutoffPreferredReplicationConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_preferred_replication(Data const& data)
+  {
+    IdxT cutoff = t_cutoff;
+    IdxT func_threads_per_block = data.func_threads_per_block;
+
+    if (func_threads_per_block < cutoff) {
+      return IdxT(preferred_replication_before_cutoff);
+    } else {
+      return IdxT(preferred_replication_after_cutoff);
+    }
+  }
+};
+
+/*!
+ * Get an amount of shared atomic replication that is a power of 2 that is at
+ * most the amount given by data.func_max_shared_replication_per_block or the
+ * amount given by GetPreferredReplication.
+ */
+template < typename GetPreferredReplication >
+struct SharedAtomicReplicationMaxPow2Concretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_shared_replication(Data const& data)
+  {
+    IdxT func_max_shared_replication_per_block = data.func_max_shared_replication_per_block;
+
+    IdxT preferred_replication = GetPreferredReplication{}.template
+        get_preferred_replication<IdxT>(data);
+
+    return prev_pow2(std::min(preferred_replication,
+                              func_max_shared_replication_per_block));
+  }
+};
+
+/*!
+ * Get an amount of global atomic replication that is a power of 2 that is at
+ * least the amount given by data.func_min_global_replication or the
+ * amount given by GetPreferredReplication.
+ */
+template < typename GetPreferredReplication >
+struct GlobalAtomicReplicationMinPow2Concretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_global_replication(Data const& data)
+  {
+    IdxT func_min_global_replication = data.func_min_global_replication;
+
+    IdxT preferred_replication = GetPreferredReplication{}.template
+        get_preferred_replication<IdxT>(data);
+
+    return next_pow2(std::max(preferred_replication, func_min_global_replication));
+  }
+};
+
+
 enum struct reduce_algorithm : int
 {
   combine_last_block,
@@ -192,10 +270,14 @@ enum struct multi_reduce_algorithm : int
   init_host_combine_global_atomic
 };
 
-template < multi_reduce_algorithm t_algorithm >
+template < multi_reduce_algorithm t_algorithm,
+           typename t_SharedAtomicReplicationConcretizer,
+           typename t_GlobalAtomicReplicationConcretizer >
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_algorithm;
+  using SharedAtomicReplicationConcretizer = t_SharedAtomicReplicationConcretizer;
+  using GlobalAtomicReplicationConcretizer = t_GlobalAtomicReplicationConcretizer;
   static constexpr bool consistent = false;
 };
 
@@ -384,9 +466,13 @@ template < bool with_atomic >
 using cuda_reduce_base = std::conditional_t<with_atomic, cuda_reduce_atomic, cuda_reduce>;
 
 
-template < RAJA::cuda::multi_reduce_algorithm algorithm >
+template < RAJA::cuda::multi_reduce_algorithm algorithm,
+           typename SharedAtomicReplicationConcretizer,
+           typename GlobalAtomicReplicationConcretizer >
 using cuda_multi_reduce_tuning = cuda_multi_reduce_policy<
-    RAJA::cuda::MultiReduceTuning<algorithm>>;
+    RAJA::cuda::MultiReduceTuning<algorithm,
+                                  SharedAtomicReplicationConcretizer,
+                                  GlobalAtomicReplicationConcretizer>>;
 
 // Policies for RAJA::MultiReduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results. The
@@ -397,10 +483,18 @@ using cuda_multi_reduce_tuning = cuda_multi_reduce_policy<
 //   significantly cheaper on some HW. On some HW this is faster overall than
 //   the non-atomic and atomic policies.
 using cuda_multi_reduce_block_then_grid_atomic_host_init = cuda_multi_reduce_tuning<
-    RAJA::cuda::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic>;
+    RAJA::cuda::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
+    RAJA::cuda::SharedAtomicReplicationMaxPow2Concretizer<
+        RAJA::cuda::ConstantPreferredReplicationConcretizer<1>>,
+    RAJA::cuda::GlobalAtomicReplicationMinPow2Concretizer<
+        RAJA::cuda::ConstantPreferredReplicationConcretizer<1>>>;
 //
 using cuda_multi_reduce_global_atomic_host_init = cuda_multi_reduce_tuning<
-    RAJA::cuda::multi_reduce_algorithm::init_host_combine_global_atomic>;
+    RAJA::cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
+    RAJA::cuda::SharedAtomicReplicationMaxPow2Concretizer<
+        RAJA::cuda::ConstantPreferredReplicationConcretizer<1>>,
+    RAJA::cuda::GlobalAtomicReplicationMinPow2Concretizer<
+        RAJA::cuda::ConstantPreferredReplicationConcretizer<1>>>;
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
