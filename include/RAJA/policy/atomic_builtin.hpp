@@ -289,6 +289,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 #endif  // RAJA_COMPILER_MSVC
 
 
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
 template <typename T>
 using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
 
