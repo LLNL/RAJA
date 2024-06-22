@@ -56,44 +56,66 @@ using hip_atomicCommon_builtin_types = ::camp::list<
 >;
 
 
-/*
- * Performs an atomic exchange. Stores the new value in the given address
- * and returns the old value.
+
+/*!
+ * Type trait for determining if the exchange operator should be implemented
+ * using a builtin
+ */
+template <typename T>
+struct hip_useBuiltinExchange {
+  static constexpr bool value =
+    std::is_same<T, int>::value ||
+    std::is_same<T, unsigned int>::value ||
+    std::is_same<T, unsigned long long>::value ||
+    std::is_same<T, float>::value;
+};
+
+/*!
+ * Type trait for determining if the exchange operator should be implemented
+ * by reinterpreting inputs to types that the builtin exchange supports
+ */
+template <typename T>
+struct hip_useReinterpretExchange {
+  static constexpr bool value =
+    !hip_useBuiltinExchange<T>::value &&
+    (sizeof(T) == sizeof(unsigned int) ||
+     sizeof(T) == sizeof(unsigned long long));
+
+  using type =
+    std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                       unsigned int, unsigned long long>;
+};
+
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
+template <typename T>
+using hip_useReinterpretExchange_t = typename hip_useReinterpretExchange<T>::type;
+
+/*!
+ * Performs an atomic exchange using a builtin function. Stores the new value
+ * in the given address and returns the old value.
  */
 template <typename T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value ||
-                           std::is_same<T, float>::value, bool> = true>
+          std::enable_if_t<hip_useBuiltinExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
 {
   return ::atomicExch(acc, value);
 }
 
+/*!
+ * Performs an atomic exchange using a reinterpret cast. Stores the new value
+ * in the given address and returns the old value.
+ */
 template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           !std::is_same<T, float>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
+          std::enable_if_t<hip_useReinterpretExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
 {
-  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    hip_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                       RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
-}
+  using R = hip_useReinterpretExchange_t<T>;
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           !std::is_same<T, float>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    hip_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
-                       RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    hip_atomicExchange(reinterpret_cast<R*>(acc),
+                       RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
 
 
@@ -105,7 +127,7 @@ RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
  * using an intrinsic
  */
 template <typename T>
-struct builtin_useIntrinsic {
+struct hip_useIntrinsicLoadStore {
   static constexpr bool value =
     (std::is_integral<T>::value || std::is_enum<T>::value) &&
     (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
@@ -117,7 +139,7 @@ struct builtin_useIntrinsic {
  * by reinterpreting inputs to types that intrinsics support
  */
 template <typename T>
-struct builtin_useReinterpret {
+struct hip_useReinterpretLoadStore {
   static constexpr bool value =
     !std::is_integral<T>::value &&
     !std::is_enum<T>::value &&
@@ -172,7 +194,7 @@ struct builtin_useReinterpret {
  * Alias for determining the integral type of the same size as the given type
  */
 template <typename T>
-using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
+using hip_useReinterpretLoadStore_t = typename hip_useReinterpretLoadStore<T>::type;
 
 #endif
 
@@ -183,17 +205,17 @@ using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
 
 template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<hip_useIntrinsicLoadStore<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
   return __hip_atomic_load(acc, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
 
 template <typename T,
-          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+          std::enable_if_t<hip_useReinterpretLoadStore<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  using R = builtin_useReinterpret_t<T>;
+  using R = hip_useReinterpretLoadStore_t<T>;
 
   return RAJA::util::reinterp_A_as_B<R, T>(
     hip_atomicLoad(reinterpret_cast<R*>(acc)));
@@ -241,17 +263,17 @@ RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
 
 template <typename T,
-          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+          std::enable_if_t<hip_useIntrinsicLoadStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
   __hip_atomic_store(acc, value, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 }
 
 template <typename T,
-          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+          std::enable_if_t<hip_useReinterpretLoadStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
-  using R = builtin_useReinterpret_t<T>;
+  using R = hip_useReinterpretLoadStore_t<T>;
 
   hip_atomicStore(reinterpret_cast<R*>(acc),
                   RAJA::util::reinterp_A_as_B<T, R>(value));
