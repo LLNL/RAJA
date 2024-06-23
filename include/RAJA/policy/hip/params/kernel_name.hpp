@@ -21,6 +21,8 @@ namespace detail {
   {
 #if defined(RAJA_ENABLE_ROCTX)
     roctxRangePush(kn.name);
+#else
+    RAJA_UNUSED_VAR(kn);
 #endif
   }
 
