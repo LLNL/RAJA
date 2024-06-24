@@ -233,10 +233,10 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 
   T temp = val;
 
-  if (numThreads % policy::hip::WARP_SIZE == 0) {
+  if (numThreads % policy::hip::device_constants.WARP_SIZE == 0) {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
       T rhs = shfl_xor_sync(temp, i);
       Combiner{}(temp, rhs);
     }
@@ -244,7 +244,7 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
   } else {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
       int srcLane = threadId ^ i;
       T rhs = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
@@ -269,7 +269,7 @@ RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
 {
   T temp = val;
 
-  for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+  for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
     T rhs = shfl_xor_sync(temp, i);
     Combiner{}(temp, rhs);
   }
@@ -287,15 +287,15 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
 
-  int warpId = threadId % policy::hip::WARP_SIZE;
-  int warpNum = threadId / policy::hip::WARP_SIZE;
+  int warpId = threadId % policy::hip::device_constants.WARP_SIZE;
+  int warpNum = threadId / policy::hip::device_constants.WARP_SIZE;
 
   T temp = val;
 
-  if (numThreads % policy::hip::WARP_SIZE == 0) {
+  if (numThreads % policy::hip::device_constants.WARP_SIZE == 0) {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
       T rhs = shfl_xor_sync(temp, i);
       Combiner{}(temp, rhs);
     }
@@ -303,7 +303,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   } else {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
       int srcLane = threadId ^ i;
       T rhs = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
@@ -314,14 +314,14 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   }
 
   // reduce per warp values
-  if (numThreads > policy::hip::WARP_SIZE) {
+  if (numThreads > policy::hip::device_constants.WARP_SIZE) {
 
-    static_assert(policy::hip::MAX_WARPS <= policy::hip::WARP_SIZE,
+    static_assert(policy::hip::device_constants.MAX_WARPS <= policy::hip::device_constants.WARP_SIZE,
         "Max Warps must be less than or equal to Warp Size for this algorithm to work");
 
-    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>)];
-    RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS>* sd =
-      reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::MAX_WARPS> *>(tmpsd);
+    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>)];
+    RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>* sd =
+      reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS> *>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0) {
@@ -333,13 +333,13 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     if (warpNum == 0) {
 
       // read per warp values
-      if (warpId * policy::hip::WARP_SIZE < numThreads) {
+      if (warpId * policy::hip::device_constants.WARP_SIZE < numThreads) {
         temp = sd->get(warpId);
       } else {
         temp = identity;
       }
 
-      for (int i = 1; i < policy::hip::MAX_WARPS; i *= 2) {
+      for (int i = 1; i < policy::hip::device_constants.MAX_WARPS; i *= 2) {
         T rhs = shfl_xor_sync(temp, i);
         Combiner{}(temp, rhs);
       }

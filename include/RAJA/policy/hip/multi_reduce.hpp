@@ -291,7 +291,7 @@ private:
 
   using TallyAtomicReplicationConcretizer = typename tuning::GlobalAtomicReplicationConcretizer;
 
-  static constexpr size_t s_tally_alignment = std::max(size_t(policy::hip::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE),
+  static constexpr size_t s_tally_alignment = std::max(size_t(policy::hip::device_constants.ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE),
                                                        size_t(RAJA::DATA_ALIGN));
 
   static int get_tally_bins(int num_bins)

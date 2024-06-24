@@ -284,6 +284,45 @@ namespace policy
 namespace hip
 {
 
+struct DeviceConstants
+{
+  RAJA::Index_type WARP_SIZE;
+  RAJA::Index_type MAX_BLOCK_SIZE;
+  RAJA::Index_type MAX_WARPS;
+  RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE; // basically the cache line size of the cache level that handles atomics
+  RAJA::Index_type ATOMIC_MAX_CONCURRENT_SIZE;
+  RAJA::Index_type ATOMIC_MAX_CONCURRENT_CACHE_LINES;
+
+  constexpr DeviceConstants(RAJA::Index_type warp_size,
+                            RAJA::Index_type max_block_size,
+                            RAJA::Index_type atomic_cache_line_bytes,
+                            RAJA::Index_type atomic_max_concurrency_bytes) noexcept
+    : WARP_SIZE(warp_size)
+    , MAX_BLOCK_SIZE(max_block_size)
+    , MAX_WARPS(max_block_size / warp_size)
+    , ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE(atomic_cache_line_bytes)
+    , ATOMIC_MAX_CONCURRENT_SIZE(atomic_max_concurrency_bytes)
+    , ATOMIC_MAX_CONCURRENT_CACHE_LINES(atomic_max_concurrency_bytes / atomic_cache_line_bytes)
+  { }
+};
+
+//
+// Operations in the included files are parametrized using the following
+// values for HIP warp size and max block size.
+//
+#if defined(__HIP_PLATFORM_AMD__)
+constexpr DeviceConstants device_constants(64, 1024, 64, 32'768); // MI300A
+// constexpr DeviceConstants device_constants(64, 1024, 128, 8'192); // MI250X
+#elif defined(__HIP_PLATFORM_NVIDIA__)
+constexpr DeviceConstants device_constants(32, 1024, 32, 65'536); // V100
+#endif
+static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
+              "RAJA Assumption Broken: device_constants.WARP_SIZE < device_constants.MAX_WARPS");
+static_assert(device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
+              "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
+              "a multiple of device_constants.WARP_SIZE");
+
+
 template <typename _IterationMapping, kernel_sync_requirement sync, typename ... _IterationGetters>
 struct hip_indexer {};
 
@@ -480,14 +519,16 @@ using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tunin
     RAJA::hip::SharedAtomicReplicationMaxPow2Concretizer<
         RAJA::hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
     RAJA::hip::GlobalAtomicReplicationMinPow2Concretizer<
-        RAJA::hip::ConstantPreferredReplicationConcretizer<32>>>;
+        RAJA::hip::ConstantPreferredReplicationConcretizer<
+          device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
 //
 using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
     RAJA::hip::multi_reduce_algorithm::init_host_combine_global_atomic,
     RAJA::hip::SharedAtomicReplicationMaxPow2Concretizer<
         RAJA::hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
     RAJA::hip::GlobalAtomicReplicationMinPow2Concretizer<
-        RAJA::hip::ConstantPreferredReplicationConcretizer<32>>>;
+        RAJA::hip::ConstantPreferredReplicationConcretizer<
+          device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
@@ -540,25 +581,6 @@ struct hip_thread_masked_direct {};
 template<typename Mask>
 struct hip_thread_masked_loop {};
 
-
-
-//
-// Operations in the included files are parametrized using the following
-// values for HIP warp size and max block size.
-//
-constexpr const RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE = 64; // 128 on gfx90a
-#if defined(__HIP_PLATFORM_AMD__)
-constexpr const RAJA::Index_type WARP_SIZE = 64;
-#elif defined(__HIP_PLATFORM_NVIDIA__)
-constexpr const RAJA::Index_type WARP_SIZE = 32;
-#endif
-constexpr const RAJA::Index_type MAX_BLOCK_SIZE = 1024;
-constexpr const RAJA::Index_type MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
-static_assert(WARP_SIZE >= MAX_WARPS,
-              "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
-static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
-              "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
-              "a multiple of WARP_SIZE");
 
 struct hip_synchronize : make_policy_pattern_launch_t<Policy::hip,
                                                        Pattern::synchronize,
@@ -1328,11 +1350,11 @@ using policy::hip::hip_warp_reduce;
 using hip_warp_direct = RAJA::policy::hip::hip_indexer<
     iteration_mapping::Direct,
     kernel_sync_requirement::none,
-    hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
+    hip::thread_x<RAJA::policy::hip::device_constants.WARP_SIZE>>;
 using hip_warp_loop = RAJA::policy::hip::hip_indexer<
     iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
-    hip::thread_x<RAJA::policy::hip::WARP_SIZE>>;
+    hip::thread_x<RAJA::policy::hip::device_constants.WARP_SIZE>>;
 
 using policy::hip::hip_warp_masked_direct;
 using policy::hip::hip_warp_masked_loop;
