@@ -361,34 +361,20 @@ RAJA_INLINE __device__ T hip_atomicCAS(T *acc, T compare, T value)
  * (most notably, NaNs).
  */
 template <typename T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value, bool> = true>
+          std::enable_if_t<hip_useBuiltinCAS<T>::value, bool> = true>
 RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
 {
   return a == b;
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
+          std::enable_if_t<hip_useReinterpretCAS<T>::value, bool> = true>
 RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
 {
-  return RAJA::util::reinterp_A_as_B<T, unsigned int>(a) ==
-         RAJA::util::reinterp_A_as_B<T, unsigned int>(b);
-}
+  using R = hip_useReinterpretCAS_t<T>;
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
-{
-  return RAJA::util::reinterp_A_as_B<T, unsigned long long int>(a) ==
-         RAJA::util::reinterp_A_as_B<T, unsigned long long int>(b);
+  return hip_atomicCAS_equal(RAJA::util::reinterp_A_as_B<T, R>(a),
+                             RAJA::util::reinterp_A_as_B<T, R>(b));
 }
 
 
