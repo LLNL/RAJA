@@ -159,9 +159,8 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
       });
 
       if (ref_vals.empty()) {
-        for (size_t bin = 0; bin < num_bins; ++bin) {
-          ref_vals.emplace_back(red.get(bin));
-        }
+        ref_vals.resize(num_bins);
+        red.get_all(ref_vals);
       } else {
         for (size_t bin = 0; bin < num_bins; ++bin) {
           ASSERT_EQ(red.get(bin), ref_vals[bin]);
