@@ -229,8 +229,13 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
 
   std::vector<DATA_TYPE> container;
 
-  std::vector<size_t> num_bins_container({0, 1, 3, 13, 125, 1457, 16529});
-  for (size_t num_bins : num_bins_container) {
+  std::vector<size_t> num_bins_max_container({0, 1, 10, 100, 1000, 10000, 100000});
+  size_t num_bins_min = 0;
+  for (size_t num_bins_max : num_bins_max_container) {
+
+    std::uniform_int_distribution<size_t> num_bins_dist(num_bins_min, num_bins_max);
+    num_bins_min = num_bins_max+1;
+    size_t num_bins = num_bins_dist(rngen);
 
     container.resize(num_bins, DATA_TYPE(2));
 
