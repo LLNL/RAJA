@@ -676,6 +676,10 @@ public:
 #endif
   }
 
+  MultiReduceDataCuda(MultiReduceDataCuda &&) = delete;
+  MultiReduceDataCuda& operator=(MultiReduceDataCuda const&) = delete;
+  MultiReduceDataCuda& operator=(MultiReduceDataCuda &&) = delete;
+
   //! cleanup resources owned by this copy
   //  on device store in pinned buffer on host
   RAJA_HOST_DEVICE

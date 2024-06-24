@@ -79,17 +79,26 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
   template < typename Container,
              std::enable_if_t<!std::is_same<Container, MultiReduceDataOMP>::value>* = nullptr >
   MultiReduceDataOMP(Container const& container, T identity)
-      : m_num_bins(container.size())
+      : m_parent(nullptr)
+      , m_num_bins(container.size())
       , m_identity(identity)
-      , m_data(create_data(container, m_num_bins))
-  { }
+      , m_data(nullptr)
+  {
+    m_data = create_data(container, m_num_bins);
+  }
 
   MultiReduceDataOMP(MultiReduceDataOMP const &other)
       : m_parent(other.m_parent ? other.m_parent : &other)
       , m_num_bins(other.m_num_bins)
       , m_identity(other.m_identity)
-      , m_data(create_data(repeat_view<value_type>(other.m_identity, other.m_num_bins), other.m_num_bins))
-  { }
+      , m_data(nullptr)
+  {
+    m_data = create_data(repeat_view<value_type>(other.m_identity, other.m_num_bins), other.m_num_bins);
+  }
+
+  MultiReduceDataOMP(MultiReduceDataOMP &&) = delete;
+  MultiReduceDataOMP& operator=(MultiReduceDataOMP const&) = delete;
+  MultiReduceDataOMP& operator=(MultiReduceDataOMP &&) = delete;
 
   ~MultiReduceDataOMP()
   {
@@ -133,7 +142,7 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
   T get(size_t bin) const { return m_data[bin]; }
 
 private:
-  MultiReduceDataOMP const *m_parent = nullptr;
+  MultiReduceDataOMP const *m_parent;
   size_t m_num_bins;
   T m_identity;
   T* m_data;
@@ -187,13 +196,16 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
   template < typename Container,
              std::enable_if_t<!std::is_same<Container, MultiReduceDataOMP>::value>* = nullptr >
   MultiReduceDataOMP(Container const& container, T identity)
-      : m_max_threads(omp_get_max_threads())
+      : m_parent(nullptr)
+      , m_max_threads(omp_get_max_threads())
       , m_num_bins(container.size())
       , m_padded_threads(pad_threads(m_max_threads))
       , m_padded_bins(pad_bins(m_num_bins))
       , m_identity(identity)
-      , m_data(create_data(container, identity, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads))
-  { }
+      , m_data(nullptr)
+  {
+    m_data = create_data(container, identity, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads);
+  }
 
   MultiReduceDataOMP(MultiReduceDataOMP const &other)
       : m_parent(other.m_parent ? other.m_parent : &other)
@@ -203,6 +215,10 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
       , m_identity(other.m_identity)
       , m_data(other.m_data)
   { }
+
+  MultiReduceDataOMP(MultiReduceDataOMP &&) = delete;
+  MultiReduceDataOMP& operator=(MultiReduceDataOMP const&) = delete;
+  MultiReduceDataOMP& operator=(MultiReduceDataOMP &&) = delete;
 
   ~MultiReduceDataOMP()
   {
@@ -263,7 +279,7 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
   }
 
 private:
-  MultiReduceDataOMP const *m_parent = nullptr;
+  MultiReduceDataOMP const *m_parent;
   size_t m_max_threads;
   size_t m_num_bins;
   size_t m_padded_threads;

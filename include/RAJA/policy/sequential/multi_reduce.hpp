@@ -72,10 +72,13 @@ struct MultiReduceDataSeq<T, t_MultiReduceOp,
   template < typename Container,
              std::enable_if_t<!std::is_same<Container, MultiReduceDataSeq>::value>* = nullptr >
   MultiReduceDataSeq(Container const& container, T identity)
-      : m_num_bins(container.size())
+      : m_parent(nullptr)
+      , m_num_bins(container.size())
       , m_identity(identity)
-      , m_data{create_data(container, m_num_bins)}
-  { }
+      , m_data(nullptr)
+  {
+    m_data = create_data(container, m_num_bins);
+  }
 
   MultiReduceDataSeq(MultiReduceDataSeq const &other)
       : m_parent(other.m_parent ? other.m_parent : &other)
@@ -83,6 +86,10 @@ struct MultiReduceDataSeq<T, t_MultiReduceOp,
       , m_identity(other.m_identity)
       , m_data(other.m_data)
   { }
+
+  MultiReduceDataSeq(MultiReduceDataSeq &&) = delete;
+  MultiReduceDataSeq& operator=(MultiReduceDataSeq const&) = delete;
+  MultiReduceDataSeq& operator=(MultiReduceDataSeq &&) = delete;
 
   ~MultiReduceDataSeq()
   {
@@ -120,7 +127,7 @@ struct MultiReduceDataSeq<T, t_MultiReduceOp,
   T get(size_t bin) const { return m_data[bin]; }
 
 private:
-  MultiReduceDataSeq const *m_parent = nullptr;
+  MultiReduceDataSeq const *m_parent;
   size_t m_num_bins;
   T m_identity;
   T* m_data;

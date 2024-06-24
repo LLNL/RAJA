@@ -676,6 +676,10 @@ public:
 #endif
   }
 
+  MultiReduceDataHip(MultiReduceDataHip &&) = delete;
+  MultiReduceDataHip& operator=(MultiReduceDataHip const&) = delete;
+  MultiReduceDataHip& operator=(MultiReduceDataHip &&) = delete;
+
   //! cleanup resources owned by this copy
   //  on device store in pinned buffer on host
   RAJA_HOST_DEVICE

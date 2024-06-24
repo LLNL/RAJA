@@ -172,10 +172,10 @@ struct BaseMultiReduce
   { }
 
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduce(const BaseMultiReduce &copy) = default;
+  BaseMultiReduce(BaseMultiReduce const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduce(BaseMultiReduce &&copy) = default;
-  BaseMultiReduce &operator=(const BaseMultiReduce &) = delete;
+  BaseMultiReduce(BaseMultiReduce &&) = default;
+  BaseMultiReduce &operator=(BaseMultiReduce const&) = delete;
   BaseMultiReduce &operator=(BaseMultiReduce &&) = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduce() = default;
@@ -251,11 +251,11 @@ public:
   using Base::Base;
 
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceMin(const BaseMultiReduceMin &copy) = default;
+  BaseMultiReduceMin(BaseMultiReduceMin const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceMin(BaseMultiReduceMin &&copy) = default;
+  BaseMultiReduceMin(BaseMultiReduceMin &&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceMin &operator=(const BaseMultiReduceMin &) = delete;
+  BaseMultiReduceMin &operator=(BaseMultiReduceMin const&) = delete;
   RAJA_SUPPRESS_HD_WARN
   BaseMultiReduceMin &operator=(BaseMultiReduceMin &&) = delete;
   RAJA_SUPPRESS_HD_WARN
@@ -304,10 +304,10 @@ public:
   using Base::Base;
 
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceMax(const BaseMultiReduceMax &copy) = default;
+  BaseMultiReduceMax(BaseMultiReduceMax const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceMax(BaseMultiReduceMax &&copy) = default;
-  BaseMultiReduceMax &operator=(const BaseMultiReduceMax &) = delete;
+  BaseMultiReduceMax(BaseMultiReduceMax &&) = default;
+  BaseMultiReduceMax &operator=(BaseMultiReduceMax const&) = delete;
   BaseMultiReduceMax &operator=(BaseMultiReduceMax &&) = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceMax() = default;
@@ -355,10 +355,10 @@ public:
   using Base::Base;
 
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceSum(const BaseMultiReduceSum &copy) = default;
+  BaseMultiReduceSum(BaseMultiReduceSum const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceSum(BaseMultiReduceSum &&copy) = default;
-  BaseMultiReduceSum &operator=(const BaseMultiReduceSum &) = delete;
+  BaseMultiReduceSum(BaseMultiReduceSum &&) = default;
+  BaseMultiReduceSum &operator=(BaseMultiReduceSum const&) = delete;
   BaseMultiReduceSum &operator=(BaseMultiReduceSum &&) = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceSum() = default;
@@ -406,10 +406,10 @@ public:
   using Base::Base;
 
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceBitOr(const BaseMultiReduceBitOr &copy) = default;
+  BaseMultiReduceBitOr(BaseMultiReduceBitOr const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceBitOr(BaseMultiReduceBitOr &&copy) = default;
-  BaseMultiReduceBitOr &operator=(const BaseMultiReduceBitOr &) = delete;
+  BaseMultiReduceBitOr(BaseMultiReduceBitOr &&) = default;
+  BaseMultiReduceBitOr &operator=(BaseMultiReduceBitOr const&) = delete;
   BaseMultiReduceBitOr &operator=(BaseMultiReduceBitOr &&) = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceBitOr() = default;
@@ -457,10 +457,10 @@ public:
   using Base::Base;
 
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceBitAnd(const BaseMultiReduceBitAnd &copy) = default;
+  BaseMultiReduceBitAnd(BaseMultiReduceBitAnd const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceBitAnd(BaseMultiReduceBitAnd &&copy) = default;
-  BaseMultiReduceBitAnd &operator=(const BaseMultiReduceBitAnd &) = delete;
+  BaseMultiReduceBitAnd(BaseMultiReduceBitAnd &&) = default;
+  BaseMultiReduceBitAnd &operator=(BaseMultiReduceBitAnd const&) = delete;
   BaseMultiReduceBitAnd &operator=(BaseMultiReduceBitAnd &&) = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceBitAnd() = default;
