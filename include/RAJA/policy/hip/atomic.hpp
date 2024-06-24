@@ -438,37 +438,21 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T *acc,
  */
 
 /*!
- * Type trait for determining if the add operator should be implemented
- * using a builtin
+ * List of types where HIP builtin atomics are used to implement atomicAdd.
  */
-template <typename T>
-struct hip_useBuiltinAdd {
-  static constexpr bool value =
-    std::is_same<T, int>::value ||
-    std::is_same<T, unsigned int>::value ||
-    std::is_same<T, unsigned long long>::value ||
-    std::is_same<T, float>::value
+using hip_atomicAdd_builtin_types = ::camp::list<
+  int,
+  unsigned int,
+  unsigned long long,
+  float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-    ||
-    std::is_same<T, double>::value
+  ,
+  double
 #endif
-    ;
-};
-
-/*!
- * Type trait for determining if the add operator should be implemented
- * using a compare and swap loop
- */
-template <typename T>
-struct hip_useCASLoopAdd {
-  static constexpr bool value =
-    !hip_useBuiltinAdd<T>::value &&
-    (sizeof(T) == sizeof(unsigned int) ||
-     sizeof(T) == sizeof(unsigned long long));
-};
+>;
 
 template <typename T,
-          std::enable_if_t<hip_useCASLoopAdd<T>::value, bool> = true>
+          RAJA::util::enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return hip_atomicCAS_loop(acc, [value] (T old) {
@@ -477,7 +461,7 @@ RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 }
 
 template <typename T,
-          std::enable_if_t<hip_useBuiltinAdd<T>::value, bool> = true>
+          RAJA::util::enable_if_is_any_of<T, hip_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return ::atomicAdd(acc, value);
@@ -528,6 +512,9 @@ using hip_atomicSub_via_Add_builtin_types = ::camp::list<
 #endif
 >;
 
+/*!
+ * HIP atomicSub compare and swap loop implementation.
+ */
 template <typename T,
           RAJA::util::enable_if_is_none_of<T, hip_atomicSub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T hip_atomicSub(T *acc, T value)
@@ -692,12 +679,10 @@ RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
   });
 }
 
-template <typename T,
-          RAJA::util::enable_if_is_any_of<T, hip_atomicOr_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T hip_atomicOr(T *acc, T value)
-{
-  return ::atomicOr(acc, value);
-}
+/*!
+ * Atomic or via builtin functions was implemented much earlier since atomicLoad
+ * may depend on it.
+ */
 
 
 /*!
