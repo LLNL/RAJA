@@ -1,8 +1,6 @@
 #ifndef CUDA_KERNELNAME_HPP
 #define CUDA_KERNELNAME_HPP
 
-//#include "../util/policy.hpp"
-
 #if defined(RAJA_CUDA_ACTIVE)
 
 #include <cuda.h>
@@ -19,6 +17,8 @@ namespace detail {
   {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
     nvtxRangePush(kn.name);
+#else
+    RAJA_UNUSED_VAR(kn);
 #endif
   }
 
