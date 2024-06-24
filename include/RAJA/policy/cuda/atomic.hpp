@@ -628,12 +628,10 @@ RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
   });
 }
 
-template <typename T,
-          RAJA::util::enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
-{
-  return ::atomicOr(acc, value);
-}
+/*!
+ * Atomic or via builtin functions was implemented much earlier since atomicLoad
+ * may depend on it.
+ */
 
 
 /*!
