@@ -18,6 +18,9 @@
 #ifndef RAJA_PATTERN_DETAIL_MULTI_REDUCE_HPP
 #define RAJA_PATTERN_DETAIL_MULTI_REDUCE_HPP
 
+#include "RAJA/pattern/detail/forall.hpp"
+
+#include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -216,6 +219,10 @@ struct BaseMultiReduce
              concepts::enable_if_t<type_traits::is_range<Container>>* = nullptr >
   void get_all(Container& container) const
   {
+    RAJA_EXTRACT_BED_IT(container);
+    if (size_t(distance_it) != data.num_bins()) {
+      RAJA_ABORT_OR_THROW("MultiReduce::get_all container has different size than multi reducer");
+    }
     size_t bin = 0;
     for (auto& val : container) {
       val = data.get(bin);
