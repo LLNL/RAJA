@@ -245,25 +245,38 @@ struct hip_useReinterpretLoadStore {
 #endif
 };
 
+#else
+
+template <typename T>
+using hip_useIntrinsicLoadStore = hip_useBuiltinCommon<T>;
+
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
+template <typename T>
+using hip_reinterpretLoadStore = hip_reinterpretCommon<T>;
+
+#endif
+
 /*!
  * Alias for determining the integral type of the same size as the given type
  */
 template <typename T>
 using hip_useReinterpretLoadStore_t = typename hip_useReinterpretLoadStore<T>::type;
 
-#endif
-
 
 /*!
  * Atomic load
  */
-#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
-
 template <typename T,
           std::enable_if_t<hip_useIntrinsicLoadStore<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
   return __hip_atomic_load(acc, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+#else
+  return hip_atomicOr(acc, static_cast<T>(0));
+#endif
 }
 
 template <typename T,
@@ -276,38 +289,19 @@ RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
     hip_atomicLoad(reinterpret_cast<R*>(acc)));
 }
 
-#else
-
-template <typename T,
-          std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  return hip_atomicOr(acc, static_cast<T>(0));
-}
-
-template <typename T,
-          std::enable_if_t<hip_useReinterpretCommon<T>::value, bool> = true>
-RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
-{
-  using R = hip_useReinterpretCommon_t<T>;
-
-  return RAJA::util::reinterp_A_as_B<R, T>(
-    hip_atomicLoad(reinterpret_cast<R*>(acc)));
-}
-
-#endif
-
 
 /*!
  * Atomic store
  */
-#if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
-
 template <typename T,
           std::enable_if_t<hip_useIntrinsicLoadStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
+#if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
   __hip_atomic_store(acc, value, __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+#else
+  hip_atomicExchange(acc, value);
+#endif
 }
 
 template <typename T,
@@ -319,16 +313,6 @@ RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
   hip_atomicStore(reinterpret_cast<R*>(acc),
                   RAJA::util::reinterp_A_as_B<T, R>(value));
 }
-
-#else
-
-template <typename T>
-RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
-{
-  hip_atomicExchange(acc, value);
-}
-
-#endif
 
 
 /*!
@@ -437,19 +421,39 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T *acc,
 /*!
  * Atomic addition
  */
-using hip_atomicAdd_builtin_types = ::camp::list<
-  int,
-  unsigned int,
-  unsigned long long,
-  float
+
+/*!
+ * Type trait for determining if the add operator should be implemented
+ * using a builtin
+ */
+template <typename T>
+struct hip_useBuiltinAdd {
+  static constexpr bool value =
+    std::is_same<T, int>::value ||
+    std::is_same<T, unsigned int>::value ||
+    std::is_same<T, unsigned long long>::value ||
+    std::is_same<T, float>::value
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-  ,
-  double
+    ||
+    std::is_same<T, double>::value
 #endif
->;
+    ;
+};
+
+/*!
+ * Type trait for determining if the add operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct hip_useCASLoopAdd {
+  static constexpr bool value =
+    !hip_useBuiltinAdd<T>::value &&
+    (sizeof(T) == sizeof(unsigned int) ||
+     sizeof(T) == sizeof(unsigned long long));
+};
 
 template <typename T,
-          RAJA::util::enable_if_is_none_of<T, hip_atomicAdd_builtin_types>* = nullptr>
+          std::enable_if_t<hip_useCASLoopAdd<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return hip_atomicCAS_loop(acc, [value] (T old) {
@@ -458,7 +462,7 @@ RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 }
 
 template <typename T,
-          RAJA::util::enable_if_is_any_of<T, hip_atomicAdd_builtin_types>* = nullptr>
+          std::enable_if_t<hip_useBuiltinAdd<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicAdd(T *acc, T value)
 {
   return ::atomicAdd(acc, value);
