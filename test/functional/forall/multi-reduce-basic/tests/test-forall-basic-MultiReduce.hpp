@@ -87,6 +87,7 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   MULTIREDUCER red(num_bins);
   MULTIREDUCER red2(multi_init);
 
+  // basic test with two multi reducers in the same loop
   {
     std::vector<DATA_TYPE> ref_vals(num_bins, ABSTRACTION::identity(red));
 
@@ -111,6 +112,7 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
 
   red.reset();
 
+  // basic multiple use test, ensure same reducer can combine values from multiple loops
   {
     std::vector<DATA_TYPE> ref_vals(num_bins, ABSTRACTION::identity(red));
 
@@ -133,6 +135,7 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     }
   }
 
+  // test the consistency of answers, if we expect them to be consistent
   if (ABSTRACTION::consistent(red)) {
 
     if /* constexpr */ (std::is_floating_point<DATA_TYPE>::value) {
