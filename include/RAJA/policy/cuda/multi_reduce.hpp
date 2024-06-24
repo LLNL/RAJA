@@ -106,8 +106,14 @@ RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_global_atomic(int RAJA_U
 
   int blockId = blockIdx.x + gridDim.x * blockIdx.y +
                  (gridDim.x * gridDim.y) * blockIdx.z;
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  int warpId = threadId / policy::cuda::device_constants.WARP_SIZE;
+  int numWarps = RAJA_DIVIDE_CEILING_INT(numThreads, policy::cuda::device_constants.WARP_SIZE);
+  int globalWarpId = warpId + numWarps * blockId;
 
-  int tally_rep = ::RAJA::power_of_2_mod(blockId, tally_replication);
+  int tally_rep = ::RAJA::power_of_2_mod(globalWarpId, tally_replication);
   int tally_offset = get_tally_offset(bin, tally_bins, tally_rep, tally_replication);
   RAJA::reduce::cuda::atomic<Combiner>{}(tally_mem[tally_offset], value);
 }
