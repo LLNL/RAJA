@@ -6,10 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 //
-// Types and type lists for loop indexing used throughout RAJA tests.
-//
-// Note that in the type lists, a subset of types is used by default.
-// For more comprehensive type testing define the macro RAJA_TEST_EXHAUSTIVE.
+// Type list for testing RAJA atomics.
 //
 
 #ifndef __RAJA_test_atomic_types_HPP__
@@ -24,19 +21,10 @@
 using AtomicDataTypeList =
   camp::list< RAJA::Index_type,
               int,
-#if defined(RAJA_TEST_EXHAUSTIVE)
-              unsigned,
+              unsigned int,
               long long,
               unsigned long long,
               float,
-#endif
               double >;
-
-using AtomicDataUnsignedTypeList =
-  camp::list< unsigned,
-#if defined(RAJA_TEST_EXHAUSTIVE)
-              unsigned long,
-#endif
-              unsigned long long>;
 
 #endif // __RAJA_test_atomic_types_HPP__
