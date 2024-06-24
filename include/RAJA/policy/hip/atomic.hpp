@@ -182,11 +182,14 @@ RAJA_INLINE __device__ T hip_atomicExchange(T *acc, T value)
  * using an intrinsic
  */
 template <typename T>
-struct hip_useIntrinsicLoadStore {
+struct hip_useBuiltinLoad {
   static constexpr bool value =
     (std::is_integral<T>::value || std::is_enum<T>::value) &&
     (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
 };
+
+template <typename T>
+using hip_useBuiltinStore = hip_useBuiltinLoad<T>;
 
 
 /*!
@@ -194,7 +197,7 @@ struct hip_useIntrinsicLoadStore {
  * by reinterpreting inputs to types that intrinsics support
  */
 template <typename T>
-struct hip_useReinterpretLoadStore {
+struct hip_useReinterpretLoad {
   static constexpr bool value =
     !std::is_integral<T>::value &&
     !std::is_enum<T>::value &&
@@ -245,16 +248,25 @@ struct hip_useReinterpretLoadStore {
 #endif
 };
 
+template <typename T>
+using hip_useReinterpretStore = hip_useReinterpretLoad<T>;
+
 #else
 
 template <typename T>
-using hip_useIntrinsicLoadStore = hip_useBuiltinCommon<T>;
+using hip_useBuiltinLoad = hip_useBuiltinCommon<T>;
+
+template <typename T>
+using hip_useBuiltinStore = hip_useBuiltinExchange<T>;
 
 /*!
  * Alias for determining the integral type of the same size as the given type
  */
 template <typename T>
-using hip_reinterpretLoadStore = hip_reinterpretCommon<T>;
+using hip_useReinterpretLoad = hip_useReinterpretCommon<T>;
+
+template <typename T>
+using hip_useReinterpretStore = hip_useReinterpretExchange<T>;
 
 #endif
 
@@ -262,14 +274,17 @@ using hip_reinterpretLoadStore = hip_reinterpretCommon<T>;
  * Alias for determining the integral type of the same size as the given type
  */
 template <typename T>
-using hip_useReinterpretLoadStore_t = typename hip_useReinterpretLoadStore<T>::type;
+using hip_useReinterpretLoad_t = typename hip_useReinterpretLoad<T>::type;
+
+template <typename T>
+using hip_useReinterpretStore_t = typename hip_useReinterpretStore<T>::type;
 
 
 /*!
  * Atomic load
  */
 template <typename T,
-          std::enable_if_t<hip_useIntrinsicLoadStore<T>::value, bool> = true>
+          std::enable_if_t<hip_useBuiltinLoad<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
@@ -280,10 +295,10 @@ RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 }
 
 template <typename T,
-          std::enable_if_t<hip_useReinterpretLoadStore<T>::value, bool> = true>
+          std::enable_if_t<hip_useReinterpretLoad<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
 {
-  using R = hip_useReinterpretLoadStore_t<T>;
+  using R = hip_useReinterpretLoad_t<T>;
 
   return RAJA::util::reinterp_A_as_B<R, T>(
     hip_atomicLoad(reinterpret_cast<R*>(acc)));
@@ -294,7 +309,7 @@ RAJA_INLINE __device__ T hip_atomicLoad(T *acc)
  * Atomic store
  */
 template <typename T,
-          std::enable_if_t<hip_useIntrinsicLoadStore<T>::value, bool> = true>
+          std::enable_if_t<hip_useBuiltinStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
@@ -305,10 +320,10 @@ RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 }
 
 template <typename T,
-          std::enable_if_t<hip_useReinterpretLoadStore<T>::value, bool> = true>
+          std::enable_if_t<hip_useReinterpretStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T *acc, T value)
 {
-  using R = hip_useReinterpretLoadStore_t<T>;
+  using R = hip_useReinterpretStore_t<T>;
 
   hip_atomicStore(reinterpret_cast<R*>(acc),
                   RAJA::util::reinterp_A_as_B<T, R>(value));
