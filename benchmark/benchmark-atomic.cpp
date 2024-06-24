@@ -25,7 +25,6 @@
 template<int BLOCK_SZ>
 struct ExecPolicyGPU {
     using policy = RAJA::cuda_exec<BLOCK_SZ, false>;
-    using sync = RAJA::policy::cuda::cuda_synchronize;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "CUDA execution with block size " << BLOCK_SZ;
@@ -47,7 +46,6 @@ struct IsGPU<RAJA::hip_exec<M>> : public std::true_type {};
 template<int BLOCK_SZ>
 struct ExecPolicyGPU {
     using policy = RAJA::hip_exec<BLOCK_SZ, false>;
-    using sync = RAJA::policy::hip::hip_synchronize;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "HIP execution with block size " << BLOCK_SZ;
@@ -106,7 +104,6 @@ struct AtomicMax {
 /// ExecPolicy wrapper for OpenMP
 struct ExecPolicyOMP {
     using policy = RAJA::omp_for_exec;
-    using sync = RAJA::policy::omp::omp_synchronize;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "OpenMP execution";
@@ -163,9 +160,8 @@ void TimeAtomicOp( AtomicImplType atomic_impl, uint64_t N, uint64_t num_iteratio
         });
     }
 
-    RAJA::synchronize<typename ExecPolicy::sync>();
+    resource.wait();
     timer.stop();
-
     resource.deallocate(device_value);
 
     double t = timer.elapsed();
