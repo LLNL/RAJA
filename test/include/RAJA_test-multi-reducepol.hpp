@@ -20,12 +20,8 @@ using SequentialMultiReducePols = camp::list< RAJA::seq_multi_reduce >;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPMultiReducePols =
-#if 1
   camp::list< RAJA::omp_multi_reduce,
               RAJA::omp_multi_reduce_ordered >;
-#else
-  camp::list< RAJA::omp_multi_reduce >;
-#endif
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
