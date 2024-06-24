@@ -94,7 +94,7 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
   ~MultiReduceDataOMP()
   {
     if (m_data) {
-      if (m_parent) {
+      if (m_parent && (m_num_bins != size_t(0))) {
 #pragma omp critical(ompMultiReduceCritical)
         {
           for (size_t bin = 0; bin < m_num_bins; ++bin) {
@@ -141,6 +141,9 @@ private:
   template < typename Container >
   static T* create_data(Container const& container, size_t num_bins)
   {
+    if (num_bins == size_t(0)) {
+      return nullptr;
+    }
     auto data = RAJA::allocate_aligned_type<T>( RAJA::DATA_ALIGN, num_bins * sizeof(T) );
     size_t bin = 0;
     for (auto const& value : container) {
@@ -152,6 +155,9 @@ private:
 
   static void destroy_data(T*& data, size_t num_bins)
   {
+    if (num_bins == size_t(0)) {
+      return;
+    }
     for (size_t bin = num_bins; bin > 0; --bin) {
       data[bin-1].~T();
     }
@@ -287,6 +293,9 @@ private:
                         size_t num_bins, size_t max_threads,
                         size_t padded_bins, size_t padded_threads)
   {
+    if (num_bins == size_t(0)) {
+      return nullptr;
+    }
     auto data = RAJA::allocate_aligned_type<T>( RAJA::DATA_ALIGN, padded_threads*padded_bins*sizeof(T) );
     if (max_threads > 0) {
       {
@@ -310,12 +319,16 @@ private:
                            size_t num_bins, size_t max_threads,
                            size_t padded_bins, size_t padded_threads)
   {
+    if (num_bins == size_t(0)) {
+      return;
+    }
     for (size_t thread_idx = max_threads+1; thread_idx > 0; --thread_idx) {
       for (size_t bin = num_bins; bin > 0; --bin) {
         data[index_data(bin-1, thread_idx-1, padded_bins, padded_threads)].~T();
       }
     }
     RAJA::free_aligned(data);
+    data = nullptr;
   }
 };
 

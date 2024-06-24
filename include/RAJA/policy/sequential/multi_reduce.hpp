@@ -128,6 +128,10 @@ private:
   template < typename Container >
   static T* create_data(Container const& container, size_t num_bins)
   {
+    if (num_bins == size_t(0)) {
+      return nullptr;
+    }
+
     auto data = static_cast<T*>(malloc(num_bins*sizeof(T)));
     size_t bin = 0;
     for (auto const& value : container) {
@@ -139,10 +143,15 @@ private:
 
   static void destroy_data(T*& data, size_t num_bins)
   {
+    if (num_bins == size_t(0)) {
+      return;
+    }
+
     for (size_t bin = 0; bin < num_bins; ++bin) {
       data[bin].~T();
     }
     free(data);
+    data = nullptr;
   }
 };
 

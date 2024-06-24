@@ -236,19 +236,17 @@ struct MultiReduceGridAtomicHostInit_TallyData
       m_tally_replication = get_tally_replication();
       m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins, m_tally_replication);
     } else {
-      if (m_tally_mem != nullptr) {
-        {
-          int tally_rep = 0;
-          int bin = 0;
-          for (auto const& value : container) {
-            m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication)] = value;
-            ++bin;
-          }
+      {
+        int tally_rep = 0;
+        int bin = 0;
+        for (auto const& value : container) {
+          m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication)] = value;
+          ++bin;
         }
-        for (int tally_rep = 1; tally_rep < m_tally_replication; ++tally_rep) {
-          for (int bin = 0; bin < m_num_bins; ++bin) {
-            m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication)] = identity;
-          }
+      }
+      for (int tally_rep = 1; tally_rep < m_tally_replication; ++tally_rep) {
+        for (int bin = 0; bin < m_num_bins; ++bin) {
+          m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication)] = identity;
         }
       }
     }
@@ -258,10 +256,7 @@ struct MultiReduceGridAtomicHostInit_TallyData
   //! teardown permanent settings, free tally memory
   void teardown_permanent()
   {
-    if (m_tally_mem != nullptr) {
-      destroy_tally(m_tally_mem, m_num_bins, m_tally_bins, m_tally_replication);
-      m_tally_mem = nullptr;
-    }
+    destroy_tally(m_tally_mem, m_num_bins, m_tally_bins, m_tally_replication);
   }
 
 
@@ -324,6 +319,10 @@ private:
   static T* create_tally(Container const& container, T const& identity,
                          int num_bins, int tally_bins, int tally_replication)
   {
+    if (num_bins == size_t(0)) {
+      return nullptr;
+    }
+
     T* tally_mem = tally_mempool_type::getInstance().template malloc<T>(
         tally_replication*tally_bins, s_tally_alignment);
 
@@ -347,9 +346,13 @@ private:
     return tally_mem;
   }
 
-  static void destroy_tally(T* tally_mem,
+  static void destroy_tally(T*& tally_mem,
                             int num_bins, int tally_bins, int tally_replication)
   {
+    if (num_bins == size_t(0)) {
+      return;
+    }
+
     for (int tally_rep = tally_replication+1; tally_rep > 0; --tally_rep) {
       for (int bin = num_bins; bin > 0; --bin) {
         int tally_offset = GetTallyOffset{}(bin-1, tally_bins, tally_rep-1, tally_replication);
@@ -357,6 +360,7 @@ private:
       }
     }
     tally_mempool_type::getInstance().free(tally_mem);
+    tally_mem = nullptr;
   }
 };
 
@@ -463,6 +467,11 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   //! setup per launch, setup shared memory parameters
   void setup_launch(size_t block_size, size_t& current_shmem, size_t max_shmem)
   {
+    if (m_num_bins == size_t(0)) {
+      m_shared_offset = s_shared_offset_invalid;
+      return;
+    }
+
     size_t align_offset = current_shmem % alignof(T);
     if (align_offset != size_t(0)) {
       align_offset = alignof(T) - align_offset;
