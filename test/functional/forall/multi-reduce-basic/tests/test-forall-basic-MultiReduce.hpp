@@ -114,7 +114,8 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   {
     std::vector<DATA_TYPE> ref_vals(num_bins, ABSTRACTION::identity(red));
 
-    const int nloops = 2;
+    std::uniform_int_distribution<int> nloops_distribution(2, 10);
+    const int nloops = nloops_distribution(rngen);
     for (int j = 0; j < nloops; ++j) {
 
       for (IDX_TYPE i = 0; i < idx_len; ++i) {
