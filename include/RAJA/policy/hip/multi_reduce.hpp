@@ -37,6 +37,7 @@
 #include "RAJA/util/mutex.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/reduce.hpp"
+#include "RAJA/util/OffsetOperators.hpp"
 
 #include "RAJA/pattern/detail/multi_reduce.hpp"
 #include "RAJA/pattern/multi_reduce.hpp"
@@ -58,26 +59,6 @@ namespace RAJA
 
 namespace hip
 {
-
-struct GetOffsetLeft
-{
-  RAJA_HOST_DEVICE constexpr
-  int operator()(int i, int num_i,
-                 int j, int RAJA_UNUSED_ARG(num_j)) const noexcept
-  {
-    return i + j * num_i;
-  }
-};
-
-struct GetOffsetRight
-{
-  RAJA_HOST_DEVICE constexpr
-  int operator()(int i, int RAJA_UNUSED_ARG(num_i),
-                 int j, int num_j) const noexcept
-  {
-    return i * num_j + j;
-  }
-};
 
 namespace impl
 {
