@@ -338,7 +338,7 @@ private:
     if (num_bins == size_t(0)) {
       return;
     }
-    for (size_t thread_idx = max_threads+1; thread_idx > 0; --thread_idx) {
+    for (size_t thread_idx = max_threads; thread_idx > 0; --thread_idx) {
       for (size_t bin = num_bins; bin > 0; --bin) {
         data[index_data(bin-1, thread_idx-1, padded_bins, padded_threads)].~T();
       }
