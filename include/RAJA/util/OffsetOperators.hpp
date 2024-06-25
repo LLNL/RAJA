@@ -52,7 +52,7 @@ template <size_t t_bunch_num_i,
           typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct GetOffsetLeftBunched
 {
-  static constexpr Arg1 bunch_num_i(t_bunch_num_i);
+  static constexpr Arg1 bunch_num_i{t_bunch_num_i};
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr
   Ret operator()(Arg1 const& i, Arg1 const& RAJA_UNUSED_ARG(num_i),
