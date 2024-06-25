@@ -38,7 +38,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 ##### PROJECT VARIABLES
-  MP_BRANCH: "develop"
+  MP_BRANCH: "woptim/multi-project"
 # We build the projects in the CI clone directory (used in
 # script/gitlab/build_and_test.sh script).
 # TODO: add a clean-up mechanism.
@@ -91,7 +91,9 @@ stages:
 trigger-rajaperf:
   stage: multi-project
   rules:
-    - if: '$CI_COMMIT_BRANCH == "${MP_BRANCH}" || $MULTI_PROJECT == "ON"' #run only if ...
+    - if: $CI_COMMIT_BRANCH != $MP_BRANCH && $MULTI_PROJECT != "ON" #never run unless
+      when: never
+    - when: on_success
   variables:
     UPDATE_RAJA: ${MP_BRANCH}
   trigger:
