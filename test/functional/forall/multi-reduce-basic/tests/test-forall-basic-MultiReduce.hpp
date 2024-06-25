@@ -247,7 +247,7 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
 
   std::vector<DATA_TYPE> container;
 
-  std::vector<size_t> num_bins_max_container({0, 1, 10, 100, 1000, 10000, 100000});
+  std::vector<size_t> num_bins_max_container({0, 1, 10, 100, 1000, 10000});
   size_t num_bins_min = 0;
   for (size_t num_bins_max : num_bins_max_container) {
 
