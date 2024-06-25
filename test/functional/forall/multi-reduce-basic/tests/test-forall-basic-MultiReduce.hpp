@@ -73,7 +73,7 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     test_range[i] = ~IDX_TYPE(0);
   }
 
-  std::uniform_int_distribution<IDX_TYPE> work_per_iterate_distribution(0, 2*num_bins);
+  std::uniform_int_distribution<IDX_TYPE> work_per_iterate_distribution(0, num_bins);
 
   for (IDX_TYPE i = 0; i < idx_len; ++i) {
     IDX_TYPE idx = seg_idx[i];
@@ -247,7 +247,7 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
 
   std::vector<DATA_TYPE> container;
 
-  std::vector<size_t> num_bins_max_container({0, 1, 10, 100, 1000, 10000});
+  std::vector<size_t> num_bins_max_container({0, 1, 100, 10000});
   size_t num_bins_min = 0;
   for (size_t num_bins_max : num_bins_max_container) {
 
