@@ -39,11 +39,8 @@ RAJA_HOST_DEVICE
 RAJA_INLINE T atomicLoad(omp_atomic, T *acc)
 {
   T ret;
-#pragma omp atomic capture
-  {
-    ret = *acc;  // capture old for return value
-    *acc += (T)0;
-  }
+#pragma omp atomic read
+  ret = *acc;
   return ret;
 }
 
@@ -52,13 +49,8 @@ template <typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE void atomicStore(omp_atomic, T *acc, T value)
 {
-  T ret;
-#pragma omp atomic capture
-  {
-    ret = *acc;
-    *acc = value;
-  }
-  RAJA_UNUSED_VAR(ret);
+#pragma omp atomic write
+  *acc = value;
 }
 
 RAJA_SUPPRESS_HD_WARN
