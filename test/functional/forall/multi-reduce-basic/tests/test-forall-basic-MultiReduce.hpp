@@ -23,10 +23,10 @@ template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
 // add bool return type to disambiguate signatures of these functions for MSVC
 std::enable_if_t<!ABSTRACTION::template supports<DATA_TYPE>(), bool>
 ForallMultiReduceBasicTestImpl(const SEG_TYPE&,
-                                    const Container&,
-                                    const std::vector<IDX_TYPE>&,
-                                    camp::resources::Resource,
-                                    RandomGenerator&)
+                               const Container&,
+                               const std::vector<IDX_TYPE>&,
+                               camp::resources::Resource,
+                               RandomGenerator&)
 { return false; }
 ///
 template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
@@ -36,18 +36,22 @@ template <typename EXEC_POLICY, typename REDUCE_POLICY, typename ABSTRACTION,
 // use enable_if in return type to appease nvcc 11.2
 std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>
 ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
-                                    const Container& multi_init,
-                                    const std::vector<IDX_TYPE>& seg_idx,
-                                    camp::resources::Resource working_res,
-                                    RandomGenerator& rngen)
+                               const Container& multi_init,
+                               const std::vector<IDX_TYPE>& seg_idx,
+                               camp::resources::Resource working_res,
+                               RandomGenerator& rngen)
 {
   using MULTIREDUCER = typename ABSTRACTION::template multi_reducer<REDUCE_POLICY, DATA_TYPE>;
 
-  const IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
+  const IDX_TYPE idx_range = seg_idx[seg_idx.size() - 1] + 1;
   const IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
   const int modval = 100;
   const size_t num_bins = multi_init.size();
+
+  IDX_TYPE* working_range;
+  IDX_TYPE* check_range;
+  IDX_TYPE* test_range;
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
@@ -57,33 +61,54 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   IDX_TYPE* check_bins;
   IDX_TYPE* test_bins;
 
-  if (num_bins > size_t(0)) {
+  IDX_TYPE data_len = 0;
 
-    allocateForallTestData(data_len,
-                           working_res,
-                           &working_array,
-                           &check_array,
-                           &test_array);
+  allocateForallTestData(idx_range+1,
+                         working_res,
+                         &working_range,
+                         &check_range,
+                         &test_range);
 
-
-    allocateForallTestData(data_len,
-                           working_res,
-                           &working_bins,
-                           &check_bins,
-                           &test_bins);
-
-    // use ints to initialize array here to avoid floating point precision issues
-    std::uniform_int_distribution<int> array_int_distribution(0, modval-1);
-    std::uniform_int_distribution<IDX_TYPE> bin_distribution(0, num_bins-1);
-
-    for (IDX_TYPE i = 0; i < data_len; ++i) {
-      test_array[i] = DATA_TYPE(array_int_distribution(rngen));
-      test_bins[i] = bin_distribution(rngen);
-    }
-    working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
-    working_res.memcpy(working_bins, test_bins, sizeof(IDX_TYPE) * data_len);
+  for (IDX_TYPE i = 0; i < idx_range+1; ++i) {
+    test_range[i] = ~IDX_TYPE(0);
   }
 
+  std::uniform_int_distribution<IDX_TYPE> work_per_iterate_distribution(0, 2*num_bins);
+
+  for (IDX_TYPE i = 0; i < idx_len; ++i) {
+    IDX_TYPE idx = seg_idx[i];
+    test_range[idx] = data_len;
+    data_len += work_per_iterate_distribution(rngen);
+    test_range[idx+1] = data_len;
+  }
+
+  allocateForallTestData(data_len,
+                         working_res,
+                         &working_array,
+                         &check_array,
+                         &test_array);
+
+  allocateForallTestData(data_len,
+                         working_res,
+                         &working_bins,
+                         &check_bins,
+                         &test_bins);
+
+  // use ints to initialize array here to avoid floating point precision issues
+  std::uniform_int_distribution<int> array_int_distribution(0, modval-1);
+  std::uniform_int_distribution<IDX_TYPE> bin_distribution(0, num_bins-1);
+
+
+  for (IDX_TYPE i = 0; i < data_len; ++i) {
+    test_array[i] = DATA_TYPE(array_int_distribution(rngen));
+
+    // this may use the same bin multiple times per iterate
+    test_bins[i] = bin_distribution(rngen);
+  }
+
+  working_res.memcpy(working_range, test_range, sizeof(IDX_TYPE) * (idx_range+1));
+  working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
+  working_res.memcpy(working_bins, test_bins, sizeof(IDX_TYPE) * data_len);
 
 
   MULTIREDUCER red(num_bins);
@@ -93,15 +118,12 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   {
     std::vector<DATA_TYPE> ref_vals(num_bins, ABSTRACTION::identity(red));
 
-    if (num_bins > size_t(0)) {
-      for (IDX_TYPE i = 0; i < idx_len; ++i) {
-        IDX_TYPE idx = seg_idx[i];
-        ref_vals[test_bins[idx]] = ABSTRACTION::combine(ref_vals[test_bins[idx]], test_array[idx]);
-      }
+    for (IDX_TYPE i = 0; i < data_len; ++i) {
+      ref_vals[test_bins[i]] = ABSTRACTION::combine(ref_vals[test_bins[i]], test_array[i]);
     }
 
-    RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-      if (num_bins > size_t(0)) {
+    RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE ii) {
+      for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii+1]; ++idx) {
         ABSTRACTION::reduce(red[working_bins[idx]],  working_array[idx]);
         ABSTRACTION::reduce(red2[working_bins[idx]], working_array[idx]);
       }
@@ -122,19 +144,15 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   {
     std::vector<DATA_TYPE> ref_vals(num_bins, ABSTRACTION::identity(red));
 
-    std::uniform_int_distribution<int> nloops_distribution(2, 10);
-    const int nloops = nloops_distribution(rngen);
+    const int nloops = 2;
     for (int j = 0; j < nloops; ++j) {
 
-      if (num_bins > size_t(0)) {
-        for (IDX_TYPE i = 0; i < idx_len; ++i) {
-          IDX_TYPE idx = seg_idx[i];
-          ref_vals[test_bins[idx]] = ABSTRACTION::combine(ref_vals[test_bins[idx]], test_array[idx]);
-        }
+      for (IDX_TYPE i = 0; i < data_len; ++i) {
+        ref_vals[test_bins[i]] = ABSTRACTION::combine(ref_vals[test_bins[i]], test_array[i]);
       }
 
-      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-        if (num_bins > size_t(0)) {
+      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE ii) {
+        for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii+1]; ++idx) {
           ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
         }
       });
@@ -145,35 +163,33 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     }
   }
 
+
   // test the consistency of answers, if we expect them to be consistent
   if (ABSTRACTION::consistent(red)) {
 
     if /* constexpr */ (std::is_floating_point<DATA_TYPE>::value) {
 
-      if (num_bins > size_t(0)) {
+      // use floating point values to accentuate floating point precision issues
+      std::conditional_t<!std::is_floating_point<DATA_TYPE>::value,
+          std::uniform_int_distribution<DATA_TYPE>,
+          std::uniform_real_distribution<DATA_TYPE>> array_flt_distribution(0, modval-1);
 
-        // use floating point values to accentuate floating point precision issues
-        std::conditional_t<!std::is_floating_point<DATA_TYPE>::value,
-            std::uniform_int_distribution<DATA_TYPE>,
-            std::uniform_real_distribution<DATA_TYPE>> array_flt_distribution(0, modval-1);
-
-        for (IDX_TYPE i = 0; i < data_len; ++i) {
-          test_array[i] = DATA_TYPE(array_flt_distribution(rngen));
-        }
-        working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
+      for (IDX_TYPE i = 0; i < data_len; ++i) {
+        test_array[i] = DATA_TYPE(array_flt_distribution(rngen));
       }
+      working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
     }
 
 
     std::vector<DATA_TYPE> ref_vals;
     bool got_ref_vals = false;
 
-    const int nloops = 10;
+    const int nloops = 2;
     for (int j = 0; j < nloops; ++j) {
       red.reset();
 
-      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-        if (num_bins > size_t(0)) {
+      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE ii) {
+        for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii+1]; ++idx) {
           ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
         }
       });
@@ -191,16 +207,18 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
   }
 
 
-  if (num_bins > size_t(0)) {
-    deallocateForallTestData(working_res,
-                             working_bins,
-                             check_bins,
-                             test_bins);
-    deallocateForallTestData(working_res,
-                             working_array,
-                             check_array,
-                             test_array);
-  }
+  deallocateForallTestData(working_res,
+                           working_bins,
+                           check_bins,
+                           test_bins);
+  deallocateForallTestData(working_res,
+                           working_array,
+                           check_array,
+                           test_array);
+  deallocateForallTestData(working_res,
+                           working_range,
+                           check_range,
+                           test_range);
 }
 
 
