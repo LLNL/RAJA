@@ -264,15 +264,6 @@ struct MultiReduceGridAtomicHostInit_TallyData
 
   T identity() const { return m_identity; }
 
-protected:
-  using GetTallyOffset = GetOffsetLeft;
-
-  T* m_tally_mem;
-  T m_identity;
-  int m_num_bins;
-  int m_tally_bins;
-  int m_tally_replication; // power of 2, at least the max number of omp threads
-
 private:
   using tally_mempool_type = device_pinned_mempool_type;
 
@@ -280,11 +271,11 @@ private:
 
   static constexpr size_t s_tally_alignment = std::max(size_t(policy::hip::device_constants.ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE),
                                                        size_t(RAJA::DATA_ALIGN));
+  static constexpr size_t s_tally_bunch_size = RAJA_DIVIDE_CEILING_INT(s_tally_alignment, sizeof(T));
 
   static int get_tally_bins(int num_bins)
   {
-    int num_cache_lines = RAJA_DIVIDE_CEILING_INT(num_bins*sizeof(T), s_tally_alignment);
-    return RAJA_DIVIDE_CEILING_INT(num_cache_lines * s_tally_alignment, sizeof(T));
+    return RAJA_DIVIDE_CEILING_INT(num_bins, s_tally_bunch_size) * s_tally_bunch_size;
   }
 
   static int get_tally_replication()
@@ -349,6 +340,15 @@ private:
     tally_mempool_type::getInstance().free(tally_mem);
     tally_mem = nullptr;
   }
+
+protected:
+  using GetTallyOffset = GetOffsetLeftBunched<s_tally_bunch_size, int>;
+
+  T* m_tally_mem;
+  T m_identity;
+  int m_num_bins;
+  int m_tally_bins;
+  int m_tally_replication; // power of 2, at least the max number of omp threads
 };
 
 
@@ -549,7 +549,7 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
 private:
   using SharedAtomicReplicationConcretizer = typename tuning::SharedAtomicReplicationConcretizer;
 
-  using GetSharedOffset = GetOffsetRight;
+  using GetSharedOffset = GetOffsetRight<int>;
   using typename TallyData::GetTallyOffset;
 
 
