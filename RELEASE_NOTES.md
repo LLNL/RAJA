@@ -20,6 +20,48 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2024.07.0 -- Release date 2024-07-xx
+============================================
+
+This release contains ...
+
+Notable changes include:
+
+  * New features / API changes:
+     * Added basic "multi-reduction" support...
+     * Added atomicLoad and atomicStore routines for correctness in some
+       use cases.
+     * Added OpenMP 5.1 implementations for atomicMin and atomicMax.
+
+  * Build changes/improvements:
+     * NONE.
+
+  * Bug fixes/improvements:
+     * Various fixes and improvements to builtin atomic support.
+     * Fixes and improvements to other atomic operations:
+        * Modified HIP and CUDA generic atomic compare and swap algorithms
+          to use atomic loads instead of relying on volatile.
+        * Re-implemented atomic loads in terms of builtin atomics for CUDA
+          and HIP so that the generic compare and swap functions can use it.
+        * Removes volatile qualifier in atomic function signatures.
+        * Use cuda::atomic_ref in newer versions of CUDA to back 
+          atomicLoad/atomicStore.
+        * Use atomicAdd as a fallback for atomicSub in CUDA.
+        * Removed checks where __CUDA_ARCH__ is less than 350 since RAJA 
+          requires that as the minimum supported architecture (CMake check).
+     * Add SYCL reduction support in RAJA::launch
+     * Fixed issues with naming RAJA forall::kernels when using CUDA.
+     * Fixes in SYCL back-end for RAJA::launch.
+     * Fixed some issues in examples.
+     * Bugfixes and cleanup in parts of the SYCL back-end needed to
+       support a bunch of new SYCL kernels that will appear in 
+       RAJA Performance Suite release.
+     * Fix type naming issue that was exposed with a new version of the
+       Intel oneAPI compiler.
+     * Fix issue in User Guide documentation for configuring a project
+       using RAJA CMake configuration.
+
+
 Version 2024.02.2 -- Release date 2024-05-08
 ============================================
 
