@@ -34,7 +34,7 @@ Notable changes include:
      * Added OpenMP 5.1 implementations for atomicMin and atomicMax.
 
   * Build changes/improvements:
-     * NONE.
+     * Update camp submodule to v2024.07.0 release.
 
   * Bug fixes/improvements:
      * Various fixes and improvements to builtin atomic support.
