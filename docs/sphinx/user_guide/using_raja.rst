@@ -34,7 +34,7 @@ project::
 
 Then, pass the path of RAJA to CMake when you configure your code::
 
-  cmake -DRAJA_DIR=<path-to-raja>/share/raja/cmake
+  cmake -DRAJA_DIR=<path-to-raja-install>/lib/cmake/raja/
 
 The ``RAJA-config.cmake`` file provides a ``RAJA`` target, that can be used
 natively by CMake to add a dependency on RAJA. For example::
