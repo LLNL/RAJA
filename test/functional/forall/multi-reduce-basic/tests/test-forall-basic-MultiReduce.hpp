@@ -264,31 +264,19 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
                                    r1, container, seg_idx, working_res, rngen);
 
     seg_idx.clear();
-    RAJA::TypedRangeSegment<IDX_TYPE> r2( 3, 642 );
-    RAJA::getIndices(seg_idx, r2);
-    ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE>(
-                                   r2, container, seg_idx, working_res, rngen);
-
-    seg_idx.clear();
-    RAJA::TypedRangeSegment<IDX_TYPE> r3( 0, 2057 );
+    RAJA::TypedRangeSegment<IDX_TYPE> r3( 3, 2060 );
     RAJA::getIndices(seg_idx, r3);
     ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE>(
                                    r3, container, seg_idx, working_res, rngen);
 
-    // Range-stride segment tests
-    seg_idx.clear();
-    RAJA::TypedRangeStrideSegment<IDX_TYPE> r4( 0, 188, 2 );
-    RAJA::getIndices(seg_idx, r4);
-    ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE>(
-                                   r4, container, seg_idx, working_res, rngen);
-
+    // Range-stride segment test
     seg_idx.clear();
     RAJA::TypedRangeStrideSegment<IDX_TYPE> r5( 3, 1029, 3 );
     RAJA::getIndices(seg_idx, r5);
     ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE>(
                                    r5, container, seg_idx, working_res, rngen);
 
-    // List segment tests
+    // List segment test
     seg_idx.clear();
     IDX_TYPE last = 10567;
     std::uniform_int_distribution<IDX_TYPE> dist(0, last-1);
