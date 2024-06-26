@@ -123,8 +123,10 @@ void testMultiReducerBasicReset(size_t num_bins)
 {
   testMultiReducerBasicResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, num_bins);
   testMultiReducerBasicResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, num_bins);
-  testMultiReducerBasicResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
-  testMultiReducerBasicResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
+  // avoid using the reducer as forone does not handle reducers correctly
+  // forone does not make_lambda_body or privatize the body
+  // testMultiReducerBasicResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
+  // testMultiReducerBasicResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
 }
 ///
 template <  typename MultiReducePolicy,
@@ -134,7 +136,9 @@ template <  typename MultiReducePolicy,
 void testMultiReducerBasicReset(size_t num_bins)
 {
   testMultiReducerBasicResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, num_bins);
-  testMultiReducerBasicResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
+  // avoid using the reducer as forone does not handle reducers correctly
+  // forone does not make_lambda_body or privatize the body
+  // testMultiReducerBasicResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
 }
 
 TYPED_TEST_P(MultiReducerBasicResetUnitTest, MultiReducerReset)
@@ -229,8 +233,10 @@ void testMultiReducerSingleResetSize(size_t init_bins, size_t num_bins, NumericT
 {
   testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, num_bins, initVal);
   testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, num_bins, initVal);
-  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
-  testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
+  // avoid using the reducer as forone does not handle reducers correctly
+  // forone does not make_lambda_body or privatize the body
+  // testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
+  // testMultiReducerSingleResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
 }
 ///
 template <  typename MultiReducePolicy,
@@ -240,7 +246,9 @@ template <  typename MultiReducePolicy,
 void testMultiReducerSingleResetSize(size_t init_bins, size_t num_bins, NumericType initVal)
 {
   testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, num_bins, initVal);
-  testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
+  // avoid using the reducer as forone does not handle reducers correctly
+  // forone does not make_lambda_body or privatize the body
+  // testMultiReducerSingleResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, num_bins, initVal);
 }
 
 template <  typename MultiReducePolicy,
@@ -358,8 +366,10 @@ void testMultiReducerContainerResetSize(size_t init_bins, Container const& conta
 {
   testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, container);
   testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, container);
-  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
-  testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
+  // avoid using the reducer as forone does not handle reducers correctly
+  // forone does not make_lambda_body or privatize the body
+  // testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
+  // testMultiReducerContainerResetBitwise< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
 }
 ///
 template <  typename MultiReducePolicy,
@@ -370,7 +380,9 @@ template <  typename MultiReducePolicy,
 void testMultiReducerContainerResetSize(size_t init_bins, Container const& container)
 {
   testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(false, init_bins, container);
-  testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
+  // avoid using the reducer as forone does not handle reducers correctly
+  // forone does not make_lambda_body or privatize the body
+  // testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType, ForOnePol >(true, init_bins, container);
 }
 
 template <  typename MultiReducePolicy,
