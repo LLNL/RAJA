@@ -20,8 +20,15 @@
 
 #include "RAJA/config.hpp"
 
+#include <cstdint>
+
+#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
+#include <intrin.h>
+#endif
+
 #include "RAJA/util/TypeConvert.hpp"
 #include "RAJA/util/macros.hpp"
+
 
 #if defined(RAJA_ENABLE_HIP)
 #define RAJA_DEVICE_HIP RAJA_HOST_DEVICE
@@ -37,255 +44,667 @@ namespace RAJA
 struct builtin_atomic {
 };
 
-namespace detail
-{
 
-template <std::size_t BYTES>
-struct BuiltinAtomicTypeImpl {
-  static_assert(!(BYTES == sizeof(unsigned) ||
-                  BYTES == sizeof(unsigned long long)),
-                "Builtin atomic operations require targets that match the size of 'unsigned int' or 'unsigned long long' (usually 4 or 8 bytes).");
-};
+namespace detail {
 
-template <>
-struct BuiltinAtomicTypeImpl<sizeof(unsigned)> {
-  using type = unsigned;
-};
-
-template <>
-struct BuiltinAtomicTypeImpl<sizeof(unsigned long long)> {
-  using type = unsigned long long;
-};
-
-template <class T>
-using BuiltinAtomicType = typename BuiltinAtomicTypeImpl<sizeof(T)>::type;
 
 #if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
 
-RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
-{
-  static_assert(sizeof(unsigned) == sizeof(long),
-                "builtin atomic load assumes unsigned and long are the same size");
 
-  return RAJA::util::reinterp_A_as_B<long, unsigned>(_InterlockedOr((long *)acc, 0));
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using an intrinsic
+ */
+template <typename T>
+struct builtin_useIntrinsic {
+  static constexpr bool value =
+    std::is_same<T, char>::value ||
+    std::is_same<T, short>::value ||
+    std::is_same<T, long>::value ||
+    std::is_same<T, long long>::value;
+};
+
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * by reinterpreting inputs to types that intrinsics support
+ */
+template <typename T>
+struct builtin_useReinterpret {
+  static constexpr bool value =
+    !builtin_useIntrinsic<T>::value &&
+    (sizeof(T) == 1 ||
+     sizeof(T) == 2 ||
+     sizeof(T) == 4 ||
+     sizeof(T) == 8);
+
+  using type =
+    std::conditional_t<sizeof(T) == 1, char,
+    std::conditional_t<sizeof(T) == 2, short,
+    std::conditional_t<sizeof(T) == 4, long, long long>>>;
+};
+
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct builtin_useCAS {
+  static constexpr bool value =
+    !builtin_useIntrinsic<T>::value &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
+ * Atomics implemented using intrinsics
+ */
+
+
+/*!
+ * Atomic or using intrinsics
+ */
+RAJA_INLINE char builtin_atomicOr(char *acc, char value)
+{
+  return _InterlockedOr8(acc, value);
 }
 
-RAJA_INLINE unsigned long long builtin_atomic_load(
-    unsigned long long volatile *acc)
+RAJA_INLINE short builtin_atomicOr(short *acc, short value)
 {
-  static_assert(sizeof(unsigned long long) == sizeof(long long),
-                "builtin atomic load assumes unsigned long long and long long are the same size");
-
-  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(_InterlockedOr64((long long *)acc, 0));
+  return _InterlockedOr16(acc, value);
 }
 
-RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc, unsigned value)
+RAJA_INLINE long builtin_atomicOr(long *acc, long value)
 {
-  static_assert(sizeof(unsigned) == sizeof(long),
-                "builtin atomic store assumes unsigned and long are the same size");
-
-  _InterlockedExchange((long *)acc, RAJA::util::reinterp_A_as_B<unsigned, long>(value));
+  return _InterlockedOr(acc, value);
 }
 
-RAJA_INLINE void builtin_atomic_store(
-    unsigned long long volatile *acc,
-    unsigned long long value)
+RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
 {
-  static_assert(sizeof(unsigned long long) == sizeof(long long),
-                "builtin atomic store assumes unsigned long long and long long are the same size");
-
-  _InterlockedExchange64((long long *)acc, RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value));
+  return _InterlockedOr64(acc, value);
 }
 
-RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
-                                        unsigned compare,
-                                        unsigned value)
+
+/*!
+ * Atomic load using atomic or
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-
-  long long_value = RAJA::util::reinterp_A_as_B<unsigned, long>(value);
-  long long_compare = RAJA::util::reinterp_A_as_B<unsigned, long>(compare);
-
-  long old = _InterlockedCompareExchange((long *)acc, long_value, long_compare);
-
-  return RAJA::util::reinterp_A_as_B<long, unsigned>(old);
+  return builtin_atomicOr(acc, static_cast<T>(0));
 }
 
-RAJA_INLINE unsigned long long builtin_atomic_CAS(
-    unsigned long long volatile *acc,
-    unsigned long long compare,
-    unsigned long long value)
+
+/*!
+ * Atomic exchange using intrinsics
+ */
+RAJA_INLINE char builtin_atomicExchange(char *acc, char value)
 {
-
-  long long long_value =
-      RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value);
-  long long long_compare =
-      RAJA::util::reinterp_A_as_B<unsigned long long, long long>(compare);
-
-  long long old = _InterlockedCompareExchange64((long long *)acc,
-                                                long_value,
-                                                long_compare);
-
-  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(old);
+  return _InterlockedExchange8(acc, value);
 }
+
+RAJA_INLINE short builtin_atomicExchange(short *acc, short value)
+{
+  return _InterlockedExchange16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicExchange(long *acc, long value)
+{
+  return _InterlockedExchange(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicExchange(long long *acc, long long value)
+{
+  return _InterlockedExchange64(acc, value);
+}
+
+
+/*!
+ * Atomic store using atomic exchange
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_INLINE void builtin_atomicStore(T *acc, T value)
+{
+  builtin_atomicExchange(acc, value);
+}
+
+
+/*!
+ * Atomic compare and swap using intrinsics
+ */
+RAJA_INLINE char builtin_atomicCAS(char *acc, char compare, char value)
+{
+  return _InterlockedCompareExchange8(acc, value, compare);
+}
+
+RAJA_INLINE short builtin_atomicCAS(short *acc, short compare, short value)
+{
+  return _InterlockedCompareExchange16(acc, value, compare);
+}
+
+RAJA_INLINE long builtin_atomicCAS(long *acc, long compare, long value)
+{
+  return _InterlockedCompareExchange(acc, value, compare);
+}
+
+RAJA_INLINE long long builtin_atomicCAS(long long *acc, long long compare, long long value)
+{
+  return _InterlockedCompareExchange64(acc, value, compare);
+}
+
+
+/*!
+ * Atomic addition using intrinsics
+ */
+RAJA_INLINE char builtin_atomicAdd(char *acc, char value)
+{
+  return _InterlockedExchangeAdd8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicAdd(short *acc, short value)
+{
+  return _InterlockedExchangeAdd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAdd(long *acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicAdd(long long *acc, long long value)
+{
+  return _InterlockedExchangeAdd64(acc, value);
+}
+
+
+/*!
+ * Atomic subtraction using intrinsics
+ */
+RAJA_INLINE char builtin_atomicSub(char *acc, char value)
+{
+  return _InterlockedExchangeAdd8(acc, -value);
+}
+
+RAJA_INLINE short builtin_atomicSub(short *acc, short value)
+{
+  return _InterlockedExchangeAdd16(acc, -value);
+}
+
+RAJA_INLINE long builtin_atomicSub(long *acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, -value);
+}
+
+RAJA_INLINE long long builtin_atomicSub(long long *acc, long long value)
+{
+  return _InterlockedExchangeAdd64(acc, -value);
+}
+
+
+/*!
+ * Atomic and using intrinsics
+ */
+RAJA_INLINE char builtin_atomicAnd(char *acc, char value)
+{
+  return _InterlockedAnd8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicAnd(short *acc, short value)
+{
+  return _InterlockedAnd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAnd(long *acc, long value)
+{
+  return _InterlockedAnd(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
+{
+  return _InterlockedAnd64(acc, value);
+}
+
+
+/*!
+ * Atomic xor using intrinsics
+ */
+RAJA_INLINE char builtin_atomicXor(char *acc, char value)
+{
+  return _InterlockedXor8(acc, value);
+}
+
+RAJA_INLINE short builtin_atomicXor(short *acc, short value)
+{
+  return _InterlockedXor16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicXor(long *acc, long value)
+{
+  return _InterlockedXor(acc, value);
+}
+
+RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
+{
+  return _InterlockedXor64(acc, value);
+}
+
 
 #else  // RAJA_COMPILER_MSVC
 
-RAJA_DEVICE_HIP
-RAJA_INLINE unsigned builtin_atomic_load(unsigned volatile *acc)
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using an intrinsic
+ */
+template <typename T>
+struct builtin_useIntrinsic {
+  static constexpr bool value =
+    (std::is_integral<T>::value || std::is_enum<T>::value) &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * by reinterpreting inputs to types that intrinsics support
+ */
+template <typename T>
+struct builtin_useReinterpret {
+  static constexpr bool value =
+    !std::is_integral<T>::value &&
+    !std::is_enum<T>::value &&
+    ((sizeof(T) == 1
+#if !defined(UINT8_MAX)
+      && sizeof(unsigned char) == 1
+#endif
+     ) ||
+     (sizeof(T) == 2
+#if !defined(UINT16_MAX)
+      && sizeof(unsigned short) == 2
+#endif
+     ) ||
+     (sizeof(T) == 4
+#if !defined(UINT32_MAX)
+      && sizeof(unsigned int) == 4
+#endif
+     ) ||
+     (sizeof(T) == 8
+#if !defined(UINT64_MAX)
+      && sizeof(unsigned long long) == 8
+#endif
+     ));
+
+  using type =
+    std::conditional_t<sizeof(T) == 1,
+#if defined(UINT8_MAX)
+                       uint8_t,
+#else
+                       unsigned char,
+#endif
+    std::conditional_t<sizeof(T) == 2,
+#if defined(UINT16_MAX)
+                       uint16_t,
+#else
+                       unsigned short,
+#endif
+    std::conditional_t<sizeof(T) == 4,
+#if defined(UINT32_MAX)
+                       uint32_t,
+#else
+                       unsigned int,
+#endif
+#if defined(UINT64_MAX)
+                       uint64_t>>>;
+#else
+                       unsigned long long>>>;
+#endif
+};
+
+
+/*!
+ * Type trait for determining if the operator should be implemented
+ * using a compare and swap loop
+ */
+template <typename T>
+struct builtin_useCAS {
+  static constexpr bool value =
+    !std::is_integral<T>::value && !std::is_enum<T>::value &&
+    (sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8);
+};
+
+
+/*!
+ * Atomics implemented using intrinsics
+ */
+
+
+/*!
+ * Atomic load using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
   return __atomic_load_n(acc, __ATOMIC_RELAXED);
 }
 
-RAJA_DEVICE_HIP
-RAJA_INLINE unsigned long long builtin_atomic_load(
-    unsigned long long volatile *acc)
-{
-  return __atomic_load_n(acc, __ATOMIC_RELAXED);
-}
 
-RAJA_DEVICE_HIP
-RAJA_INLINE void builtin_atomic_store(unsigned volatile *acc,
-                                      unsigned value)
+/*!
+ * Atomic store using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
   __atomic_store_n(acc, value, __ATOMIC_RELAXED);
 }
 
-RAJA_DEVICE_HIP
-RAJA_INLINE void builtin_atomic_store(
-    unsigned long long volatile *acc,
-    unsigned long long value)
+
+/*!
+ * Atomic exchange using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
 {
-  __atomic_store_n(acc, value, __ATOMIC_RELAXED);
+  return __atomic_exchange_n(acc, value, __ATOMIC_RELAXED);
 }
 
-RAJA_DEVICE_HIP
-RAJA_INLINE unsigned builtin_atomic_CAS(unsigned volatile *acc,
-                                        unsigned compare,
-                                        unsigned value)
+
+/*!
+ * Atomic compare and swap using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
 {
   __atomic_compare_exchange_n(
-      acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
+      acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
   return compare;
 }
 
 
-RAJA_DEVICE_HIP
-RAJA_INLINE unsigned long long builtin_atomic_CAS(
-    unsigned long long volatile *acc,
-    unsigned long long compare,
-    unsigned long long value)
+/*!
+ * Atomic addition using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
 {
-  __atomic_compare_exchange_n(
-      acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
-  return compare;
+  return __atomic_fetch_add(acc, value, __ATOMIC_RELAXED);
 }
+
+
+/*!
+ * Atomic subtraction using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
+{
+  return __atomic_fetch_sub(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic and using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
+{
+  return __atomic_fetch_and(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic or using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
+{
+  return __atomic_fetch_or(acc, value, __ATOMIC_RELAXED);
+}
+
+
+/*!
+ * Atomic xor using intrinsic
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
+{
+  return __atomic_fetch_xor(acc, value, __ATOMIC_RELAXED);
+}
+
 
 #endif  // RAJA_COMPILER_MSVC
 
 
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE
-    typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
-    builtin_atomic_load(T volatile *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned, T>(
-      builtin_atomic_load((unsigned volatile*)acc));
-}
+/*!
+ * Atomics implemented using reinterpret cast
+ */
 
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE
-    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
-    builtin_atomic_load(T volatile *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(
-      builtin_atomic_load((unsigned long long volatile *)acc));
-}
-
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE
-    typename std::enable_if<sizeof(T) == sizeof(unsigned), void>::type
-    builtin_atomic_store(T volatile *acc, T value)
-{
-  builtin_atomic_store((unsigned volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned>(value));
-}
-
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE
-    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), void>::type
-    builtin_atomic_store(T volatile *acc, T value)
-{
-  builtin_atomic_store((unsigned long long volatile*)acc, RAJA::util::reinterp_A_as_B<T, unsigned long long>(value));
-}
-
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE
-    typename std::enable_if<sizeof(T) == sizeof(unsigned), T>::type
-    builtin_atomic_CAS(T volatile *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned, T>(
-      builtin_atomic_CAS((unsigned volatile *)acc,
-                         RAJA::util::reinterp_A_as_B<T, unsigned>(compare),
-                         RAJA::util::reinterp_A_as_B<T, unsigned>(value)));
-}
-
-template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE
-    typename std::enable_if<sizeof(T) == sizeof(unsigned long long), T>::type
-    builtin_atomic_CAS(T volatile *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long, T>(builtin_atomic_CAS(
-      (unsigned long long volatile *)acc,
-      RAJA::util::reinterp_A_as_B<T, unsigned long long>(compare),
-      RAJA::util::reinterp_A_as_B<T, unsigned long long>(value)));
-}
 
 /*!
- * Generic impementation of any atomic 32-bit or 64-bit operator that can be
- * implemented using a compare and swap primitive.
- * Implementation uses the builtin unsigned 32-bit and 64-bit CAS operators.
- * Returns the OLD value that was replaced by the result of this operation.
+ * Alias for determining the integral type of the same size as the given type
  */
-template <typename T, typename OPER>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper(T volatile *acc,
-                                                      OPER &&oper)
+template <typename T>
+using builtin_useReinterpret_t = typename builtin_useReinterpret<T>::type;
+
+
+/*!
+ * Atomic load using reinterpret cast
+ */
+template <typename T,
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicLoad(T *acc)
 {
-  static_assert(sizeof(T) == 4 || sizeof(T) == 8,
-                "builtin atomic cas assumes 4 or 8 byte targets");
+  using R = builtin_useReinterpret_t<T>;
 
-  BuiltinAtomicType<T> volatile * accConverted = (BuiltinAtomicType<T> volatile *) acc;
-  BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
-  BuiltinAtomicType<T> expected;
-
-  do {
-    expected = old;
-    old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
-  } while (old != expected);
-
-  return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    builtin_atomicLoad(reinterpret_cast<R*>(acc)));
 }
 
-template <typename T, typename OPER, typename ShortCircuit>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
-                                                         OPER &&oper,
-                                                         ShortCircuit const &sc)
+
+/*!
+ * Atomic store using reinterpret cast
+ */
+template <typename T,
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE void builtin_atomicStore(T *acc, T value)
 {
-  static_assert(sizeof(T) == 4 || sizeof(T) == 8,
-                "builtin atomic cas assumes 4 or 8 byte targets");
+  using R = builtin_useReinterpret_t<T>;
 
-  BuiltinAtomicType<T> volatile * accConverted = (BuiltinAtomicType<T> volatile *) acc;
-  BuiltinAtomicType<T> old = builtin_atomic_load(accConverted);
-  BuiltinAtomicType<T> expected;
+  builtin_atomicStore(reinterpret_cast<R*>(acc),
+                      RAJA::util::reinterp_A_as_B<T, R>(value));
+}
 
-  if (sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old))) {
-    return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
-  }
+
+/*!
+ * Atomic exchange using reinterpret cast
+ */
+template <typename T,
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicExchange(T *acc, T value)
+{
+  using R = builtin_useReinterpret_t<T>;
+
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    builtin_atomicExchange(reinterpret_cast<R*>(acc),
+                           RAJA::util::reinterp_A_as_B<T, R>(value)));
+}
+
+
+/*!
+ * Atomic compare and swap using reinterpret cast
+ */
+template <typename T,
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T *acc, T compare, T value)
+{
+  using R = builtin_useReinterpret_t<T>;
+
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    builtin_atomicCAS(reinterpret_cast<R*>(acc),
+                      RAJA::util::reinterp_A_as_B<T, R>(compare),
+                      RAJA::util::reinterp_A_as_B<T, R>(value)));
+}
+
+
+/*!
+ * Implementation of compare and swap loop
+ */
+
+
+/*!
+ * Equality comparison for compare and swap loop using types supported by
+ * intrinsics.
+ */
+template <typename T,
+          std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  return a == b;
+}
+
+
+/*!
+ * Equality comparison for compare and swap loop using reinterpret cast.
+ * Converts to the underlying integral type to avoid cases where the values
+ * will never compare equal (most notably, NaNs).
+ */
+template <typename T,
+          std::enable_if_t<builtin_useReinterpret<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE bool builtin_atomicCAS_equal(const T &a, const T &b)
+{
+  using R = builtin_useReinterpret_t<T>;
+
+  return builtin_atomicCAS_equal(RAJA::util::reinterp_A_as_B<T, R>(a),
+                                 RAJA::util::reinterp_A_as_B<T, R>(b));
+}
+
+
+/*!
+ * Generic impementation of any atomic 8, 16, 32, or 64 bit operator
+ * that can be implemented using a builtin compare and swap primitive.
+ * Returns the OLD value that was replaced by the result of this operation.
+ */
+template <typename T, typename Oper>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T *acc,
+                                                     Oper &&oper)
+{
+  T old = builtin_atomicLoad(acc);
+  T expected;
 
   do {
     expected = old;
-    old = builtin_atomic_CAS(accConverted, expected, RAJA::util::reinterp_A_as_B<T, BuiltinAtomicType<T>>(oper(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(expected))));
-  } while (old != expected && !sc(RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old)));
+    old = builtin_atomicCAS(acc, expected, oper(expected));
+  } while (!builtin_atomicCAS_equal(old, expected));
 
-  return RAJA::util::reinterp_A_as_B<BuiltinAtomicType<T>, T>(old);
+  return old;
+}
+
+
+/*!
+ * Generic impementation of any atomic 8, 16, 32, or 64 bit operator
+ * that can be implemented using a builtin compare and swap primitive.
+ * Uses short-circuiting for improved efficiency. Returns the OLD value
+ * that was replaced by the result of this operation.
+ */
+template <typename T, typename Oper, typename ShortCircuit>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T *acc,
+                                                     Oper &&oper,
+                                                     ShortCircuit &&sc)
+{
+  T old = builtin_atomicLoad(acc);
+
+  if (sc(old)) {
+    return old;
+  }
+
+  T expected;
+
+  do {
+    expected = old;
+    old = builtin_atomicCAS(acc, expected, oper(expected));
+  } while (!builtin_atomicCAS_equal(old, expected) && !sc(old));
+
+  return old;
+}
+
+
+/*!
+ * Atomics implemented using compare and swap loop
+ */
+
+
+/*!
+ * Atomic addition using compare and swap loop
+ */
+template <typename T,
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAdd(T *acc, T value)
+{
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
+    return old + value;
+  });
+}
+
+
+/*!
+ * Atomic subtraction using compare and swap loop
+ */
+template <typename T,
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicSub(T *acc, T value)
+{
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
+    return old - value;
+  });
+}
+
+
+/*!
+ * Atomic and using compare and swap loop
+ */
+template <typename T,
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicAnd(T *acc, T value)
+{
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
+    return old & value;
+  });
+}
+
+
+/*!
+ * Atomic or using compare and swap loop
+ */
+template <typename T,
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicOr(T *acc, T value)
+{
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
+    return old | value;
+  });
+}
+
+
+/*!
+ * Atomic xor using compare and swap loop
+ */
+template <typename T,
+          std::enable_if_t<builtin_useCAS<T>::value, bool> = true>
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicXor(T *acc, T value)
+{
+  return builtin_atomicCAS_loop(acc, [value] (T old) {
+    return old ^ value;
+  });
 }
 
 
@@ -293,133 +712,115 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomic_CAS_oper_sc(T volatile *acc,
 
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicLoad(builtin_atomic,
-                                         T volatile *acc)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicLoad(builtin_atomic, T *acc)
 {
-  return detail::builtin_atomic_load(acc);
+  return detail::builtin_atomicLoad(acc);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE void atomicStore(builtin_atomic,
-                                             T volatile *acc,
-                                             T value)
+RAJA_DEVICE_HIP RAJA_INLINE void atomicStore(builtin_atomic, T *acc, T value)
 {
-  detail::builtin_atomic_store(acc, value);
+  detail::builtin_atomicStore(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicAdd(builtin_atomic,
-                                        T volatile *acc,
-                                        T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicAdd(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a + value; });
+  return detail::builtin_atomicAdd(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicSub(builtin_atomic,
-                                        T volatile *acc,
-                                        T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicSub(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a - value; });
+  return detail::builtin_atomicSub(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic,
-                                        T volatile *acc,
-                                        T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper_sc(acc,
-                                            [=](T a) {
-                                              return a < value ? a : value;
-                                            },
-                                            [=](T current) {
-                                              return current < value;
-                                            });
+  return detail::builtin_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return value < old ? value : old;
+    },
+    [value] (T current) {
+      return current <= value;
+    });
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic,
-                                        T volatile *acc,
-                                        T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper_sc(acc,
-                                            [=](T a) {
-                                              return a > value ? a : value;
-                                            },
-                                            [=](T current) {
-                                              return current > value;
-                                            });
+  return detail::builtin_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return old < value ? value : old;
+    },
+    [value] (T current) {
+      return value <= current;
+    });
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T volatile *acc)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T *acc)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a + 1; });
+  return detail::builtin_atomicAdd(acc, static_cast<T>(1));
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T volatile *acc, T val)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T old) {
-    return ((old >= val) ? 0 : (old + 1));
+  return detail::builtin_atomicCAS_loop(acc, [value] (T old) {
+    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T volatile *acc)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T *acc)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a - 1; });
+  return detail::builtin_atomicSub(acc, static_cast<T>(1));
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T volatile *acc, T val)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T old) {
-    return (((old == 0) | (old > val)) ? val : (old - 1));
+  return detail::builtin_atomicCAS_loop(acc, [value] (T old) {
+    return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
   });
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicAnd(builtin_atomic,
-                                        T volatile *acc,
-                                        T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicAnd(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a & value; });
+  return detail::builtin_atomicAnd(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicOr(builtin_atomic, T volatile *acc, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicOr(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a | value; });
+  return detail::builtin_atomicOr(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicXor(builtin_atomic,
-                                        T volatile *acc,
-                                        T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicXor(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T a) { return a ^ value; });
+  return detail::builtin_atomicXor(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T atomicExchange(builtin_atomic,
-                                             T volatile *acc,
-                                             T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicExchange(builtin_atomic, T *acc, T value)
 {
-  return detail::builtin_atomic_CAS_oper(acc, [=](T) { return value; });
+  return detail::builtin_atomicExchange(acc, value);
 }
 
 template <typename T>
-RAJA_DEVICE_HIP RAJA_INLINE T
-atomicCAS(builtin_atomic, T volatile *acc, T compare, T value)
+RAJA_DEVICE_HIP RAJA_INLINE T atomicCAS(builtin_atomic, T *acc, T compare, T value)
 {
-  return detail::builtin_atomic_CAS(acc, compare, value);
+  return detail::builtin_atomicCAS(acc, compare, value);
 }
 
 
 }  // namespace RAJA
 
-// make sure this define doesn't bleed out of this header
-#undef RAJA_AUTO_ATOMIC
 
 #endif
