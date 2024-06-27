@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_BASIC_REDUCESUM_HPP__
-#define __TEST_FORALL_BASIC_REDUCESUM_HPP__
+#ifndef __TEST_KERNEL_NESTED_MULTIREDUCE_HPP__
+#define __TEST_KERNEL_NESTED_MULTIREDUCE_HPP__
 
 #include <cstdlib>
 #include <ctime>
@@ -358,4 +358,4 @@ TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
 REGISTER_TYPED_TEST_SUITE_P(KernelMultiReduceNestedTest,
                             MultiReduceNestedKernel);
 
-#endif  // __TEST_FORALL_BASIC_REDUCESUM_HPP__
+#endif  // __TEST_KERNEL_NESTED_MULTIREDUCE_HPP__
