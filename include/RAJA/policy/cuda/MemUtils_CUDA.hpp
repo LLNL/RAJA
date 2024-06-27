@@ -60,7 +60,8 @@ cudaDeviceProp get_device_prop()
   return prop;
 }
 
-//! Get a copy of the device properties, this copy is cached on first use to speedup later calls
+//! Get a cached copy of the current device properties.
+//  This caches a copy on first use to speedup later calls.
 RAJA_INLINE
 cudaDeviceProp& device_prop()
 {
@@ -311,13 +312,47 @@ cuda_dim_member_t currentBlockSize() { return detail::tl_status.blockDim.x *
                                               detail::tl_status.blockDim.y *
                                               detail::tl_status.blockDim.z; }
 
-//! get dynamic shared memory for current launch, you may add to this
+//! get dynamic shared memory usage for current launch
 RAJA_INLINE
-size_t& currentDynamicSmem() { return *detail::tl_status.dynamic_smem; }
+size_t currentDynamicSmem() { return *detail::tl_status.dynamic_smem; }
 
 //! get maximum dynamic shared memory for current launch
 RAJA_INLINE
 size_t maxDynamicSmem() { return cuda::device_prop().sharedMemPerBlock; }
+
+constexpr size_t dynamic_smem_allocation_failure = std::numeric_limits<size_t>::max();
+
+//! Allocate dynamic shared memory for current launch
+//
+//  The first argument is a functional object that takes the maximum number of
+//  objects that can fit into the dynamic shared memory available and returns
+//  the number of objects to allocate.
+//  The second argument is the required alignment.
+//
+//  Returns an offset into dynamic shared memory aligned to align on success,
+//  or dynamic_smem_allocation_failure on failure. Note that asking for 0 memory
+//  takes the failure return path.
+template < typename T, typename GetNFromMax >
+RAJA_INLINE
+size_t allocateDynamicSmem(GetNFromMax&& get_n_from_max, size_t align = alignof(T))
+{
+  const size_t unaligned_shmem = *detail::tl_status.dynamic_smem;
+  const size_t align_offset = ((unaligned_shmem % align) != size_t(0))
+      ? align - (unaligned_shmem % align)
+      : size_t(0);
+  const size_t aligned_shmem = unaligned_shmem + align_offset;
+
+  const size_t max_shmem_bytes = maxDynamicSmem() - aligned_shmem;
+  const size_t n_bytes = sizeof(T) *
+      std::forward<GetNFromMax>(get_n_from_max)(max_shmem_bytes / sizeof(T));
+
+  if (size_t(0) < n_bytes && n_bytes <= max_shmem_bytes) {
+    *detail::tl_status.dynamic_smem = aligned_shmem + n_bytes;
+    return aligned_shmem;
+  } else {
+    return dynamic_smem_allocation_failure;
+  }
+}
 
 //! get resource for current launch
 RAJA_INLINE

@@ -368,9 +368,7 @@ struct MultiReduceGridAtomicHostInit_Data
   using TallyData::identity;
 
   //! setup per launch, do nothing
-  void setup_launch(size_t RAJA_UNUSED_ARG(block_size),
-                    size_t& RAJA_UNUSED_ARG(current_shmem),
-                    size_t RAJA_UNUSED_ARG(max_shmem))
+  void setup_launch(size_t RAJA_UNUSED_ARG(block_size))
   { }
 
   //! teardown per launch, do nothing
@@ -452,32 +450,30 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   using TallyData::identity;
 
   //! setup per launch, setup shared memory parameters
-  void setup_launch(size_t block_size, size_t& current_shmem, size_t max_shmem)
+  void setup_launch(size_t block_size)
   {
     if (m_num_bins == size_t(0)) {
       m_shared_offset = s_shared_offset_invalid;
       return;
     }
 
-    size_t align_offset = current_shmem % alignof(T);
-    if (align_offset != size_t(0)) {
-      align_offset = alignof(T) - align_offset;
-    }
+    size_t shared_replication = 0;
+    const size_t shared_offset = allocateDynamicSmem<T>(
+        [&](size_t max_shmem_size) {
 
-    size_t max_shmem_size = max_shmem - (current_shmem + align_offset);
-    size_t max_shared_replication = max_shmem_size / (m_num_bins * sizeof(T));
+      struct {
+        size_t func_threads_per_block;
+        size_t func_max_shared_replication_per_block;
+      } func_data{block_size, max_shmem_size / m_num_bins};
 
-    struct {
-      size_t func_threads_per_block;
-      size_t func_max_shared_replication_per_block;
-    } func_data{block_size, max_shared_replication};
+      shared_replication = SharedAtomicReplicationConcretizer{}.template
+          get_shared_replication<size_t>(func_data);
+      return m_num_bins * shared_replication;
+    });
 
-    m_shared_replication = SharedAtomicReplicationConcretizer{}.template
-        get_shared_replication<size_t>(func_data);
-
-    if (m_shared_replication != 0) {
-      m_shared_offset = static_cast<int>(current_shmem + align_offset);
-      current_shmem += align_offset + m_shared_replication * (m_num_bins * sizeof(T));
+    if (shared_offset != dynamic_smem_allocation_failure) {
+      m_shared_replication = static_cast<int>(shared_replication);
+      m_shared_offset = static_cast<int>(shared_offset);
     } else {
       m_shared_offset = s_shared_offset_invalid;
     }
@@ -650,7 +646,7 @@ public:
       if (setupReducers()) {
         // the copy made in make_launch_body does this setup
         add_resource_to_synchronization_list(currentResource());
-        m_data.setup_launch(currentBlockSize(), currentDynamicSmem(), maxDynamicSmem());
+        m_data.setup_launch(currentBlockSize());
         m_own_launch_data = true;
         m_parent = nullptr;
       }
