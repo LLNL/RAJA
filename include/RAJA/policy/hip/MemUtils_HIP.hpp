@@ -311,11 +311,11 @@ hip_dim_member_t currentBlockSize() { return detail::tl_status.blockDim.x *
 
 //! get dynamic shared memory usage for current launch
 RAJA_INLINE
-size_t currentDynamicSmem() { return *detail::tl_status.dynamic_smem; }
+size_t currentDynamicShmem() { return *detail::tl_status.dynamic_smem; }
 
 //! get maximum dynamic shared memory for current launch
 RAJA_INLINE
-size_t maxDynamicSmem() { return hip::device_prop().sharedMemPerBlock; }
+size_t maxDynamicShmem() { return hip::device_prop().sharedMemPerBlock; }
 
 constexpr size_t dynamic_smem_allocation_failure = std::numeric_limits<size_t>::max();
 
@@ -331,7 +331,7 @@ constexpr size_t dynamic_smem_allocation_failure = std::numeric_limits<size_t>::
 //  takes the failure return path.
 template < typename T, typename GetNFromMax >
 RAJA_INLINE
-size_t allocateDynamicSmem(GetNFromMax&& get_n_from_max, size_t align = alignof(T))
+size_t allocateDynamicShmem(GetNFromMax&& get_n_from_max, size_t align = alignof(T))
 {
   const size_t unaligned_shmem = *detail::tl_status.dynamic_smem;
   const size_t align_offset = ((unaligned_shmem % align) != size_t(0))
@@ -339,7 +339,7 @@ size_t allocateDynamicSmem(GetNFromMax&& get_n_from_max, size_t align = alignof(
       : size_t(0);
   const size_t aligned_shmem = unaligned_shmem + align_offset;
 
-  const size_t max_shmem_bytes = maxDynamicSmem() - aligned_shmem;
+  const size_t max_shmem_bytes = maxDynamicShmem() - aligned_shmem;
   const size_t n_bytes = sizeof(T) *
       std::forward<GetNFromMax>(get_n_from_max)(max_shmem_bytes / sizeof(T));
 

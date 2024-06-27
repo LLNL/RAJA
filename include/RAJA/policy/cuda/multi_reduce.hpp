@@ -458,7 +458,7 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     }
 
     size_t shared_replication = 0;
-    const size_t shared_offset = allocateDynamicSmem<T>(
+    const size_t shared_offset = allocateDynamicShmem<T>(
         [&](size_t max_shmem_size) {
 
       struct {
