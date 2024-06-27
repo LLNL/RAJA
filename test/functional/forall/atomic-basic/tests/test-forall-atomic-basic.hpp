@@ -61,7 +61,7 @@ template <typename ExecPolicy,
 void ForallAtomicBasicTestImpl( IdxType seglimit )
 {
   // initialize an array
-  const int len = 10;
+  const int len = 12;
 
   camp::resources::Resource work_res{WORKINGRES()};
 
@@ -79,52 +79,58 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
                               &test_array );
 
   // use atomic add to reduce the array
-  test_array[0] = (T)0;
-  test_array[1] = (T)seglimit;
-  test_array[2] = (T)seglimit;
-  test_array[3] = (T)0;
-  test_array[4] = (T)0;
-  test_array[5] = (T)seglimit + 1;
-  test_array[6] = (T)seglimit;
-  test_array[7] = (T)0;
-  test_array[8] = (T)0;
-  test_array[9] = (T)0;
+  test_array[0] = static_cast<T>(0);
+  test_array[1] = static_cast<T>(seglimit);
+  test_array[2] = static_cast<T>(seglimit);
+  test_array[3] = static_cast<T>(0);
+  test_array[4] = static_cast<T>(0);
+  test_array[5] = static_cast<T>(seglimit + 1);
+  test_array[6] = static_cast<T>(seglimit);
+  test_array[7] = static_cast<T>(0);
+  test_array[8] = static_cast<T>(0);
+  test_array[9] = static_cast<T>(0);
+  test_array[10] = static_cast<T>(0);
+  test_array[11] = static_cast<T>(0);
 
-  work_res.memcpy( work_array, test_array, sizeof(T) * len );
+  work_res.memcpy(work_array, test_array, sizeof(T) * len);
 
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    RAJA::atomicAdd<AtomicPolicy>(work_array + 0, (T)1);
-    RAJA::atomicSub<AtomicPolicy>(work_array + 1, (T)1);
-    RAJA::atomicMin<AtomicPolicy>(work_array + 2, (T)i);
-    RAJA::atomicMax<AtomicPolicy>(work_array + 3, (T)i);
+    RAJA::atomicAdd<AtomicPolicy>(work_array + 0, static_cast<T>(1));
+    RAJA::atomicSub<AtomicPolicy>(work_array + 1, static_cast<T>(1));
+    RAJA::atomicMin<AtomicPolicy>(work_array + 2, static_cast<T>(i));
+    RAJA::atomicMax<AtomicPolicy>(work_array + 3, static_cast<T>(i));
     RAJA::atomicInc<AtomicPolicy>(work_array + 4);
     RAJA::atomicDec<AtomicPolicy>(work_array + 5);
-    RAJA::atomicExchange<AtomicPolicy>(work_array + 6, (T)i);
-    RAJA::atomicCAS<AtomicPolicy>(work_array + 7, (T)i, (T)(i+1));
+    RAJA::atomicExchange<AtomicPolicy>(work_array + 6, static_cast<T>(i));
+    RAJA::atomicCAS<AtomicPolicy>(work_array + 7, static_cast<T>(i), static_cast<T>(i+1));
     RAJA::atomicLoad<AtomicPolicy>(work_array + 8);
-    RAJA::atomicStore<AtomicPolicy>(work_array + 9, (T)1);
+    RAJA::atomicStore<AtomicPolicy>(work_array + 9, static_cast<T>(1));
+    RAJA::atomicInc<AtomicPolicy>(work_array + 10, static_cast<T>(16));
+    RAJA::atomicDec<AtomicPolicy>(work_array + 11, static_cast<T>(16));
   });
 
   work_res.memcpy( check_array, work_array, sizeof(T) * len );
   work_res.wait();
 
-  EXPECT_EQ((T)seglimit, check_array[0]);
-  EXPECT_EQ((T)0, check_array[1]);
-  EXPECT_EQ((T)0, check_array[2]);
-  EXPECT_EQ((T)seglimit - 1, check_array[3]);
-  EXPECT_EQ((T)seglimit, check_array[4]);
-  EXPECT_EQ((T)1, check_array[5]);
-  EXPECT_LE((T)0, check_array[6]);
-  EXPECT_GT((T)seglimit, check_array[6]);
-  EXPECT_LT((T)0, check_array[7]);
-  EXPECT_GE((T)seglimit, check_array[7]);
-  EXPECT_EQ((T)0, check_array[8]);
-  EXPECT_EQ((T)1, check_array[9]);
+  EXPECT_EQ(static_cast<T>(seglimit), check_array[0]);
+  EXPECT_EQ(static_cast<T>(0), check_array[1]);
+  EXPECT_EQ(static_cast<T>(0), check_array[2]);
+  EXPECT_EQ(static_cast<T>(seglimit - 1), check_array[3]);
+  EXPECT_EQ(static_cast<T>(seglimit), check_array[4]);
+  EXPECT_EQ(static_cast<T>(1), check_array[5]);
+  EXPECT_LE(static_cast<T>(0), check_array[6]);
+  EXPECT_GT(static_cast<T>(seglimit), check_array[6]);
+  EXPECT_LT(static_cast<T>(0), check_array[7]);
+  EXPECT_GE(static_cast<T>(seglimit), check_array[7]);
+  EXPECT_EQ(static_cast<T>(0), check_array[8]);
+  EXPECT_EQ(static_cast<T>(1), check_array[9]);
+  EXPECT_EQ(static_cast<T>(4), check_array[10]);
+  EXPECT_EQ(static_cast<T>(13), check_array[11]);
 
-  deallocateForallTestData<T>(  work_res,
-                                work_array,
-                                check_array,
-                                test_array );
+  deallocateForallTestData<T>(work_res,
+                              work_array,
+                              check_array,
+                              test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallAtomicBasicTest);
@@ -143,13 +149,13 @@ TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
 
   ForallAtomicBasicTestImpl<AExec, APol, ResType, 
                             IdxType, RAJA::TypedRangeSegment<IdxType>, 
-                            DType>( 10000 );
+                            DType>(10000);
   ForallAtomicBasicTestImpl<AExec, APol, ResType, 
                             IdxType, RAJA::TypedRangeStrideSegment<IdxType>, 
-                            DType>( 10000 );
+                            DType>(10000);
   ForallAtomicBasicTestImpl<AExec, APol, ResType, 
                             IdxType, RAJA::TypedListSegment<IdxType>, 
-                            DType>( 10000 );
+                            DType>(10000);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicTest,

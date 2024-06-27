@@ -59,42 +59,125 @@ namespace detail
 
 
 /*!
- * Atomic exchange
+ * Type trait for determining if atomic operators should be implemented
+ * using builtin functions. This type trait can be used for a lot of atomic
+ * operators. More specific type traits are added when needed, such as
+ * cuda_useBuiltinExchange below.
+ */
+template <typename T>
+struct cuda_useBuiltinCommon {
+  static constexpr bool value =
+    std::is_same<T, int>::value ||
+    std::is_same<T, unsigned int>::value ||
+    std::is_same<T, unsigned long long>::value;
+};
+
+
+/*!
+ * Type trait for determining if atomic operators should be implemented
+ * by reinterpreting inputs to types that the builtin functions support.
+ * This type trait can be used for a lot of atomic operators. More specific
+ * type traits are added when needed, such as cuda_useReinterpretExchange
+ * below.
+ */
+template <typename T>
+struct cuda_useReinterpretCommon {
+  static constexpr bool value =
+    !cuda_useBuiltinCommon<T>::value &&
+    (sizeof(T) == sizeof(unsigned int) ||
+     sizeof(T) == sizeof(unsigned long long));
+
+  using type =
+    std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                       unsigned int, unsigned long long>;
+};
+
+
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
+template <typename T>
+using cuda_useReinterpretCommon_t = typename cuda_useReinterpretCommon<T>::type;
+
+
+/*!
+ * Performs an atomic bitwise or using a builtin function. Stores the new value
+ * in the given address and returns the old value.
+ *
+ * This overload using builtin functions is used to implement atomic loads
+ * under some build configurations.
  */
 template <typename T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value ||
-                           std::is_same<T, float>::value, bool> = true>
+          std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
+RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
+{
+  return ::atomicOr(acc, value);
+}
+
+
+/*!
+ * Atomic exchange
+ */
+
+/*!
+ * Type trait for determining if the exchange operator should be implemented
+ * using a builtin
+ */
+template <typename T>
+struct cuda_useBuiltinExchange {
+  static constexpr bool value =
+    std::is_same<T, int>::value ||
+    std::is_same<T, unsigned int>::value ||
+    std::is_same<T, unsigned long long>::value ||
+    std::is_same<T, float>::value;
+};
+
+/*!
+ * Type trait for determining if the exchange operator should be implemented
+ * by reinterpreting inputs to types that the builtin exchange supports
+ */
+template <typename T>
+struct cuda_useReinterpretExchange {
+  static constexpr bool value =
+    !cuda_useBuiltinExchange<T>::value &&
+    (sizeof(T) == sizeof(unsigned int) ||
+     sizeof(T) == sizeof(unsigned long long));
+
+  using type =
+    std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                       unsigned int, unsigned long long>;
+};
+
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
+template <typename T>
+using cuda_useReinterpretExchange_t = typename cuda_useReinterpretExchange<T>::type;
+
+/*!
+ * Performs an atomic exchange using a builtin function. Stores the new value
+ * in the given address and returns the old value.
+ */
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
   return ::atomicExch(acc, value);
 }
 
+/*!
+ * Performs an atomic exchange using a reinterpret cast. Stores the new value
+ * in the given address and returns the old value.
+ */
 template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           !std::is_same<T, float>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
+          std::enable_if_t<cuda_useReinterpretExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
 {
-  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    cuda_atomicExchange(reinterpret_cast<unsigned int*>(acc),
-                        RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
-}
+  using R = cuda_useReinterpretExchange_t<T>;
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           !std::is_same<T, float>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicExchange(T *acc, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    cuda_atomicExchange(reinterpret_cast<unsigned long long int*>(acc),
-                        RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    cuda_atomicExchange(reinterpret_cast<R*>(acc),
+                        RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
 
 
@@ -121,36 +204,21 @@ RAJA_INLINE __device__ void cuda_atomicStore(T *acc, T value)
 #else
 
 template <typename T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value, bool> = true>
+          std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
 {
-  return ::atomicOr(acc, static_cast<T>(0));
+  return cuda_atomicOr(acc, static_cast<T>(0));
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
+          std::enable_if_t<cuda_useReinterpretCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
 {
-  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    cuda_atomicLoad(reinterpret_cast<unsigned int*>(acc)));
-}
+  using R = cuda_useReinterpretCommon_t<T>;
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicLoad(T *acc)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    cuda_atomicLoad(reinterpret_cast<unsigned long long int*>(acc)));
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    cuda_atomicLoad(reinterpret_cast<R*>(acc)));
 }
-
 
 template <typename T>
 RAJA_INLINE __device__ void cuda_atomicStore(T *acc, T value)
@@ -164,69 +232,77 @@ RAJA_INLINE __device__ void cuda_atomicStore(T *acc, T value)
 /*!
  * Atomic compare and swap
  */
-template <typename T,
-          std::enable_if_t<
+
+/*!
+ * Type trait for determining if the compare and swap operator should be
+ * implemented using a builtin
+ */
+template <typename T>
+struct cuda_useBuiltinCAS {
+  static constexpr bool value =
 #if __CUDA_ARCH__ >= 700
-                           std::is_same<T, unsigned short int>::value ||
+    std::is_same<T, unsigned short int>::value ||
 #endif
-                           std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value, bool> = true>
+    std::is_same<T, int>::value ||
+    std::is_same<T, unsigned int>::value ||
+    std::is_same<T, unsigned long long>::value;
+};
+
+/*!
+ * Type trait for determining if the compare and swap operator should be
+ * implemented by reinterpreting inputs to types that the builtin compare
+ * and swap supports
+ */
+template <typename T>
+struct cuda_useReinterpretCAS {
+  static constexpr bool value =
+    !cuda_useBuiltinCAS<T>::value &&
+    (
+#if __CUDA_ARCH__ >= 700
+     sizeof(T) == sizeof(unsigned short) ||
+#endif
+     sizeof(T) == sizeof(unsigned int) ||
+     sizeof(T) == sizeof(unsigned long long)
+    );
+
+  using type =
+#if __CUDA_ARCH__ >= 700
+    std::conditional_t<sizeof(T) == sizeof(unsigned short),
+                       unsigned short,
+#endif
+    std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                       unsigned int,
+                       unsigned long long>
+#if __CUDA_ARCH__ >= 700
+                      >
+#endif
+    ;
+};
+
+/*!
+ * Alias for determining the integral type of the same size as the given type
+ */
+template <typename T>
+using cuda_useReinterpretCAS_t = typename cuda_useReinterpretCAS<T>::type;
+
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinCAS<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
   return ::atomicCAS(acc, compare, value);
 }
 
-#if __CUDA_ARCH__ >= 700
 template <typename T,
-          std::enable_if_t<!std::is_same<T, unsigned short int>::value &&
-                           !std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned short int), bool> = true>
+          std::enable_if_t<cuda_useReinterpretCAS<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
 {
-  return RAJA::util::reinterp_A_as_B<unsigned short int, T>(
-    cuda_atomicCAS(reinterpret_cast<unsigned short int*>(acc),
-                   RAJA::util::reinterp_A_as_B<T, unsigned short int>(compare),
-                   RAJA::util::reinterp_A_as_B<T, unsigned short int>(value)));
-}
-#endif
+  using R = cuda_useReinterpretCAS_t<T>;
 
-template <typename T,
-          std::enable_if_t<
-#if __CUDA_ARCH__ >= 700
-                           !std::is_same<T, unsigned short int>::value &&
-#endif
-                           !std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned int, T>(
-    cuda_atomicCAS(reinterpret_cast<unsigned int*>(acc),
-                   RAJA::util::reinterp_A_as_B<T, unsigned int>(compare),
-                   RAJA::util::reinterp_A_as_B<T, unsigned int>(value)));
+  return RAJA::util::reinterp_A_as_B<R, T>(
+    cuda_atomicCAS(reinterpret_cast<R*>(acc),
+                   RAJA::util::reinterp_A_as_B<T, R>(compare),
+                   RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
-
-template <typename T,
-          std::enable_if_t<
-#if __CUDA_ARCH__ >= 700
-                           !std::is_same<T, unsigned short int>::value &&
-#endif
-                           !std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
-{
-  return RAJA::util::reinterp_A_as_B<unsigned long long int, T>(
-    cuda_atomicCAS(reinterpret_cast<unsigned long long int*>(acc),
-                   RAJA::util::reinterp_A_as_B<T, unsigned long long int>(compare),
-                   RAJA::util::reinterp_A_as_B<T, unsigned long long int>(value)));
-}
-
 
 /*!
  * Equality comparison for compare and swap loop. Converts to the underlying
@@ -234,34 +310,20 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, T compare, T value)
  * (most notably, NaNs).
  */
 template <typename T,
-          std::enable_if_t<std::is_same<T, int>::value ||
-                           std::is_same<T, unsigned int>::value ||
-                           std::is_same<T, unsigned long long int>::value, bool> = true>
+          std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
 {
   return a == b;
 }
 
 template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned int), bool> = true>
+          std::enable_if_t<cuda_useReinterpretCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
 {
-  return RAJA::util::reinterp_A_as_B<T, unsigned int>(a) ==
-         RAJA::util::reinterp_A_as_B<T, unsigned int>(b);
-}
+  using R = cuda_useReinterpretCommon_t<T>;
 
-template <typename T,
-          std::enable_if_t<!std::is_same<T, int>::value &&
-                           !std::is_same<T, unsigned int>::value &&
-                           !std::is_same<T, unsigned long long int>::value &&
-                           sizeof(T) == sizeof(unsigned long long int), bool> = true>
-RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
-{
-  return RAJA::util::reinterp_A_as_B<T, unsigned long long int>(a) ==
-         RAJA::util::reinterp_A_as_B<T, unsigned long long int>(b);
+  return cuda_atomicCAS_equal(RAJA::util::reinterp_A_as_B<T, R>(a),
+                              RAJA::util::reinterp_A_as_B<T, R>(b));
 }
 
 
@@ -272,7 +334,8 @@ RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
  * operation.
  */
 template <typename T, typename Oper>
-RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper)
+RAJA_INLINE __device__ T cuda_atomicCAS_loop(T *acc,
+                                             Oper&& oper)
 {
   T old = cuda_atomicLoad(acc);
   T expected;
@@ -292,7 +355,9 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper)
  * operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_INLINE __device__ T cuda_atomicCAS(T *acc, Oper&& oper, ShortCircuit&& sc)
+RAJA_INLINE __device__ T cuda_atomicCAS_loop(T *acc,
+                                             Oper&& oper,
+                                             ShortCircuit&& sc)
 {
   T old = cuda_atomicLoad(acc);
 
@@ -329,7 +394,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAdd(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return old + value;
   });
 }
@@ -365,7 +430,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicSub(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return old - value;
   });
 }
@@ -406,13 +471,14 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMin(T *acc, T value)
 {
-  return cuda_atomicCAS(acc,
-                        [value] (T old) {
-                          return value < old ? value : old;
-                        },
-                        [value] (T current) {
-                          return current <= value;
-                        });
+  return cuda_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return value < old ? value : old;
+    },
+    [value] (T current) {
+      return current <= value;
+    });
 }
 
 template <typename T,
@@ -430,13 +496,14 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicMinMax_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicMax(T *acc, T value)
 {
-  return cuda_atomicCAS(acc,
-                        [value] (T old) {
-                          return old < value ? value : old;
-                        },
-                        [value] (T current) {
-                          return value <= current;
-                        });
+  return cuda_atomicCAS_loop(
+    acc,
+    [value] (T old) {
+      return old < value ? value : old;
+    },
+    [value] (T current) {
+      return value <= current;
+    });
 }
 
 template <typename T,
@@ -464,7 +531,7 @@ RAJA_INLINE __device__ T cuda_atomicInc(T *acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
   });
 }
@@ -496,7 +563,7 @@ RAJA_INLINE __device__ T cuda_atomicDec(T *acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return old == static_cast<T>(0) || value < old ? value : old - static_cast<T>(1);
   });
 }
@@ -536,7 +603,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicAnd(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return old & value;
   });
 }
@@ -556,17 +623,15 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return old | value;
   });
 }
 
-template <typename T,
-          RAJA::util::enable_if_is_any_of<T, cuda_atomicBit_builtin_types>* = nullptr>
-RAJA_INLINE __device__ T cuda_atomicOr(T *acc, T value)
-{
-  return ::atomicOr(acc, value);
-}
+/*!
+ * Atomic or via builtin functions was implemented much earlier since atomicLoad
+ * may depend on it.
+ */
 
 
 /*!
@@ -576,7 +641,7 @@ template <typename T,
           RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* = nullptr>
 RAJA_INLINE __device__ T cuda_atomicXor(T *acc, T value)
 {
-  return cuda_atomicCAS(acc, [value] (T old) {
+  return cuda_atomicCAS_loop(acc, [value] (T old) {
     return old ^ value;
   });
 }
