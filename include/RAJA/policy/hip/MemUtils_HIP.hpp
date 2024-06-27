@@ -61,7 +61,7 @@ hipDeviceProp_t get_device_prop()
   return prop;
 }
 
-//! Get a cached copy of the current device properties.
+//! Get a reference to a static cached copy of the current device properties.
 //  This caches a copy on first use to speedup later calls.
 RAJA_INLINE
 hipDeviceProp_t& device_prop()
