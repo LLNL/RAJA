@@ -44,6 +44,6 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
                           SOURCES plugin_for_test_kokkos.cpp)
 
   set_tests_properties(test-plugin-kokkos.exe PROPERTIES
-                      ENVIRONMENT "KOKKOS_PLUGINS=${CMAKE_BINARY_DIR}/lib/libkokkos_plugin.so")
+                       ENVIRONMENT "KOKKOS_PLUGINS=${CMAKE_CURRENT_BINARY_DIR}/lib/libkokkos_plugin.so")
   endif()
 endif ()
