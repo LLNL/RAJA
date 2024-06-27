@@ -31,6 +31,7 @@
 #include "RAJA/policy/sequential/policy.hpp"
 
 #include "RAJA/util/Operators.hpp"
+#include "RAJA/util/OffsetOperators.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/math.hpp"
 
@@ -74,6 +75,13 @@ struct IndexGlobal;
 
 template<typename ...indexers>
 struct IndexFlatten;
+
+template<size_t divisor, typename index>
+struct IndexDivide;
+
+template<size_t divisor, typename index>
+struct IndexModulo;
+
 
 /*!
  * Use the max occupancy of a kernel on the current device when launch
@@ -266,14 +274,24 @@ enum struct multi_reduce_algorithm : int
   init_host_combine_global_atomic
 };
 
+template < typename t_AtomicReplicationConcretizer,
+           typename t_ReplicationIndexer,
+           typename t_OffsetCalculator >
+struct AtomicReplicationTuning
+{
+  using AtomicReplicationConcretizer = t_AtomicReplicationConcretizer;
+  using ReplicationIndexer = t_ReplicationIndexer;
+  using OffsetCalculator = t_OffsetCalculator;
+};
+
 template < multi_reduce_algorithm t_algorithm,
-           typename t_SharedAtomicReplicationConcretizer,
-           typename t_GlobalAtomicReplicationConcretizer >
+           typename t_SharedAtomicReplicationTuning,
+           typename t_GlobalAtomicReplicationTuning >
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_algorithm;
-  using SharedAtomicReplicationConcretizer = t_SharedAtomicReplicationConcretizer;
-  using GlobalAtomicReplicationConcretizer = t_GlobalAtomicReplicationConcretizer;
+  using SharedAtomicReplicationTuning = t_SharedAtomicReplicationTuning;
+  using GlobalAtomicReplicationTuning = t_GlobalAtomicReplicationTuning;
   static constexpr bool consistent = false;
 };
 
@@ -429,111 +447,6 @@ struct hip_atomic_explicit{};
  * on the host
  */
 using hip_atomic = hip_atomic_explicit<seq_atomic>;
-
-
-template < RAJA::hip::reduce_algorithm algorithm,
-           RAJA::hip::block_communication_mode comm_mode,
-           size_t replication = named_usage::unspecified,
-           size_t atomic_stride = named_usage::unspecified >
-using hip_reduce_tuning = hip_reduce_policy< RAJA::hip::ReduceTuning<
-    algorithm, comm_mode, replication, atomic_stride> >;
-
-// Policies for RAJA::Reduce* objects with specific behaviors.
-// - *atomic* policies may use atomics to combine partial results and falls back
-//   on a non-atomic policy when atomics can't be used with the given type. The
-//   use of atomics leads to order of operation differences which change the
-//   results of floating point sum reductions run to run. The memory used with
-//   atomics is initialized on the device which can be expensive on some HW.
-//   On some HW this is faster overall than the non-atomic policies.
-// - *atomic_host* policies are similar to the atomic policies above. However
-//   the memory used with atomics is initialized on the host which is
-//   significantly cheaper on some HW. On some HW this is faster overall than
-//   the non-atomic and atomic policies.
-// - *device_fence policies use normal memory accesses with device scope fences
-//                in the implementation. This works on all HW.
-// - *block_fence policies use special (atomic) memory accesses that only cache
-//                 in a cache shared by the whole device to avoid having to use
-//                 device scope fences. This improves performance on some HW but
-//                 is more difficult to code correctly.
-using hip_reduce_device_fence = hip_reduce_tuning<
-    RAJA::hip::reduce_algorithm::combine_last_block,
-    RAJA::hip::block_communication_mode::device_fence,
-    named_usage::unspecified, named_usage::unspecified>;
-///
-using hip_reduce_block_fence = hip_reduce_tuning<
-    RAJA::hip::reduce_algorithm::combine_last_block,
-    RAJA::hip::block_communication_mode::block_fence,
-    named_usage::unspecified, named_usage::unspecified>;
-///
-using hip_reduce_atomic_device_init_device_fence = hip_reduce_tuning<
-    RAJA::hip::reduce_algorithm::init_device_combine_atomic_block,
-    RAJA::hip::block_communication_mode::device_fence,
-    named_usage::unspecified, named_usage::unspecified>;
-///
-using hip_reduce_atomic_device_init_block_fence = hip_reduce_tuning<
-    RAJA::hip::reduce_algorithm::init_device_combine_atomic_block,
-    RAJA::hip::block_communication_mode::block_fence,
-    named_usage::unspecified, named_usage::unspecified>;
-///
-using hip_reduce_atomic_host_init_device_fence = hip_reduce_tuning<
-    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
-    RAJA::hip::block_communication_mode::device_fence,
-    named_usage::unspecified, named_usage::unspecified>;
-///
-using hip_reduce_atomic_host_init_block_fence = hip_reduce_tuning<
-    RAJA::hip::reduce_algorithm::init_host_combine_atomic_block,
-    RAJA::hip::block_communication_mode::block_fence,
-    named_usage::unspecified, named_usage::unspecified>;
-
-// Policy for RAJA::Reduce* objects that gives the same answer every time when
-// used in the same way
-using hip_reduce = hip_reduce_block_fence;
-
-// Policy for RAJA::Reduce* objects that may use atomics and may not give the
-// same answer every time when used in the same way
-using hip_reduce_atomic = hip_reduce_atomic_host_init_block_fence;
-
-// Policy for RAJA::Reduce* objects that lets you select the default atomic or
-// non-atomic policy with a bool
-template < bool with_atomic >
-using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_reduce>;
-
-
-template < RAJA::hip::multi_reduce_algorithm algorithm,
-           typename SharedAtomicReplicationConcretizer,
-           typename GlobalAtomicReplicationConcretizer >
-using hip_multi_reduce_tuning = hip_multi_reduce_policy<
-    RAJA::hip::MultiReduceTuning<algorithm,
-                                 SharedAtomicReplicationConcretizer,
-                                 GlobalAtomicReplicationConcretizer>>;
-
-// Policies for RAJA::MultiReduce* objects with specific behaviors.
-// - *atomic* policies may use atomics to combine partial results. The
-//   use of atomics leads to order of operation differences which change the
-//   results of floating point sum reductions run to run.
-// - *host_init* policies are similar to the atomic policies above. However
-//   the memory used with atomics is initialized on the host which is
-//   significantly cheaper on some HW. On some HW this is faster overall than
-//   the non-atomic and atomic policies.
-using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tuning<
-    RAJA::hip::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
-    RAJA::hip::SharedAtomicReplicationMaxPow2Concretizer<
-        RAJA::hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
-    RAJA::hip::GlobalAtomicReplicationMinPow2Concretizer<
-        RAJA::hip::ConstantPreferredReplicationConcretizer<
-          device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
-//
-using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
-    RAJA::hip::multi_reduce_algorithm::init_host_combine_global_atomic,
-    RAJA::hip::SharedAtomicReplicationMaxPow2Concretizer<
-        RAJA::hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
-    RAJA::hip::GlobalAtomicReplicationMinPow2Concretizer<
-        RAJA::hip::ConstantPreferredReplicationConcretizer<
-          device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
-
-// Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
-// same answer every time when used in the same way
-using hip_multi_reduce_atomic = hip_multi_reduce_block_then_grid_atomic_host_init;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -1160,6 +1073,38 @@ struct IndexFlatten<x_index, y_index, z_index>
 
 };
 
+template<size_t divisor, typename indexer>
+struct IndexDivide
+{
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT index()
+  {
+    return indexer::template index<IdxT>() / static_cast<IdxT>(divisor);
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT size()
+  {
+    return RAJA_DIVIDE_CEILING_INT(indexer::template size<IdxT>(), static_cast<IdxT>(divisor));
+  }
+};
+
+template<size_t divisor, typename indexer>
+struct IndexModulo
+{
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT index()
+  {
+    return indexer::template index<IdxT>() % static_cast<IdxT>(divisor);
+  }
+
+  template < typename IdxT = hip_dim_member_t >
+  RAJA_DEVICE static inline IdxT size()
+  {
+    return static_cast<IdxT>(divisor);
+  }
+};
+
 
 // helper to get just the thread indexing part of IndexGlobal
 template < typename index_global >
@@ -1205,6 +1150,13 @@ using thread_y = IndexGlobal<named_dim::y, BLOCK_SIZE, named_usage::ignored>;
 template <size_t BLOCK_SIZE=named_usage::unspecified>
 using thread_z = IndexGlobal<named_dim::z, BLOCK_SIZE, named_usage::ignored>;
 
+template <size_t BLOCK_SIZE_X=named_usage::unspecified,
+          size_t BLOCK_SIZE_Y=named_usage::unspecified,
+          size_t BLOCK_SIZE_Z=named_usage::unspecified>
+using thread_xyz = IndexFlatten<thread_x<BLOCK_SIZE_X>,
+                                thread_y<BLOCK_SIZE_Y>,
+                                thread_z<BLOCK_SIZE_Z>>;
+
 template <size_t GRID_SIZE=named_usage::unspecified>
 using block_x = IndexGlobal<named_dim::x, named_usage::ignored, GRID_SIZE>;
 template <size_t GRID_SIZE=named_usage::unspecified>
@@ -1212,12 +1164,55 @@ using block_y = IndexGlobal<named_dim::y, named_usage::ignored, GRID_SIZE>;
 template <size_t GRID_SIZE=named_usage::unspecified>
 using block_z = IndexGlobal<named_dim::z, named_usage::ignored, GRID_SIZE>;
 
+template <size_t GRID_SIZE_X=named_usage::unspecified,
+          size_t GRID_SIZE_Y=named_usage::unspecified,
+          size_t GRID_SIZE_Z=named_usage::unspecified>
+using block_xyz = IndexFlatten<block_x<GRID_SIZE_X>,
+                               block_y<GRID_SIZE_Y>,
+                               block_z<GRID_SIZE_Z>>;
+
 template <size_t BLOCK_SIZE, size_t GRID_SIZE=named_usage::unspecified>
 using global_x = IndexGlobal<named_dim::x, BLOCK_SIZE, GRID_SIZE>;
 template <size_t BLOCK_SIZE, size_t GRID_SIZE=named_usage::unspecified>
 using global_y = IndexGlobal<named_dim::y, BLOCK_SIZE, GRID_SIZE>;
 template <size_t BLOCK_SIZE, size_t GRID_SIZE=named_usage::unspecified>
 using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
+
+
+template <size_t BLOCK_SIZE_X,
+          size_t BLOCK_SIZE_Y,
+          size_t BLOCK_SIZE_Z,
+          size_t GRID_SIZE_X=named_usage::unspecified,
+          size_t GRID_SIZE_Y=named_usage::unspecified,
+          size_t GRID_SIZE_Z=named_usage::unspecified>
+using global_xyz = IndexFlatten<global_x<BLOCK_SIZE_X, GRID_SIZE_X>,
+                                global_y<BLOCK_SIZE_Y, GRID_SIZE_Y>,
+                                global_z<BLOCK_SIZE_Z, GRID_SIZE_Z>>;
+
+
+template <size_t WARP_SIZE=RAJA::policy::hip::device_constants.WARP_SIZE,
+          size_t BLOCK_SIZE_X=named_usage::unspecified,
+          size_t BLOCK_SIZE_Y=named_usage::unspecified,
+          size_t BLOCK_SIZE_Z=named_usage::unspecified>
+using warp_xyz = IndexDivide<WARP_SIZE,
+                             thread_xyz<BLOCK_SIZE_X,
+                                        BLOCK_SIZE_Y,
+                                        BLOCK_SIZE_Z>>;
+
+template <size_t WARP_SIZE=RAJA::policy::hip::device_constants.WARP_SIZE,
+          size_t BLOCK_SIZE_X=named_usage::unspecified,
+          size_t BLOCK_SIZE_Y=named_usage::unspecified,
+          size_t BLOCK_SIZE_Z=named_usage::unspecified,
+          size_t GRID_SIZE_X=named_usage::unspecified,
+          size_t GRID_SIZE_Y=named_usage::unspecified,
+          size_t GRID_SIZE_Z=named_usage::unspecified>
+using warp_global_xyz = IndexFlatten<warp_xyz<WARP_SIZE,
+                                              BLOCK_SIZE_X,
+                                              BLOCK_SIZE_Y,
+                                              BLOCK_SIZE_Z>,
+                                     block_xyz<GRID_SIZE_X,
+                                               GRID_SIZE_Y,
+                                               GRID_SIZE_Z>>;
 
 } // namespace hip
 
@@ -1328,21 +1323,118 @@ using policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
 using policy::hip::hip_atomic;
 using policy::hip::hip_atomic_explicit;
 
+
 // policies usable with reducers
-using policy::hip::hip_reduce_device_fence;
-using policy::hip::hip_reduce_block_fence;
-using policy::hip::hip_reduce_atomic_device_init_device_fence;
-using policy::hip::hip_reduce_atomic_device_init_block_fence;
-using policy::hip::hip_reduce_atomic_host_init_device_fence;
-using policy::hip::hip_reduce_atomic_host_init_block_fence;
-using policy::hip::hip_reduce_base;
-using policy::hip::hip_reduce;
-using policy::hip::hip_reduce_atomic;
+template < hip::reduce_algorithm algorithm,
+           hip::block_communication_mode comm_mode,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified >
+using hip_reduce_tuning = policy::hip::hip_reduce_policy<
+    hip::ReduceTuning<algorithm, comm_mode, replication, atomic_stride>>;
+
+// Policies for RAJA::Reduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results and falls back
+//   on a non-atomic policy when atomics can't be used with the given type. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run. The memory used with
+//   atomics is initialized on the device which can be expensive on some HW.
+//   On some HW this is faster overall than the non-atomic policies.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+// - *device_fence policies use normal memory accesses with device scope fences
+//                in the implementation. This works on all HW.
+// - *block_fence policies use special (atomic) memory accesses that only cache
+//                 in a cache shared by the whole device to avoid having to use
+//                 device scope fences. This improves performance on some HW but
+//                 is more difficult to code correctly.
+using hip_reduce_device_fence = hip_reduce_tuning<
+    hip::reduce_algorithm::combine_last_block,
+    hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_block_fence = hip_reduce_tuning<
+    hip::reduce_algorithm::combine_last_block,
+    hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_device_init_device_fence = hip_reduce_tuning<
+    hip::reduce_algorithm::init_device_combine_atomic_block,
+    hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_device_init_block_fence = hip_reduce_tuning<
+    hip::reduce_algorithm::init_device_combine_atomic_block,
+    hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_host_init_device_fence = hip_reduce_tuning<
+    hip::reduce_algorithm::init_host_combine_atomic_block,
+    hip::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using hip_reduce_atomic_host_init_block_fence = hip_reduce_tuning<
+    hip::reduce_algorithm::init_host_combine_atomic_block,
+    hip::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+
+// Policy for RAJA::Reduce* objects that gives the same answer every time when
+// used in the same way
+using hip_reduce = hip_reduce_block_fence;
+
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using hip_reduce_atomic = hip_reduce_atomic_host_init_block_fence;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool with_atomic >
+using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_reduce>;
+
 
 // policies usable with multi_reducers
-using policy::hip::hip_multi_reduce_block_then_grid_atomic_host_init;
-using policy::hip::hip_multi_reduce_global_atomic_host_init;
-using policy::hip::hip_multi_reduce_atomic;
+template < hip::multi_reduce_algorithm algorithm,
+           typename SharedAtomicReplicationConcretizer,
+           typename GlobalAtomicReplicationConcretizer >
+using hip_multi_reduce_tuning = policy::hip::hip_multi_reduce_policy<
+    hip::MultiReduceTuning<
+      algorithm,
+      hip::AtomicReplicationTuning<SharedAtomicReplicationConcretizer,
+                                    hip::thread_xyz<>,
+                                    GetOffsetRight<int>>,
+      hip::AtomicReplicationTuning<GlobalAtomicReplicationConcretizer,
+                                    hip::warp_global_xyz<>,
+                                    GetOffsetLeftBunched<0,int>>>>;
+
+// Policies for RAJA::MultiReduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run.
+// - *host_init* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tuning<
+    hip::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
+    hip::SharedAtomicReplicationMaxPow2Concretizer<
+        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
+    hip::GlobalAtomicReplicationMinPow2Concretizer<
+        hip::ConstantPreferredReplicationConcretizer<
+          RAJA::policy::hip::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+//
+using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
+    hip::multi_reduce_algorithm::init_host_combine_global_atomic,
+    hip::SharedAtomicReplicationMaxPow2Concretizer<
+        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
+    hip::GlobalAtomicReplicationMinPow2Concretizer<
+        hip::ConstantPreferredReplicationConcretizer<
+          RAJA::policy::hip::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+
+// Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using hip_multi_reduce_atomic = hip_multi_reduce_block_then_grid_atomic_host_init;
+
 
 // policies usable with kernel
 using policy::hip::hip_block_reduce;

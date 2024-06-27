@@ -73,7 +73,8 @@ namespace impl
 //
 
 //! combine value into global memory
-template <typename Combiner, typename T, typename GetTallyOffset>
+template <typename Combiner, typename GetTallyIndex,
+          typename T, typename GetTallyOffset>
 RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_global_atomic(int RAJA_UNUSED_ARG(num_bins),
                                                                       T identity,
                                                                       int bin,
@@ -85,16 +86,8 @@ RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_global_atomic(int RAJA_U
 {
   if (value == identity) { return; }
 
-  int blockId = blockIdx.x + gridDim.x * blockIdx.y +
-                 (gridDim.x * gridDim.y) * blockIdx.z;
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-                 (blockDim.x * blockDim.y) * threadIdx.z;
-  int numThreads = blockDim.x * blockDim.y * blockDim.z;
-  int warpId = threadId / policy::cuda::device_constants.WARP_SIZE;
-  int numWarps = RAJA_DIVIDE_CEILING_INT(numThreads, policy::cuda::device_constants.WARP_SIZE);
-  int globalWarpId = warpId + numWarps * blockId;
-
-  int tally_rep = ::RAJA::power_of_2_mod(globalWarpId, tally_replication);
+  int tally_index = GetTallyIndex::template index<int>(); // globalWarpId by default
+  int tally_rep = ::RAJA::power_of_2_mod(tally_index, tally_replication);
   int tally_offset = get_tally_offset(bin, tally_bins, tally_rep, tally_replication);
   RAJA::reduce::cuda::atomic<Combiner>{}(tally_mem[tally_offset], value);
 }
@@ -120,7 +113,8 @@ RAJA_DEVICE RAJA_INLINE void block_multi_reduce_init_shmem(int num_bins,
 }
 
 //! combine value into shared memory
-template <typename Combiner, typename T, typename GetSharedOffset>
+template <typename Combiner, typename GetSharedIndex,
+          typename T, typename GetSharedOffset>
 RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_shmem_atomic(int num_bins,
                                                                      T identity,
                                                                      int bin,
@@ -131,17 +125,16 @@ RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_shmem_atomic(int num_bin
 {
   if (value == identity) { return; }
 
-  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
-                 (blockDim.x * blockDim.y) * threadIdx.z;
-
-  int shared_rep = ::RAJA::power_of_2_mod(threadId, shared_replication);
+  int shared_index = GetSharedIndex::template index<int>(); // threadId by default
+  int shared_rep = ::RAJA::power_of_2_mod(shared_index, shared_replication);
   int shmem_offset = get_shared_offset(bin, num_bins, shared_rep, shared_replication);
 
   RAJA::reduce::cuda::atomic<Combiner>{}(shared_mem[shmem_offset], value);
 }
 
 //! combine value into shared memory
-template <typename Combiner, typename T, typename GetSharedOffset, typename GetTallyOffset>
+template <typename Combiner,
+          typename T, typename GetSharedOffset, typename GetTallyOffset>
 RAJA_DEVICE RAJA_INLINE void grid_multi_reduce_shmem_to_global_atomic(int num_bins,
                                                                       T identity,
                                                                       T* shared_mem,
@@ -265,13 +258,16 @@ struct MultiReduceGridAtomicHostInit_TallyData
   T identity() const { return m_identity; }
 
 private:
-  using tally_mempool_type = device_pinned_mempool_type;
-
-  using TallyAtomicReplicationConcretizer = typename tuning::GlobalAtomicReplicationConcretizer;
-
   static constexpr size_t s_tally_alignment = std::max(size_t(policy::cuda::device_constants.ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE),
                                                        size_t(RAJA::DATA_ALIGN));
   static constexpr size_t s_tally_bunch_size = RAJA_DIVIDE_CEILING_INT(s_tally_alignment, sizeof(T));
+
+  using tally_mempool_type = device_pinned_mempool_type;
+  using tally_tuning = typename tuning::GlobalAtomicReplicationTuning;
+  using TallyAtomicReplicationConcretizer = typename tally_tuning::AtomicReplicationConcretizer;
+  using GetTallyOffset_rebind_rebunch = typename tally_tuning::OffsetCalculator;
+  using GetTallyOffset_rebind = typename GetTallyOffset_rebind_rebunch::template rebunch<s_tally_bunch_size>;
+
 
   static int get_tally_bins(int num_bins)
   {
@@ -342,7 +338,8 @@ private:
   }
 
 protected:
-  using GetTallyOffset = GetOffsetLeftBunched<s_tally_bunch_size, int>;
+  using GetTallyIndex = typename tally_tuning::ReplicationIndexer;
+  using GetTallyOffset = typename GetTallyOffset_rebind::template rebind<int>;
 
   T* m_tally_mem;
   T m_identity;
@@ -391,7 +388,7 @@ struct MultiReduceGridAtomicHostInit_Data
   RAJA_DEVICE
   void combine_device(int bin, T value)
   {
-    impl::block_multi_reduce_combine_global_atomic<Combiner>(
+    impl::block_multi_reduce_combine_global_atomic<Combiner, GetTallyIndex>(
         m_num_bins, m_identity,
         bin, value,
         m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
@@ -409,6 +406,7 @@ struct MultiReduceGridAtomicHostInit_Data
   }
 
 private:
+  using typename TallyData::GetTallyIndex;
   using typename TallyData::GetTallyOffset;
 
   using TallyData::m_tally_mem;
@@ -519,12 +517,12 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   {
     T* shared_mem = get_shared_mem();
     if (shared_mem != nullptr) {
-      impl::block_multi_reduce_combine_shmem_atomic<Combiner>(
+      impl::block_multi_reduce_combine_shmem_atomic<Combiner, GetSharedIndex>(
           m_num_bins, m_identity,
           bin, value,
           shared_mem, GetSharedOffset{}, m_shared_replication);
     } else {
-      impl::block_multi_reduce_combine_global_atomic<Combiner>(
+      impl::block_multi_reduce_combine_global_atomic<Combiner, GetTallyIndex>(
           m_num_bins, m_identity,
           bin, value,
           m_tally_mem, GetTallyOffset{}, m_tally_replication, m_tally_bins);
@@ -543,9 +541,13 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
   }
 
 private:
-  using SharedAtomicReplicationConcretizer = typename tuning::SharedAtomicReplicationConcretizer;
+  using shared_tuning = typename tuning::SharedAtomicReplicationTuning;
+  using SharedAtomicReplicationConcretizer = typename shared_tuning::AtomicReplicationConcretizer;
+  using GetSharedIndex = typename shared_tuning::ReplicationIndexer;
+  using GetSharedOffset_rebind = typename shared_tuning::OffsetCalculator;
+  using GetSharedOffset = typename GetSharedOffset_rebind::template rebind<int>;
 
-  using GetSharedOffset = GetOffsetRight<int>;
+  using typename TallyData::GetTallyIndex;
   using typename TallyData::GetTallyOffset;
 
 
