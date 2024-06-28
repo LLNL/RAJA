@@ -1333,16 +1333,18 @@ using hip_reduce_tuning = policy::hip::hip_reduce_policy<
     hip::ReduceTuning<algorithm, comm_mode, replication, atomic_stride>>;
 
 // Policies for RAJA::Reduce* objects with specific behaviors.
-// - *atomic* policies may use atomics to combine partial results and falls back
-//   on a non-atomic policy when atomics can't be used with the given type. The
+// - non-atomic policies store partial results and combine them in the same
+//   order every time, leading to consistent results for a loop run to run.
+// - *atomic* policies may use atomics to combine partial results. The
 //   use of atomics leads to order of operation differences which change the
-//   results of floating point sum reductions run to run. The memory used with
-//   atomics is initialized on the device which can be expensive on some HW.
-//   On some HW this is faster overall than the non-atomic policies.
+//   results of floating point sum reductions for a loop run to run. Falls back
+//   on a non-atomic implementation if atomics can't be used with the given
+//   type. The memory used with atomics is initialized on the device using
+//   atomics which adds overhead.
 // - *atomic_host* policies are similar to the atomic policies above. However
-//   the memory used with atomics is initialized on the host which is
-//   significantly cheaper on some HW. On some HW this is faster overall than
-//   the non-atomic and atomic policies.
+//   the memory used with atomics is initialized on the host. This is faster
+//   overall than other policies on HW with direct host access to device memory
+//   such as the AMD MI300A El Capitan/Tuolumne systems.
 // - *device_fence policies use normal memory accesses with device scope fences
 //                in the implementation. This works on all HW.
 // - *block_fence policies use special (atomic) memory accesses that only cache
@@ -1410,11 +1412,14 @@ using hip_multi_reduce_tuning = policy::hip::hip_multi_reduce_policy<
 // Policies for RAJA::MultiReduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results. The
 //   use of atomics leads to order of operation differences which change the
-//   results of floating point sum reductions run to run.
-// - *host_init* policies are similar to the atomic policies above. However
-//   the memory used with atomics is initialized on the host which is
-//   significantly cheaper on some HW. On some HW this is faster overall than
-//   the non-atomic and atomic policies.
+//   results of floating point sum reductions for a loop run to run.
+// - *no_replication* policies use the minimum amount of resources. The
+//   lack of resources means they may perform poorly. These policies are
+//   intended for use cases where low overhead is more important than high
+//   performance such as error flags that are rarely set.
+// - *host_init* policies initialize memory used with atomics on the host.
+//   This is faster overall than other policies on HW with direct host access
+//   to device memory such as the AMD MI300A El Capitan/Tuolumne systems.
 using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
     hip::SharedAtomicReplicationMaxPow2Concretizer<
@@ -1425,15 +1430,23 @@ using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tunin
 //
 using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
-    hip::SharedAtomicReplicationMaxPow2Concretizer<
-        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
+    void,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<
           RAJA::policy::hip::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+//
+using hip_multi_reduce_global_atomic_no_replication_host_init = hip_multi_reduce_tuning<
+    hip::multi_reduce_algorithm::init_host_combine_global_atomic,
+    void,
+    hip::GlobalAtomicReplicationMinPow2Concretizer<
+        hip::ConstantPreferredReplicationConcretizer<1>>>;
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
 using hip_multi_reduce_atomic = hip_multi_reduce_block_then_grid_atomic_host_init;
+// Similar to above but optimized for low overhead in cases where it is rarely used
+using hip_multi_reduce_atomic_low_performance_low_overhead =
+    hip_multi_reduce_global_atomic_no_replication_host_init;
 
 
 // policies usable with kernel
