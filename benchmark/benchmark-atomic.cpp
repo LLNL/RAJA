@@ -8,7 +8,7 @@
 // of RAJA's atomic implementations with Desul's atomic implementations.  In order
 // to accomplish this without requiring two separate build system configurations
 // this file directly includes "desul/atomics.hpp" and directly calls desul namespace
-// atomics.  This is different from how a typical RAJA user would call a desul atomic/
+// atomics.  This is different from how a typical RAJA user would call a desul atomic.
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/for_each.hpp"
@@ -114,7 +114,7 @@ DECLARE_ATOMIC_WRAPPER(AtomicXor, atomicXor)
 
 /// ExecPolicy wrapper for OpenMP
 struct ExecPolicyOMP {
-    using policy = RAJA::omp_for_exec;
+    using policy = RAJA::omp_parallel_for_exec;;
     static std::string PolicyName() {
         std::stringstream ss;
         ss << "OpenMP execution";
@@ -198,6 +198,7 @@ struct atomic_ops {
                                                 std::pair<atomicWrapperDesul<AtomicDataType, desul::atomic_fetch_sub>, AtomicSub<Policy>>,
                                                 std::pair<atomicWrapperDesul<AtomicDataType, desul::atomic_fetch_min>, AtomicMin<Policy>>,
                                                 std::pair<atomicWrapperDesul<AtomicDataType, desul::atomic_fetch_max>, AtomicMax<Policy>>,
+                                                // These two operations are unary and require some retooling to measure using the same testing loop.
                                                 //std::pair<atomicWrapperDesul<AtomicDataType, desul::atomic_fetch_inc>, AtomicInc<Policy>>,
                                                 //std::pair<atomicWrapperDesul<AtomicDataType, desul::atomic_fetch_dec>, AtomicDec<Policy>>,
                                                 std::pair<atomicWrapperDesul<AtomicDataType, desul::atomic_fetch_and>, AtomicAnd<Policy>>,
@@ -213,7 +214,6 @@ int main (int argc, char* argv[]) {
     if (argc == 2) {
         N = std::stoi(argv[1]);
     }
-
 
     // Perform an untimed initialization of both desul and RAJA atomics.
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
@@ -238,9 +238,18 @@ int main (int argc, char* argv[]) {
 
     // OpenMP benchmarks
     std::cout << "Executing OpenMP benchmarks" << std::endl;
-    std::cout << INDENT << "Executing atomic add benchmarks" << std::endl;
-    TimeAtomicOp<ExecPolicyOMP, int, false>(AtomicAdd<RAJA::policy::omp::omp_atomic> {}, N, 1);
-    TimeAtomicOp<ExecPolicyOMP, int, false>(atomicWrapperDesul<int, desul::atomic_fetch_add> {}, N, 1);
+    RAJA::for_each_type(atomic_ops<int, RAJA::policy::omp::omp_atomic>::type{}, [&](auto type_pair) {
+        auto desul_functor = type_pair.first;
+        auto raja_functor = type_pair.second;
+        std::cout << INDENT << "Executing " << raja_functor.name << " integer benchmarks" << std::endl;
+        TimeAtomicOp<ExecPolicyOMP, int, true>(desul_functor, N, 100, 10000);
+        TimeAtomicOp<ExecPolicyOMP, int, true>(raja_functor, N, 100, 10000);
+        TimeAtomicOp<ExecPolicyOMP, int, true>(desul_functor, N, 10, 1000);
+        TimeAtomicOp<ExecPolicyOMP, int, true>(raja_functor, N, 10, 1000);
+        TimeAtomicOp<ExecPolicyOMP, int, true>(desul_functor, N, 4, 10);
+        TimeAtomicOp<ExecPolicyOMP, int, true>(raja_functor, N, 4, 10);
+    });
+
 
     return 0;
 }
