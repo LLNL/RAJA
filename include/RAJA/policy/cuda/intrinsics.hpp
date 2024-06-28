@@ -418,7 +418,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   if (numThreads > policy::cuda::device_constants.WARP_SIZE) {
 
     static_assert(policy::cuda::device_constants.MAX_WARPS <= policy::cuda::device_constants.WARP_SIZE,
-        "Max Warps must be less than or equal to Warp Size for this algorithm to work");
+        "This algorithms assumes a warp of WARP_SIZE threads can reduce MAX_WARPS values");
 
     // Need to separate declaration and initialization for clang-cuda
     __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::cuda::device_constants.MAX_WARPS>)];
