@@ -46,10 +46,10 @@ gcc_8_3_1_cuda_11_5_0_ats_disabled:
     MODULE_LIST: "cuda/11.5.0"
     LASSEN_JOB_ALLOC: "1 --atsdisable -W 30 -q pci"
 
-clang_16_0_6_gcc_8_3_1_openmp_target:
+clang_16_0_6_ibm_gcc_8_3_1_openmp_target:
   extends: .job_on_lassen
   variables:
-    SPEC: " ~shared +openmp +tests %clang@=16.0.6.gcc.8.3.1 cuda_arch=70 cxxflags==\"-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda\" ^blt@develop"
+    SPEC: " ~shared +openmp +tests %clang@=16.0.6.ibm.gcc.8.3.1 cuda_arch=70 cxxflags==\"-fopenmp;-fopenmp-targets=nvptx64-nvidia-cuda\" ^blt@develop"
     MODULE_LIST: "cuda/11.2.0"
   allow_failure: true
 
