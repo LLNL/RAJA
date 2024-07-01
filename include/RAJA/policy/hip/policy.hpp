@@ -308,19 +308,14 @@ struct DeviceConstants
   RAJA::Index_type MAX_BLOCK_SIZE;
   RAJA::Index_type MAX_WARPS;
   RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE; // basically the cache line size of the cache level that handles atomics
-  RAJA::Index_type ATOMIC_MAX_CONCURRENT_SIZE;
-  RAJA::Index_type ATOMIC_MAX_CONCURRENT_CACHE_LINES;
 
   constexpr DeviceConstants(RAJA::Index_type warp_size,
                             RAJA::Index_type max_block_size,
-                            RAJA::Index_type atomic_cache_line_bytes,
-                            RAJA::Index_type atomic_max_concurrency_bytes) noexcept
+                            RAJA::Index_type atomic_cache_line_bytes) noexcept
     : WARP_SIZE(warp_size)
     , MAX_BLOCK_SIZE(max_block_size)
     , MAX_WARPS(max_block_size / warp_size)
     , ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE(atomic_cache_line_bytes)
-    , ATOMIC_MAX_CONCURRENT_SIZE(atomic_max_concurrency_bytes)
-    , ATOMIC_MAX_CONCURRENT_CACHE_LINES(atomic_max_concurrency_bytes / atomic_cache_line_bytes)
   { }
 };
 
@@ -329,11 +324,10 @@ struct DeviceConstants
 // values for HIP warp size and max block size.
 //
 #if defined(__HIP_PLATFORM_AMD__)
-constexpr DeviceConstants device_constants(64, 1024, 64, 32'768); // MI300A
-// constexpr DeviceConstants device_constants(64, 1024, 128, 8'192); // MI250X
+constexpr DeviceConstants device_constants(64, 1024, 64); // MI300A
+// constexpr DeviceConstants device_constants(64, 1024, 128); // MI250X
 #elif defined(__HIP_PLATFORM_NVIDIA__)
-// constexpr DeviceConstants device_constants(32, 1024, 32, 65'536); // V100
-constexpr DeviceConstants device_constants(32, 1024, 32, 1024); // V100
+constexpr DeviceConstants device_constants(32, 1024, 32); // V100
 #endif
 static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
               "RAJA Assumption Broken: device_constants.WARP_SIZE < device_constants.MAX_WARPS");
