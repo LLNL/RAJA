@@ -1423,17 +1423,15 @@ using hip_multi_reduce_tuning = policy::hip::hip_multi_reduce_policy<
 using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
     hip::SharedAtomicReplicationMaxPow2Concretizer<
-        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 4, 8>>,
+        hip::ConstantPreferredReplicationConcretizer<4>>,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ConstantPreferredReplicationConcretizer<
-          RAJA::policy::hip::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 32, 16>>>;
 //
 using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ConstantPreferredReplicationConcretizer<
-          RAJA::policy::hip::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 32, 16>>>;
 //
 using hip_multi_reduce_global_atomic_no_replication_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,

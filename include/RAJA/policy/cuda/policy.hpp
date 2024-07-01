@@ -1515,17 +1515,15 @@ using cuda_multi_reduce_tuning = policy::cuda::cuda_multi_reduce_policy<
 using cuda_multi_reduce_block_then_grid_atomic_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
     cuda::SharedAtomicReplicationMaxPow2Concretizer<
-        cuda::ConstantPreferredReplicationConcretizer<1>>, // TODO: tune
+        cuda::ConstantPreferredReplicationConcretizer<16>>,
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
-        cuda::ConstantPreferredReplicationConcretizer<
-          RAJA::policy::cuda::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+        cuda::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 2, 1>>>;
 //
 using cuda_multi_reduce_global_atomic_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
-        cuda::ConstantPreferredReplicationConcretizer<
-          RAJA::policy::cuda::device_constants.ATOMIC_MAX_CONCURRENT_CACHE_LINES>>>;
+        cuda::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 2, 1>>>;
 //
 using cuda_multi_reduce_global_atomic_no_replication_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
