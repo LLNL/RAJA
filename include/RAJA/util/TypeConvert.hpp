@@ -26,6 +26,8 @@
 
 #include "RAJA/util/macros.hpp"
 
+#include <string.h>
+
 
 namespace RAJA
 {
@@ -42,7 +44,7 @@ RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const &a)
   static_assert(sizeof(A) == sizeof(B), "A and B must be the same size");
 
   B b;
-  std::memcpy(&b, &a, sizeof(A));
+  memcpy(&b, &a, sizeof(A));
   return b;
 }
 
