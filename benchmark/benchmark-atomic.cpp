@@ -224,6 +224,24 @@ struct atomic_ops {
                                                 std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_xor>, AtomicXor<Policy>>>;
 };
 
+template<typename AtomicDataType, typename AtomicPolicy, typename ExecPolicy>
+void ExecuteBenchmark(uint64_t N) {
+    using ops = atomic_ops<AtomicDataType, AtomicPolicy>;
+    using iter_t = typename ops::type;
+    auto iter = iter_t{};
+    RAJA::for_each_type(iter, [&](auto type_pair) {
+        auto desul_functor = type_pair.first;
+        auto raja_functor = type_pair.second;
+        std::cout << INDENT << "Executing " << raja_functor.name << " integer benchmarks" << std::endl;
+        TimeAtomicOp<ExecPolicy, AtomicDataType, true>(desul_functor, N, 100, 10000);
+        TimeAtomicOp<ExecPolicy, AtomicDataType, true>(raja_functor, N, 100, 10000);
+        TimeAtomicOp<ExecPolicy, AtomicDataType, true>(desul_functor, N, 10, 1000);
+        TimeAtomicOp<ExecPolicy, AtomicDataType, true>(raja_functor, N, 10, 1000);
+        TimeAtomicOp<ExecPolicy, AtomicDataType, true>(desul_functor, N, 4, 10);
+        TimeAtomicOp<ExecPolicy, AtomicDataType, true>(raja_functor, N, 4, 10);
+    });
+}
+
 int main (int argc, char* argv[]) {
     if (argc > 2) {
         RAJA_ABORT_OR_THROW("Usage: ./benchmark-atomic.exe <N> where N is the optional size of the benchmark loop");
@@ -238,17 +256,7 @@ int main (int argc, char* argv[]) {
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
     // GPU benchmarks
     std::cout << "Executing GPU benchmarks" << std::endl;
-    RAJA::for_each_type(atomic_ops<int, typename GPUAtomic::policy>::type{}, [&](auto type_pair) {
-        auto desul_functor = type_pair.first;
-        auto raja_functor = type_pair.second;
-        std::cout << INDENT << "Executing " << raja_functor.name << " integer benchmarks" << std::endl;
-        TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(desul_functor, N, 100, 10000);
-        TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(raja_functor, N, 100, 10000);
-        TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(desul_functor, N, 10, 1000);
-        TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(raja_functor, N, 10, 1000);
-        TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(desul_functor, N, 4, 10);
-        TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(raja_functor, N, 4, 10);
-    });
+    ExecuteBenchmark<int, typename GPUAtomic::policy, ExecPolicyGPU<BLOCK_SZ>>(N);
     std::cout << INDENT << "Executing atomic add double benchmarks" << std::endl;
 
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, double, false>(AtomicAdd<typename GPUAtomic::policy> {}, N);
@@ -256,18 +264,7 @@ int main (int argc, char* argv[]) {
 
     // OpenMP benchmarks
     std::cout << "Executing OpenMP benchmarks" << std::endl;
-    RAJA::for_each_type(atomic_ops<int, RAJA::policy::omp::omp_atomic>::type{}, [&](auto type_pair) {
-        auto desul_functor = type_pair.first;
-        auto raja_functor = type_pair.second;
-        std::cout << INDENT << "Executing " << raja_functor.name << " integer benchmarks" << std::endl;
-        TimeAtomicOp<ExecPolicyOMP, int, true>(desul_functor, N, 100, 10000);
-        TimeAtomicOp<ExecPolicyOMP, int, true>(raja_functor, N, 100, 10000);
-        TimeAtomicOp<ExecPolicyOMP, int, true>(desul_functor, N, 10, 1000);
-        TimeAtomicOp<ExecPolicyOMP, int, true>(raja_functor, N, 10, 1000);
-        TimeAtomicOp<ExecPolicyOMP, int, true>(desul_functor, N, 4, 10);
-        TimeAtomicOp<ExecPolicyOMP, int, true>(raja_functor, N, 4, 10);
-    });
-
+    ExecuteBenchmark<int, typename RAJA::policy::omp::omp_atomic, ExecPolicyOMP>(N);
 
     return 0;
 }
