@@ -11,6 +11,10 @@
 set(TESTTYPES ForICount TileTCount)
 set(TILESIZES 8 32)
 
+if(RAJA_ENABLE_TARGET_OPENMP)
+  list(REMOVE_ITEM TESTTYPES ForICount)
+endif()
+
 #
 # Generate tests for each enabled RAJA back-end. 
 # 
