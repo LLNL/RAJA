@@ -209,7 +209,11 @@ struct BaseMultiReduce
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  void combine(size_t bin, value_type const &other) const { data.combine(bin, other); }
+  BaseMultiReduce const& combine(size_t bin, value_type const &other) const
+  {
+    data.combine(bin, other);
+    return *this;
+  }
 
   //! Get the calculated reduced value for a bin
   value_type get(size_t bin) const { return data.get(bin); }
