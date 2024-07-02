@@ -283,7 +283,7 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::WARP_SIZE,
+  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::device_constants.WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
 
   static
@@ -312,7 +312,7 @@ struct CudaStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    const diff_t len = RAJA::policy::cuda::WARP_SIZE;
+    const diff_t len = RAJA::policy::cuda::device_constants.WARP_SIZE;
 
     // request one thread per element in the segment
     set_cuda_dim<named_dim::x>(dims.dims.threads, len);
@@ -352,7 +352,7 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::WARP_SIZE,
+  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::device_constants.WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
 
   static
@@ -391,7 +391,7 @@ struct CudaStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    const diff_t len = RAJA::policy::cuda::WARP_SIZE;
+    const diff_t len = RAJA::policy::cuda::device_constants.WARP_SIZE;
 
     // request one thread per element in the segment
     set_cuda_dim<named_dim::x>(dims.dims.threads, len);

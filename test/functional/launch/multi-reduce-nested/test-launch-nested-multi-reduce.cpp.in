@@ -1,0 +1,58 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-launch-direct-teams-threads-3D-execpol.hpp"
+#include "RAJA_test-multi-reducepol.hpp"
+#include "RAJA_test-multi-reduce-abstractor.hpp"
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-launch-nested-MultiReduce.hpp"
+
+//
+// Data types for core reduction nested tests
+//
+using ReductionDataTypeList = camp::list< int,
+                                          float,
+                                          double >;
+
+
+//
+// These tests exercise only one index type. We parameterize here to 
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@LaunchMultiReduceNestedTypes =
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                ReductionDataTypeList,
+                                @BACKEND@ResourceList,
+                                @BACKEND@_launch_policies,
+                                @BACKEND@MultiReducePols,
+                                Reduce@REDUCETYPE@Abstractors>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               LaunchMultiReduceNestedTest,
+                               @BACKEND@LaunchMultiReduceNestedTypes);

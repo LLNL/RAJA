@@ -37,6 +37,8 @@ add_subdirectory(reduce-basic)
 add_subdirectory(reduce-multiple-segment)
 add_subdirectory(reduce-multiple-indexset)
 
+add_subdirectory(multi-reduce-basic)
+
 add_subdirectory(resource-indexset)
 add_subdirectory(resource-segment)
 

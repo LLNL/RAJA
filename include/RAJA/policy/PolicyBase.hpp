@@ -42,6 +42,7 @@ enum class Pattern {
   forall,
   region,
   reduce,
+  multi_reduce,
   taskgraph,
   synchronize,
   workgroup,
@@ -110,6 +111,25 @@ struct platform_is
     : camp::num<platform_of<camp::decay<PolicyType>>::value == P_> {
 };
 
+template <typename PolicyType, typename Trait>
+struct policy_has_trait_impl
+    : camp::num<false> {
+};
+///
+template <typename Trait, Policy Policy_,
+                          Pattern Pattern_,
+                          Launch Launch_,
+                          Platform Platform_,
+                          typename... Traits>
+struct policy_has_trait_impl<
+      PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Traits...>, Trait>
+    : camp::num<camp::concepts::any_of<std::is_same<Trait, Traits>...>::value> {
+};
+///
+template <typename PolicyType, typename Trait>
+using policy_has_trait = policy_has_trait_impl<camp::decay<PolicyType>, Trait>;
+
+
 template <typename Inner>
 struct wrapper {
   using inner = Inner;
@@ -119,6 +139,9 @@ namespace reduce
 {
 
 struct ordered {
+};
+
+struct unordered {
 };
 
 }  // namespace reduce
@@ -200,6 +223,15 @@ struct is_device_exec_policy
 
 DefineTypeTraitFromConcept(is_execution_policy,
                            RAJA::concepts::ExecutionPolicy);
+
+
+template <typename Pol>
+struct is_reduce_policy : RAJA::pattern_is<Pol, RAJA::Pattern::reduce> {
+};
+
+template <typename Pol>
+struct is_multi_reduce_policy : RAJA::pattern_is<Pol, RAJA::Pattern::multi_reduce> {
+};
 
 }  // end namespace type_traits
 

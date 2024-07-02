@@ -165,6 +165,7 @@
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
+#include "RAJA/pattern/multi_reduce.hpp"
 
 
 //

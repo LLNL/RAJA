@@ -29,6 +29,7 @@
 #include "RAJA/policy/sycl/forall.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sycl/reduce.hpp"
+//#include "RAJA/policy/sycl/multi_reduce.hpp"
 //#include "RAJA/policy/sycl/scan.hpp"
 //#include "RAJA/policy/sycl/sort.hpp"
 #include "RAJA/policy/sycl/kernel.hpp"

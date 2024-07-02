@@ -1,0 +1,123 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-kernel-nested-loop-types.hpp"
+#include "RAJA_test-multi-reducepol.hpp"
+#include "RAJA_test-multi-reduce-abstractor.hpp"
+
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-kernel-nested-MultiReduce.hpp"
+
+//
+// Data types for core reduction nested tests
+//
+using ReductionDataTypeList = camp::list< int,
+                                          float,
+                                          double >;
+
+
+//
+// These tests exercise only one index type. We parameterize here to 
+// make it easier to expand types in the future if needed.
+//
+using TestIdxTypeList = camp::list< RAJA::Index_type >;
+
+
+using SequentialKernelNestedLoopExecPols = camp::list<
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::seq_exec,  RAJA::seq_exec, RAJA::seq_exec >
+  >;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPKernelNestedLoopExecPols = camp::list<
+
+    // Collapse Exec Pols
+    NestedLoopData<DEPTH_3_COLLAPSE, RAJA::omp_parallel_collapse_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_OPENMP
+
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+using OpenMPTargetKernelNestedLoopExecPols = camp::list<
+
+    // Collapse Exec Pols
+    NestedLoopData<DEPTH_3_COLLAPSE, RAJA::omp_target_parallel_collapse_exec >,
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEPTH_3, RAJA::seq_exec,  RAJA::omp_target_parallel_for_exec<16>, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_TARGET_OPENMP
+
+
+#if defined(RAJA_ENABLE_CUDA)
+using CudaKernelNestedLoopExecPols = camp::list<
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::cuda_global_size_x_loop<16>, RAJA::cuda_global_size_y_direct<16>, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+
+using HipKernelNestedLoopExecPols = camp::list<
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::hip_global_size_x_loop<32>, RAJA::hip_global_size_y_direct<8>, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_HIP
+
+#if defined(RAJA_ENABLE_SYCL)
+
+using SyclKernelNestedLoopExecPols = camp::list<
+
+    // Depth 3 Exec Pols
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::sycl_local_0_loop, RAJA::sycl_local_1_loop, RAJA::seq_exec >,
+    NestedLoopData<DEVICE_DEPTH_3, RAJA::sycl_group_0_loop, RAJA::sycl_local_1_loop, RAJA::seq_exec >
+  >;
+
+#endif  // RAJA_ENABLE_SYCL
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@KernelMultiReduceNestedTypes =
+  Test< camp::cartesian_product<TestIdxTypeList,
+                                ReductionDataTypeList,
+                                @BACKEND@ResourceList,
+                                @BACKEND@KernelNestedLoopExecPols,
+                                @BACKEND@MultiReducePols,
+                                Reduce@REDUCETYPE@Abstractors>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               KernelMultiReduceNestedTest,
+                               @BACKEND@KernelMultiReduceNestedTypes);

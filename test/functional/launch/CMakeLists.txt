@@ -26,6 +26,8 @@ endif()
 add_subdirectory(run-time-switch)
 
 #Adapted from forall test
+add_subdirectory(multi-reduce-nested)
+
 add_subdirectory(reduce-basic)
 
 add_subdirectory(reduce-params)

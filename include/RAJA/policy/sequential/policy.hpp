@@ -22,6 +22,24 @@
 
 namespace RAJA
 {
+namespace sequential
+{
+
+enum struct multi_reduce_algorithm : int
+{
+  left_fold
+};
+
+template < multi_reduce_algorithm t_multi_algorithm >
+struct MultiReduceTuning
+{
+  static constexpr multi_reduce_algorithm algorithm = t_multi_algorithm;
+  static constexpr bool consistent =
+      (algorithm == multi_reduce_algorithm::left_fold);
+};
+
+} // namspace sequential
+
 namespace policy
 {
 namespace sequential
@@ -79,9 +97,21 @@ struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
 ///////////////////////////////////////////////////////////////////////
 ///
 struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                          Pattern::forall,
+                                                          Pattern::reduce,
                                                           Launch::undefined,
                                                           Platform::host> {
+};
+
+///
+template < typename tuning >
+struct seq_multi_reduce_policy
+    : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                            Pattern::multi_reduce,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            std::conditional_t<tuning::consistent,
+                                                               reduce::ordered,
+                                                               reduce::unordered>> {
 };
 
 ///
@@ -94,12 +124,27 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
 struct seq_atomic {
 };
 
+
+template < RAJA::sequential::multi_reduce_algorithm algorithm >
+using seq_multi_reduce_tuning = seq_multi_reduce_policy<
+    RAJA::sequential::MultiReduceTuning<algorithm> >;
+
+// Policies for RAJA::MultiReduce* objects with specific behaviors.
+// - left_fold policies combine new values into a single value.
+using seq_multi_reduce_left_fold = seq_multi_reduce_tuning<
+    RAJA::sequential::multi_reduce_algorithm::left_fold>;
+
+// Policy for RAJA::MultiReduce* objects that gives the
+// same answer every time when used in the same way
+using seq_multi_reduce = seq_multi_reduce_left_fold;
+
 }  // namespace sequential
 }  // namespace policy
 
 using policy::sequential::seq_atomic;
 using policy::sequential::seq_exec;
 using policy::sequential::seq_reduce;
+using policy::sequential::seq_multi_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_work;
