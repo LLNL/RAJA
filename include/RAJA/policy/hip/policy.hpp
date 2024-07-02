@@ -270,7 +270,7 @@ struct ReduceTuning
 
 enum struct multi_reduce_algorithm : int
 {
-  init_host_combine_block_then_grid_atomic,
+  init_host_combine_block_atomic_then_grid_atomic,
   init_host_combine_global_atomic
 };
 
@@ -1414,20 +1414,20 @@ using hip_multi_reduce_tuning = policy::hip::hip_multi_reduce_policy<
 // - *host_init* policies initialize memory used with atomics on the host.
 //   This is faster overall than other policies on HW with direct host access
 //   to device memory such as the AMD MI300A El Capitan/Tuolumne systems.
-using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tuning<
-    hip::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
+using hip_multi_reduce_atomic_block_then_atomic_grid_host_init = hip_multi_reduce_tuning<
+    hip::multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic,
     hip::SharedAtomicReplicationMaxPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<4>>,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<32>>>;
 //
-using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
+using hip_multi_reduce_atomic_global_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<32>>>;
 //
-using hip_multi_reduce_global_atomic_no_replication_host_init = hip_multi_reduce_tuning<
+using hip_multi_reduce_atomic_global_no_replication_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
@@ -1435,10 +1435,10 @@ using hip_multi_reduce_global_atomic_no_replication_host_init = hip_multi_reduce
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
-using hip_multi_reduce_atomic = hip_multi_reduce_block_then_grid_atomic_host_init;
+using hip_multi_reduce_atomic = hip_multi_reduce_atomic_block_then_atomic_grid_host_init;
 // Similar to above but optimized for low overhead in cases where it is rarely used
 using hip_multi_reduce_atomic_low_performance_low_overhead =
-    hip_multi_reduce_global_atomic_no_replication_host_init;
+    hip_multi_reduce_atomic_global_no_replication_host_init;
 
 
 // policies usable with kernel

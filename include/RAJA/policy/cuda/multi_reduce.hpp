@@ -603,7 +603,7 @@ struct MultiReduceDataCuda
   //! cuda reduction data storage class and folding algorithm
   using reduce_data_type =
       std::conditional_t<(atomic_available),
-        std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_block_then_grid_atomic),
+        std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic),
           cuda::MultiReduceBlockThenGridAtomicHostInit_Data<t_MultiReduceOp, T, tuning>,
           std::conditional_t<(tuning::algorithm == multi_reduce_algorithm::init_host_combine_global_atomic),
             cuda::MultiReduceGridAtomicHostInit_Data<t_MultiReduceOp, T, tuning>,

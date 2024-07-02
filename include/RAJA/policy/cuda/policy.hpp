@@ -275,7 +275,7 @@ struct ReduceTuning
 
 enum struct multi_reduce_algorithm : int
 {
-  init_host_combine_block_then_grid_atomic,
+  init_host_combine_block_atomic_then_grid_atomic,
   init_host_combine_global_atomic
 };
 
@@ -1506,20 +1506,20 @@ using cuda_multi_reduce_tuning = policy::cuda::cuda_multi_reduce_policy<
 //   This is faster overall than other policies on HW with direct host access
 //   to device memory such as the IBM power 9 + Nvidia V100 Sierra/Lassen
 //   systems.
-using cuda_multi_reduce_block_then_grid_atomic_host_init = cuda_multi_reduce_tuning<
-    cuda::multi_reduce_algorithm::init_host_combine_block_then_grid_atomic,
+using cuda_multi_reduce_atomic_block_then_atomic_grid_host_init = cuda_multi_reduce_tuning<
+    cuda::multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic,
     cuda::SharedAtomicReplicationMaxPow2Concretizer<
         cuda::ConstantPreferredReplicationConcretizer<16>>,
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
         cuda::ConstantPreferredReplicationConcretizer<2>>>;
 //
-using cuda_multi_reduce_global_atomic_host_init = cuda_multi_reduce_tuning<
+using cuda_multi_reduce_atomic_global_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
         cuda::ConstantPreferredReplicationConcretizer<2>>>;
 //
-using cuda_multi_reduce_global_atomic_no_replication_host_init = cuda_multi_reduce_tuning<
+using cuda_multi_reduce_atomic_global_no_replication_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
@@ -1527,10 +1527,10 @@ using cuda_multi_reduce_global_atomic_no_replication_host_init = cuda_multi_redu
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
-using cuda_multi_reduce_atomic = cuda_multi_reduce_block_then_grid_atomic_host_init;
+using cuda_multi_reduce_atomic = cuda_multi_reduce_atomic_block_then_atomic_grid_host_init;
 // Similar to above but optimized for low overhead in cases where it is rarely used
 using cuda_multi_reduce_atomic_low_performance_low_overhead =
-    cuda_multi_reduce_global_atomic_no_replication_host_init;
+    cuda_multi_reduce_atomic_global_no_replication_host_init;
 
 
 // policies usable with kernel
