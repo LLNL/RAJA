@@ -1419,13 +1419,13 @@ using hip_multi_reduce_block_then_grid_atomic_host_init = hip_multi_reduce_tunin
     hip::SharedAtomicReplicationMaxPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<4>>,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 32, 16>>>;
+        hip::ConstantPreferredReplicationConcretizer<32>>>;
 //
 using hip_multi_reduce_global_atomic_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
     void,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ThreadsPerBlockCutoffPreferredReplicationConcretizer<512, 32, 16>>>;
+        hip::ConstantPreferredReplicationConcretizer<32>>>;
 //
 using hip_multi_reduce_global_atomic_no_replication_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
