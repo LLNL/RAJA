@@ -17,16 +17,19 @@ set(TILESIZES 8 32)
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
 foreach( BACKEND ${KERNEL_BACKENDS} )
-  foreach( TESTTYPE ${TESTTYPES} )
-    foreach( TILESIZE ${TILESIZES} )
-      configure_file( test-kernel-single-loop-tile-count.cpp.in
-                      test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
-      raja_add_test( NAME test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
-      target_include_directories(test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  # using omp target crashes the compiler with this one 
+  if( NOT ((BACKEND STREQUAL "OpenMPTarget")) )
+    foreach( TESTTYPE ${TESTTYPES} )
+      foreach( TILESIZE ${TILESIZES} )
+        configure_file( test-kernel-single-loop-tile-count.cpp.in
+                        test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
+        raja_add_test( NAME test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}
+                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
+        target_include_directories(test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.exe
+                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      endforeach()
     endforeach()
-  endforeach()
+  endif()
 endforeach()
 
 unset( TILESIZES )

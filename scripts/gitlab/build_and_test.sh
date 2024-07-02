@@ -200,7 +200,7 @@ then
     mkdir -p ${build_dir} && cd ${build_dir}
 
     timed_message "Building RAJA"
-    if [[ "${truehostname}" == "corona" || "${truehostname}" == "tioga" ]]
+    if [[ "${truehostname}" == "tioga" ]]
     then
         module unload rocm
     fi
