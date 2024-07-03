@@ -109,6 +109,43 @@ The results of these operations will yield the following values:
  * ``vsum[8].get() == 100``
  * ``vsum[9].get() == 100``
 
+
+If a multi-reducer is conditionally used to set an error flag then, even if the
+multi-reduction is not used at runtime in the loop kernel then any setup and
+finalization is still done and any resources are still allocated and deallocated
+by the multi-reducer. To reduce this overhead when multi-reducers are rarely
+used some backends have special policies with minimal overhead but also poor
+performance. Here are example RAJA multi-reduction policies that have minimal
+overhead::
+
+  using rarely_used_multi_reduce_policy = RAJA::seq_multi_reduce;
+  // using rarely_used_multi_reduce_policy = RAJA::omp_multi_reduce;
+  // using rarely_used_multi_reduce_policy = RAJA::cuda_multi_reduce_atomic_low_performance_low_overhead;
+  // using rarely_used_multi_reduce_policy = RAJA::hip_multi_reduce_atomic_low_performance_low_overhead;
+
+
+Here a simple rarely used bitwise or multi-reduction performed using RAJA::
+
+  RAJA::MultiReduceBitOr<rarely_used_multi_reduce_policy, int> vor(num_bins, 0);
+
+  RAJA::forall<exec_policy>( RAJA::RangeSegment(0, N),
+    [=](RAJA::Index_type i) {
+
+    if (vec[i] < 0) {
+      vor[0] |= 1;
+    }
+
+  });
+
+The results of these operations will yield the following value if the condition
+is never met:
+
+ * ``vsum[0].get() == 0``
+
+or yield the following value if the condition is ever met:
+
+ * ``vsum[0].get() == 1``
+
 Another option for the execution policy when using the cuda or hip backends are
 the base policies which have a boolean parameter to choose between the general
 use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
