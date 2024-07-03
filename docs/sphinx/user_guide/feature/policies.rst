@@ -877,7 +877,7 @@ omp_multi_reduce                                              any OpenMP    Open
                                                               policy
 omp_multi_reduce_ordered                                      any OpenMP    OpenMP parallel multi-reduction with result
                                                               policy        guaranteed to be reproducible.
-cuda/hip_multi_reduce_atomic                                  any CUDA/HIP  Parallel reduction in a CUDA/HIP kernel.
+cuda/hip_multi_reduce_atomic                                  any CUDA/HIP  Parallel multi-reduction in a CUDA/HIP kernel.
                                                               policy        Multi-reduction may use atomic operations
                                                                             leading to run to run variability in the
                                                                             results.
@@ -893,8 +893,9 @@ cuda/hip_multi_reduce_atomic_block_then_atomic_grid_host_init any CUDA/HIP  The 
                                                               policy        memory and global memory. Atomics into
                                                                             shared memory are used each time a value
                                                                             is combined into the multi-reducer and at
-                                                                            the end of the block the shared values are
-                                                                            combined into global memory with atomics.
+                                                                            the end of the life of the block the shared
+                                                                            values are combined into global memory with
+                                                                            atomics.
                                                                             The memory for global atomics is
                                                                             initialized on the host.
 cuda/hip_multi_reduce_atomic_global_host_init                 any CUDA/HIP  The multi-reduction uses atomics into global
@@ -903,13 +904,8 @@ cuda/hip_multi_reduce_atomic_global_host_init                 any CUDA/HIP  The 
                                                                             is combined into the multi-reducer.
                                                                             The memory for global atomics is
                                                                             initialized on the host.
-cuda/hip_multi_reduce_atomic_global_no_replication_host_init  any CUDA/HIP  The multi-reduction uses atomics into global
-                                                              policy        global memory only and uses minimal memory
-                                                                            by not replicating global atomics. Atomics
-                                                                            into global memory are used each time a
-                                                                            value is combined into the multi-reducer.
-                                                                            The memory for global atomics is
-                                                                            initialized on the host.
+cuda/hip_multi_reduce_atomic_global_no_replication_host_init  any CUDA/HIP  Same as above, but uses minimal memory
+                                                                            by not replicating global atomics.
 
 ============================================================= ============= ==========================================
 

@@ -24,11 +24,11 @@ used. Available RAJA multi-reduction types are described in this section.
 Also
 
 .. note:: * Each RAJA multi-reduction type is templated on a **multi-reduction policy**
-            and a **multi-reduction value type** for the multi-reduction variable. The
+            and a **reduction value type** for the multi-reduction variable. The
             **multi-reduction policy type must be compatible with the execution
             policy used by the kernel in which it is used.** For example, in
             a CUDA kernel, a CUDA multi-reduction policy must be used.
-          * Each RAJA multi-reduction type accepts an **initial multi-reduction value or
+          * Each RAJA multi-reduction type accepts an **initial reduction value or
             values** at construction (see below).
           * Each RAJA multi-reduction type has a 'get' method to access reduced
             values after kernel execution completes.

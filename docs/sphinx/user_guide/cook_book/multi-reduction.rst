@@ -36,7 +36,7 @@ Here is the setup for a simple multi-reduction example::
 
   }
 
-Here a simple sum multi-reduction is performed in a for loop::
+Here a simple sum multi-reduction performed in a for loop::
 
   int vsum[num_bins] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -76,14 +76,15 @@ number of blocks, optimized for performance with multi_reducers.::
 The multi-reduction policy specifies how the multi-reduction is done and must match the
 execution policy. For example ``RAJA::seq_multi_reduce`` does a sequential multi-reduction
 and can only be used with sequential execution policies. The
-``RAJA::cuda_multi_reduce_atomic`` policy uses atomics, if possible with the given
-data type, and can only be used with cuda execution policies. Similarly for other RAJA execution back-ends, such as HIP and OpenMP. Here are example RAJA multi-reduction policies whose names are indicative of which execution policies they work with::
+``RAJA::cuda_multi_reduce_atomic`` policy uses atomics and can only be used with
+cuda execution policies. Similarly for other RAJA execution back-ends, such as
+HIP and OpenMP. Here are example RAJA multi-reduction policies whose names are
+indicative of which execution policies they work with::
 
   using multi_reduce_policy = RAJA::seq_multi_reduce;
   // using multi_reduce_policy = RAJA::omp_multi_reduce;
   // using multi_reduce_policy = RAJA::cuda_multi_reduce_atomic;
   // using multi_reduce_policy = RAJA::hip_multi_reduce_atomic;
-
 
 Here a simple sum multi-reduction is performed using RAJA::
 
@@ -122,21 +123,21 @@ use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
 Rarely Used MultiReductions
 ---------------------------
 
-If a multi-reducer is conditionally used to set an error flag then, even if the
-multi-reduction is not used at runtime in the loop kernel then any setup and
-finalization is still done and any resources are still allocated and deallocated
-by the multi-reducer. To reduce this overhead when multi-reducers are rarely
-used some backends have special policies with minimal overhead but also poor
-performance. Here are example RAJA multi-reduction policies that have minimal
-overhead::
+Multi-reductions take time and consume resources even if they are not used in a
+loop kernel. If a multi-reducer is conditionally used to set an error flag, even
+if the multi-reduction is not used at runtime in the loop kernel then the setup
+and finalization for the multi-reduction is still done and any resources are
+still allocated and deallocated. To minimize these overheads some backends have
+special policies that minimize the amount of work the multi-reducer does in the
+case that it is not used at runtime even if it is compiled into a loop kernel.
+Here are example RAJA multi-reduction policies that have minimal overhead::
 
   using rarely_used_multi_reduce_policy = RAJA::seq_multi_reduce;
   // using rarely_used_multi_reduce_policy = RAJA::omp_multi_reduce;
   // using rarely_used_multi_reduce_policy = RAJA::cuda_multi_reduce_atomic_low_performance_low_overhead;
   // using rarely_used_multi_reduce_policy = RAJA::hip_multi_reduce_atomic_low_performance_low_overhead;
 
-
-Here a simple rarely used bitwise or multi-reduction performed using RAJA::
+Here is a simple rarely used bitwise or multi-reduction performed using RAJA::
 
   RAJA::MultiReduceBitOr<rarely_used_multi_reduce_policy, int> vor(num_bins, 0);
 
