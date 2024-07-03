@@ -32,6 +32,7 @@
 
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/reduce.hpp"
+#include "RAJA/util/RepeatView.hpp"
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
