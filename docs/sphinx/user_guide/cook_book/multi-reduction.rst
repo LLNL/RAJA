@@ -109,6 +109,18 @@ The results of these operations will yield the following values:
  * ``vsum[8].get() == 100``
  * ``vsum[9].get() == 100``
 
+Another option for the execution policy when using the cuda or hip backends are
+the base policies which have a boolean parameter to choose between the general
+use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
+
+  // static constexpr bool with_reduce = ...;
+  // using exec_policy = RAJA::cuda_exec_base<with_reduce, 256>;
+  // using exec_policy = RAJA::hip_exec_base<with_reduce, 256>;
+
+
+---------------------------
+Rarely Used MultiReductions
+---------------------------
 
 If a multi-reducer is conditionally used to set an error flag then, even if the
 multi-reduction is not used at runtime in the loop kernel then any setup and
@@ -145,11 +157,3 @@ is never met:
 or yield the following value if the condition is ever met:
 
  * ``vsum[0].get() == 1``
-
-Another option for the execution policy when using the cuda or hip backends are
-the base policies which have a boolean parameter to choose between the general
-use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
-
-  // static constexpr bool with_reduce = ...;
-  // using exec_policy = RAJA::cuda_exec_base<with_reduce, 256>;
-  // using exec_policy = RAJA::hip_exec_base<with_reduce, 256>;
