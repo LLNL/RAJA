@@ -70,10 +70,8 @@ number of blocks, optimized for performance with multi_reducers.::
 
   using exec_policy = RAJA::seq_exec;
   // using exec_policy = RAJA::omp_parallel_for_exec;
-  // using exec_policy = RAJA::omp_target_parallel_for_exec<256>;
   // using exec_policy = RAJA::cuda_exec_with_reduce<256>;
   // using exec_policy = RAJA::hip_exec_with_reduce<256>;
-  // using exec_policy = RAJA::sycl_exec<256>;
 
 The multi-reduction policy specifies how the multi-reduction is done and must match the
 execution policy. For example ``RAJA::seq_multi_reduce`` does a sequential multi-reduction
@@ -83,10 +81,8 @@ data type, and can only be used with cuda execution policies. Similarly for othe
 
   using multi_reduce_policy = RAJA::seq_multi_reduce;
   // using multi_reduce_policy = RAJA::omp_multi_reduce;
-  // using multi_reduce_policy = RAJA::omp_target_multi_reduce;
   // using multi_reduce_policy = RAJA::cuda_multi_reduce_atomic;
   // using multi_reduce_policy = RAJA::hip_multi_reduce_atomic;
-  // using multi_reduce_policy = RAJA::sycl_multi_reduce;
 
 
 Here a simple sum multi-reduction is performed using RAJA::

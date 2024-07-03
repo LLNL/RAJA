@@ -24,11 +24,6 @@ using OpenMPMultiReducePols =
               RAJA::omp_multi_reduce_ordered >;
 #endif
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetMultiReducePols =
-  camp::list< RAJA::omp_target_multi_reduce >;
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaMultiReducePols =
   camp::list< RAJA::cuda_multi_reduce_block_then_grid_atomic_host_init,
@@ -41,10 +36,6 @@ using HipMultiReducePols =
   camp::list< RAJA::hip_multi_reduce_block_then_grid_atomic_host_init,
               RAJA::hip_multi_reduce_global_atomic_host_init,
               RAJA::hip_multi_reduce_global_atomic_no_replication_host_init  >;
-#endif
-
-#if defined(RAJA_ENABLE_SYCL) && 0
-using SyclMultiReducePols = camp::list< RAJA::sycl_multi_reduce >;
 #endif
 
 #endif  // __RAJA_test_multi_reducepol_HPP__

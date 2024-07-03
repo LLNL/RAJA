@@ -28,10 +28,6 @@ using OpenMPMultiReducerPolicyList = camp::list< RAJA::omp_multi_reduce,
                                                  RAJA::omp_multi_reduce_ordered >;
 #endif
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetMultiReducerPolicyList = camp::list< RAJA::omp_target_multi_reduce >;
-#endif
-
 #if defined(RAJA_ENABLE_CUDA)
 using CudaMultiReducerPolicyList =
   camp::list< RAJA::cuda_multi_reduce_block_then_grid_atomic_host_init,
