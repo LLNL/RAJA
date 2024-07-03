@@ -885,10 +885,11 @@ cuda/hip_multi_reduce_atomic                                  any CUDA/HIP  Para
                                                                             reduction value is finalized)
 cuda/hip_multi_reduce_atomic_low_performance_low_overhead     any CUDA/HIP  Same as above, but multi-reduction uses
                                                               policy        a low overhead algorithm with a minimal
-                                                                            set of resources leading to a low impact
-                                                                            on the performance of loops containing the
-                                                                            multi-reducer but also low performance
-                                                                            when the multi-reducer is used.
+                                                                            set of resources. This minimally effects
+                                                                            the performance of loops containing the
+                                                                            multi-reducer though it may cause the
+                                                                            multi-reducer itself to perform poorly if
+                                                                            it is used.
 cuda/hip_multi_reduce_atomic_block_then_atomic_grid_host_init any CUDA/HIP  The multi-reduction uses atomics into shared
                                                               policy        memory and global memory. Atomics into
                                                                             shared memory are used each time a value
