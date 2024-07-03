@@ -106,16 +106,67 @@ multi-reduction type::
 
 The results of these operations will yield the following values:
 
- * my_vsum[0] == 100
- * my_vsum[1] == 100
- * my_vsum[2] == 100
- * my_vsum[3] == 100
- * my_vsum[4] == 100
- * my_vsum[5] == 100
- * my_vsum[6] == 100
- * my_vsum[7] == 100
- * my_vsum[8] == 100
- * my_vsum[9] == 100
+ * my_vsums[0] == 100
+ * my_vsums[1] == 100
+ * my_vsums[2] == 100
+ * my_vsums[3] == 100
+ * my_vsums[4] == 100
+ * my_vsums[5] == 100
+ * my_vsums[6] == 100
+ * my_vsums[7] == 100
+ * my_vsums[8] == 100
+ * my_vsums[9] == 100
+
+
+Here is the same example but using values stored in a container::
+
+  const int N = 1000;
+  const int B = 10;
+
+  //
+  // Initialize an array of length N with all ones, and another array to
+  // integers between 0 and B-1
+  //
+  int vec[N];
+  int bins[N];
+  for (int i = 0; i < N; ++i) {
+    vec[i] = 1;
+    bins[i] = i % B;
+  }
+
+  // Create a vector with a size of B, and initial values of zero
+  std::vector<int> my_vsums(B, 0);
+
+  // Create a multi-reducer initalized with size and values from my_vsums
+  RAJA::MultiReduceSum< RAJA::omp_multi_reduce, int > vsum(my_vsums);
+
+  // Run a kernel using the multi-reduction object
+  RAJA::forall<RAJA::omp_parallel_for_exec>( RAJA::RangeSegment(0, N),
+    [=](RAJA::Index_type i) {
+
+    vsum[bins[i]] += vec[i];
+
+  });
+
+  // After kernel is run, extract the reduced values back into my_vsums
+  vsum.get_all(my_vsums);
+
+The results of these operations will yield the following values:
+
+ * my_vsums[0] == 100
+ * my_vsums[1] == 100
+ * my_vsums[2] == 100
+ * my_vsums[3] == 100
+ * my_vsums[4] == 100
+ * my_vsums[5] == 100
+ * my_vsums[6] == 100
+ * my_vsums[7] == 100
+ * my_vsums[8] == 100
+ * my_vsums[9] == 100
+
+
+
+
 
 Here is an example of a bitwise or multi-reduction::
 
@@ -142,21 +193,21 @@ Here is an example of a bitwise or multi-reduction::
   });
 
   // After kernel is run, extract the reduced values
-  int my_vor[B];
+  int my_vors[B];
   for (int bin = 0; bin < B; ++bin) {
-    my_vor[bin] = vor[bin].get();
+    my_vors[bin] = vor[bin].get();
   }
 
 The results of these operations will yield the following values:
 
- * my_vor[0] == 120 == 0b1111000
- * my_vor[1] == 121 == 0b1111001
- * my_vor[2] == 122 == 0b1111010
- * my_vor[3] == 123 == 0b1111011
- * my_vor[4] == 124 == 0b1111100
- * my_vor[5] == 125 == 0b1111101
- * my_vor[6] == 126 == 0b1111110
- * my_vor[7] == 127 == 0b1111111
+ * my_vors[0] == 120 == 0b1111000
+ * my_vors[1] == 121 == 0b1111001
+ * my_vors[2] == 122 == 0b1111010
+ * my_vors[3] == 123 == 0b1111011
+ * my_vors[4] == 124 == 0b1111100
+ * my_vors[5] == 125 == 0b1111101
+ * my_vors[6] == 126 == 0b1111110
+ * my_vors[7] == 127 == 0b1111111
 
 The results of the multi-reduction start at 120 and increase to 127. In binary
 representation (i.e., bits), :math:`120 = 0b1111000` and :math:`127 = 0b1111111`.
