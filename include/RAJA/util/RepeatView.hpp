@@ -15,12 +15,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_SPAN_HPP
-#define RAJA_SPAN_HPP
+#ifndef RAJA_REPEATVIEW_HPP
+#define RAJA_REPEATVIEW_HPP
 
+#include <cstddef>
+#include <utility>
 #include <type_traits>
 
-#include "RAJA/util/concepts.hpp"
 #include "RAJA/util/macros.hpp"
 
 namespace RAJA
@@ -107,11 +108,11 @@ struct RepeatView
 
   RepeatView() = delete;
 
-  constexpr explicit RepeatView(T const& value, size_t bound)
+  constexpr RepeatView(T const& value, size_t bound)
     : m_bound(bound), m_value(value)
   { }
 
-  constexpr explicit RepeatView(T&& value, size_t bound)
+  constexpr RepeatView(T&& value, size_t bound)
     : m_bound(bound), m_value(std::move(value))
   { }
 
@@ -137,4 +138,4 @@ private:
 
 }  // end namespace RAJA
 
-#endif /* RAJA_SPAN_HPP */
+#endif /* RAJA_REPEATVIEW_HPP */
