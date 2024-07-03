@@ -17,8 +17,9 @@ reduction operations like some other C++ loop programming abstraction models.
 Instead, RAJA provides reduction types that allow users to perform reduction
 operations in kernels launched using ``RAJA::forall``, ``RAJA::kernel``,
 and ``RAJA::launch`` methods in a portable, thread-safe manner. Users may
-use as many reduction objects in a loop kernel as they need. Available RAJA
-reduction types are described in this section.
+use as many reduction objects in a loop kernel as they need. If a runtime number
+of reductions is required in a loop kernel then multi-reductions can be used.
+Available RAJA reduction types are described in this section.
 
 .. note:: All RAJA reduction types are located in the namespace ``RAJA``.
 
@@ -38,6 +39,10 @@ Please see the following tutorial sections for detailed examples that use
 RAJA reductions:
 
  * :ref:`tut-reduction-label`.
+
+Please see the following sections for a description of multi-reducers:
+
+ * :ref:`feat-multi-reductions-label`.
 
 Please see the following cook book sections for guidance on policy usage:
 
