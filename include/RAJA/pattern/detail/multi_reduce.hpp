@@ -165,7 +165,8 @@ struct BaseMultiReduce
 
   template < typename Container,
              concepts::enable_if_t<type_traits::is_range<Container>,
-                                   concepts::negate<std::is_convertible<Container, size_t>>>* = nullptr >
+                                   concepts::negate<std::is_convertible<Container, size_t>>,
+                                   concepts::negate<std::is_convertible<Container, BaseMultiReduce>>>* = nullptr >
   explicit BaseMultiReduce(Container const& container,
                            value_type identity = MultiReduceOp::identity())
       : data{container, identity}
