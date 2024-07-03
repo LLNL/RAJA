@@ -28,7 +28,7 @@ namespace RAJA
 {
 
 /*!
- * @brief A view of a single object repeated.
+ * @brief A view of a single object repeated a certain number of times.
  *
  * Creates a view or container object given an object and length.
  * Allows use of container interface functions if you want to repeat a
@@ -39,7 +39,7 @@ namespace RAJA
  *     // Create a repeat view object for the int 2 repeated int_len times
  *     RepeatView<int> int_repeated(2, int_len);
  *
- *     // Use with RAJA scan
+ *     // Use with RAJA for_each
  *     RAJA::for_each(int_repeated, [&](int val) {
  *       sum += val;
  *     });
