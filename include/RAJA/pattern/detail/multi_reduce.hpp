@@ -23,6 +23,7 @@
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/RepeatView.hpp"
 
 
 #define RAJA_DECLARE_MULTI_REDUCER(OP_NAME, OP, POL, DATA)    \
@@ -56,92 +57,6 @@
 namespace RAJA
 {
 
-template < typename T >
-struct repeat_view
-{
-  struct iterator
-  {
-    using difference_type = std::ptrdiff_t;
-    using value_type = T;
-    using reference = value_type const&;
-
-    iterator() = default;
-
-    constexpr iterator(const T* base, size_t index)
-      : m_value(base), m_index(index)
-    { }
-
-    constexpr reference operator*() const noexcept { return *m_value; }
-    constexpr reference operator[](difference_type index) const noexcept { return *(*this + index); }
-
-    constexpr iterator& operator++() { ++m_index; return *this; }
-    constexpr iterator operator++(int) { auto tmp = *this; ++(*this); return tmp; }
-
-    constexpr iterator& operator--() { --m_index; return *this; }
-    constexpr iterator operator--(int) { auto tmp = *this; --(*this); return tmp; }
-
-    constexpr iterator& operator+=(difference_type rhs) { m_index += rhs; return *this; }
-    constexpr iterator& operator-=(difference_type rhs) { m_index -= rhs; return *this; }
-
-    friend constexpr iterator operator+(iterator lhs, difference_type rhs)
-    { lhs += rhs; return lhs; }
-    friend constexpr iterator operator+(difference_type lhs, iterator rhs)
-    { rhs += lhs; return rhs; }
-
-    friend constexpr iterator operator-(iterator lhs, difference_type rhs)
-    { lhs -= rhs; return lhs; }
-    friend constexpr difference_type operator-(iterator const& lhs, iterator const& rhs)
-    { return static_cast<difference_type>(lhs.m_index) - static_cast<difference_type>(rhs.m_index); }
-
-    friend constexpr bool operator==(iterator const& lhs, iterator const& rhs)
-    { return lhs.m_index == rhs.m_index; }
-    friend constexpr bool operator!=(iterator const& lhs, iterator const& rhs)
-    { return !(lhs == rhs); }
-
-    friend constexpr bool operator<(iterator const& lhs, iterator const& rhs)
-    { return lhs.m_index < rhs.m_index; }
-    friend constexpr bool operator<=(iterator const& lhs, iterator const& rhs)
-    { return !(rhs < lhs); }
-    friend constexpr bool operator>(iterator const& lhs, iterator const& rhs)
-    { return rhs < lhs; }
-    friend constexpr bool operator>=(iterator const& lhs, iterator const& rhs)
-    { return !(lhs < rhs); }
-
-  private:
-    const T* m_value = nullptr;
-    size_t m_index = 0;
-  };
-
-  repeat_view() = delete;
-
-  constexpr explicit repeat_view(T const& value, size_t bound)
-    : m_bound(bound), m_value(value)
-  { }
-
-  constexpr explicit repeat_view(T&& value, size_t bound)
-    : m_bound(bound), m_value(std::move(value))
-  { }
-
-  constexpr T const& front() const { return m_value; }
-  constexpr T const& back() const { return m_value; }
-  constexpr T const& operator[](size_t RAJA_UNUSED_ARG(index)) const { return m_value; }
-
-  constexpr iterator begin() const { return iterator(&m_value, 0); }
-  constexpr iterator cbegin() const { return iterator(&m_value, 0); }
-
-  constexpr iterator end() const { return iterator(&m_value, m_bound); }
-  constexpr iterator cend() const { return iterator(&m_value, m_bound); }
-
-  constexpr explicit operator bool() const { return m_bound != 0; }
-  constexpr bool empty() const { return m_bound == 0; }
-
-  constexpr size_t size() const { return m_bound; }
-
-private:
-  size_t m_bound = 0;
-  T m_value;
-};
-
 namespace reduce
 {
 
@@ -155,12 +70,12 @@ struct BaseMultiReduce
   using MultiReduceOp = typename t_MultiReduceData::MultiReduceOp;
   using value_type = typename t_MultiReduceData::value_type;
 
-  BaseMultiReduce() : BaseMultiReduce{repeat_view<value_type>(MultiReduceOp::identity(), 0)} {}
+  BaseMultiReduce() : BaseMultiReduce{RepeatView<value_type>(MultiReduceOp::identity(), 0)} {}
 
   explicit BaseMultiReduce(size_t num_bins,
                            value_type init_val = MultiReduceOp::identity(),
                            value_type identity = MultiReduceOp::identity())
-      : BaseMultiReduce{repeat_view<value_type>(init_val, num_bins), identity}
+      : BaseMultiReduce{RepeatView<value_type>(init_val, num_bins), identity}
   { }
 
   template < typename Container,
@@ -183,14 +98,14 @@ struct BaseMultiReduce
 
   void reset()
   {
-    reset(repeat_view<value_type>(MultiReduceOp::identity(), size()));
+    reset(RepeatView<value_type>(MultiReduceOp::identity(), size()));
   }
 
   void reset(size_t num_bins,
              value_type init_val = MultiReduceOp::identity(),
              value_type identity = MultiReduceOp::identity())
   {
-    reset(repeat_view<value_type>(init_val, num_bins), identity);
+    reset(RepeatView<value_type>(init_val, num_bins), identity);
   }
 
   template < typename Container,

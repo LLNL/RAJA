@@ -93,7 +93,7 @@ struct MultiReduceDataOMP<T, t_MultiReduceOp,
       , m_identity(other.m_identity)
       , m_data(nullptr)
   {
-    m_data = create_data(repeat_view<value_type>(other.m_identity, other.m_num_bins), other.m_num_bins);
+    m_data = create_data(RepeatView<value_type>(other.m_identity, other.m_num_bins), other.m_num_bins);
   }
 
   MultiReduceDataOMP(MultiReduceDataOMP &&) = delete;
