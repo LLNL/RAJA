@@ -747,7 +747,7 @@ private:
   void synchronize_resources_and_clear_list()
   {
     for (resources::Cuda& list_res : *m_sync_list) {
-      list_res.wait();
+      ::RAJA::cuda::synchronize(list_res);
     }
     m_sync_list->clear();
   }

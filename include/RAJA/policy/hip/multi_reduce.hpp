@@ -747,7 +747,7 @@ private:
   void synchronize_resources_and_clear_list()
   {
     for (resources::Hip& list_res : *m_sync_list) {
-      list_res.wait();
+      ::RAJA::hip::synchronize(list_res);
     }
     m_sync_list->clear();
   }
