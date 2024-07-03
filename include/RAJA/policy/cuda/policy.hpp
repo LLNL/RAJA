@@ -1483,16 +1483,18 @@ using cuda_reduce_base = std::conditional_t<with_atomic, cuda_reduce_atomic, cud
 // policies usable with multi_reducers
 template < cuda::multi_reduce_algorithm algorithm,
            typename SharedAtomicReplicationConcretizer,
-           typename GlobalAtomicReplicationConcretizer >
+           typename SharedAtomicReplicationIndexer,
+           typename GlobalAtomicReplicationConcretizer,
+           typename GlobalAtomicReplicationIndexer >
 using cuda_multi_reduce_tuning = policy::cuda::cuda_multi_reduce_policy<
     cuda::MultiReduceTuning<
       algorithm,
       cuda::AtomicReplicationTuning<SharedAtomicReplicationConcretizer,
-                                    cuda::thread_xyz<>,
+                                    SharedAtomicReplicationIndexer,
                                     GetOffsetRight<int>>,
       cuda::AtomicReplicationTuning<GlobalAtomicReplicationConcretizer,
-                                    cuda::warp_global_xyz<>,
-                                    GetOffsetLeftBunched<0,int>>>>;
+                                    GlobalAtomicReplicationIndexer,
+                                    GetOffsetLeft<int>>>>;
 
 // Policies for RAJA::MultiReduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results. The
@@ -1510,20 +1512,26 @@ using cuda_multi_reduce_atomic_block_then_atomic_grid_host_init = cuda_multi_red
     cuda::multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic,
     cuda::SharedAtomicReplicationMaxPow2Concretizer<
         cuda::ConstantPreferredReplicationConcretizer<16>>,
+    cuda::thread_xyz<>,
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
-        cuda::ConstantPreferredReplicationConcretizer<2>>>;
+        cuda::ConstantPreferredReplicationConcretizer<2>>,
+    cuda::warp_global_xyz<>>;
 //
 using cuda_multi_reduce_atomic_global_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
-    void,
+    void, // unused with this algorithm
+    void, // unused with this algorithm
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
-        cuda::ConstantPreferredReplicationConcretizer<2>>>;
+        cuda::ConstantPreferredReplicationConcretizer<2>>,
+    cuda::warp_global_xyz<>>;
 //
 using cuda_multi_reduce_atomic_global_no_replication_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
-    void,
+    void, // unused with this algorithm
+    void, // unused with this algorithm
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
-        cuda::ConstantPreferredReplicationConcretizer<1>>>;
+        cuda::ConstantPreferredReplicationConcretizer<1>>,
+    cuda::block_xyz<>>;
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way

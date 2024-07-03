@@ -1392,16 +1392,18 @@ using hip_reduce_base = std::conditional_t<with_atomic, hip_reduce_atomic, hip_r
 // policies usable with multi_reducers
 template < hip::multi_reduce_algorithm algorithm,
            typename SharedAtomicReplicationConcretizer,
-           typename GlobalAtomicReplicationConcretizer >
+           typename SharedAtomicReplicationIndexer,
+           typename GlobalAtomicReplicationConcretizer,
+           typename GlobalAtomicReplicationIndexer >
 using hip_multi_reduce_tuning = policy::hip::hip_multi_reduce_policy<
     hip::MultiReduceTuning<
       algorithm,
       hip::AtomicReplicationTuning<SharedAtomicReplicationConcretizer,
-                                    hip::thread_xyz<>,
+                                    SharedAtomicReplicationIndexer,
                                     GetOffsetRight<int>>,
       hip::AtomicReplicationTuning<GlobalAtomicReplicationConcretizer,
-                                    hip::warp_global_xyz<>,
-                                    GetOffsetLeftBunched<0,int>>>>;
+                                    GlobalAtomicReplicationIndexer,
+                                    GetOffsetLeft<int>>>>;
 
 // Policies for RAJA::MultiReduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results. The
@@ -1418,20 +1420,26 @@ using hip_multi_reduce_atomic_block_then_atomic_grid_host_init = hip_multi_reduc
     hip::multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic,
     hip::SharedAtomicReplicationMaxPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<4>>,
+    hip::thread_xyz<>,
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ConstantPreferredReplicationConcretizer<32>>>;
+        hip::ConstantPreferredReplicationConcretizer<32>>,
+    hip::warp_global_xyz<>>;
 //
 using hip_multi_reduce_atomic_global_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
-    void,
+    void, // unused with this algorithm
+    void, // unused with this algorithm
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ConstantPreferredReplicationConcretizer<32>>>;
+        hip::ConstantPreferredReplicationConcretizer<32>>,
+    hip::warp_global_xyz<>>;
 //
 using hip_multi_reduce_atomic_global_no_replication_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
-    void,
+    void, // unused with this algorithm
+    void, // unused with this algorithm
     hip::GlobalAtomicReplicationMinPow2Concretizer<
-        hip::ConstantPreferredReplicationConcretizer<1>>>;
+        hip::ConstantPreferredReplicationConcretizer<1>>,
+    hip::block_xyz<>>;
 
 // Policy for RAJA::MultiReduce* objects that may use atomics and may not give the
 // same answer every time when used in the same way
