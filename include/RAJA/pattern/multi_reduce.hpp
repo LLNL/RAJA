@@ -49,14 +49,15 @@ namespace RAJA
    Real_ptr data = ...;
    Index_ptr bins = ...;
    Real_ptr min_vals = ...;
-   MultiReduceMin<multi_reduce_policy, Real_type> my_mins(num_bins, init_vals);
+
+   MultiReduceMin<multi_reduce_policy, Real_type> my_mins(num_bins, init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_mins[bins[i]].min(data[i]);
    }
 
    for (size_t bin = 0; bin < num_bins; ++bin) {
-      min_vals[bin] = my_mins.get(bin);
+      min_vals[bin] = my_mins[bin].get();
    }
 
  * \endverbatim
@@ -78,14 +79,15 @@ struct MultiReduceMin;
    Real_ptr data = ...;
    Index_ptr bins = ...;
    Real_ptr max_vals = ...;
-   MultiReduceMax<multi_reduce_policy, Real_type> my_maxs(num_bins, init_vals);
+
+   MultiReduceMax<multi_reduce_policy, Real_type> my_maxs(num_bins, init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_maxs[bins[i]].max(data[i]);
    }
 
    for (size_t bin = 0; bin < num_bins; ++bin) {
-      max_vals[bin] = my_maxs.get(bin);
+      max_vals[bin] = my_maxs[bin].get();
    }
 
  * \endverbatim
@@ -107,14 +109,15 @@ struct MultiReduceMax;
    Real_ptr data = ...;
    Index_ptr bins = ...;
    Real_ptr sum_vals = ...;
-   MultiReduceSum<multi_reduce_policy, Real_type> my_sums(num_bins, init_vals);
+
+   MultiReduceSum<multi_reduce_policy, Real_type> my_sums(num_bins, init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_sums[bins[i]] += (data[i]);
    }
 
    for (size_t bin = 0; bin < num_bins; ++bin) {
-      sum_vals[bin] = my_sums.get(bin);
+      sum_vals[bin] = my_sums[bin].get();
    }
 
  * \endverbatim
@@ -136,14 +139,15 @@ struct MultiReduceSum;
    Real_ptr data = ...;
    Index_ptr bins = ...;
    Real_ptr bit_vals = ...;
-   MultiReduceBitOr<multi_reduce_policy, Real_type> my_bits(num_bins, init_vals);
+
+   MultiReduceBitOr<multi_reduce_policy, Real_type> my_bits(num_bins, init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_bits[bins[i]] |= (data[i]);
    }
 
    for (size_t bin = 0; bin < num_bins; ++bin) {
-      bit_vals[bin] = my_bits.get(bin);
+      bit_vals[bin] = my_bits[bin].get();
    }
 
  * \endverbatim
@@ -166,14 +170,15 @@ struct MultiReduceBitOr;
    Real_ptr data = ...;
    Index_ptr bins = ...;
    Real_ptr bit_vals = ...;
-   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins, init_vals);
+
+   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins, init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_bits[bins[i]] &= (data[i]);
    }
 
    for (size_t bin = 0; bin < num_bins; ++bin) {
-      bit_vals[bin] = my_bits.get(bin);
+      bit_vals[bin] = my_bits[bin].get();
    }
 
  * \endverbatim
