@@ -43,7 +43,7 @@ using HipMultiReducePols =
               RAJA::hip_multi_reduce_global_atomic_no_replication_host_init  >;
 #endif
 
-#if defined(RAJA_ENABLE_SYCL)
+#if defined(RAJA_ENABLE_SYCL) && 0
 using SyclMultiReducePols = camp::list< RAJA::sycl_multi_reduce >;
 #endif
 
