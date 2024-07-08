@@ -76,10 +76,9 @@ using raja_default_desul_scope = desul::MemoryScopeDevice;
 // helper function templates so that they can be called using the same signature in timing code.
 
 // Struct holding Desul atomic signature typedef
-template<typename AtomicType>
+template<typename ReturnType, typename... Args>
 struct DesulAtomicSignature {
-    using binary_type = AtomicType(*)(AtomicType*, const AtomicType, raja_default_desul_order, raja_default_desul_scope);
-    using unary_type = AtomicType(*)(AtomicType*, raja_default_desul_order, raja_default_desul_scope);
+    using type = ReturnType(*)(Args..., raja_default_desul_order, raja_default_desul_scope);
 };
 
 // Struct holding RAJA atomic signature typedef
@@ -94,21 +93,21 @@ struct RajaAtomicSignature {
 /// wrapper. AtomicOperation must be a valid RAJA namespace atomic operation, like atomicAdd,
 /// atomicMax, etc.
 #define OPERATOR_CALL_BINARY(AtomicOperation)                                               \
-    template<typename AtomicType>                                                           \
-    RAJA_HOST_DEVICE AtomicType operator()(AtomicType* acc, const AtomicType val) const {   \
+    template<typename ArgType>                                                              \
+    RAJA_HOST_DEVICE ArgType operator()(ArgType* acc, const ArgType val) const {            \
         return RAJA::AtomicOperation(Policy {}, acc, val);                                  \
     }                                                                                       \
 
 #define OPERATOR_CALL_UNARY(AtomicOperation)                                                \
-    template<typename AtomicType>                                                           \
-    RAJA_HOST_DEVICE AtomicType operator()(AtomicType* acc, const AtomicType) const {       \
+    template<typename ArgType>                                                              \
+    RAJA_HOST_DEVICE ArgType operator()(ArgType* acc, const ArgType) const {                \
         return RAJA::AtomicOperation(Policy {}, acc);                                       \
     }                                                                                       \
 
 #define DECLARE_ATOMIC_WRAPPER(AtomicFunctorName, AtomicOperatorDeclaration)                \
 template<typename Policy>                                                                   \
 struct AtomicFunctorName {                                                                  \
-    const char* name = #AtomicFunctorName ;                                                   \
+    const char* name = #AtomicFunctorName ;                                                 \
     AtomicOperatorDeclaration                                                               \
 };                                                                                          \
 
@@ -116,11 +115,35 @@ DECLARE_ATOMIC_WRAPPER(AtomicAdd, OPERATOR_CALL_BINARY(atomicAdd))
 DECLARE_ATOMIC_WRAPPER(AtomicSub, OPERATOR_CALL_BINARY(atomicSub))
 DECLARE_ATOMIC_WRAPPER(AtomicMax, OPERATOR_CALL_BINARY(atomicMax))
 DECLARE_ATOMIC_WRAPPER(AtomicMin, OPERATOR_CALL_BINARY(atomicMin))
-DECLARE_ATOMIC_WRAPPER(AtomicInc, OPERATOR_CALL_UNARY(atomicInc))
-DECLARE_ATOMIC_WRAPPER(AtomicDec, OPERATOR_CALL_UNARY(atomicDec))
+DECLARE_ATOMIC_WRAPPER(AtomicIncBinary, OPERATOR_CALL_BINARY(atomicInc))
+DECLARE_ATOMIC_WRAPPER(AtomicDecBinary, OPERATOR_CALL_BINARY(atomicDec))
+DECLARE_ATOMIC_WRAPPER(AtomicIncUnary, OPERATOR_CALL_UNARY(atomicInc))
+DECLARE_ATOMIC_WRAPPER(AtomicDecUnary, OPERATOR_CALL_UNARY(atomicDec))
 DECLARE_ATOMIC_WRAPPER(AtomicAnd, OPERATOR_CALL_BINARY(atomicAnd))
 DECLARE_ATOMIC_WRAPPER(AtomicOr, OPERATOR_CALL_BINARY(atomicOr))
 DECLARE_ATOMIC_WRAPPER(AtomicXor, OPERATOR_CALL_BINARY(atomicXor))
+DECLARE_ATOMIC_WRAPPER(AtomicExchange, OPERATOR_CALL_BINARY(atomicExchange))
+DECLARE_ATOMIC_WRAPPER(AtomicLoad, OPERATOR_CALL_UNARY(atomicLoad))
+
+/// Instead of complicating the above macro to handle these two atomics, do the declarations
+/// manually below.
+template<typename Policy>
+struct AtomicStore {
+    const char* name = "AtomicStore";
+    template<typename ArgType>
+    RAJA_HOST_DEVICE void operator()(ArgType* acc, const ArgType val) const {
+        return RAJA::atomicStore(Policy {}, acc, val);
+    }
+};
+
+template<typename Policy>
+struct AtomicCAS {
+    const char* name = "AtomicCAS";
+    template<typename ArgType>
+    RAJA_HOST_DEVICE ArgType operator()(ArgType* acc, ArgType compare) const {
+        return RAJA::atomicCAS(Policy {}, acc, compare, ArgType(1));
+    }
+};
 
 /// ExecPolicy wrapper for OpenMP
 struct ExecPolicyOMP {
@@ -135,37 +158,41 @@ struct ExecPolicyOMP {
 /// Functor wrapping the desul implementation.  Wrapping the desul call ensure an identical signature with
 /// RAJA's implementations.  Wrapping the call in an functor allows simple type deduction for printing
 /// from within the benchmark.
-template<typename T, typename DesulAtomicSignature<T>::binary_type atomic_impl>
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*, const T, T>::type atomic_impl>
+struct atomicWrapperDesulTernary {
+    /// Call operator overload template that allows invoking DESUL atomic with a (int*)(T*, T) signature
+    RAJA_HOST_DEVICE ReturnType operator()(T * acc, T value) const {
+        return atomic_impl(acc, value, T(1), raja_default_desul_order{},
+                        raja_default_desul_scope{});
+    }
+};
+
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*, const T>::type atomic_impl>
 struct atomicWrapperDesulBinary {
     /// Call operator overload template that allows invoking DESUL atomic with a (int*)(T*, T) signature
-    RAJA_HOST_DEVICE T operator()(T * acc, T value) const {
+    RAJA_HOST_DEVICE ReturnType operator()(T * acc, T value) const {
         return atomic_impl(acc, value, raja_default_desul_order{},
                         raja_default_desul_scope{});
     }
 };
 
 /// Unary wrapper variant for increment and decrement benchmarks.
-template<typename T, typename DesulAtomicSignature<T>::unary_type atomic_impl>
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*>::type atomic_impl>
 struct atomicWrapperDesulUnary {
-    RAJA_HOST_DEVICE T operator()(T * acc) const {
+    RAJA_HOST_DEVICE ReturnType operator()(T* acc, T) const {
         return atomic_impl(acc, raja_default_desul_order{},
                         raja_default_desul_scope{});
-    }
-    // This overload simplifies the benchmarking body by making unary and binary atomic
-    // operations callable using the same semantics.
-    RAJA_HOST_DEVICE T operator()(T * acc, T /*unused second parameter*/) const {
-        return operator()(acc);
     }
 };
 
 template<typename T>
 class IsDesul : public std::false_type {};
 
-template<typename T, typename DesulAtomicSignature<T>::binary_type atomic_impl>
-class IsDesul<atomicWrapperDesulBinary<T, atomic_impl>> : public std::true_type {};
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T, T*>::type atomic_impl>
+class IsDesul<atomicWrapperDesulBinary<T, ReturnType, atomic_impl>> : public std::true_type {};
 
-template<typename T, typename DesulAtomicSignature<T>::unary_type atomic_impl>
-class IsDesul<atomicWrapperDesulUnary<T, atomic_impl>> : public std::true_type {};
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T>::type atomic_impl>
+class IsDesul<atomicWrapperDesulUnary<T, ReturnType, atomic_impl>> : public std::true_type {};
 
 template<typename AtomicImplType>
 std::string GetImplName (const AtomicImplType& impl) {
@@ -223,16 +250,21 @@ void TimeAtomicOp(const AtomicImplType& atomic_impl, uint64_t N, uint64_t num_it
 /// Holder struct for all atomic operations
 template<typename AtomicDataType, typename Policy>
 struct atomic_ops {
-    using type = camp::list<std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_add>, AtomicAdd<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_sub>, AtomicSub<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_min>, AtomicMin<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_max>, AtomicMax<Policy>>,
-                                                // These two operations are unary and require some retooling to measure using the same testing loop.
-                                                std::pair<atomicWrapperDesulUnary<AtomicDataType, desul::atomic_fetch_inc>, AtomicInc<Policy>>,
-                                                std::pair<atomicWrapperDesulUnary<AtomicDataType, desul::atomic_fetch_dec>, AtomicDec<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_and>, AtomicAnd<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_or>, AtomicOr<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, desul::atomic_fetch_xor>, AtomicXor<Policy>>>;
+    using type = camp::list<std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_add>, AtomicAdd<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_sub>, AtomicSub<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_min>, AtomicMin<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_max>, AtomicMax<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_inc_mod>, AtomicIncBinary<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_dec_mod>, AtomicDecBinary<Policy>>,
+                                                std::pair<atomicWrapperDesulUnary<AtomicDataType, AtomicDataType, desul::atomic_fetch_inc>, AtomicIncUnary<Policy>>,
+                                                std::pair<atomicWrapperDesulUnary<AtomicDataType, AtomicDataType, desul::atomic_fetch_dec>, AtomicDecUnary<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_and>, AtomicAnd<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_or>, AtomicOr<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_xor>, AtomicXor<Policy>>,
+                                                std::pair<atomicWrapperDesulUnary<const AtomicDataType, AtomicDataType, desul::atomic_load>, AtomicLoad<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, void, desul::atomic_store>, AtomicStore<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_exchange>, AtomicExchange<Policy>>,
+                                                std::pair<atomicWrapperDesulTernary<AtomicDataType, AtomicDataType, desul::atomic_compare_exchange>, AtomicCAS<Policy>>>;
 };
 
 template<typename AtomicDataType, typename AtomicPolicy, typename ExecPolicy>
@@ -268,7 +300,7 @@ int main (int argc, char* argv[]) {
     #if defined (RAJA_ENABLE_CUDA) || defined (RAJA_ENABLE_HIP)
     // Perform an untimed initialization of both desul and RAJA atomics.
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
     // GPU benchmarks
     std::cout << "Executing GPU benchmarks" << std::endl;
     ExecuteBenchmark<int, typename GPUAtomic::policy, ExecPolicyGPU<BLOCK_SZ>>(N);
@@ -277,7 +309,7 @@ int main (int argc, char* argv[]) {
     #if defined (RAJA_ENABLE_OPENMP)
     // Perform an untimed initialization of both desul and RAJA atomics.
     TimeAtomicOp<ExecPolicyOMP, int, true>(AtomicAdd<typename RAJA::policy::omp::omp_atomic>{}, N, 10, 1000, false);
-    TimeAtomicOp<ExecPolicyOMP, int, true>(atomicWrapperDesulBinary<int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
+    TimeAtomicOp<ExecPolicyOMP, int, true>(atomicWrapperDesulBinary<int, int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
 
     // OpenMP benchmarks
     std::cout << "Executing OpenMP benchmarks" << std::endl;
