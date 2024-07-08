@@ -35,7 +35,7 @@ variables:
 
 # Corona
 # Arguments for top level allocation
-  CORONA_SHARED_ALLOC: "--exclusive --time-limit=60m --nodes=1 -o per-resource.count=2"
+  CORONA_SHARED_ALLOC: "--exclusive --time-limit=180m --nodes=1 -o per-resource.count=2"
 # Arguments for job level allocation
   CORONA_JOB_ALLOC: "--nodes=1 --begin-time=+5s"
 # Project specific variants for corona
