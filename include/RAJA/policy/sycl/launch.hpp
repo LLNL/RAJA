@@ -120,7 +120,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 				    launch_params.threads.value[0] * launch_params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if ( launch_params.threads.value[0]  > zero && launch_params.threads.value[1]  > zero && launch_params.threads.value[2] > zero &&
          launch_params.teams.value[0] > zero && launch_params.teams.value[1] > zero && launch_params.teams.value[2]> zero ) {
 
@@ -182,6 +182,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name,
        BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
+    (void*)kernel_name; // quiet the compiler warning about unused variable
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
@@ -199,7 +200,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 				    params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if ( params.threads.value[0]  > zero && params.threads.value[1]  > zero && params.threads.value[2] > zero &&
          params.teams.value[0] > zero && params.teams.value[1] > zero && params.teams.value[2]> zero ) {
 
@@ -253,6 +254,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
          BODY_IN &&body_in, ReduceParams launch_reducers)
   {
+    (void*)kernel_name; // quiet the compiler warning about unused variable
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
@@ -272,7 +274,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 				    launch_params.threads.value[0] * launch_params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if ( launch_params.threads.value[0]  > zero && launch_params.threads.value[1]  > zero && launch_params.threads.value[2] > zero &&
          launch_params.teams.value[0] > zero && launch_params.teams.value[1] > zero && launch_params.teams.value[2]> zero ) {
 
