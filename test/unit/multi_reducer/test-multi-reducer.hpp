@@ -31,6 +31,7 @@ using OpenMPMultiReducerPolicyList = camp::list< RAJA::omp_multi_reduce,
 #if defined(RAJA_ENABLE_CUDA)
 using CudaMultiReducerPolicyList =
   camp::list< RAJA::cuda_multi_reduce_atomic_block_then_atomic_grid_host_init,
+              RAJA::cuda_multi_reduce_atomic_block_then_atomic_grid_host_init_fallback_testing,
               RAJA::cuda_multi_reduce_atomic_global_host_init,
               RAJA::cuda_multi_reduce_atomic_global_no_replication_host_init >;
 #endif
@@ -38,6 +39,7 @@ using CudaMultiReducerPolicyList =
 #if defined(RAJA_ENABLE_HIP)
 using HipMultiReducerPolicyList =
   camp::list< RAJA::hip_multi_reduce_atomic_block_then_atomic_grid_host_init,
+              RAJA::hip_multi_reduce_atomic_block_then_atomic_grid_host_init_fallback_testing,
               RAJA::hip_multi_reduce_atomic_global_host_init,
               RAJA::hip_multi_reduce_atomic_global_no_replication_host_init  >;
 #endif

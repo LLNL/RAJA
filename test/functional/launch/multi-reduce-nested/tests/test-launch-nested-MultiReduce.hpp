@@ -336,7 +336,7 @@ TYPED_TEST_P(LaunchMultiReduceNestedTest, MultiReduceNestedLaunch)
 
   std::vector<DATA_TYPE> container;
 
-  std::vector<size_t> num_bins_max_container({0, 1, 100, 10000});
+  std::vector<size_t> num_bins_max_container({0, 1, 100});
   size_t num_bins_min = 0;
   for (size_t num_bins_max : num_bins_max_container) {
 

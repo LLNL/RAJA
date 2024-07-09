@@ -1516,6 +1516,15 @@ using cuda_multi_reduce_atomic_block_then_atomic_grid_host_init = cuda_multi_red
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
         cuda::ConstantPreferredReplicationConcretizer<2>>,
     cuda::warp_global_xyz<>>;
+// special policy to test that multi-reducers work if there is not enough shmem
+using cuda_multi_reduce_atomic_block_then_atomic_grid_host_init_fallback_testing = cuda_multi_reduce_tuning<
+    cuda::multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic,
+    cuda::SharedAtomicReplicationMaxPow2Concretizer<
+        cuda::ConstantPreferredReplicationConcretizer<0>>,
+    cuda::thread_xyz<>,
+    cuda::GlobalAtomicReplicationMinPow2Concretizer<
+        cuda::ConstantPreferredReplicationConcretizer<2>>,
+    cuda::warp_global_xyz<>>;
 //
 using cuda_multi_reduce_atomic_global_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,

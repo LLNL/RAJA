@@ -1424,6 +1424,15 @@ using hip_multi_reduce_atomic_block_then_atomic_grid_host_init = hip_multi_reduc
     hip::GlobalAtomicReplicationMinPow2Concretizer<
         hip::ConstantPreferredReplicationConcretizer<32>>,
     hip::warp_global_xyz<>>;
+// special policy to test that multi-reducers work if there is not enough shmem
+using hip_multi_reduce_atomic_block_then_atomic_grid_host_init_fallback_testing = hip_multi_reduce_tuning<
+    hip::multi_reduce_algorithm::init_host_combine_block_atomic_then_grid_atomic,
+    hip::SharedAtomicReplicationMaxPow2Concretizer<
+        hip::ConstantPreferredReplicationConcretizer<0>>,
+    hip::thread_xyz<>,
+    hip::GlobalAtomicReplicationMinPow2Concretizer<
+        hip::ConstantPreferredReplicationConcretizer<32>>,
+    hip::warp_global_xyz<>>;
 //
 using hip_multi_reduce_atomic_global_host_init = hip_multi_reduce_tuning<
     hip::multi_reduce_algorithm::init_host_combine_global_atomic,
