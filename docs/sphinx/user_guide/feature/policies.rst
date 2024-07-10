@@ -860,7 +860,7 @@ Each RAJA multi-reduction object must be defined with a 'multi-reduction policy'
 type. Multi-reduction policy types are distinct from loop execution policy types.
 It is important to note the following constraints about RAJA multi-reduction usage:
 
-.. note:: To guarantee correctness, a **multi-reduction policy must be consistent
+.. note:: To guarantee correctness, a **multi-reduction policy must be compatible
           with the loop execution policy** used. For example, a CUDA
           multi-reduction policy must be used when the execution policy is a
           CUDA policy, an OpenMP multi-reduction policy must be used when the

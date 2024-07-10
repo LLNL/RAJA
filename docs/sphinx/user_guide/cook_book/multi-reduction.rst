@@ -36,7 +36,7 @@ Here is the setup for a simple multi-reduction example::
 
   }
 
-Here a simple sum multi-reduction performed in a for loop::
+Here a simple sum multi-reduction performed in a C-style for-loop::
 
   int vsum[num_bins] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -63,8 +63,8 @@ The results of these operations will yield the following values:
 RAJA uses policy types to specify how things are implemented.
 
 The forall *execution policy* specifies how the loop is run by the ``RAJA::forall`` method. The following discussion includes examples of several other RAJA execution policies that could be applied.
-For example ``RAJA::seq_exec`` runs a C-style for loop sequentially on a CPU. The
-``RAJA::cuda_exec_with_reduce<256>`` runs the loop as a CUDA GPU kernel with
+For example ``RAJA::seq_exec`` runs a C-style for-loop sequentially on a CPU. The
+``RAJA::cuda_exec_with_reduce<256>`` runs the operation as a CUDA GPU kernel with
 256 threads per block and other CUDA kernel launch parameters, like the
 number of blocks, optimized for performance with multi_reducers.::
 
@@ -73,8 +73,8 @@ number of blocks, optimized for performance with multi_reducers.::
   // using exec_policy = RAJA::cuda_exec_with_reduce<256>;
   // using exec_policy = RAJA::hip_exec_with_reduce<256>;
 
-The multi-reduction policy specifies how the multi-reduction is done and must match the
-execution policy. For example ``RAJA::seq_multi_reduce`` does a sequential multi-reduction
+The multi-reduction policy specifies how the multi-reduction is done and must be compatible with the
+execution policy. For example, ``RAJA::seq_multi_reduce`` does a sequential multi-reduction
 and can only be used with sequential execution policies. The
 ``RAJA::cuda_multi_reduce_atomic`` policy uses atomics and can only be used with
 cuda execution policies. Similarly for other RAJA execution back-ends, such as
@@ -110,7 +110,7 @@ The results of these operations will yield the following values:
  * ``vsum[8].get() == 100``
  * ``vsum[9].get() == 100``
 
-Another option for the execution policy when using the cuda or hip backends are
+Another option for the execution policy when using the CUDA or HIP backends are
 the base policies which have a boolean parameter to choose between the general
 use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
 
@@ -123,11 +123,11 @@ use ``cuda/hip_exec`` policy and the ``cuda/hip_exec_with_reduce`` policy.::
 Rarely Used MultiReductions
 ---------------------------
 
-Multi-reductions take time and consume resources even if they are not used in a
-loop kernel. If a multi-reducer is conditionally used to set an error flag, even
-if the multi-reduction is not used at runtime in the loop kernel then the setup
+Multi-reductions consume resources even if they are not used in a
+loop kernel. If a multi-reducer is conditionally used to set an error flag, for example, even
+if the multi-reduction is not used at runtime in the loop kernel, then the setup
 and finalization for the multi-reduction is still done and any resources are
-still allocated and deallocated. To minimize these overheads some backends have
+still allocated and deallocated. To minimize these overheads, some backends have
 special policies that minimize the amount of work the multi-reducer does in the
 case that it is not used at runtime even if it is compiled into a loop kernel.
 Here are example RAJA multi-reduction policies that have minimal overhead::

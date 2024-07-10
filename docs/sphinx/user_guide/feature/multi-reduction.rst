@@ -16,7 +16,7 @@ RAJA provides multi-reduction types that allow users to perform a runtime number
 of reduction operations in kernels launched using ``RAJA::forall``, ``RAJA::kernel``,
 and ``RAJA::launch`` methods in a portable, thread-safe manner. Users may
 use as many multi-reduction objects in a loop kernel as they need. If a small
-fixed number of reductions is required in a loop kernel then reductions can be
+fixed number of reductions is required in a loop kernel then standard RAJA reduction objects can be
 used. Available RAJA multi-reduction types are described in this section.
 
 .. note:: All RAJA multi-reduction types are located in the namespace ``RAJA``.
@@ -168,7 +168,7 @@ The results of these operations will yield the following values:
 
 
 
-Here is an example of a bitwise or multi-reduction::
+Here is an example of a bitwise-or multi-reduction::
 
   const int N = 128;
   const int B = 8;
@@ -213,8 +213,8 @@ The results of the multi-reduction start at 120 and increase to 127. In binary
 representation (i.e., bits), :math:`120 = 0b1111000` and :math:`127 = 0b1111111`.
 The bins were picked in such a way that all the integers in a bin had the same
 remainder modulo 8 so their last 3 binary digits were all the same while their
-upper binary digits varied. Because bitwise or keeps all the set bits the upper
-bits are all set because at least one integer in that bin set them, but the last
+upper binary digits varied. Because bitwise-or keeps all the set bits, the upper
+bits are all set because at least one integer in that bin set them. The last
 3 bits were the same in all the integers so the last 3 bits are the same as the
 remainder modulo 8 of the bin number.
 
