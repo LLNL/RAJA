@@ -1430,10 +1430,10 @@ using cuda_reduce_tuning = policy::cuda::cuda_reduce_policy<
 //   the memory used with atomics is initialized on the host. This is faster
 //   overall than other policies on HW with direct host access to device memory
 //   such as the IBM power 9 + Nvidia V100 Sierra/Lassen systems.
-// - *device_fence policies use normal memory accesses with device scope fences
+// - *device_fence* policies use normal memory accesses with device scope fences
 //                in the implementation. This works on all HW.
-// - *block_fence policies use special (atomic) memory accesses that only cache
-//                 in a cache shared by the whole device to avoid having to use
+// - *block_fence* policies use special (atomic) memory accesses that use
+//                 a cache shared by the whole device to avoid having to use
 //                 device scope fences. This improves performance on some HW but
 //                 is more difficult to code correctly.
 using cuda_reduce_device_fence = cuda_reduce_tuning<
