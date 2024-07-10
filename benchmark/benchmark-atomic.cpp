@@ -207,8 +207,8 @@ void TimeAtomicOp(const AtomicImplType& atomic_impl, uint64_t N, uint64_t num_it
     // Allocate memory
     AtomicType* device_value = nullptr;
     int len_array = test_array ? array_size : 1;
-    auto resource  = RAJA::resources::get_resource<typename ExecPolicy::policy>::type::get_default();
-    device_value = static_cast<AtomicType*>(resource.calloc(len_array));
+    camp::resources::Resource resource {RAJA::resources::get_resource<typename ExecPolicy::policy>::type::get_default()};
+    device_value = resource.allocate<AtomicType>(len_array);
 
     timer.start();
     if (test_array) {
@@ -296,8 +296,8 @@ int main (int argc, char* argv[]) {
 
     #if defined (RAJA_ENABLE_CUDA) || defined (RAJA_ENABLE_HIP)
     // Perform an untimed initialization of both desul and RAJA atomics.
-    //TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
-    //TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
+    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
     // GPU benchmarks
     std::cout << "Executing GPU benchmarks" << std::endl;
     ExecuteBenchmark<int, typename GPUAtomic::policy, ExecPolicyGPU<BLOCK_SZ>>(N);
