@@ -896,7 +896,10 @@ cuda/hip_multi_reduce_atomic_block_then_atomic_grid_host_init any CUDA/HIP  The 
                                                                             is combined into the multi-reducer and at
                                                                             the end of the life of the block the shared
                                                                             values are combined into global memory with
-                                                                            atomics.
+                                                                            atomics. If there is not enough shared memory
+                                                                            available this will fall back to using atomics into
+                                                                            global memory only, which may have a
+                                                                            performance penalty.
                                                                             The memory for global atomics is
                                                                             initialized on the host.
 cuda/hip_multi_reduce_atomic_global_host_init                 any CUDA/HIP  The multi-reduction uses atomics into global
