@@ -182,7 +182,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
   exec(RAJA::resources::Resource res, const LaunchParams &params, const char *kernel_name,
        BODY_IN &&body_in, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
-    (void*)kernel_name; // quiet the compiler warning about unused variable
+    (void)kernel_name; // quiet the compiler warning about unused variable
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
@@ -254,7 +254,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
     exec(RAJA::resources::Resource res, const LaunchParams &launch_params, const char *kernel_name,
          BODY_IN &&body_in, ReduceParams launch_reducers)
   {
-    (void*)kernel_name; // quiet the compiler warning about unused variable
+    (void)kernel_name; // quiet the compiler warning about unused variable
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
