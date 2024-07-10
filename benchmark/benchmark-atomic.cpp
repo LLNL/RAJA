@@ -15,7 +15,6 @@
 #include "RAJA/util/Timer.hpp"
 #if defined (RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
 #endif
 #include "desul/atomics.hpp"
 
@@ -27,7 +26,6 @@
 
 /// Conditional compilation for CUDA benchmarks.
 #if defined (RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda.hpp"
 #include "RAJA/policy/cuda/atomic.hpp"
 
 template<int BLOCK_SZ>
@@ -45,7 +43,6 @@ struct GPUAtomic {
 };
 
 #elif defined (RAJA_ENABLE_HIP)
-#include "RAJA/policy/hip.hpp"
 #include "RAJA/policy/hip/atomic.hpp"
 
 template<int M>
@@ -188,10 +185,10 @@ struct atomicWrapperDesulUnary {
 template<typename T>
 class IsDesul : public std::false_type {};
 
-template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T, T*>::type atomic_impl>
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*, T>::type atomic_impl>
 class IsDesul<atomicWrapperDesulBinary<T, ReturnType, atomic_impl>> : public std::true_type {};
 
-template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T>::type atomic_impl>
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*>::type atomic_impl>
 class IsDesul<atomicWrapperDesulUnary<T, ReturnType, atomic_impl>> : public std::true_type {};
 
 template<typename AtomicImplType>
@@ -210,21 +207,21 @@ void TimeAtomicOp(const AtomicImplType& atomic_impl, uint64_t N, uint64_t num_it
     // Allocate memory
     AtomicType* device_value = nullptr;
     int len_array = test_array ? array_size : 1;
-    camp::resources::Resource resource {RAJA::resources::get_resource<typename ExecPolicy::policy>::type::get_default()};
-    device_value = resource.allocate<AtomicType>(len_array);
+    auto resource  = RAJA::resources::get_resource<typename ExecPolicy::policy>::type::get_default();
+    device_value = static_cast<AtomicType*>(resource.calloc(len_array));
 
     timer.start();
     if (test_array) {
-        for (int i = 0; i < num_iterations; ++i) {
-            RAJA::forall<typename ExecPolicy::policy>(RAJA::RangeSegment(0, N),
-            [=] RAJA_HOST_DEVICE(int tid)  {
+        for (uint64_t i = 0; i < num_iterations; ++i) {
+            RAJA::forall<typename ExecPolicy::policy>(RAJA::TypedRangeSegment<uint64_t>(0, N),
+            [=] RAJA_HOST_DEVICE(uint64_t tid)  {
                 atomic_impl(&(device_value[tid % array_size]), AtomicType(1));
             });
         }
     } else {
-        for (int i = 0; i < num_iterations; ++i) {
-            RAJA::forall<typename ExecPolicy::policy>(RAJA::RangeSegment(0, N),
-            [=] RAJA_HOST_DEVICE(int tid)  {
+        for (uint64_t i = 0; i < num_iterations; ++i) {
+            RAJA::forall<typename ExecPolicy::policy>(RAJA::TypedRangeSegment<uint64_t>(0, N),
+            [=] RAJA_HOST_DEVICE(uint64_t tid)  {
                 atomic_impl(device_value, AtomicType(1));
             });
         }
@@ -294,13 +291,13 @@ int main (int argc, char* argv[]) {
     }
     uint64_t N = 1000000000;
     if (argc == 2) {
-        N = std::stoi(argv[1]);
+        N = std::stoll(argv[1]);
     }
 
     #if defined (RAJA_ENABLE_CUDA) || defined (RAJA_ENABLE_HIP)
     // Perform an untimed initialization of both desul and RAJA atomics.
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
-    TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
+    //TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(atomicWrapperDesulBinary<int, int, desul::atomic_fetch_add>{}, N, 10, 1000, false);
+    //TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
     // GPU benchmarks
     std::cout << "Executing GPU benchmarks" << std::endl;
     ExecuteBenchmark<int, typename GPUAtomic::policy, ExecPolicyGPU<BLOCK_SZ>>(N);
