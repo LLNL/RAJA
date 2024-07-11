@@ -359,8 +359,8 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     ::RAJA::resources::Hip res,
     LOOP_BODY&& loop_body)
 {
-  ::RAJA::detail::ScopedAssignment<hipInfo> info_sa(detail::tl_status,
-      hipInfo{func, gridDim, blockDim, &dynamic_smem, res, true});
+  ::RAJA::detail::ScopedAssignment<detail::hipInfo> info_sa(detail::tl_status,
+      detail::hipInfo{func, gridDim, blockDim, &dynamic_smem, res, true});
 
   using return_type = typename std::remove_reference<LOOP_BODY>::type;
   return return_type(std::forward<LOOP_BODY>(loop_body));
