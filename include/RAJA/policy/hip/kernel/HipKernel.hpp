@@ -570,9 +570,12 @@ struct StatementExecutor<
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
+        // Note that there is a circular dependency between the previous setup
+        // of the launch_dims and potential changes to shmem here that is
+        // currently an unresolved issue.
+        //
         auto hip_data = RAJA::hip::make_launch_body(func,
             launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res, data);
-
 
         //
         // Launch the kernel
