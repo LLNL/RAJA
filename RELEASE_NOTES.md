@@ -35,7 +35,8 @@ Notable changes include:
      * Add SYCL reduction support in RAJA::launch
 
   * Build changes/improvements:
-     * Update camp submodule to v2024.07.0 release.
+     * Update camp submodule to v2024.07.0 release. This will be a version
+       constraint for this release in RAJA Spack package.
 
   * Bug fixes/improvements:
      * Fix CMake issue for case when RAJA is used as a submodule dependency.
