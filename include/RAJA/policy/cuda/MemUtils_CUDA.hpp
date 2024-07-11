@@ -362,7 +362,7 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     ::RAJA::resources::Cuda res,
     LOOP_BODY&& loop_body)
 {
-  detail::ScopedAssignment<cudaInfo> info_sa(detail::tl_status,
+  ::RAJA::detail::ScopedAssignment<cudaInfo> info_sa(detail::tl_status,
       cudaInfo{func, gridDim, blockDim, &dynamic_smem, res, true});
 
   using return_type = typename std::remove_reference<LOOP_BODY>::type;
