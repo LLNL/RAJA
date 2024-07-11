@@ -169,32 +169,16 @@ struct hipInfo {
   size_t* dynamic_smem = nullptr;
   ::RAJA::resources::Hip res{::RAJA::resources::Hip::HipFromStream(0,0)};
   bool setup_reducers = false;
+};
+struct hipStatusInfo : hipInfo {
 #if defined(RAJA_ENABLE_OPENMP)
-  hipInfo* thread_states = nullptr;
   omp::mutex lock;
 #endif
 };
 
-//! class that changes a value on construction then resets it at destruction
-template <typename T>
-class SetterResetter
-{
-public:
-  SetterResetter(T& val, T new_val) : m_val(val), m_old_val(val)
-  {
-    m_val = new_val;
-  }
-  SetterResetter(const SetterResetter&) = delete;
-  ~SetterResetter() { m_val = m_old_val; }
+extern hipStatusInfo g_status;
 
-private:
-  T& m_val;
-  T m_old_val;
-};
-
-extern hipInfo g_status;
-
-extern hipInfo tl_status;
+extern hipStatusInfo tl_status;
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp threadprivate(tl_status)
 #endif
@@ -362,6 +346,10 @@ RAJA_INLINE
 ::RAJA::resources::Hip currentResource() { return detail::tl_status.res; }
 
 //! create copy of loop_body that is setup for device execution
+//
+// Note: This is done to setup the Reducer and MultiReducer objects through
+// their copy constructors. Both look at tl_status to setup per kernel launch
+// resources.
 template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     const void* func,
@@ -371,16 +359,8 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
     ::RAJA::resources::Hip res,
     LOOP_BODY&& loop_body)
 {
-  detail::SetterResetter<bool> setup_reducers_srer(
-      detail::tl_status.setup_reducers, true);
-  detail::SetterResetter<::RAJA::resources::Hip> res_srer(
-      detail::tl_status.res, res);
-  detail::SetterResetter<size_t*> dynamic_smem_srer(
-      detail::tl_status.dynamic_smem, &dynamic_smem);
-
-  detail::tl_status.func = func;
-  detail::tl_status.gridDim = gridDim;
-  detail::tl_status.blockDim = blockDim;
+  detail::ScopedAssignment<hipInfo> info_sa(detail::tl_status,
+      hipInfo{func, gridDim, blockDim, &dynamic_smem, res, true});
 
   using return_type = typename std::remove_reference<LOOP_BODY>::type;
   return return_type(std::forward<LOOP_BODY>(loop_body));
