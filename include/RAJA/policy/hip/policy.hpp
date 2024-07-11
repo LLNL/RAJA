@@ -1339,10 +1339,10 @@ using hip_reduce_tuning = policy::hip::hip_reduce_policy<
 //   the memory used with atomics is initialized on the host. This is faster
 //   overall than other policies on HW with direct host access to device memory
 //   such as the AMD MI300A El Capitan/Tuolumne systems.
-// - *device_fence policies use normal memory accesses with device scope fences
+// - *device_fence* policies use normal memory accesses with device scope fences
 //                in the implementation. This works on all HW.
-// - *block_fence policies use special (atomic) memory accesses that only cache
-//                 in a cache shared by the whole device to avoid having to use
+// - *block_fence* policies use special (atomic) memory accesses that use
+//                 a cache shared by the whole device to avoid having to use
 //                 device scope fences. This improves performance on some HW but
 //                 is more difficult to code correctly.
 using hip_reduce_device_fence = hip_reduce_tuning<

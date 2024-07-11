@@ -18,7 +18,7 @@ Instead, RAJA provides reduction types that allow users to perform reduction
 operations in kernels launched using ``RAJA::forall``, ``RAJA::kernel``,
 and ``RAJA::launch`` methods in a portable, thread-safe manner. Users may
 use as many reduction objects in a loop kernel as they need. If a runtime number
-of reductions is required in a loop kernel then multi-reductions can be used.
+of reductions is required in a loop kernel, then multi-reductions can be used.
 Available RAJA reduction types are described in this section.
 
 .. note:: All RAJA reduction types are located in the namespace ``RAJA``.

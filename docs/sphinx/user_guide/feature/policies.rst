@@ -860,7 +860,7 @@ Each RAJA multi-reduction object must be defined with a 'multi-reduction policy'
 type. Multi-reduction policy types are distinct from loop execution policy types.
 It is important to note the following constraints about RAJA multi-reduction usage:
 
-.. note:: To guarantee correctness, a **multi-reduction policy must be consistent
+.. note:: To guarantee correctness, a **multi-reduction policy must be compatible
           with the loop execution policy** used. For example, a CUDA
           multi-reduction policy must be used when the execution policy is a
           CUDA policy, an OpenMP multi-reduction policy must be used when the
@@ -896,7 +896,10 @@ cuda/hip_multi_reduce_atomic_block_then_atomic_grid_host_init any CUDA/HIP  The 
                                                                             is combined into the multi-reducer and at
                                                                             the end of the life of the block the shared
                                                                             values are combined into global memory with
-                                                                            atomics.
+                                                                            atomics. If there is not enough shared memory
+                                                                            available this will fall back to using atomics into
+                                                                            global memory only, which may have a
+                                                                            performance penalty.
                                                                             The memory for global atomics is
                                                                             initialized on the host.
 cuda/hip_multi_reduce_atomic_global_host_init                 any CUDA/HIP  The multi-reduction uses atomics into global
