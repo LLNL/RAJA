@@ -163,6 +163,7 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct hipInfo {
+  const void* func = nullptr;
   hip_dim_t gridDim{0, 0, 0};
   hip_dim_t blockDim{0, 0, 0};
   size_t* dynamic_smem = nullptr;
@@ -315,7 +316,12 @@ size_t currentDynamicShmem() { return *detail::tl_status.dynamic_smem; }
 
 //! get maximum dynamic shared memory for current launch
 RAJA_INLINE
-size_t maxDynamicShmem() { return hip::device_prop().sharedMemPerBlock; }
+size_t maxDynamicShmem()
+{
+  hipFuncAttributes func_attr;
+  hipErrchk(hipFuncGetAttributes(&func_attr, detail::tl_status.func));
+  return func_attr.maxDynamicSharedSizeBytes;
+}
 
 constexpr size_t dynamic_smem_allocation_failure = std::numeric_limits<size_t>::max();
 
@@ -358,6 +364,7 @@ RAJA_INLINE
 //! create copy of loop_body that is setup for device execution
 template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
+    const void* func,
     hip_dim_t gridDim,
     hip_dim_t blockDim,
     size_t& dynamic_smem,
@@ -371,6 +378,7 @@ RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   detail::SetterResetter<size_t*> dynamic_smem_srer(
       detail::tl_status.dynamic_smem, &dynamic_smem);
 
+  detail::tl_status.func = func;
   detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 
