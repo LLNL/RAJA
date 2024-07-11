@@ -32,11 +32,13 @@ Notable changes include:
      * Added atomicLoad and atomicStore routines for correctness in some
        use cases.
      * Added OpenMP 5.1 implementations for atomicMin and atomicMax.
+     * Add SYCL reduction support in RAJA::launch
 
   * Build changes/improvements:
      * Update camp submodule to v2024.07.0 release.
 
   * Bug fixes/improvements:
+     * Fix CMake issue for case when RAJA is used as a submodule dependency.
      * Various fixes and improvements to builtin atomic support.
      * Fixes and improvements to other atomic operations:
         * Modified HIP and CUDA generic atomic compare and swap algorithms
@@ -49,7 +51,8 @@ Notable changes include:
         * Use atomicAdd as a fallback for atomicSub in CUDA.
         * Removed checks where __CUDA_ARCH__ is less than 350 since RAJA 
           requires that as the minimum supported architecture (CMake check).
-     * Add SYCL reduction support in RAJA::launch
+     * Fix issue related to the fact that only C version of memcpy is supported
+       in device code.
      * Fixed issues with naming RAJA forall::kernels when using CUDA.
      * Fixes in SYCL back-end for RAJA::launch.
      * Fixed some issues in examples.
