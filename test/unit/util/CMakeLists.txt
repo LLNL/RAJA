@@ -21,4 +21,12 @@ raja_add_test(
   NAME test-span
   SOURCES test-span.cpp)
 
+raja_add_test(
+  NAME test-fraction
+  SOURCES test-fraction.cpp)
+
+raja_add_test(
+  NAME test-math
+  SOURCES test-math.cpp)
+
 add_subdirectory(operator)

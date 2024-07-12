@@ -22,15 +22,15 @@
 //
 // Cartesian product of types used in parameterized tests
 //
-using @SORT_BACKEND@@UTIL_SORT@SortTypes =
-  Test< camp::cartesian_product<@SORT_BACKEND@@UTIL_SORT@SortSorters,
-                                @SORT_BACKEND@ResourceList,
+using @ALG_BACKEND@@UTIL_ALG@SortTypes =
+  Test< camp::cartesian_product<@ALG_BACKEND@@UTIL_ALG@SortSorters,
+                                @ALG_BACKEND@ResourceList,
                                 SortKeyTypeList,
-                                SortMaxNList@SORT_SIZE@ > >::Types;
+                                SortMaxNList@ALG_SIZE@ > >::Types;
 
 //
 // Instantiate parameterized test
 //
-INSTANTIATE_TYPED_TEST_SUITE_P( @SORT_BACKEND@,
+INSTANTIATE_TYPED_TEST_SUITE_P( @ALG_BACKEND@,
                                 SortUnitTest,
-                                @SORT_BACKEND@@UTIL_SORT@SortTypes );
+                                @ALG_BACKEND@@UTIL_ALG@SortTypes );

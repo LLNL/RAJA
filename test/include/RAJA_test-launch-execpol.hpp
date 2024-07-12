@@ -68,7 +68,7 @@ using Hip_launch_policies = camp::list<
 
 using sycl_policies = camp::list<
   RAJA::LaunchPolicy<RAJA::sycl_launch_t<true>>,
-  RAJA::LoopPolicy<RAJA::sycl_global_item_0>>;
+  RAJA::LoopPolicy<RAJA::sycl_global_item_2>>;
 
 using Sycl_launch_policies = camp::list<
       sycl_policies

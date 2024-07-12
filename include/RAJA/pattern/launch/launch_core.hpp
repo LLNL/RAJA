@@ -174,10 +174,14 @@ public:
   template<typename T>
   RAJA_HOST_DEVICE T* getSharedMemory(size_t bytes)
   {
-    T * mem_ptr = &((T*) shared_mem_ptr)[shared_mem_offset];
+
+    //Calculate offset in bytes with a char pointer
+    void* mem_ptr = static_cast<char *>(shared_mem_ptr) + shared_mem_offset;
 
     shared_mem_offset += bytes*sizeof(T);
-    return mem_ptr;
+
+    //convert to desired type
+    return static_cast<T*>(mem_ptr);
   }
 
   /*
@@ -370,23 +374,21 @@ void launch(ExecPlace place, const LaunchParams &launch_params, ReduceParams&&..
 }
 
 
-
-
 // Helper function to retrieve a resource based on the run-time policy - if a device is active
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 template<typename T, typename U>
 RAJA::resources::Resource Get_Runtime_Resource(T host_res, U device_res, RAJA::ExecPlace device){
   if(device == RAJA::ExecPlace::DEVICE) {return RAJA::resources::Resource(device_res);}
   else { return RAJA::resources::Resource(host_res); }
 }
-#else
+#endif
+
 template<typename T>
 RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device){
   if(device == RAJA::ExecPlace::DEVICE) {RAJA_ABORT_OR_THROW("Device is not enabled");}
 
   return RAJA::resources::Resource(host_res);
 }
-#endif
 
 //Launch API which takes team resource struct and supports new reducers
 template <typename POLICY_LIST, typename ... ReduceParams>

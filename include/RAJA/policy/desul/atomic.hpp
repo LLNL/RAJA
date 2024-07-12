@@ -30,8 +30,32 @@ RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
-atomicAdd(AtomicPolicy, T volatile *acc, T value) {
-  return desul::atomic_fetch_add(const_cast<T*>(acc),
+atomicLoad(AtomicPolicy, T *acc)
+{
+  return desul::atomic_load(acc,
+                            raja_default_desul_order{},
+                            raja_default_desul_scope{});
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename AtomicPolicy, typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE void
+atomicStore(AtomicPolicy, T *acc, T value)
+{
+  desul::atomic_store(acc,
+                      value,
+                      raja_default_desul_order{},
+                      raja_default_desul_scope{});
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename AtomicPolicy, typename T>
+RAJA_HOST_DEVICE
+RAJA_INLINE T
+atomicAdd(AtomicPolicy, T *acc, T value)
+{
+  return desul::atomic_fetch_add(acc,
                                  value,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
@@ -41,8 +65,9 @@ RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
 RAJA_INLINE T
-atomicSub(AtomicPolicy, T volatile *acc, T value) {
-  return desul::atomic_fetch_sub(const_cast<T*>(acc),
+atomicSub(AtomicPolicy, T *acc, T value)
+{
+  return desul::atomic_fetch_sub(acc,
                                  value,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
@@ -51,9 +76,9 @@ atomicSub(AtomicPolicy, T volatile *acc, T value) {
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicMin(AtomicPolicy, T volatile *acc, T value)
+RAJA_INLINE T atomicMin(AtomicPolicy, T *acc, T value)
 {
-  return desul::atomic_fetch_min(const_cast<T*>(acc),
+  return desul::atomic_fetch_min(acc,
                                  value,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
@@ -62,9 +87,9 @@ RAJA_INLINE T atomicMin(AtomicPolicy, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicMax(AtomicPolicy, T volatile *acc, T value)
+RAJA_INLINE T atomicMax(AtomicPolicy, T *acc, T value)
 {
-  return desul::atomic_fetch_max(const_cast<T*>(acc),
+  return desul::atomic_fetch_max(acc,
                                  value,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
@@ -73,9 +98,9 @@ RAJA_INLINE T atomicMax(AtomicPolicy, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicInc(AtomicPolicy, T volatile *acc)
+RAJA_INLINE T atomicInc(AtomicPolicy, T *acc)
 {
-  return desul::atomic_fetch_inc(const_cast<T*>(acc),
+  return desul::atomic_fetch_inc(acc,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
 }
@@ -83,22 +108,22 @@ RAJA_INLINE T atomicInc(AtomicPolicy, T volatile *acc)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicInc(AtomicPolicy, T volatile *acc, T val)
+RAJA_INLINE T atomicInc(AtomicPolicy, T *acc, T val)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return desul::atomic_fetch_inc_mod(const_cast<T*>(acc),
-                                          val,
-                                          raja_default_desul_order{},
-                                          raja_default_desul_scope{});
+  return desul::atomic_fetch_inc_mod(acc,
+                                     val,
+                                     raja_default_desul_order{},
+                                     raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicDec(AtomicPolicy, T volatile *acc)
+RAJA_INLINE T atomicDec(AtomicPolicy, T *acc)
 {
-  return desul::atomic_fetch_dec(const_cast<T*>(acc),
+  return desul::atomic_fetch_dec(acc,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
 }
@@ -106,22 +131,22 @@ RAJA_INLINE T atomicDec(AtomicPolicy, T volatile *acc)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicDec(AtomicPolicy, T volatile *acc, T val)
+RAJA_INLINE T atomicDec(AtomicPolicy, T *acc, T val)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return desul::atomic_fetch_dec_mod(const_cast<T*>(acc),
-                                          val,
-                                          raja_default_desul_order{},
-                                          raja_default_desul_scope{});
+  return desul::atomic_fetch_dec_mod(acc,
+                                     val,
+                                     raja_default_desul_order{},
+                                     raja_default_desul_scope{});
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicAnd(AtomicPolicy, T volatile *acc, T value)
+RAJA_INLINE T atomicAnd(AtomicPolicy, T *acc, T value)
 {
-  return desul::atomic_fetch_and(const_cast<T*>(acc),
+  return desul::atomic_fetch_and(acc,
                                  value,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
@@ -130,9 +155,9 @@ RAJA_INLINE T atomicAnd(AtomicPolicy, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicOr(AtomicPolicy, T volatile *acc, T value)
+RAJA_INLINE T atomicOr(AtomicPolicy, T *acc, T value)
 {
-  return desul::atomic_fetch_or(const_cast<T*>(acc),
+  return desul::atomic_fetch_or(acc,
                                 value,
                                 raja_default_desul_order{},
                                 raja_default_desul_scope{});
@@ -141,9 +166,9 @@ RAJA_INLINE T atomicOr(AtomicPolicy, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicXor(AtomicPolicy, T volatile *acc, T value)
+RAJA_INLINE T atomicXor(AtomicPolicy, T *acc, T value)
 {
-  return desul::atomic_fetch_xor(const_cast<T*>(acc),
+  return desul::atomic_fetch_xor(acc,
                                  value,
                                  raja_default_desul_order{},
                                  raja_default_desul_scope{});
@@ -152,9 +177,9 @@ RAJA_INLINE T atomicXor(AtomicPolicy, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicExchange(AtomicPolicy, T volatile *acc, T value)
+RAJA_INLINE T atomicExchange(AtomicPolicy, T *acc, T value)
 {
-  return desul::atomic_exchange(const_cast<T*>(acc),
+  return desul::atomic_exchange(acc,
                                 value,
                                 raja_default_desul_order{},
                                 raja_default_desul_scope{});
@@ -163,9 +188,9 @@ RAJA_INLINE T atomicExchange(AtomicPolicy, T volatile *acc, T value)
 RAJA_SUPPRESS_HD_WARN
 template <typename AtomicPolicy, typename T>
 RAJA_HOST_DEVICE
-RAJA_INLINE T atomicCAS(AtomicPolicy, T volatile *acc, T compare, T value)
+RAJA_INLINE T atomicCAS(AtomicPolicy, T *acc, T compare, T value)
 {
-  return desul::atomic_compare_exchange(const_cast<T*>(acc),
+  return desul::atomic_compare_exchange(acc,
                                         compare,
                                         value,
                                         raja_default_desul_order{},

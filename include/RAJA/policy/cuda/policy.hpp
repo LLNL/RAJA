@@ -22,6 +22,7 @@
 
 #if defined(RAJA_CUDA_ACTIVE)
 
+#include <cstddef>
 #include <utility>
 
 #include "RAJA/pattern/reduce.hpp"
@@ -78,6 +79,110 @@ struct IndexGlobal;
 template<typename ...indexers>
 struct IndexFlatten;
 
+/*!
+ * Use the max occupancy of a kernel on the current device when launch
+ * parameters are not fully determined.
+ * Note that the maximum occupancy of the kernel may be less than the maximum
+ * occupancy of the device in terms of total threads.
+ */
+struct MaxOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+
+    IdxT func_max_blocks_per_device = func_max_blocks_per_sm * device_sm_per_device;
+
+    return func_max_blocks_per_device;
+  }
+};
+
+/*!
+ * Use a fraction and an offset of the max occupancy of a kernel on the current
+ * device when launch parameters are not fully determined.
+ * The following formula is used, with care to avoid zero, to determine the
+ * maximum grid size:
+ * (Fraction * kernel_max_blocks_per_sm + BLOCKS_PER_SM_OFFSET) * device_sm
+ */
+template < typename t_Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
+struct FractionOffsetOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    using Fraction = typename t_Fraction::template rebind<IdxT>;
+
+    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+
+    if (Fraction::multiply(func_max_blocks_per_sm) > IdxT(0)) {
+      func_max_blocks_per_sm = Fraction::multiply(func_max_blocks_per_sm);
+    }
+
+    if (IdxT(std::ptrdiff_t(func_max_blocks_per_sm) + BLOCKS_PER_SM_OFFSET) > IdxT(0)) {
+      func_max_blocks_per_sm = IdxT(std::ptrdiff_t(func_max_blocks_per_sm) + BLOCKS_PER_SM_OFFSET);
+    }
+
+    IdxT func_max_blocks_per_device = func_max_blocks_per_sm * device_sm_per_device;
+
+    return func_max_blocks_per_device;
+  }
+};
+
+/*!
+ * Use an occupancy that is less than the max occupancy of the device when
+ * launch parameters are not fully determined.
+ * Use the MaxOccupancyConcretizer if the maximum occupancy of the kernel is
+ * below the maximum occupancy of the device.
+ * Otherwise use the given AvoidMaxOccupancyCalculator to determine the
+ * maximum grid size.
+ */
+template < typename AvoidMaxOccupancyConcretizer >
+struct AvoidDeviceMaxThreadOccupancyConcretizer
+{
+  template < typename IdxT, typename Data >
+  static IdxT get_max_grid_size(Data const& data)
+  {
+    IdxT device_max_threads_per_sm = data.device_max_threads_per_sm;
+    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
+    IdxT func_threads_per_block = data.func_threads_per_block;
+
+    IdxT func_max_threads_per_sm = func_threads_per_block * func_max_blocks_per_sm;
+
+    if (func_max_threads_per_sm < device_max_threads_per_sm) {
+      return MaxOccupancyConcretizer::template get_max_grid_size<IdxT>(data);
+    } else {
+      return AvoidMaxOccupancyConcretizer::template get_max_grid_size<IdxT>(data);
+    }
+  }
+};
+
+
+enum struct reduce_algorithm : int
+{
+  combine_last_block,
+  init_device_combine_atomic_block,
+  init_host_combine_atomic_block
+};
+
+enum struct block_communication_mode : int
+{
+  device_fence,
+  block_fence
+};
+
+template < reduce_algorithm t_algorithm, block_communication_mode t_comm_mode,
+           size_t t_replication, size_t t_atomic_stride >
+struct ReduceTuning
+{
+  static constexpr reduce_algorithm algorithm = t_algorithm;
+  static constexpr block_communication_mode comm_mode = t_comm_mode;
+  static constexpr size_t replication = t_replication;
+  static constexpr size_t atomic_stride = t_atomic_stride;
+};
+
 }  // namespace cuda
 
 namespace policy
@@ -100,7 +205,8 @@ struct cuda_flatten_indexer : public RAJA::make_policy_pattern_launch_platform_t
   using IterationGetter = RAJA::cuda::IndexFlatten<_IterationGetters...>;
 };
 
-template <typename _IterationMapping, typename _IterationGetter, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
+template <typename _IterationMapping, typename _IterationGetter, typename _LaunchConcretizer,
+          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
 struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Policy::cuda,
                        RAJA::Pattern::forall,
@@ -108,17 +214,17 @@ struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                        RAJA::Platform::cuda> {
   using IterationMapping = _IterationMapping;
   using IterationGetter = _IterationGetter;
+  using LaunchConcretizer = _LaunchConcretizer;
 };
 
-template <bool Async, int num_threads = named_usage::unspecified, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
+template <bool Async, int num_threads = named_usage::unspecified,
+          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 struct cuda_launch_explicit_t : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
                                 RAJA::Pattern::region,
                                 detail::get_launch<Async>::value,
                                 RAJA::Platform::cuda> {
 };
-
-
 
 
 //
@@ -156,8 +262,8 @@ struct unordered_cuda_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <bool maybe_atomic>
-struct cuda_reduce_base
+template < typename tuning >
+struct cuda_reduce_policy
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
                                                 RAJA::Pattern::reduce,
@@ -178,9 +284,73 @@ struct cuda_atomic_explicit{};
  */
 using cuda_atomic = cuda_atomic_explicit<seq_atomic>;
 
-using cuda_reduce = cuda_reduce_base<false>;
 
-using cuda_reduce_atomic = cuda_reduce_base<true>;
+template < RAJA::cuda::reduce_algorithm algorithm,
+           RAJA::cuda::block_communication_mode comm_mode,
+           size_t replication = named_usage::unspecified,
+           size_t atomic_stride = named_usage::unspecified >
+using cuda_reduce_tuning = cuda_reduce_policy< RAJA::cuda::ReduceTuning<
+    algorithm, comm_mode, replication, atomic_stride> >;
+
+// Policies for RAJA::Reduce* objects with specific behaviors.
+// - *atomic* policies may use atomics to combine partial results and falls back
+//   on a non-atomic policy when atomics can't be used with the given type. The
+//   use of atomics leads to order of operation differences which change the
+//   results of floating point sum reductions run to run. The memory used with
+//   atomics is initialized on the device which can be expensive on some HW.
+//   On some HW this is faster overall than the non-atomic policies.
+// - *atomic_host* policies are similar to the atomic policies above. However
+//   the memory used with atomics is initialized on the host which is
+//   significantly cheaper on some HW. On some HW this is faster overall than
+//   the non-atomic and atomic policies.
+// - *device_fence policies use normal memory accesses with device scope fences
+//                in the implementation. This works on all HW.
+// - *block_fence policies use special (atomic) memory accesses that only cache
+//                 in a cache shared by the whole device to avoid having to use
+//                 device scope fences. This improves performance on some HW but
+//                 is more difficult to code correctly.
+using cuda_reduce_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::combine_last_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::combine_last_block,
+    RAJA::cuda::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_device_init_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_device_init_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_device_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_host_init_device_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::device_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+///
+using cuda_reduce_atomic_host_init_block_fence = cuda_reduce_tuning<
+    RAJA::cuda::reduce_algorithm::init_host_combine_atomic_block,
+    RAJA::cuda::block_communication_mode::block_fence,
+    named_usage::unspecified, named_usage::unspecified>;
+
+// Policy for RAJA::Reduce* objects that gives the same answer every time when
+// used in the same way
+using cuda_reduce = cuda_reduce_device_fence;
+
+// Policy for RAJA::Reduce* objects that may use atomics and may not give the
+// same answer every time when used in the same way
+using cuda_reduce_atomic = cuda_reduce_atomic_host_init_device_fence;
+
+// Policy for RAJA::Reduce* objects that lets you select the default atomic or
+// non-atomic policy with a bool
+template < bool with_atomic >
+using cuda_reduce_base = std::conditional_t<with_atomic, cuda_reduce_atomic, cuda_reduce>;
 
 
 // Policy for RAJA::statement::Reduce that reduces threads in a block
@@ -235,6 +405,7 @@ struct cuda_thread_masked_loop {};
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
+constexpr const RAJA::Index_type ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE = 32;
 constexpr const RAJA::Index_type WARP_SIZE = 32;
 constexpr const RAJA::Index_type MAX_BLOCK_SIZE = 1024;
 constexpr const RAJA::Index_type MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
@@ -882,54 +1053,181 @@ using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 } // namespace cuda
 
+// contretizers used in forall, scan, and sort policies
+
+using CudaAvoidDeviceMaxThreadOccupancyConcretizer = cuda::AvoidDeviceMaxThreadOccupancyConcretizer<cuda::FractionOffsetOccupancyConcretizer<Fraction<size_t, 1, 1>, -1>>;
+
+template < typename Fraction, std::ptrdiff_t BLOCKS_PER_SM_OFFSET >
+using CudaFractionOffsetOccupancyConcretizer = cuda::FractionOffsetOccupancyConcretizer<Fraction, BLOCKS_PER_SM_OFFSET>;
+
+using CudaMaxOccupancyConcretizer = cuda::MaxOccupancyConcretizer;
+
+using CudaReduceDefaultConcretizer = CudaMaxOccupancyConcretizer;
+
+using CudaDefaultConcretizer = CudaMaxOccupancyConcretizer;
+
 // policies usable with forall, scan, and sort
+
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_grid_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>,
+    CudaDefaultConcretizer, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_grid_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>,
+    CudaDefaultConcretizer, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE, bool Async = false>
 using cuda_exec_grid = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE>
 using cuda_exec_grid_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE, GRID_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE, GRID_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using cuda_exec = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::Direct, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_occ_calc_explicit = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
 using cuda_exec_occ_calc_explicit_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, BLOCKS_PER_SM, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 using cuda_exec_occ_calc = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
 
 template <size_t BLOCK_SIZE>
 using cuda_exec_occ_calc_async = policy::cuda::cuda_exec_explicit<
-    iteration_mapping::StridedLoop, cuda::global_x<BLOCK_SIZE>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_occ_max_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_occ_max_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_occ_max = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE>
+using cuda_exec_occ_max_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaMaxOccupancyConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Fraction, bool Async = false>
+using cuda_exec_occ_fraction_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaFractionOffsetOccupancyConcretizer<Fraction, 0>, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Fraction>
+using cuda_exec_occ_fraction_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaFractionOffsetOccupancyConcretizer<Fraction, 0>, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, typename Fraction, bool Async = false>
+using cuda_exec_occ_fraction = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaFractionOffsetOccupancyConcretizer<Fraction, 0>, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, typename Fraction>
+using cuda_exec_occ_fraction_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaFractionOffsetOccupancyConcretizer<Fraction, 0>, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Concretizer, bool Async = false>
+using cuda_exec_occ_custom_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    Concretizer, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, typename Concretizer>
+using cuda_exec_occ_custom_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    Concretizer, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, typename Concretizer, bool Async = false>
+using cuda_exec_occ_custom = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    Concretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, typename Concretizer>
+using cuda_exec_occ_custom_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    Concretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_with_reduce_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaReduceDefaultConcretizer, BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_with_reduce_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaReduceDefaultConcretizer, BLOCKS_PER_SM, true>;
+
+template <size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_with_reduce = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, Async>;
+
+template <size_t BLOCK_SIZE>
+using cuda_exec_with_reduce_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::StridedLoop<named_usage::unspecified>, cuda::global_x<BLOCK_SIZE>,
+    CudaReduceDefaultConcretizer, policy::cuda::MIN_BLOCKS_PER_SM, true>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
+using cuda_exec_base_explicit = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+    cuda_exec_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
+using cuda_exec_base_explicit_async = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
+    cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
+using cuda_exec_base = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE, Async>,
+    cuda_exec<BLOCK_SIZE, Async>>;
+
+template <bool with_reduce, size_t BLOCK_SIZE>
+using cuda_exec_base_async = std::conditional_t<with_reduce,
+    cuda_exec_with_reduce_async<BLOCK_SIZE>,
+    cuda_exec_async<BLOCK_SIZE>>;
+
 
 // policies usable with WorkGroup
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM, bool Async = false>
@@ -951,6 +1249,12 @@ using policy::cuda::cuda_atomic;
 using policy::cuda::cuda_atomic_explicit;
 
 // policies usable with reducers
+using policy::cuda::cuda_reduce_device_fence;
+using policy::cuda::cuda_reduce_block_fence;
+using policy::cuda::cuda_reduce_atomic_device_init_device_fence;
+using policy::cuda::cuda_reduce_atomic_device_init_block_fence;
+using policy::cuda::cuda_reduce_atomic_host_init_device_fence;
+using policy::cuda::cuda_reduce_atomic_host_init_block_fence;
 using policy::cuda::cuda_reduce_base;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_atomic;
@@ -964,7 +1268,7 @@ using cuda_warp_direct = RAJA::policy::cuda::cuda_indexer<
     kernel_sync_requirement::none,
     cuda::thread_x<RAJA::policy::cuda::WARP_SIZE>>;
 using cuda_warp_loop = RAJA::policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     cuda::thread_x<RAJA::policy::cuda::WARP_SIZE>>;
 
@@ -996,13 +1300,13 @@ using cuda_indexer_direct = policy::cuda::cuda_indexer<
 
 template < typename ... indexers >
 using cuda_indexer_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
 template < typename ... indexers >
 using cuda_indexer_syncable_loop = policy::cuda::cuda_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::sync,
     indexers...>;
 
@@ -1014,7 +1318,7 @@ using cuda_flatten_indexer_direct = policy::cuda::cuda_flatten_indexer<
 
 template < typename ... indexers >
 using cuda_flatten_indexer_loop = policy::cuda::cuda_flatten_indexer<
-    iteration_mapping::StridedLoop,
+    iteration_mapping::StridedLoop<named_usage::unspecified>,
     kernel_sync_requirement::none,
     indexers...>;
 
