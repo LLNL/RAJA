@@ -237,7 +237,7 @@ struct CudaKernelLauncherGetter
   using type = camp::decay<decltype(&internal::CudaKernelLauncherFixed<BlockSize, BlocksPerSM, Data, executor_t>)>;
   static constexpr type get() noexcept
   {
-    return internal::CudaKernelLauncherFixed<BlockSize, BlocksPerSM, Data, executor_t>;
+    return &internal::CudaKernelLauncherFixed<BlockSize, BlocksPerSM, Data, executor_t>;
   }
 };
 
@@ -251,7 +251,7 @@ struct CudaKernelLauncherGetter<0, 0, Data, executor_t>
   using type = camp::decay<decltype(&internal::CudaKernelLauncher<Data, executor_t>)>;
   static constexpr type get() noexcept
   {
-    return internal::CudaKernelLauncher<Data, executor_t>;
+    return &internal::CudaKernelLauncher<Data, executor_t>;
   }
 };
 
@@ -281,10 +281,15 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
 
   using kernelGetter_t = CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, (blocks_per_sm <= 0) ? 0 : blocks_per_sm, Data, executor_t>;
 
+  inline static const void* get_func()
+  {
+    return reinterpret_cast<const void*>(kernelGetter_t::get());
+  }
+
   inline static void recommended_blocks_threads(size_t shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
-    auto func = reinterpret_cast<const void*>(kernelGetter_t::get());
+    auto func = Self::get_func();
 
     if (num_blocks <= 0) {
 
@@ -363,7 +368,7 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
   inline static void max_blocks(size_t shmem_size,
       int &max_blocks, int actual_threads)
   {
-    auto func = reinterpret_cast<const void*>(kernelGetter_t::get());
+    auto func = Self::get_func();
 
     if (num_blocks <= 0) {
 
@@ -399,17 +404,6 @@ struct CudaLaunchHelper<cuda_explicit_launch<async0, num_blocks, num_threads, bl
       max_blocks = num_blocks;
 
     }
-  }
-
-  static void launch(Data &&data,
-                     internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     RAJA::resources::Cuda res)
-  {
-    auto func = kernelGetter_t::get();
-
-    void *args[] = {(void*)&data};
-    RAJA::cuda::launch((const void*)func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, async);
   }
 };
 
@@ -592,17 +586,23 @@ struct StatementExecutor<
       }
 
       {
+        auto func = launch_t::get_func();
+
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
-        auto cuda_data = RAJA::cuda::make_launch_body(
+        // Note that there is a circular dependency between the previous setup
+        // of the launch_dims and potential changes to shmem here that is
+        // currently an unresolved issue.
+        //
+        auto cuda_data = RAJA::cuda::make_launch_body(func,
             launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res, data);
 
-
         //
-        // Launch the kernels
+        // Launch the kernel
         //
-        launch_t::launch(std::move(cuda_data), launch_dims, shmem, res);
+        void *args[] = {(void*)&cuda_data};
+        RAJA::cuda::launch(func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, launch_t::async);
       }
     }
   }
