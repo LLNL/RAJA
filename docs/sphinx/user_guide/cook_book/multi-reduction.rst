@@ -137,7 +137,7 @@ Here are example RAJA multi-reduction policies that have minimal overhead::
   // using rarely_used_multi_reduce_policy = RAJA::cuda_multi_reduce_atomic_low_performance_low_overhead;
   // using rarely_used_multi_reduce_policy = RAJA::hip_multi_reduce_atomic_low_performance_low_overhead;
 
-Here is a simple rarely used bitwise or multi-reduction performed using RAJA::
+Here is a simple rarely used bitwise-or multi-reduction performed using RAJA::
 
   RAJA::MultiReduceBitOr<rarely_used_multi_reduce_policy, int> vor(num_bins, 0);
 

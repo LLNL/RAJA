@@ -181,7 +181,7 @@ Here is an example of a bitwise-or multi-reduction::
     bins[i] = i % B;
   }
 
-  // Create a bitwise or multi-reduction object with initial value of '0'
+  // Create a bitwise-or multi-reduction object with initial value of '0'
   RAJA::MultiReduceBitOr< RAJA::omp_multi_reduce, int > vor(B, 0);
 
   // Run a kernel using the multi-reduction object
