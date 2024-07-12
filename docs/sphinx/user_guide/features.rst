@@ -25,6 +25,7 @@ materials that provide detailed examples of usage.
    feature/iteration_spaces
    feature/view
    feature/reduction
+   feature/multi-reduction
    feature/atomic
    feature/scan
    feature/sort
