@@ -77,8 +77,9 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,camp::idx_se
     using varType = typename camp::tuple_element_t<Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
 
     // Initialize memory
-#ifdef RAJA_COMPILER_MSVC
+#if defined(RAJA_COMPILER_MSVC) or defined (RAJA_ENABLE_SYCL)
     // MSVC doesn't like taking a pointer to stack allocated data?!?!
+    // SYCL doesn't either, it seems... 
     varType *ptr = new varType[camp::get<Pos>(data.param_tuple).size()];
     camp::get<Pos>(data.param_tuple).set_data(ptr);
 #else
