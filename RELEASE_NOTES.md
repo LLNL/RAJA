@@ -28,7 +28,13 @@ This release contains ...
 Notable changes include:
 
   * New features / API changes:
-     * Added basic "multi-reduction" support...
+     * Added support for a "multi-reduction" operation which allows users to
+       perform a run time-defined number of reduction operations in a kernel.
+       Please see the RAJA User Guide for details and examples.
+     * Added first couple of sections for a "RAJA Cookbook" in the RAJA User
+       Guide. The goal is to provide users with more detailed guidance about
+       using RAJA features, choosing execution policies, etc. Additional
+       content will be provided in future releases.
      * Added atomicLoad and atomicStore routines for correctness in some
        use cases.
      * Added OpenMP 5.1 implementations for atomicMin and atomicMax.
