@@ -42,10 +42,10 @@ namespace detail
 //
 
 //! State of the host code globally
-hipInfo g_status;
+hipStatusInfo g_status;
 
 //! State of the host code in this thread
-hipInfo tl_status;
+hipStatusInfo tl_status;
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp threadprivate(tl_status)
 #endif

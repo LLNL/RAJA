@@ -91,13 +91,12 @@ stages:
 trigger-rajaperf:
   stage: multi-project
   rules:
-    - if: '$CI_COMMIT_BRANCH == "${MP_BRANCH}" || $MULTI_PROJECT == "ON"' #run only if ...
+    - if: $CI_COMMIT_BRANCH == $MP_BRANCH || $MULTI_PROJECT == "ON" #run only if ...
   variables:
     UPDATE_RAJA: ${MP_BRANCH}
   trigger:
     project: radiuss/rajaperf
     branch: develop
-    strategy: depend
 
 include:
   # Sets ID tokens for every job using `default:`

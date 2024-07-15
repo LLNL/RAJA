@@ -20,4 +20,5 @@ to provide users with complete beyond usage examples beyond what can be found in
    :maxdepth: 2
 
    cook_book/reduction
+   cook_book/multi-reduction
 

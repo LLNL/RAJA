@@ -12,13 +12,16 @@ set(TILETYPES Fixed2D Fixed2DSum Fixed2DMinMax)
 
 foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
   foreach( TILE_TYPE ${TILETYPES} )
-    configure_file( test-kernel-tilefixed.cpp.in
-                    test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
-    raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
+    # OpenMPTarget crashes the xl compiler when building this test... 
+    if( NOT((TILE_BACKEND STREQUAL "OpenMPTarget")) )
+      configure_file( test-kernel-tilefixed.cpp.in
+                      test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
+      raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}
+                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
 
-    target_include_directories(test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.exe
-                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      target_include_directories(test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.exe
+                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    endif()
   endforeach()
 endforeach()
 
