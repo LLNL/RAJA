@@ -1,0 +1,59 @@
+on: push
+name: Build
+jobs:
+  build_docker:
+    strategy:
+      matrix:
+        target: [gcc, clang, hip, cuda, sycl]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/build-push-action@v6
+      with:
+        target: ${{ matrix.target }}
+  build_mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: threeal/cmake-action@v1.3.0
+        with:
+          build-dir: build
+          options:
+            CMAKE_CXX_STANDARD=14
+            ENABLE_OPENMP=Off
+            CMAKE_BUILD_TYPE=Release
+          run-build: true
+          build-args: '--parallel 16'
+      - uses: threeal/ctest-action@v1.1.0
+  build_windows:
+    strategy:
+      matrix:
+        shared: 
+        - args: 
+            BUILD_SHARED_LIBS=On 
+            CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=On
+        static:
+        - args: BUILD_SHARED_LIBS=Off
+          
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: threeal/cmake-action@v1.3.0
+        with:
+          build-dir: build
+          options:
+            ENABLE_WARNINGS_AS_ERRORS=Off
+            BLT_CXX_STD=""
+            CMAKE_CXX_STANDARD=17
+            CMAKE_BUILD_TYPE=Release
+            ${{ matrix.shared.args }}
+          run-build: true
+          build-args: '--parallel 16'
+
