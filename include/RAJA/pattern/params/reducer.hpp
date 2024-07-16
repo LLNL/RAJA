@@ -29,6 +29,9 @@ struct ValLoc {
   RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v) {}
   RAJA_HOST_DEVICE constexpr ValLoc(value_type v, RAJA::Index_type l) : val(v), loc(l) {}
 
+  RAJA_HOST_DEVICE constexpr void min(value_type v, index_type l) { if (v < val) { val = v; loc = l; } }
+  RAJA_HOST_DEVICE constexpr void max(value_type v, index_type l) { if (v > val) { val = v; loc = l; } }
+
   RAJA_HOST_DEVICE constexpr bool operator<(const ValLoc& rhs) const { return val < rhs.val; }
   RAJA_HOST_DEVICE constexpr bool operator>(const ValLoc& rhs) const { return val > rhs.val; }
 
