@@ -4,10 +4,7 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        gcc12:
-          docker_target: gcc12
-        gcc13:
-          docker_target: gcc13
+        target: [gcc12, gcc13]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
