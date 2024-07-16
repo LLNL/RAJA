@@ -4,7 +4,10 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        target: [gcc, clang, hip, cuda, sycl]
+        gcc12:
+          docker_target: gcc12
+        gcc13:
+          docker_target: gcc13
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

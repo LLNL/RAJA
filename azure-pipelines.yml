@@ -34,14 +34,14 @@ jobs:
   timeoutInMinutes: 360
   strategy:
     matrix: 
-      gcc7.3.0:
-        docker_target: gcc7.3.0
-      gcc8.1.0:
-        docker_target: gcc8.1.0
-      gcc9.4.0:
-        docker_target: gcc9.4.0
-      gcc11.2.0:
-        docker_target: gcc11.2.0
+##      gcc7.3.0:
+##        docker_target: gcc7.3.0
+##      gcc8.1.0:
+##        docker_target: gcc8.1.0
+##      gcc9.4.0:
+##        docker_target: gcc9.4.0
+##      gcc11.2.0:
+##        docker_target: gcc11.2.0
       clang11.0.0:
         docker_target: clang11.0.0
       clang11.0.0-debug:
