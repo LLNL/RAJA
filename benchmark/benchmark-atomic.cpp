@@ -45,9 +45,6 @@ struct GPUAtomic {
 #elif defined (RAJA_ENABLE_HIP)
 #include "RAJA/policy/hip/atomic.hpp"
 
-template<int M>
-struct IsGPU<RAJA::hip_exec<M>> : public std::true_type {};
-
 template<int BLOCK_SZ>
 struct ExecPolicyGPU {
     using policy = RAJA::hip_exec<BLOCK_SZ, false>;
@@ -185,6 +182,9 @@ struct atomicWrapperDesulUnary {
 template<typename T>
 class IsDesul : public std::false_type {};
 
+template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*, T, T>::type atomic_impl>
+class IsDesul<atomicWrapperDesulTernary<T, ReturnType, atomic_impl>> : public std::true_type {};
+
 template<typename T, typename ReturnType, typename DesulAtomicSignature<ReturnType, T*, T>::type atomic_impl>
 class IsDesul<atomicWrapperDesulBinary<T, ReturnType, atomic_impl>> : public std::true_type {};
 
@@ -280,8 +280,8 @@ void ExecuteBenchmark(uint64_t N) {
         TimeAtomicOp<ExecPolicy, AtomicDataType, true>(desul_functor, N, 4, 10);
         TimeAtomicOp<ExecPolicy, AtomicDataType, true>(raja_functor, N, 4, 10);
         // Test contention over a single atomic
-        TimeAtomicOp<ExecPolicy, AtomicDataType, false>(raja_functor, N);
         TimeAtomicOp<ExecPolicy, AtomicDataType, false>(desul_functor, N);
+        TimeAtomicOp<ExecPolicy, AtomicDataType, false>(raja_functor, N);
     });
 }
 
