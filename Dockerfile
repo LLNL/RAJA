@@ -49,8 +49,8 @@ COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=icpx -DENABLE_OPENMP=On .. && \
-    make -j 8 &&\
-    ctest -T test --output-on-failure"
+    make -j 8 &&" \
+    ctest -T test --output-on-failure
 
 ##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
 ##ENV GTEST_COLOR=1
