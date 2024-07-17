@@ -26,7 +26,7 @@
 
 #if defined(RAJA_ENABLE_SYCL)
 
-#include <sycl.hpp>
+#include <sycl/sycl.hpp>
 #include <algorithm>
 #include <chrono>
 
