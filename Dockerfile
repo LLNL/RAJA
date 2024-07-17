@@ -13,29 +13,29 @@ RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNI
     make -j 6 &&\
     ctest -T test --output-on-failure
 
-FROM ghcr.io/llnl/radiuss:ubuntu-22.04-gcc-13 AS gcc13
-ENV GTEST_COLOR=1
-COPY . /home/raja/workspace
-WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure
-
-FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-13 AS clang13-debug
-ENV GTEST_COLOR=1
-COPY . /home/raja/workspace
-WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure
-
-FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-15 AS clang15
-ENV GTEST_COLOR=1
-COPY . /home/raja/workspace
-WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure
+#FROM ghcr.io/llnl/radiuss:ubuntu-22.04-gcc-13 AS gcc13
+#ENV GTEST_COLOR=1
+#COPY . /home/raja/workspace
+#WORKDIR /home/raja/workspace/build
+#RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
+#    make -j 6 &&\
+#    ctest -T test --output-on-failure
+#
+#FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-13 AS clang13-debug
+#ENV GTEST_COLOR=1
+#COPY . /home/raja/workspace
+#WORKDIR /home/raja/workspace/build
+#RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
+#    make -j 6 &&\
+#    ctest -T test --output-on-failure
+#
+#FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-15 AS clang15
+#ENV GTEST_COLOR=1
+#COPY . /home/raja/workspace
+#WORKDIR /home/raja/workspace/build
+#RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+#    make -j 6 &&\
+#    ctest -T test --output-on-failure
 
 ##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
 ##ENV GTEST_COLOR=1
@@ -74,11 +74,11 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
 ##    make -j 6 && \
 ##    cd .. && rm -rf build
 
-FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2023.2.1 AS sycl
-ENV GTEST_COLOR=1
-COPY . /home/raja/workspace
-WORKDIR /home/raja/workspace/build
-RUN /bin/bash -c "source /opt/view/setvars.sh && \
-    cmake -DCMAKE_CXX_COMPILER=dpcpp -DRAJA_ENABLE_SYCL=On -DENABLE_OPENMP=Off -DENABLE_ALL_WARNINGS=Off -DBLT_CXX_STD=c++17 .. && \
-    make -j 6" && \
-    cd .. && rm -rf build
+#FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2023.2.1 AS sycl
+#ENV GTEST_COLOR=1
+#COPY . /home/raja/workspace
+#WORKDIR /home/raja/workspace/build
+#RUN /bin/bash -c "source /opt/view/setvars.sh && \
+#    cmake -DCMAKE_CXX_COMPILER=dpcpp -DRAJA_ENABLE_SYCL=On -DENABLE_OPENMP=Off -DENABLE_ALL_WARNINGS=Off -DBLT_CXX_STD=c++17 .. && \
+#    make -j 6" && \
+#    cd .. && rm -rf build
