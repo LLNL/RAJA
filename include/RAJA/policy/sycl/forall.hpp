@@ -26,9 +26,10 @@
 
 #if defined(RAJA_ENABLE_SYCL)
 
-#include <sycl/sycl.hpp>
 #include <algorithm>
 #include <chrono>
+
+#include "RAJA/util/sycl_compat.hpp"
 
 #include "RAJA/pattern/forall.hpp"
 

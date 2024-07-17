@@ -23,7 +23,7 @@
 
 #if defined(RAJA_ENABLE_SYCL)
 
-#include <sycl/sycl.hpp>
+#include "RAJA/util/sycl_compat.hpp"
 
 #include <cassert>
 #include <cstddef>
