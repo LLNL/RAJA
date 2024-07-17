@@ -42,7 +42,7 @@ FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=clang++ .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure
 
