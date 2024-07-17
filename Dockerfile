@@ -26,7 +26,7 @@ WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Release .. && \
     make -j 6 &&\
-    ctest -T test --output-on-failure &&
+    ctest -T test --output-on-failure
 
 FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_debug
 ENV GTEST_COLOR=1
