@@ -37,11 +37,12 @@ RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNI
 #    make -j 6 &&\
 #    ctest -T test --output-on-failure
 
+## TODO: Figure out why OpenMP does not work here....
 FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure
 
@@ -65,8 +66,7 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
 
 ##FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11.1.-debug
 ##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
+hh: Command not found.
 ##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
 ##    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
 ##    make -j 4 && \
