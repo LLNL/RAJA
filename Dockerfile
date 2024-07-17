@@ -1,5 +1,3 @@
-###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,11 +28,11 @@ RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/li
     make -j 6 &&\
     ctest -T test --output-on-failure &&
 
-FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-14 AS clang14_debug
+FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure
 
