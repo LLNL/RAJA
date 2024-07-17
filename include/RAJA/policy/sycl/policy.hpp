@@ -22,7 +22,7 @@
 
 #if defined(RAJA_SYCL_ACTIVE)
 
-#include <CL/sycl.hpp>
+#include <sycl.hpp>
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
