@@ -7,7 +7,7 @@ FROM ghcr.io/llnl/radiuss:ubuntu-22.04-gcc-12 AS gcc12
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
     make -j 16 &&\
     ctest -T test --output-on-failure
 
@@ -15,7 +15,7 @@ FROM ghcr.io/llnl/radiuss:ubuntu-22.04-gcc-13 AS gcc13
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=g++ --DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
     make -j 16 &&\
     ctest -T test --output-on-failure
 
@@ -23,7 +23,7 @@ FROM ghcr.io/llnl/radiuss:clang-13-ubuntu-22.04 AS clang13
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
     make -j 16 &&\
     ctest -T test --output-on-failure
 
@@ -31,7 +31,7 @@ FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug  -DENABLE_OPENMP=On .. && \
     make -j 16 &&\
     ctest -T test --output-on-failure
 
@@ -47,10 +47,9 @@ FROM ghcr.io/llnl/radiuss:intel-2024.0-ubuntu-20.04 AS intel2024
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=icpx -DENABLE_OPENMP=On .. && \
-    make -j 8" && \
-    ctest -T test --output-on-failure
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
+    make -j 16"
 
 ##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
 ##ENV GTEST_COLOR=1
