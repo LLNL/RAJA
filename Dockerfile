@@ -66,7 +66,8 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ .. && \
 
 ##FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11.1.-debug
 ##ENV GTEST_COLOR=1
-hh: Command not found.
+##COPY . /home/raja/workspace
+##WORKDIR /home/raja/workspace/build
 ##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
 ##    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
 ##    make -j 4 && \
