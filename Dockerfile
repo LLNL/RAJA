@@ -21,14 +21,14 @@ RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNI
     make -j 6 &&\
     ctest -T test --output-on-failure
 
-#FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-13 AS clang13-debug
-#ENV GTEST_COLOR=1
-#COPY . /home/raja/workspace
-#WORKDIR /home/raja/workspace/build
-#RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
-#    make -j 6 &&\
-#    ctest -T test --output-on-failure
-#
+FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-14 AS clang14_debug
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
+    make -j 6 &&\
+    ctest -T test --output-on-failure
+
 #FROM ghcr.io/llnl/radiuss:ubuntu-22.04-clang-15 AS clang15
 #ENV GTEST_COLOR=1
 #COPY . /home/raja/workspace
