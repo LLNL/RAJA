@@ -10,48 +10,34 @@ ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
-    make -j 8 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make -j 12 &&\
+    ctest -T test --output-on-failure
 
 FROM ghcr.io/llnl/radiuss:ubuntu-22.04-gcc-13 AS gcc13
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
-    make -j 8 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make -j 12 &&\
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/clang-ubuntu-20.04:llvm-11.0.0 AS clang11.0.0
-ENV GTEST_COLOR=1
-COPY . /home/raja/workspace
-WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
-    cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
-
-FROM ghcr.io/rse-ops/clang-ubuntu-20.04:llvm-11.0.0 AS clang11.0.0-debug
+FROM ghcr.io/llnl/radiuss:clang-13-ubuntu-22.04 AS clang13-debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
     cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make -j 12 &&\
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/clang-ubuntu-22.04:llvm-13.0.0 AS clang13.0.0
+FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
-    cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Release .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+    make -j 12 &&\
+    ctest -T test --output-on-failure
 
 ##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
 ##ENV GTEST_COLOR=1

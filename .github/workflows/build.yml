@@ -4,7 +4,7 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        target: [gcc12, gcc13]
+        target: [gcc12, gcc13, clang13-debug, clang15]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

@@ -42,12 +42,12 @@ jobs:
 ##        docker_target: gcc9.4.0
 ##      gcc11.2.0:
 ##        docker_target: gcc11.2.0
-      clang11.0.0:
-        docker_target: clang11.0.0
-      clang11.0.0-debug:
-        docker_target: clang11.0.0-debug
-      clang13.0.0:
-        docker_target: clang13.0.0
+##      clang11.0.0:
+##        docker_target: clang11.0.0
+##      clang11.0.0-debug:
+##        docker_target: clang11.0.0-debug
+##      clang13.0.0:
+##        docker_target: clang13.0.0
 ##      nvcc10.1.243:
 ##        docker_target: nvcc10.1.243
 ##      nvcc11.1.1:
