@@ -10,7 +10,7 @@ ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
-    make -j 12 &&\
+    make -j 6 &&\
     ctest -T test --output-on-failure
 
 FROM ghcr.io/llnl/radiuss:ubuntu-22.04-gcc-13 AS gcc13
@@ -18,7 +18,7 @@ ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
-    make -j 12 &&\
+    make -j 6 &&\
     ctest -T test --output-on-failure
 
 FROM ghcr.io/llnl/radiuss:clang-13-ubuntu-22.04 AS clang13-debug
@@ -26,7 +26,7 @@ ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
-    make -j 12 &&\
+    make -j 6 &&\
     ctest -T test --output-on-failure
 
 FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
@@ -34,7 +34,7 @@ ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
-    make -j 12 &&\
+    make -j 6 &&\
     ctest -T test --output-on-failure
 
 ##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
