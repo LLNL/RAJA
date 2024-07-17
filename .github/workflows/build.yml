@@ -4,7 +4,7 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        target: [gcc12, gcc13, clang15]
+        target: [gcc12, gcc13, clang14]
     runs-on: ubuntu-latest
     steps:
     - run: |
