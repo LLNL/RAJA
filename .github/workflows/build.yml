@@ -61,7 +61,11 @@ jobs:
             ${{ matrix.shared.args }}
           run-build: true
           build-args: '--parallel 16'
-      - uses: threeal/ctest-action@v1.1.0
-        with:
-          test-dir: build/test
-          args: '-C Release'
+      - task: CmdLine@2
+        inputs:
+          script: 'ctest.exe -T test -C Release'
+          workingDirectory: 'build'
+##    - uses: threeal/ctest-action@v1.1.0
+##      with:
+##        test-dir: build/test
+##        args: '-C Release'
