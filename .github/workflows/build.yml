@@ -63,5 +63,5 @@ jobs:
           build-args: '--parallel 16'
       - uses: threeal/ctest-action@v1.1.0
         with:
-          build-config: Release
+          args: '-C Release'
 
