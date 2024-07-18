@@ -44,20 +44,20 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENM
     ctest -T test --output-on-failure
 
 ## TODO: Fix compilation issue with OpenMP 5.1 atomic support
-##FROM ghcr.io/llnl/radiuss:intel-2024.0-ubuntu-20.04 AS intel2024
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
-##    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
-##    make -j 16"
+FROM ghcr.io/llnl/radiuss:intel-2024.0-ubuntu-20.04 AS intel2024
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
+    make -j 16"
 
 FROM ghcr.io/llnl/radiuss:ubuntu-22.04-cuda-12-3 AS cuda12.3
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_STANDARD=14  -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
-    make -j 16
+    make -j 8
 
 # TODO: Switch to ROCM 6 -- issues building image
 FROM ghcr.io/llnl/radiuss:hip-5.6.1-ubuntu-20.04 AS hip5.6
