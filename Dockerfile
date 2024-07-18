@@ -39,10 +39,11 @@ FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
     make -j 16 &&\
     ctest -T test --output-on-failure
 
+## TODO: Fix compilation issue with OpenMP 5.1 atomic support
 ##FROM ghcr.io/llnl/radiuss:intel-2024.0-ubuntu-20.04 AS intel2024
 ##ENV GTEST_COLOR=1
 ##COPY . /home/raja/workspace
@@ -51,42 +52,21 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENM
 ##    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
 ##    make -j 16"
 
-##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
-##    cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
-##    make -j 4 && \
-##    cd .. && rm -rf build
+FROM ghcr.io/llnl/radiuss:cuda-11-8-ubuntu-22.04 AS cuda11.8
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_STANDARD=14  -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
+    make -j 16
 
-##FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11.1.1
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
-##    cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
-##    make -j 4 && \
-##    cd .. && rm -rf build
-
-##FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11.1.-debug
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
-##    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
-##    make -j 4 && \
-##    cd .. && rm -rf build
-
-##FROM ghcr.io/rse-ops/hip-ubuntu-20.04:hip-5.1.3 AS hip5.1.3
-##ENV GTEST_COLOR=1
-##ENV HCC_AMDGPU_TARGET=gfx900
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu && \
-##    cmake -DCMAKE_CXX_COMPILER=clang++ -DHIP_PATH=/opt -DENABLE_HIP=On -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
-##    make -j 6 && \
-##    cd .. && rm -rf build
+# TODO: Switch to ROCM 6 -- issues building image
+FROM ghcr.io/llnl/radiuss:hip-5.6.1-ubuntu-20.04 AS hip5.6
+ENV GTEST_COLOR=1
+ENV HCC_AMDGPU_TARGET=gfx900
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-5.6.1/bin/amdclang++ -DENABLE_HIP=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    make -j 16 VERBOSE=1
 
 FROM ghcr.io/llnl/radiuss:intel-2024.0-ubuntu-20.04 AS intel2024_sycl
 ENV GTEST_COLOR=1
