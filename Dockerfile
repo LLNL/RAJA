@@ -52,7 +52,7 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENM
 ##    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
 ##    make -j 16"
 
-FROM ghcr.io/llnl/radiuss:cuda-11-8-ubuntu-22.04 AS cuda11.8
+FROM ghcr.io/llnl/radiuss:ubuntu-22.04-cuda-12-3 AS cuda12.3
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
