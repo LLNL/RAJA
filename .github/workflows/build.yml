@@ -63,10 +63,10 @@ jobs:
           build-args: '--parallel 16'
 ## ====================================
 ## This is the part of our azure setup that runs tests on windows
-      - task: CmdLine@2
-        inputs:
-          script: 'ctest.exe -T test -C Release'
-          workingDirectory: 'build' 
+    - task: CmdLine@2
+      inputs:
+        script: 'ctest.exe -T test -C Release'
+        workingDirectory: 'build' 
 ## ====================================
 ## This produces no errors, but tests are not found 
 ##    - name: Run Tests
