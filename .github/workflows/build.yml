@@ -62,18 +62,20 @@ jobs:
           run-build: true
           build-args: '--parallel 16'
 ## ====================================
-      - name: Run Tests
-        uses: HorstBaerbel/action-ctest@1.1
-        with:
-          sourcedir: '.'
-          builddir: 'build'
-          cmakeoptions: '--config Release'
-          ctestoptions: '' 
+## This is the part of our azure setup that runs tests on windows
+      - task: CmdLine@2
+        inputs:
+          script: 'ctest.exe -T test -C Release'
+          workingDirectory: 'build' 
 ## ====================================
+## This produces no errors, but tests are not found 
 ##    - name: Run Tests
 ##      run: ctest.exe -C Release
 ##      shell: bash
 ## ====================================
+## This produces errors because tests are not found in the
+## build/test/Release directory. All other attempts to set 
+## the correct test directory failed
 ##    - uses: threeal/ctest-action@v1.1.0
 ##      with:
 ##        test-dir: raja-build/test/Release/..
