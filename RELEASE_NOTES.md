@@ -23,7 +23,7 @@ Notable changes include:
 Version 2024.07.0 -- Release date 2024-07-xx
 ============================================
 
-This release contains ...
+This release contains new features, improvements, and bugfixes.
 
 Notable changes include:
 
