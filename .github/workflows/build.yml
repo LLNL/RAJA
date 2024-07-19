@@ -63,5 +63,6 @@ jobs:
           build-args: '--parallel 16'
       - uses: threeal/ctest-action@v1.1.0
         with:
-          test-dir: raja-build
-          args: '-C Release'
+          test-dir: raja-build/test
+          build-config: Release
+##        args: '-C Release'
