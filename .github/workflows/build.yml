@@ -62,7 +62,7 @@ jobs:
           run-build: true
           build-args: '--parallel 16'
       - name: Run Tests
-        run: ctest.exe -T test -C Release
+        run: ctest.exe -C Release
         shell: bash
 ##    - uses: threeal/ctest-action@v1.1.0
 ##      with:
