@@ -51,20 +51,31 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - uses: threeal/cmake-action@v1.3.0
-        with:
-          build-dir: build
-          options:
-            ENABLE_WARNINGS_AS_ERRORS=Off
-            BLT_CXX_STD=""
-            CMAKE_CXX_STANDARD=17
-            CMAKE_BUILD_TYPE=Release
-            ${{ matrix.shared.args }}
-          run-build: true
-          build-args: '--parallel 16'
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_WARNINGS_AS_ERRORS=Off -BLT_CXX_STD="" CMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       - name: Test
         working-directory: ${{github.workspace}}/build
-        run: ctest -C Relase --output-on-failure
+        run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+## ====================================
+## Config and build  action following Umpire. This works!
+##    - uses: threeal/cmake-action@v1.3.0
+##      with:
+##        build-dir: build
+##        options:
+##          ENABLE_WARNINGS_AS_ERRORS=Off
+##          BLT_CXX_STD=""
+##          CMAKE_CXX_STANDARD=17
+##          CMAKE_BUILD_TYPE=Release
+##          ${{ matrix.shared.args }}
+##        run-build: true
+##        build-args: '--parallel 16'
+## ====================================
+## Attempt: Does not run tests
+##    - name: Test
+##      working-directory: ${{github.workspace}}/build
+##      run: ctest -C Relase --output-on-failure
 ## ====================================
 ## Print the contents of the test directory in the build space
 ##    - run: | 
