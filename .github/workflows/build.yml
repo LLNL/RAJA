@@ -61,9 +61,19 @@ jobs:
             ${{ matrix.shared.args }}
           run-build: true
           build-args: '--parallel 16'
+## ====================================
       - name: Run Tests
-        run: ctest.exe -C Release
-        shell: bash
+        uses: HorstBaerbel/action-ctest@1.1
+        with:
+          sourcedir: '.'
+          builddir: 'build'
+          cmakeoptions: '--config Release'
+          ctestoptions: '' 
+## ====================================
+##    - name: Run Tests
+##      run: ctest.exe -C Release
+##      shell: bash
+## ====================================
 ##    - uses: threeal/ctest-action@v1.1.0
 ##      with:
 ##        test-dir: raja-build/test/Release/..
