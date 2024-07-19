@@ -52,7 +52,7 @@ jobs:
           submodules: recursive
       - uses: threeal/cmake-action@v1.3.0
         with:
-          build-dir: raja-build
+          build-dir: build
           options:
             ENABLE_WARNINGS_AS_ERRORS=Off
             BLT_CXX_STD=""
