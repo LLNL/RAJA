@@ -52,7 +52,7 @@ jobs:
           submodules: recursive
       - uses: threeal/cmake-action@v1.3.0
         with:
-          build-dir: build
+          build-dir: raja-build
           options:
             ENABLE_WARNINGS_AS_ERRORS=Off
             BLT_CXX_STD=""
@@ -61,7 +61,7 @@ jobs:
             ${{ matrix.shared.args }}
           run-build: true
           build-args: '--parallel 16'
-##    - uses: threeal/ctest-action@v1.1.0
-##      with:
-##        test-dir: build/test
-##        args: '-C Release'
+      - uses: threeal/ctest-action@v1.1.0
+        with:
+          test-dir: raja-build
+          args: '-C Release'
