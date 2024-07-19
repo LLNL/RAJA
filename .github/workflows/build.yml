@@ -62,7 +62,7 @@ jobs:
           run-build: true
           build-args: '--parallel 16'
       - run: | 
-          dir /S D:\a\RAJA\RAJA\build
+          dir D:\a\RAJA\RAJA\build\test
 ## ====================================
 ## This produces errors because tests are not found in the
 ## build/test/Release directory. All other attempts to set 
