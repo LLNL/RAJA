@@ -61,15 +61,17 @@ jobs:
             ${{ matrix.shared.args }}
           run-build: true
           build-args: '--parallel 16'
+## ====================================
+## Print the contents of the test directory in the build space
       - run: | 
-          dir D:\a\RAJA\RAJA\build\test
+          dir D:\a\RAJA\RAJA\build\test /s
 ## ====================================
 ## This produces errors because tests are not found in the
-## build/test/Release directory. All other attempts to set 
+## build/test/Release directory. Many attempts to set
 ## the correct test directory failed
 ##    - uses: threeal/ctest-action@v1.1.0
 ##      with:
-##        test-dir: raja-build/test/Release/..
+##        test-dir: build/test/Release/..
 ##        build-config: Release
 ###        args: '-C Release'
 ## ====================================
