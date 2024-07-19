@@ -64,7 +64,7 @@ jobs:
 ## ====================================
 ## Print the contents of the test directory in the build space
       - run: | 
-          dir D:\a\RAJA\RAJA\build\test /S
+          dir -r D:\a\RAJA\RAJA\build\test
 ## ====================================
 ## This produces errors because tests are not found in the
 ## build/test/Release directory. Many attempts to set
