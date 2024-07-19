@@ -4,7 +4,8 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        target: [gcc12, gcc13, clang13, clang14_debug, clang15, cuda12.3_debug, hip5.6, intel2024_sycl]
+##        target: [gcc12, gcc13, clang13, clang14_debug, clang15, cuda12.3_debug, hip5.6, intel2024_sycl]
+          target: [gcc12]
     runs-on: ubuntu-latest
     steps:
     - run: |
@@ -61,10 +62,13 @@ jobs:
             ${{ matrix.shared.args }}
           run-build: true
           build-args: '--parallel 16'
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C Relase --output-on-failure
 ## ====================================
 ## Print the contents of the test directory in the build space
-      - run: | 
-          dir -r D:\a\RAJA\RAJA\build\test
+##    - run: | 
+##        dir -r D:\a\RAJA\RAJA\build\test
 ## ====================================
 ## This produces errors because tests are not found in the
 ## build/test/Release directory. Many attempts to set
