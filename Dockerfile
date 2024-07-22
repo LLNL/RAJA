@@ -60,7 +60,7 @@ ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_STANDARD=14  -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
-    make -j 12
+    make -j 16
 
 # TODO: We should switch to ROCm 6 -- size issues when creating image
 FROM ghcr.io/llnl/radiuss:hip-5.6.1-ubuntu-20.04 AS hip5.6
