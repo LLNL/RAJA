@@ -55,7 +55,7 @@ RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
 ##    make -j 16 &&\
 ##    ctest -T test --output-on-failure"
 
-FROM ghcr.io/llnl/radiuss:ubuntu-22.04-cuda-11-8 AS cuda11.8_debug
+FROM ghcr.io/llnl/radiuss:ubuntu-22.04-cuda-12-3 AS cuda12.3_debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
