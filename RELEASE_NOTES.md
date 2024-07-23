@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2024.07.0 -- Release date 2024-07-xx
+Version 2024.07.0 -- Release date 2024-07-24
 ============================================
 
 This release contains new features, improvements, and bugfixes.
@@ -58,8 +58,6 @@ Notable changes include:
         * Use atomicAdd as a fallback for atomicSub in CUDA.
         * Removed checks where __CUDA_ARCH__ is less than 350 since RAJA 
           requires that as the minimum supported architecture (CMake check).
-     * Fix issue related to the fact that only C version of memcpy is supported
-       in device code.
      * Fixed issues with naming RAJA forall::kernels when using CUDA.
      * Fixes in SYCL back-end for RAJA::launch.
      * Fixed some issues in examples.
