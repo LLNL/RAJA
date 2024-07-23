@@ -65,7 +65,7 @@ RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
 ##    make -j 16
 
 ## Try an older rse-ops image....
-FROM ghcr.io/rse-ops/cuda-ubuntu-22.04:cuda-11.2.2 AS cuda11.2_debug
+FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.2.2 AS cuda11.2_debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
