@@ -64,7 +64,7 @@ void ForallReduceMinLocBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-    RAJA::expt::KernelName("RAJA Reduce ReduceMinLoc"),
+    RAJA::expt::KernelName("RAJA Reduce MinLoc"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_TYPE &mi, VL_TYPE &m) {
       mi.min( working_array[idx], idx );
       m.min( working_array[idx], idx );

@@ -54,7 +54,7 @@ void ForallReduceMaxBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::maximum>(&maxinit),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
-    RAJA::expt::KernelName("RAJA Reduce ReduceMax"),
+    RAJA::expt::KernelName("RAJA Reduce Max"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &mi, DATA_TYPE &m) {
       mi = RAJA_MAX(working_array[idx], mi);
       m  = RAJA_MAX(working_array[idx], m);

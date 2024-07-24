@@ -54,7 +54,7 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-    RAJA::expt::KernelName("RAJA Reduce ReduceMin"),
+    RAJA::expt::KernelName("RAJA Reduce Min"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &mi, DATA_TYPE &m) {
       mi = RAJA_MIN(working_array[idx], mi);
       m  = RAJA_MIN(working_array[idx], m);
