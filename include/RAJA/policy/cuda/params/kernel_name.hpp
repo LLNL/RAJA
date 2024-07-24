@@ -4,6 +4,7 @@
 #if defined(RAJA_CUDA_ACTIVE)
 
 #include <cuda.h>
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/pattern/params/kernel_name.hpp"
 
 namespace RAJA {
