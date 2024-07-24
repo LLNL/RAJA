@@ -22,7 +22,7 @@
 
 #if defined(RAJA_SYCL_ACTIVE)
 
-#include <CL/sycl.hpp>
+#include "RAJA/util/sycl_compat.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
@@ -96,7 +96,7 @@ template<typename host_policy>
 struct sycl_atomic_explicit{};
 
 //
-// Default cuda atomic policy uses cuda atomics on the device and non-atomics
+// Default sycl atomic policy uses sycl atomics on the device and non-atomics
 // on the host
 //
 using sycl_atomic = sycl_atomic_explicit<seq_atomic>;

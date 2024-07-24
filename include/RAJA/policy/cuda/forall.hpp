@@ -548,7 +548,8 @@ forall_impl(resources::Cuda cuda_res,
   if (len > 0) {
 
     auto func = reinterpret_cast<const void*>(
-        &impl::forall_cuda_kernel<EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY, IndexType>);
+        &impl::forall_cuda_kernel<EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY,
+                                  IndexType>);
 
     //
     // Setup shared memory buffers
@@ -567,7 +568,7 @@ forall_impl(resources::Cuda cuda_res,
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body = RAJA::cuda::make_launch_body(
+      LOOP_BODY body = RAJA::cuda::make_launch_body(func,
           dims.blocks, dims.threads, shmem, cuda_res, std::forward<LoopBody>(loop_body));
 
       //
@@ -617,7 +618,8 @@ forall_impl(resources::Cuda cuda_res,
   if (len > 0) {
 
     auto func = reinterpret_cast<const void*>(
-        impl::forallp_cuda_kernel< EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY, IndexType, camp::decay<ForallParam> >);
+        &impl::forallp_cuda_kernel< EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY,
+                                   IndexType, camp::decay<ForallParam> >);
 
     //
     // Setup shared memory buffers
@@ -643,7 +645,7 @@ forall_impl(resources::Cuda cuda_res,
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body = RAJA::cuda::make_launch_body(
+      LOOP_BODY body = RAJA::cuda::make_launch_body(func,
           dims.blocks, dims.threads, shmem, cuda_res, std::forward<LoopBody>(loop_body));
 
       //

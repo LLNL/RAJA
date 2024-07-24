@@ -1,11 +1,10 @@
 #ifndef CUDA_KERNELNAME_HPP
 #define CUDA_KERNELNAME_HPP
 
-//#include "../util/policy.hpp"
-
 #if defined(RAJA_CUDA_ACTIVE)
 
 #include <cuda.h>
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/pattern/params/kernel_name.hpp"
 
 namespace RAJA {
@@ -15,10 +14,12 @@ namespace detail {
   // Init
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  init(KernelName& kn, const RAJA::cuda::detail::cudaInfo & cs)
+  init(KernelName& kn, const RAJA::cuda::detail::cudaInfo &)
   {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
     nvtxRangePush(kn.name);
+#else
+    RAJA_UNUSED_VAR(kn);
 #endif
   }
 
@@ -31,7 +32,7 @@ namespace detail {
   // Resolve
   template<typename EXEC_POL>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  resolve(KernelName&)
+  resolve(KernelName&, const RAJA::cuda::detail::cudaInfo &)
   {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
     nvtxRangePop();
