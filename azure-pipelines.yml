@@ -46,12 +46,8 @@ jobs:
         docker_target: clang14_debug
       clang15:
         docker_target: clang15
-      intel2024:
-        docker_target: intel2024
       rocm5.6:
         docker_target: rocm5.6
-      intel2024_sycl:
-        docker_target: intel2024_sycl
   pool:
     vmImage: 'ubuntu-latest'
   variables:
