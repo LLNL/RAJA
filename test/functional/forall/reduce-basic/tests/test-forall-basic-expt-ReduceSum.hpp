@@ -52,6 +52,7 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
     RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
+    RAJA::expt::KernelName("RAJA Reduce ReduceSum"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &s1, DATA_TYPE &s2) {
       s1 += working_array[idx];
       s2 += working_array[idx];
