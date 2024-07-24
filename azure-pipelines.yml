@@ -34,30 +34,24 @@ jobs:
   timeoutInMinutes: 360
   strategy:
     matrix: 
-      gcc7.3.0:
-        docker_target: gcc7.3.0
-      gcc8.1.0:
-        docker_target: gcc8.1.0
-      gcc9.4.0:
-        docker_target: gcc9.4.0
-      gcc11.2.0:
-        docker_target: gcc11.2.0
-      clang11.0.0:
-        docker_target: clang11.0.0
-      clang11.0.0-debug:
-        docker_target: clang11.0.0-debug
-      clang13.0.0:
-        docker_target: clang13.0.0
-##      nvcc10.1.243:
-##        docker_target: nvcc10.1.243
-##      nvcc11.1.1:
-##        docker_target: nvcc11.1.1
-##      nvcc11.1.1-debug:
-##        docker_target: nvcc11.1.1-debug
-##      hip5.1.3:
-##        docker_target: hip5.1.3
-      sycl:
-        docker_target: sycl
+      gcc11:
+        docker_target: gcc11
+      gcc12:
+        docker_target: gcc12
+      gcc13:
+        docker_target: gcc13
+      clang13:
+        docker_target: clang13
+      clang14_debug:
+        docker_target: clang13_debug
+      clang15:
+        docker_target: clang15
+      intel2024:
+        docker_target: intel2024
+      rocm5.6:
+        docker_target: rocm5.6
+      intel2024_sycl:
+        docker_target: intel2024_sycl
   pool:
     vmImage: 'ubuntu-latest'
   variables:
