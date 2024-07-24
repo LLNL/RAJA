@@ -101,7 +101,10 @@ RAJA_INLINE T atomicMin(omp_atomic, T *acc, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = value < *acc ? value : *acc;
+    if ( value < *acc )
+    {
+      *acc = value;
+    }
   }
   return old;
 #else
@@ -120,7 +123,10 @@ RAJA_INLINE T atomicMax(omp_atomic, T *acc, T value)
   #pragma omp atomic capture compare
   {
     old = *acc;
-    *acc = *acc < value ? value : *acc;
+    if ( value > *acc )
+    {
+      *acc = value;
+    }
   }
   return old;
 #else

@@ -24,7 +24,7 @@
 
 #if defined(RAJA_SYCL_ACTIVE)
 
-#include <CL/sycl.hpp>
+#include "RAJA/util/sycl_compat.hpp"
 
 #include "RAJA/policy/sycl/forall.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
