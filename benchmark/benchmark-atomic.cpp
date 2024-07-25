@@ -244,9 +244,18 @@ void TimeAtomicOp(const AtomicImplType& atomic_impl, uint64_t N, uint64_t num_it
     }
 }
 
-/// Holder struct for all atomic operations
+template<typename ...T>
+struct list_concat;
+
+template<typename ...T, typename...S>
+struct list_concat<camp::list<T...>, camp::list<S...>> {
+    using type = camp::list<T..., S...>;
+};
+
+/// Holder for atomic operations that work with arbitrary atomic type, e.g. double, float
+/// and ints etc.
 template<typename AtomicDataType, typename Policy>
-struct atomic_ops {
+struct universal_atomic_ops {
     using type = camp::list<std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_add>, AtomicAdd<Policy>>,
                                                 std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_sub>, AtomicSub<Policy>>,
                                                 std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_min>, AtomicMin<Policy>>,
@@ -255,14 +264,34 @@ struct atomic_ops {
                                                 std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_dec_mod>, AtomicDecBinary<Policy>>,
                                                 std::pair<atomicWrapperDesulUnary<AtomicDataType, AtomicDataType, desul::atomic_fetch_inc>, AtomicIncUnary<Policy>>,
                                                 std::pair<atomicWrapperDesulUnary<AtomicDataType, AtomicDataType, desul::atomic_fetch_dec>, AtomicDecUnary<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_and>, AtomicAnd<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_or>, AtomicOr<Policy>>,
-                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_xor>, AtomicXor<Policy>>,
                                                 std::pair<atomicWrapperDesulUnary<const AtomicDataType, AtomicDataType, desul::atomic_load>, AtomicLoad<Policy>>,
                                                 std::pair<atomicWrapperDesulBinary<AtomicDataType, void, desul::atomic_store>, AtomicStore<Policy>>,
                                                 std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_exchange>, AtomicExchange<Policy>>,
                                                 std::pair<atomicWrapperDesulTernary<AtomicDataType, AtomicDataType, desul::atomic_compare_exchange>, AtomicCAS<Policy>>>;
 };
+
+template<typename AtomicDataType, typename Policy>
+struct integral_atomic_ops {
+    using type = camp::list<std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_and>, AtomicAnd<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_or>, AtomicOr<Policy>>,
+                                                std::pair<atomicWrapperDesulBinary<AtomicDataType, AtomicDataType, desul::atomic_fetch_xor>, AtomicXor<Policy>>>;
+};
+
+template<typename AtomicDataType, typename Policy, class t = void>
+struct atomic_ops;
+
+/// Include all atomic ops if the underlying atomic to benchmark is integral.
+template<typename AtomicDataType, typename Policy>
+struct atomic_ops<AtomicDataType, Policy, typename std::enable_if<std::is_integral<AtomicDataType>::value>::type> {
+    using type = typename list_concat<typename universal_atomic_ops<AtomicDataType, Policy>::type, typename integral_atomic_ops<AtomicDataType, Policy>::type>::type;
+};
+
+/// Omit bitwise ops and, or, and xor for floating point types
+template<typename AtomicDataType, typename Policy>
+struct atomic_ops<AtomicDataType, Policy, typename std::enable_if<std::is_floating_point<AtomicDataType>::value>::type> {
+    using type = typename universal_atomic_ops< AtomicDataType, Policy >::type;
+};
+
 
 template<typename AtomicDataType, typename AtomicPolicy, typename ExecPolicy>
 void ExecuteBenchmark(uint64_t N) {
@@ -300,7 +329,7 @@ int main (int argc, char* argv[]) {
     TimeAtomicOp<ExecPolicyGPU<BLOCK_SZ>, int, true>(AtomicAdd<typename GPUAtomic::policy>{}, N, 10, 1000, false);
     // GPU benchmarks
     std::cout << "Executing GPU benchmarks" << std::endl;
-    ExecuteBenchmark<int, typename GPUAtomic::policy, ExecPolicyGPU<BLOCK_SZ>>(N);
+    ExecuteBenchmark<double, typename GPUAtomic::policy, ExecPolicyGPU<BLOCK_SZ>>(N);
     #endif
 
     #if defined (RAJA_ENABLE_OPENMP)
@@ -310,7 +339,7 @@ int main (int argc, char* argv[]) {
 
     // OpenMP benchmarks
     std::cout << "Executing OpenMP benchmarks" << std::endl;
-    ExecuteBenchmark<int, typename RAJA::policy::omp::omp_atomic, ExecPolicyOMP>(N);
+    ExecuteBenchmark<double, typename RAJA::policy::omp::omp_atomic, ExecPolicyOMP>(N);
     #endif
 
     return 0;
