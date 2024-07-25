@@ -1,0 +1,86 @@
+on: push
+name: Build
+jobs:
+  build_docker:
+    strategy:
+      matrix:
+        target: [gcc12, gcc13, clang13, clang15, hip5.6, intel2024, intel2024_sycl]
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo docker image prune --all --force
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/build-push-action@v6
+      with:
+        target: ${{ matrix.target }}
+  build_mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: threeal/cmake-action@v1.3.0
+        with:
+          build-dir: build
+          options:
+            CMAKE_CXX_STANDARD=14
+            ENABLE_OPENMP=Off
+            CMAKE_BUILD_TYPE=Release
+          run-build: true
+          build-args: '--parallel 16'
+      - uses: threeal/ctest-action@v1.1.0
+  build_windows:
+    strategy:
+      matrix:
+        shared: 
+        - args: 
+            BUILD_SHARED_LIBS=On 
+            CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=On
+        - args: BUILD_SHARED_LIBS=Off
+          
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+## ====================================
+## Config and build action
+      - uses: threeal/cmake-action@v1.3.0
+        with:
+          build-dir: build
+          options:
+            ENABLE_WARNINGS_AS_ERRORS=Off
+            BLT_CXX_STD=""
+            CMAKE_CXX_STANDARD=17
+            CMAKE_BUILD_TYPE=Release
+            ${{ matrix.shared.args }}
+          run-build: true
+          build-args: '--parallel 16'
+## ====================================
+## Print the contents of the test directory in the build space (debugging)
+##    - run: | 
+##        dir -r D:\a\RAJA\RAJA\build\test
+## ====================================
+## Run tests action
+      - uses: threeal/ctest-action@v1.1.0
+        with:
+          build-config: Debug
+## ====================================
+## Attempt to run tests by invoking ctest manually.
+## Generates errors similar to above -- cannot find test executables.
+##    - name: Test
+##      working-directory: ${{github.workspace}}/build
+##      run: ctest -C Release --output-on-failure
+## ====================================
+## Another attempt.
+## This produces no errors, but test executables are not found.
+##    - name: Run Tests
+##      run: ctest.exe -C Release
+##      shell: bash
