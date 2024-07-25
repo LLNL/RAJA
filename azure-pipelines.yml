@@ -36,12 +36,14 @@ jobs:
     matrix: 
       gcc12_debug:
         docker_target: gcc12_debug
+      gcc12_desul:
+        docker_target: gcc12_desul
       clang14_debug:
         docker_target: clang14_debug
+      clang15_desul:
+        docker_target: clang15_desul
       rocm5.6:
         docker_target: rocm5.6
-      rocm5.6_desul:
-        docker_target: rocm5.6_desul
   pool:
     vmImage: 'ubuntu-latest'
   variables:
