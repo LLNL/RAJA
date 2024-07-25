@@ -42,8 +42,6 @@ jobs:
         docker_target: clang14_debug
       clang15_desul:
         docker_target: clang15_desul
-      rocm5.6:
-        docker_target: rocm5.6
   pool:
     vmImage: 'ubuntu-latest'
   variables:

@@ -95,6 +95,18 @@ RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
 ##    make -j 16 &&\
 ##    ctest -T test --output-on-failure"
 
+## Test run failure in RAJA launch tests with new reducer interface.
+## Need to figure out best way to handle that.
+FROM ghcr.io/llnl/radiuss:ubuntu-20.04-intel-2024.0 AS intel2024_debug
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=On .. && \
+    make -j 16"
+##    make -j 16 &&\
+##    ctest -T test --output-on-failure"
+
 ##
 ## Need to find a viable cuda image to test...
 ## 

@@ -4,7 +4,7 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        target: [gcc12, gcc13, clang13, clang15, rocm5.6_desul, intel2024, intel2024_sycl]
+        target: [gcc12, gcc13, clang13, clang15, rocm5.6, rocm5.6_desul, intel2024, intel2024_debug, intel2024_sycl]
     runs-on: ubuntu-latest
     steps:
     - run: |
