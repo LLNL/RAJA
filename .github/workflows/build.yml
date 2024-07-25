@@ -73,10 +73,10 @@ jobs:
 ## This generates errors because test executables are not found in the 
 ## build/test/Release directory where it is looking for them.
 ## Many attempts to set the correct test directory failed...
-##    - uses: threeal/ctest-action@v1.1.0
-##      with:
+      - uses: threeal/ctest-action@v1.1.0
+        with:
 ##        test-dir: build/test/Release/..
-##        build-config: Release
+          build-config: Debug
 ###        args: '-C Release'
 ## ====================================
 ## Attempt to run tests by invoking ctest manually.
