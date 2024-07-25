@@ -216,7 +216,7 @@ struct HipKernelLauncherGetter
   using type = camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
   static constexpr type get() noexcept
   {
-    return internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
+    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
   }
 };
 
@@ -230,7 +230,7 @@ struct HipKernelLauncherGetter<0, Data, executor_t>
   using type = camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
   static constexpr type get() noexcept
   {
-    return internal::HipKernelLauncher<Data, executor_t>;
+    return &internal::HipKernelLauncher<Data, executor_t>;
   }
 };
 
@@ -260,10 +260,15 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
 
   using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
 
+  inline static const void* get_func()
+  {
+    return reinterpret_cast<const void*>(kernelGetter_t::get());
+  }
+
   inline static void recommended_blocks_threads(size_t shmem_size,
       int &recommended_blocks, int &recommended_threads)
   {
-    auto func = reinterpret_cast<const void*>(kernelGetter_t::get());
+    auto func = Self::get_func();
 
     if (num_blocks <= 0) {
 
@@ -342,7 +347,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
   inline static void max_blocks(size_t shmem_size,
       int &max_blocks, int actual_threads)
   {
-    auto func = reinterpret_cast<const void*>(kernelGetter_t::get());
+    auto func = Self::get_func();
 
     if (num_blocks <= 0) {
 
@@ -378,17 +383,6 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
       max_blocks = num_blocks;
 
     }
-  }
-
-  static void launch(Data &&data,
-                     internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     RAJA::resources::Hip res)
-  {
-    auto func = kernelGetter_t::get();
-
-    void *args[] = {(void*)&data};
-    RAJA::hip::launch((const void*)func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, async);
   }
 };
 
@@ -571,17 +565,23 @@ struct StatementExecutor<
       }
 
       {
+        auto func = launch_t::get_func();
+
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
-        auto hip_data = RAJA::hip::make_launch_body(
+        // Note that there is a circular dependency between the previous setup
+        // of the launch_dims and potential changes to shmem here that is
+        // currently an unresolved issue.
+        //
+        auto hip_data = RAJA::hip::make_launch_body(func,
             launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res, data);
 
-
         //
-        // Launch the kernels
+        // Launch the kernel
         //
-        launch_t::launch(std::move(hip_data), launch_dims, shmem, res);
+        void *args[] = {(void*)&hip_data};
+        RAJA::hip::launch(func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, launch_t::async);
       }
     }
   }

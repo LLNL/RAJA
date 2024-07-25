@@ -283,7 +283,7 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::WARP_SIZE,
+  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::device_constants.WARP_SIZE,
                 "BitMask is too large for HIP warp size");
 
   static
@@ -312,7 +312,7 @@ struct HipStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    const diff_t len = RAJA::policy::hip::WARP_SIZE;
+    const diff_t len = RAJA::policy::hip::device_constants.WARP_SIZE;
 
     // request one thread per element in the segment
     set_hip_dim<named_dim::x>(dims.dims.threads, len);
@@ -352,7 +352,7 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::WARP_SIZE,
+  static_assert(mask_t::max_masked_size <= RAJA::policy::hip::device_constants.WARP_SIZE,
                 "BitMask is too large for HIP warp size");
 
   static
@@ -391,7 +391,7 @@ struct HipStatementExecutor<
 
     // we always get EXACTLY one warp by allocating one warp in the X
     // dimension
-    const diff_t len = RAJA::policy::hip::WARP_SIZE;
+    const diff_t len = RAJA::policy::hip::device_constants.WARP_SIZE;
 
     // request one thread per element in the segment
     set_hip_dim<named_dim::x>(dims.dims.threads, len);
