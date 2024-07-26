@@ -11,6 +11,8 @@
 
 #include "RAJA/RAJA.hpp"
 
+#include "camp/tuple.hpp"
+
 /*
  *  MultiReduction Example using RAJA forall
  *
