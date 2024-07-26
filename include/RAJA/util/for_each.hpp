@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "camp/list.hpp"
+#include "camp/tuple.hpp"
 
 #include "RAJA/pattern/detail/algorithm.hpp"
 
