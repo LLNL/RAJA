@@ -49,10 +49,10 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
 
   ASSERT_EQ(static_cast<DATA_TYPE>(simpand.get()), 5);
 
-  
-  // 
+
+  //
   // And now a randomized test that pushes zeros around
-  // 
+  //
 
   const int modval = 100;
 
@@ -72,6 +72,7 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg,
     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
+    RAJA::expt::KernelName("RAJA Reduce BitAnd"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &r1, DATA_TYPE &r2) {
       r1 &= working_array[idx];
       r2 &= working_array[idx];
@@ -92,7 +93,7 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   }
 
   ASSERT_EQ(static_cast<DATA_TYPE>(redand), ref_and);
-   
+
 
   deallocateForallTestData<DATA_TYPE>(working_res,
                                       working_array,
