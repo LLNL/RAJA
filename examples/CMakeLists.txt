@@ -20,6 +20,10 @@ raja_add_executable(
   SOURCES forall-param-reductions.cpp)
 
 raja_add_executable(
+  NAME forall_multi-reductions
+  SOURCES forall_multi-reductions.cpp)
+
+raja_add_executable(
   NAME launch-param-reductions
   SOURCES launch-param-reductions.cpp)
 

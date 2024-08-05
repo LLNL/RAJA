@@ -560,7 +560,7 @@ forall_impl(resources::Hip hip_res,
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body = RAJA::hip::make_launch_body(
+      LOOP_BODY body = RAJA::hip::make_launch_body(func,
           dims.blocks, dims.threads, shmem, hip_res, std::forward<LoopBody>(loop_body));
 
       //
@@ -610,7 +610,8 @@ forall_impl(resources::Hip hip_res,
   if (len > 0) {
 
     auto func = reinterpret_cast<const void*>(
-        &impl::forallp_hip_kernel<EXEC_POL, Iterator, LOOP_BODY, IndexType, camp::decay<ForallParam>>);
+        &impl::forallp_hip_kernel<EXEC_POL, Iterator, LOOP_BODY, IndexType,
+                                  camp::decay<ForallParam>>);
 
     //
     // Setup shared memory buffers
@@ -636,7 +637,7 @@ forall_impl(resources::Hip hip_res,
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body = RAJA::hip::make_launch_body(
+      LOOP_BODY body = RAJA::hip::make_launch_body(func,
           dims.blocks, dims.threads, shmem, hip_res, std::forward<LoopBody>(loop_body));
 
       //

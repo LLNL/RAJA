@@ -956,6 +956,43 @@ struct AsIntegerArray
   }
 };
 
+
+/*!
+ * \brief Assign a new value to an object and restore the object's previous
+ * value at the end of the current scope.
+ */
+template <typename T>
+struct ScopedAssignment
+{
+  ScopedAssignment(T& val, T const& new_val)
+    : m_ref_to_val(val)
+    , m_prev_val(std::move(val))
+  {
+    m_ref_to_val = new_val;
+  }
+
+  ScopedAssignment(T& val, T&& new_val)
+    : m_ref_to_val(val)
+    , m_prev_val(std::move(val))
+  {
+    m_ref_to_val = std::move(new_val);
+  }
+
+  ScopedAssignment(ScopedAssignment const&) = delete;
+  ScopedAssignment(ScopedAssignment &&) = delete;
+  ScopedAssignment& operator=(ScopedAssignment const&) = delete;
+  ScopedAssignment& operator=(ScopedAssignment &&) = delete;
+
+  ~ScopedAssignment()
+  {
+    m_ref_to_val = std::move(m_prev_val);
+  }
+
+private:
+  T& m_ref_to_val;
+  T m_prev_val;
+};
+
 }  // namespace detail
 
 }  // namespace RAJA
