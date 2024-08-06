@@ -26,9 +26,9 @@
 # ${PROJECT_<MACHINE>_DEPS} in the extra jobs. There is no reason not to fully
 # describe the spec here.
 
-rocmcc_6_0_2_hip_desul_atomics:
+rocmcc_5_7_1_hip_desul_atomics:
   variables:
-    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@=6.0.2 ^hip@6.0.2 ^blt@develop"
+    SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@=5.7.1 ^hip@5.7.1 ^blt@develop"
   extends: .job_on_corona
 
 clang_19_0_0_sycl_gcc_10_3_1_rocmcc_5_7_1_hip:
