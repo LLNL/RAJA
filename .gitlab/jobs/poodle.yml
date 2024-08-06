@@ -29,18 +29,10 @@ gcc_10_3_1:
     SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
 
-# Identical to shared job, but use OpenMP tasks and no vectorization
-# Deactivated (too long on poodle)
-intel_19_1_2_gcc_10_3_1:
-  variables:
-    ON_POODLE: "OFF"
-    SPEC: " ~shared +openmp +omptask +tests %intel@=19.1.2.gcc.10.3.1 ${PROJECT_POODLE_DEPS}"
-  extends: .job_on_poodle
-
 # Allowed to fail
-intel_2022_1_0:
+intel_2023_2_1:
   variables:
-    SPEC: "${PROJECT_POODLE_VARIANTS} %intel@=2022.1.0 ${PROJECT_POODLE_DEPS}"
+    SPEC: "${PROJECT_POODLE_VARIANTS} %intel@=2023.2.1 ${PROJECT_POODLE_DEPS}"
   allow_failure: true
   extends: .job_on_poodle
 

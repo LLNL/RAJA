@@ -29,16 +29,10 @@ gcc_10_3_1:
     SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ${PROJECT_RUBY_DEPS}"
   extends: .job_on_ruby
 
-# Identical to shared job, but use OpenMP tasks and no vectorization
-intel_19_1_2_gcc_10_3_1:
-  variables:
-    SPEC: " ~shared +openmp +omptask +tests %intel@=19.1.2.gcc.10.3.1 ${PROJECT_RUBY_DEPS}"
-  extends: .job_on_ruby
-
 # Allowed to fail
-intel_2022_1_0:
+intel_2023_2_1:
   variables:
-    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@=2022.1.0 ${PROJECT_RUBY_DEPS}"
+    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@=2023.2.1 ${PROJECT_RUBY_DEPS}"
   allow_failure: true
   extends: .job_on_ruby
 
