@@ -126,7 +126,7 @@ struct Reduce_Data
       exit(1);
     }
     std::fill_n(host, sycl::MaxNumTeams, identityValue);
-    hostToDevice(/*info*/);
+    hostToDevice();
   }
 
   void reset(T initValue)
@@ -138,7 +138,7 @@ struct Reduce_Data
   Reduce_Data(const Reduce_Data &) = default;
 
   //! transfers from the host to the device -- exit() is called upon failure
-  RAJA_INLINE void hostToDevice(/* Offload_Info &info */)
+  RAJA_INLINE void hostToDevice()
   {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
@@ -156,7 +156,7 @@ struct Reduce_Data
   }
 
   //! transfers from the device to the host -- exit() is called upon failure
-  RAJA_INLINE void deviceToHost(/*Offload_Info &info*/)
+  RAJA_INLINE void deviceToHost()
   {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
 
@@ -174,7 +174,7 @@ struct Reduce_Data
   }
 
   //! frees all data from the offload information passed
-  RAJA_INLINE void cleanup(/*Offload_Info &info*/)
+  RAJA_INLINE void cleanup()
   {
     cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
     if(!q) {
@@ -213,7 +213,7 @@ struct TargetReduce
 
   void reset(T init_val_, T identity_ = Reducer::identity())
   {
-    val.cleanup(/*info*/);
+    val.cleanup();
     val = sycl::Reduce_Data<T>(identity_, identity_, info);
     info.isMapped = false;
     initVal = init_val_;
@@ -229,7 +229,7 @@ struct TargetReduce
   operator T()
   {
     if (!info.isMapped) {
-      val.deviceToHost(/*info*/);
+      val.deviceToHost();
       for (int i =0; i < sycl::MaxNumTeams; ++i) {
         Reducer{}(val.value, val.host[i]);
       }
@@ -309,9 +309,9 @@ struct TargetReduceLoc
              T identity_val_ = Reducer::identity,
              IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
-    val.cleanup(/*info*/);
+    val.cleanup();
     val = sycl::Reduce_Data<T>(identity_val_, identity_val_, info);
-    loc.cleanup(/*info*/);
+    loc.cleanup();
     loc = sycl::Reduce_Data<IndexType>(identity_loc_, identity_loc_, info);
     info.isMapped = false;
     initVal = init_val_;
@@ -329,8 +329,8 @@ struct TargetReduceLoc
   operator T()
   {
     if (!info.isMapped) {
-      val.deviceToHost(/*info*/);
-      loc.deviceToHost(/*info*/);
+      val.deviceToHost();
+      loc.deviceToHost();
       
       for (int i = 0; i < sycl::MaxNumTeams; ++i) {
         Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
