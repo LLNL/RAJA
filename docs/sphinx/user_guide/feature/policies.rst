@@ -593,7 +593,7 @@ GPU Policies for SYCL
 	  x dimension for CUDA and HIP.
 
           Similarly, ``RAJA::kernel`` uses a three-dimensional work-group
-          configuration. SYCL imension 2 always exists and should be used as
+          configuration. SYCL dimension 2 always exists and should be used as
           one would use the x dimension in CUDA and HIP.  
 
 ======================================== ============= ==============================
