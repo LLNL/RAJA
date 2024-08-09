@@ -122,7 +122,7 @@ if (RAJA_ENABLE_CUDA)
     message(STATUS "CUDA compute architecture set to RAJA default 35 since it was not specified")
     set(CMAKE_CUDA_ARCHITECTURES "35" CACHE STRING "Set CMAKE_CUDA_ARCHITECTURES to RAJA minimum supported" FORCE)
   endif()
-  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}") 
+  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}")
   if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
       set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
@@ -220,6 +220,7 @@ if (RAJA_ENABLE_SYCL)
     ${raja_depends}
     sycl)
 endif ()
+
 
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)
