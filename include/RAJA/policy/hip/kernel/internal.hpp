@@ -210,6 +210,27 @@ using hip_statement_list_executor_t = HipStatementListExecutor<
     StmtList,
     Types>;
 
+struct HIPKernelLaunchFuncData {
+  static unsigned int getKernelScratchBytes(
+      hipFuncAttributes const &hip_func_attributes) {
+    return hip_func_attributes.localSizeBytes;
+  }
+  static unsigned int getKernelRegisters(
+  	hipFuncAttributes const &hip_func_attributes) {
+	 return hip_func_attributes.numRegs;
+   }
+
+
+static hipFuncAttributes get_hip_func_attributes(void const *kernel_func) {
+    static hipFuncAttributes attr = [=]() {
+      hipFuncAttributes attr;
+      hipFuncGetAttributes(&attr, kernel_func);
+      hipErrchk(hipFuncGetAttributes(&attr, kernel_func));
+      return attr;
+    }();
+    return attr;
+  }
+};
 
 // specialization for direct sequential policies
 template<typename kernel_indexer>
