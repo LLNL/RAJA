@@ -34,6 +34,8 @@ jobs:
   timeoutInMinutes: 360
   strategy:
     matrix: 
+      gcc11:
+        docker_target: gcc11
       gcc12_debug:
         docker_target: gcc12_debug
       gcc12_desul:

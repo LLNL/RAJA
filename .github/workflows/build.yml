@@ -4,7 +4,7 @@ jobs:
   build_docker:
     strategy:
       matrix:
-        target: [gcc12, gcc13, clang13, clang15, rocm6.0, rocm6.0_desul, intel2024, intel2024_debug, intel2024_sycl]
+        target: [gcc12, gcc13, clang13, clang15, rocm5.6, rocm5.6_desul, intel2024, intel2024_debug, intel2024_sycl]
     runs-on: ubuntu-latest
     steps:
     - run: |
@@ -72,15 +72,3 @@ jobs:
       - uses: threeal/ctest-action@v1.1.0
         with:
           build-config: Debug
-## ====================================
-## Attempt to run tests by invoking ctest manually.
-## Generates errors similar to above -- cannot find test executables.
-##    - name: Test
-##      working-directory: ${{github.workspace}}/build
-##      run: ctest -C Release --output-on-failure
-## ====================================
-## Another attempt.
-## This produces no errors, but test executables are not found.
-##    - name: Run Tests
-##      run: ctest.exe -C Release
-##      shell: bash
