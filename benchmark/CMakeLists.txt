@@ -12,5 +12,9 @@ if (RAJA_ENABLE_CUDA)
 endif()
 
 raja_add_benchmark(
+  NAME benchmark-atomic
+  SOURCES benchmark-atomic.cpp)
+
+raja_add_benchmark(
   NAME ltimes
   SOURCES ltimes.cpp)
