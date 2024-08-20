@@ -51,7 +51,7 @@ rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
 
-module load cmake/3.23.1
+module load cmake/3.24.2
 
 # unload rocm to avoid configuration problems where the loaded rocm and COMP_VER
 # are inconsistent causing the rocprim from the module to be used unexpectedly

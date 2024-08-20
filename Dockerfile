@@ -5,114 +5,153 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-7.3.0 AS gcc7.3.0
+##
+## Note that we build with 'make -j 16' on GitHub Actions and
+## with 'make -j 6' on Azure. This is reflected in the 'make' commands below.
+## This seems to work best for throughput.
+##
+
+FROM ghcr.io/llnl/radiuss:gcc-11-ubuntu-22.04 AS gcc11
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_DEPRECATED_TESTS=On -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-8.1.0 AS gcc8.1.0
+FROM ghcr.io/llnl/radiuss:gcc-12-ubuntu-22.04 AS gcc12
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_COVERAGE=On -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
+    make -j 16 &&\
+    ctest -T test --output-on-failure
+
+FROM ghcr.io/llnl/radiuss:gcc-12-ubuntu-22.04 AS gcc12_debug
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-9.4.0 AS gcc9.4.0
+FROM ghcr.io/llnl/radiuss:gcc-12-ubuntu-22.04 AS gcc12_desul
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_RUNTIME_PLUGINS=On -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On -DRAJA_ENABLE_DESUL_ATOMICS=On .. && \
     make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/gcc-ubuntu-20.04:gcc-11.2.0 AS gcc11.2.0
+FROM ghcr.io/llnl/radiuss:gcc-13-ubuntu-22.04 AS gcc13
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_CXX_COMPILER=g++ -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_BOUNDS_CHECK=ON -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
+    make -j 16 &&\
+    ctest -T test --output-on-failure
+
+FROM ghcr.io/llnl/radiuss:clang-13-ubuntu-22.04 AS clang13
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
+    make -j 16 &&\
+    ctest -T test --output-on-failure
+
+FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_debug
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug  -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/clang-ubuntu-20.04:llvm-11.0.0 AS clang11.0.0
+FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
-    cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On .. && \
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
+    make -j 16 &&\
+    ctest -T test --output-on-failure
+
+FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15_desul
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On -DRAJA_ENABLE_DESUL_ATOMICS=On .. && \
     make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    ctest -T test --output-on-failure
 
-FROM ghcr.io/rse-ops/clang-ubuntu-20.04:llvm-11.0.0 AS clang11.0.0-debug
+## Test run failure in RAJA launch tests with new reducer interface.
+## Need to figure out best way to handle that.
+FROM ghcr.io/llnl/radiuss:ubuntu-20.04-intel-2024.0 AS intel2024
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
-    cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Debug .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On .. && \
+    make -j 16"
+##    make -j 16 &&\
+##    ctest -T test --output-on-failure"
 
-FROM ghcr.io/rse-ops/clang-ubuntu-22.04:llvm-13.0.0 AS clang13.0.0
+## Test run failure in RAJA launch tests with new reducer interface.
+## Need to figure out best way to handle that.
+FROM ghcr.io/llnl/radiuss:ubuntu-20.04-intel-2024.0 AS intel2024_debug
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN . /opt/spack/share/spack/setup-env.sh && export LD_LIBRARY_PATH=/opt/view/lib:$LD_LIBRARY_PATH && \
-    cmake -DCMAKE_CXX_COMPILER=clang++ -DENABLE_OPENMP=On -DCMAKE_BUILD_TYPE=Release .. && \
-    make -j 6 &&\
-    ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake -DCMAKE_CXX_COMPILER=icpx -DCMAKE_BUILD_TYPE=Debug -DENABLE_OPENMP=On .. && \
+    make -j 16"
+##    make -j 16 &&\
+##    ctest -T test --output-on-failure"
 
-##FROM ghcr.io/rse-ops/cuda:cuda-10.1.243-ubuntu-18.04 AS nvcc10.1.243
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
-##    cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
-##    make -j 4 && \
-##    cd .. && rm -rf build
+##
+## Need to find a viable cuda image to test...
+## 
 
-##FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11.1.1
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
-##    cmake -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
-##    make -j 4 && \
-##    cd .. && rm -rf build
+# TODO: We should switch to ROCm 6 -- where to get an image??
+FROM ghcr.io/llnl/radiuss:ubuntu-20.04-hip-5.6.1 AS rocm5.6
+ENV GTEST_COLOR=1
+ENV HCC_AMDGPU_TARGET=gfx900
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-5.6.1/bin/amdclang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_HIP=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    make -j 16
 
-##FROM ghcr.io/rse-ops/cuda-ubuntu-20.04:cuda-11.1.1 AS nvcc11.1.-debug
-##ENV GTEST_COLOR=1
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load cuda && \
-##    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_STANDARD=14 -DCMAKE_CUDA_ARCHITECTURES=70 -DENABLE_OPENMP=On .. && \
-##    make -j 4 && \
-##    cd .. && rm -rf build
+# TODO: We should switch to ROCm 6 -- where to get an image??
+FROM ghcr.io/llnl/radiuss:ubuntu-20.04-hip-5.6.1 AS rocm5.6_desul
+ENV GTEST_COLOR=1
+ENV HCC_AMDGPU_TARGET=gfx900
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-5.6.1/bin/amdclang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_HIP=On -DRAJA_ENABLE_DESUL_ATOMICS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    make -j 16
 
-##FROM ghcr.io/rse-ops/hip-ubuntu-20.04:hip-5.1.3 AS hip5.1.3
-##ENV GTEST_COLOR=1
-##ENV HCC_AMDGPU_TARGET=gfx900
-##COPY . /home/raja/workspace
-##WORKDIR /home/raja/workspace/build
-##RUN . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu && \
-##    cmake -DCMAKE_CXX_COMPILER=clang++ -DHIP_PATH=/opt -DENABLE_HIP=On -DENABLE_CUDA=Off -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
-##    make -j 6 && \
-##    cd .. && rm -rf build
+## ROCm 6 image is broken
+FROM ghcr.io/llnl/radiuss:hip-6.0.2-ubuntu-20.04 AS rocm6.0
+ENV GTEST_COLOR=1
+ENV HCC_AMDGPU_TARGET=gfx900
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-6.0.2/bin/amdclang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_HIP=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    make -j 16
 
-FROM ghcr.io/rse-ops/intel-ubuntu-22.04:intel-2023.2.1 AS sycl
+## ROCm 6 image is broken
+FROM ghcr.io/llnl/radiuss:hip-6.0.2-ubuntu-20.04 AS rocm6.0_desul
+ENV GTEST_COLOR=1
+ENV HCC_AMDGPU_TARGET=gfx900
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-6.0.2/bin/amdclang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_HIP=On -DRAJA_ENABLE_DESUL_ATOMICS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
+    make -j 16
+
+FROM ghcr.io/llnl/radiuss:intel-2024.0-ubuntu-20.04 AS intel2024_sycl
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN /bin/bash -c "source /opt/view/setvars.sh && \
-    cmake -DCMAKE_CXX_COMPILER=dpcpp -DRAJA_ENABLE_SYCL=On -DENABLE_OPENMP=Off -DENABLE_ALL_WARNINGS=Off -DBLT_CXX_STD=c++17 .. && \
-    make -j 6" && \
-    cd .. && rm -rf build
+RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake -DCMAKE_CXX_COMPILER=dpcpp -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=Off -DRAJA_ENABLE_SYCL=On -DBLT_CXX_STD=c++17 -DRAJA_ENABLE_DESUL_ATOMICS=On .. && \
+    make -j 16"
+
