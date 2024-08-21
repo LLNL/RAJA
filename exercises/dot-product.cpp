@@ -14,9 +14,9 @@
 /*
  *  Vector Dot Product Exercise
  *
- *  Computes dot = (a,b), where a, b are vectors of
+ *  Computes dot = (a,b), where a, b are vectors of 
  *  doubles and dot is a scalar double. It illustrates how RAJA
- *  supports a portable parallel reduction opertion in a way that
+ *  supports a portable parallel reduction opertion in a way that 
  *  the code looks like it does in a sequential implementation.
  *
  *  RAJA features shown:
@@ -83,15 +83,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::seq_exec
-  ///           execution policy type and RAJA::seq_reduce.
+  ///           execution policy type and RAJA::seq_reduce. 
   ///
   /// NOTE: We've done this one for you to help you get started...
   ///
 
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
-    seqdot += a[i] * b[i];
+  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+    seqdot += a[i] * b[i]; 
   });
 
   dot = seqdot.get();
@@ -136,9 +136,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::cuda_exec
   ///           execution policy type and RAJA::cuda_reduce reduction policy type.
-  ///
+  ///      
   ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' above.
-  ///                 if you want to use it here.
+  ///                 if you want to use it here. 
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -167,9 +167,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::hip_exec
   ///           execution policy type and RAJA::hip_reduce reduction policy type.
-  ///
+  ///      
   ///           NOTE: You will need to uncomment 'HIP_BLOCK_SIZE' above
-  ///                 if you want to use it here.
+  ///                 if you want to use it here. 
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -194,10 +194,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::sycl_exec
-  ///           execution policy type and RAJA::sycl_reduce.
+  ///           execution policy type and RAJA::sycl_reduce. 
   ///
   ///           NOTE: You will need to uncomment 'SYCL_BLOCK_SIZE' above
-  ///                 if you want to use it here.
+  ///                 if you want to use it here. 
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;

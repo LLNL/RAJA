@@ -16,7 +16,7 @@
 /*
  *  Vector Addition Exercise
  *
- *  In this exercise, you will compute c = a + b, where a, b, c are
+ *  In this exercise, you will compute c = a + b, where a, b, c are 
  *  integer vectors.
  *
  *  This file contains sequential and OpenMP variants of the vector addition
@@ -24,7 +24,7 @@
  *  plus a RAJA CUDA version if you have access to an NVIDIA GPU and a CUDA
  *  compiler, in empty code sections indicated by comments.
  *
- *  The exercise shows you how to use RAJA in its simplest form and
+ *  The exercise shows you how to use RAJA in its simplest form and 
  *  illustrates similarities between a C-style for-loop and a RAJA forall loop.
  *
  *  RAJA features you will use:
@@ -32,7 +32,7 @@
  *    -  Index range segment
  *    -  Execution policies
  *
- * Note: if CUDA is enabled, CUDA unified memory is used.
+ * Note: if CUDA is enabled, CUDA unified memory is used. 
  */
 
 /*
@@ -53,7 +53,7 @@ constexpr int SYCL_BLOCK_SIZE = 256;
 //
 // Functions for checking and printing arrays
 //
-void checkResult(int* c, int* c_ref, int len);
+void checkResult(int* c, int* c_ref, int len); 
 void printArray(int* v, int len);
 
 
@@ -128,10 +128,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
   RAJA::forall<RAJA::simd_exec>(
-    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
-      c[i] = a[i] + b[i];
+    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+      c[i] = a[i] + b[i]; 
     }
-  );
+  );    
 
   checkResult(c, c_ref, N);
 //printArray(c, N);
@@ -171,10 +171,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _rajaomp_vector_add_start
   RAJA::forall< RAJA::omp_parallel_for_exec >(
-    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
-      c[i] = a[i] + b[i];
+    RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+      c[i] = a[i] + b[i]; 
     }
-  );
+  ); 
   // _rajaomp_vector_add_end
 
   checkResult(c, c_ref, N);
@@ -200,7 +200,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( d_b, b, N * sizeof(int), cudaMemcpyHostToDevice ));
 
   // _rajacuda_vector_add_start
-  RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(RAJA::TypedRangeSegment<int>(0, N),
+  RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(RAJA::TypedRangeSegment<int>(0, N), 
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
@@ -212,7 +212,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printArray(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::cuda_exec policy runs the loop as a CUDA kernel asynchronously on a
+// RAJA::cuda_exec policy runs the loop as a CUDA kernel asynchronously on a 
 // GPU device with 2 blocks per SM.
 //----------------------------------------------------------------------------//
 
@@ -223,10 +223,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_explicit_vector_add_start
   const bool Asynchronous = true;
 
-  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::TypedRangeSegment<int>(0, N),
-    [=] RAJA_DEVICE (int i) {
-    d_c[i] = d_a[i] + d_b[i];
-  });
+  RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::TypedRangeSegment<int>(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    d_c[i] = d_a[i] + d_b[i]; 
+  });    
   // _rajacuda_explicit_vector_add_end
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));

@@ -4,7 +4,7 @@
  * \file
  *
  * \brief   Header file for SYCL reduction stucts/classes.
- *
+ *          
  ******************************************************************************
  */
 
@@ -38,7 +38,7 @@ namespace sycl
 {
 
 template <typename T, typename I>
-struct minloc
+struct minloc 
 {
   static constexpr T identity = T(::RAJA::operators::limits<T>::max());
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
@@ -54,7 +54,7 @@ struct minloc
 };
 
 template <typename T, typename I>
-struct maxloc
+struct maxloc 
 {
   static constexpr T identity = T(::RAJA::operators::limits<T>::min());
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
@@ -74,7 +74,7 @@ struct maxloc
 static int MaxNumTeams = 1;
 
 //! Information necessary for SYCL offload to be considered
-struct Offload_Info
+struct Offload_Info 
 {
   int hostID{1};
   int deviceID{2};
@@ -159,13 +159,13 @@ struct Reduce_Data
     if(!q) {
       camp::resources::Resource res = camp::resources::Sycl();
       q = res.get<camp::resources::Sycl>().get_queue();
-    }
+    } 
 
     // precondition: host and device are valid pointers
     auto e = q->memcpy(reinterpret_cast<void *>(host),
                        reinterpret_cast<void *>(device),
                        sycl::MaxNumTeams * sizeof(T));
-
+ 
     e.wait();
   }
 
@@ -191,7 +191,7 @@ struct Reduce_Data
 //! SYCL Target Reduction entity -- generalize on # of teams, reduction, and
 //! type
 template <typename Reducer, typename T>
-struct TargetReduce
+struct TargetReduce 
 {
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
@@ -259,7 +259,7 @@ struct TargetReduce
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm = ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device, cl::sycl::access::address_space::global_space>(val.device[i]);
-    Reducer{}(atm, rhsVal);
+    Reducer{}(atm, rhsVal);  
     return *this;
 #else
     Reducer{}(val.value, rhsVal);
@@ -281,7 +281,7 @@ private:
 //! SYCL Target Reduction Location entity -- generalize on # of teams,
 //! reduction, and type
 template <typename Reducer, typename T, typename IndexType>
-struct TargetReduceLoc
+struct TargetReduceLoc 
 {
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
@@ -324,7 +324,7 @@ struct TargetReduceLoc
     if (!info.isMapped) {
       val.deviceToHost(info);
       loc.deviceToHost(info);
-
+      
       for (int i = 0; i < sycl::MaxNumTeams; ++i) {
         Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
       }

@@ -16,7 +16,7 @@
 /*
  *  Vector Addition Exercise
  *
- *  In this exercise, you will compute c = a + b, where a, b, c are
+ *  In this exercise, you will compute c = a + b, where a, b, c are 
  *  integer vectors.
  *
  *  This file contains sequential and OpenMP variants of the vector addition
@@ -24,7 +24,7 @@
  *  plus a RAJA CUDA version if you have access to an NVIDIA GPU and a CUDA
  *  compiler, in empty code sections indicated by comments.
  *
- *  The exercise shows you how to use RAJA in its simplest form and
+ *  The exercise shows you how to use RAJA in its simplest form and 
  *  illustrates similarities between a C-style for-loop and a RAJA forall loop.
  *
  *  RAJA features you will use:
@@ -32,7 +32,7 @@
  *    -  Index range segment
  *    -  Execution policies
  *
- * Note: if CUDA is enabled, CUDA unified memory is used.
+ * Note: if CUDA is enabled, CUDA unified memory is used. 
  */
 
 /*
@@ -53,7 +53,7 @@
 //
 // Functions for checking and printing arrays
 //
-void checkResult(int* c, int* c_ref, int len);
+void checkResult(int* c, int* c_ref, int len); 
 void printArray(int* v, int len);
 
 
@@ -110,14 +110,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
-  ///           method and RAJA::seq_exec execution policy type.
+  ///           method and RAJA::seq_exec execution policy type. 
   ///
   /// NOTE: We've done this one for you to help you get started...
   ///
 
   // _rajaseq_vector_add_start
   RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
-    c[i] = a[i] + b[i];
+    c[i] = a[i] + b[i]; 
   });
   // _rajaseq_vector_add_end
 
@@ -213,7 +213,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///           method and RAJA::cuda_exec execution policy type.
   ///
   ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
-  ///                 top of the file if you want to use it here.
+  ///                 top of the file if you want to use it here. 
   ///
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
@@ -222,7 +222,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //printArray(c, N);
 
 //----------------------------------------------------------------------------//
-// RAJA::cuda_exec policy runs the loop as a CUDA kernel asynchronously on a
+// RAJA::cuda_exec policy runs the loop as a CUDA kernel asynchronously on a 
 // GPU device with 2 blocks per SM.
 //----------------------------------------------------------------------------//
 
@@ -234,11 +234,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the vector addition kernel using a RAJA::forall
-  ///           method and RAJA::cuda_exec execution policy type with
+  ///           method and RAJA::cuda_exec execution policy type with 
   ///           arguments defining 2 blocks per SM and asynchronous execution.
   ///
   ///           NOTE: You will have to uncomment 'CUDA_BLOCK_SIZE' near the
-  ///                 top of the file if you want to use it here.
+  ///                 top of the file if you want to use it here. 
   ///
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
@@ -268,7 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///           method and RAJA::hip_exec execution policy type.
   ///
   ///           NOTE: You will have to uncomment 'HIP_BLOCK_SIZE' near the
-  ///                 top of the file if you want to use it here.
+  ///                 top of the file if you want to use it here. 
   ///
 
   hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
@@ -302,7 +302,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///           method and RAJA::hip_exec execution policy type.
   ///
   ///           NOTE: You will have to uncomment 'SYCL_BLOCK_SIZE' near the
-  ///                 top of the file if you want to use it here.
+  ///                 top of the file if you want to use it here. 
   ///
 
   memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));

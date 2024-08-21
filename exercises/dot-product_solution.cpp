@@ -16,9 +16,9 @@
 /*
  *  Vector Dot Product Exercise
  *
- *  Computes dot = (a,b), where a, b are vectors of
+ *  Computes dot = (a,b), where a, b are vectors of 
  *  doubles and dot is a scalar double. It illustrates how RAJA
- *  supports a portable parallel reduction opertion in a way that
+ *  supports a portable parallel reduction opertion in a way that 
  *  the code looks like it does in a sequential implementation.
  *
  *  RAJA features shown:
@@ -84,8 +84,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajaseq_dotprod_start
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
-    seqdot += a[i] * b[i];
+  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+    seqdot += a[i] * b[i]; 
   });
 
   dot = seqdot.get();
@@ -106,9 +106,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajaomp_dotprod_start
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
-    ompdot += a[i] * b[i];
-  });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
+    ompdot += a[i] * b[i]; 
+  }); 
 
   dot = ompdot.get();
   // _rajaomp_dotprod_end
@@ -132,10 +132,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_dotprod_start
   RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
-    [=] RAJA_DEVICE (int i) {
-    cudot += a[i] * b[i];
-  });
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    cudot += a[i] * b[i]; 
+  });    
 
   dot = cudot.get();
   // _rajacuda_dotprod_end
