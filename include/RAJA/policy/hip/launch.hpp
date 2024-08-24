@@ -359,6 +359,77 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
    HIP generic loop implementations
 */
 template <typename SEGMENT, typename IndexMapper>
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE
+  void exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+            SEGMENT const &segment,
+            BODY const &body)
+  {
+    const diff_t i = IndexMapper::template index<diff_t>();
+
+    body(*(segment.begin() + i));
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t i0 = IndexMapper0::template index<diff_t>();
+    const diff_t i1 = IndexMapper1::template index<diff_t>();
+
+    body(*(segment0.begin() + i0), *(segment1.begin() + i1));
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1,
+                                                  IndexMapper2>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t i0 = IndexMapper0::template index<diff_t>();
+    const diff_t i1 = IndexMapper1::template index<diff_t>();
+    const diff_t i2 = IndexMapper2::template index<diff_t>();
+
+    body(*(segment0.begin() + i0),
+         *(segment1.begin() + i1),
+         *(segment2.begin() + i2));
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper>
 struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
@@ -545,6 +616,83 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Strid
         }
       }
     }
+  }
+};
+
+
+/*
+   HIP generic loop_icount implementations
+*/
+template <typename SEGMENT, typename IndexMapper>
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const diff_t i = IndexMapper::template index<diff_t>();
+
+    body(*(segment.begin() + i), i);
+  }
+};
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t i0 = IndexMapper0::template index<diff_t>();
+    const diff_t i1 = IndexMapper1::template index<diff_t>();
+
+    body(*(segment0.begin() + i0),
+         *(segment1.begin() + i1),
+         i0, i1);
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1,
+                                                        IndexMapper2>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t i0 = IndexMapper0::template index<diff_t>();
+    const diff_t i1 = IndexMapper1::template index<diff_t>();
+    const diff_t i2 = IndexMapper2::template index<diff_t>();
+
+    body(*(segment0.begin() + i0),
+         *(segment1.begin() + i1),
+         *(segment2.begin() + i2),
+         i0, i1, i2);
   }
 };
 
@@ -747,6 +895,72 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
    HIP generic flattened loop implementations
 */
 template<typename SEGMENT, kernel_sync_requirement sync, typename IndexMapper0>
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Unchecked,
+                                                          sync,
+                                                          IndexMapper0>,
+                   SEGMENT>
+    :  LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  sync,
+                                                  IndexMapper0>,
+                   SEGMENT>
+{};
+
+template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Unchecked,
+                                                          kernel_sync_requirement::none,
+                                                          IndexMapper0,
+                                                          IndexMapper1>,
+                   SEGMENT>
+{
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int i0 = IndexMapper0::template index<diff_t>();
+    const int i1 = IndexMapper1::template index<diff_t>();
+
+    const diff_t i0_stride = IndexMapper0::template size<diff_t>();
+
+    const int i = i0 + i0_stride*i1;
+
+    body(*(segment.begin() + i));
+  }
+};
+
+template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Unchecked,
+                                                          kernel_sync_requirement::none,
+                                                          IndexMapper0,
+                                                          IndexMapper1,
+                                                          IndexMapper2>,
+                   SEGMENT>
+{
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const int i0 = IndexMapper0::template index<diff_t>();
+    const int i1 = IndexMapper1::template index<diff_t>();
+    const int i2 = IndexMapper2::template index<diff_t>();
+
+    const diff_t i0_stride = IndexMapper0::template size<diff_t>();
+    const diff_t i1_stride = IndexMapper1::template size<diff_t>();
+
+    const int i = i0 + i0_stride*(i1 + i1_stride*i2);
+
+    body(*(segment.begin() + i));
+  }
+};
+
+template<typename SEGMENT, kernel_sync_requirement sync, typename IndexMapper0>
 struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Direct,
                                                           sync,
                                                           IndexMapper0>,
@@ -901,6 +1115,27 @@ struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mappin
    HIP generic tile implementations
 */
 template <typename SEGMENT, typename IndexMapper>
+struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const diff_t i = IndexMapper::template index<diff_t>() * static_cast<diff_t>(tile_size);
+
+    body(segment.slice(i, static_cast<diff_t>(tile_size)));
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper>
 struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
@@ -946,6 +1181,32 @@ struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Strid
     for (diff_t i = i_init; i < len; i += i_stride) {
       body(segment.slice(i, static_cast<diff_t>(tile_size)));
     }
+  }
+};
+
+
+/*
+   HIP generic tile_tcount implementations
+*/
+template <typename SEGMENT, typename IndexMapper>
+struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size,
+      SEGMENT const &segment,
+      BODY const &body)
+  {
+    const diff_t t = IndexMapper::template index<diff_t>();
+    const diff_t i = t * static_cast<diff_t>(tile_size);
+
+    body(segment.slice(i, static_cast<diff_t>(tile_size)), t);
   }
 };
 
