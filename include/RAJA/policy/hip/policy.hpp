@@ -1463,6 +1463,10 @@ using hip_multi_reduce_atomic_low_performance_low_overhead =
 using policy::hip::hip_block_reduce;
 using policy::hip::hip_warp_reduce;
 
+using hip_warp_unchecked = RAJA::policy::hip::hip_indexer<
+    iteration_mapping::Unchecked,
+    kernel_sync_requirement::none,
+    hip::thread_x<RAJA::policy::hip::device_constants.WARP_SIZE>>;
 using hip_warp_direct = RAJA::policy::hip::hip_indexer<
     iteration_mapping::Direct,
     kernel_sync_requirement::none,
