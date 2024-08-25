@@ -32,6 +32,58 @@ namespace internal
 
 /*
  * Executor for work sharing inside HipKernel.
+ * Provides an unchecked mapping.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ * Meets all sync requirements
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::ForICount<ArgumentId, ParamId,
+                         RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                         EnclosedStmts...>,
+    Types>
+    : HipStatementExecutor<
+        Data,
+        statement::For<ArgumentId,
+                       RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                       EnclosedStmts...>,
+        Types> {
+
+  using Base = HipStatementExecutor<
+      Data,
+      statement::For<ArgumentId,
+                     RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                     EnclosedStmts...>,
+      Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static inline RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // grid stride loop
+    const diff_t i = IndexMapper::template index<diff_t>();
+
+    // Assign the index to the argument and param
+    data.template assign_offset<ArgumentId>(i);
+    data.template assign_param<ParamId>(i);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active);
+  }
+};
+
+/*
+ * Executor for work sharing inside HipKernel.
  * Provides a direct mapping.
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
