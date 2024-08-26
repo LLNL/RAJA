@@ -141,7 +141,7 @@ ENV HCC_AMDGPU_TARGET=gfx900
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-5.6.1/bin/amdclang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_HIP=On -DRAJA_ENABLE_DESUL_ATOMICS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
-    make -j 16 \
+    make -j 16 && \
     cd .. && rm -rf build
 
 ## ROCm 6 image is broken
