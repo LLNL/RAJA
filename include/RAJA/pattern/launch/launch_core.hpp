@@ -547,8 +547,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 {
 
   LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                       segment,
-                                                       body);
+      segment, body);
 }
 
 template <typename POLICY_LIST,
@@ -561,8 +560,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
 {
 
   LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                          segment,
-                                                          body);
+      segment, body);
 }
 
 namespace expt
@@ -580,9 +578,22 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
 {
 
   LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                       segment0,
-                                                       segment1,
-                                                       body);
+      segment0, segment1, body);
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       BODY const &body)
+{
+
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+      segment0, segment1, body);
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -617,7 +628,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
 {
 
   LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                           segment0, segment1, segment2, body);
+      segment0, segment1, segment2, body);
 }
 
 } //namespace expt
@@ -640,9 +651,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
 {
 
   TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                       tile_size,
-                                                       segment,
-                                                       body);
+      tile_size, segment, body);
 }
 
 template <typename POLICY_LIST,
@@ -656,9 +665,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
                                        BODY const &body)
 {
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                          tile_size,
-                                                          segment,
-                                                          body);
+      tile_size, segment, body);
 }
 
 namespace expt
@@ -678,11 +685,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
 {
 
   TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                       tile_size0,
-                                                       tile_size1,
-                                                       segment0,
-                                                       segment1,
-                                                       body);
+      tile_size0, tile_size1, segment0, segment1, body);
 }
 
 template <typename POLICY_LIST,
@@ -699,11 +702,47 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
 {
 
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
-                                                          tile_size0,
-                                                          tile_size1,
-                                                          segment0,
-                                                          segment1,
-                                                          body);
+      tile_size0, tile_size1, segment0, segment1, body);
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       TILE_T tile_size2,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       SEGMENT const &segment2,
+                                       BODY const &body)
+{
+
+  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+      tile_size0, tile_size1, tile_size2,
+      segment0, segment1, segment2, body);
+}
+
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename TILE_T,
+          typename SEGMENT,
+          typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const &ctx,
+                                       TILE_T tile_size0,
+                                       TILE_T tile_size1,
+                                       TILE_T tile_size2,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       SEGMENT const &segment2,
+                                       BODY const &body)
+{
+
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+      tile_size0, tile_size1, tile_size2,
+      segment0, segment1, segment2, body);
 }
 
 } //namespace expt
