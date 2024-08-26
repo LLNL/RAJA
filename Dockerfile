@@ -18,7 +18,7 @@ WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make clean
 
 FROM ghcr.io/llnl/radiuss:gcc-12-ubuntu-22.04 AS gcc12
 ENV GTEST_COLOR=1
@@ -35,7 +35,7 @@ WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make clean
 
 FROM ghcr.io/llnl/radiuss:gcc-12-ubuntu-22.04 AS gcc12_desul
 ENV GTEST_COLOR=1
@@ -44,7 +44,7 @@ WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DRAJA_ENABLE_WARNINGS=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=On -DENABLE_OPENMP=On -DRAJA_ENABLE_DESUL_ATOMICS=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make clean
 
 FROM ghcr.io/llnl/radiuss:gcc-13-ubuntu-22.04 AS gcc13
 ENV GTEST_COLOR=1
@@ -69,7 +69,7 @@ WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug  -DENABLE_OPENMP=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make clean
 
 FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
@@ -86,7 +86,7 @@ WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=On -DRAJA_ENABLE_DESUL_ATOMICS=On .. && \
     make -j 6 &&\
     ctest -T test --output-on-failure && \
-    cd .. && rm -rf build
+    make clean
 
 ## Test run failure in RAJA launch tests with new reducer interface.
 ## Need to figure out best way to handle that.
