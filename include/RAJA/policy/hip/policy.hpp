@@ -404,7 +404,6 @@ struct unordered_hip_loop_y_block_iter_x_threadblock_average
 ///////////////////////////////////////////////////////////////////////
 ///
 
-
 template < typename tuning >
 struct hip_reduce_policy
     : public RAJA::
@@ -1534,6 +1533,7 @@ using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
 
 // helper to generate the many policy aliases
 #define RAJA_INTERNAL_HIP_ALIAS_INDEXER_POLICIES_HELPER(flatten, scope, mapping) \
+  \
   using hip_##flatten##scope##_x_##mapping = hip_##flatten##scope##_##mapping<named_dim::x>; \
   using hip_##flatten##scope##_y_##mapping = hip_##flatten##scope##_##mapping<named_dim::y>; \
   using hip_##flatten##scope##_z_##mapping = hip_##flatten##scope##_##mapping<named_dim::z>; \
@@ -1557,6 +1557,7 @@ using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
   template < named_dim ... dims > \
   using hip_##flatten##thread_##mapping = hip_##flatten##indexer_##mapping< \
       hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>; \
+  \
   RAJA_INTERNAL_HIP_ALIAS_INDEXER_POLICIES_HELPER(flatten, thread, mapping)
 
 // helper to generate the many block policy aliases
@@ -1564,6 +1565,7 @@ using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
   template < named_dim ... dims > \
   using hip_##flatten##block_##mapping = hip_##flatten##indexer_##mapping< \
       hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>; \
+  \
   RAJA_INTERNAL_HIP_ALIAS_INDEXER_POLICIES_HELPER(flatten, block, mapping)
 
 // helper to generate the many global policy aliases
@@ -1571,6 +1573,7 @@ using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
   template < named_dim ... dims > \
   using hip_##flatten##global_##mapping = hip_##flatten##indexer_##mapping< \
       hip::IndexGlobal<dims, named_usage::unspecified, named_usage::unspecified>...>; \
+  \
   RAJA_INTERNAL_HIP_ALIAS_INDEXER_POLICIES_HELPER(flatten, global, mapping)
 
 
