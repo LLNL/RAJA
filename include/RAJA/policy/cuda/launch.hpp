@@ -1134,6 +1134,63 @@ struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Unc
   }
 };
 
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t i0 = IndexMapper0::template index<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = IndexMapper1::template index<diff_t>() * static_cast<diff_t>(tile_size1);
+
+    body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+         segment1.slice(i1, static_cast<diff_t>(tile_size1)));
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Unchecked,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1,
+                                                  IndexMapper2>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      TILE_T tile_size2,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t i0 = IndexMapper0::template index<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = IndexMapper1::template index<diff_t>() * static_cast<diff_t>(tile_size1);
+    const diff_t i2 = IndexMapper2::template index<diff_t>() * static_cast<diff_t>(tile_size2);
+
+    body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+         segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+         segment2.slice(i2, static_cast<diff_t>(tile_size2)));
+  }
+};
+
 template <typename SEGMENT, typename IndexMapper>
 struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
                                                   kernel_sync_requirement::none,
@@ -1154,6 +1211,74 @@ struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Dir
 
     if (i < len) {
       body(segment.slice(i, static_cast<diff_t>(tile_size)));
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+
+    const diff_t i0 = IndexMapper0::template index<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = IndexMapper1::template index<diff_t>() * static_cast<diff_t>(tile_size1);
+
+    if (i0 < len0 && i1 < len1) {
+      body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+           segment1.slice(i1, static_cast<diff_t>(tile_size1)));
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1,
+                                                  IndexMapper2>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      TILE_T tile_size2,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+    const diff_t len2 = segment2.end() - segment2.begin();
+
+    const diff_t i0 = IndexMapper0::template index<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = IndexMapper1::template index<diff_t>() * static_cast<diff_t>(tile_size1);
+    const diff_t i2 = IndexMapper2::template index<diff_t>() * static_cast<diff_t>(tile_size2);
+
+    if (i0 < len0 && i1 < len1 && i2 < len2) {
+      body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+           segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+           segment2.slice(i2, static_cast<diff_t>(tile_size2)));
     }
   }
 };
@@ -1179,6 +1304,87 @@ struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Str
 
     for (diff_t i = i_init; i < len; i += i_stride) {
       body(segment.slice(i, static_cast<diff_t>(tile_size)));
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+
+    const diff_t i0_init = IndexMapper0::template index<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1_init = IndexMapper1::template index<diff_t>() * static_cast<diff_t>(tile_size1);
+
+    const diff_t i0_stride = IndexMapper0::template size<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1_stride = IndexMapper1::template size<diff_t>() * static_cast<diff_t>(tile_size1);
+
+    for (diff_t i0 = i0_init; i0 < len0; i0 += i0_stride) {
+      for (diff_t i1 = i1_init; i1 < len1; i1 += i1_stride) {
+        body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+             segment1.slice(i1, static_cast<diff_t>(tile_size1)));
+      }
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct TileExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
+                                                  kernel_sync_requirement::none,
+                                                  IndexMapper0,
+                                                  IndexMapper1,
+                                                  IndexMapper2>,
+                   SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      TILE_T tile_size2,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+    const diff_t len2 = segment2.end() - segment2.begin();
+
+    const diff_t i0_init = IndexMapper0::template index<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1_init = IndexMapper1::template index<diff_t>() * static_cast<diff_t>(tile_size1);
+    const diff_t i2_init = IndexMapper2::template index<diff_t>() * static_cast<diff_t>(tile_size2);
+
+    const diff_t i0_stride = IndexMapper0::template size<diff_t>() * static_cast<diff_t>(tile_size0);
+    const diff_t i1_stride = IndexMapper1::template size<diff_t>() * static_cast<diff_t>(tile_size1);
+    const diff_t i2_stride = IndexMapper2::template size<diff_t>() * static_cast<diff_t>(tile_size2);
+
+    for (diff_t i0 = i0_init; i0 < len0; i0 += i0_stride) {
+      for (diff_t i1 = i1_init; i1 < len1; i1 += i1_stride) {
+        for (diff_t i2 = i2_init; i2 < len2; i2 += i2_stride) {
+          body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+               segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+               segment2.slice(i2, static_cast<diff_t>(tile_size2)));
+        }
+      }
     }
   }
 };
@@ -1209,6 +1415,72 @@ struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
   }
 };
 
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Unchecked,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t t0 = IndexMapper0::template index<diff_t>();
+    const diff_t t1 = IndexMapper1::template index<diff_t>();
+
+    const diff_t i0 = t0 * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = t1 * static_cast<diff_t>(tile_size1);
+
+    body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+         segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+         t0, t1);
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Unchecked,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1,
+                                                        IndexMapper2>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      TILE_T tile_size2,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t t0 = IndexMapper0::template index<diff_t>();
+    const diff_t t1 = IndexMapper1::template index<diff_t>();
+    const diff_t t2 = IndexMapper2::template index<diff_t>();
+
+    const diff_t i0 = t0 * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = t1 * static_cast<diff_t>(tile_size1);
+    const diff_t i2 = t2 * static_cast<diff_t>(tile_size2);
+
+    body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+         segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+         segment2.slice(i2, static_cast<diff_t>(tile_size2)),
+         t0, t1, t2);
+  }
+};
+
 template <typename SEGMENT, typename IndexMapper>
 struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
                                                         kernel_sync_requirement::none,
@@ -1230,6 +1502,83 @@ struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 
     if (i < len) {
       body(segment.slice(i, static_cast<diff_t>(tile_size)), t);
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+
+    const diff_t t0 = IndexMapper0::template index<diff_t>();
+    const diff_t t1 = IndexMapper1::template index<diff_t>();
+
+    const diff_t i0 = t0 * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = t1 * static_cast<diff_t>(tile_size1);
+
+    if (i0 < len0 && i1 < len1) {
+      body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+           segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+           t0, t1);
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::Direct,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1,
+                                                        IndexMapper2>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      TILE_T tile_size2,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+    const diff_t len2 = segment2.end() - segment2.begin();
+
+    const diff_t t0 = IndexMapper0::template index<diff_t>();
+    const diff_t t1 = IndexMapper1::template index<diff_t>();
+    const diff_t t2 = IndexMapper2::template index<diff_t>();
+
+    const diff_t i0 = t0 * static_cast<diff_t>(tile_size0);
+    const diff_t i1 = t1 * static_cast<diff_t>(tile_size1);
+    const diff_t i2 = t2 * static_cast<diff_t>(tile_size2);
+
+    if (i0 < len0 && i1 < len1 && i2 < len2) {
+      body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+           segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+           segment2.slice(i2, static_cast<diff_t>(tile_size2)),
+           t0, t1, t2);
     }
   }
 };
@@ -1257,6 +1606,103 @@ struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mappin
 
     for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
       body(segment.slice(i, static_cast<diff_t>(tile_size)), t);
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+
+    const diff_t t0_init = IndexMapper0::template index<diff_t>();
+    const diff_t t1_init = IndexMapper1::template index<diff_t>();
+
+    const diff_t i0_init = t0_init * static_cast<diff_t>(tile_size0);
+    const diff_t i1_init = t1_init * static_cast<diff_t>(tile_size1);
+
+    const diff_t t0_stride = IndexMapper0::template size<diff_t>();
+    const diff_t t1_stride = IndexMapper1::template size<diff_t>();
+
+    const diff_t i0_stride = t0_stride * static_cast<diff_t>(tile_size0);
+    const diff_t i1_stride = t1_stride * static_cast<diff_t>(tile_size1);
+
+    for (diff_t i0 = i0_init, t0 = t0_init; i0 < len0; i0 += i0_stride, t0 += t0_stride) {
+      for (diff_t i1 = i1_init, t1 = t1_init; i1 < len1; i1 += i1_stride, t1 += t1_stride) {
+        body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+             segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+             t0, t1);
+      }
+    }
+  }
+};
+
+template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
+struct TileTCountExecute<RAJA::policy::cuda::cuda_indexer<RAJA::iteration_mapping::StridedLoop<named_usage::unspecified>,
+                                                        kernel_sync_requirement::none,
+                                                        IndexMapper0,
+                                                        IndexMapper1,
+                                                        IndexMapper2>,
+                         SEGMENT> {
+
+  using diff_t = typename std::iterator_traits<typename SEGMENT::iterator>::difference_type;
+
+  template <typename TILE_T, typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const RAJA_UNUSED_ARG(&ctx),
+      TILE_T tile_size0,
+      TILE_T tile_size1,
+      TILE_T tile_size2,
+      SEGMENT const &segment0,
+      SEGMENT const &segment1,
+      SEGMENT const &segment2,
+      BODY const &body)
+  {
+    const diff_t len0 = segment0.end() - segment0.begin();
+    const diff_t len1 = segment1.end() - segment1.begin();
+    const diff_t len2 = segment2.end() - segment2.begin();
+
+    const diff_t t0_init = IndexMapper0::template index<diff_t>();
+    const diff_t t1_init = IndexMapper1::template index<diff_t>();
+    const diff_t t2_init = IndexMapper2::template index<diff_t>();
+
+    const diff_t i0_init = t0_init * static_cast<diff_t>(tile_size0);
+    const diff_t i1_init = t1_init * static_cast<diff_t>(tile_size1);
+    const diff_t i2_init = t2_init * static_cast<diff_t>(tile_size2);
+
+    const diff_t t0_stride = IndexMapper0::template size<diff_t>();
+    const diff_t t1_stride = IndexMapper1::template size<diff_t>();
+    const diff_t t2_stride = IndexMapper2::template size<diff_t>();
+
+    const diff_t i0_stride = t0_stride * static_cast<diff_t>(tile_size0);
+    const diff_t i1_stride = t1_stride * static_cast<diff_t>(tile_size1);
+    const diff_t i2_stride = t2_stride * static_cast<diff_t>(tile_size2);
+
+    for (diff_t i0 = i0_init, t0 = t0_init; i0 < len0; i0 += i0_stride, t0 += t0_stride) {
+      for (diff_t i1 = i1_init, t1 = t1_init; i1 < len1; i1 += i1_stride, t1 += t1_stride) {
+        for (diff_t i2 = i2_init, t2 = t2_init; i2 < len2; i2 += i2_stride, t2 += t2_stride) {
+          body(segment0.slice(i0, static_cast<diff_t>(tile_size0)),
+               segment1.slice(i1, static_cast<diff_t>(tile_size1)),
+               segment2.slice(i2, static_cast<diff_t>(tile_size2)),
+               t0, t1, t2);
+        }
+      }
     }
   }
 };
