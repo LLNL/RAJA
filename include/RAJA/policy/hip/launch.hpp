@@ -121,8 +121,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, named_usage::unspeci
     return resources::EventProxy<resources::Resource>(res);
   }
 
-
- //Version with explicit reduction parameters..
+  //Version with explicit reduction parameters..
   template <typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -228,7 +227,6 @@ void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams reduce_params
   RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(reduce_params);
 }
 
-
 template <bool async, int nthreads>
 struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
 
@@ -267,6 +265,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
 
       {
         size_t shared_mem_size = params.shared_mem_size;
+
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
@@ -286,7 +285,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
     return resources::EventProxy<resources::Resource>(res);
   }
 
- //Version with explicit reduction parameters..
+  //Version with explicit reduction parameters..
   template <typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
                                RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
