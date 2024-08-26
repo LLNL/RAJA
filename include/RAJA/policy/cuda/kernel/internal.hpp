@@ -215,6 +215,185 @@ using cuda_statement_list_executor_t = CudaStatementListExecutor<
 template<typename kernel_indexer>
 struct KernelDimensionCalculator;
 
+// specialization for unchecked sequential policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& RAJA_UNUSED_ARG(dims), CudaDims& RAJA_UNUSED_ARG(min_dims), IdxT len)
+  {
+    if ( len != static_cast<IdxT>(1) ) {
+      RAJA_ABORT_OR_THROW("len does not match the size of the directly mapped index space");
+    }
+  }
+};
+
+// specialization for unchecked thread policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if ( len != static_cast<IdxT>(IndexMapper::block_size) ) {
+      RAJA_ABORT_OR_THROW("len does not match the size of the unchecked mapped index space");
+    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+  }
+};
+
+// specialization for unchecked block policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(len));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
+{
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if ( len != static_cast<IdxT>(IndexMapper::grid_size) ) {
+      RAJA_ABORT_OR_THROW("len does not match the size of the unchecked mapped index space");
+    }
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+
+// specialization for unchecked global policies
+template<named_dim dim, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>>>
+{
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& RAJA_UNUSED_ARG(dims), CudaDims& RAJA_UNUSED_ARG(min_dims), IdxT len)
+  {
+    if (len != static_cast<IdxT>(0)) {
+      RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
+    }
+  }
+};
+///
+template<named_dim dim, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
+{
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    const IdxT block_size = RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size));
+    if ( len != (block_size * static_cast<IdxT>(IndexMapper::grid_size)) ) {
+      RAJA_ABORT_OR_THROW("len does not match the size of the unchecked mapped index space");
+    }
+    set_cuda_dim<dim>(dims.threads, block_size);
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, block_size);
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    const IdxT grid_size = RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size));
+    if ( len != (static_cast<IdxT>(IndexMapper::block_size) * grid_size) ) {
+      RAJA_ABORT_OR_THROW("len does not match the size of the unchecked mapped index space");
+    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, grid_size);
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, grid_size);
+  }
+};
+///
+template<named_dim dim, int BLOCK_SIZE, int GRID_SIZE, kernel_sync_requirement sync>
+struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked,
+                                                    sync,
+                                                    cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
+{
+  static_assert(BLOCK_SIZE > 0, "block size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+  static_assert(GRID_SIZE > 0, "grid size must be > 0, named_usage::unspecified, or named_usage::ignored with kernel");
+
+  using IndexMapper = cuda::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
+
+  template < typename IdxT >
+  static void set_dimensions(CudaDims& dims, CudaDims& min_dims, IdxT len)
+  {
+    if ( len != (static_cast<IdxT>(IndexMapper::block_size) *
+                 static_cast<IdxT>(IndexMapper::grid_size)) ) {
+      RAJA_ABORT_OR_THROW("len does not match the size of the unchecked mapped index space");
+    }
+    set_cuda_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_cuda_dim<dim>(min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
+  }
+};
+
+
 // specialization for direct sequential policies
 template<named_dim dim, kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
