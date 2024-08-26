@@ -32,6 +32,58 @@ namespace internal
 
 /*
  * Executor for work sharing inside CudaKernel.
+ * Provides an unchecked mapping.
+ * Assigns the loop index to offset ArgumentId
+ * Assigns the loop index to param ParamId
+ * Meets all sync requirements
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::ForICount<ArgumentId, ParamId,
+                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                         EnclosedStmts...>,
+    Types>
+    : CudaStatementExecutor<
+        Data,
+        statement::For<ArgumentId,
+                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                       EnclosedStmts...>,
+        Types> {
+
+  using Base = CudaStatementExecutor<
+      Data,
+      statement::For<ArgumentId,
+                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                     EnclosedStmts...>,
+      Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static inline RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // grid stride loop
+    const diff_t i = IndexMapper::template index<diff_t>();
+
+    // Assign the index to the argument and param
+    data.template assign_offset<ArgumentId>(i);
+    data.template assign_param<ParamId>(i);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active);
+  }
+};
+
+/*
+ * Executor for work sharing inside CudaKernel.
  * Provides a direct mapping.
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId

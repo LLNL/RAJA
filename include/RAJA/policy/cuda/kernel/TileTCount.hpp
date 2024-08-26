@@ -60,6 +60,73 @@ struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
+                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                    EnclosedStmts...>,
+                    Types>
+    : public CudaStatementExecutor<
+        Data,
+        statement::Tile<ArgumentId,
+                        RAJA::tile_fixed<chunk_size>,
+                        RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                        EnclosedStmts...>,
+                        Types> {
+
+  using Base = CudaStatementExecutor<
+      Data,
+      statement::Tile<ArgumentId,
+                      RAJA::tile_fixed<chunk_size>,
+                      RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                      EnclosedStmts...>,
+                      Types>;
+
+  using typename Base::enclosed_stmts_t;
+  using typename Base::diff_t;
+
+  static inline RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    using segment_t = camp::decay<decltype(segment)>;
+
+    // compute trip count
+    const diff_t t = IndexMapper::template index<diff_t>();
+    const diff_t i = t * static_cast<diff_t>(chunk_size);
+
+    // Keep copy of original segment, so we can restore it
+    segment_t orig_segment = segment;
+
+    // Assign our new tiled segment
+    segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
+    data.template assign_param<ParamId>(t);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active);
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+};
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::TileTCount
+ * Assigns the tile segment to segment ArgumentId
+ * Assigns the tile index to param ParamId
+ * Meets all sync requirements
+ */
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::TileTCount<ArgumentId, ParamId,
+                    RAJA::tile_fixed<chunk_size>,
                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
