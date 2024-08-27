@@ -4,8 +4,10 @@ jobs:
     matrix:
       shared:
         SHARED_ARGS: '-DBUILD_SHARED_LIBS=On'
-      static:
-        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
+###########################
+## Windows static build is run on GitHub Actions
+##    static:
+##      SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
   pool:
     vmImage: 'windows-2019'
   variables:
