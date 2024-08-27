@@ -111,6 +111,13 @@ RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
 ## Need to find a viable cuda image to test...
 ## 
 
+FROM ghcr.io/llnl/radiuss:ubuntu-22.04-cuda-12-3 AS cuda12
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DENABLE_CUDA=On -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 .. && \
+    make -j 16
+
 # TODO: We should switch to ROCm 6 -- where to get an image??
 FROM ghcr.io/llnl/radiuss:ubuntu-20.04-hip-5.6.1 AS rocm5.6
 ENV GTEST_COLOR=1
