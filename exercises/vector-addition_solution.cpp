@@ -62,11 +62,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nExercise: RAJA Vector Addition...\n";
 
-#if defined(RAJA_ENABLE_SYCL)
-  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
-  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
-#endif
-
 //
 // Define vector length
 //
@@ -179,7 +174,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
       c[i] = a[i] + b[i]; 
     }
-  );    
+  ); 
   // _rajaomp_vector_add_end
 
   checkResult(c, c_ref, N);
