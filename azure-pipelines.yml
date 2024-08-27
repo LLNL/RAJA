@@ -4,8 +4,10 @@ jobs:
     matrix:
       shared:
         SHARED_ARGS: '-DBUILD_SHARED_LIBS=On'
-      static:
-        SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
+###########################
+## Windows static build is run on GitHub Actions
+##    static:
+##      SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
   pool:
     vmImage: 'windows-2019'
   variables:
@@ -36,8 +38,8 @@ jobs:
     matrix: 
       gcc11:
         docker_target: gcc11
-      gcc12_debug:
-        docker_target: gcc12_debug
+      gcc12:
+        docker_target: gcc12
       gcc12_desul:
         docker_target: gcc12_desul
       clang14_debug:
