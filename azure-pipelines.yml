@@ -39,7 +39,7 @@ jobs:
       gcc11:
         docker_target: gcc11
       gcc12_debug:
-        docker_target: gcc12_debug
+        docker_target: gcc12
       gcc12_desul:
         docker_target: gcc12_desul
       clang14_debug:
