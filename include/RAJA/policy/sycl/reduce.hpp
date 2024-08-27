@@ -107,12 +107,8 @@ struct Reduce_Data
   Reduce_Data(T initValue, T identityValue, Offload_Info &info)
       : value(initValue)
   {
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    cl::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
 
-    if(!q) {
-      camp::resources::Resource res = camp::resources::Sycl();
-      q = res.get<camp::resources::Sycl>().get_queue();
-    } 
 
     device = reinterpret_cast<T *>(cl::sycl::malloc_device(sycl::MaxNumTeams * sizeof(T), *(q)));
     host = reinterpret_cast<T *>(cl::sycl::malloc_host(sycl::MaxNumTeams * sizeof(T), *(q)));
@@ -140,7 +136,7 @@ struct Reduce_Data
   //! transfers from the host to the device -- exit() is called upon failure
   RAJA_INLINE void hostToDevice(Offload_Info &info)
   {
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    cl::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
 
     if(!q) {
       camp::resources::Resource res = camp::resources::Sycl();
@@ -158,7 +154,7 @@ struct Reduce_Data
   //! transfers from the device to the host -- exit() is called upon failure
   RAJA_INLINE void deviceToHost(Offload_Info &info)
   {
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
+    cl::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
 
     if(!q) {
       camp::resources::Resource res = camp::resources::Sycl();
@@ -169,18 +165,15 @@ struct Reduce_Data
     auto e = q->memcpy(reinterpret_cast<void *>(host),
                        reinterpret_cast<void *>(device),
                        sycl::MaxNumTeams * sizeof(T));
-    
+ 
     e.wait();
   }
 
   //! frees all data from the offload information passed
   RAJA_INLINE void cleanup(Offload_Info &info)
   {
-    cl::sycl::queue* q = ::RAJA::sycl::detail::getQueue();
-    if(!q) {
-      camp::resources::Resource res = camp::resources::Sycl();
-      q = res.get<camp::resources::Sycl>().get_queue();
-    }
+    cl::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
+
     if (device) {
       cl::sycl::free(reinterpret_cast<void *>(device), *q);
       device = nullptr;
