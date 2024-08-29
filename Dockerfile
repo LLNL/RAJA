@@ -117,7 +117,7 @@ RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
 ## 
 
 # TODO: We should switch to ROCm 6 -- where to get an image??
-FROM ghcr.io/llnl/radiuss:hip-6.0.2-ubuntu-20.04 image AS rocm6
+FROM ghcr.io/llnl/radiuss:hip-6.0.2-ubuntu-20.04 AS rocm6
 ENV GTEST_COLOR=1
 ENV HCC_AMDGPU_TARGET=gfx90a
 COPY . /home/raja/workspace
