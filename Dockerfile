@@ -117,9 +117,9 @@ RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
 ## 
 
 # TODO: We should switch to ROCm 6 -- where to get an image??
-FROM ghcr.io/llnl/radiuss:ubuntu-20.04-hip-5.6.1 AS rocm5.6
+FROM ghcr.io/llnl/radiuss:hip-6.0.2-ubuntu-20.04 image AS rocm6
 ENV GTEST_COLOR=1
-ENV HCC_AMDGPU_TARGET=gfx900
+ENV HCC_AMDGPU_TARGET=gfx90a
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
 RUN cmake -DCMAKE_CXX_COMPILER=/opt/rocm-5.6.1/bin/amdclang++ -DCMAKE_BUILD_TYPE=Release -DENABLE_HIP=On -DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off .. && \
