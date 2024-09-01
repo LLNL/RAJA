@@ -94,7 +94,10 @@ The [**RAJA Performance Suite**](https://github.com/LLNL/RAJAPerf) contains
 a collection of loop kernels implemented in multiple RAJA and non-RAJA
 variants. We use it to monitor and assess RAJA performance on different
 platforms using a variety of compilers. Many major compiler vendors use the
-Suite to improve their support of abstractions like RAJA. 
+Suite to improve their support of abstractions like RAJA. **The RAJA
+Performance Suite is an excellent source of examples of RAJA usage where you
+can compare RAJA and non-RAJA variants of a variety of different kernels and
+RAJA back-ends.**
 
 The [**RAJA Proxies**](https://github.com/LLNL/RAJAProxies) repository 
 contains RAJA versions of several important HPC proxy applications.
