@@ -40,7 +40,7 @@ using device_launch = RAJA::cuda_launch_t<false>;
 using device_loop = RAJA::cuda_global_thread_x;
 #elif defined(RAJA_ENABLE_HIP)
 using device_launch = RAJA::hip_launch_t<false>;
-using device_loop = RAJA::hip_thread_xyz_loop;
+using device_loop = RAJA::hip_global_thread_x;
 #endif
 
 using launch_policy = RAJA::LaunchPolicy<host_launch
@@ -154,20 +154,20 @@ int main(int argc, char *argv[])
      RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
                         RAJA::Threads(TEAM_SZ)),
      "Launch Reductions",
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) 
      {
 
-       RAJA::expt::loop<loop_pol>(ctx, arange, arange, arange, [&] (int i, int j, int k) {
-
+       RAJA::loop<loop_pol>(ctx, arange, [&] (int i) {
+           
            kernel_sum += a[i];
-
+           
            kernel_min.min(a[i]);
            kernel_max.max(a[i]);
-
+           
            kernel_minloc.minloc(a[i], i);
            kernel_maxloc.maxloc(a[i], i);
          });
-
+       
     });
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
