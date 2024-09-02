@@ -29,6 +29,14 @@ gcc_10_3_1:
     SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ${PROJECT_RUBY_DEPS}"
   extends: .job_on_ruby
 
+# Known issue currently under investigation
+# https://github.com/LLNL/RAJA/pull/1712#issuecomment-2292006843
+intel_2023_2_1:
+  variables:
+    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@=2023.2.1 ${PROJECT_RUBY_DEPS}"
+  extends: .job_on_ruby
+  allow_failure: true
+
 ############
 # Extra jobs
 ############
