@@ -77,6 +77,9 @@ struct LaunchExecute<RAJA::omp_launch_t> {
       ctx.shared_mem_ptr = (char*) malloc(launch_params.shared_mem_size);
 
       expt::invoke_body(f_params, loop_body.get_priv(), ctx);
+
+      free(ctx.shared_mem_ptr);
+      ctx.shared_mem_ptr = nullptr;
     }
 
     expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
@@ -97,6 +100,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_for_exec 1\n" );
     int len = segment.end() - segment.begin();
     RAJA::region<RAJA::omp_parallel_region>([&]() {
       using RAJA::internal::thread_privatize;
@@ -116,6 +120,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_for_exec 2\n" );
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
@@ -143,6 +148,7 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_for_exec 3\n" );
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -175,6 +181,7 @@ struct LoopExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    //printf( "RCC omp_for_exec 1\n" );
     int len = segment.end() - segment.begin();
 #pragma omp for
     for (int i = 0; i < len; i++) {
@@ -191,6 +198,7 @@ struct LoopExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec 2\n" );
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
@@ -212,6 +220,7 @@ struct LoopExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec 3\n" );
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -242,6 +251,7 @@ struct LoopICountExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec icount 1\n" );
     int len = segment.end() - segment.begin();
 
 #pragma omp for
@@ -258,6 +268,7 @@ struct LoopICountExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec icount 2\n" );
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
@@ -282,6 +293,7 @@ struct LoopICountExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec icount 3\n" );
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -316,6 +328,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_nested_for_exec 1\n" );
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
@@ -343,6 +356,7 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_nested_for_exec 2\n" );
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -377,6 +391,7 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_nested_for_exec icount 1\n" );
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
@@ -406,6 +421,7 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_nested_for_exec icount 2\n" );
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -443,6 +459,7 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_for_exec tile 1\n" );
     int len = segment.end() - segment.begin();
 
     RAJA::region<RAJA::omp_parallel_region>([&]() {
@@ -468,6 +485,7 @@ struct TileTCountExecute<omp_parallel_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_parallel_for_exec tile 2\n" );
     const int len = segment.end() - segment.begin();
     const int numTiles = (len - 1) / tile_size + 1;
 
@@ -495,6 +513,7 @@ struct TileExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec tile seg 1\n" );
     int len = segment.end() - segment.begin();
 #pragma omp for
     for (int i = 0; i < len; i += tile_size) {
@@ -514,6 +533,7 @@ struct TileTCountExecute<omp_for_exec, SEGMENT> {
       BODY const &body)
   {
 
+    printf( "RCC omp_for_exec tile tcount seg 1\n" );
     const int len = segment.end() - segment.begin();
     const int numTiles = (len - 1) / tile_size + 1;
 
