@@ -346,7 +346,7 @@ Each of our docker builds is built up on a base image maintained in the
 `RADIUSS Docker Project <https://github.com/LLNL/radiuss-docker>`_.
 
 The base container images are shared by multiple projects and are rebuilt
-regularly rebuilt. If bugs are fixed in the base images, the changes will be
+regularly. If bugs are fixed in the base images, the changes will be
 automatically propagated to all projects using them in their Docker builds.
 
 Check `RADIUSS Docker Project <https://github.com/LLNL/radiuss-docker>`_ for a

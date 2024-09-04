@@ -22,7 +22,7 @@ The RAJA project uses threes CI tools to run tests:
   * **Azure Pipelines** and **GitHub Actions** runs builds and tests for Linux,
     Windows, and MacOS environments using compilers in container images 
     maintained in the `RADIUSS Docker Project <https://github.com/LLNL/radiuss-docker>`_.
-    While we do some GPU builds on Azure and GitHub Actions, for CUDA, HIP, and
+    While we do some GPU builds on Azure and GitHub Actions for CUDA, HIP, and
     SYCL, RAJA tests are only run for CPU-only builds. The current set of 
     builds run on Azure and GitHub Actions can be seen by looking at the 
     ``RAJA/azure-pipelines.yml`` and ``RAJA/.github/workflows/build.yml`` files,
