@@ -17,7 +17,7 @@ Continuous Integration (CI) Testing
                  viewed by clicking the appropriate link in the **checks** 
                  section of a GitHub pull request.
 
-The RAJA project uses threes CI tools to run tests:
+The RAJA project uses three CI tools to run tests:
 
   * **Azure Pipelines** and **GitHub Actions** runs builds and tests for Linux,
     Windows, and MacOS environments using compilers in container images 
