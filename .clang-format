@@ -1,15 +1,41 @@
-BasedOnStyle : google
+BasedOnStyle : LLVM
+# Indent formatting
 IndentWidth : 2
+UseTab: Never
 BreakBeforeBraces : Linux
 KeepEmptyLinesAtTheStartOfBlocks : true
 MaxEmptyLinesToKeep : 2
 AccessModifierOffset : -2
-UseTab: Never
+
+# Control curly brace placement
+BraceWrapping:
+  AfterCaseLabel:  true
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: false
+  AfterStruct:     true
+  AfterUnion:      true
+  AfterExternBlock: false
+  BeforeCatch:     true
+  BeforeElse:      true
+  # BeforeLambdaBody: true   # available in clang 11
+  IndentBraces:    false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+# Pointer alignment
+DerivePointerAlignment: false
+PointerAlignment: Left
+SortIncludes: false
 AllowShortIfStatementsOnASingleLine : true
 ConstructorInitializerAllOnOneLineOrOnePerLine : true
 AllowShortFunctionsOnASingleLine : true
 AllowShortLoopsOnASingleLine : false
-BinPackParameters : false
+BinPackParameters : true
 AllowAllParametersOfDeclarationOnNextLine : false
 AlignTrailingComments : true
 ColumnLimit : 80
@@ -17,11 +43,9 @@ PenaltyBreakBeforeFirstCallParameter : 100
 PenaltyReturnTypeOnItsOwnLine : 65000
 PenaltyBreakString : 10
 
-# These improve formatting results but require clang 3.6/7 or higher
 BreakBeforeBinaryOperators : None
 AlignAfterOpenBracket: true
 BinPackArguments : false
 AlignOperands : true
 AlwaysBreakTemplateDeclarations : true
-Cpp11BracedListStyle : true
 
