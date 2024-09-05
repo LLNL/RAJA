@@ -39,9 +39,9 @@
 
 #define RAJA_FT_BEGIN                                                          \
   extern volatile int fault_type;                                              \
-  bool repeat;                                                                 \
-  bool do_time = false;                                                        \
-  ticks start = 0, stop = 0;                                                   \
+  bool                repeat;                                                  \
+  bool                do_time = false;                                         \
+  ticks               start = 0, stop = 0;                                     \
   if (fault_type != 0)                                                         \
   {                                                                            \
     printf("Uncaught fault %d\n", fault_type);                                 \
@@ -60,7 +60,7 @@
   {                                                                            \
     stop = getticks();                                                         \
     printf("recoverable fault clock cycles = %16f\n", elapsed(stop, start));   \
-    do_time = false;                                                           \
+    do_time    = false;                                                        \
     fault_type = 0;                                                            \
   }                                                                            \
   if (fault_type < 0)                                                          \
@@ -71,7 +71,7 @@
   if (fault_type > 0)                                                          \
   {                                                                            \
     /* invalidate cache */                                                     \
-    repeat = true;                                                             \
+    repeat  = true;                                                            \
     do_time = true;                                                            \
   }                                                                            \
   }                                                                            \
@@ -81,7 +81,7 @@
 #else
 #define RAJA_FT_BEGIN                                                          \
   extern volatile int fault_type;                                              \
-  bool repeat;                                                                 \
+  bool                repeat;                                                  \
   if (fault_type == 0)                                                         \
   {                                                                            \
     do                                                                         \
@@ -92,7 +92,7 @@
   if (fault_type > 0)                                                          \
   {                                                                            \
     /* invalidate cache */                                                     \
-    repeat = true;                                                             \
+    repeat     = true;                                                         \
     fault_type = 0;                                                            \
   }                                                                            \
   }                                                                            \

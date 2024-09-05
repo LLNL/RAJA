@@ -75,7 +75,7 @@ struct MultiReduceDataOMP<
     RAJA::omp::MultiReduceTuning<
         RAJA::omp::multi_reduce_algorithm::combine_on_destruction>>
 {
-  using value_type = T;
+  using value_type    = T;
   using MultiReduceOp = t_MultiReduceOp;
 
   MultiReduceDataOMP() = delete;
@@ -103,9 +103,9 @@ struct MultiReduceDataOMP<
                     other.m_num_bins);
   }
 
-  MultiReduceDataOMP(MultiReduceDataOMP&&) = delete;
+  MultiReduceDataOMP(MultiReduceDataOMP&&)                 = delete;
   MultiReduceDataOMP& operator=(MultiReduceDataOMP const&) = delete;
-  MultiReduceDataOMP& operator=(MultiReduceDataOMP&&) = delete;
+  MultiReduceDataOMP& operator=(MultiReduceDataOMP&&)      = delete;
 
   ~MultiReduceDataOMP()
   {
@@ -128,13 +128,13 @@ struct MultiReduceDataOMP<
   template <typename Container>
   void reset(Container const& container, T identity)
   {
-    m_identity = identity;
+    m_identity          = identity;
     size_t new_num_bins = container.size();
     if (new_num_bins != m_num_bins)
     {
       destroy_data(m_data, m_num_bins);
       m_num_bins = new_num_bins;
-      m_data = create_data(container, m_num_bins);
+      m_data     = create_data(container, m_num_bins);
     }
     else
     {
@@ -157,9 +157,9 @@ struct MultiReduceDataOMP<
 
 private:
   MultiReduceDataOMP const* m_parent;
-  size_t m_num_bins;
-  T m_identity;
-  T* m_data;
+  size_t                    m_num_bins;
+  T                         m_identity;
+  T*                        m_data;
 
   template <typename Container>
   static T* create_data(Container const& container, size_t num_bins)
@@ -210,7 +210,7 @@ struct MultiReduceDataOMP<
     RAJA::omp::MultiReduceTuning<
         RAJA::omp::multi_reduce_algorithm::combine_on_get>>
 {
-  using value_type = T;
+  using value_type    = T;
   using MultiReduceOp = t_MultiReduceOp;
 
   MultiReduceDataOMP() = delete;
@@ -244,9 +244,9 @@ struct MultiReduceDataOMP<
         m_data(other.m_data)
   {}
 
-  MultiReduceDataOMP(MultiReduceDataOMP&&) = delete;
+  MultiReduceDataOMP(MultiReduceDataOMP&&)                 = delete;
   MultiReduceDataOMP& operator=(MultiReduceDataOMP const&) = delete;
-  MultiReduceDataOMP& operator=(MultiReduceDataOMP&&) = delete;
+  MultiReduceDataOMP& operator=(MultiReduceDataOMP&&)      = delete;
 
   ~MultiReduceDataOMP()
   {
@@ -263,15 +263,15 @@ struct MultiReduceDataOMP<
   template <typename Container>
   void reset(Container const& container, T identity)
   {
-    m_identity = identity;
+    m_identity          = identity;
     size_t new_num_bins = container.size();
     if (new_num_bins != m_num_bins)
     {
       destroy_data(
           m_data, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads);
-      m_num_bins = new_num_bins;
+      m_num_bins    = new_num_bins;
       m_padded_bins = pad_bins(m_num_bins);
-      m_data = create_data(container,
+      m_data        = create_data(container,
                            identity,
                            m_num_bins,
                            m_max_threads,
@@ -284,7 +284,7 @@ struct MultiReduceDataOMP<
       {
         {
           size_t thread_idx = 0;
-          size_t bin = 0;
+          size_t bin        = 0;
           for (auto const& value : container)
           {
             m_data[index_data(
@@ -330,12 +330,12 @@ struct MultiReduceDataOMP<
 
 private:
   MultiReduceDataOMP const* m_parent;
-  size_t m_max_threads;
-  size_t m_num_bins;
-  size_t m_padded_threads;
-  size_t m_padded_bins;
-  T m_identity;
-  T* m_data;
+  size_t                    m_max_threads;
+  size_t                    m_num_bins;
+  size_t                    m_padded_threads;
+  size_t                    m_padded_bins;
+  T                         m_identity;
+  T*                        m_data;
 
   static constexpr size_t pad_bins(size_t num_bins)
   {
@@ -360,11 +360,11 @@ private:
 
   template <typename Container>
   static T* create_data(Container const& container,
-                        T identity,
-                        size_t num_bins,
-                        size_t max_threads,
-                        size_t padded_bins,
-                        size_t padded_threads)
+                        T                identity,
+                        size_t           num_bins,
+                        size_t           max_threads,
+                        size_t           padded_bins,
+                        size_t           padded_threads)
   {
     if (num_bins == size_t(0))
     {
@@ -376,7 +376,7 @@ private:
     {
       {
         size_t thread_idx = 0;
-        size_t bin = 0;
+        size_t bin        = 0;
         for (auto const& value : container)
         {
           new (&data[index_data(bin, thread_idx, padded_bins, padded_threads)])
@@ -396,7 +396,7 @@ private:
     return data;
   }
 
-  static void destroy_data(T*& data,
+  static void destroy_data(T*&    data,
                            size_t num_bins,
                            size_t max_threads,
                            size_t padded_bins,

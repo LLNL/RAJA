@@ -27,15 +27,15 @@ namespace RAJA
 template <camp::idx_t N>
 struct LogBase2
 {
-  static constexpr camp::idx_t value = LogBase2<(N >> 1)>::value + 1;
-  static constexpr bool is_exact = ((1 << value) == N);
+  static constexpr camp::idx_t value    = LogBase2<(N >> 1)>::value + 1;
+  static constexpr bool        is_exact = ((1 << value) == N);
 };
 
 template <>
 struct LogBase2<0>
 {
-  static constexpr camp::idx_t value = -1;
-  static constexpr bool is_exact = true;
+  static constexpr camp::idx_t value    = -1;
+  static constexpr bool        is_exact = true;
 };
 
 /*!
@@ -53,10 +53,10 @@ struct LogBase2<0>
 template <int Width, int Shift>
 struct BitMask
 {
-  static constexpr int shift = Shift;
-  static constexpr int width = Width;
-  static constexpr int max_input_size = 1 << (Shift + Width);
-  static constexpr int max_masked_size = 1 << Width;
+  static constexpr int shift            = Shift;
+  static constexpr int width            = Width;
+  static constexpr int max_input_size   = 1 << (Shift + Width);
+  static constexpr int max_masked_size  = 1 << Width;
   static constexpr int max_shifted_size = 1 << Shift;
 
   template <typename T>

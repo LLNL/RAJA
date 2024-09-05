@@ -14,26 +14,26 @@ template <typename REGISTER_TYPE>
 void GatherImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // get the integer indexing types
   using int_register_t = typename register_t::int_vector_type;
-  using index_t = typename int_register_t::element_type;
+  using index_t        = typename int_register_t::element_type;
 
   // Allocate
 
   // Data to be read (10x larger than output)
   std::vector<element_t> input0_vec(10 * num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(10 * num_elem);
 
   // Indexing into input0
   std::vector<index_t> input1_vec(num_elem);
-  index_t* input1_hptr = input1_vec.data();
-  index_t* input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
+  index_t*             input1_hptr = input1_vec.data();
+  index_t*             input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
   element_t* output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
@@ -58,18 +58,20 @@ void GatherImpl()
   //
 
   // operator z[i] = a[b[i]]
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // get offsets
-    int_register_t idx;
-    idx.load_packed(input1_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // get offsets
+        int_register_t idx;
+        idx.load_packed(input1_dptr);
 
-    // gather elements from a given offsets in idx
-    register_t a;
-    a.gather(input0_dptr, idx);
+        // gather elements from a given offsets in idx
+        register_t a;
+        a.gather(input0_dptr, idx);
 
-    // write out gathered elements in packed order
-    a.store_packed(output0_dptr);
-  });
+        // write out gathered elements in packed order
+        a.store_packed(output0_dptr);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
@@ -87,19 +89,21 @@ void GatherImpl()
   {
 
     // operator z[i] = a[b[i]]
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      // get offsets
-      int_register_t idx;
-      idx.load_packed_n(input1_dptr, N);
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          // get offsets
+          int_register_t idx;
+          idx.load_packed_n(input1_dptr, N);
 
-      // gather elements from a given offsets in idx
-      register_t a;
-      a.gather_n(input0_dptr, idx, N);
+          // gather elements from a given offsets in idx
+          register_t a;
+          a.gather_n(input0_dptr, idx, N);
 
-      // write out gathered elements in packed order
-      // we're writing out entire length to check the zeroing
-      a.store_packed(output0_dptr);
-    });
+          // write out gathered elements in packed order
+          // we're writing out entire length to check the zeroing
+          a.store_packed(output0_dptr);
+        });
 
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 

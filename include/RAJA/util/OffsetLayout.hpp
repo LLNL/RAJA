@@ -43,16 +43,16 @@ struct OffsetLayout_impl;
 template <camp::idx_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
 {
-  using Self = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>;
-  using IndexRange = camp::idx_seq<RangeInts...>;
+  using Self        = OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>;
+  using IndexRange  = camp::idx_seq<RangeInts...>;
   using IndexLinear = IdxLin;
-  using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
+  using Base        = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
   static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
 
-  static constexpr size_t n_dims = sizeof...(RangeInts);
-  IdxLin offsets[n_dims] = {0}; // If not specified set to zero
+  static constexpr size_t n_dims          = sizeof...(RangeInts);
+  IdxLin                  offsets[n_dims] = {0}; // If not specified set to zero
 
   constexpr RAJA_INLINE
   OffsetLayout_impl(std::array<IdxLin, sizeof...(RangeInts)> begin,
@@ -117,9 +117,9 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   }
 
   static RAJA_INLINE OffsetLayout_impl<IndexRange, IdxLin>
-  from_layout_and_offsets(
-      const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
-      const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+                     from_layout_and_offsets(
+                         const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
+                         const Layout<sizeof...(RangeInts), IdxLin>&     rhs)
   {
     OffsetLayout_impl ret{rhs};
     camp::sink((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
@@ -188,11 +188,11 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
     : public OffsetLayout<sizeof...(DimTypes), strip_index_type_t<IdxLin>>
 {
   using StrippedIdxLin = strip_index_type_t<IdxLin>;
-  using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
-  using Base = OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>;
-  using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
-  using DimTuple = camp::tuple<DimTypes...>;
-  using IndexLinear = IdxLin;
+  using Self           = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
+  using Base           = OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>;
+  using DimArr         = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
+  using DimTuple       = camp::tuple<DimTypes...>;
+  using IndexLinear    = IdxLin;
 
   // Pull in base coonstructors
 #if 0

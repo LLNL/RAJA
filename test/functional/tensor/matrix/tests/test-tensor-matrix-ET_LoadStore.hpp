@@ -14,8 +14,8 @@ template <typename MATRIX_TYPE>
 void ET_LoadStoreImpl()
 {
 
-  using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  using matrix_t  = MATRIX_TYPE;
+  using policy_t  = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
 
@@ -24,7 +24,7 @@ void ET_LoadStoreImpl()
   //
 
   // alloc data1
-  std::vector<element_t> data1_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data1_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
@@ -35,7 +35,7 @@ void ET_LoadStoreImpl()
 
 
   // alloc data2
-  std::vector<element_t> data2_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data2_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
@@ -63,7 +63,7 @@ void ET_LoadStoreImpl()
 
 
   // alloc data4
-  std::vector<element_t> data4_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data4_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data4_h(
       data4_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
@@ -74,7 +74,7 @@ void ET_LoadStoreImpl()
 
 
   // alloc data5
-  std::vector<element_t> data5_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data5_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data5_h(
       data5_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
@@ -85,7 +85,7 @@ void ET_LoadStoreImpl()
 
 
   // alloc data6
-  std::vector<element_t> data6_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data6_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data6_h(
       data6_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
@@ -96,7 +96,7 @@ void ET_LoadStoreImpl()
 
 
   // alloc data7
-  std::vector<element_t> data7_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data7_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data7_h(
       data7_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
@@ -123,27 +123,29 @@ void ET_LoadStoreImpl()
   //
   // Do Operation: Load/Store full matrix from one view to another
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
-    auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::all();
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::all();
 
-    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
+        auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+        auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::
-        template static_range<0, matrix_t::s_num_rows>();
-    auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::
-        template static_range<0, matrix_t::s_num_columns>();
+        auto SRrows = RAJA::expt::RowIndex<int, matrix_t>::
+            template static_range<0, matrix_t::s_num_rows>();
+        auto SRcols = RAJA::expt::ColIndex<int, matrix_t>::
+            template static_range<0, matrix_t::s_num_columns>();
 
-    data2_d(cols, rows) = data1_d(rows, cols);
+        data2_d(cols, rows) = data1_d(rows, cols);
 
-    data4_d(cols, rows) =
-        data3_d(SArows, SRcols); // mixed static_all and static_range
-    data5_d(cols, rows) = data3_d(SArows, SAcols); // static_all
-    data6_d(cols, rows) = data3_d(SRrows, SRcols); // static_range
-    data7_d(cols, rows) =
-        data3_d(rows, SRcols); // mixed static_range and non-static
-  });
+        data4_d(cols, rows) =
+            data3_d(SArows, SRcols); // mixed static_all and static_range
+        data5_d(cols, rows) = data3_d(SArows, SAcols); // static_all
+        data6_d(cols, rows) = data3_d(SRrows, SRcols); // static_range
+        data7_d(cols, rows) =
+            data3_d(rows, SRcols); // mixed static_range and non-static
+      });
 
   tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
   tensor_copy_to_host<policy_t>(data4_vec, data4_ptr);
@@ -194,13 +196,15 @@ void ET_LoadStoreImpl()
       //
       // Do Operation: Load/Store partial matrix from one view to another
       //
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        // Load data using a View
-        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
+          {
+            // Load data using a View
+            auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+            auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
-        data2_d(cols, rows) = data1_d(rows, cols);
-      });
+            data2_d(cols, rows) = data1_d(rows, cols);
+          });
 
       tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 

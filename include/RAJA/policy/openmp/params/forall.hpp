@@ -28,10 +28,10 @@ template <typename ExecPol,
           typename Func,
           typename ForallParam>
 RAJA_INLINE concepts::enable_if<std::is_same<ExecPol, RAJA::policy::omp::Auto>>
-forall_impl(const ExecPol& p,
-            Iterable&& iter,
-            Func&& loop_body,
-            ForallParam&& f_params)
+            forall_impl(const ExecPol& p,
+                        Iterable&&     iter,
+                        Func&&         loop_body,
+                        ForallParam&&  f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -59,9 +59,9 @@ RAJA_INLINE concepts::enable_if<
     std::is_same<ExecPol<ChunkSize>, RAJA::policy::omp::Static<ChunkSize>>,
     std::integral_constant<bool, (ChunkSize <= 0)>>
 forall_impl(const ExecPol<ChunkSize>& p,
-            Iterable&& iter,
-            Func&& loop_body,
-            ForallParam&& f_params)
+            Iterable&&                iter,
+            Func&&                    loop_body,
+            ForallParam&&             f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -89,9 +89,9 @@ RAJA_INLINE concepts::enable_if<
     std::is_same<ExecPol<ChunkSize>, RAJA::policy::omp::Static<ChunkSize>>,
     std::integral_constant<bool, (ChunkSize > 0)>>
 forall_impl(const ExecPol<ChunkSize>& p,
-            Iterable&& iter,
-            Func&& loop_body,
-            ForallParam&& f_params)
+            Iterable&&                iter,
+            Func&&                    loop_body,
+            ForallParam&&             f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -113,9 +113,9 @@ forall_impl(const ExecPol<ChunkSize>& p,
 //
 template <typename Iterable, typename Func, typename ForallParam>
 RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
-                             Iterable&& iter,
-                             Func&& loop_body,
-                             ForallParam&& f_params)
+                             Iterable&&                          iter,
+                             Func&&                              loop_body,
+                             ForallParam&&                       f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -136,9 +136,9 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
 //
 template <typename Iterable, typename Func, typename ForallParam>
 RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
-                                    Iterable&& iter,
-                                    Func&& loop_body,
-                                    ForallParam&& f_params)
+                                    Iterable&&                       iter,
+                                    Func&&                           loop_body,
+                                    ForallParam&&                    f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -166,8 +166,8 @@ template <typename Iterable,
           typename ForallParam,
           typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
 RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
-                             Iterable&& iter,
-                             Func&& loop_body,
+                             Iterable&&    iter,
+                             Func&&        loop_body,
                              ForallParam&& f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
@@ -193,8 +193,8 @@ template <typename Iterable,
           typename ForallParam,
           typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
 RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
-                             Iterable&& iter,
-                             Func&& loop_body,
+                             Iterable&&    iter,
+                             Func&&        loop_body,
                              ForallParam&& f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
@@ -221,8 +221,8 @@ template <typename Iterable,
           typename ForallParam,
           typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
 RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
-                             Iterable&& iter,
-                             Func&& loop_body,
+                             Iterable&&                                    iter,
+                             Func&&        loop_body,
                              ForallParam&& f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
@@ -248,8 +248,8 @@ template <typename Iterable,
           typename ForallParam,
           typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
 RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
-                             Iterable&& iter,
-                             Func&& loop_body,
+                             Iterable&&                                    iter,
+                             Func&&        loop_body,
                              ForallParam&& f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
@@ -277,9 +277,9 @@ template <typename Iterable,
           typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
 RAJA_INLINE void
 forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
-                   Iterable&& iter,
-                   Func&& loop_body,
-                   ForallParam&& f_params)
+                   Iterable&&                                    iter,
+                   Func&&                                        loop_body,
+                   ForallParam&&                                 f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -308,9 +308,9 @@ template <typename Iterable,
           typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
 RAJA_INLINE void
 forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
-                   Iterable&& iter,
-                   Func&& loop_body,
-                   ForallParam&& f_params)
+                   Iterable&&                                    iter,
+                   Func&&                                        loop_body,
+                   ForallParam&&                                 f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -336,11 +336,11 @@ template <typename Schedule,
           typename Func,
           typename ForallParam>
 RAJA_INLINE resources::EventProxy<resources::Host>
-forall_impl(resources::Host host_res,
-            const omp_for_schedule_exec<Schedule>&,
-            Iterable&& iter,
-            Func&& loop_body,
-            ForallParam f_params)
+            forall_impl(resources::Host host_res,
+                        const omp_for_schedule_exec<Schedule>&,
+                        Iterable&&  iter,
+                        Func&&      loop_body,
+                        ForallParam f_params)
 {
   expt::internal::forall_impl(Schedule{},
                               std::forward<Iterable>(iter),
@@ -364,8 +364,8 @@ RAJA_INLINE concepts::enable_if_t<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(resources::Host host_res,
             const omp_parallel_exec<InnerPolicy>&,
-            Iterable&& iter,
-            Func&& loop_body,
+            Iterable&&  iter,
+            Func&&      loop_body,
             ForallParam f_params)
 {
   expt::forall_impl(host_res, InnerPolicy{}, iter, loop_body, f_params);

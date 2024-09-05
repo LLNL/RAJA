@@ -80,8 +80,8 @@ concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_sequential_policy<ExecPolicy>>
 unstable(resources::Host host_res,
          const ExecPolicy&,
-         Iter begin,
-         Iter end,
+         Iter    begin,
+         Iter    end,
          Compare comp)
 {
   detail::UnstableSorter{}(begin, end, comp);
@@ -97,8 +97,8 @@ concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_sequential_policy<ExecPolicy>>
 stable(resources::Host host_res,
        const ExecPolicy&,
-       Iter begin,
-       Iter end,
+       Iter    begin,
+       Iter    end,
        Compare comp)
 {
   detail::StableSorter{}(begin, end, comp);
@@ -122,8 +122,8 @@ unstable_pairs(resources::Host host_res,
                ValIter vals_begin,
                Compare comp)
 {
-  auto begin = RAJA::zip(keys_begin, vals_begin);
-  auto end = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
+  auto begin    = RAJA::zip(keys_begin, vals_begin);
+  auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::UnstableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 
@@ -147,8 +147,8 @@ stable_pairs(resources::Host host_res,
              ValIter vals_begin,
              Compare comp)
 {
-  auto begin = RAJA::zip(keys_begin, vals_begin);
-  auto end = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
+  auto begin    = RAJA::zip(keys_begin, vals_begin);
+  auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::StableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 

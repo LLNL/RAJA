@@ -14,15 +14,15 @@ template <typename REGISTER_TYPE>
 void SegmentedBroadcastInnerImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -53,14 +53,16 @@ void SegmentedBroadcastInnerImpl()
       //      (camp::idx_t)input_segment);
 
       // Execute segmented broadcast
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        register_t x;
-        x.load_packed(input0_dptr);
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
+          {
+            register_t x;
+            x.load_packed(input0_dptr);
 
-        register_t y = x.segmented_broadcast_inner(segbits, input_segment);
+            register_t y = x.segmented_broadcast_inner(segbits, input_segment);
 
-        y.store_packed(output0_dptr);
-      });
+            y.store_packed(output0_dptr);
+          });
 
       // Move result to host
       tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
@@ -71,7 +73,7 @@ void SegmentedBroadcastInnerImpl()
       // Compute expected values
       element_t expected[num_elem];
 
-      camp::idx_t mask = (1 << segbits) - 1;
+      camp::idx_t mask   = (1 << segbits) - 1;
       camp::idx_t offset = input_segment << segbits;
 
       // default implementation is dumb, just sum each value into

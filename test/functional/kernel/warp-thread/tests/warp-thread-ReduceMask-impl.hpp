@@ -39,8 +39,8 @@ template <typename EXEC_POL,
           typename WORKING_RES,
           typename... Args>
 typename std::enable_if<USE_RESOURCE>::type
-call_kernel_param(SEGMENTS&& segs,
-                  PARAMS&& params,
+call_kernel_param(SEGMENTS&&  segs,
+                  PARAMS&&    params,
                   WORKING_RES work_res,
                   Args&&... args)
 {
@@ -81,7 +81,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK&,
                           const RAJA::Index_type directlen,
                           const RAJA::Index_type looplen)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   RAJA::Index_type* work_array;
@@ -94,7 +94,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK&,
                                            &check_array,
                                            &test_array);
 
-  RAJA::ReduceMax<REDUCE_POL, int> max_thread(0);
+  RAJA::ReduceMax<REDUCE_POL, int>              max_thread(0);
   RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type> trip_count(0);
   RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type> worksum(0);
 
@@ -102,7 +102,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK&,
       RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, directlen),
                        RAJA::TypedRangeSegment<RAJA::Index_type>(0, looplen)),
       work_res,
-      [=] RAJA_DEVICE(RAJA::Index_type i, RAJA::Index_type RAJA_UNUSED_ARG(j)) {
+      [=] RAJA_DEVICE(RAJA::Index_type i, RAJA::Index_type RAJA_UNUSED_ARG(j))
+      {
         trip_count += 1;
         worksum += i; // i should only be 0..directlen-1
         max_thread.max(threadIdx.x);
@@ -124,7 +125,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
                           const RAJA::Index_type directlen,
                           const RAJA::Index_type looplen)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   RAJA::Index_type* work_array;
@@ -137,7 +138,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
                                            &check_array,
                                            &test_array);
 
-  RAJA::ReduceMax<REDUCE_POL, int> max_thread(0);
+  RAJA::ReduceMax<REDUCE_POL, int>              max_thread(0);
   RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type> trip_count(0);
   RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type> worksum(0);
 
@@ -149,7 +150,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
       [=] RAJA_DEVICE(RAJA::Index_type RAJA_UNUSED_ARG(i),
                       RAJA::Index_type RAJA_UNUSED_ARG(j),
                       RAJA::Index_type RAJA_UNUSED_ARG(x),
-                      RAJA::Index_type y) {
+                      RAJA::Index_type y)
+      {
         trip_count += 1;
         worksum += y; // y should only be 0..3
         max_thread.max(threadIdx.x);

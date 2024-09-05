@@ -29,12 +29,12 @@ TYPED_TEST_SUITE_P(AtomicRefBasicMinMaxUnitTest);
 
 TYPED_TEST_P(AtomicRefBasicMinMaxUnitTest, BasicMinMaxs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T theval = (T)91;
+  T  theval  = (T)91;
   T* memaddr = &theval;
-  T result;
+  T  result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
@@ -76,10 +76,10 @@ TYPED_TEST_SUITE_P(AtomicRefCUDAMinMaxUnitTest);
 
 GPU_TYPED_TEST_P(AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T* result = nullptr;
+  T* result  = nullptr;
   T* memaddr = nullptr;
   cudaErrchk(cudaMallocManaged(&result, sizeof(T)));
   cudaErrchk(cudaMallocManaged(&memaddr, sizeof(T)));

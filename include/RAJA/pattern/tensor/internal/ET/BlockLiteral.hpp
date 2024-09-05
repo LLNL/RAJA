@@ -49,20 +49,20 @@ class BlockLiteral
     : public TensorExpressionBase<BlockLiteral<STORAGE_TYPE, TENSOR_TYPE>>
 {
 public:
-  using self_type = BlockLiteral<STORAGE_TYPE, TENSOR_TYPE>;
+  using self_type    = BlockLiteral<STORAGE_TYPE, TENSOR_TYPE>;
   using storage_type = STORAGE_TYPE;
-  using tensor_type = TENSOR_TYPE;
-  using result_type = TENSOR_TYPE;
-  using ref_type = typename STORAGE_TYPE::ref_type;
-  using tile_type = typename ref_type::tile_type;
-  using index_type = camp::idx_t;
+  using tensor_type  = TENSOR_TYPE;
+  using result_type  = TENSOR_TYPE;
+  using ref_type     = typename STORAGE_TYPE::ref_type;
+  using tile_type    = typename ref_type::tile_type;
+  using index_type   = camp::idx_t;
 
   static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
 
 
 private:
   storage_type m_storage;
-  tile_type m_tile_origin;
+  tile_type    m_tile_origin;
 
 public:
   RAJA_INLINE

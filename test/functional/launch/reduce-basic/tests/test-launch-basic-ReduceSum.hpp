@@ -19,20 +19,20 @@ template <typename IDX_TYPE,
           typename LAUNCH_POLICY,
           typename GLOBAL_THREAD_POLICY,
           typename REDUCE_POLICY>
-void LaunchReduceSumBasicTestImpl(const SEG_TYPE& seg,
+void LaunchReduceSumBasicTestImpl(const SEG_TYPE&              seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
-                                  camp::resources::Resource working_res)
+                                  camp::resources::Resource    working_res)
 {
 
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
   constexpr int threads = 256;
-  int blocks = (seg.size() - 1) / threads + 1;
+  int           blocks  = (seg.size() - 1) / threads + 1;
 
   allocateForallTestData<DATA_TYPE>(
       data_len, working_res, &working_array, &check_array, &test_array);
@@ -58,11 +58,15 @@ void LaunchReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
-          sum += working_array[idx];
-          sum2 += working_array[idx];
-        });
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx,
+                                         seg,
+                                         [&](IDX_TYPE idx)
+                                         {
+                                           sum += working_array[idx];
+                                           sum2 += working_array[idx];
+                                         });
       });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
@@ -76,7 +80,8 @@ void LaunchReduceSumBasicTestImpl(const SEG_TYPE& seg,
   {
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
           RAJA::loop<GLOBAL_THREAD_POLICY>(
               ctx, seg, [&](IDX_TYPE idx) { sum += working_array[idx]; });
         });
@@ -97,8 +102,8 @@ class LaunchReduceSumBasicTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchReduceSumBasicTest, ReduceSumBasicForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE   = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<3>>::type,

@@ -123,13 +123,13 @@ struct IterableTiler
   {
     // NOTE: this must be held by value for NVCC support, *even on the host*
     const IterableTiler itiler;
-    const Index_type block_id;
+    const Index_type    block_id;
 
   public:
-    using value_type = iterate;
-    using difference_type = camp::idx_t;
-    using pointer = value_type*;
-    using reference = value_type&;
+    using value_type        = iterate;
+    using difference_type   = camp::idx_t;
+    using pointer           = value_type*;
+    using reference         = value_type&;
     using iterator_category = std::random_access_iterator_tag;
 
     RAJA_HOST_DEVICE
@@ -194,7 +194,7 @@ struct IterableTiler
     using std::begin;
     using std::distance;
     using std::end;
-    dist = it.end() - it.begin(); // distance(begin(it), end(it));
+    dist       = it.end() - it.begin(); // distance(begin(it), end(it));
     num_blocks = dist / block_size;
     // if (dist % block_size) num_blocks += 1;
     if (dist - num_blocks * block_size > 0)
@@ -211,7 +211,7 @@ struct IterableTiler
   RAJA_INLINE
   iterator end() const { return iterator(*this, num_blocks); }
 
-  value_type it;
+  value_type  it;
   camp::idx_t block_size;
   camp::idx_t num_blocks;
   camp::idx_t dist;

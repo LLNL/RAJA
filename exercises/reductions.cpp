@@ -71,10 +71,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Set min and max loc values
   //
   constexpr int minloc_ref = N / 2;
-  a[minloc_ref] = -100;
+  a[minloc_ref]            = -100;
 
   constexpr int maxloc_ref = N / 2 + 1;
-  a[maxloc_ref] = 100;
+  a[maxloc_ref]            = 100;
   // _reductions_array_init_end
 
   //
@@ -251,27 +251,29 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy(d_a, a, N * sizeof(int), hipMemcpyHostToDevice));
 
   // _reductions_raja_hippolicy_start
-  using EXEC_POL3 = RAJA::hip_exec<HIP_BLOCK_SIZE>;
+  using EXEC_POL3   = RAJA::hip_exec<HIP_BLOCK_SIZE>;
   using REDUCE_POL3 = RAJA::hip_reduce;
   // _reductions_raja_hippolicy_end
 
-  RAJA::ReduceSum<REDUCE_POL3, int> hip_sum(0);
-  RAJA::ReduceMin<REDUCE_POL3, int> hip_min(std::numeric_limits<int>::max());
-  RAJA::ReduceMax<REDUCE_POL3, int> hip_max(std::numeric_limits<int>::min());
+  RAJA::ReduceSum<REDUCE_POL3, int>    hip_sum(0);
+  RAJA::ReduceMin<REDUCE_POL3, int>    hip_min(std::numeric_limits<int>::max());
+  RAJA::ReduceMax<REDUCE_POL3, int>    hip_max(std::numeric_limits<int>::min());
   RAJA::ReduceMinLoc<REDUCE_POL3, int> hip_minloc(
       std::numeric_limits<int>::max(), -1);
   RAJA::ReduceMaxLoc<REDUCE_POL3, int> hip_maxloc(
       std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange1, [=] RAJA_DEVICE(int i) {
-    hip_sum += d_a[i];
+  RAJA::forall<EXEC_POL3>(arange1,
+                          [=] RAJA_DEVICE(int i)
+                          {
+                            hip_sum += d_a[i];
 
-    hip_min.min(d_a[i]);
-    hip_max.max(d_a[i]);
+                            hip_min.min(d_a[i]);
+                            hip_max.max(d_a[i]);
 
-    hip_minloc.minloc(d_a[i], i);
-    hip_maxloc.maxloc(d_a[i], i);
-  });
+                            hip_minloc.minloc(d_a[i], i);
+                            hip_maxloc.maxloc(d_a[i], i);
+                          });
 
   std::cout << "\tsum = " << hip_sum.get() << std::endl;
   std::cout << "\tmin = " << hip_min.get() << std::endl;

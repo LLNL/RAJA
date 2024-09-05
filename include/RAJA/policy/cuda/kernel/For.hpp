@@ -69,7 +69,7 @@ struct CudaStatementExecutor<
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i = IndexMapper::template index<diff_t>();
+    const diff_t i   = IndexMapper::template index<diff_t>();
 
     // execute enclosed statements if any thread will
     // but mask off threads without work
@@ -138,8 +138,8 @@ struct CudaStatementExecutor<
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // grid stride loop
-    const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i_init = IndexMapper::template index<diff_t>();
+    const diff_t len      = segment_length<ArgumentId>(data);
+    const diff_t i_init   = IndexMapper::template index<diff_t>();
     const diff_t i_stride = IndexMapper::template size<diff_t>();
 
     // Iterate through in chunks
@@ -216,8 +216,8 @@ struct CudaStatementExecutor<
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // grid stride loop
-    const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i_init = IndexMapper::template index<diff_t>();
+    const diff_t len      = segment_length<ArgumentId>(data);
+    const diff_t i_init   = IndexMapper::template index<diff_t>();
     const diff_t i_stride = IndexMapper::template size<diff_t>();
 
     // Iterate through one at a time
@@ -376,8 +376,8 @@ struct CudaStatementExecutor<Data,
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // masked size strided loop
-    const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t len      = segment_length<ArgumentId>(data);
+    const diff_t i_init   = mask_t::maskValue((diff_t)threadIdx.x);
     const diff_t i_stride = (diff_t)mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
@@ -514,8 +514,8 @@ struct CudaStatementExecutor<Data,
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // masked size strided loop
-    const diff_t len = segment_length<ArgumentId>(data);
-    const diff_t i_init = mask_t::maskValue((diff_t)threadIdx.x);
+    const diff_t len      = segment_length<ArgumentId>(data);
+    const diff_t i_init   = mask_t::maskValue((diff_t)threadIdx.x);
     const diff_t i_stride = (diff_t)mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks

@@ -13,7 +13,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   double* a = new double[N];
   double* b = new double[N];
-  double c = 3.14159;
+  double  c = 3.14159;
 
   for (std::size_t i = 0; i < N; i++)
   {
@@ -21,9 +21,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
     b[i] = 2.0;
   }
 
-  RAJA::forall<RAJA::seq_exec>(
-      RAJA::RangeSegment(0, N),
-      [=] RAJA_HOST_DEVICE(std::size_t i) { a[i] += b[i] * c; });
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+                               [=] RAJA_HOST_DEVICE(std::size_t i)
+                               { a[i] += b[i] * c; });
 
   delete[] a;
   delete[] b;

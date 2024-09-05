@@ -71,7 +71,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -247,13 +247,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=](int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile) {
-        RAJA_Tile(trow, tcol) = Aview(row, col);
-      },
+      [=](int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile)
+      { RAJA_Tile(trow, tcol) = Aview(row, col); },
 
-      [=](int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile) {
-        Atview(col, row) = RAJA_Tile(trow, tcol);
-      });
+      [=](int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile)
+      { Atview(col, row) = RAJA_Tile(trow, tcol); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -301,13 +299,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=](int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile) {
-        RAJA_Tile(trow, tcol) = Aview(row, col);
-      },
+      [=](int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile)
+      { RAJA_Tile(trow, tcol) = Aview(row, col); },
 
-      [=](int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile) {
-        Atview(col, row) = RAJA_Tile(trow, tcol);
-      });
+      [=](int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile)
+      { Atview(col, row) = RAJA_Tile(trow, tcol); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -363,15 +359,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
 
-      [=] RAJA_DEVICE(
-          int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile) {
-        RAJA_Tile(trow, tcol) = Aview(row, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int tcol, int trow, TILE_MEM& RAJA_Tile)
+      { RAJA_Tile(trow, tcol) = Aview(row, col); },
 
-      [=] RAJA_DEVICE(
-          int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile) {
-        Atview(col, row) = RAJA_Tile(trow, tcol);
-      });
+      [=] RAJA_DEVICE(int col, int row, int tcol, int trow, TILE_MEM RAJA_Tile)
+      { Atview(col, row) = RAJA_Tile(trow, tcol); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);

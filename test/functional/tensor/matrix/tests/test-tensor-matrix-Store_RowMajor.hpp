@@ -14,8 +14,8 @@ template <typename MATRIX_TYPE>
 void Store_RowMajorImpl()
 {
 
-  using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  using matrix_t  = MATRIX_TYPE;
+  using policy_t  = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
   //
@@ -24,7 +24,7 @@ void Store_RowMajorImpl()
 
   // alloc data1 - matrix data will be generated on device, stored into data1
 
-  std::vector<element_t> data1_vec(4 * matrix_t::s_num_rows *
+  std::vector<element_t>                 data1_vec(4 * matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), 2 * matrix_t::s_num_rows, 2 * matrix_t::s_num_columns);
@@ -36,7 +36,7 @@ void Store_RowMajorImpl()
 
   // alloc data2 - reference data to compare with data1 on host
 
-  std::vector<element_t> data2_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data2_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
@@ -69,28 +69,30 @@ void Store_RowMajorImpl()
   //
   // Do Operation: Full store
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill out matrix
-    matrix_t m(-1.0);
-
-    for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
-    {
-      for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
       {
-        m.set(2 * i * matrix_t::s_num_columns + j, i, j);
-      }
-    }
+        // fill out matrix
+        matrix_t m(-1.0);
 
-    // Store matrix to memory
-    if (matrix_t::layout_type::is_row_major())
-    {
-      m.store_packed(data1_ptr, 2 * matrix_t::s_num_columns, 1);
-    }
-    else
-    {
-      m.store_strided(data1_ptr, 2 * matrix_t::s_num_columns, 1);
-    }
-  });
+        for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+        {
+          for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+          {
+            m.set(2 * i * matrix_t::s_num_columns + j, i, j);
+          }
+        }
+
+        // Store matrix to memory
+        if (matrix_t::layout_type::is_row_major())
+        {
+          m.store_packed(data1_ptr, 2 * matrix_t::s_num_columns, 1);
+        }
+        else
+        {
+          m.store_strided(data1_ptr, 2 * matrix_t::s_num_columns, 1);
+        }
+      });
 
   tensor_copy_to_host<policy_t>(data1_vec, data1_ptr);
 
@@ -141,30 +143,32 @@ void Store_RowMajorImpl()
       //
       // Do Operation: Partial Store
       //
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        // fill out matrix
-        matrix_t m(-1.0);
-
-        for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
-        {
-          for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
           {
-            m.set(2 * i * matrix_t::s_num_columns + j, i, j);
-          }
-        }
+            // fill out matrix
+            matrix_t m(-1.0);
 
-        // Store matrix to memory
-        if (matrix_t::layout_type::is_row_major())
-        {
-          m.store_packed_nm(
-              data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
-        }
-        else
-        {
-          m.store_strided_nm(
-              data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
-        }
-      });
+            for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+            {
+              for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+              {
+                m.set(2 * i * matrix_t::s_num_columns + j, i, j);
+              }
+            }
+
+            // Store matrix to memory
+            if (matrix_t::layout_type::is_row_major())
+            {
+              m.store_packed_nm(
+                  data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
+            }
+            else
+            {
+              m.store_strided_nm(
+                  data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
+            }
+          });
 
 
       tensor_copy_to_host<policy_t>(data1_vec, data1_ptr);

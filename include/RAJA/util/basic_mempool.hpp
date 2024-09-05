@@ -54,9 +54,9 @@ namespace detail
 class MemoryArena
 {
 public:
-  using free_type = std::map<void*, void*>;
+  using free_type       = std::map<void*, void*>;
   using free_value_type = typename free_type::value_type;
-  using used_type = std::map<void*, void*>;
+  using used_type       = std::map<void*, void*>;
   using used_value_type = typename used_type::value_type;
 
   MemoryArena(void* ptr, size_t size)
@@ -72,10 +72,10 @@ public:
     }
   }
 
-  MemoryArena(MemoryArena const&) = delete;
+  MemoryArena(MemoryArena const&)            = delete;
   MemoryArena& operator=(MemoryArena const&) = delete;
 
-  MemoryArena(MemoryArena&&) = default;
+  MemoryArena(MemoryArena&&)            = default;
   MemoryArena& operator=(MemoryArena&&) = default;
 
   size_t capacity()
@@ -97,7 +97,7 @@ public:
       for (free_type::iterator iter = m_free_space.begin(); iter != end; ++iter)
       {
 
-        void* adj_ptr = iter->first;
+        void*  adj_ptr = iter->first;
         size_t cap =
             static_cast<char*>(iter->second) - static_cast<char*>(adj_ptr);
 
@@ -210,7 +210,7 @@ private:
   void remove_free_chunk(free_type::iterator iter, void* begin, void* end)
   {
 
-    void* ptr = iter->first;
+    void* ptr     = iter->first;
     void* ptr_end = iter->second;
 
     // fixup m_free_space, shrinking and adding chunks as needed
@@ -253,8 +253,8 @@ private:
   }
 
   memory_chunk m_allocation;
-  free_type m_free_space;
-  used_type m_used_space;
+  free_type    m_free_space;
+  used_type    m_used_space;
 };
 
 } /* end namespace detail */
@@ -356,7 +356,7 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
-    size_t prev_size = m_default_arena_size;
+    size_t prev_size     = m_default_arena_size;
     m_default_arena_size = new_size;
     return prev_size;
   }
@@ -368,9 +368,9 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
-    const size_t size = nTs * sizeof(T);
-    void* ptr = nullptr;
-    arena_container_type::iterator end = m_arenas.end();
+    const size_t                   size = nTs * sizeof(T);
+    void*                          ptr  = nullptr;
+    arena_container_type::iterator end  = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end;
          ++iter)
     {
@@ -402,7 +402,7 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
-    void* ptr = const_cast<void*>(cptr);
+    void*                          ptr = const_cast<void*>(cptr);
     arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end;
          ++iter)
@@ -427,8 +427,8 @@ private:
 #endif
 
   arena_container_type m_arenas;
-  size_t m_default_arena_size;
-  allocator_t m_alloc;
+  size_t               m_default_arena_size;
+  allocator_t          m_alloc;
 };
 
 //! example allocator for basic_mempool using malloc/free

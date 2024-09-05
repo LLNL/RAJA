@@ -51,10 +51,10 @@ struct ResourceAllocator
     std_allocator() = default;
 
     std_allocator(std_allocator const&) = default;
-    std_allocator(std_allocator&&) = default;
+    std_allocator(std_allocator&&)      = default;
 
     std_allocator& operator=(std_allocator const&) = default;
-    std_allocator& operator=(std_allocator&&) = default;
+    std_allocator& operator=(std_allocator&&)      = default;
 
     template <typename U>
     std_allocator(std_allocator<U> const& other) noexcept
@@ -96,7 +96,7 @@ struct ResourceAllocator
     }
 
     template <typename U>
-    friend inline bool operator!=(std_allocator const& lhs,
+    friend inline bool operator!=(std_allocator const&    lhs,
                                   std_allocator<U> const& rhs)
     {
       return !(lhs == rhs);
@@ -111,15 +111,15 @@ struct NeverEqualAllocator
 {
   using propagate_on_container_copy_assignment = std::false_type;
   using propagate_on_container_move_assignment = std::false_type;
-  using propagate_on_container_swap = std::true_type;
+  using propagate_on_container_swap            = std::true_type;
 
   NeverEqualAllocator() = default;
 
   NeverEqualAllocator(NeverEqualAllocator const&) = default;
-  NeverEqualAllocator(NeverEqualAllocator&&) = default;
+  NeverEqualAllocator(NeverEqualAllocator&&)      = default;
 
   NeverEqualAllocator& operator=(NeverEqualAllocator const&) = default;
-  NeverEqualAllocator& operator=(NeverEqualAllocator&&) = default;
+  NeverEqualAllocator& operator=(NeverEqualAllocator&&)      = default;
 
   NeverEqualAllocator select_on_container_copy_construction()
   {
@@ -137,8 +137,8 @@ struct NeverEqualAllocator
   /*[[nodiscard]]*/
   void* allocate(size_t size)
   {
-    void* ptr = malloc(size);
-    auto iter_b = m_allocations.emplace(ptr, size);
+    void* ptr    = malloc(size);
+    auto  iter_b = m_allocations.emplace(ptr, size);
     if (!iter_b.second)
     {
       RAJA_ABORT_OR_THROW("failed to add allocation to map");
@@ -171,15 +171,15 @@ struct AlwaysEqualAllocator
 {
   using propagate_on_container_copy_assignment = std::false_type;
   using propagate_on_container_move_assignment = std::false_type;
-  using propagate_on_container_swap = std::false_type;
+  using propagate_on_container_swap            = std::false_type;
 
   AlwaysEqualAllocator() = default;
 
   AlwaysEqualAllocator(AlwaysEqualAllocator const&) = default;
-  AlwaysEqualAllocator(AlwaysEqualAllocator&&) = default;
+  AlwaysEqualAllocator(AlwaysEqualAllocator&&)      = default;
 
   AlwaysEqualAllocator& operator=(AlwaysEqualAllocator const&) = default;
-  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator&&) = default;
+  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator&&)      = default;
 
   AlwaysEqualAllocator select_on_container_copy_construction() { return *this; }
 
@@ -205,15 +205,15 @@ struct PropogatingAllocator : NeverEqualAllocator
 {
   using propagate_on_container_copy_assignment = std::true_type;
   using propagate_on_container_move_assignment = std::true_type;
-  using propagate_on_container_swap = std::true_type;
+  using propagate_on_container_swap            = std::true_type;
 
   PropogatingAllocator() = default;
 
   PropogatingAllocator(PropogatingAllocator const&) = default;
-  PropogatingAllocator(PropogatingAllocator&&) = default;
+  PropogatingAllocator(PropogatingAllocator&&)      = default;
 
   PropogatingAllocator& operator=(PropogatingAllocator const&) = default;
-  PropogatingAllocator& operator=(PropogatingAllocator&&) = default;
+  PropogatingAllocator& operator=(PropogatingAllocator&&)      = default;
 
   PropogatingAllocator select_on_container_copy_construction()
   {
@@ -244,10 +244,10 @@ struct WorkStorageTestAllocator
     std_allocator() = default;
 
     std_allocator(std_allocator const&) = default;
-    std_allocator(std_allocator&&) = default;
+    std_allocator(std_allocator&&)      = default;
 
     std_allocator& operator=(std_allocator const&) = default;
-    std_allocator& operator=(std_allocator&&) = default;
+    std_allocator& operator=(std_allocator&&)      = default;
 
     template <typename U>
     std_allocator(std_allocator<U> const& other) noexcept
@@ -286,14 +286,14 @@ struct WorkStorageTestAllocator
     AllocatorImpl const& get_impl() const { return m_impl; }
 
     template <typename U>
-    friend inline bool operator==(std_allocator const& lhs,
+    friend inline bool operator==(std_allocator const&    lhs,
                                   std_allocator<U> const& rhs)
     {
       return lhs.get_impl() == rhs.get_impl();
     }
 
     template <typename U>
-    friend inline bool operator!=(std_allocator const& lhs,
+    friend inline bool operator!=(std_allocator const&    lhs,
                                   std_allocator<U> const& rhs)
     {
       return !(lhs == rhs);
@@ -328,16 +328,16 @@ using SequentialStoragePolicyList =
                RAJA::constant_stride_array_of_objects>;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPExecPolicyList = camp::list<RAJA::omp_work>;
+using OpenMPExecPolicyList    = camp::list<RAJA::omp_work>;
 using OpenMPOrderedPolicyList = SequentialOrderedPolicyList;
-using OpenMPOrderPolicyList = SequentialOrderPolicyList;
+using OpenMPOrderPolicyList   = SequentialOrderPolicyList;
 using OpenMPStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetExecPolicyList = camp::list<RAJA::omp_target_work>;
+using OpenMPTargetExecPolicyList    = camp::list<RAJA::omp_target_work>;
 using OpenMPTargetOrderedPolicyList = SequentialOrderedPolicyList;
-using OpenMPTargetOrderPolicyList = SequentialOrderPolicyList;
+using OpenMPTargetOrderPolicyList   = SequentialOrderPolicyList;
 using OpenMPTargetStoragePolicyList = SequentialStoragePolicyList;
 #endif
 

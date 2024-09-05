@@ -57,7 +57,7 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
   }
 
   using layout_type = RAJA::Layout<1, INDEX_TYPE, 0>;
-  using view_type = RAJA::View<INDEX_TYPE, layout_type>;
+  using view_type   = RAJA::View<INDEX_TYPE, layout_type>;
 #if (!(defined(_GLIBCXX_RELEASE) || defined(RAJA_COMPILER_INTEL) ||            \
        defined(RAJA_COMPILER_MSVC))) ||                                        \
     _GLIBCXX_RELEASE >= 20150716
@@ -79,7 +79,7 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
 #endif
 
   RAJA::Layout<1> layout(N);
-  view_type work_view(working_array, layout);
+  view_type       work_view(working_array, layout);
 
   RAJA::forall<EXEC_POLICY>(
       lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) { work_view(idx) = idx; });
@@ -136,10 +136,10 @@ void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
   }
 
   using layout_type = RAJA::OffsetLayout<1, INDEX_TYPE>;
-  using view_type = RAJA::View<INDEX_TYPE, layout_type>;
+  using view_type   = RAJA::View<INDEX_TYPE, layout_type>;
 
   INDEX_TYPE N_offset = N + offset;
-  view_type work_view(
+  view_type  work_view(
       working_array,
       RAJA::make_offset_layout<1, INDEX_TYPE>({{offset}}, {{N_offset}}));
 
@@ -164,9 +164,9 @@ class ForallListSegmentViewTest : public ::testing::Test
 
 TYPED_TEST_P(ForallListSegmentViewTest, ListSegmentForallView)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ForallListSegmentViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13);
   ForallListSegmentViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(

@@ -31,8 +31,8 @@ namespace expt
 
 template <typename IDX,
           typename TENSOR_TYPE,
-          camp::idx_t DIM,
-          IDX INDEX_VALUE,
+          camp::idx_t             DIM,
+          IDX                     INDEX_VALUE,
           strip_index_type_t<IDX> LENGTH_VALUE>
 struct StaticTensorIndexInner;
 
@@ -44,9 +44,9 @@ template <typename IDX, typename TENSOR_TYPE, camp::idx_t DIM>
 class TensorIndex
 {
 public:
-  using self_type = TensorIndex<IDX, TENSOR_TYPE, DIM>;
-  using value_type = strip_index_type_t<IDX>;
-  using index_type = IDX;
+  using self_type   = TensorIndex<IDX, TENSOR_TYPE, DIM>;
+  using value_type  = strip_index_type_t<IDX>;
+  using index_type  = IDX;
   using tensor_type = TENSOR_TYPE;
 
   RAJA_INLINE
@@ -155,19 +155,19 @@ private:
 
 template <typename IDX,
           typename TENSOR_TYPE,
-          camp::idx_t DIM,
-          IDX INDEX_VALUE,
+          camp::idx_t             DIM,
+          IDX                     INDEX_VALUE,
           strip_index_type_t<IDX> LENGTH_VALUE>
 struct StaticTensorIndex<
     StaticTensorIndexInner<IDX, TENSOR_TYPE, DIM, INDEX_VALUE, LENGTH_VALUE>>
 {
 
-  using base_type = TensorIndex<IDX, TENSOR_TYPE, DIM>;
-  using value_type = strip_index_type_t<IDX>;
-  using index_type = IDX;
+  using base_type   = TensorIndex<IDX, TENSOR_TYPE, DIM>;
+  using value_type  = strip_index_type_t<IDX>;
+  using index_type  = IDX;
   using tensor_type = TENSOR_TYPE;
 
-  static const index_type s_index = INDEX_VALUE;
+  static const index_type s_index  = INDEX_VALUE;
   static const index_type s_length = LENGTH_VALUE;
 
   RAJA_INLINE
@@ -200,7 +200,7 @@ using ColIndex = TensorIndex<IDX, MATRIX_TYPE, 1>;
  */
 template <typename IDX, typename MATRIX_TYPE>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr ColIndex<IDX, MATRIX_TYPE>
-toColIndex(RowIndex<IDX, MATRIX_TYPE> const& r)
+                 toColIndex(RowIndex<IDX, MATRIX_TYPE> const& r)
 {
   return ColIndex<IDX, MATRIX_TYPE>(*r, r.size());
 }
@@ -210,7 +210,7 @@ toColIndex(RowIndex<IDX, MATRIX_TYPE> const& r)
  */
 template <typename IDX, typename MATRIX_TYPE>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr RowIndex<IDX, MATRIX_TYPE>
-toRowIndex(ColIndex<IDX, MATRIX_TYPE> const& c)
+                 toRowIndex(ColIndex<IDX, MATRIX_TYPE> const& c)
 {
   return RowIndex<IDX, MATRIX_TYPE>(*c, c.size());
 }

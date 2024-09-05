@@ -44,7 +44,7 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #if defined(RAJA_HAVE_POSIX_MEMALIGN)
   // posix_memalign available
   void* ret = nullptr;
-  int err = posix_memalign(&ret, alignment, size);
+  int   err = posix_memalign(&ret, alignment, size);
   return err ? nullptr : ret;
 #elif defined(RAJA_HAVE_ALIGNED_ALLOC)
   return std::aligned_alloc(alignment, size);

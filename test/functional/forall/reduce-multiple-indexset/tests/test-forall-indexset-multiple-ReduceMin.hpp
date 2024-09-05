@@ -26,7 +26,7 @@ template <typename IDX_TYPE,
 void ForallIndexSetReduceMinMultipleTestImpl()
 {
   using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
-  using IdxSetType = RAJA::TypedIndexSet<RangeSegType>;
+  using IdxSetType   = RAJA::TypedIndexSet<RangeSegType>;
 
   RAJA::TypedRangeSegment<IDX_TYPE> r1(1, 1037);
   RAJA::TypedRangeSegment<IDX_TYPE> r2(1043, 2036);
@@ -58,11 +58,11 @@ void ForallIndexSetReduceMinMultipleTestImpl()
   }
 
   // for setting random values in arrays
-  std::random_device rd;
-  std::mt19937 mt(rd());
+  std::random_device                     rd;
+  std::mt19937                           mt(rd());
   std::uniform_real_distribution<double> dist(-10, 10);
 
-  double current_min = default_val;
+  double    current_min = default_val;
   const int test_repeat = 4;
 
   RAJA::ReduceMin<REDUCE_POLICY, double> dmin0(default_val);
@@ -81,15 +81,17 @@ void ForallIndexSetReduceMinMultipleTestImpl()
     if (test_array[index] > droll)
     {
       test_array[index] = droll;
-      current_min = RAJA_MIN(current_min, droll);
+      current_min       = RAJA_MIN(current_min, droll);
     }
 
     working_res.memcpy(working_array, test_array, sizeof(double) * alen);
 
-    RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
-      dmin0.min(working_array[i]);
-      dmin1.min(2 * working_array[i]);
-    });
+    RAJA::forall<EXEC_POLICY>(iset,
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE i)
+                              {
+                                dmin0.min(working_array[i]);
+                                dmin1.min(2 * working_array[i]);
+                              });
 
     ASSERT_FLOAT_EQ(static_cast<double>(dmin0.get()), current_min);
     ASSERT_FLOAT_EQ(static_cast<double>(dmin1.get()), 2 * current_min);
@@ -107,9 +109,9 @@ class ForallIndexSetReduceMinMultipleTest : public ::testing::Test
 TYPED_TEST_P(ForallIndexSetReduceMinMultipleTest,
              ReduceMinMultipleForallIndexSet)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
   ForallIndexSetReduceMinMultipleTestImpl<IDX_TYPE,

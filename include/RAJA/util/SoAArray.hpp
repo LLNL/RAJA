@@ -42,7 +42,7 @@ class SoAArray
 
 public:
   RAJA_HOST_DEVICE value_type get(size_t i) const { return mem[i]; }
-  RAJA_HOST_DEVICE void set(size_t i, value_type val) { mem[i] = val; }
+  RAJA_HOST_DEVICE void       set(size_t i, value_type val) { mem[i] = val; }
 
 private:
   value_type mem[size];
@@ -54,8 +54,8 @@ private:
 template <typename T, typename IndexType, bool doing_min, size_t size>
 class SoAArray<::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, size>
 {
-  using value_type = ::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
-  using first_type = T;
+  using value_type  = ::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
+  using first_type  = T;
   using second_type = IndexType;
 
 public:
@@ -65,12 +65,12 @@ public:
   }
   RAJA_HOST_DEVICE void set(size_t i, value_type val)
   {
-    mem[i] = val;
+    mem[i]     = val;
     mem_idx[i] = val.getLoc();
   }
 
 private:
-  first_type mem[size];
+  first_type  mem[size];
   second_type mem_idx[size];
 };
 

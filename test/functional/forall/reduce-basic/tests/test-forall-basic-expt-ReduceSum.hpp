@@ -18,12 +18,12 @@ template <typename IDX_TYPE,
           typename SEG_TYPE,
           typename EXEC_POLICY,
           typename REDUCE_POLICY>
-void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
+void ForallReduceSumBasicTestImpl(const SEG_TYPE&              seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
-                                  camp::resources::Resource working_res)
+                                  camp::resources::Resource    working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
@@ -47,7 +47,7 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  DATA_TYPE sum = 0;
+  DATA_TYPE sum  = 0;
   DATA_TYPE sum2 = 2;
 
   RAJA::forall<EXEC_POLICY>(
@@ -55,7 +55,8 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
       RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
       RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
       RAJA::expt::KernelName("RAJA Reduce Sum"),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & s1, DATA_TYPE & s2) {
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & s1, DATA_TYPE & s2)
+      {
         s1 += working_array[idx];
         s2 += working_array[idx];
       });
@@ -69,12 +70,10 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   for (int j = 0; j < nloops; ++j)
   {
-    RAJA::forall<EXEC_POLICY>(
-        seg,
-        RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
-        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & s) {
-          s += working_array[idx];
-        });
+    RAJA::forall<EXEC_POLICY>(seg,
+                              RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & s)
+                              { s += working_array[idx]; });
   }
 
   ASSERT_EQ(static_cast<DATA_TYPE>(sum), nloops * ref_sum);
@@ -92,10 +91,10 @@ class ForallReduceSumBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceSumBasicTest, ReduceSumBasicForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};

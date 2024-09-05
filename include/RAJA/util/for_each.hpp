@@ -39,8 +39,8 @@ namespace detail
 // runtime loop applying func to each element in the range in order
 RAJA_SUPPRESS_HD_WARN
 template <typename Iter, typename UnaryFunc>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each(Iter begin,
-                                                Iter end,
+RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each(Iter      begin,
+                                                Iter      end,
                                                 UnaryFunc func)
 {
   for (; begin != end; ++begin)
@@ -67,7 +67,7 @@ RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const&,
 // compile time expansion applying func to a each type in the tuple in order
 RAJA_SUPPRESS_HD_WARN
 template <typename Tuple, typename UnaryFunc, camp::idx_t... Is>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t,
+RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&&   t,
                                                       UnaryFunc func,
                                                       camp::idx_seq<Is...>)
 {

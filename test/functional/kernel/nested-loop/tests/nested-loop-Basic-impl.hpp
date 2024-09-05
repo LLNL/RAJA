@@ -59,10 +59,10 @@ void KernelNestedLoopTest(const DEPTH_2&,
                           const RAJA::Index_type dim1,
                           ExtraArgs...)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
-  RAJA::Index_type flatSize = dim0 * dim1;
+  RAJA::Index_type  flatSize = dim0 * dim1;
   RAJA::Index_type* work_array;
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
@@ -76,24 +76,26 @@ void KernelNestedLoopTest(const DEPTH_2&,
 
   std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
-  constexpr int Depth = 2;
+  constexpr int                                     Depth = 2;
   RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(
       work_array, dim1, dim0);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
       RAJA::make_tuple(range1, range0),
       work_res,
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type j, RAJA::Index_type i) {
-        work_view(j, i) = (j * dim0) + i;
-      });
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type j, RAJA::Index_type i)
+      { work_view(j, i) = (j * dim0) + i; });
 
   work_res.memcpy(check_array,
                   work_array,
                   sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
-  RAJA::forall<RAJA::seq_exec>(rangeflat, [=](RAJA::Index_type i) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
-  });
+  RAJA::forall<RAJA::seq_exec>(rangeflat,
+                               [=](RAJA::Index_type i)
+                               {
+                                 ASSERT_EQ(
+                                     test_array[RAJA::stripIndexType(i)],
+                                     check_array[RAJA::stripIndexType(i)]);
+                               });
 
   deallocateForallTestData<RAJA::Index_type>(
       erased_work_res, work_array, check_array, test_array);
@@ -132,10 +134,10 @@ void KernelNestedLoopTest(const DEPTH_3&,
                           const RAJA::Index_type dim1,
                           const RAJA::Index_type dim2)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
-  RAJA::Index_type flatSize = dim0 * dim1 * dim2;
+  RAJA::Index_type  flatSize = dim0 * dim1 * dim2;
   RAJA::Index_type* work_array;
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
@@ -150,7 +152,7 @@ void KernelNestedLoopTest(const DEPTH_3&,
 
   std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
-  constexpr int Depth = 3;
+  constexpr int                                     Depth = 3;
   RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(
       work_array, dim2, dim1, dim0);
 
@@ -158,17 +160,19 @@ void KernelNestedLoopTest(const DEPTH_3&,
       RAJA::make_tuple(range2, range1, range0),
       work_res,
       [=] RAJA_HOST_DEVICE(
-          RAJA::Index_type k, RAJA::Index_type j, RAJA::Index_type i) {
-        work_view(k, j, i) = (dim0 * dim1 * k) + (dim0 * j) + i;
-      });
+          RAJA::Index_type k, RAJA::Index_type j, RAJA::Index_type i)
+      { work_view(k, j, i) = (dim0 * dim1 * k) + (dim0 * j) + i; });
 
   work_res.memcpy(check_array,
                   work_array,
                   sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
-  RAJA::forall<RAJA::seq_exec>(rangeflat, [=](RAJA::Index_type i) {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
-  });
+  RAJA::forall<RAJA::seq_exec>(rangeflat,
+                               [=](RAJA::Index_type i)
+                               {
+                                 ASSERT_EQ(
+                                     test_array[RAJA::stripIndexType(i)],
+                                     check_array[RAJA::stripIndexType(i)]);
+                               });
 
   deallocateForallTestData<RAJA::Index_type>(
       erased_work_res, work_array, check_array, test_array);

@@ -45,26 +45,26 @@ class TensorBinaryOperator
 {
 public:
   using self_type = TensorBinaryOperator<OPERATOR, LEFT_OPERAND, RIGHT_OPERAND>;
-  using operator_type = OPERATOR;
-  using left_operand_type = LEFT_OPERAND;
+  using operator_type      = OPERATOR;
+  using left_operand_type  = LEFT_OPERAND;
   using right_operand_type = RIGHT_OPERAND;
 
   using element_type = typename LEFT_OPERAND::element_type;
-  using index_type = typename LEFT_OPERAND::index_type;
+  using index_type   = typename LEFT_OPERAND::index_type;
 
   using operator_traits = OperatorTraits<LEFT_OPERAND, RIGHT_OPERAND>;
-  using result_type = typename operator_traits::result_type;
+  using result_type     = typename operator_traits::result_type;
 
   static constexpr camp::idx_t s_num_dims = operator_traits::s_num_dims;
 
 private:
-  left_operand_type m_left_operand;
+  left_operand_type  m_left_operand;
   right_operand_type m_right_operand;
 
 public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorBinaryOperator(left_operand_type const& left,
+  TensorBinaryOperator(left_operand_type const&  left,
                        right_operand_type const& right)
       : m_left_operand{left}, m_right_operand{right}
   {}
@@ -116,7 +116,7 @@ template <typename LEFT_OPERAND,
           typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase,
                                                   RIGHT_OPERAND>::value,
                                   bool>::type = true>
-RAJA_INLINE RAJA_HOST_DEVICE auto operator+(LEFT_OPERAND const& left,
+RAJA_INLINE RAJA_HOST_DEVICE auto operator+(LEFT_OPERAND const&  left,
                                             RIGHT_OPERAND const& right)
     -> TensorAdd<typename NormalizeOperandHelper<LEFT_OPERAND>::return_type,
                  RIGHT_OPERAND>
@@ -138,7 +138,7 @@ template <typename LEFT_OPERAND,
           typename std::enable_if<std::is_base_of<TensorExpressionConcreteBase,
                                                   RIGHT_OPERAND>::value,
                                   bool>::type = true>
-RAJA_INLINE RAJA_HOST_DEVICE auto operator-(LEFT_OPERAND const& left,
+RAJA_INLINE RAJA_HOST_DEVICE auto operator-(LEFT_OPERAND const&  left,
                                             RIGHT_OPERAND const& right)
     -> TensorSubtract<
         typename NormalizeOperandHelper<LEFT_OPERAND>::return_type,

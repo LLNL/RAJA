@@ -49,26 +49,28 @@ template <typename ReducePolicy,
 typename std::enable_if< // GPU policy execution.
     std::is_base_of<RunOnDevice, ForOnePol>::value>::type
 exec_dispatcher(
-    RAJA::ReduceSum<ReducePolicy, NumericType>& reduce_sum,
-    RAJA::ReduceMin<ReducePolicy, NumericType>& reduce_min,
-    RAJA::ReduceMax<ReducePolicy, NumericType>& reduce_max,
+    RAJA::ReduceSum<ReducePolicy, NumericType>&             reduce_sum,
+    RAJA::ReduceMin<ReducePolicy, NumericType>&             reduce_min,
+    RAJA::ReduceMax<ReducePolicy, NumericType>&             reduce_max,
     RAJA::ReduceMinLoc<ReducePolicy, NumericType, Indexer>& reduce_minloc,
     RAJA::ReduceMaxLoc<ReducePolicy, NumericType, Indexer>& reduce_maxloc,
-    RAJA::ReduceMinLoc<ReducePolicy, NumericType, Tuple>& reduce_minloctup,
-    RAJA::ReduceMaxLoc<ReducePolicy, NumericType, Tuple>& reduce_maxloctup,
-    NumericType initVal)
+    RAJA::ReduceMinLoc<ReducePolicy, NumericType, Tuple>&   reduce_minloctup,
+    RAJA::ReduceMaxLoc<ReducePolicy, NumericType, Tuple>&   reduce_maxloctup,
+    NumericType                                             initVal)
 {
   // Use device to activate any value for each reducer.
-  forone<ForOnePol>([=] __host__ __device__() {
-    Tuple temploc(0, 0);
-    reduce_sum += initVal;
-    reduce_min.min(0);
-    reduce_max.max(0);
-    reduce_minloc.minloc(0, 0);
-    reduce_maxloc.maxloc(0, 0);
-    reduce_minloctup.minloc(0, temploc);
-    reduce_maxloctup.maxloc(0, temploc);
-  });
+  forone<ForOnePol>(
+      [=] __host__ __device__()
+      {
+        Tuple temploc(0, 0);
+        reduce_sum += initVal;
+        reduce_min.min(0);
+        reduce_max.max(0);
+        reduce_minloc.minloc(0, 0);
+        reduce_maxloc.maxloc(0, 0);
+        reduce_minloctup.minloc(0, temploc);
+        reduce_maxloctup.maxloc(0, temploc);
+      });
   // Relying on implicit device synchronization in forone.
 }
 #endif
@@ -89,11 +91,11 @@ void testReducerReset()
   camp::resources::Resource host_res{camp::resources::Host()};
 
   NumericType* resetVal = nullptr;
-  NumericType* workVal = nullptr;
+  NumericType* workVal  = nullptr;
 
   NumericType initVal = (NumericType)5;
 
-  workVal = work_res.allocate<NumericType>(1);
+  workVal  = work_res.allocate<NumericType>(1);
   resetVal = host_res.allocate<NumericType>(1);
 
   work_res.memcpy(workVal, &initVal, sizeof(initVal));
@@ -107,9 +109,9 @@ void testReducerReset()
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
+  RAJA::ReduceSum<ReducePolicy, NumericType>    reduce_sum(initVal);
+  RAJA::ReduceMin<ReducePolicy, NumericType>    reduce_min(initVal);
+  RAJA::ReduceMax<ReducePolicy, NumericType>    reduce_max(initVal);
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
@@ -183,10 +185,10 @@ void testReducerReset()
 
 TYPED_TEST_P(ReducerResetUnitTest, BasicReset)
 {
-  using ReduceType = typename camp::at<TypeParam, camp::num<0>>::type;
-  using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ReduceType   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using NumericType  = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using ForOneType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using ForOneType   = typename camp::at<TypeParam, camp::num<3>>::type;
   testReducerReset<ReduceType, NumericType, ResourceType, ForOneType>();
 }
 

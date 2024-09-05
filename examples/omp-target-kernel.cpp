@@ -23,19 +23,21 @@ int main(int /*argc*/, char** /*argv[]*/)
   double* array = new double[25 * 25];
 
 #pragma omp target enter data map(to : array [0:25 * 25])
-#pragma omp target data use_device_ptr(array)
+#pragma omp target data       use_device_ptr(array)
 
 #if 1
   RAJA::kernel<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, 25), RAJA::RangeSegment(0, 25)),
-      [=](int /*i*/, int /*j*/) {
+      [=](int /*i*/, int /*j*/)
+      {
         // array[i + (25*j)] = i*j;
         //    int idx = i;
         // array[0] = i*j;
       });
 #else
   RAJA::forall<RAJA::omp_target_parallel_for_exec<1>>(RAJA::RangeSegment(0, 25),
-                                                      [=](int i) {
+                                                      [=](int i)
+                                                      {
                                                         //
                                                       });
 #endif

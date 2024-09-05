@@ -40,7 +40,7 @@ void DefaultPolConstructors()
 
   // ref constructor
   RAJA::AtomicRef<T> const& reft1 = test1;
-  RAJA::AtomicRef<T> reftest1(reft1);
+  RAJA::AtomicRef<T>        reftest1(reft1);
 
   ASSERT_EQ(reftest1.getPointer(), nullptr);
 }
@@ -69,7 +69,7 @@ TYPED_TEST_SUITE_P(AtomicRefBasicConstructorUnitTest);
 
 TYPED_TEST_P(AtomicRefBasicConstructorUnitTest, BasicConstructors)
 {
-  using NumericType = typename std::tuple_element<0, TypeParam>::type;
+  using NumericType  = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   NumericType* memaddr = nullptr;
@@ -81,7 +81,7 @@ TYPED_TEST_P(AtomicRefBasicConstructorUnitTest, BasicConstructors)
 
   // ref constructor
   RAJA::AtomicRef<NumericType, AtomicPolicy> const& reft1 = test1;
-  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1(reft1);
+  RAJA::AtomicRef<NumericType, AtomicPolicy>        reftest1(reft1);
 
   ASSERT_EQ(reftest1.getPointer(), nullptr);
 }
@@ -105,11 +105,11 @@ TYPED_TEST_SUITE_P(AtomicRefCUDAConstructorUnitTest);
 
 GPU_TYPED_TEST_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors)
 {
-  using NumericType = typename std::tuple_element<0, TypeParam>::type;
+  using NumericType  = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   NumericType* memaddr = nullptr;
-  NumericType* proxy = nullptr;
+  NumericType* proxy   = nullptr;
   cudaErrchk(cudaMallocManaged((void**)&proxy, sizeof(NumericType)));
   proxy = memaddr;
   cudaErrchk(cudaDeviceSynchronize());
@@ -125,7 +125,7 @@ GPU_TYPED_TEST_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors)
 
   // ref constructor
   RAJA::AtomicRef<NumericType, AtomicPolicy> const& reft1 = test1;
-  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1(reft1);
+  RAJA::AtomicRef<NumericType, AtomicPolicy>        reftest1(reft1);
   forone<test_cuda>([=] __device__() { reftest1.getPointer(); });
   cudaErrchk(cudaDeviceSynchronize());
 

@@ -10,13 +10,13 @@
 
 
 template <typename IDX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2> dim,
+void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2>    dim,
                                   std::array<RAJA::idx_t, 2> perm)
 {
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  IDX_TYPE* working_array;
-  IDX_TYPE* check_array;
-  IDX_TYPE* test_array;
+  IDX_TYPE*                 working_array;
+  IDX_TYPE*                 check_array;
+  IDX_TYPE*                 test_array;
 
   std::array<RAJA::idx_t, 2> dim_strip{
       {static_cast<RAJA::idx_t>(RAJA::stripIndexType(dim.at(0))),
@@ -42,8 +42,9 @@ void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2> dim,
   RAJA::kernel<EXEC_POLICY>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(0)),
                        RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(1))),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j) {
-        int val = RAJA::stripIndexType(layout(i, j)) % mod_val;
+      [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j)
+      {
+        int val    = RAJA::stripIndexType(layout(i, j)) % mod_val;
         view(i, j) = static_cast<IDX_TYPE>(val);
       });
 
@@ -67,7 +68,7 @@ class KernelNestedLoopPermutedView2DTest : public ::testing::Test
 
 TYPED_TEST_P(KernelNestedLoopPermutedView2DTest, PermutedView2DKernelTest)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

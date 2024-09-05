@@ -14,18 +14,18 @@ template <typename INDEX_TYPE,
           typename EXEC_POLICY>
 void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first,
                                               INDEX_TYPE last,
-                                              DIFF_TYPE stride)
+                                              DIFF_TYPE  stride)
 {
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(
       RAJA::stripIndexType(first), RAJA::stripIndexType(last), stride);
   INDEX_TYPE N = INDEX_TYPE(r1.size());
 
-  WORKING_RES working_res;
+  WORKING_RES               working_res;
   camp::resources::Resource erased_working_res{working_res};
   camp::resources::Resource host_res{camp::resources::Host()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       N, erased_working_res, &working_array, &check_array, &test_array);
@@ -46,9 +46,10 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first,
   }
 
   RAJA::forall<EXEC_POLICY>(
-      working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-        working_array[RAJA::stripIndexType((idx - first) / stride)] = idx;
-      });
+      working_res,
+      r1,
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+      { working_array[RAJA::stripIndexType((idx - first) / stride)] = idx; });
 
   working_res.memcpy(
       check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
@@ -119,7 +120,7 @@ void runNegativeStrideTests()
 TYPED_TEST_P(ForallResourceRangeStrideSegmentTest,
              ResourceRangeStrideSegmentForall)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
   using DIFF_TYPE =

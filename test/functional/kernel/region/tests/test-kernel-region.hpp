@@ -47,7 +47,8 @@ void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
       [=](INDEX_TYPE i) { work_array2[i - first] = 100; },
 
-      [=](INDEX_TYPE i) {
+      [=](INDEX_TYPE i)
+      {
         work_array3[i - first] =
             work_array1[i - first] + work_array2[i - first] + 1;
       }
@@ -73,7 +74,7 @@ class KernelRegionTest : public ::testing::Test
 
 TYPED_TEST_P(KernelRegionTest, RegionKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

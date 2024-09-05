@@ -42,7 +42,7 @@
 //  PI - Value of pi
 //
 
-const int sr = 2;
+const int    sr = 2;
 const double PI = 3.14159265359;
 
 //
@@ -54,7 +54,7 @@ const double PI = 3.14159265359;
 struct grid_s
 {
   double ox, dx;
-  int nx;
+  int    nx;
 };
 
 
@@ -67,10 +67,10 @@ struct grid_s
 //
 
 template <typename T, typename fdNestedPolicy>
-void wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx);
+void   wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx);
 double waveSol(double t, double x, double y);
-void setIC(double* P1, double* P2, double t0, double t1, grid_s grid);
-void computeErr(double* P, double tf, grid_s grid);
+void   setIC(double* P1, double* P2, double t0, double t1, grid_s grid);
+void   computeErr(double* P, double tf, grid_s grid);
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
@@ -104,9 +104,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double T = 0.82;
 
 
-  int entries = grid.nx * grid.nx;
-  double* P1 = memoryManager::allocate<double>(entries);
-  double* P2 = memoryManager::allocate<double>(entries);
+  int     entries = grid.nx * grid.nx;
+  double* P1      = memoryManager::allocate<double>(entries);
+  double* P2      = memoryManager::allocate<double>(entries);
 
   //
   //----[Time stepping parameters]----
@@ -164,8 +164,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     time += dt;
 
     double* Temp = P2;
-    P2 = P1;
-    P1 = Temp;
+    P2           = P1;
+    P1           = Temp;
   }
 #if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
@@ -194,7 +194,7 @@ double waveSol(double t, double x, double y)
 void computeErr(double* P, double tf, grid_s grid)
 {
 
-  RAJA::RangeSegment fdBounds(0, grid.nx);
+  RAJA::RangeSegment                        fdBounds(0, grid.nx);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using initialPolicy = RAJA::KernelPolicy<RAJA::statement::For<
@@ -203,10 +203,11 @@ void computeErr(double* P, double tf, grid_s grid)
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                              [=](RAJA::Index_type tx, RAJA::Index_type ty) {
-                                int id = tx + grid.nx * ty;
-                                double x = grid.ox + tx * grid.dx;
-                                double y = grid.ox + ty * grid.dx;
+                              [=](RAJA::Index_type tx, RAJA::Index_type ty)
+                              {
+                                int    id = tx + grid.nx * ty;
+                                double x  = grid.ox + tx * grid.dx;
+                                double y  = grid.ox + ty * grid.dx;
                                 double myErr =
                                     std::abs(P[id] - waveSol(tf, x, y));
 
@@ -235,10 +236,11 @@ void setIC(double* P1, double* P2, double t0, double t1, grid_s grid)
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                              [=](RAJA::Index_type tx, RAJA::Index_type ty) {
-                                int id = tx + ty * grid.nx;
-                                double x = grid.ox + tx * grid.dx;
-                                double y = grid.ox + ty * grid.dx;
+                              [=](RAJA::Index_type tx, RAJA::Index_type ty)
+                              {
+                                int    id = tx + ty * grid.nx;
+                                double x  = grid.ox + tx * grid.dx;
+                                double y  = grid.ox + ty * grid.dx;
 
                                 P1[id] = waveSol(t0, x, y);
                                 P2[id] = waveSol(t1, x, y);
@@ -252,16 +254,17 @@ void wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 
   RAJA::kernel<fdNestedPolicy>(
       RAJA::make_tuple(fdBounds, fdBounds),
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type tx, RAJA::Index_type ty) {
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type tx, RAJA::Index_type ty)
+      {
         //
         // Coefficients for fourth order stencil
         //
         double coeff[5] = {
             -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
 
-        const int id = tx + ty * nx;
-        double P_old = P1[id];
-        double P_curr = P2[id];
+        const int id     = tx + ty * nx;
+        double    P_old  = P1[id];
+        double    P_curr = P2[id];
 
         //
         // Compute Laplacian
@@ -270,11 +273,11 @@ void wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 
         for (auto r : RAJA::RangeSegment(-sr, sr + 1))
         {
-          const int xi = (tx + r + nx) % nx;
+          const int xi  = (tx + r + nx) % nx;
           const int idx = xi + nx * ty;
           lap += coeff[r + sr] * P2[idx];
 
-          const int yi = (ty + r + nx) % nx;
+          const int yi  = (ty + r + nx) % nx;
           const int idy = tx + nx * yi;
           lap += coeff[r + sr] * P2[idy];
         }

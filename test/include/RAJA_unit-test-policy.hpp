@@ -84,7 +84,7 @@ template <>
 struct test_policy_info<test_seq>
 {
   using resource = camp::resources::Host;
-  using type = RAJA::seq_exec;
+  using type     = RAJA::seq_exec;
   using platform = RunOnHost;
   static const char* name() { return "test_seq"; }
 };
@@ -100,7 +100,7 @@ template <>
 struct test_policy_info<test_openmp_target>
 {
   using resource = camp::resources::Omp;
-  using type = RAJA::omp_target_parallel_for_exec<1>;
+  using type     = RAJA::omp_target_parallel_for_exec<1>;
   using platform = RunOnHost;
   static const char* name() { return "test_openmp_target"; }
 };
@@ -118,7 +118,7 @@ template <>
 struct test_policy_info<test_cuda>
 {
   using resource = camp::resources::Cuda;
-  using type = RAJA::cuda_exec<1>;
+  using type     = RAJA::cuda_exec<1>;
   using platform = RunOnDevice;
   static const char* name() { return "test_cuda"; }
 };
@@ -136,7 +136,7 @@ template <>
 struct test_policy_info<test_hip>
 {
   using resource = camp::resources::Hip;
-  using type = RAJA::hip_exec<1>;
+  using type     = RAJA::hip_exec<1>;
   using platform = RunOnDevice;
   static const char* name() { return "test_hip"; }
 };

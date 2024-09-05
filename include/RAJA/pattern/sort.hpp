@@ -68,8 +68,8 @@ sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare{})
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
-  auto N = distance(begin_it, end_it);
+  auto end_it   = end(c);
+  auto N        = distance(begin_it, end_it);
 
   if (N > 1)
   {
@@ -86,7 +86,7 @@ template <
     typename ExecPolicy,
     typename Container,
     typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>,
-    typename Res = typename resources::get_resource<ExecPolicy>::type>
+    typename Res     = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<
     resources::EventProxy<Res>,
     type_traits::is_execution_policy<ExecPolicy>,
@@ -134,8 +134,8 @@ stable_sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare{})
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
-  auto N = distance(begin_it, end_it);
+  auto end_it   = end(c);
+  auto N        = distance(begin_it, end_it);
 
   if (N > 1)
   {
@@ -152,7 +152,7 @@ template <
     typename ExecPolicy,
     typename Container,
     typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>,
-    typename Res = typename resources::get_resource<ExecPolicy>::type>
+    typename Res     = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<
     resources::EventProxy<Res>,
     type_traits::is_execution_policy<ExecPolicy>,
@@ -191,11 +191,11 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<KeyContainer>,
                       type_traits::is_range<ValContainer>>
-sort_pairs(ExecPolicy&& p,
-           Res r,
+sort_pairs(ExecPolicy&&   p,
+           Res            r,
            KeyContainer&& keys,
            ValContainer&& vals,
-           Compare comp = Compare{})
+           Compare        comp = Compare{})
 {
   using std::begin;
   using std::distance;
@@ -209,8 +209,8 @@ sort_pairs(ExecPolicy&& p,
                 "ValContainer must model RandomAccessRange");
 
   auto begin_key = begin(keys);
-  auto end_key = end(keys);
-  auto N = distance(begin_key, end_key);
+  auto end_key   = end(keys);
+  auto N         = distance(begin_key, end_key);
 
   if (N > 1)
   {
@@ -236,10 +236,10 @@ concepts::enable_if_t<
     concepts::negate<
         std::is_constructible<camp::resources::Resource, KeyContainer>>,
     type_traits::is_range<ValContainer>>
-sort_pairs(ExecPolicy&& p,
+sort_pairs(ExecPolicy&&   p,
            KeyContainer&& keys,
            ValContainer&& vals,
-           Compare comp = Compare{})
+           Compare        comp = Compare{})
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::sort_pairs(
@@ -275,11 +275,11 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<KeyContainer>,
                       type_traits::is_range<ValContainer>>
-stable_sort_pairs(ExecPolicy&& p,
-                  Res r,
+stable_sort_pairs(ExecPolicy&&   p,
+                  Res            r,
                   KeyContainer&& keys,
                   ValContainer&& vals,
-                  Compare comp = Compare{})
+                  Compare        comp = Compare{})
 {
   using std::begin;
   using std::distance;
@@ -293,8 +293,8 @@ stable_sort_pairs(ExecPolicy&& p,
                 "ValContainer must model RandomAccessRange");
 
   auto begin_key = begin(keys);
-  auto end_key = end(keys);
-  auto N = distance(begin_key, end_key);
+  auto end_key   = end(keys);
+  auto N         = distance(begin_key, end_key);
 
   if (N > 1)
   {
@@ -320,10 +320,10 @@ concepts::enable_if_t<
     concepts::negate<
         std::is_constructible<camp::resources::Resource, KeyContainer>>,
     type_traits::is_range<ValContainer>>
-stable_sort_pairs(ExecPolicy&& p,
+stable_sort_pairs(ExecPolicy&&   p,
                   KeyContainer&& keys,
                   ValContainer&& vals,
-                  Compare comp = Compare{})
+                  Compare        comp = Compare{})
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::stable_sort_pairs(

@@ -60,7 +60,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -130,9 +130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<KERNEL_EXEC_POL>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL>(RAJA::make_tuple(col_Range, row_Range),
+                                [=](int col, int row)
+                                { Atview(col, row) = Aview(row, col); });
   // _raja_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -153,9 +153,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::omp_parallel_for_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<KERNEL_EXEC_POL_OMP>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>(RAJA::make_tuple(col_Range, row_Range),
+                                    [=](int col, int row)
+                                    { Atview(col, row) = Aview(row, col); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -176,9 +176,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               For<0, RAJA::cuda_thread_y_loop, RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<KERNEL_EXEC_POL_CUDA>(RAJA::make_tuple(col_Range, row_Range),
-                                     [=] RAJA_DEVICE(int col, int row) {
-                                       Atview(col, row) = Aview(row, col);
-                                     });
+                                     [=] RAJA_DEVICE(int col, int row)
+                                     { Atview(col, row) = Aview(row, col); });
   // _raja_mattranspose_cuda_end
 
   checkResult<int>(Atview, N_c, N_r);

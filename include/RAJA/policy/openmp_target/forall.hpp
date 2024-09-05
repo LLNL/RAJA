@@ -42,18 +42,18 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(resources::Omp omp_res,
+forall_impl(resources::Omp                                      omp_res,
             const omp_target_parallel_for_exec<ThreadsPerTeam>& p,
-            Iterable&& iter,
-            Func&& loop_body,
-            ForallParam f_params)
+            Iterable&&                                          iter,
+            Func&&                                              loop_body,
+            ForallParam                                         f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
-  Body body = loop_body;
+  Body body  = loop_body;
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -103,11 +103,11 @@ RAJA_INLINE concepts::enable_if_t<
 forall_impl(resources::Omp omp_res,
             const omp_target_parallel_for_exec<ThreadsPerTeam>&,
             Iterable&& iter,
-            Func&& loop_body,
+            Func&&     loop_body,
             ForallParam)
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
-  Body body = loop_body;
+  Body body  = loop_body;
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -151,18 +151,18 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(resources::Omp omp_res,
+forall_impl(resources::Omp                         omp_res,
             const omp_target_parallel_for_exec_nt& p,
-            Iterable&& iter,
-            Func&& loop_body,
-            ForallParam f_params)
+            Iterable&&                             iter,
+            Func&&                                 loop_body,
+            ForallParam                            f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
-  Body body = loop_body;
+  Body body  = loop_body;
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -187,11 +187,11 @@ RAJA_INLINE concepts::enable_if_t<
 forall_impl(resources::Omp omp_res,
             const omp_target_parallel_for_exec_nt&,
             Iterable&& iter,
-            Func&& loop_body,
+            Func&&     loop_body,
             ForallParam)
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
-  Body body = loop_body;
+  Body body  = loop_body;
 
   RAJA_EXTRACT_BED_IT(iter);
 

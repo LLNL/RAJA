@@ -116,7 +116,7 @@ struct HipStatementExecutor<
     LaunchDims dims{my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment
@@ -174,7 +174,7 @@ struct HipStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
@@ -217,7 +217,7 @@ struct HipStatementExecutor<
     LaunchDims dims{my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment
@@ -275,7 +275,7 @@ struct HipStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
@@ -313,7 +313,7 @@ struct HipStatementExecutor<
     LaunchDims dims{my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment

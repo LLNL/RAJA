@@ -60,16 +60,16 @@ using associative_or_fp_associative_tag =
 template <typename Arg1, typename Arg2, typename Result>
 struct binary_function
 {
-  using first_argument_type = Arg1;
+  using first_argument_type  = Arg1;
   using second_argument_type = Arg2;
-  using result_type = Result;
+  using result_type          = Result;
 };
 
 template <typename Argument, typename Result>
 struct unary_function
 {
   using argument_type = Argument;
-  using result_type = Result;
+  using result_type   = Result;
 };
 
 template <typename Arg1, typename Arg2>

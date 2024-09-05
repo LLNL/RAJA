@@ -58,33 +58,40 @@ void Launch(const SEGMENTS_TYPE& segments, Lambda&& lambda)
   RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks_i, blocks_j, blocks_k),
                          RAJA::Threads(threads_i, threads_j, threads_k)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
         RAJA::loop<TEAM_Z_POLICY>(
             ctx,
             RAJA::TypedRangeSegment<IDX_TYPE>(0, blocks_k),
-            [&](IDX_TYPE bk) {
+            [&](IDX_TYPE bk)
+            {
               RAJA::loop<TEAM_Y_POLICY>(
                   ctx,
                   RAJA::TypedRangeSegment<IDX_TYPE>(0, blocks_j),
-                  [&](IDX_TYPE bj) {
+                  [&](IDX_TYPE bj)
+                  {
                     RAJA::loop<TEAM_X_POLICY>(
                         ctx,
                         RAJA::TypedRangeSegment<IDX_TYPE>(0, blocks_i),
-                        [&](IDX_TYPE bi) {
+                        [&](IDX_TYPE bi)
+                        {
                           RAJA::loop<THREAD_Z_POLICY>(
                               ctx,
                               RAJA::TypedRangeSegment<IDX_TYPE>(0, threads_k),
-                              [&](IDX_TYPE tk) {
+                              [&](IDX_TYPE tk)
+                              {
                                 RAJA::loop<THREAD_Y_POLICY>(
                                     ctx,
                                     RAJA::TypedRangeSegment<IDX_TYPE>(
                                         0, threads_j),
-                                    [&](IDX_TYPE tj) {
+                                    [&](IDX_TYPE tj)
+                                    {
                                       RAJA::loop<THREAD_X_POLICY>(
                                           ctx,
                                           RAJA::TypedRangeSegment<IDX_TYPE>(
                                               0, threads_i),
-                                          [&](IDX_TYPE ti) {
+                                          [&](IDX_TYPE ti)
+                                          {
                                             IDX_TYPE i = ti + threads_i * bi;
                                             IDX_TYPE j = tj + threads_j * bj;
                                             IDX_TYPE k = tk + threads_k * bk;
@@ -138,9 +145,9 @@ template <typename EXEC_POL_DATA,
 // use enable_if in return type to appease nvcc 11.2
 std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>
 LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
-                                const Container& multi_init,
-                                WORKING_RES working_res,
-                                RandomGenerator& rngen)
+                                const Container&     multi_init,
+                                WORKING_RES          working_res,
+                                RandomGenerator&     rngen)
 {
   using RAJA::get;
   using MULTIREDUCER =
@@ -160,7 +167,7 @@ LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
 
   const IDX_TYPE idx_range = dimi * dimj * dimk;
 
-  const int modval = 100;
+  const int    modval   = 100;
   const size_t num_bins = multi_init.size();
 
   IDX_TYPE* working_range;
@@ -195,7 +202,7 @@ LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       {
         for (IDX_TYPE i : si)
         {
-          IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
+          IDX_TYPE ii    = (dimi * dimj * k) + (dimi * j) + i;
           test_range[ii] = data_len;
           data_len += work_per_iterate_distribution(rngen);
           test_range[ii + 1] = data_len;
@@ -248,7 +255,9 @@ LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     }
 
     Launch<EXEC_POL_DATA, IDX_TYPE>(
-        segments, [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i) {
+        segments,
+        [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
+        {
           IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
           for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
                ++idx)
@@ -286,7 +295,9 @@ LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       }
 
       Launch<EXEC_POL_DATA, IDX_TYPE>(
-          segments, [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i) {
+          segments,
+          [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
+          {
             IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
             for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
                  ++idx)
@@ -326,7 +337,7 @@ LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
 
 
     std::vector<DATA_TYPE> ref_vals;
-    bool got_ref_vals = false;
+    bool                   got_ref_vals = false;
 
     const int nloops = 2;
     for (int j = 0; j < nloops; ++j)
@@ -334,7 +345,9 @@ LaunchMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       red.reset();
 
       Launch<EXEC_POL_DATA, IDX_TYPE>(
-          segments, [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i) {
+          segments,
+          [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
+          {
             IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
             for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
                  ++idx)
@@ -373,15 +386,15 @@ class LaunchMultiReduceNestedTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchMultiReduceNestedTest, MultiReduceNestedLaunch)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
-  using ABSTRACTION = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ABSTRACTION   = typename camp::at<TypeParam, camp::num<5>>::type;
 
   // for setting random values in arrays
-  auto random_seed = std::random_device{}();
+  auto         random_seed = std::random_device{}();
   std::mt19937 rngen(random_seed);
 
   WORKING_RES working_res{WORKING_RES::get_default()};
@@ -389,13 +402,13 @@ TYPED_TEST_P(LaunchMultiReduceNestedTest, MultiReduceNestedLaunch)
   std::vector<DATA_TYPE> container;
 
   std::vector<size_t> num_bins_max_container({0, 1, 100});
-  size_t num_bins_min = 0;
+  size_t              num_bins_min = 0;
   for (size_t num_bins_max : num_bins_max_container)
   {
 
     std::uniform_int_distribution<size_t> num_bins_dist(num_bins_min,
                                                         num_bins_max);
-    num_bins_min = num_bins_max + 1;
+    num_bins_min    = num_bins_max + 1;
     size_t num_bins = num_bins_dist(rngen);
 
     container.resize(num_bins, DATA_TYPE(2));

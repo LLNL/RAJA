@@ -15,9 +15,9 @@ void KernelOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
                                 std::array<RAJA::idx_t, 3> offset_hi)
 {
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  IDX_TYPE* working_array;
-  IDX_TYPE* check_array;
-  IDX_TYPE* test_array;
+  IDX_TYPE*                 working_array;
+  IDX_TYPE*                 check_array;
+  IDX_TYPE*                 test_array;
 
   RAJA::idx_t N = dim.at(0) * dim.at(1) * dim.at(2);
 
@@ -62,9 +62,8 @@ void KernelOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
 
   RAJA::kernel<EXEC_POLICY>(
       RAJA::make_tuple(iseg, jseg, kseg),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j, IDX_TYPE k) {
-        view(i, j, k) = static_cast<IDX_TYPE>(1);
-      });
+      [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j, IDX_TYPE k)
+      { view(i, j, k) = static_cast<IDX_TYPE>(1); });
 
   working_res.memcpy(check_array, working_array, sizeof(IDX_TYPE) * N);
 
@@ -86,14 +85,14 @@ class KernelNestedLoopOffsetView3DTest : public ::testing::Test
 
 TYPED_TEST_P(KernelNestedLoopOffsetView3DTest, OffsetView3DKernelTest)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
 
-  RAJA::idx_t dim0 = 13;
-  RAJA::idx_t dim1 = 19;
-  RAJA::idx_t dim2 = 16;
+  RAJA::idx_t                dim0 = 13;
+  RAJA::idx_t                dim1 = 19;
+  RAJA::idx_t                dim2 = 16;
   std::array<RAJA::idx_t, 3> dim{{dim0, dim1, dim2}};
 
   //

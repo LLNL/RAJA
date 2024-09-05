@@ -101,10 +101,10 @@ template <typename PolicyType,
           typename Resource,
           typename... Bodies>
 RAJA_INLINE resources::EventProxy<Resource>
-kernel_param_resource(SegmentTuple&& segments,
-                      ParamTuple&& params,
-                      Resource resource,
-                      Bodies&&... bodies)
+            kernel_param_resource(SegmentTuple&& segments,
+                                  ParamTuple&&   params,
+                                  Resource       resource,
+                                  Bodies&&... bodies)
 {
   util::PluginContext context{util::make_context<PolicyType>()};
 
@@ -183,7 +183,7 @@ kernel_param(SegmentTuple&& segments, ParamTuple&& params, Bodies&&... bodies)
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>
 RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>>
-kernel(SegmentTuple&& segments, Bodies&&... bodies)
+            kernel(SegmentTuple&& segments, Bodies&&... bodies)
 {
   auto res = resources::get_default_resource<PolicyType>();
   return RAJA::kernel_param_resource<PolicyType>(

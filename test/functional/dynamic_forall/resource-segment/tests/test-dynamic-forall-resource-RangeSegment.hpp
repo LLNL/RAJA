@@ -14,18 +14,18 @@
 template <typename INDEX_TYPE, typename WORKING_RES, typename POLICY_LIST>
 void DynamicForallResourceRangeSegmentTestImpl(INDEX_TYPE first,
                                                INDEX_TYPE last,
-                                               const int pol)
+                                               const int  pol)
 {
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first),
                                          RAJA::stripIndexType(last));
-  INDEX_TYPE N = INDEX_TYPE(r1.end() - r1.begin());
+  INDEX_TYPE                          N = INDEX_TYPE(r1.end() - r1.begin());
 
-  WORKING_RES working_res;
+  WORKING_RES               working_res;
   camp::resources::Resource erased_working_res{working_res};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       N, erased_working_res, &working_array, &check_array, &test_array);
@@ -35,9 +35,11 @@ void DynamicForallResourceRangeSegmentTestImpl(INDEX_TYPE first,
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
   RAJA::expt::dynamic_forall<POLICY_LIST>(
-      working_res, pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-        working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-      });
+      working_res,
+      pol,
+      r1,
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+      { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
 
   working_res.memcpy(
       check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
@@ -61,7 +63,7 @@ class DynamicForallResourceRangeSegmentTest : public ::testing::Test
 TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
 {
 
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using POLICY_LIST = typename camp::at<TypeParam, camp::num<2>>::type;
 
@@ -76,9 +78,9 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
   // If N == 5 host, openmp, device are on
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  bool is_on_host =
+  bool                      is_on_host =
       working_res.get_platform() == camp::resources::Platform::host ? true
-                                                                    : false;
+                                                                                         : false;
 
   if (is_on_host)
   {

@@ -59,13 +59,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive_inplace(
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
-    Function binary_op)
+    Function  binary_op)
 {
   hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
@@ -132,14 +132,14 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive_inplace(
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
-    Function binary_op,
-    T init)
+    Function  binary_op,
+    T         init)
 {
   hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
@@ -204,19 +204,19 @@ template <typename IterationMapping,
           typename OutputIter,
           typename Function>
 RAJA_INLINE resources::EventProxy<resources::Hip>
-inclusive(resources::Hip hip_res,
-          ::RAJA::policy::hip::
-              hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-          InputIter begin,
-          InputIter end,
-          OutputIter out,
-          Function binary_op)
+            inclusive(resources::Hip hip_res,
+                      ::RAJA::policy::hip::
+                          hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+                      InputIter  begin,
+                      InputIter  end,
+                      OutputIter out,
+                      Function   binary_op)
 {
   hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::inclusive_scan(
@@ -258,20 +258,20 @@ template <typename IterationMapping,
           typename Function,
           typename T>
 RAJA_INLINE resources::EventProxy<resources::Hip>
-exclusive(resources::Hip hip_res,
-          ::RAJA::policy::hip::
-              hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-          InputIter begin,
-          InputIter end,
-          OutputIter out,
-          Function binary_op,
-          T init)
+            exclusive(resources::Hip hip_res,
+                      ::RAJA::policy::hip::
+                          hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+                      InputIter  begin,
+                      InputIter  end,
+                      OutputIter out,
+                      Function   binary_op,
+                      T          init)
 {
   hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::exclusive_scan(d_temp_storage,

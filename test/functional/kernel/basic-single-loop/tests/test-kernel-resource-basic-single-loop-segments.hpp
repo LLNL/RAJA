@@ -17,11 +17,11 @@ class KernelBasicSingleLoopTest : public ::testing::Test
 
 TYPED_TEST_P(KernelBasicSingleLoopTest, BasicSingleLoopSegmentKernel)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  WORKING_RES working_res{WORKING_RES::get_default()};
+  WORKING_RES               working_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_working_res{working_res};
 
   constexpr bool USE_RES = true;

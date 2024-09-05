@@ -17,7 +17,7 @@ template <typename INDEX_TYPE,
           typename GLOBAL_THREAD_POICY>
 void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
                                       INDEX_TYPE last,
-                                      DIFF_TYPE stride)
+                                      DIFF_TYPE  stride)
 {
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(
       RAJA::stripIndexType(first), RAJA::stripIndexType(last), stride);
@@ -25,9 +25,9 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
   camp::resources::Resource host_res{camp::resources::Host()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N);
   if (data_len == 0)
@@ -43,7 +43,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
   working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
   constexpr int threads = 256;
-  int blocks = (data_len - 1) / threads + 1;
+  int           blocks  = (data_len - 1) / threads + 1;
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -57,10 +57,15 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            working_array[RAJA::stripIndexType((idx - first) / stride)] = idx;
-          });
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<GLOBAL_THREAD_POICY>(
+              ctx,
+              r1,
+              [&](INDEX_TYPE idx) {
+                working_array[RAJA::stripIndexType((idx - first) / stride)] =
+                    idx;
+              });
         });
   }
   else
@@ -68,11 +73,12 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<GLOBAL_THREAD_POICY>(
-              ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(idx)) {
-                working_array[0]++;
-              });
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<GLOBAL_THREAD_POICY>(ctx,
+                                          r1,
+                                          [&](INDEX_TYPE RAJA_UNUSED_ARG(idx))
+                                          { working_array[0]++; });
         });
   }
 
@@ -159,7 +165,7 @@ void runNegativeStrideTests()
 
 TYPED_TEST_P(LaunchRangeStrideSegmentTest, RangeStrideSegmentTeams)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

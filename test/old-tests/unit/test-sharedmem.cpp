@@ -45,7 +45,7 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
 {
   using Pol = at_v<TypeParam, 0>;
 
-  const int DIM = 2;
+  const int DIM    = 2;
   const int N_rows = 144;
   const int N_cols = 255;
 
@@ -96,7 +96,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
 
       // Load data into shared memory
       [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&) {
+          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
 
@@ -108,7 +109,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
 
       // read from shared mem
       [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&) {
+          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
 
@@ -153,7 +155,7 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 {
   using Pol = at_v<TypeParam, 0>;
 
-  const int DIM = 2;
+  const int DIM    = 2;
   const int N_rows = 144;
   const int N_cols = 255;
 
@@ -165,7 +167,7 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   double *A, *B;
   double *d_A, *d_B;
-  size_t Arr_sz = N_rows * N_cols;
+  size_t  Arr_sz = N_rows * N_cols;
   hipMalloc(&d_A, sizeof(double) * Arr_sz);
   hipMalloc(&d_B, sizeof(double) * Arr_sz);
   A = new double[N_rows * N_cols];
@@ -207,7 +209,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
       // Load data into shared memory
       [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&) {
+          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
 
@@ -219,7 +222,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
       // read from shared mem
       [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&) {
+          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
 
@@ -267,7 +271,7 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 
   using Pol = at_v<TypeParam, 0>;
 
-  const int DIM = 2;
+  const int DIM    = 2;
   const int N_rows = 144;
   const int N_cols = 255;
 
@@ -284,9 +288,9 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
   cudaErrchk(cudaMallocManaged(&B, sizeof(double) * N_rows * N_cols));
   cudaErrchk(cudaMallocManaged(&Bt, sizeof(double) * N_rows * N_cols));
 #else
-  A = new double[N_rows * N_cols];
+  A  = new double[N_rows * N_cols];
   At = new double[N_rows * N_cols];
-  B = new double[N_rows * N_cols];
+  B  = new double[N_rows * N_cols];
   Bt = new double[N_rows * N_cols];
 #endif
 
@@ -320,29 +324,31 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(int tx,
-                           int ty,
-                           int bx,
-                           int by,
+      [=] RAJA_HOST_DEVICE(int         tx,
+                           int         ty,
+                           int         bx,
+                           int         by,
                            SharedTile& myTile,
-                           SharedTile& myTile2) {
+                           SharedTile& myTile2)
+      {
         int col = bx * TILE_DIM + tx; // Matrix column index
         int row = by * TILE_DIM + ty; // Matrix row index
 
         if (row < N_rows && col < N_cols)
         {
-          myTile(ty, tx) = Aview(row, col);
+          myTile(ty, tx)  = Aview(row, col);
           myTile2(ty, tx) = Bview(row, col);
         }
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(int tx,
-                           int ty,
-                           int bx,
-                           int by,
+      [=] RAJA_HOST_DEVICE(int         tx,
+                           int         ty,
+                           int         bx,
+                           int         by,
                            SharedTile& myTile,
-                           SharedTile& myTile2) {
+                           SharedTile& myTile2)
+      {
         int col = by * TILE_DIM + tx; // Transposed matrix column index
         int row = bx * TILE_DIM + ty; // Transposed matrix row index
 
@@ -395,7 +401,7 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
 
   using Pol = at_v<TypeParam, 0>;
 
-  const int DIM = 2;
+  const int DIM    = 2;
   const int N_rows = 144;
   const int N_cols = 255;
 
@@ -411,9 +417,9 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   hipMalloc(&d_At, sizeof(double) * N_rows * N_cols);
   hipMalloc(&d_B, sizeof(double) * N_rows * N_cols);
   hipMalloc(&d_Bt, sizeof(double) * N_rows * N_cols);
-  A = new double[N_rows * N_cols];
+  A  = new double[N_rows * N_cols];
   At = new double[N_rows * N_cols];
-  B = new double[N_rows * N_cols];
+  B  = new double[N_rows * N_cols];
   Bt = new double[N_rows * N_cols];
 
   RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N_rows, N_cols);
@@ -455,29 +461,31 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(int tx,
-                           int ty,
-                           int bx,
-                           int by,
+      [=] RAJA_HOST_DEVICE(int         tx,
+                           int         ty,
+                           int         bx,
+                           int         by,
                            SharedTile& myTile,
-                           SharedTile& myTile2) {
+                           SharedTile& myTile2)
+      {
         int col = bx * TILE_DIM + tx; // Matrix column index
         int row = by * TILE_DIM + ty; // Matrix row index
 
         if (row < N_rows && col < N_cols)
         {
-          myTile(ty, tx) = d_Aview(row, col);
+          myTile(ty, tx)  = d_Aview(row, col);
           myTile2(ty, tx) = d_Bview(row, col);
         }
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(int tx,
-                           int ty,
-                           int bx,
-                           int by,
+      [=] RAJA_HOST_DEVICE(int         tx,
+                           int         ty,
+                           int         bx,
+                           int         by,
                            SharedTile& myTile,
-                           SharedTile& myTile2) {
+                           SharedTile& myTile2)
+      {
         int col = by * TILE_DIM + tx; // Transposed matrix column index
         int row = bx * TILE_DIM + ty; // Transposed matrix row index
 
@@ -909,7 +917,7 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
           dot += Aview(r, k) * Bview(k, c);
         }
         C_solView(r, c) = dot;
-        Cview(r, c) = 0;
+        Cview(r, c)     = 0;
       }
     }
   }
@@ -924,11 +932,11 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
   RAJA::View<double, RAJA::Layout<2>> Bview(d_B, M, P);
   RAJA::View<double, RAJA::Layout<2>> Cview(d_C, N, P);
 
-  using Shmem = typename TypeParam::Shmem;
+  using Shmem      = typename TypeParam::Shmem;
   using ThreadPriv = typename TypeParam::ThreadPriv;
 
-  Shmem aShared, bShared; // memory to be shared between threads
-  ThreadPriv pVal;        // iteration dependent data
+  Shmem      aShared, bShared; // memory to be shared between threads
+  ThreadPriv pVal;             // iteration dependent data
 
   RAJA::kernel_param<Pol>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N),
@@ -937,34 +945,29 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
       RAJA::make_tuple(aShared, bShared, pVal),
 
       // Zero out thread local memory for storing dot products
-      [=] RAJA_HOST_DEVICE(int tn, int tp, ThreadPriv& pVal) {
-        pVal(tn, tp) = 0.0;
-      },
+      [=] RAJA_HOST_DEVICE(int tn, int tp, ThreadPriv& pVal)
+      { pVal(tn, tp) = 0.0; },
 
       // Load tile of A
-      [=] RAJA_HOST_DEVICE(int n, int m, int tn, int tm, Shmem& aShared) {
-        aShared(tn, tm) = Aview(n, m);
-      },
+      [=] RAJA_HOST_DEVICE(int n, int m, int tn, int tm, Shmem& aShared)
+      { aShared(tn, tm) = Aview(n, m); },
 
       // Load tile of B
-      [=] RAJA_HOST_DEVICE(int m, int p, int tm, int tp, Shmem& bShared) {
-        bShared(tm, tp) = Bview(m, p);
-      },
+      [=] RAJA_HOST_DEVICE(int m, int p, int tm, int tp, Shmem& bShared)
+      { bShared(tm, tp) = Bview(m, p); },
 
       // Do partial update in shmem
-      [=] RAJA_HOST_DEVICE(int tn,
-                           int tm,
-                           int tp,
-                           Shmem& aShared,
-                           Shmem& bShared,
-                           ThreadPriv& pVal) {
-        pVal(tn, tp) += aShared(tn, tm) * bShared(tm, tp);
-      },
+      [=] RAJA_HOST_DEVICE(int         tn,
+                           int         tm,
+                           int         tp,
+                           Shmem&      aShared,
+                           Shmem&      bShared,
+                           ThreadPriv& pVal)
+      { pVal(tn, tp) += aShared(tn, tm) * bShared(tm, tp); },
 
       // Write out complete result
-      [=] RAJA_HOST_DEVICE(int n, int p, int tn, int tp, ThreadPriv& pVal) {
-        Cview(n, p) = pVal(tn, tp);
-      });
+      [=] RAJA_HOST_DEVICE(int n, int p, int tn, int tp, ThreadPriv& pVal)
+      { Cview(n, p) = pVal(tn, tp); });
 
   // copy result back to host (NOP on CPU)
   TypeParam::copy_d2h(N * P, C, d_C);
@@ -989,7 +992,7 @@ REGISTER_TYPED_TEST_SUITE_P(MatMultiply, shmem);
 
 void alloc_cpu(size_t N, double** host, double** device)
 {
-  *host = new double[N];
+  *host   = new double[N];
   *device = *host;
 }
 
@@ -1008,15 +1011,15 @@ void free_cpu(double* host, double*) { delete[] host; }
 struct Policy_MatMultiply_cpu
 {
 
-  static constexpr size_t N = 150;
-  static constexpr size_t M = 25;
-  static constexpr size_t P = 95;
+  static constexpr size_t N         = 150;
+  static constexpr size_t M         = 25;
+  static constexpr size_t P         = 95;
   static constexpr size_t tile_size = 16;
 
   constexpr static void (*alloc_double)(size_t, double**, double**) = alloc_cpu;
   constexpr static void (*copy_h2d)(size_t, double*, double*) = copy_h2d_cpu;
   constexpr static void (*copy_d2h)(size_t, double*, double*) = copy_d2h_cpu;
-  constexpr static void (*free_double)(double*, double*) = free_cpu;
+  constexpr static void (*free_double)(double*, double*)      = free_cpu;
 
   using Shmem = RAJA::
       LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<tile_size, tile_size>>;

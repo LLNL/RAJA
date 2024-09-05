@@ -342,7 +342,7 @@ RAJA_INLINE __device__ T cuda_atomicCAS_loop(T* acc, Oper&& oper)
   do
   {
     expected = old;
-    old = cuda_atomicCAS(acc, expected, oper(expected));
+    old      = cuda_atomicCAS(acc, expected, oper(expected));
   } while (!cuda_atomicCAS_equal(old, expected));
 
   return old;
@@ -355,8 +355,8 @@ RAJA_INLINE __device__ T cuda_atomicCAS_loop(T* acc, Oper&& oper)
  * result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_INLINE __device__ T cuda_atomicCAS_loop(T* acc,
-                                             Oper&& oper,
+RAJA_INLINE __device__ T cuda_atomicCAS_loop(T*             acc,
+                                             Oper&&         oper,
                                              ShortCircuit&& sc)
 {
   T old = cuda_atomicLoad(acc);
@@ -371,7 +371,7 @@ RAJA_INLINE __device__ T cuda_atomicCAS_loop(T* acc,
   do
   {
     expected = old;
-    old = cuda_atomicCAS(acc, expected, oper(expected));
+    old      = cuda_atomicCAS(acc, expected, oper(expected));
   } while (!cuda_atomicCAS_equal(old, expected) && !sc(old));
 
   return old;
@@ -529,9 +529,11 @@ RAJA_INLINE __device__ T cuda_atomicInc(T* acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return cuda_atomicCAS_loop(acc, [value](T old) {
-    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
-  });
+  return cuda_atomicCAS_loop(acc,
+                             [value](T old) {
+                               return value <= old ? static_cast<T>(0)
+                                                   : old + static_cast<T>(1);
+                             });
 }
 
 template <
@@ -565,10 +567,13 @@ RAJA_INLINE __device__ T cuda_atomicDec(T* acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return cuda_atomicCAS_loop(acc, [value](T old) {
-    return old == static_cast<T>(0) || value < old ? value
-                                                   : old - static_cast<T>(1);
-  });
+  return cuda_atomicCAS_loop(acc,
+                             [value](T old)
+                             {
+                               return old == static_cast<T>(0) || value < old
+                                          ? value
+                                          : old - static_cast<T>(1);
+                             });
 }
 
 template <
@@ -694,7 +699,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAdd(acc, value);
@@ -707,7 +712,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicSub(acc, value);
@@ -720,7 +725,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMin(acc, value);
@@ -733,7 +738,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMax(acc, value);
@@ -746,7 +751,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   // See:
@@ -773,7 +778,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   // See:
@@ -800,7 +805,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAnd(acc, value);
@@ -813,7 +818,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(cuda_atomic_explicit<host_policy>,
                                         T* acc,
-                                        T value)
+                                        T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicOr(acc, value);
@@ -826,7 +831,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(cuda_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicXor(acc, value);
@@ -839,7 +844,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(cuda_atomic_explicit<host_policy>,
                                               T* acc,
-                                              T value)
+                                              T  value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicExchange(acc, value);

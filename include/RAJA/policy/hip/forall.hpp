@@ -82,8 +82,8 @@ struct ForallDimensionCalculator;
 // but named_usage::ignored is not supported so no specializations are provided
 // and static_asserts in the general case catch unsupported values
 template <named_dim dim,
-          int BLOCK_SIZE,
-          int GRID_SIZE,
+          int       BLOCK_SIZE,
+          int       GRID_SIZE,
           typename Concretizer,
           typename UniqueMarker>
 struct ForallDimensionCalculator<
@@ -103,12 +103,12 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* RAJA_UNUSED_ARG(func),
+                             IdxT               len,
+                             const void*        RAJA_UNUSED_ARG(func),
                              size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
   {
     const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
-    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT grid_size  = static_cast<IdxT>(IndexGetter::grid_size);
 
     if (len > (block_size * grid_size))
     {
@@ -124,7 +124,7 @@ struct ForallDimensionCalculator<
 };
 
 template <named_dim dim,
-          int GRID_SIZE,
+          int       GRID_SIZE,
           typename Concretizer,
           typename UniqueMarker>
 struct ForallDimensionCalculator<
@@ -142,14 +142,14 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* func,
-                             size_t dynamic_shmem_size)
+                             IdxT               len,
+                             const void*        func,
+                             size_t             dynamic_shmem_size)
   {
     ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{
         func, dynamic_shmem_size, len};
 
-    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT grid_size  = static_cast<IdxT>(IndexGetter::grid_size);
     const IdxT block_size = concretizer.get_block_size_to_fit_len(grid_size);
 
     if (block_size == IdxT(0))
@@ -164,7 +164,7 @@ struct ForallDimensionCalculator<
 };
 
 template <named_dim dim,
-          int BLOCK_SIZE,
+          int       BLOCK_SIZE,
           typename Concretizer,
           typename UniqueMarker>
 struct ForallDimensionCalculator<
@@ -182,15 +182,15 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* func,
-                             size_t dynamic_shmem_size)
+                             IdxT               len,
+                             const void*        func,
+                             size_t             dynamic_shmem_size)
   {
     ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{
         func, dynamic_shmem_size, len};
 
     const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
-    const IdxT grid_size = concretizer.get_grid_size_to_fit_len(block_size);
+    const IdxT grid_size  = concretizer.get_grid_size_to_fit_len(block_size);
 
     internal::set_hip_dim<dim>(dims.threads, block_size);
     internal::set_hip_dim<dim>(dims.blocks, grid_size);
@@ -210,9 +210,9 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* func,
-                             size_t dynamic_shmem_size)
+                             IdxT               len,
+                             const void*        func,
+                             size_t             dynamic_shmem_size)
   {
     ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{
         func, dynamic_shmem_size, len};
@@ -225,8 +225,8 @@ struct ForallDimensionCalculator<
 };
 
 template <named_dim dim,
-          int BLOCK_SIZE,
-          int GRID_SIZE,
+          int       BLOCK_SIZE,
+          int       GRID_SIZE,
           typename Concretizer,
           typename UniqueMarker>
 struct ForallDimensionCalculator<
@@ -246,12 +246,12 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT RAJA_UNUSED_ARG(len),
-                             const void* RAJA_UNUSED_ARG(func),
+                             IdxT               RAJA_UNUSED_ARG(len),
+                             const void*        RAJA_UNUSED_ARG(func),
                              size_t RAJA_UNUSED_ARG(dynamic_shmem_size))
   {
     const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
-    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT grid_size  = static_cast<IdxT>(IndexGetter::grid_size);
 
     internal::set_hip_dim<dim>(dims.threads, block_size);
     internal::set_hip_dim<dim>(dims.blocks, grid_size);
@@ -259,7 +259,7 @@ struct ForallDimensionCalculator<
 };
 
 template <named_dim dim,
-          int GRID_SIZE,
+          int       GRID_SIZE,
           typename Concretizer,
           typename UniqueMarker>
 struct ForallDimensionCalculator<
@@ -277,14 +277,14 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* func,
-                             size_t dynamic_shmem_size)
+                             IdxT               len,
+                             const void*        func,
+                             size_t             dynamic_shmem_size)
   {
     ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{
         func, dynamic_shmem_size, len};
 
-    const IdxT grid_size = static_cast<IdxT>(IndexGetter::grid_size);
+    const IdxT grid_size  = static_cast<IdxT>(IndexGetter::grid_size);
     const IdxT block_size = concretizer.get_block_size_to_fit_device(grid_size);
 
     internal::set_hip_dim<dim>(dims.threads, block_size);
@@ -293,7 +293,7 @@ struct ForallDimensionCalculator<
 };
 
 template <named_dim dim,
-          int BLOCK_SIZE,
+          int       BLOCK_SIZE,
           typename Concretizer,
           typename UniqueMarker>
 struct ForallDimensionCalculator<
@@ -311,15 +311,15 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* func,
-                             size_t dynamic_shmem_size)
+                             IdxT               len,
+                             const void*        func,
+                             size_t             dynamic_shmem_size)
   {
     ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{
         func, dynamic_shmem_size, len};
 
     const IdxT block_size = static_cast<IdxT>(IndexGetter::block_size);
-    const IdxT grid_size = concretizer.get_grid_size_to_fit_device(block_size);
+    const IdxT grid_size  = concretizer.get_grid_size_to_fit_device(block_size);
 
     internal::set_hip_dim<dim>(dims.threads, block_size);
     internal::set_hip_dim<dim>(dims.blocks, grid_size);
@@ -339,9 +339,9 @@ struct ForallDimensionCalculator<
 
   template <typename IdxT>
   static void set_dimensions(internal::HipDims& dims,
-                             IdxT len,
-                             const void* func,
-                             size_t dynamic_shmem_size)
+                             IdxT               len,
+                             const void*        func,
+                             size_t             dynamic_shmem_size)
   {
     ::RAJA::hip::ConcretizerImpl<IdxT, Concretizer, UniqueMarker> concretizer{
         func, dynamic_shmem_size, len};
@@ -373,20 +373,20 @@ template <typename EXEC_POL,
           typename LOOP_BODY,
           typename IndexType,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
-          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          typename IterationGetter  = typename EXEC_POL::IterationGetter,
           std::enable_if_t<std::is_base_of<iteration_mapping::DirectBase,
                                            IterationMapping>::value &&
                                (IterationGetter::block_size > 0),
                            size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forall_hip_kernel(LOOP_BODY loop_body,
+    void forall_hip_kernel(LOOP_BODY      loop_body,
                            const Iterator idx,
-                           IndexType length)
+                           IndexType      length)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
-  auto ii = IterationGetter::template index<IndexType>();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
+  auto  ii         = IterationGetter::template index<IndexType>();
   if (ii < length)
   {
     body(idx[ii]);
@@ -398,7 +398,7 @@ template <typename EXEC_POL,
           typename LOOP_BODY,
           typename IndexType,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
-          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          typename IterationGetter  = typename EXEC_POL::IterationGetter,
           std::enable_if_t<std::is_base_of<iteration_mapping::DirectBase,
                                            IterationMapping>::value &&
                                (IterationGetter::block_size <= 0),
@@ -407,9 +407,9 @@ __global__ void
 forall_hip_kernel(LOOP_BODY loop_body, const Iterator idx, IndexType length)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
-  auto ii = IterationGetter::template index<IndexType>();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
+  auto  ii         = IterationGetter::template index<IndexType>();
   if (ii < length)
   {
     body(idx[ii]);
@@ -422,21 +422,21 @@ template <typename EXEC_POL,
           typename IndexType,
           typename ForallParam,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
-          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          typename IterationGetter  = typename EXEC_POL::IterationGetter,
           std::enable_if_t<std::is_base_of<iteration_mapping::DirectBase,
                                            IterationMapping>::value &&
                                (IterationGetter::block_size > 0),
                            size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forallp_hip_kernel(LOOP_BODY loop_body,
+    void forallp_hip_kernel(LOOP_BODY      loop_body,
                             const Iterator idx,
-                            IndexType length,
-                            ForallParam f_params)
+                            IndexType      length,
+                            ForallParam    f_params)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
-  auto ii = IterationGetter::template index<IndexType>();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
+  auto  ii         = IterationGetter::template index<IndexType>();
   if (ii < length)
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
@@ -450,20 +450,20 @@ template <typename EXEC_POL,
           typename IndexType,
           typename ForallParam,
           typename IterationMapping = typename EXEC_POL::IterationMapping,
-          typename IterationGetter = typename EXEC_POL::IterationGetter,
+          typename IterationGetter  = typename EXEC_POL::IterationGetter,
           std::enable_if_t<std::is_base_of<iteration_mapping::DirectBase,
                                            IterationMapping>::value &&
                                (IterationGetter::block_size <= 0),
                            size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_hip_kernel(LOOP_BODY loop_body,
+__global__ void forallp_hip_kernel(LOOP_BODY      loop_body,
                                    const Iterator idx,
-                                   IndexType length,
-                                   ForallParam f_params)
+                                   IndexType      length,
+                                   ForallParam    f_params)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
-  auto ii = IterationGetter::template index<IndexType>();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
+  auto  ii         = IterationGetter::template index<IndexType>();
   if (ii < length)
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
@@ -476,8 +476,8 @@ template <
     typename Iterator,
     typename LOOP_BODY,
     typename IndexType,
-    typename IterationMapping = typename EXEC_POL::IterationMapping,
-    typename IterationGetter = typename EXEC_POL::IterationGetter,
+    typename IterationMapping          = typename EXEC_POL::IterationMapping,
+    typename IterationGetter           = typename EXEC_POL::IterationGetter,
     std::enable_if_t<std::is_base_of<iteration_mapping::StridedLoopBase,
                                      IterationMapping>::value &&
                          std::is_base_of<iteration_mapping::UnsizedLoopBase,
@@ -485,13 +485,13 @@ template <
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forall_hip_kernel(LOOP_BODY loop_body,
+    void forall_hip_kernel(LOOP_BODY      loop_body,
                            const Iterator idx,
-                           IndexType length)
+                           IndexType      length)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
   for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
        ii += IterationGetter::template size<IndexType>())
   {
@@ -505,7 +505,7 @@ template <
     typename LOOP_BODY,
     typename IndexType,
     typename IterationMapping = typename EXEC_POL::IterationMapping,
-    typename IterationGetter = typename EXEC_POL::IterationGetter,
+    typename IterationGetter  = typename EXEC_POL::IterationGetter,
     std::enable_if_t<std::is_base_of<iteration_mapping::StridedLoopBase,
                                      IterationMapping>::value &&
                          std::is_base_of<iteration_mapping::UnsizedLoopBase,
@@ -516,8 +516,8 @@ __global__ void
 forall_hip_kernel(LOOP_BODY loop_body, const Iterator idx, IndexType length)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
   for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
        ii += IterationGetter::template size<IndexType>())
   {
@@ -532,8 +532,8 @@ template <
     typename LOOP_BODY,
     typename IndexType,
     typename ForallParam,
-    typename IterationMapping = typename EXEC_POL::IterationMapping,
-    typename IterationGetter = typename EXEC_POL::IterationGetter,
+    typename IterationMapping          = typename EXEC_POL::IterationMapping,
+    typename IterationGetter           = typename EXEC_POL::IterationGetter,
     std::enable_if_t<std::is_base_of<iteration_mapping::StridedLoopBase,
                                      IterationMapping>::value &&
                          std::is_base_of<iteration_mapping::UnsizedLoopBase,
@@ -541,14 +541,14 @@ template <
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forallp_hip_kernel(LOOP_BODY loop_body,
+    void forallp_hip_kernel(LOOP_BODY      loop_body,
                             const Iterator idx,
-                            IndexType length,
-                            ForallParam f_params)
+                            IndexType      length,
+                            ForallParam    f_params)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
   for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
        ii += IterationGetter::template size<IndexType>())
   {
@@ -564,21 +564,21 @@ template <
     typename IndexType,
     typename ForallParam,
     typename IterationMapping = typename EXEC_POL::IterationMapping,
-    typename IterationGetter = typename EXEC_POL::IterationGetter,
+    typename IterationGetter  = typename EXEC_POL::IterationGetter,
     std::enable_if_t<std::is_base_of<iteration_mapping::StridedLoopBase,
                                      IterationMapping>::value &&
                          std::is_base_of<iteration_mapping::UnsizedLoopBase,
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_hip_kernel(LOOP_BODY loop_body,
+__global__ void forallp_hip_kernel(LOOP_BODY      loop_body,
                                    const Iterator idx,
-                                   IndexType length,
-                                   ForallParam f_params)
+                                   IndexType      length,
+                                   ForallParam    f_params)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body = privatizer.get_priv();
+  auto  privatizer = thread_privatize(loop_body);
+  auto& body       = privatizer.get_priv();
   for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
        ii += IterationGetter::template size<IndexType>())
   {
@@ -616,7 +616,7 @@ forall_impl(
     LoopBody&& loop_body,
     ForallParam)
 {
-  using Iterator = camp::decay<decltype(std::begin(iter))>;
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
@@ -632,9 +632,9 @@ forall_impl(
   //
   // Compute the requested iteration space size
   //
-  Iterator begin = std::begin(iter);
-  Iterator end = std::end(iter);
-  IndexType len = std::distance(begin, end);
+  Iterator  begin = std::begin(iter);
+  Iterator  end   = std::end(iter);
+  IndexType len   = std::distance(begin, end);
 
   // Only launch kernel if we have something to iterate over
   if (len > 0)
@@ -699,11 +699,11 @@ forall_impl(
     resources::Hip hip_res,
     ::RAJA::policy::hip::
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const&,
-    Iterable&& iter,
-    LoopBody&& loop_body,
+    Iterable&&  iter,
+    LoopBody&&  loop_body,
     ForallParam f_params)
 {
-  using Iterator = camp::decay<decltype(std::begin(iter))>;
+  using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
@@ -719,9 +719,9 @@ forall_impl(
   //
   // Compute the requested iteration space size
   //
-  Iterator begin = std::begin(iter);
-  Iterator end = std::end(iter);
-  IndexType len = std::distance(begin, end);
+  Iterator  begin = std::begin(iter);
+  Iterator  end   = std::end(iter);
+  IndexType len   = std::distance(begin, end);
 
   // Only launch kernel if we have something to iterate over
   if (len > 0)
@@ -748,9 +748,9 @@ forall_impl(
     RAJA_FT_BEGIN;
 
     RAJA::hip::detail::hipInfo launch_info;
-    launch_info.gridDim = dims.blocks;
+    launch_info.gridDim  = dims.blocks;
     launch_info.blockDim = dims.threads;
-    launch_info.res = hip_res;
+    launch_info.res      = hip_res;
 
     {
       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params, launch_info);
@@ -815,7 +815,7 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(
         ::RAJA::policy::hip::
             hip_exec<IterationMapping, IterationGetter, Concretizer, Async>>,
     const TypedIndexSet<SegmentTypes...>& iset,
-    LoopBody&& loop_body)
+    LoopBody&&                            loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi)

@@ -53,7 +53,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void atomicStore(omp_atomic, T* acc, T value)
   T ret;
 #pragma omp atomic capture
   {
-    ret = *acc;
+    ret  = *acc;
     *acc = value;
   }
   RAJA_UNUSED_VAR(ret);
@@ -221,7 +221,7 @@ RAJA_HOST_DEVICE RAJA_INLINE T atomicExchange(omp_atomic, T* acc, T value)
   T old;
 #pragma omp atomic capture
   {
-    old = *acc; // capture old for return value
+    old  = *acc; // capture old for return value
     *acc = value;
   }
   return old;

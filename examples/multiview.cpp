@@ -144,9 +144,9 @@ int main()
   docs_example();
 
   constexpr int N = 12;
-  int* myarr[2]; // two 3x4 arrays
-  int arr1[N];
-  int arr2[N];
+  int*          myarr[2]; // two 3x4 arrays
+  int           arr1[N];
+  int           arr2[N];
 
   for (int ii = 0; ii < N; ++ii)
   {
@@ -169,7 +169,7 @@ int main()
 
   // Moved array-of-pointers index MultiView usage
   // Add an array-of-pointers index specifier
-  constexpr int aopidx = 1;
+  constexpr int                                                   aopidx = 1;
   RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type>, aopidx> arrViewMov(
       myarr, layout);
 
@@ -200,7 +200,7 @@ int main()
   {
     for (int jj = 0; jj < 3; ++jj)
     {
-      int temp = arrView(0, kk, jj);
+      int temp           = arrView(0, kk, jj);
       arrView(0, kk, jj) = arrView(1, kk, jj);
       arrView(1, kk, jj) = temp;
     }

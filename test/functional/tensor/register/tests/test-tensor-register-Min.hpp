@@ -14,22 +14,22 @@ template <typename REGISTER_TYPE>
 void MinImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
   element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(1);
-  element_t* output0_dptr = tensor_malloc<policy_t, element_t>(1);
+  element_t*             output0_dptr = tensor_malloc<policy_t, element_t>(1);
 
   std::vector<element_t> output1_vec(num_elem);
   element_t* output1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
@@ -50,23 +50,25 @@ void MinImpl()
   //  Check full-length operations
   //
 
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // load input vectors
-    register_t x;
-    x.load_packed(input0_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // load input vectors
+        register_t x;
+        x.load_packed(input0_dptr);
 
-    register_t y;
-    y.load_packed(input1_dptr);
-
-
-    // compute reduction
-    output0_dptr[0] = x.min();
+        register_t y;
+        y.load_packed(input1_dptr);
 
 
-    // compute element-wise
-    register_t z = x.vmin(y);
-    z.store_packed(output1_dptr);
-  });
+        // compute reduction
+        output0_dptr[0] = x.min();
+
+
+        // compute element-wise
+        register_t z = x.vmin(y);
+        z.store_packed(output1_dptr);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
   tensor_copy_to_host<policy_t>(output1_vec, output1_dptr);
@@ -100,12 +102,14 @@ void MinImpl()
     //  Check full-length operations
     //
 
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      register_t x;
-      x.load_packed(input0_dptr);
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          register_t x;
+          x.load_packed(input0_dptr);
 
-      output0_dptr[0] = x.min_n(N);
-    });
+          output0_dptr[0] = x.min_n(N);
+        });
 
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 

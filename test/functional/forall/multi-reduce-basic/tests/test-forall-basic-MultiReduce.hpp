@@ -45,19 +45,19 @@ template <typename EXEC_POLICY,
           typename RandomGenerator>
 // use enable_if in return type to appease nvcc 11.2
 std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>
-ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
-                               const Container& multi_init,
+ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
+                               const Container&             multi_init,
                                const std::vector<IDX_TYPE>& seg_idx,
-                               camp::resources::Resource working_res,
-                               RandomGenerator& rngen)
+                               camp::resources::Resource    working_res,
+                               RandomGenerator&             rngen)
 {
   using MULTIREDUCER =
       typename ABSTRACTION::template multi_reducer<REDUCE_POLICY, DATA_TYPE>;
 
   const IDX_TYPE idx_range = seg_idx[seg_idx.size() - 1] + 1;
-  const IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  const IDX_TYPE idx_len   = static_cast<IDX_TYPE>(seg_idx.size());
 
-  const int modval = 100;
+  const int    modval   = 100;
   const size_t num_bins = multi_init.size();
 
   IDX_TYPE* working_range;
@@ -88,7 +88,7 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
 
     for (IDX_TYPE i = 0; i < idx_len; ++i)
     {
-      IDX_TYPE idx = seg_idx[i];
+      IDX_TYPE idx    = seg_idx[i];
       test_range[idx] = data_len;
       data_len += work_per_iterate_distribution(rngen);
       test_range[idx + 1] = data_len;
@@ -138,13 +138,17 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
           ABSTRACTION::combine(ref_vals[test_bins[i]], test_array[i]);
     }
 
-    RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE ii) {
-      for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1]; ++idx)
-      {
-        ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
-        ABSTRACTION::reduce(red2[working_bins[idx]], working_array[idx]);
-      }
-    });
+    RAJA::forall<EXEC_POLICY>(
+        seg,
+        [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
+        {
+          for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
+               ++idx)
+          {
+            ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
+            ABSTRACTION::reduce(red2[working_bins[idx]], working_array[idx]);
+          }
+        });
 
     size_t bin = 0;
     for (auto init_val : multi_init)
@@ -173,13 +177,16 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
             ABSTRACTION::combine(ref_vals[test_bins[i]], test_array[i]);
       }
 
-      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE ii) {
-        for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
-             ++idx)
-        {
-          ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
-        }
-      });
+      RAJA::forall<EXEC_POLICY>(
+          seg,
+          [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
+          {
+            for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
+                 ++idx)
+            {
+              ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
+            }
+          });
     }
 
     for (size_t bin = 0; bin < num_bins; ++bin)
@@ -212,20 +219,23 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
 
 
     std::vector<DATA_TYPE> ref_vals;
-    bool got_ref_vals = false;
+    bool                   got_ref_vals = false;
 
     const int nloops = 2;
     for (int j = 0; j < nloops; ++j)
     {
       red.reset();
 
-      RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE ii) {
-        for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
-             ++idx)
-        {
-          ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
-        }
-      });
+      RAJA::forall<EXEC_POLICY>(
+          seg,
+          [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
+          {
+            for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
+                 ++idx)
+            {
+              ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
+            }
+          });
 
       if (!got_ref_vals)
       {
@@ -257,15 +267,15 @@ class ForallMultiReduceBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
-  using ABSTRACTION = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ABSTRACTION   = typename camp::at<TypeParam, camp::num<5>>::type;
 
   // for setting random values in arrays
-  auto random_seed = std::random_device{}();
+  auto         random_seed = std::random_device{}();
   std::mt19937 rngen(random_seed);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
@@ -275,13 +285,13 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
   std::vector<DATA_TYPE> container;
 
   std::vector<size_t> num_bins_max_container({0, 1, 100});
-  size_t num_bins_min = 0;
+  size_t              num_bins_min = 0;
   for (size_t num_bins_max : num_bins_max_container)
   {
 
     std::uniform_int_distribution<size_t> num_bins_dist(num_bins_min,
                                                         num_bins_max);
-    num_bins_min = num_bins_max + 1;
+    num_bins_min    = num_bins_max + 1;
     size_t num_bins = num_bins_dist(rngen);
 
     container.resize(num_bins, DATA_TYPE(2));
@@ -316,7 +326,7 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
 
     // List segment test
     seg_idx.clear();
-    IDX_TYPE last = 10567;
+    IDX_TYPE                                last = 10567;
     std::uniform_int_distribution<IDX_TYPE> dist(0, last - 1);
     for (IDX_TYPE i = 0; i < last; ++i)
     {

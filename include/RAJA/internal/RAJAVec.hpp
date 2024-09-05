@@ -61,22 +61,22 @@ class RAJAVec
       typename allocator_traits_type::propagate_on_container_swap;
 
 public:
-  using value_type = T;
-  using allocator_type = Allocator;
-  using size_type = std::size_t;
+  using value_type      = T;
+  using allocator_type  = Allocator;
+  using size_type       = std::size_t;
   using difference_type = std::ptrdiff_t;
-  using reference = value_type&;
+  using reference       = value_type&;
   using const_reference = const value_type&;
-  using pointer = typename allocator_traits_type::pointer;
-  using const_pointer = typename allocator_traits_type::const_pointer;
-  using iterator = value_type*;
-  using const_iterator = const value_type*;
+  using pointer         = typename allocator_traits_type::pointer;
+  using const_pointer   = typename allocator_traits_type::const_pointer;
+  using iterator        = value_type*;
+  using const_iterator  = const value_type*;
 
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(size_type init_cap = 0,
-                   const allocator_type& a = allocator_type())
+  explicit RAJAVec(size_type             init_cap = 0,
+                   const allocator_type& a        = allocator_type())
       : m_data(nullptr), m_allocator(a), m_capacity(0), m_size(0)
   {
     reserve(init_cap);
@@ -106,9 +106,9 @@ public:
         m_capacity(other.m_capacity),
         m_size(other.m_size)
   {
-    other.m_data = nullptr;
+    other.m_data     = nullptr;
     other.m_capacity = 0;
-    other.m_size = 0;
+    other.m_size     = 0;
   }
 
   ///
@@ -305,10 +305,10 @@ public:
   void pop_back() { destroy_items_after(m_size - 1); }
 
 private:
-  pointer m_data;
+  pointer        m_data;
   allocator_type m_allocator;
-  size_type m_capacity;
-  size_type m_size;
+  size_type      m_capacity;
+  size_type      m_size;
 
   ///
   /// Copy assignment implementation
@@ -354,14 +354,14 @@ private:
     clear();
     shrink_to_fit();
 
-    m_data = rhs.m_data;
+    m_data      = rhs.m_data;
     m_allocator = std::move(rhs.m_allocator);
-    m_capacity = rhs.m_capacity;
-    m_size = rhs.m_size;
+    m_capacity  = rhs.m_capacity;
+    m_size      = rhs.m_size;
 
-    rhs.m_data = nullptr;
+    rhs.m_data     = nullptr;
     rhs.m_capacity = 0;
-    rhs.m_size = 0;
+    rhs.m_size     = 0;
   }
 
   ///
@@ -375,13 +375,13 @@ private:
       clear();
       shrink_to_fit();
 
-      m_data = rhs.m_data;
+      m_data     = rhs.m_data;
       m_capacity = rhs.m_capacity;
-      m_size = rhs.m_size;
+      m_size     = rhs.m_size;
 
-      rhs.m_data = nullptr;
+      rhs.m_data     = nullptr;
       rhs.m_capacity = 0;
-      rhs.m_size = 0;
+      rhs.m_size     = 0;
     }
     else
     {
@@ -534,7 +534,7 @@ private:
   // relying on STL directly.
   //
   static constexpr const size_type s_init_cap = 8;
-  static constexpr const double s_grow_fac = 1.5;
+  static constexpr const double    s_grow_fac = 1.5;
 
   //
   // Get the next value for capacity given a target and minimum.
@@ -594,7 +594,7 @@ private:
       allocator_traits_type::deallocate(m_allocator, m_data, m_capacity);
     }
 
-    m_data = tdata;
+    m_data     = tdata;
     m_capacity = next_cap;
   }
 };

@@ -116,10 +116,10 @@ public:
    * If 'Unowned' is passed as last argument, the segment will not own its
    * index data. In this case, caller must manage array lifetime properly.
    */
-  TypedListSegment(const value_type* values,
-                   Index_type length,
+  TypedListSegment(const value_type*         values,
+                   Index_type                length,
                    camp::resources::Resource resource,
-                   IndexOwnership owned = Owned)
+                   IndexOwnership            owned = Owned)
       : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     initIndexData(values, length, resource, owned);
@@ -138,7 +138,7 @@ public:
    * Constructor assumes container data lives in host memory space.
    */
   template <typename Container>
-  TypedListSegment(const Container& container,
+  TypedListSegment(const Container&          container,
                    camp::resources::Resource resource)
       : m_resource(nullptr),
         m_owned(Unowned),
@@ -152,9 +152,9 @@ public:
 
       value_type* tmp = host_res.allocate<value_type>(m_size);
 
-      auto dest = tmp;
-      auto src = container.begin();
-      auto const end = container.end();
+      auto       dest = tmp;
+      auto       src  = container.begin();
+      auto const end  = container.end();
       while (src != end)
       {
         *dest = *src;
@@ -163,7 +163,7 @@ public:
       }
 
       m_resource = new camp::resources::Resource(resource);
-      m_data = m_resource->allocate<value_type>(m_size);
+      m_data     = m_resource->allocate<value_type>(m_size);
       m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
       m_owned = Owned;
 
@@ -191,9 +191,9 @@ public:
   {
     clear();
     m_resource = nullptr;
-    m_owned = Unowned;
-    m_data = other.m_data;
-    m_size = other.m_size;
+    m_owned    = Unowned;
+    m_data     = other.m_data;
+    m_size     = other.m_size;
   }
 
   //! move assignment for list segment
@@ -203,14 +203,14 @@ public:
   {
     clear();
     m_resource = rhs.m_resource;
-    m_owned = rhs.m_owned;
-    m_data = rhs.m_data;
-    m_size = rhs.m_size;
+    m_owned    = rhs.m_owned;
+    m_data     = rhs.m_data;
+    m_size     = rhs.m_size;
 
     rhs.m_resource = nullptr;
-    rhs.m_owned = Unowned;
-    rhs.m_data = nullptr;
-    rhs.m_size = 0;
+    rhs.m_owned    = Unowned;
+    rhs.m_data     = nullptr;
+    rhs.m_size     = 0;
   }
 
   //! Move constructor for list segment
@@ -220,10 +220,10 @@ public:
         m_data(rhs.m_data),
         m_size(rhs.m_size)
   {
-    rhs.m_owned = Unowned;
+    rhs.m_owned    = Unowned;
     rhs.m_resource = nullptr;
-    rhs.m_size = 0;
-    rhs.m_data = nullptr;
+    rhs.m_size     = 0;
+    rhs.m_data     = nullptr;
   }
 
   //! List segment destructor
@@ -240,10 +240,10 @@ public:
       delete m_resource;
     }
 #endif
-    m_data = nullptr;
+    m_data     = nullptr;
     m_resource = nullptr;
-    m_owned = Unowned;
-    m_size = 0;
+    m_owned    = Unowned;
+    m_size     = 0;
   }
 
   //@}
@@ -289,7 +289,7 @@ public:
    * memory space.
    */
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
-                                     Index_type len) const
+                                     Index_type        len) const
   {
     if (container == m_data) return len == m_size;
     if (len != m_size || container == nullptr || m_data == nullptr)
@@ -342,23 +342,23 @@ private:
   //
   // Initialize segment data based on whether object owns the index data.
   //
-  void initIndexData(const value_type* container,
-                     Index_type len,
+  void initIndexData(const value_type*         container,
+                     Index_type                len,
                      camp::resources::Resource resource_,
-                     IndexOwnership container_own)
+                     IndexOwnership            container_own)
   {
 
     // empty list segment
     if (len <= 0 || container == nullptr)
     {
-      m_data = nullptr;
-      m_size = 0;
+      m_data  = nullptr;
+      m_size  = 0;
       m_owned = Unowned;
       return;
     }
 
     // some non-zero size -- initialize accordingly
-    m_size = len;
+    m_size  = len;
     m_owned = container_own;
     if (m_owned == Owned)
     {

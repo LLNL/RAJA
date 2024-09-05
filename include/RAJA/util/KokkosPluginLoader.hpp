@@ -44,9 +44,9 @@ private:
 
   void initDirectory(const std::string& path);
 
-  std::vector<init_function> init_functions;
-  std::vector<pre_function> pre_functions;
-  std::vector<post_function> post_functions;
+  std::vector<init_function>     init_functions;
+  std::vector<pre_function>      pre_functions;
+  std::vector<post_function>     post_functions;
   std::vector<finalize_function> finalize_functions;
 
 }; // end KokkosPluginLoader class

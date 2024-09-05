@@ -69,8 +69,8 @@ struct DivideOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  divide(TILE_TYPE const& tile,
-         LEFT_OPERAND_TYPE const& left,
+  divide(TILE_TYPE const&          tile,
+         LEFT_OPERAND_TYPE const&  left,
          RIGHT_OPERAND_TYPE const& right)
   {
     result_type numerator(left.eval(tile));
@@ -112,8 +112,8 @@ struct DivideOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  divide(TILE_TYPE const& tile,
-         LEFT_OPERAND_TYPE const& left,
+  divide(TILE_TYPE const&          tile,
+         LEFT_OPERAND_TYPE const&  left,
          RIGHT_OPERAND_TYPE const& right)
   {
     result_type denominator(right.eval(tile));
@@ -157,8 +157,8 @@ struct DivideOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  divide(TILE_TYPE const& tile,
-         LEFT_OPERAND_TYPE const& left,
+  divide(TILE_TYPE const&          tile,
+         LEFT_OPERAND_TYPE const&  left,
          RIGHT_OPERAND_TYPE const& right)
   {
     if (tile.s_tensor_size == TENSOR_FULL)
@@ -200,8 +200,8 @@ struct DivideOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  divide(TILE_TYPE const& tile,
-         LEFT_OPERAND_TYPE const& left,
+  divide(TILE_TYPE const&          tile,
+         LEFT_OPERAND_TYPE const&  left,
          RIGHT_OPERAND_TYPE const& right)
   {
     result_type numerator(left.eval(tile));
@@ -245,8 +245,8 @@ struct DivideOperator<
   RAJA_SUPPRESS_HD_WARN
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  divide(TILE_TYPE const& tile,
-         LEFT_OPERAND_TYPE const& left,
+  divide(TILE_TYPE const&          tile,
+         LEFT_OPERAND_TYPE const&  left,
          RIGHT_OPERAND_TYPE const& right)
   {
     result_type denominator(right.eval(tile));
@@ -291,8 +291,8 @@ struct DivideOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  divide(TILE_TYPE const& tile,
-         LEFT_OPERAND_TYPE const& left,
+  divide(TILE_TYPE const&          tile,
+         LEFT_OPERAND_TYPE const&  left,
          RIGHT_OPERAND_TYPE const& right)
   {
     if (tile.s_tensor_size == TENSOR_FULL)
@@ -313,25 +313,25 @@ class TensorDivide : public TensorExpressionBase<
                          TensorDivide<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>>
 {
 public:
-  using self_type = TensorDivide<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
+  using self_type         = TensorDivide<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
   using left_operand_type = LEFT_OPERAND_TYPE;
   using right_operand_type = RIGHT_OPERAND_TYPE;
-  using element_type = typename LEFT_OPERAND_TYPE::element_type;
-  using index_type = typename LEFT_OPERAND_TYPE::index_type;
+  using element_type       = typename LEFT_OPERAND_TYPE::element_type;
+  using index_type         = typename LEFT_OPERAND_TYPE::index_type;
 
-  using divide_op = DivideOperator<left_operand_type, right_operand_type>;
+  using divide_op   = DivideOperator<left_operand_type, right_operand_type>;
   using result_type = typename divide_op::result_type;
   static constexpr camp::idx_t s_num_dims = divide_op::s_num_dims;
 
 
 private:
-  left_operand_type m_left_operand;
+  left_operand_type  m_left_operand;
   right_operand_type m_right_operand;
 
 public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorDivide(left_operand_type const& left_operand,
+  TensorDivide(left_operand_type const&  left_operand,
                right_operand_type const& right_operand)
       : m_left_operand{left_operand}, m_right_operand{right_operand}
   {}

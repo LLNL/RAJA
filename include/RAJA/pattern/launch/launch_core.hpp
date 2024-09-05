@@ -142,16 +142,16 @@ struct Lanes
 struct LaunchParams
 {
 public:
-  Teams teams;
+  Teams   teams;
   Threads threads;
-  size_t shared_mem_size;
+  size_t  shared_mem_size;
 
   RAJA_INLINE
   LaunchParams() = default;
 
-  LaunchParams(Teams in_teams,
+  LaunchParams(Teams   in_teams,
                Threads in_threads,
-               size_t in_shared_mem_size = 0)
+               size_t  in_shared_mem_size = 0)
       : teams(in_teams),
         threads(in_threads),
         shared_mem_size(in_shared_mem_size){};
@@ -236,7 +236,7 @@ struct LaunchExecute;
 // Policy based launch with support to new reducers...
 template <typename LAUNCH_POLICY, typename... ReduceParams>
 void launch(LaunchParams const& launch_params,
-            const char* kernel_name,
+            const char*         kernel_name,
             ReduceParams&&... rest_of_launch_args)
 {
 
@@ -322,10 +322,10 @@ void launch(ExecPlace place, LaunchParams const& params, BODY const& body)
 }
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place,
+void launch(ExecPlace           place,
             const LaunchParams& params,
-            const char* kernel_name,
-            BODY const& body)
+            const char*         kernel_name,
+            BODY const&         body)
 {
 
   // Forward to single policy launch API - simplifies testing of plugins
@@ -356,9 +356,9 @@ void launch(ExecPlace place,
 
 // Run-time API for new reducer interface
 template <typename POLICY_LIST, typename... ReduceParams>
-void launch(ExecPlace place,
+void launch(ExecPlace           place,
             const LaunchParams& launch_params,
-            const char* kernel_name,
+            const char*         kernel_name,
             ReduceParams&&... rest_of_launch_args)
 {
 
@@ -397,7 +397,7 @@ void launch(ExecPlace place,
 // Run-time API for new reducer interface with support of the case without a new
 // kernel name
 template <typename POLICY_LIST, typename... ReduceParams>
-void launch(ExecPlace place,
+void launch(ExecPlace           place,
             const LaunchParams& launch_params,
             ReduceParams&&... rest_of_launch_args)
 // BODY const &body)
@@ -472,8 +472,8 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device)
 template <typename POLICY_LIST, typename... ReduceParams>
 resources::EventProxy<resources::Resource>
 launch(RAJA::resources::Resource res,
-       LaunchParams const& launch_params,
-       const char* kernel_name,
+       LaunchParams const&       launch_params,
+       const char*               kernel_name,
        ReduceParams&&... rest_of_launch_args)
 {
 
@@ -554,7 +554,7 @@ launch(RAJA::resources::Resource res,
 template <typename POLICY_LIST, typename... ReduceParams>
 resources::EventProxy<resources::Resource>
 launch(RAJA::resources::Resource res,
-       LaunchParams const& launch_params,
+       LaunchParams const&       launch_params,
        ReduceParams&&... rest_of_launch_args)
 {
 
@@ -679,7 +679,7 @@ template <typename POLICY_LIST,
 RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const& ctx,
                                        SEGMENT const& segment0,
                                        SEGMENT const& segment1,
-                                       BODY const& body)
+                                       BODY const&    body)
 {
 
   LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
@@ -695,7 +695,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const& ctx,
                                               SEGMENT const& segment0,
                                               SEGMENT const& segment1,
                                               SEGMENT const& segment2,
-                                              BODY const& body)
+                                              BODY const&    body)
 {
 
   LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
@@ -716,9 +716,9 @@ template <typename POLICY_LIST,
           typename SEGMENT,
           typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
-                                       TILE_T tile_size,
+                                       TILE_T         tile_size,
                                        SEGMENT const& segment,
-                                       BODY const& body)
+                                       BODY const&    body)
 {
 
   TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
@@ -731,9 +731,9 @@ template <typename POLICY_LIST,
           typename SEGMENT,
           typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
-                                              TILE_T tile_size,
+                                              TILE_T         tile_size,
                                               SEGMENT const& segment,
-                                              BODY const& body)
+                                              BODY const&    body)
 {
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
       ctx, tile_size, segment, body);
@@ -748,11 +748,11 @@ template <typename POLICY_LIST,
           typename SEGMENT,
           typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
-                                       TILE_T tile_size0,
-                                       TILE_T tile_size1,
+                                       TILE_T         tile_size0,
+                                       TILE_T         tile_size1,
                                        SEGMENT const& segment0,
                                        SEGMENT const& segment1,
-                                       BODY const& body)
+                                       BODY const&    body)
 {
 
   TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
@@ -765,11 +765,11 @@ template <typename POLICY_LIST,
           typename SEGMENT,
           typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
-                                              TILE_T tile_size0,
-                                              TILE_T tile_size1,
+                                              TILE_T         tile_size0,
+                                              TILE_T         tile_size1,
                                               SEGMENT const& segment0,
                                               SEGMENT const& segment1,
-                                              BODY const& body)
+                                              BODY const&    body)
 {
 
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(

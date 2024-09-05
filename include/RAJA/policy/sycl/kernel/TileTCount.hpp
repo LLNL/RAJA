@@ -79,7 +79,7 @@ struct SyclStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     diff_t chunk_size = TPol::chunk_size;
@@ -114,7 +114,7 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          int BlockDim,
+          int         BlockDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
@@ -188,7 +188,7 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          int BlockDim,
+          int         BlockDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
@@ -226,13 +226,13 @@ struct SyclStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t len = segment.end() - segment.begin();
-    diff_t t_init = item.get_group(BlockDim);
-    diff_t i_init = t_init * chunk_size;
+    diff_t len      = segment.end() - segment.begin();
+    diff_t t_init   = item.get_group(BlockDim);
+    diff_t i_init   = t_init * chunk_size;
     diff_t t_stride = item.get_group_range(BlockDim);
     diff_t i_stride = t_stride * chunk_size;
 
@@ -263,7 +263,7 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          int ThreadDim,
+          int         ThreadDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
@@ -301,7 +301,7 @@ struct SyclStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
@@ -316,7 +316,7 @@ struct SyclStatementExecutor<
 
     // Assign our new tiled segment
     diff_t slice_size = have_work ? chunk_size : 0;
-    segment = orig_segment.slice(i, slice_size);
+    segment           = orig_segment.slice(i, slice_size);
     data.template assign_param<ParamId>(t);
 
     // execute enclosed statements
@@ -337,7 +337,7 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           camp::idx_t chunk_size,
-          int ThreadDim,
+          int         ThreadDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
@@ -375,7 +375,7 @@ struct SyclStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
@@ -398,7 +398,7 @@ struct SyclStatementExecutor<
 
       // Assign our new tiled segment
       diff_t slice_size = have_work ? chunk_size : 0;
-      segment = orig_segment.slice(i, slice_size);
+      segment           = orig_segment.slice(i, slice_size);
       data.template assign_param<ParamId>(t);
 
       // execute enclosed statements

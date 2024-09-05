@@ -41,11 +41,11 @@ template <typename TENSOR_TYPE>
 class TensorLiteral : public TensorExpressionBase<TensorLiteral<TENSOR_TYPE>>
 {
 public:
-  using self_type = TensorLiteral<TENSOR_TYPE>;
-  using tensor_type = TENSOR_TYPE;
+  using self_type    = TensorLiteral<TENSOR_TYPE>;
+  using tensor_type  = TENSOR_TYPE;
   using element_type = typename TENSOR_TYPE::element_type;
-  using result_type = tensor_type;
-  using index_type = RAJA::Index_type;
+  using result_type  = tensor_type;
+  using index_type   = RAJA::Index_type;
 
   static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
 

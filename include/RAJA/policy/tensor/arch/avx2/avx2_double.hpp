@@ -43,9 +43,9 @@ public:
       internal::expt::RegisterBase<Register<double, avx2_register>>;
 
   using register_policy = avx2_register;
-  using self_type = Register<double, avx2_register>;
-  using element_type = double;
-  using register_type = __m256d;
+  using self_type       = Register<double, avx2_register>;
+  using element_type    = double;
+  using register_type   = __m256d;
 
   using int_vector_type = Register<int64_t, avx2_register>;
 
@@ -420,7 +420,7 @@ public:
   RAJA_INLINE
   element_type sum(camp::idx_t = 4) const
   {
-    auto sh1 = _mm256_permute_pd(m_value, 0x5);
+    auto sh1  = _mm256_permute_pd(m_value, 0x5);
     auto red1 = _mm256_add_pd(m_value, sh1);
     return red1[0] + red1[2];
   }

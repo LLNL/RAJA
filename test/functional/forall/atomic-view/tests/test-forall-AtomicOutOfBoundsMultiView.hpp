@@ -35,11 +35,11 @@ void ForallAtomicOutOfBoundsMultiViewTestImpl(IdxType N)
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T* actualsource = work_res.allocate<T>(N);
-  T** source = work_res.allocate<T*>(src_side);
-  T* actualdest = work_res.allocate<T>(N / 2);
-  T** dest = work_res.allocate<T*>(dst_side);
-  T* check_array = host_res.allocate<T>(N / 2);
+  T*  actualsource = work_res.allocate<T>(N);
+  T** source       = work_res.allocate<T*>(src_side);
+  T*  actualdest   = work_res.allocate<T>(N / 2);
+  T** dest         = work_res.allocate<T*>(dst_side);
+  T*  check_array  = host_res.allocate<T>(N / 2);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -90,11 +90,11 @@ class ForallAtomicOutOfBoundsMultiViewTest : public ::testing::Test
 TYPED_TEST_P(ForallAtomicOutOfBoundsMultiViewTest,
              AtomicOutOfBoundsMultiViewForall)
 {
-  using AExec = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol = typename camp::at<TypeParam, camp::num<1>>::type;
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using DType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallAtomicOutOfBoundsMultiViewTestImpl<AExec,
                                            APol,

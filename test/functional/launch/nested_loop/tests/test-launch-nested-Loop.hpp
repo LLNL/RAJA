@@ -42,9 +42,9 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
   INDEX_TYPE N = static_cast<INDEX_TYPE>(N1 * N2 * N3 * N4 * N5 * N6);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N);
   if (data_len == 0)
@@ -70,34 +70,67 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
     std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
 
     constexpr int DIM = 6;
-    using layout_t = RAJA::Layout<DIM, INDEX_TYPE, DIM - 1>;
+    using layout_t    = RAJA::Layout<DIM, INDEX_TYPE, DIM - 1>;
     RAJA::View<INDEX_TYPE, layout_t> Aview(
         working_array, N6, N5, N4, N3, N2, N1);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
                            RAJA::Threads(threads_x, threads_y, threads_z)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<TEAM_Z_POLICY>(ctx, r6, [&](INDEX_TYPE bz) {
-            RAJA::loop<TEAM_Y_POLICY>(ctx, r5, [&](INDEX_TYPE by) {
-              RAJA::loop<TEAM_X_POLICY>(ctx, r4, [&](INDEX_TYPE bx) {
-                RAJA::loop<THREAD_Z_POLICY>(ctx, r3, [&](INDEX_TYPE tz) {
-                  RAJA::loop<THREAD_Y_POLICY>(ctx, r2, [&](INDEX_TYPE ty) {
-                    RAJA::loop<THREAD_X_POLICY>(ctx, r1, [&](INDEX_TYPE tx) {
-                      auto idx =
-                          tx +
-                          N1 * (ty +
-                                N2 * (tz + N3 * (bx + N4 * (by + N5 * bz))));
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<TEAM_Z_POLICY>(
+              ctx,
+              r6,
+              [&](INDEX_TYPE bz)
+              {
+                RAJA::loop<TEAM_Y_POLICY>(
+                    ctx,
+                    r5,
+                    [&](INDEX_TYPE by)
+                    {
+                      RAJA::loop<TEAM_X_POLICY>(
+                          ctx,
+                          r4,
+                          [&](INDEX_TYPE bx)
+                          {
+                            RAJA::loop<THREAD_Z_POLICY>(
+                                ctx,
+                                r3,
+                                [&](INDEX_TYPE tz)
+                                {
+                                  RAJA::loop<THREAD_Y_POLICY>(
+                                      ctx,
+                                      r2,
+                                      [&](INDEX_TYPE ty)
+                                      {
+                                        RAJA::loop<THREAD_X_POLICY>(
+                                            ctx,
+                                            r1,
+                                            [&](INDEX_TYPE tx)
+                                            {
+                                              auto idx =
+                                                  tx +
+                                                  N1 *
+                                                      (ty +
+                                                       N2 *
+                                                           (tz +
+                                                            N3 *
+                                                                (bx +
+                                                                 N4 *
+                                                                     (by +
+                                                                      N5 *
+                                                                          bz))));
 
 
-                      Aview(bz, by, bx, tz, ty, tx) =
-                          static_cast<INDEX_TYPE>(idx);
+                                              Aview(bz, by, bx, tz, ty, tx) =
+                                                  static_cast<INDEX_TYPE>(idx);
+                                            });
+                                      });
+                                });
+                          });
                     });
-                  });
-                });
               });
-            });
-          });
         });
   }
   else
@@ -111,24 +144,38 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
                            RAJA::Threads(blocks_x, blocks_y, blocks_z)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
           RAJA::loop<TEAM_Z_POLICY>(
-              ctx, r3, [&](INDEX_TYPE RAJA_UNUSED_ARG(bz)) {
+              ctx,
+              r3,
+              [&](INDEX_TYPE RAJA_UNUSED_ARG(bz))
+              {
                 RAJA::loop<TEAM_Y_POLICY>(
-                    ctx, r2, [&](INDEX_TYPE RAJA_UNUSED_ARG(by)) {
+                    ctx,
+                    r2,
+                    [&](INDEX_TYPE RAJA_UNUSED_ARG(by))
+                    {
                       RAJA::loop<TEAM_X_POLICY>(
-                          ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
+                          ctx,
+                          r1,
+                          [&](INDEX_TYPE RAJA_UNUSED_ARG(bx))
+                          {
                             RAJA::loop<THREAD_Z_POLICY>(
-                                ctx, r3, [&](INDEX_TYPE RAJA_UNUSED_ARG(tz)) {
+                                ctx,
+                                r3,
+                                [&](INDEX_TYPE RAJA_UNUSED_ARG(tz))
+                                {
                                   RAJA::loop<THREAD_Y_POLICY>(
                                       ctx,
                                       r2,
-                                      [&](INDEX_TYPE RAJA_UNUSED_ARG(ty)) {
+                                      [&](INDEX_TYPE RAJA_UNUSED_ARG(ty))
+                                      {
                                         RAJA::loop<THREAD_X_POLICY>(
                                             ctx,
                                             r1,
-                                            [&](INDEX_TYPE RAJA_UNUSED_ARG(
-                                                tx)) { working_array[0]++; });
+                                            [&](INDEX_TYPE RAJA_UNUSED_ARG(tx))
+                                            { working_array[0]++; });
                                       });
                                 });
                           });
@@ -168,7 +215,7 @@ class LaunchNestedLoopTest : public ::testing::Test
 TYPED_TEST_P(LaunchNestedLoopTest, RangeSegmentTeams)
 {
 
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

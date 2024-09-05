@@ -57,7 +57,7 @@ using ContainerDiff =
                          camp::val<camp::iterator_from<Container>>())>;
 
 template <typename DiffType, typename CountType>
-RAJA_INLINE DiffType firstIndex(DiffType n,
+RAJA_INLINE DiffType firstIndex(DiffType  n,
                                 CountType num_threads,
                                 CountType thread_id)
 {

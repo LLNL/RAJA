@@ -27,7 +27,7 @@ namespace expt
 // Convenience to describe VectorTensors
 template <typename T,
           typename REGISTER_POLICY = default_register,
-          camp::idx_t NUM_ELEM = Register<T, REGISTER_POLICY>::s_num_elem>
+          camp::idx_t NUM_ELEM     = Register<T, REGISTER_POLICY>::s_num_elem>
 using VectorRegister =
     TensorRegister<REGISTER_POLICY, T, VectorLayout, camp::idx_seq<NUM_ELEM>>;
 } // namespace expt

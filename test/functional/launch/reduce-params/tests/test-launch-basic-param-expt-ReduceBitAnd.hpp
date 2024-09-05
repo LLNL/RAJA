@@ -20,19 +20,19 @@ template <typename IDX_TYPE,
           typename GLOBAL_THREAD_POLICY>
 
 void LaunchParamExptReduceBitAndBasicTestImpl(
-    const SEG_TYPE& seg,
+    const SEG_TYPE&              seg,
     const std::vector<IDX_TYPE>& seg_idx,
-    camp::resources::Resource working_res)
+    camp::resources::Resource    working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
   constexpr int threads = 256;
-  int blocks = (seg.size() - 1) / threads + 1;
+  int           blocks  = (seg.size() - 1) / threads + 1;
 
   allocateForallTestData<DATA_TYPE>(
       data_len, working_res, &working_array, &check_array, &test_array);
@@ -51,7 +51,8 @@ void LaunchParamExptReduceBitAndBasicTestImpl(
   RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
       RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _simpand) {
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _simpand)
+      {
         RAJA::loop<GLOBAL_THREAD_POLICY>(
             ctx, seg, [&](IDX_TYPE idx) { _simpand &= working_array[idx]; });
       });
@@ -85,11 +86,15 @@ void LaunchParamExptReduceBitAndBasicTestImpl(
       RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
       RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
       [=] RAJA_HOST_DEVICE(
-          RAJA::LaunchContext ctx, DATA_TYPE & _redand, DATA_TYPE & _redand2) {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
-          _redand &= working_array[idx];
-          _redand2 &= working_array[idx];
-        });
+          RAJA::LaunchContext ctx, DATA_TYPE & _redand, DATA_TYPE & _redand2)
+      {
+        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx,
+                                         seg,
+                                         [&](IDX_TYPE idx)
+                                         {
+                                           _redand &= working_array[idx];
+                                           _redand2 &= working_array[idx];
+                                         });
       });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(redand), ref_and);
@@ -103,7 +108,8 @@ void LaunchParamExptReduceBitAndBasicTestImpl(
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE _redand) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE _redand)
+        {
           RAJA::loop<GLOBAL_THREAD_POLICY>(
               ctx, seg, [&](IDX_TYPE idx) { _redand &= working_array[idx]; });
         });
@@ -124,8 +130,8 @@ class LaunchParamExptReduceBitAndBasicTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchParamExptReduceBitAndBasicTest, ReduceBitAndBasicForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE   = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<3>>::type,

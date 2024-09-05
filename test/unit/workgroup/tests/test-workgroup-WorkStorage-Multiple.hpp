@@ -31,11 +31,13 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
   using type1 = TestArray<double, 6>;
   using type2 = TestArray<double, 14>;
 
-  auto make_type0 = [](double init_val, size_t i) {
+  auto make_type0 = [](double init_val, size_t i)
+  {
     type0 obj(init_val - (double)i);
     return obj;
   };
-  auto make_type1 = [](double init_val, size_t i) {
+  auto make_type1 = [](double init_val, size_t i)
+  {
     type1 obj{};
     for (size_t j = 0; j < 6; ++j)
     {
@@ -43,7 +45,8 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
     }
     return obj;
   };
-  auto make_type2 = [](double init_val, size_t i) {
+  auto make_type2 = [](double init_val, size_t i)
+  {
     type2 obj{};
     for (size_t j = 0; j < 14; ++j)
     {
@@ -77,15 +80,17 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
           RAJA::seq_work{});
 
   {
-    auto test_empty = [&](WorkStorage_type& container) {
+    auto test_empty = [&](WorkStorage_type& container)
+    {
       ASSERT_EQ(container.size(), (size_t)(0));
       ASSERT_EQ(container.storage_size(), (size_t)0);
     };
 
     auto fill_contents = [&](WorkStorage_type& container,
-                             double init_val0,
-                             double init_val1,
-                             double init_val2) {
+                             double            init_val0,
+                             double            init_val1,
+                             double            init_val2)
+    {
       std::vector<callable0> vec0;
       vec0.reserve(num0);
       for (size_t i = 0; i < num0; ++i)
@@ -129,9 +134,10 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
     };
 
     auto test_contents = [&](WorkStorage_type& container,
-                             double init_val0,
-                             double init_val1,
-                             double init_val2) {
+                             double            init_val0,
+                             double            init_val1,
+                             double            init_val2)
+    {
       ASSERT_EQ(container.size(), num0 + num1 + num2);
       ASSERT_GE(container.storage_size(),
                 num0 * sizeof(callable0) + num1 * sizeof(callable1) +
@@ -143,8 +149,8 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
         for (size_t i = 0; i < num0; ++i)
         {
           type0 val{};
-          bool move_constructed = false;
-          bool moved_from = true;
+          bool  move_constructed = false;
+          bool  moved_from       = true;
           WorkStruct_type::host_call(
               &*iter, (void*)&val, &move_constructed, &moved_from);
 
@@ -159,8 +165,8 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
         for (size_t i = 0; i < num1; ++i)
         {
           type1 val{};
-          bool move_constructed = false;
-          bool moved_from = true;
+          bool  move_constructed = false;
+          bool  moved_from       = true;
           WorkStruct_type::host_call(
               &*iter, (void*)&val, &move_constructed, &moved_from);
 
@@ -175,8 +181,8 @@ void testWorkGroupWorkStorageMultiple(const size_t num0,
         for (size_t i = 0; i < num2; ++i)
         {
           type2 val{};
-          bool move_constructed = false;
-          bool moved_from = true;
+          bool  move_constructed = false;
+          bool  moved_from       = true;
           WorkStruct_type::host_call(
               &*iter, (void*)&val, &move_constructed, &moved_from);
 
@@ -244,9 +250,9 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest,
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Allocator     = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  std::mt19937 rng(std::random_device{}());
+  std::mt19937                          rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
   testWorkGroupWorkStorageMultiple<StoragePolicy, DispatchTyper, Allocator>(

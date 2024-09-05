@@ -33,8 +33,8 @@
             DATA<T, RAJA::reduce::OP<T>, tuning>>                              \
   {                                                                            \
     using policy = POL<tuning>;                                                \
-    using Base = reduce::detail::BaseMultiReduce##OP_NAME<                     \
-        DATA<T, RAJA::reduce::OP<T>, tuning>>;                                 \
+    using Base   = reduce::detail::BaseMultiReduce##OP_NAME<                   \
+        DATA<T, RAJA::reduce::OP<T>, tuning>>;                               \
     using Base::Base;                                                          \
     using typename Base::value_type;                                           \
     using typename Base::reference;                                            \
@@ -64,14 +64,14 @@ template <typename t_MultiReduceData>
 struct BaseMultiReduce
 {
   using MultiReduceData = t_MultiReduceData;
-  using MultiReduceOp = typename t_MultiReduceData::MultiReduceOp;
-  using value_type = typename t_MultiReduceData::value_type;
+  using MultiReduceOp   = typename t_MultiReduceData::MultiReduceOp;
+  using value_type      = typename t_MultiReduceData::value_type;
 
   BaseMultiReduce()
       : BaseMultiReduce{RepeatView<value_type>(MultiReduceOp::identity(), 0)}
   {}
 
-  explicit BaseMultiReduce(size_t num_bins,
+  explicit BaseMultiReduce(size_t     num_bins,
                            value_type init_val = MultiReduceOp::identity(),
                            value_type identity = MultiReduceOp::identity())
       : BaseMultiReduce{RepeatView<value_type>(init_val, num_bins), identity}
@@ -92,9 +92,9 @@ struct BaseMultiReduce
   RAJA_SUPPRESS_HD_WARN
   BaseMultiReduce(BaseMultiReduce const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduce(BaseMultiReduce&&) = default;
+  BaseMultiReduce(BaseMultiReduce&&)                 = default;
   BaseMultiReduce& operator=(BaseMultiReduce const&) = delete;
-  BaseMultiReduce& operator=(BaseMultiReduce&&) = delete;
+  BaseMultiReduce& operator=(BaseMultiReduce&&)      = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduce() = default;
 
@@ -103,7 +103,7 @@ struct BaseMultiReduce
     reset(RepeatView<value_type>(MultiReduceOp::identity(), size()));
   }
 
-  void reset(size_t num_bins,
+  void reset(size_t     num_bins,
              value_type init_val = MultiReduceOp::identity(),
              value_type identity = MultiReduceOp::identity())
   {
@@ -113,7 +113,7 @@ struct BaseMultiReduce
   template <typename Container,
             concepts::enable_if_t<type_traits::is_range<Container>>* = nullptr>
   void reset(Container const& container,
-             value_type identity = MultiReduceOp::identity())
+             value_type       identity = MultiReduceOp::identity())
   {
     for (size_t bin = 0; bin < data.num_bins(); ++bin)
     {
@@ -206,7 +206,7 @@ public:
 
   private:
     BaseMultiReduceMin const& m_base;
-    size_t m_bin;
+    size_t                    m_bin;
   };
 };
 
@@ -229,9 +229,9 @@ public:
   RAJA_SUPPRESS_HD_WARN
   BaseMultiReduceMax(BaseMultiReduceMax const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceMax(BaseMultiReduceMax&&) = default;
+  BaseMultiReduceMax(BaseMultiReduceMax&&)                 = default;
   BaseMultiReduceMax& operator=(BaseMultiReduceMax const&) = delete;
-  BaseMultiReduceMax& operator=(BaseMultiReduceMax&&) = delete;
+  BaseMultiReduceMax& operator=(BaseMultiReduceMax&&)      = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceMax() = default;
 
@@ -254,7 +254,7 @@ public:
 
   private:
     BaseMultiReduceMax const& m_base;
-    size_t m_bin;
+    size_t                    m_bin;
   };
 };
 
@@ -277,9 +277,9 @@ public:
   RAJA_SUPPRESS_HD_WARN
   BaseMultiReduceSum(BaseMultiReduceSum const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceSum(BaseMultiReduceSum&&) = default;
+  BaseMultiReduceSum(BaseMultiReduceSum&&)                 = default;
   BaseMultiReduceSum& operator=(BaseMultiReduceSum const&) = delete;
-  BaseMultiReduceSum& operator=(BaseMultiReduceSum&&) = delete;
+  BaseMultiReduceSum& operator=(BaseMultiReduceSum&&)      = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceSum() = default;
 
@@ -302,7 +302,7 @@ public:
 
   private:
     BaseMultiReduceSum const& m_base;
-    size_t m_bin;
+    size_t                    m_bin;
   };
 };
 
@@ -325,9 +325,9 @@ public:
   RAJA_SUPPRESS_HD_WARN
   BaseMultiReduceBitOr(BaseMultiReduceBitOr const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceBitOr(BaseMultiReduceBitOr&&) = default;
+  BaseMultiReduceBitOr(BaseMultiReduceBitOr&&)                 = default;
   BaseMultiReduceBitOr& operator=(BaseMultiReduceBitOr const&) = delete;
-  BaseMultiReduceBitOr& operator=(BaseMultiReduceBitOr&&) = delete;
+  BaseMultiReduceBitOr& operator=(BaseMultiReduceBitOr&&)      = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceBitOr() = default;
 
@@ -350,7 +350,7 @@ public:
 
   private:
     BaseMultiReduceBitOr const& m_base;
-    size_t m_bin;
+    size_t                      m_bin;
   };
 };
 
@@ -373,9 +373,9 @@ public:
   RAJA_SUPPRESS_HD_WARN
   BaseMultiReduceBitAnd(BaseMultiReduceBitAnd const&) = default;
   RAJA_SUPPRESS_HD_WARN
-  BaseMultiReduceBitAnd(BaseMultiReduceBitAnd&&) = default;
+  BaseMultiReduceBitAnd(BaseMultiReduceBitAnd&&)                 = default;
   BaseMultiReduceBitAnd& operator=(BaseMultiReduceBitAnd const&) = delete;
-  BaseMultiReduceBitAnd& operator=(BaseMultiReduceBitAnd&&) = delete;
+  BaseMultiReduceBitAnd& operator=(BaseMultiReduceBitAnd&&)      = delete;
   RAJA_SUPPRESS_HD_WARN
   ~BaseMultiReduceBitAnd() = default;
 
@@ -398,7 +398,7 @@ public:
 
   private:
     BaseMultiReduceBitAnd const& m_base;
-    size_t m_bin;
+    size_t                       m_bin;
   };
 };
 

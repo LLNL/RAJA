@@ -27,12 +27,12 @@ TYPED_TEST_SUITE_P(AtomicRefBasicBitwiseUnitTest);
 
 TYPED_TEST_P(AtomicRefBasicBitwiseUnitTest, BasicBitwises)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T theval = (T)1;
+  T  theval  = (T)1;
   T* memaddr = &theval;
-  T result;
+  T  result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
@@ -107,11 +107,11 @@ TYPED_TEST_SUITE_P(AtomicRefCUDABitwiseUnitTest);
 
 GPU_TYPED_TEST_P(AtomicRefCUDABitwiseUnitTest, CUDABitwises)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   T* memaddr = nullptr;
-  T* result = nullptr;
+  T* result  = nullptr;
   cudaErrchk(cudaMallocManaged((void**)&memaddr, sizeof(T)));
   cudaErrchk(cudaMallocManaged((void**)&result, sizeof(T)));
   memaddr[0] = (T)1;

@@ -14,8 +14,8 @@ template <typename MATRIX_TYPE>
 void Load_ColMajorImpl()
 {
 
-  using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  using matrix_t  = MATRIX_TYPE;
+  using policy_t  = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
 
@@ -25,7 +25,7 @@ void Load_ColMajorImpl()
 
   // alloc data1
 
-  std::vector<element_t> data1_vec(4 * matrix_t::s_num_rows *
+  std::vector<element_t>                 data1_vec(4 * matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), 2 * matrix_t::s_num_columns, 2 * matrix_t::s_num_rows);
@@ -37,7 +37,7 @@ void Load_ColMajorImpl()
 
   // alloc data2
 
-  std::vector<element_t> data2_vec(matrix_t::s_num_rows *
+  std::vector<element_t>                 data2_vec(matrix_t::s_num_rows *
                                    matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
@@ -62,28 +62,30 @@ void Load_ColMajorImpl()
   //
   // Do operation
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    matrix_t m;
-
-    if (matrix_t::layout_type::is_column_major())
-    {
-      m.load_packed(data1_ptr, 1, 2 * matrix_t::s_num_rows);
-    }
-    else
-    {
-      m.load_strided(data1_ptr, 1, 2 * matrix_t::s_num_rows);
-    }
-
-    // write out to a second view so we can check it on the host
-    // on GPU's we'll write way too much, but it should stil be correct
-    for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
-    {
-      for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
       {
-        data2_d(j, i) = m.get(i, j);
-      }
-    }
-  });
+        matrix_t m;
+
+        if (matrix_t::layout_type::is_column_major())
+        {
+          m.load_packed(data1_ptr, 1, 2 * matrix_t::s_num_rows);
+        }
+        else
+        {
+          m.load_strided(data1_ptr, 1, 2 * matrix_t::s_num_rows);
+        }
+
+        // write out to a second view so we can check it on the host
+        // on GPU's we'll write way too much, but it should stil be correct
+        for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+        {
+          for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+          {
+            data2_d(j, i) = m.get(i, j);
+          }
+        }
+      });
 
   tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 
@@ -127,29 +129,31 @@ void Load_ColMajorImpl()
       //
       // Do Operation: Partial load
       //
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        matrix_t m;
-        if (matrix_t::layout_type::is_column_major())
-        {
-          m.load_packed_nm(
-              data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size, m_size);
-        }
-        else
-        {
-          m.load_strided_nm(
-              data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size, m_size);
-        }
-
-        // write out to a second view so we can check it on the host
-        // on GPU's we'll write way too much, but it should stil be correct
-        for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
-        {
-          for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
           {
-            data2_d(j, i) = m.get(i, j);
-          }
-        }
-      });
+            matrix_t m;
+            if (matrix_t::layout_type::is_column_major())
+            {
+              m.load_packed_nm(
+                  data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size, m_size);
+            }
+            else
+            {
+              m.load_strided_nm(
+                  data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size, m_size);
+            }
+
+            // write out to a second view so we can check it on the host
+            // on GPU's we'll write way too much, but it should stil be correct
+            for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+            {
+              for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+              {
+                data2_d(j, i) = m.get(i, j);
+              }
+            }
+          });
 
       tensor_copy_to_host<policy_t>(data2_vec, data2_ptr);
 

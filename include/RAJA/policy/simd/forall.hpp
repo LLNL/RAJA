@@ -54,14 +54,14 @@ RAJA_INLINE concepts::enable_if_t<
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(RAJA::resources::Host host_res,
             const simd_exec&,
-            Iterable&& iter,
-            Func&& loop_body,
+            Iterable&&  iter,
+            Func&&      loop_body,
             ForallParam f_params)
 {
   expt::ParamMultiplexer::init<seq_exec>(f_params);
 
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
+  auto begin    = std::begin(iter);
+  auto end      = std::end(iter);
   auto distance = std::distance(begin, end);
   RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i)
@@ -81,11 +81,11 @@ RAJA_INLINE concepts::enable_if_t<
 forall_impl(RAJA::resources::Host host_res,
             const simd_exec&,
             Iterable&& iter,
-            Func&& loop_body,
+            Func&&     loop_body,
             ForallParam)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
+  auto begin    = std::begin(iter);
+  auto end      = std::end(iter);
   auto distance = std::distance(begin, end);
   RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i)

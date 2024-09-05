@@ -28,7 +28,7 @@ void testWorkGroupWorkStorageIterator()
   using callable = TestCallable<int>;
 
   static constexpr auto platform = RAJA::Platform::host;
-  using DispatchPolicy = typename DispatchTyper::template type<callable>;
+  using DispatchPolicy  = typename DispatchTyper::template type<callable>;
   using Dispatcher_type = RAJA::detail::
       Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type =
@@ -94,7 +94,7 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest,
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Allocator     = typename camp::at<TypeParam, camp::num<2>>::type;
 
   testWorkGroupWorkStorageIterator<StoragePolicy, DispatchTyper, Allocator>();
 }

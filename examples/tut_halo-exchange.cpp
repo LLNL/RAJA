@@ -39,12 +39,12 @@
   CUDA thread block when using workgroup
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+const int CUDA_BLOCK_SIZE           = 256;
 const int CUDA_WORKGROUP_BLOCK_SIZE = 1024;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
+const int HIP_BLOCK_SIZE           = 256;
 const int HIP_WORKGROUP_BLOCK_SIZE = 1024;
 #endif
 
@@ -59,21 +59,21 @@ const int num_neighbors = 26;
 //
 void checkResult(std::vector<double*> const& vars,
                  std::vector<double*> const& vars_ref,
-                 int var_size,
-                 int num_vars);
+                 int                         var_size,
+                 int                         num_vars);
 void printResult(std::vector<double*> const& vars, int var_size, int num_vars);
 
 //
 // Functions for allocating and populating packing and unpacking lists
 //
 void create_pack_lists(std::vector<int*>& pack_index_lists,
-                       std::vector<int>& pack_index_list_lengths,
-                       const int halo_width,
-                       const int* grid_dims);
+                       std::vector<int>&  pack_index_list_lengths,
+                       const int          halo_width,
+                       const int*         grid_dims);
 void create_unpack_lists(std::vector<int*>& unpack_index_lists,
-                         std::vector<int>& unpack_index_list_lengths,
-                         const int halo_width,
-                         const int* grid_dims);
+                         std::vector<int>&  unpack_index_list_lengths,
+                         const int          halo_width,
+                         const int*         grid_dims);
 void destroy_pack_lists(std::vector<int*>& pack_index_lists);
 void destroy_unpack_lists(std::vector<int*>& unpack_index_lists);
 
@@ -213,7 +213,7 @@ int main(int argc, char** argv)
                             (argc != 7) ? 100 : std::atoi(argv[2]),
                             (argc != 7) ? 100 : std::atoi(argv[3])};
   const int halo_width = (argc != 7) ? 1 : std::atoi(argv[4]);
-  const int num_vars = (argc != 7) ? 3 : std::atoi(argv[5]);
+  const int num_vars   = (argc != 7) ? 3 : std::atoi(argv[5]);
   const int num_cycles = (argc != 7) ? 3 : std::atoi(argv[6]);
   // _halo_exchange_input_params_end
 
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 
   for (int v = 0; v < num_vars; ++v)
   {
-    vars[v] = memoryManager::allocate<double>(var_size);
+    vars[v]     = memoryManager::allocate<double>(var_size);
     vars_ref[v] = memoryManager::allocate<double>(var_size);
   }
   // _halo_exchange_vars_allocate_end
@@ -259,12 +259,12 @@ int main(int argc, char** argv)
   // Generate index lists for packing and unpacking
   //
   std::vector<int*> pack_index_lists(num_neighbors, nullptr);
-  std::vector<int> pack_index_list_lengths(num_neighbors, 0);
+  std::vector<int>  pack_index_list_lengths(num_neighbors, 0);
   create_pack_lists(
       pack_index_lists, pack_index_list_lengths, halo_width, grid_dims);
 
   std::vector<int*> unpack_index_lists(num_neighbors, nullptr);
-  std::vector<int> unpack_index_list_lengths(num_neighbors, 0);
+  std::vector<int>  unpack_index_list_lengths(num_neighbors, 0);
   create_unpack_lists(
       unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
   // _halo_exchange_index_list_generate_end
@@ -318,8 +318,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -346,8 +346,8 @@ int main(int argc, char** argv)
           // recv single message
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -385,7 +385,7 @@ int main(int argc, char** argv)
     for (int v = 0; v < num_vars; ++v)
     {
 
-      double* var = vars[v];
+      double* var     = vars[v];
       double* var_ref = vars_ref[v];
 
       for (int i = 0; i < var_size; i++)
@@ -438,8 +438,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -447,9 +447,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i) {
-              buffer[i] = var[list[i]];
-            });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=](int i)
+                                        { buffer[i] = var[list[i]]; });
 
             buffer += len;
           }
@@ -465,8 +465,8 @@ int main(int argc, char** argv)
           // recv single message
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -474,9 +474,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i) {
-              var[list[i]] = buffer[i];
-            });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=](int i)
+                                        { var[list[i]] = buffer[i]; });
 
             buffer += len;
           }
@@ -573,8 +573,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -603,8 +603,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -693,8 +693,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -702,9 +702,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i) {
-              buffer[i] = var[list[i]];
-            });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=](int i)
+                                        { buffer[i] = var[list[i]]; });
 
             buffer += len;
           }
@@ -720,8 +720,8 @@ int main(int argc, char** argv)
           // recv single message
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -729,9 +729,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i) {
-              var[list[i]] = buffer[i];
-            });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=](int i)
+                                        { var[list[i]] = buffer[i]; });
 
             buffer += len;
           }
@@ -826,8 +826,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -856,8 +856,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -916,8 +916,8 @@ int main(int argc, char** argv)
 
 
     std::vector<double*> cuda_vars(num_vars, nullptr);
-    std::vector<int*> cuda_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*> cuda_unpack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    cuda_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    cuda_unpack_index_lists(num_neighbors, nullptr);
 
     for (int v = 0; v < num_vars; ++v)
     {
@@ -926,14 +926,14 @@ int main(int argc, char** argv)
 
     for (int l = 0; l < num_neighbors; ++l)
     {
-      int pack_len = pack_index_list_lengths[l];
+      int pack_len             = pack_index_list_lengths[l];
       cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
       cudaErrchk(cudaMemcpy(cuda_pack_index_lists[l],
                             pack_index_lists[l],
                             pack_len * sizeof(int),
                             cudaMemcpyDefault));
 
-      int unpack_len = unpack_index_list_lengths[l];
+      int unpack_len             = unpack_index_list_lengths[l];
       cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
       cudaErrchk(cudaMemcpy(cuda_unpack_index_lists[l],
                             unpack_index_lists[l],
@@ -971,9 +971,9 @@ int main(int argc, char** argv)
 
           double* var = vars[v];
 
-          RAJA::forall<forall_policy>(
-              range_segment(0, var_size),
-              [=] RAJA_DEVICE(int i) { var[i] = i + v; });
+          RAJA::forall<forall_policy>(range_segment(0, var_size),
+                                      [=] RAJA_DEVICE(int i)
+                                      { var[i] = i + v; });
         }
 
         // _halo_exchange_cuda_forall_packing_start
@@ -981,8 +981,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -990,9 +990,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(
-                range_segment(0, len),
-                [=] RAJA_DEVICE(int i) { buffer[i] = var[list[i]]; });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=] RAJA_DEVICE(int i)
+                                        { buffer[i] = var[list[i]]; });
 
             buffer += len;
           }
@@ -1010,8 +1010,8 @@ int main(int argc, char** argv)
           // recv single message
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -1019,9 +1019,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(
-                range_segment(0, len),
-                [=] RAJA_DEVICE(int i) { var[list[i]] = buffer[i]; });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=] RAJA_DEVICE(int i)
+                                        { var[list[i]] = buffer[i]; });
 
             buffer += len;
           }
@@ -1081,8 +1081,8 @@ int main(int argc, char** argv)
 
 
     std::vector<double*> cuda_vars(num_vars, nullptr);
-    std::vector<int*> cuda_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*> cuda_unpack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    cuda_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    cuda_unpack_index_lists(num_neighbors, nullptr);
 
     for (int v = 0; v < num_vars; ++v)
     {
@@ -1091,14 +1091,14 @@ int main(int argc, char** argv)
 
     for (int l = 0; l < num_neighbors; ++l)
     {
-      int pack_len = pack_index_list_lengths[l];
+      int pack_len             = pack_index_list_lengths[l];
       cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
       cudaErrchk(cudaMemcpy(cuda_pack_index_lists[l],
                             pack_index_lists[l],
                             pack_len * sizeof(int),
                             cudaMemcpyDefault));
 
-      int unpack_len = unpack_index_list_lengths[l];
+      int unpack_len             = unpack_index_list_lengths[l];
       cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
       cudaErrchk(cudaMemcpy(cuda_unpack_index_lists[l],
                             unpack_index_lists[l],
@@ -1154,9 +1154,9 @@ int main(int argc, char** argv)
 
           double* var = vars[v];
 
-          RAJA::forall<forall_policy>(
-              range_segment(0, var_size),
-              [=] RAJA_DEVICE(int i) { var[i] = i + v; });
+          RAJA::forall<forall_policy>(range_segment(0, var_size),
+                                      [=] RAJA_DEVICE(int i)
+                                      { var[i] = i + v; });
         }
 
         // _halo_exchange_cuda_workgroup_packing_start
@@ -1164,8 +1164,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -1173,9 +1173,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_pack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i) {
-              buffer[i] = var[list[i]];
-            });
+            pool_pack.enqueue(range_segment(0, len),
+                              [=] RAJA_DEVICE(int i)
+                              { buffer[i] = var[list[i]]; });
 
             buffer += len;
           }
@@ -1197,8 +1197,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -1206,9 +1206,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_unpack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i) {
-              var[list[i]] = buffer[i];
-            });
+            pool_unpack.enqueue(range_segment(0, len),
+                                [=] RAJA_DEVICE(int i)
+                                { var[list[i]] = buffer[i]; });
 
             buffer += len;
           }
@@ -1279,8 +1279,8 @@ int main(int argc, char** argv)
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
-    std::vector<int*> hip_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*> hip_unpack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_unpack_index_lists(num_neighbors, nullptr);
 
     for (int v = 0; v < num_vars; ++v)
     {
@@ -1289,14 +1289,14 @@ int main(int argc, char** argv)
 
     for (int l = 0; l < num_neighbors; ++l)
     {
-      int pack_len = pack_index_list_lengths[l];
+      int pack_len            = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
       hipErrchk(hipMemcpy(hip_pack_index_lists[l],
                           pack_index_lists[l],
                           pack_len * sizeof(int),
                           hipMemcpyHostToDevice));
 
-      int unpack_len = unpack_index_list_lengths[l];
+      int unpack_len            = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
       hipErrchk(hipMemcpy(hip_unpack_index_lists[l],
                           unpack_index_lists[l],
@@ -1334,9 +1334,9 @@ int main(int argc, char** argv)
 
           double* var = vars[v];
 
-          RAJA::forall<forall_policy>(
-              range_segment(0, var_size),
-              [=] RAJA_DEVICE(int i) { var[i] = i + v; });
+          RAJA::forall<forall_policy>(range_segment(0, var_size),
+                                      [=] RAJA_DEVICE(int i)
+                                      { var[i] = i + v; });
         }
 
         // _halo_exchange_hip_forall_packing_start
@@ -1344,8 +1344,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -1353,9 +1353,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(
-                range_segment(0, len),
-                [=] RAJA_DEVICE(int i) { buffer[i] = var[list[i]]; });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=] RAJA_DEVICE(int i)
+                                        { buffer[i] = var[list[i]]; });
 
             buffer += len;
           }
@@ -1373,8 +1373,8 @@ int main(int argc, char** argv)
           // recv single message
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -1382,9 +1382,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(
-                range_segment(0, len),
-                [=] RAJA_DEVICE(int i) { var[list[i]] = buffer[i]; });
+            RAJA::forall<forall_policy>(range_segment(0, len),
+                                        [=] RAJA_DEVICE(int i)
+                                        { var[list[i]] = buffer[i]; });
 
             buffer += len;
           }
@@ -1448,8 +1448,8 @@ int main(int argc, char** argv)
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
-    std::vector<int*> hip_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*> hip_unpack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_unpack_index_lists(num_neighbors, nullptr);
 
     for (int v = 0; v < num_vars; ++v)
     {
@@ -1458,14 +1458,14 @@ int main(int argc, char** argv)
 
     for (int l = 0; l < num_neighbors; ++l)
     {
-      int pack_len = pack_index_list_lengths[l];
+      int pack_len            = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
       hipErrchk(hipMemcpy(hip_pack_index_lists[l],
                           pack_index_lists[l],
                           pack_len * sizeof(int),
                           hipMemcpyHostToDevice));
 
-      int unpack_len = unpack_index_list_lengths[l];
+      int unpack_len            = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
       hipErrchk(hipMemcpy(hip_unpack_index_lists[l],
                           unpack_index_lists[l],
@@ -1521,9 +1521,9 @@ int main(int argc, char** argv)
 
           double* var = vars[v];
 
-          RAJA::forall<forall_policy>(
-              range_segment(0, var_size),
-              [=] RAJA_DEVICE(int i) { var[i] = i + v; });
+          RAJA::forall<forall_policy>(range_segment(0, var_size),
+                                      [=] RAJA_DEVICE(int i)
+                                      { var[i] = i + v; });
         }
 
         // _halo_exchange_hip_workgroup_packing_start
@@ -1531,8 +1531,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -1540,9 +1540,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_pack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i) {
-              buffer[i] = var[list[i]];
-            });
+            pool_pack.enqueue(range_segment(0, len),
+                              [=] RAJA_DEVICE(int i)
+                              { buffer[i] = var[list[i]]; });
 
             buffer += len;
           }
@@ -1564,8 +1564,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -1573,9 +1573,9 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_unpack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i) {
-              var[list[i]] = buffer[i];
-            });
+            pool_unpack.enqueue(range_segment(0, len),
+                                [=] RAJA_DEVICE(int i)
+                                { var[list[i]] = buffer[i]; });
 
             buffer += len;
           }
@@ -1642,8 +1642,8 @@ int main(int argc, char** argv)
 
 
     std::vector<double*> hip_vars(num_vars, nullptr);
-    std::vector<int*> hip_pack_index_lists(num_neighbors, nullptr);
-    std::vector<int*> hip_unpack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_pack_index_lists(num_neighbors, nullptr);
+    std::vector<int*>    hip_unpack_index_lists(num_neighbors, nullptr);
 
     for (int v = 0; v < num_vars; ++v)
     {
@@ -1652,14 +1652,14 @@ int main(int argc, char** argv)
 
     for (int l = 0; l < num_neighbors; ++l)
     {
-      int pack_len = pack_index_list_lengths[l];
+      int pack_len            = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
       hipErrchk(hipMemcpy(hip_pack_index_lists[l],
                           pack_index_lists[l],
                           pack_len * sizeof(int),
                           hipMemcpyHostToDevice));
 
-      int unpack_len = unpack_index_list_lengths[l];
+      int unpack_len            = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
       hipErrchk(hipMemcpy(hip_unpack_index_lists[l],
                           unpack_index_lists[l],
@@ -1676,17 +1676,17 @@ int main(int argc, char** argv)
 
     struct Packer
     {
-      double* buffer;
-      double* var;
-      int* list;
+      double*          buffer;
+      double*          var;
+      int*             list;
       RAJA_DEVICE void operator()(int i) const { buffer[i] = var[list[i]]; }
     };
 
     struct UnPacker
     {
-      double* buffer;
-      double* var;
-      int* list;
+      double*          buffer;
+      double*          var;
+      int*             list;
       RAJA_DEVICE void operator()(int i) const { var[list[i]] = buffer[i]; }
     };
 
@@ -1730,17 +1730,17 @@ int main(int argc, char** argv)
 
           double* var = vars[v];
 
-          RAJA::forall<forall_policy>(
-              range_segment(0, var_size),
-              [=] RAJA_DEVICE(int i) { var[i] = i + v; });
+          RAJA::forall<forall_policy>(range_segment(0, var_size),
+                                      [=] RAJA_DEVICE(int i)
+                                      { var[i] = i + v; });
         }
 
         for (int l = 0; l < num_neighbors; ++l)
         {
 
           double* buffer = buffers[l];
-          int* list = pack_index_lists[l];
-          int len = pack_index_list_lengths[l];
+          int*    list   = pack_index_lists[l];
+          int     len    = pack_index_list_lengths[l];
 
           // pack
           for (int v = 0; v < num_vars; ++v)
@@ -1768,8 +1768,8 @@ int main(int argc, char** argv)
         {
 
           double* buffer = buffers[l];
-          int* list = unpack_index_lists[l];
-          int len = unpack_index_list_lengths[l];
+          int*    list   = unpack_index_lists[l];
+          int     len    = unpack_index_list_lengths[l];
 
           // unpack
           for (int v = 0; v < num_vars; ++v)
@@ -1862,13 +1862,13 @@ int main(int argc, char** argv)
 //
 void checkResult(std::vector<double*> const& vars,
                  std::vector<double*> const& vars_ref,
-                 int var_size,
-                 int num_vars)
+                 int                         var_size,
+                 int                         num_vars)
 {
   bool correct = true;
   for (int v = 0; v < num_vars; ++v)
   {
-    double* var = vars[v];
+    double* var     = vars[v];
     double* var_ref = vars_ref[v];
     for (int i = 0; i < var_size; i++)
     {
@@ -1920,9 +1920,9 @@ struct Extent
 // Function to generate index lists for packing.
 //
 void create_pack_lists(std::vector<int*>& pack_index_lists,
-                       std::vector<int>& pack_index_list_lengths,
-                       const int halo_width,
-                       const int* grid_dims)
+                       std::vector<int>&  pack_index_list_lengths,
+                       const int          halo_width,
+                       const int*         grid_dims)
 {
   std::vector<Extent> pack_index_list_extents(num_neighbors);
 
@@ -1965,25 +1965,25 @@ void create_pack_lists(std::vector<int*>& pack_index_lists,
                                       grid_dims[2] + halo_width};
 
   // edges
-  pack_index_list_extents[6] = Extent{halo_width,
+  pack_index_list_extents[6]  = Extent{halo_width,
                                       halo_width + halo_width,
                                       halo_width,
                                       halo_width + halo_width,
                                       halo_width,
                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[7] = Extent{halo_width,
+  pack_index_list_extents[7]  = Extent{halo_width,
                                       halo_width + halo_width,
                                       grid_dims[1],
                                       grid_dims[1] + halo_width,
                                       halo_width,
                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[8] = Extent{grid_dims[0],
+  pack_index_list_extents[8]  = Extent{grid_dims[0],
                                       grid_dims[0] + halo_width,
                                       halo_width,
                                       halo_width + halo_width,
                                       halo_width,
                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[9] = Extent{grid_dims[0],
+  pack_index_list_extents[9]  = Extent{grid_dims[0],
                                       grid_dims[0] + halo_width,
                                       grid_dims[1],
                                       grid_dims[1] + halo_width,
@@ -2142,9 +2142,9 @@ void destroy_pack_lists(std::vector<int*>& pack_index_lists)
 // Function to generate index lists for unpacking.
 //
 void create_unpack_lists(std::vector<int*>& unpack_index_lists,
-                         std::vector<int>& unpack_index_list_lengths,
-                         const int halo_width,
-                         const int* grid_dims)
+                         std::vector<int>&  unpack_index_list_lengths,
+                         const int          halo_width,
+                         const int*         grid_dims)
 {
   std::vector<Extent> unpack_index_list_extents(num_neighbors);
 
@@ -2189,19 +2189,19 @@ void create_unpack_lists(std::vector<int*>& unpack_index_lists,
   // edges
   unpack_index_list_extents[6] = Extent{
       0, halo_width, 0, halo_width, halo_width, grid_dims[2] + halo_width};
-  unpack_index_list_extents[7] = Extent{0,
+  unpack_index_list_extents[7]  = Extent{0,
                                         halo_width,
                                         grid_dims[1] + halo_width,
                                         grid_dims[1] + 2 * halo_width,
                                         halo_width,
                                         grid_dims[2] + halo_width};
-  unpack_index_list_extents[8] = Extent{grid_dims[0] + halo_width,
+  unpack_index_list_extents[8]  = Extent{grid_dims[0] + halo_width,
                                         grid_dims[0] + 2 * halo_width,
                                         0,
                                         halo_width,
                                         halo_width,
                                         grid_dims[2] + halo_width};
-  unpack_index_list_extents[9] = Extent{grid_dims[0] + halo_width,
+  unpack_index_list_extents[9]  = Extent{grid_dims[0] + halo_width,
                                         grid_dims[0] + 2 * halo_width,
                                         grid_dims[1] + halo_width,
                                         grid_dims[1] + 2 * halo_width,

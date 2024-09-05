@@ -40,8 +40,8 @@ namespace detail
     and using O(N) predicate evaluations and O(1) memory
 */
 template <typename Iter, typename Predicate>
-RAJA_HOST_DEVICE RAJA_INLINE Iter partition(Iter begin,
-                                            Iter end,
+RAJA_HOST_DEVICE RAJA_INLINE Iter partition(Iter      begin,
+                                            Iter      end,
                                             Predicate pred)
 {
   using ::RAJA::safe_iter_swap;
@@ -233,7 +233,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void shell_sort(Iter begin, Iter end, Compare comp)
              i_to_insert -= stride)
         {
 
-          Iter to_insert = begin + i_to_insert;
+          Iter to_insert   = begin + i_to_insert;
           Iter next_sorted = to_insert - stride;
 
           // compare with next item to left
@@ -400,7 +400,7 @@ intro_sort_depth(Iter begin, Iter end, Compare comp, unsigned depth)
 
     // use quick sort
     // choose pivot with median of 3 (N >= insertion_sort_cutoff)
-    Iter mid = begin + N / 2;
+    Iter mid  = begin + N / 2;
     Iter last = end - 1;
     Iter pivot =
         comp(*begin, *mid)
@@ -462,7 +462,7 @@ RAJA_HOST_DEVICE inline void intro_sort(Iter begin, Iter end, Compare comp)
 template <typename Iter, typename Compare>
 void RAJA_INLINE inplace_merge(Iter first, Iter middle, Iter last, Compare comp)
 {
-  using diff_type = RAJA::detail::IterDiff<Iter>;
+  using diff_type  = RAJA::detail::IterDiff<Iter>;
   using value_type = RAJA::detail::IterVal<Iter>;
 
   diff_type copylen = middle - first;
@@ -538,10 +538,10 @@ void RAJA_INLINE inplace_merge(Iter first, Iter middle, Iter last, Compare comp)
 template <typename Iter1, typename Iter2, typename OutIter, typename Compare>
 // constexpr OutIter // <-- std:: return value
 void RAJA_INLINE
-merge_like_std(Iter1 first1,
-               Iter1 last1,
-               Iter2 first2,
-               Iter2 last2,
+merge_like_std(Iter1   first1,
+               Iter1   last1,
+               Iter2   first2,
+               Iter2   last2,
                OutIter d_first, // using this as direct access to result
                Compare comp)
 {
@@ -600,7 +600,7 @@ merge_like_std(Iter1 first1,
 template <typename Iter, typename Compare>
 RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
 {
-  using diff_type = RAJA::detail::IterDiff<Iter>;
+  using diff_type  = RAJA::detail::IterDiff<Iter>;
   using value_type = RAJA::detail::IterVal<Iter>;
 
   // iterative mergesort (bottom up) for future parallelism
@@ -609,7 +609,7 @@ RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
   auto minlam = [](diff_type a, diff_type b) { return (a < b) ? a : b; };
 
   // insertion sort for sizes <= 16
-  diff_type len = end - begin;
+  diff_type                  len                   = end - begin;
   static constexpr diff_type insertion_sort_cutoff = 16;
   if (len <= insertion_sort_cutoff && len > 0)
   {
@@ -730,7 +730,7 @@ template <typename Container,
           typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-    insertion_sort(Container&& c, Compare comp = Compare{})
+                insertion_sort(Container&& c, Compare comp = Compare{})
 {
   using std::begin;
   using std::end;
@@ -741,7 +741,7 @@ RAJA_HOST_DEVICE
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
+  auto end_it   = end(c);
 
   if (begin_it != end_it)
   {
@@ -761,7 +761,7 @@ template <typename Container,
           typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-    shell_sort(Container&& c, Compare comp = Compare{})
+                shell_sort(Container&& c, Compare comp = Compare{})
 {
   using std::begin;
   using std::end;
@@ -772,7 +772,7 @@ RAJA_HOST_DEVICE
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
+  auto end_it   = end(c);
 
   if (begin_it != end_it)
   {
@@ -792,7 +792,7 @@ template <typename Container,
           typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-    heap_sort(Container&& c, Compare comp = Compare{})
+                heap_sort(Container&& c, Compare comp = Compare{})
 {
   using std::begin;
   using std::end;
@@ -803,7 +803,7 @@ RAJA_HOST_DEVICE
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
+  auto end_it   = end(c);
 
   if (begin_it != end_it)
   {
@@ -823,7 +823,7 @@ template <typename Container,
           typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-    intro_sort(Container&& c, Compare comp = Compare{})
+                intro_sort(Container&& c, Compare comp = Compare{})
 {
   using std::begin;
   using std::end;
@@ -834,7 +834,7 @@ RAJA_HOST_DEVICE
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
+  auto end_it   = end(c);
 
   if (begin_it != end_it)
   {
@@ -853,7 +853,7 @@ RAJA_HOST_DEVICE
 template <typename Container,
           typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-merge_sort(Container&& c, Compare comp = Compare{})
+            merge_sort(Container&& c, Compare comp = Compare{})
 {
   using std::begin;
   using std::end;
@@ -864,7 +864,7 @@ merge_sort(Container&& c, Compare comp = Compare{})
                 "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
-  auto end_it = end(c);
+  auto end_it   = end(c);
 
   if (begin_it != end_it)
   {

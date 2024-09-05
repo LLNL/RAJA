@@ -19,25 +19,25 @@ template <typename IDX_TYPE,
           typename LAUNCH_POLICY,
           typename GLOBAL_THREAD_POLICY>
 void LaunchParamExptReduceMinBasicTestImpl(
-    const SEG_TYPE& seg,
+    const SEG_TYPE&              seg,
     const std::vector<IDX_TYPE>& seg_idx,
-    camp::resources::Resource working_res)
+    camp::resources::Resource    working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
   constexpr int threads = 256;
-  int blocks = (seg.size() - 1) / threads + 1;
+  int           blocks  = (seg.size() - 1) / threads + 1;
 
   allocateForallTestData<DATA_TYPE>(
       data_len, working_res, &working_array, &check_array, &test_array);
 
-  const int modval = 100;
-  const DATA_TYPE min_init = modval + 1;
+  const int       modval    = 100;
+  const DATA_TYPE min_init  = modval + 1;
   const DATA_TYPE small_min = -modval;
 
   for (IDX_TYPE i = 0; i < data_len; ++i)
@@ -62,11 +62,16 @@ void LaunchParamExptReduceMinBasicTestImpl(
       RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
       [=] RAJA_HOST_DEVICE(
-          RAJA::LaunchContext ctx, DATA_TYPE & _mininit, DATA_TYPE & _min) {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
-          _mininit = RAJA_MIN(working_array[idx], _mininit);
-          _min = RAJA_MIN(working_array[idx], _min);
-        });
+          RAJA::LaunchContext ctx, DATA_TYPE & _mininit, DATA_TYPE & _min)
+      {
+        RAJA::loop<GLOBAL_THREAD_POLICY>(
+            ctx,
+            seg,
+            [&](IDX_TYPE idx)
+            {
+              _mininit = RAJA_MIN(working_array[idx], _mininit);
+              _min     = RAJA_MIN(working_array[idx], _min);
+            });
       });
 
 
@@ -80,10 +85,13 @@ void LaunchParamExptReduceMinBasicTestImpl(
   RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _min) {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
-          _min = RAJA_MIN(working_array[idx] * factor, _min);
-        });
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _min)
+      {
+        RAJA::loop<GLOBAL_THREAD_POLICY>(
+            ctx,
+            seg,
+            [&](IDX_TYPE idx)
+            { _min = RAJA_MIN(working_array[idx] * factor, _min); });
       });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min * factor);
@@ -93,10 +101,13 @@ void LaunchParamExptReduceMinBasicTestImpl(
   RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _min) {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
-          _min = RAJA_MIN(working_array[idx] * factor, _min);
-        });
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _min)
+      {
+        RAJA::loop<GLOBAL_THREAD_POLICY>(
+            ctx,
+            seg,
+            [&](IDX_TYPE idx)
+            { _min = RAJA_MIN(working_array[idx] * factor, _min); });
       });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min * factor);
@@ -114,8 +125,8 @@ class LaunchParamExptReduceMinBasicTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchParamExptReduceMinBasicTest, ReduceMinBasicForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE   = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<3>>::type,

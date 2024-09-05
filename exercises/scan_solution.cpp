@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#define OP_PLUS_INT RAJA::operators::plus<int>
-#define OP_MIN_INT RAJA::operators::minimum<int>
-#define OP_MAX_INT RAJA::operators::maximum<int>
+#define OP_PLUS_INT               RAJA::operators::plus<int>
+#define OP_MIN_INT                RAJA::operators::minimum<int>
+#define OP_MAX_INT                RAJA::operators::maximum<int>
 #define CHECK_INC_SCAN_RESULTS(X) checkInclusiveScanResult<X>(in, out, N);
 #define CHECK_EXC_SCAN_RESULTS(X) checkExclusiveScanResult<X>(in, out, N);
 
@@ -74,7 +74,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize vector data
   //
-  int* in = memoryManager::allocate<int>(N);
+  int* in  = memoryManager::allocate<int>(N);
   int* out = memoryManager::allocate<int>(N);
 
   std::iota(in, in + N, -1);
@@ -267,7 +267,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running HIP inclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
-  int* d_in = memoryManager::allocate_gpu<int>(N);
+  int* d_in  = memoryManager::allocate_gpu<int>(N);
   int* d_out = memoryManager::allocate_gpu<int>(N);
 
   hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));

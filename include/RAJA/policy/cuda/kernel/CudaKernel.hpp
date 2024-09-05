@@ -213,7 +213,7 @@ template <typename Data, typename Exec>
 __global__ void CudaKernelLauncher(Data data)
 {
 
-  using data_t = camp::decay<Data>;
+  using data_t        = camp::decay<Data>;
   data_t private_data = data;
 
   Exec::exec(private_data, true);
@@ -232,7 +232,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
     void CudaKernelLauncherFixed(Data data)
 {
 
-  using data_t = camp::decay<Data>;
+  using data_t        = camp::decay<Data>;
   data_t private_data = data;
 
   // execute the the object
@@ -296,9 +296,9 @@ struct CudaLaunchHelper;
  * determined at runtime using the CUDA occupancy calculator.
  */
 template <bool async0,
-          int num_blocks,
-          int num_threads,
-          int blocks_per_sm,
+          int  num_blocks,
+          int  num_threads,
+          int  blocks_per_sm,
           typename StmtList,
           typename Data,
           typename Types>
@@ -327,8 +327,8 @@ struct CudaLaunchHelper<
   }
 
   inline static void recommended_blocks_threads(size_t shmem_size,
-                                                int& recommended_blocks,
-                                                int& recommended_threads)
+                                                int&   recommended_blocks,
+                                                int&   recommended_threads)
   {
     auto func = Self::get_func();
 
@@ -344,7 +344,7 @@ struct CudaLaunchHelper<
         //
         auto data = ::RAJA::cuda::cuda_occupancy_max_blocks_threads<Self>(
             func, shmem_size);
-        recommended_blocks = data.func_max_blocks_per_device;
+        recommended_blocks  = data.func_max_blocks_per_device;
         recommended_threads = data.func_max_threads_per_block;
       }
       else
@@ -391,7 +391,7 @@ struct CudaLaunchHelper<
   }
 
   inline static void max_threads(size_t RAJA_UNUSED_ARG(shmem_size),
-                                 int& max_threads)
+                                 int&   max_threads)
   {
     if (num_threads <= 0)
     {
@@ -465,8 +465,8 @@ struct CudaLaunchHelper<
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
 inline cuda_dim_t fitCudaDims(cuda_dim_member_t limit,
-                              cuda_dim_t result,
-                              cuda_dim_t minimum = cuda_dim_t())
+                              cuda_dim_t        result,
+                              cuda_dim_t        minimum = cuda_dim_t())
 {
 
 
@@ -551,7 +551,7 @@ struct StatementExecutor<
 
 
     // Only launch kernel if we have something to iterate over
-    int num_blocks = launch_dims.num_blocks();
+    int num_blocks  = launch_dims.num_blocks();
     int num_threads = launch_dims.num_threads();
     if (num_blocks > 0 || num_threads > 0)
     {

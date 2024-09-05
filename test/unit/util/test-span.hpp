@@ -26,7 +26,7 @@ template <typename ValueType, typename IndexType>
 void testSpanConstructTypes()
 {
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   {
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
@@ -49,10 +49,10 @@ template <typename ValueType, typename IndexType>
 void testSpanAssignTypes()
 {
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   {
-    RAJA::Span<ValueType*, IndexType> span(ptr, len);
+    RAJA::Span<ValueType*, IndexType>       span(ptr, len);
     const RAJA::Span<ValueType*, IndexType> span2(ptr, len);
     span = span2;
 
@@ -61,9 +61,9 @@ void testSpanAssignTypes()
   }
 
   {
-    ValueType* ptr2 = ptr + 1;
-    constexpr IndexType len2 = 1;
-    RAJA::Span<ValueType*, IndexType> span(ptr, len);
+    ValueType*                              ptr2 = ptr + 1;
+    constexpr IndexType                     len2 = 1;
+    RAJA::Span<ValueType*, IndexType>       span(ptr, len);
     const RAJA::Span<ValueType*, IndexType> span2(ptr2, len2);
     span = span2;
 
@@ -77,11 +77,11 @@ void testSpanAssignTypes()
 template <typename ValueType, typename IndexType>
 void testSpanIteratorTypes()
 {
-  using span_type = RAJA::Span<ValueType*, IndexType>;
-  using iterator = typename span_type::iterator;
-  using const_iterator = typename span_type::const_iterator;
+  using span_type         = RAJA::Span<ValueType*, IndexType>;
+  using iterator          = typename span_type::iterator;
+  using const_iterator    = typename span_type::const_iterator;
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
@@ -94,7 +94,7 @@ void testSpanIteratorTypes()
     const span_type span(ptr, len);
 
     iterator begin = span.begin();
-    iterator end = span.end();
+    iterator end   = span.end();
     ASSERT_EQ(ptr, begin);
     ASSERT_EQ(ptr + len, end);
 
@@ -107,7 +107,7 @@ void testSpanIteratorTypes()
     }
 
     const_iterator cbegin = span.cbegin();
-    const_iterator cend = span.cend();
+    const_iterator cend   = span.cend();
     ASSERT_EQ(ptr, cbegin);
     ASSERT_EQ(ptr + len, cend);
 
@@ -127,7 +127,7 @@ template <typename ValueType, typename IndexType>
 void testSpanElementAccessTypes()
 {
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
@@ -156,7 +156,7 @@ template <typename ValueType, typename IndexType>
 void testSpanObserveTypes()
 {
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
@@ -186,7 +186,7 @@ template <typename ValueType, typename IndexType>
 void testSpanSubViewTypes()
 {
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   // XL cannot handle initialization list with new
   // e.g. new ValueType[len]{0,1,2,3} produces error
@@ -196,7 +196,7 @@ void testSpanSubViewTypes()
   }
 
   {
-    constexpr IndexType count = 3;
+    constexpr IndexType                     count = 3;
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
     const RAJA::Span<ValueType*, IndexType> subspan = span.first(count);
 
@@ -205,7 +205,7 @@ void testSpanSubViewTypes()
   }
 
   {
-    constexpr IndexType count = 3;
+    constexpr IndexType                     count = 3;
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
     const RAJA::Span<ValueType*, IndexType> subspan = span.last(count);
 
@@ -214,8 +214,8 @@ void testSpanSubViewTypes()
   }
 
   {
-    constexpr IndexType begin = 1;
-    constexpr IndexType count = 2;
+    constexpr IndexType                     begin = 1;
+    constexpr IndexType                     count = 2;
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
     const RAJA::Span<ValueType*, IndexType> subspan =
         span.subspan(begin, count);
@@ -225,8 +225,8 @@ void testSpanSubViewTypes()
   }
 
   {
-    constexpr IndexType begin = 1;
-    constexpr IndexType count = 2;
+    constexpr IndexType                     begin = 1;
+    constexpr IndexType                     count = 2;
     const RAJA::Span<ValueType*, IndexType> span(ptr, len);
     const RAJA::Span<ValueType*, IndexType> subspan = span.slice(begin, count);
 
@@ -241,7 +241,7 @@ template <typename ValueType, typename IndexType>
 void testSpanMakeSpanTypes()
 {
   constexpr IndexType len = 4;
-  ValueType* ptr = new ValueType[len];
+  ValueType*          ptr = new ValueType[len];
 
   {
     const RAJA::Span<ValueType*, IndexType> span = RAJA::make_span(ptr, len);

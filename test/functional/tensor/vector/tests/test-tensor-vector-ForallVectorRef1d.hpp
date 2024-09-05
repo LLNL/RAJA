@@ -16,8 +16,8 @@ template <typename VECTOR_TYPE>
 void ForallVectorRef1dImpl()
 {
 
-  using vector_t = VECTOR_TYPE;
-  using policy_t = typename vector_t::register_policy;
+  using vector_t  = VECTOR_TYPE;
+  using policy_t  = typename vector_t::register_policy;
   using element_t = typename vector_t::element_type;
 
 
@@ -58,9 +58,8 @@ void ForallVectorRef1dImpl()
   tensor_copy_to_device<policy_t>(B_ptr, B);
   tensor_copy_to_device<policy_t>(C_ptr, C);
 
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    Z_d[all] = 3 + (X_d[all] * (5 / Y_d[all])) + 9;
-  });
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE()
+                      { Z_d[all] = 3 + (X_d[all] * (5 / Y_d[all])) + 9; });
 
   tensor_copy_to_host<policy_t>(C, C_ptr);
 
@@ -83,9 +82,9 @@ void ForallVectorRef1dImpl()
 
   tensor_copy_to_device<policy_t>(C_ptr, C);
 
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    Z_d[all] = 3 + ((X_d[all] * Y_d[all]) / Y_d[all]) + 9;
-  });
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      { Z_d[all] = 3 + ((X_d[all] * Y_d[all]) / Y_d[all]) + 9; });
 
   tensor_copy_to_host<policy_t>(C, C_ptr);
 
@@ -104,9 +103,8 @@ void ForallVectorRef1dImpl()
 
   // evaluate on a subrange [N/2, N)
   auto some = idx_t::range(N / 2, N);
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    Z_d[some] = 3. + (X_d[some] * (5 / Y_d[some])) + 9;
-  });
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE()
+                      { Z_d[some] = 3. + (X_d[some] * (5 / Y_d[some])) + 9; });
 
   tensor_copy_to_host<policy_t>(A, A_ptr);
   tensor_copy_to_host<policy_t>(B, B_ptr);

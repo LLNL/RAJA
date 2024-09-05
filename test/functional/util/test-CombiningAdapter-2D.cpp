@@ -28,14 +28,15 @@ void test_CombiningAdapter_2D(Segment0 const& seg0, Segment1 const& seg1)
   using std::begin;
   using std::distance;
   using std::end;
-  auto seg0_begin = begin(seg0);
-  auto seg1_begin = begin(seg1);
-  size_t seg1_len = static_cast<size_t>(seg1.size());
+  auto   seg0_begin = begin(seg0);
+  auto   seg1_begin = begin(seg1);
+  size_t seg1_len   = static_cast<size_t>(seg1.size());
 
   size_t counter0 = 0;
   size_t counter1 = 0;
-  auto adapter = RAJA::make_CombiningAdapter(
-      [&](SegIndexType0 i0, SegIndexType1 i1) {
+  auto   adapter  = RAJA::make_CombiningAdapter(
+      [&](SegIndexType0 i0, SegIndexType1 i1)
+      {
         ASSERT_EQ(seg0_begin[counter0], i0);
         ASSERT_EQ(seg1_begin[counter1], i1);
         counter1 += 1;

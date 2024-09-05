@@ -102,7 +102,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Initialize a RAJA timer object
   // and variable to store minimum run time
   //
-  auto timer = RAJA::Timer();
+  auto   timer  = RAJA::Timer();
   double minRun = std::numeric_limits<double>::max();
 
   //
@@ -168,21 +168,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using INIT_POL = RAJA::seq_exec;
 #endif
 
-  RAJA::forall<INIT_POL>(RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
-    for (int row = 0; row < N_r; ++row)
-    {
-      for (int col = 0; col < N_c; ++col)
-      {
-        Aview(e, row, col) = row;
-        Bview(e, row, col) = col;
-        Cview(e, row, col) = 0;
+  RAJA::forall<INIT_POL>(RAJA::TypedRangeSegment<int>(0, N),
+                         [=](int e)
+                         {
+                           for (int row = 0; row < N_r; ++row)
+                           {
+                             for (int col = 0; col < N_c; ++col)
+                             {
+                               Aview(e, row, col) = row;
+                               Bview(e, row, col) = col;
+                               Cview(e, row, col) = 0;
 
-        Aview2(e, row, col) = row;
-        Bview2(e, row, col) = col;
-        Cview2(e, row, col) = 0;
-      }
-    }
-  });
+                               Aview2(e, row, col) = row;
+                               Bview2(e, row, col) = col;
+                               Cview2(e, row, col) = 0;
+                             }
+                           }
+                         });
 
 
   //----------------------------------------------------------------------------//
@@ -197,7 +199,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     timer.start();
     // _permutedlayout_batchedmatmult_loop_start
     RAJA::forall<RAJA::seq_exec>(
-        RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=](int e)
+        {
           Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0) +
                            Aview(e, 0, 1) * Bview(e, 1, 0) +
                            Aview(e, 0, 2) * Bview(e, 2, 0);
@@ -251,7 +255,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     timer.start();
     // _permutedlayout2_batchedmatmult_loop_start
     RAJA::forall<RAJA::seq_exec>(
-        RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=](int e)
+        {
           Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0) +
                             Aview2(e, 0, 1) * Bview2(e, 1, 0) +
                             Aview2(e, 0, 2) * Bview2(e, 2, 0);
@@ -308,7 +314,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     timer.start();
     // _permutedlayout_batchedmatmult_omp_start
     RAJA::forall<RAJA::omp_parallel_for_exec>(
-        RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=](int e)
+        {
           Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0) +
                            Aview(e, 0, 1) * Bview(e, 1, 0) +
                            Aview(e, 0, 2) * Bview(e, 2, 0);
@@ -363,7 +371,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::omp_parallel_for_exec>(
-        RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=](int e)
+        {
           Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0) +
                             Aview2(e, 0, 1) * Bview2(e, 1, 0) +
                             Aview2(e, 0, 2) * Bview2(e, 2, 0);
@@ -421,7 +431,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-        RAJA::TypedRangeSegment<int>(0, N), [=] RAJA_DEVICE(int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=] RAJA_DEVICE(int e)
+        {
           Cview(e, 0, 0) = Aview(e, 0, 0) * Bview(e, 0, 0) +
                            Aview(e, 0, 1) * Bview(e, 1, 0) +
                            Aview(e, 0, 2) * Bview(e, 2, 0);
@@ -475,7 +487,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-        RAJA::TypedRangeSegment<int>(0, N), [=] RAJA_DEVICE(int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=] RAJA_DEVICE(int e)
+        {
           Cview2(e, 0, 0) = Aview2(e, 0, 0) * Bview2(e, 0, 0) +
                             Aview2(e, 0, 1) * Bview2(e, 1, 0) +
                             Aview2(e, 0, 2) * Bview2(e, 2, 0);
@@ -554,7 +568,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-        RAJA::TypedRangeSegment<int>(0, N), [=] RAJA_DEVICE(int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=] RAJA_DEVICE(int e)
+        {
           d_Cview(e, 0, 0) = d_Aview(e, 0, 0) * d_Bview(e, 0, 0) +
                              d_Aview(e, 0, 1) * d_Bview(e, 1, 0) +
                              d_Aview(e, 0, 2) * d_Bview(e, 2, 0);
@@ -609,7 +625,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-        RAJA::TypedRangeSegment<int>(0, N), [=] RAJA_DEVICE(int e) {
+        RAJA::TypedRangeSegment<int>(0, N),
+        [=] RAJA_DEVICE(int e)
+        {
           d_Cview2(e, 0, 0) = d_Aview2(e, 0, 0) * d_Bview2(e, 0, 0) +
                               d_Aview2(e, 0, 1) * d_Bview2(e, 1, 0) +
                               d_Aview2(e, 0, 2) * d_Bview2(e, 2, 0);

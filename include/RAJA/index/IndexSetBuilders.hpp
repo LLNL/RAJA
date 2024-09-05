@@ -55,9 +55,9 @@ namespace RAJA
  */
 void RAJASHAREDDLL_API buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource work_res,
-    const RAJA::Index_type* const indices_in,
-    RAJA::Index_type length,
+    camp::resources::Resource                                   work_res,
+    const RAJA::Index_type* const                               indices_in,
+    RAJA::Index_type                                            length,
     RAJA::Index_type range_min_length,
     RAJA::Index_type range_align);
 
@@ -117,12 +117,12 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
  */
 void buildLockFreeColorIndexset(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource work_res,
-    RAJA::Index_type const* domainToRange,
-    int numEntity,
-    int numRangePerDomain,
-    int numEntityRange,
-    RAJA::Index_type* elemPermutation = nullptr,
+    camp::resources::Resource                                   work_res,
+    RAJA::Index_type const*                                     domainToRange,
+    int                                                         numEntity,
+    int               numRangePerDomain,
+    int               numEntityRange,
+    RAJA::Index_type* elemPermutation  = nullptr,
     RAJA::Index_type* ielemPermutation = nullptr);
 
 } // namespace RAJA

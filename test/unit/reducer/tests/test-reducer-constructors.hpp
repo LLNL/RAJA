@@ -60,9 +60,9 @@ typename std::enable_if< // CPU policy.
     >::type
 testReducerConstructor()
 {
-  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum;
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min;
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max;
+  RAJA::ReduceSum<ReducePolicy, NumericType>    reduce_sum;
+  RAJA::ReduceMin<ReducePolicy, NumericType>    reduce_min;
+  RAJA::ReduceMax<ReducePolicy, NumericType>    reduce_max;
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc;
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc;
 
@@ -99,7 +99,7 @@ testReducerConstructor()
 TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
 {
   using ReducePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using NumericType  = typename camp::at<TypeParam, camp::num<1>>::type;
 
   testReducerConstructor<ReducePolicy, NumericType>();
 }
@@ -122,10 +122,12 @@ typename std::enable_if< // GPU policy fiddles with value.
     std::is_base_of<RunOnDevice, ForOnePol>::value>::type
 exec_dispatcher(NumericType* initVal)
 {
-  forone<ForOnePol>([=] __device__() {
-    initVal[0] += 1;
-    initVal[0] -= 1;
-  });
+  forone<ForOnePol>(
+      [=] __device__()
+      {
+        initVal[0] += 1;
+        initVal[0] -= 1;
+      });
 }
 #endif
 
@@ -138,13 +140,13 @@ void testInitReducerConstructor()
   camp::resources::Resource work_res{WORKING_RES::get_default()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  NumericType* theVal = nullptr;
+  NumericType* theVal  = nullptr;
   NumericType* workVal = nullptr;
 
   NumericType initVal = (NumericType)5;
 
   workVal = work_res.allocate<NumericType>(1);
-  theVal = host_res.allocate<NumericType>(1);
+  theVal  = host_res.allocate<NumericType>(1);
 
   work_res.memcpy(workVal, &initVal, sizeof(initVal));
   theVal[0] = (NumericType)10;
@@ -157,9 +159,9 @@ void testInitReducerConstructor()
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
+  RAJA::ReduceSum<ReducePolicy, NumericType>    reduce_sum(initVal);
+  RAJA::ReduceMin<ReducePolicy, NumericType>    reduce_min(initVal);
+  RAJA::ReduceMax<ReducePolicy, NumericType>    reduce_max(initVal);
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
@@ -208,10 +210,10 @@ void testInitReducerConstructor()
 
 TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
 {
-  using ReduceType = typename camp::at<TypeParam, camp::num<0>>::type;
-  using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ReduceType   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using NumericType  = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using ForOneType = typename camp::at<TypeParam, camp::num<3>>::type;
+  using ForOneType   = typename camp::at<TypeParam, camp::num<3>>::type;
 
   testInitReducerConstructor<ReduceType,
                              NumericType,

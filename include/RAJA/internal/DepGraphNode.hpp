@@ -119,9 +119,9 @@ public:
   void print(std::ostream& os) const;
 
 private:
-  int m_dep_task[_MaxDepTasks_];
-  int m_num_dep_tasks;
-  int m_semaphore_reload_value;
+  int              m_dep_task[_MaxDepTasks_];
+  int              m_num_dep_tasks;
+  int              m_semaphore_reload_value;
   std::atomic<int> m_semaphore_value;
 };
 

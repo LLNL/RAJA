@@ -34,7 +34,7 @@ struct testWorkGroupUnorderedSingle
     ASSERT_GE(end, begin);
     IndexType N = end + begin;
 
-    WORKING_RES res = WORKING_RES::get_default();
+    WORKING_RES               res = WORKING_RES::get_default();
     camp::resources::Resource working_res{res};
 
     IndexType* working_array;
@@ -48,9 +48,8 @@ struct testWorkGroupUnorderedSingle
 
     using range_segment = RAJA::TypedRangeSegment<IndexType>;
 
-    auto callable = [=] RAJA_HOST_DEVICE(IndexType i) {
-      working_array[i] += i + test_val;
-    };
+    auto callable = [=] RAJA_HOST_DEVICE(IndexType i)
+    { working_array[i] += i + test_val; };
 
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, decltype(callable)>>;
@@ -139,7 +138,7 @@ struct testWorkGroupUnorderedSingle
 
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
@@ -157,7 +156,7 @@ struct testWorkGroupUnorderedSingle<
 };
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
@@ -187,12 +186,12 @@ TYPED_TEST_SUITE_P(WorkGroupBasicUnorderedSingleFunctionalTest);
 TYPED_TEST_P(WorkGroupBasicUnorderedSingleFunctionalTest,
              BasicWorkGroupUnorderedSingle)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ExecPolicy       = typename camp::at<TypeParam, camp::num<0>>::type;
+  using OrderPolicy      = typename camp::at<TypeParam, camp::num<1>>::type;
+  using StoragePolicy    = typename camp::at<TypeParam, camp::num<2>>::type;
+  using DispatchTyper    = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType        = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Allocator        = typename camp::at<TypeParam, camp::num<5>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());

@@ -17,17 +17,17 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallResourceIcountIndexSetTestImpl()
 {
 
-  using RangeSegType = RAJA::TypedRangeSegment<INDEX_TYPE>;
+  using RangeSegType       = RAJA::TypedRangeSegment<INDEX_TYPE>;
   using RangeStrideSegType = RAJA::TypedRangeStrideSegment<INDEX_TYPE>;
-  using ListSegType = RAJA::TypedListSegment<INDEX_TYPE>;
+  using ListSegType        = RAJA::TypedListSegment<INDEX_TYPE>;
 
   using IndexSetType =
       RAJA::TypedIndexSet<RangeSegType, RangeStrideSegType, ListSegType>;
 
-  WORKING_RES working_res;
+  WORKING_RES               working_res;
   camp::resources::Resource erased_working_res{working_res};
 
-  IndexSetType iset;
+  IndexSetType            iset;
   std::vector<INDEX_TYPE> is_indices;
   buildIndexSet<INDEX_TYPE, RangeSegType, RangeStrideSegType, ListSegType>(
       iset, is_indices, erased_working_res);
@@ -60,9 +60,8 @@ void ForallResourceIcountIndexSetTestImpl()
   RAJA::forall_Icount<EXEC_POLICY>(
       working_res,
       iset,
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx) {
-        working_array[icount] = idx;
-      });
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx)
+      { working_array[icount] = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -83,9 +82,9 @@ class ForallResourceIcountIndexSetTest : public ::testing::Test
 
 TYPED_TEST_P(ForallResourceIcountIndexSetTest, ResourceIndexSetForallIcount)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ForallResourceIcountIndexSetTestImpl<INDEX_TYPE,
                                        WORKING_RESOURCE,

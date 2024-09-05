@@ -24,7 +24,7 @@ struct TestCallable
 {
   TestCallable(T _val) : val(_val) {}
 
-  TestCallable(TestCallable const&) = delete;
+  TestCallable(TestCallable const&)            = delete;
   TestCallable& operator=(TestCallable const&) = delete;
 
   TestCallable(TestCallable&& o) : val(o.val), move_constructed(true)
@@ -34,7 +34,7 @@ struct TestCallable
 
   TestCallable& operator=(TestCallable&& o)
   {
-    val = o.val;
+    val          = o.val;
     o.moved_from = true;
     return *this;
   }
@@ -44,8 +44,8 @@ struct TestCallable
                                    bool* moved_from_ptr) const
   {
     *static_cast<T*>(val_ptr) = val;
-    *move_constructed_ptr = move_constructed;
-    *moved_from_ptr = moved_from;
+    *move_constructed_ptr     = move_constructed;
+    *moved_from_ptr           = moved_from;
   }
 
 private:
@@ -53,7 +53,7 @@ private:
 
 public:
   bool move_constructed = false;
-  bool moved_from = false;
+  bool moved_from       = false;
 };
 
 
@@ -61,9 +61,9 @@ public:
 template <typename T, size_t N>
 struct TestArray
 {
-  T a[N]{};
-  T& operator[](size_t i) { return a[i]; }
-  T const& operator[](size_t i) const { return a[i]; }
+  T                  a[N]{};
+  T&                 operator[](size_t i) { return a[i]; }
+  T const&           operator[](size_t i) const { return a[i]; }
   friend inline bool operator==(TestArray const& lhs, TestArray const& rhs)
   {
     for (size_t i = 0; i < N; ++i)

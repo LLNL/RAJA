@@ -74,13 +74,13 @@ class TensorLoadStore
     : public TensorExpressionBase<TensorLoadStore<TENSOR_TYPE, REF_TYPE>>
 {
 public:
-  using self_type = TensorLoadStore<TENSOR_TYPE, REF_TYPE>;
-  using tensor_type = TENSOR_TYPE;
+  using self_type    = TensorLoadStore<TENSOR_TYPE, REF_TYPE>;
+  using tensor_type  = TENSOR_TYPE;
   using element_type = typename TENSOR_TYPE::element_type;
-  using index_type = typename REF_TYPE::index_type;
-  using ref_type = REF_TYPE;
-  using tile_type = typename REF_TYPE::tile_type;
-  using result_type = TENSOR_TYPE;
+  using index_type   = typename REF_TYPE::index_type;
+  using ref_type     = REF_TYPE;
+  using tile_type    = typename REF_TYPE::tile_type;
+  using result_type  = TENSOR_TYPE;
 
   static constexpr camp::idx_t s_num_dims = result_type::s_num_dims;
 

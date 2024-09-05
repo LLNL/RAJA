@@ -76,17 +76,15 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
                            INDEX_TYPE rr,
                            INDEX_TYPE tx,
                            INDEX_TYPE ty,
-                           TILE_MEM & Tile_Array) {
-        Tile_Array(ty, tx) = WorkView(rr, cc);
-      },
+                           TILE_MEM & Tile_Array)
+      { Tile_Array(ty, tx) = WorkView(rr, cc); },
 
       [=] RAJA_HOST_DEVICE(INDEX_TYPE cc,
                            INDEX_TYPE rr,
                            INDEX_TYPE tx,
                            INDEX_TYPE ty,
-                           TILE_MEM & Tile_Array) {
-        WorkTView(cc, rr) = Tile_Array(ty, tx);
-      });
+                           TILE_MEM & Tile_Array)
+      { WorkTView(cc, rr) = Tile_Array(ty, tx); });
 
   work_res.memcpy(
       check_array_t, work_array_t, sizeof(DATA_TYPE) * array_length);
@@ -114,8 +112,8 @@ class KernelTileLocalArray2DTest : public ::testing::Test
 
 TYPED_TEST_P(KernelTileLocalArray2DTest, TileLocalArray2DKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE   = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 

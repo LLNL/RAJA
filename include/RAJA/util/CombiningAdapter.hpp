@@ -82,11 +82,11 @@ struct CombiningAdapter
 {
   using Layout = Layout_;
 
-  using IndexRange = typename Layout::IndexRange;
+  using IndexRange     = typename Layout::IndexRange;
   using StrippedIdxLin = typename Layout::StrippedIdxLin;
-  using IndexLinear = typename Layout::IndexLinear;
-  using DimTuple = typename Layout::DimTuple;
-  using DimArr = typename Layout::DimArr;
+  using IndexLinear    = typename Layout::IndexLinear;
+  using DimTuple       = typename Layout::DimTuple;
+  using DimArr         = typename Layout::DimArr;
 
   using RangeLinear = RAJA::TypedRangeSegment<IndexLinear>;
 
@@ -232,7 +232,7 @@ make_CombiningAdapter(Lambda&& lambda,
   using Layout = RAJA::Layout<sizeof...(IdxTs), IdxLin>;
   using OffsetLayout = RAJA::TypedOffsetLayout<IdxLin, camp::tuple<IdxTs...>>;
 
-  Layout layout(static_cast<IdxLin>(distance(begin(segs), end(segs)))...);
+  Layout       layout(static_cast<IdxLin>(distance(begin(segs), end(segs)))...);
   OffsetLayout offset_layout = OffsetLayout::from_layout_and_offsets(
       {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs))
                                           : static_cast<IdxLin>(0))...}},

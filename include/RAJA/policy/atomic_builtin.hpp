@@ -608,7 +608,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T* acc, Oper&& oper)
   do
   {
     expected = old;
-    old = builtin_atomicCAS(acc, expected, oper(expected));
+    old      = builtin_atomicCAS(acc, expected, oper(expected));
   } while (!builtin_atomicCAS_equal(old, expected));
 
   return old;
@@ -622,8 +622,8 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T* acc, Oper&& oper)
  * that was replaced by the result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T* acc,
-                                                     Oper&& oper,
+RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T*             acc,
+                                                     Oper&&         oper,
                                                      ShortCircuit&& sc)
 {
   T old = builtin_atomicLoad(acc);
@@ -638,7 +638,7 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS_loop(T* acc,
   do
   {
     expected = old;
-    old = builtin_atomicCAS(acc, expected, oper(expected));
+    old      = builtin_atomicCAS(acc, expected, oper(expected));
   } while (!builtin_atomicCAS_equal(old, expected) && !sc(old));
 
   return old;
@@ -754,9 +754,10 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T* acc)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T* acc, T value)
 {
-  return detail::builtin_atomicCAS_loop(acc, [value](T old) {
-    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
-  });
+  return detail::builtin_atomicCAS_loop(
+      acc,
+      [value](T old)
+      { return value <= old ? static_cast<T>(0) : old + static_cast<T>(1); });
 }
 
 template <typename T>
@@ -768,10 +769,14 @@ RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T* acc)
 template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicDec(builtin_atomic, T* acc, T value)
 {
-  return detail::builtin_atomicCAS_loop(acc, [value](T old) {
-    return old == static_cast<T>(0) || value < old ? value
-                                                   : old - static_cast<T>(1);
-  });
+  return detail::builtin_atomicCAS_loop(acc,
+                                        [value](T old)
+                                        {
+                                          return old == static_cast<T>(0) ||
+                                                         value < old
+                                                     ? value
+                                                     : old - static_cast<T>(1);
+                                        });
 }
 
 template <typename T>

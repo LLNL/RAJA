@@ -95,9 +95,9 @@ struct IndexLayout_impl;
 template <camp::idx_t... RangeInts, typename IdxLin, typename... IndexTypes>
 struct IndexLayout_impl<camp::idx_seq<RangeInts...>, IdxLin, IndexTypes...>
 {
-  using IndexRange = camp::idx_seq<RangeInts...>;
+  using IndexRange  = camp::idx_seq<RangeInts...>;
   using IndexLinear = IdxLin;
-  using Base = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
+  using Base        = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
@@ -129,7 +129,7 @@ struct IndexLayout_impl<camp::idx_seq<RangeInts...>, IdxLin, IndexTypes...>
 } // namespace internal
 
 
-template <size_t n_dims = 1,
+template <size_t n_dims   = 1,
           typename IdxLin = Index_type,
           typename... IndexTypes>
 struct IndexLayout

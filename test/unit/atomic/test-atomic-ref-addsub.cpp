@@ -29,10 +29,10 @@ TYPED_TEST_SUITE_P(AtomicRefBasicAddSubUnitTest);
 
 TYPED_TEST_P(AtomicRefBasicAddSubUnitTest, BasicAddSubs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T theval = (T)0;
+  T  theval  = (T)0;
   T* memaddr = &theval;
 
   // explicit constructor with memory address
@@ -88,7 +88,7 @@ TYPED_TEST_SUITE_P(AtomicRefCUDAAddSubUnitTest);
 
 GPU_TYPED_TEST_P(AtomicRefCUDAAddSubUnitTest, CUDAAddSubs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   T* memaddr = nullptr;

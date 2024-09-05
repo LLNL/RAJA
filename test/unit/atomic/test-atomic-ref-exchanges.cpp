@@ -27,11 +27,11 @@ TYPED_TEST_SUITE_P(AtomicRefBasicExchangeUnitTest);
 
 TYPED_TEST_P(AtomicRefBasicExchangeUnitTest, BasicExchanges)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T swapper = (T)91;
-  T theval = (T)0;
+  T  swapper = (T)91;
+  T  theval  = (T)0;
   T* memaddr = &theval;
 
   // explicit constructor with memory address
@@ -48,9 +48,9 @@ TYPED_TEST_P(AtomicRefBasicExchangeUnitTest, BasicExchanges)
   ASSERT_EQ(swapper, (T)91);
 
 
-  bool result = true;
-  T testval = (T)19;
-  T& valref = testval;
+  bool result  = true;
+  T    testval = (T)19;
+  T&   valref  = testval;
 
   // test strong exchange method
   result = test1.compare_exchange_strong(valref, testval);
@@ -118,13 +118,13 @@ TYPED_TEST_SUITE_P(AtomicRefCUDAExchangeUnitTest);
 
 GPU_TYPED_TEST_P(AtomicRefCUDAExchangeUnitTest, CUDAExchanges)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T* swapper = nullptr;
-  T* memaddr = nullptr;
-  T* testval = nullptr;
-  bool* result = nullptr;
+  T*    swapper = nullptr;
+  T*    memaddr = nullptr;
+  T*    testval = nullptr;
+  bool* result  = nullptr;
   cudaErrchk(cudaMallocManaged(&swapper, sizeof(T)));
   cudaErrchk(cudaMallocManaged(&memaddr, sizeof(T)));
   cudaErrchk(cudaMallocManaged(&testval, sizeof(T)));
@@ -132,30 +132,30 @@ GPU_TYPED_TEST_P(AtomicRefCUDAExchangeUnitTest, CUDAExchanges)
   swapper[0] = (T)91;
   memaddr[0] = (T)0;
   testval[0] = (T)19;
-  result[0] = true;
+  result[0]  = true;
   cudaErrchk(cudaDeviceSynchronize());
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
 
   // test exchange method
-  forone<test_cuda>(
-      [=] __device__() { swapper[0] = test1.exchange(swapper[0]); });
+  forone<test_cuda>([=] __device__()
+                    { swapper[0] = test1.exchange(swapper[0]); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(test1, (T)91);
   ASSERT_EQ(swapper[0], (T)0);
 
   // test CAS method
-  forone<test_cuda>(
-      [=] __device__() { swapper[0] = test1.CAS((T)91, swapper[0]); });
+  forone<test_cuda>([=] __device__()
+                    { swapper[0] = test1.CAS((T)91, swapper[0]); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(test1, (T)0);
   ASSERT_EQ(swapper[0], (T)91);
 
   // test strong exchange method
-  forone<test_cuda>([=] __device__() {
-    result[0] = test1.compare_exchange_strong(testval[0], testval[0]);
-  });
+  forone<test_cuda>(
+      [=] __device__()
+      { result[0] = test1.compare_exchange_strong(testval[0], testval[0]); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(result[0], false);
   ASSERT_EQ(test1, (T)0);
@@ -163,9 +163,9 @@ GPU_TYPED_TEST_P(AtomicRefCUDAExchangeUnitTest, CUDAExchanges)
   ASSERT_EQ(testval[0], (T)0);
 
   // test weak exchange method (same as strong exchange)
-  forone<test_cuda>([=] __device__() {
-    result[0] = test1.compare_exchange_weak(testval[0], swapper[0]);
-  });
+  forone<test_cuda>(
+      [=] __device__()
+      { result[0] = test1.compare_exchange_weak(testval[0], swapper[0]); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(result[0], true);
   ASSERT_EQ(test1, (T)91);

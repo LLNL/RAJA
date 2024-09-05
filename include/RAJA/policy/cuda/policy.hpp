@@ -101,7 +101,7 @@ struct MaxOccupancyConcretizer
   template <typename IdxT, typename Data>
   static IdxT get_max_grid_size(Data const& data)
   {
-    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT device_sm_per_device   = data.device_sm_per_device;
     IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
 
     IdxT func_max_blocks_per_device =
@@ -126,7 +126,7 @@ struct FractionOffsetOccupancyConcretizer
   {
     using Fraction = typename t_Fraction::template rebind<IdxT>;
 
-    IdxT device_sm_per_device = data.device_sm_per_device;
+    IdxT device_sm_per_device   = data.device_sm_per_device;
     IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
 
     if (Fraction::multiply(func_max_blocks_per_sm) > IdxT(0))
@@ -163,8 +163,8 @@ struct AvoidDeviceMaxThreadOccupancyConcretizer
   static IdxT get_max_grid_size(Data const& data)
   {
     IdxT device_max_threads_per_sm = data.device_max_threads_per_sm;
-    IdxT func_max_blocks_per_sm = data.func_max_blocks_per_sm;
-    IdxT func_threads_per_block = data.func_threads_per_block;
+    IdxT func_max_blocks_per_sm    = data.func_max_blocks_per_sm;
+    IdxT func_threads_per_block    = data.func_threads_per_block;
 
     IdxT func_max_threads_per_sm =
         func_threads_per_block * func_max_blocks_per_sm;
@@ -208,7 +208,7 @@ struct ThreadsPerBlockCutoffPreferredReplicationConcretizer
   template <typename IdxT, typename Data>
   static IdxT get_preferred_replication(Data const& data)
   {
-    IdxT cutoff = t_cutoff;
+    IdxT cutoff                 = t_cutoff;
     IdxT func_threads_per_block = data.func_threads_per_block;
 
     if (func_threads_per_block < cutoff)
@@ -281,17 +281,17 @@ enum struct block_communication_mode : int
   block_fence
 };
 
-template <reduce_algorithm t_algorithm,
+template <reduce_algorithm         t_algorithm,
           block_communication_mode t_comm_mode,
-          size_t t_replication,
-          size_t t_atomic_stride>
+          size_t                   t_replication,
+          size_t                   t_atomic_stride>
 struct ReduceTuning
 {
-  static constexpr reduce_algorithm algorithm = t_algorithm;
-  static constexpr block_communication_mode comm_mode = t_comm_mode;
-  static constexpr size_t replication = t_replication;
-  static constexpr size_t atomic_stride = t_atomic_stride;
-  static constexpr bool consistent =
+  static constexpr reduce_algorithm         algorithm     = t_algorithm;
+  static constexpr block_communication_mode comm_mode     = t_comm_mode;
+  static constexpr size_t                   replication   = t_replication;
+  static constexpr size_t                   atomic_stride = t_atomic_stride;
+  static constexpr bool                     consistent =
       (algorithm == reduce_algorithm::combine_last_block);
 };
 
@@ -308,8 +308,8 @@ template <typename t_AtomicReplicationConcretizer,
 struct AtomicReplicationTuning
 {
   using AtomicReplicationConcretizer = t_AtomicReplicationConcretizer;
-  using ReplicationIndexer = t_ReplicationIndexer;
-  using OffsetCalculator = t_OffsetCalculator;
+  using ReplicationIndexer           = t_ReplicationIndexer;
+  using OffsetCalculator             = t_OffsetCalculator;
 };
 
 template <multi_reduce_algorithm t_algorithm,
@@ -320,7 +320,7 @@ struct MultiReduceTuning
   static constexpr multi_reduce_algorithm algorithm = t_algorithm;
   using SharedAtomicReplicationTuning = t_SharedAtomicReplicationTuning;
   using GlobalAtomicReplicationTuning = t_GlobalAtomicReplicationTuning;
-  static constexpr bool consistent = false;
+  static constexpr bool consistent    = false;
 };
 
 } // namespace cuda
@@ -389,20 +389,20 @@ template <typename _IterationMapping,
           typename _IterationGetter,
           typename _LaunchConcretizer,
           size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
-          bool Async = false>
+          bool   Async         = false>
 struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
                                 RAJA::Pattern::forall,
                                 detail::get_launch<Async>::value,
                                 RAJA::Platform::cuda>
 {
-  using IterationMapping = _IterationMapping;
-  using IterationGetter = _IterationGetter;
+  using IterationMapping  = _IterationMapping;
+  using IterationGetter   = _IterationGetter;
   using LaunchConcretizer = _LaunchConcretizer;
 };
 
-template <bool Async,
-          int num_threads = named_usage::unspecified,
+template <bool   Async,
+          int    num_threads   = named_usage::unspecified,
           size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 struct cuda_launch_explicit_t
     : public RAJA::make_policy_pattern_launch_platform_t<
@@ -422,7 +422,7 @@ struct cuda_launch_explicit_t
 ///
 template <size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
-          bool Async = false>
+          bool   Async         = false>
 struct cuda_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
                                 RAJA::Pattern::workgroup_exec,
@@ -570,8 +570,8 @@ struct CudaDims
   cuda_dim_t blocks{0, 0, 0};
   cuda_dim_t threads{0, 0, 0};
 
-  CudaDims() = default;
-  CudaDims(CudaDims const&) = default;
+  CudaDims()                           = default;
+  CudaDims(CudaDims const&)            = default;
   CudaDims& operator=(CudaDims const&) = default;
 
   RAJA_INLINE
@@ -692,11 +692,11 @@ namespace cuda
 struct IndexSize
 {
   cuda_dim_member_t block_size = named_usage::unspecified;
-  cuda_dim_member_t grid_size = named_usage::unspecified;
+  cuda_dim_member_t grid_size  = named_usage::unspecified;
 
   RAJA_HOST_DEVICE constexpr IndexSize(
       cuda_dim_member_t _block_size = named_usage::unspecified,
-      cuda_dim_member_t _grid_size = named_usage::unspecified)
+      cuda_dim_member_t _grid_size  = named_usage::unspecified)
       : block_size(_block_size), grid_size(_grid_size)
   {}
 };
@@ -713,7 +713,7 @@ struct IndexGlobal
   static_assert(GRID_SIZE > 0, "grid size must not be negative");
 
   static constexpr int block_size = BLOCK_SIZE;
-  static constexpr int grid_size = GRID_SIZE;
+  static constexpr int grid_size  = GRID_SIZE;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -738,7 +738,7 @@ struct IndexGlobal<dim, 1, GRID_SIZE>
   static_assert(GRID_SIZE > 0, "grid size must not be negative");
 
   static constexpr int block_size = 1;
-  static constexpr int grid_size = GRID_SIZE;
+  static constexpr int grid_size  = GRID_SIZE;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -760,7 +760,7 @@ struct IndexGlobal<dim, BLOCK_SIZE, 1>
   static_assert(BLOCK_SIZE > 0, "block size must not be negative");
 
   static constexpr int block_size = BLOCK_SIZE;
-  static constexpr int grid_size = 1;
+  static constexpr int grid_size  = 1;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -780,7 +780,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, 1, 1>
 {
   static constexpr int block_size = 1;
-  static constexpr int grid_size = 1;
+  static constexpr int grid_size  = 1;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -802,7 +802,7 @@ struct IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>
   static_assert(GRID_SIZE > 0, "grid size must not be negative");
 
   static constexpr int block_size = named_usage::unspecified;
-  static constexpr int grid_size = GRID_SIZE;
+  static constexpr int grid_size  = GRID_SIZE;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -828,7 +828,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, named_usage::unspecified, 1>
 {
   static constexpr int block_size = named_usage::unspecified;
-  static constexpr int grid_size = 1;
+  static constexpr int grid_size  = 1;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -852,7 +852,7 @@ struct IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>
   static_assert(BLOCK_SIZE > 0, "block size must not be negative");
 
   static constexpr int block_size = BLOCK_SIZE;
-  static constexpr int grid_size = named_usage::unspecified;
+  static constexpr int grid_size  = named_usage::unspecified;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -877,7 +877,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, 1, named_usage::unspecified>
 {
   static constexpr int block_size = 1;
-  static constexpr int grid_size = named_usage::unspecified;
+  static constexpr int grid_size  = named_usage::unspecified;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -899,7 +899,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>
 {
   static constexpr int block_size = named_usage::unspecified;
-  static constexpr int grid_size = named_usage::unspecified;
+  static constexpr int grid_size  = named_usage::unspecified;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -930,7 +930,7 @@ struct IndexGlobal<dim, named_usage::ignored, GRID_SIZE>
   static_assert(GRID_SIZE > 0, "grid size must not be negative");
 
   static constexpr int block_size = named_usage::ignored;
-  static constexpr int grid_size = GRID_SIZE;
+  static constexpr int grid_size  = GRID_SIZE;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -950,7 +950,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, named_usage::ignored, 1>
 {
   static constexpr int block_size = named_usage::ignored;
-  static constexpr int grid_size = 1;
+  static constexpr int grid_size  = 1;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -969,7 +969,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>
 {
   static constexpr int block_size = named_usage::ignored;
-  static constexpr int grid_size = named_usage::unspecified;
+  static constexpr int grid_size  = named_usage::unspecified;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -994,7 +994,7 @@ struct IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>
   static_assert(BLOCK_SIZE > 0, "block size must not be negative");
 
   static constexpr int block_size = BLOCK_SIZE;
-  static constexpr int grid_size = named_usage::ignored;
+  static constexpr int grid_size  = named_usage::ignored;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -1014,7 +1014,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, 1, named_usage::ignored>
 {
   static constexpr int block_size = 1;
-  static constexpr int grid_size = named_usage::ignored;
+  static constexpr int grid_size  = named_usage::ignored;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -1033,7 +1033,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>
 {
   static constexpr int block_size = named_usage::unspecified;
-  static constexpr int grid_size = named_usage::ignored;
+  static constexpr int grid_size  = named_usage::ignored;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -1056,7 +1056,7 @@ template <named_dim dim>
 struct IndexGlobal<dim, named_usage::ignored, named_usage::ignored>
 {
   static constexpr int block_size = named_usage::ignored;
-  static constexpr int grid_size = named_usage::ignored;
+  static constexpr int grid_size  = named_usage::ignored;
 
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT index()
@@ -1252,7 +1252,7 @@ using global_xyz = IndexFlatten<global_x<BLOCK_SIZE_X, GRID_SIZE_X>,
                                 global_z<BLOCK_SIZE_Z, GRID_SIZE_Z>>;
 
 
-template <size_t WARP_SIZE = RAJA::policy::cuda::device_constants.WARP_SIZE,
+template <size_t WARP_SIZE    = RAJA::policy::cuda::device_constants.WARP_SIZE,
           size_t BLOCK_SIZE_X = named_usage::unspecified,
           size_t BLOCK_SIZE_Y = named_usage::unspecified,
           size_t BLOCK_SIZE_Z = named_usage::unspecified>
@@ -1260,13 +1260,13 @@ using warp_xyz =
     IndexDivide<WARP_SIZE,
                 thread_xyz<BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z>>;
 
-template <size_t WARP_SIZE = RAJA::policy::cuda::device_constants.WARP_SIZE,
+template <size_t WARP_SIZE    = RAJA::policy::cuda::device_constants.WARP_SIZE,
           size_t BLOCK_SIZE_X = named_usage::unspecified,
           size_t BLOCK_SIZE_Y = named_usage::unspecified,
           size_t BLOCK_SIZE_Z = named_usage::unspecified,
-          size_t GRID_SIZE_X = named_usage::unspecified,
-          size_t GRID_SIZE_Y = named_usage::unspecified,
-          size_t GRID_SIZE_Z = named_usage::unspecified>
+          size_t GRID_SIZE_X  = named_usage::unspecified,
+          size_t GRID_SIZE_Y  = named_usage::unspecified,
+          size_t GRID_SIZE_Z  = named_usage::unspecified>
 using warp_global_xyz =
     IndexFlatten<warp_xyz<WARP_SIZE, BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z>,
                  block_xyz<GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z>>;
@@ -1294,7 +1294,7 @@ using CudaDefaultConcretizer = CudaMaxOccupancyConcretizer;
 template <size_t BLOCK_SIZE,
           size_t GRID_SIZE,
           size_t BLOCKS_PER_SM,
-          bool Async = false>
+          bool   Async = false>
 using cuda_exec_grid_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>,
     cuda::global_x<BLOCK_SIZE, GRID_SIZE>,
@@ -1524,10 +1524,10 @@ using cuda_exec_with_reduce_async = policy::cuda::cuda_exec_explicit<
     policy::cuda::MIN_BLOCKS_PER_SM,
     true>;
 
-template <bool with_reduce,
+template <bool   with_reduce,
           size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
-          bool Async = false>
+          bool   Async = false>
 using cuda_exec_base_explicit = std::conditional_t<
     with_reduce,
     cuda_exec_with_reduce_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
@@ -1555,7 +1555,7 @@ using cuda_exec_base_async =
 // policies usable with WorkGroup
 template <size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
-          bool Async = false>
+          bool   Async         = false>
 using cuda_work_explicit =
     policy::cuda::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
 
@@ -1580,10 +1580,10 @@ using policy::cuda::cuda_atomic_explicit;
 
 
 // policies usable with reducers
-template <cuda::reduce_algorithm algorithm,
+template <cuda::reduce_algorithm         algorithm,
           cuda::block_communication_mode comm_mode,
-          size_t replication = named_usage::unspecified,
-          size_t atomic_stride = named_usage::unspecified>
+          size_t                         replication = named_usage::unspecified,
+          size_t atomic_stride                       = named_usage::unspecified>
 using cuda_reduce_tuning = policy::cuda::cuda_reduce_policy<
     cuda::ReduceTuning<algorithm, comm_mode, replication, atomic_stride>>;
 
@@ -1757,8 +1757,8 @@ using policy::cuda::cuda_thread_masked_loop;
 using policy::cuda::cuda_synchronize;
 
 // policies usable with launch
-template <bool Async,
-          int num_threads = named_usage::unspecified,
+template <bool   Async,
+          int    num_threads   = named_usage::unspecified,
           size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 using cuda_launch_explicit_t =
     policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>;

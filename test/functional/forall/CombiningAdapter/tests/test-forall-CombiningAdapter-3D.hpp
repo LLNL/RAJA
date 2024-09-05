@@ -30,12 +30,12 @@ void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
   INDEX_TYPE N0 = static_cast<INDEX_TYPE>(r0.end() - r0.begin());
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N2 = static_cast<INDEX_TYPE>(r2.end() - r2.begin());
-  INDEX_TYPE N = N0 * N1 * N2;
+  INDEX_TYPE N  = N0 * N1 * N2;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N) + 1;
 
@@ -59,8 +59,8 @@ void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
     working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
 
     auto adapter = RAJA::make_CombiningAdapter(
-        [=] RAJA_HOST_DEVICE(
-            INDEX_TYPE idx0, INDEX_TYPE idx1, INDEX_TYPE idx2) {
+        [=] RAJA_HOST_DEVICE(INDEX_TYPE idx0, INDEX_TYPE idx1, INDEX_TYPE idx2)
+        {
           if (idx0 >= first0 && idx0 < last0 && idx1 >= first1 &&
               idx1 < last1 && idx2 >= first2 && idx2 < last2)
           {
@@ -144,7 +144,7 @@ void runNegativeTests()
 
 TYPED_TEST_P(ForallCombiningAdapter3DTest, Forall3D)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

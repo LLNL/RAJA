@@ -18,20 +18,20 @@
 #include "RAJA_test-forall-execpol.hpp"
 
 // Sequential execution policy types
-using SequentialAsyncForallExecPols = SequentialForallExecPols;
+using SequentialAsyncForallExecPols       = SequentialForallExecPols;
 using SequentialAsyncForallReduceExecPols = SequentialForallReduceExecPols;
 using SequentialAsyncForallAtomicExecPols = SequentialForallAtomicExecPols;
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenMPAsyncForallExecPols = OpenMPForallExecPols;
+using OpenMPAsyncForallExecPols       = OpenMPForallExecPols;
 using OpenMPAsyncForallReduceExecPols = OpenMPForallReduceExecPols;
 using OpenMPAsyncForallAtomicExecPols = OpenMPForallAtomicExecPols;
 
 #endif // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetAsyncForallExecPols = OpenMPTargetForallExecPols;
+using OpenMPTargetAsyncForallExecPols       = OpenMPTargetForallExecPols;
 using OpenMPTargetAsyncForallReduceExecPols = OpenMPTargetForallReduceExecPols;
 using OpenMPTargetAsyncForallAtomicExecPols = OpenMPTargetForallAtomicExecPols;
 

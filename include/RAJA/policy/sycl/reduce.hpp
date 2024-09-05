@@ -74,8 +74,8 @@ static int MaxNumTeams = 1;
 //! Information necessary for SYCL offload to be considered
 struct Offload_Info
 {
-  int hostID{1};
-  int deviceID{2};
+  int  hostID{1};
+  int  deviceID{2};
   bool isMapped{false};
 
   Offload_Info() = default;
@@ -91,8 +91,8 @@ template <typename T>
 struct Reduce_Data
 {
   mutable T value;
-  T* device;
-  T* host;
+  T*        device;
+  T*        host;
 
   //! disallow default constructor
   Reduce_Data() = delete;
@@ -195,7 +195,7 @@ struct Reduce_Data
 template <typename Reducer, typename T>
 struct TargetReduce
 {
-  TargetReduce() = delete;
+  TargetReduce()                    = delete;
   TargetReduce(const TargetReduce&) = default;
 
   explicit TargetReduce(T init_val)
@@ -208,10 +208,10 @@ struct TargetReduce
   void reset(T init_val_, T identity_ = Reducer::identity())
   {
     val.cleanup(info);
-    val = sycl::Reduce_Data<T>(identity_, identity_, info);
+    val           = sycl::Reduce_Data<T>(identity_, identity_, info);
     info.isMapped = false;
-    initVal = init_val_;
-    finalVal = identity_;
+    initVal       = init_val_;
+    finalVal      = identity_;
   }
 
   //! apply reduction on device upon destruction
@@ -294,12 +294,12 @@ private:
 template <typename Reducer, typename T, typename IndexType>
 struct TargetReduceLoc
 {
-  TargetReduceLoc() = delete;
+  TargetReduceLoc()                       = delete;
   TargetReduceLoc(const TargetReduceLoc&) = default;
   explicit TargetReduceLoc(
-      T init_val,
+      T         init_val,
       IndexType init_loc,
-      T identity_val_ = Reducer::identity,
+      T         identity_val_ = Reducer::identity,
       IndexType identity_loc_ =
           RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
@@ -311,9 +311,9 @@ struct TargetReduceLoc
         finalLoc(identity_loc_)
   {}
 
-  void reset(T init_val_,
+  void reset(T         init_val_,
              IndexType init_loc_,
-             T identity_val_ = Reducer::identity,
+             T         identity_val_ = Reducer::identity,
              IndexType identity_loc_ =
                  RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
@@ -322,10 +322,10 @@ struct TargetReduceLoc
     loc.cleanup(info);
     loc = sycl::Reduce_Data<IndexType>(identity_loc_, identity_loc_, info);
     info.isMapped = false;
-    initVal = init_val_;
-    finalVal = identity_val_;
-    initLoc = init_loc_;
-    finalLoc = identity_loc_;
+    initVal       = init_val_;
+    finalVal      = identity_val_;
+    initLoc       = init_loc_;
+    finalLoc      = identity_loc_;
   }
 
   //! apply reduction on device upon destruction
@@ -392,7 +392,7 @@ struct TargetReduceLoc
   }
 
   //! storage for reduction data for value
-  sycl::Reduce_Data<T> val;
+  sycl::Reduce_Data<T>         val;
   sycl::Reduce_Data<IndexType> loc;
 
 private:
@@ -401,9 +401,9 @@ private:
   //! storage for reduction data for value
   //  sycl::Reduce_Data<T> val;
   //! storage for redcution data for location
-  T initVal;
-  T finalVal;
-  T returnVal;
+  T         initVal;
+  T         finalVal;
+  T         returnVal;
   IndexType initLoc;
   IndexType finalLoc;
   IndexType returnLoc;
@@ -415,7 +415,7 @@ template <typename T>
 class ReduceSum<sycl_reduce, T> : public TargetReduce<RAJA::reduce::sum<T>, T>
 {
 public:
-  using self = ReduceSum<sycl_reduce, T>;
+  using self   = ReduceSum<sycl_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::sum<T>, T>;
   using parent::parent;
 
@@ -452,7 +452,7 @@ class ReduceBitOr<sycl_reduce, T>
     : public TargetReduce<RAJA::reduce::or_bit<T>, T>
 {
 public:
-  using self = ReduceBitOr<sycl_reduce, T>;
+  using self   = ReduceBitOr<sycl_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::or_bit<T>, T>;
   using parent::parent;
 
@@ -501,7 +501,7 @@ class ReduceBitAnd<sycl_reduce, T>
     : public TargetReduce<RAJA::reduce::and_bit<T>, T>
 {
 public:
-  using self = ReduceBitAnd<sycl_reduce, T>;
+  using self   = ReduceBitAnd<sycl_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::and_bit<T>, T>;
   using parent::parent;
 
@@ -550,7 +550,7 @@ template <typename T>
 class ReduceMin<sycl_reduce, T> : public TargetReduce<RAJA::reduce::min<T>, T>
 {
 public:
-  using self = ReduceMin<sycl_reduce, T>;
+  using self   = ReduceMin<sycl_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::min<T>, T>;
   using parent::parent;
 
@@ -599,7 +599,7 @@ template <typename T>
 class ReduceMax<sycl_reduce, T> : public TargetReduce<RAJA::reduce::max<T>, T>
 {
 public:
-  using self = ReduceMax<sycl_reduce, T>;
+  using self   = ReduceMax<sycl_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::max<T>, T>;
   using parent::parent;
 

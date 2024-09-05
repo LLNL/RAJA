@@ -14,8 +14,8 @@ template <typename MATRIX_TYPE>
 void TransposeImpl()
 {
 
-  using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  using matrix_t  = MATRIX_TYPE;
+  using policy_t  = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
   using transpose_t = typename matrix_t::transpose_type;
@@ -32,7 +32,7 @@ void TransposeImpl()
 
   // alloc input0
 
-  std::vector<element_t> input0_vec(N * M);
+  std::vector<element_t>                 input0_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> input0_h(input0_vec.data(), N, M);
 
   element_t* input0_ptr = tensor_malloc<policy_t>(input0_vec);
@@ -41,7 +41,7 @@ void TransposeImpl()
 
   // alloc output0
 
-  std::vector<element_t> output0_vec(N * M);
+  std::vector<element_t>                 output0_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output0_h(output0_vec.data(), M, N);
 
   element_t* output0_ptr = tensor_malloc<policy_t>(output0_vec);
@@ -63,17 +63,19 @@ void TransposeImpl()
   //
   // Do Operation: transpose
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // load original matrix
-    matrix_t A;
-    A.load_strided(input0_ptr, M, 1);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // load original matrix
+        matrix_t A;
+        A.load_strided(input0_ptr, M, 1);
 
-    // transpose matrix
-    transpose_t B = A.transpose();
+        // transpose matrix
+        transpose_t B = A.transpose();
 
-    // store transposed matrix
-    B.store_strided(output0_ptr, N, 1);
-  });
+        // store transposed matrix
+        B.store_strided(output0_ptr, N, 1);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_ptr);
 

@@ -49,12 +49,12 @@ namespace detail
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct syclInfo
 {
-  sycl_dim_t gridDim{0};
-  sycl_dim_t blockDim{0};
-  cl::sycl::queue qu = cl::sycl::queue();
-  bool setup_reducers = false;
+  sycl_dim_t      gridDim{0};
+  sycl_dim_t      blockDim{0};
+  cl::sycl::queue qu             = cl::sycl::queue();
+  bool            setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
-  syclInfo* thread_states = nullptr;
+  syclInfo*  thread_states = nullptr;
   omp::mutex lock;
 #endif
 };
@@ -74,9 +74,9 @@ struct PinnedAllocator
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
-    void* ptr;
+    void*          ptr;
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
-    ptr = ::sycl::malloc_host(nbytes, *q);
+    ptr              = ::sycl::malloc_host(nbytes, *q);
     return ptr;
   }
 
@@ -97,9 +97,9 @@ struct DeviceAllocator
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
-    void* ptr;
+    void*          ptr;
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
-    ptr = ::sycl::malloc_device(nbytes, *q);
+    ptr              = ::sycl::malloc_device(nbytes, *q);
     return ptr;
   }
 
@@ -121,9 +121,9 @@ struct DeviceZeroedAllocator
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
-    void* ptr;
+    void*          ptr;
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
-    ptr = ::sycl::malloc_device(nbytes, *q);
+    ptr              = ::sycl::malloc_device(nbytes, *q);
     q->memset(ptr, 0, nbytes);
     return ptr;
   }

@@ -20,9 +20,9 @@ void LaunchBasicSharedTestImpl()
   int N = 1000;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  int* working_array;
-  int* check_array;
-  int* test_array;
+  int*                      working_array;
+  int*                      check_array;
+  int*                      test_array;
 
   allocateForallTestData<int>(
       N * N, working_res, &working_array, &check_array, &test_array);
@@ -44,25 +44,33 @@ void LaunchBasicSharedTestImpl()
   RAJA::launch<LAUNCH_POLICY>(
       select_cpu_or_gpu,
       RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N), shared_mem_size),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<TEAM_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int r) {
-          // Array shared within threads of the same team
-          int* s_A = ctx.getSharedMemory<int>(1);
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<TEAM_POLICY>(
+            ctx,
+            RAJA::RangeSegment(0, N),
+            [&](int r)
+            {
+              // Array shared within threads of the same team
+              int* s_A = ctx.getSharedMemory<int>(1);
 
-          RAJA::loop<THREAD_POLICY>(
-              ctx, RAJA::RangeSegment(0, 1), [&](int c) { s_A[c] = r; });
+              RAJA::loop<THREAD_POLICY>(
+                  ctx, RAJA::RangeSegment(0, 1), [&](int c) { s_A[c] = r; });
 
-          ctx.teamSync();
+              ctx.teamSync();
 
-          // broadcast shared value to all threads and write to array
-          RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, N), [&](int c) {
-            const int idx = c + N * r;
-            working_array[idx] = s_A[0];
-          }); // loop j
+              // broadcast shared value to all threads and write to array
+              RAJA::loop<THREAD_POLICY>(ctx,
+                                        RAJA::RangeSegment(0, N),
+                                        [&](int c)
+                                        {
+                                          const int idx      = c + N * r;
+                                          working_array[idx] = s_A[0];
+                                        }); // loop j
 
-          ctx.releaseSharedMemory();
-        }); // loop r
-      });   // outer lambda
+              ctx.releaseSharedMemory();
+            }); // loop r
+      });       // outer lambda
 
 
   working_res.memcpy(check_array, working_array, sizeof(int) * N * N);

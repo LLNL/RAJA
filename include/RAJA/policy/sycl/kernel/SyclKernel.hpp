@@ -92,7 +92,7 @@ template <typename Data, typename Exec>
 void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)
 {
 
-  using data_t = camp::decay<Data>;
+  using data_t        = camp::decay<Data>;
   data_t private_data = data;
 
   // execute the the object
@@ -126,10 +126,10 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
       internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
   using data_t = camp::decay<Data>;
 
-  static void launch(Data&& data,
+  static void launch(Data&&               data,
                      internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     cl::sycl::queue* qu)
+                     size_t               shmem,
+                     cl::sycl::queue*     qu)
   {
 
     //
@@ -140,12 +140,15 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
     data_t* m_data = (data_t*)cl::sycl::malloc_device(sizeof(data_t), *qu);
     qu->memcpy(m_data, &data, sizeof(data_t)).wait();
 
-    qu->submit([&](cl::sycl::handler& h) {
-        h.parallel_for(launch_dims.fit_nd_range(qu),
-                       [=](cl::sycl::nd_item<3> item) {
-                         SyclKernelLauncher<Data, executor_t>(*m_data, item);
-                       });
-      }).wait(); // Need to wait to free memory
+    qu->submit(
+          [&](cl::sycl::handler& h)
+          {
+            h.parallel_for(
+                launch_dims.fit_nd_range(qu),
+                [=](cl::sycl::nd_item<3> item)
+                { SyclKernelLauncher<Data, executor_t>(*m_data, item); });
+          })
+        .wait(); // Need to wait to free memory
 
     cl::sycl::free(m_data, *qu);
   }
@@ -167,18 +170,19 @@ struct SyclLaunchHelper<true, sycl_launch<async0>, StmtList, Data, Types>
       internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
   using data_t = camp::decay<Data>;
 
-  static void launch(Data&& data,
+  static void launch(Data&&               data,
                      internal::LaunchDims launch_dims,
-                     size_t shmem,
-                     cl::sycl::queue* qu)
+                     size_t               shmem,
+                     cl::sycl::queue*     qu)
   {
 
-    qu->submit([&](cl::sycl::handler& h) {
-      h.parallel_for(launch_dims.fit_nd_range(qu),
-                     [=](cl::sycl::nd_item<3> item) {
-                       SyclKernelLauncher<Data, executor_t>(data, item);
-                     });
-    });
+    qu->submit(
+        [&](cl::sycl::handler& h)
+        {
+          h.parallel_for(launch_dims.fit_nd_range(qu),
+                         [=](cl::sycl::nd_item<3> item)
+                         { SyclKernelLauncher<Data, executor_t>(data, item); });
+        });
 
     if (!async)
     {
@@ -214,7 +218,7 @@ struct StatementExecutor<
                                       Types>;
 
     camp::resources::Sycl res = data.get_resource();
-    ::sycl::queue* q = res.get_queue();
+    ::sycl::queue*        q   = res.get_queue();
     ;
 
     //

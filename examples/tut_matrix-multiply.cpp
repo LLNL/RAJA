@@ -199,18 +199,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N * N * sizeof(double));
 
   // _matmult_outerforall_start
-  RAJA::forall<RAJA::seq_exec>(row_range, [=](int row) {
-    for (int col = 0; col < N; ++col)
-    {
+  RAJA::forall<RAJA::seq_exec>(row_range,
+                               [=](int row)
+                               {
+                                 for (int col = 0; col < N; ++col)
+                                 {
 
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k)
-      {
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      Cview(row, col) = dot;
-    }
-  });
+                                   double dot = 0.0;
+                                   for (int k = 0; k < N; ++k)
+                                   {
+                                     dot += Aview(row, k) * Bview(k, col);
+                                   }
+                                   Cview(row, col) = dot;
+                                 }
+                               });
   // _matmult_outerforall_end
 
   checkResult<double>(Cview, N);
@@ -235,16 +237,21 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N * N * sizeof(double));
 
   // _matmult_nestedforall_start
-  RAJA::forall<RAJA::seq_exec>(row_range, [=](int row) {
-    RAJA::forall<RAJA::seq_exec>(col_range, [=](int col) {
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k)
-      {
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      Cview(row, col) = dot;
-    });
-  });
+  RAJA::forall<RAJA::seq_exec>(row_range,
+                               [=](int row)
+                               {
+                                 RAJA::forall<RAJA::seq_exec>(
+                                     col_range,
+                                     [=](int col)
+                                     {
+                                       double dot = 0.0;
+                                       for (int k = 0; k < N; ++k)
+                                       {
+                                         dot += Aview(row, k) * Bview(k, col);
+                                       }
+                                       Cview(row, col) = dot;
+                                     });
+                               });
   // _matmult_nestedforall_end
 
   checkResult<double>(Cview, N);
@@ -292,7 +299,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                 RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<EXEC_POL>(RAJA::make_tuple(col_range, row_range),
-                         [=](int col, int row) {
+                         [=](int col, int row)
+                         {
                            double dot = 0.0;
                            for (int k = 0; k < N; ++k)
                            {
@@ -323,7 +331,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _matmult_ompkernel_end
 
   RAJA::kernel<EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
-                          [=](int col, int row) {
+                          [=](int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -358,7 +367,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _matmult_ompkernel_swap_end
 
   RAJA::kernel<EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
-                          [=](int col, int row) {
+                          [=](int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -387,7 +397,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                 RAJA::statement::Lambda<0>>>;
 
   RAJA::kernel<EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
-                          [=](int col, int row) {
+                          [=](int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -426,7 +437,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               For<0, RAJA::cuda_thread_x_loop, RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-                          [=] RAJA_DEVICE(int col, int row) {
+                          [=] RAJA_DEVICE(int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -470,7 +482,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
-                          [=] RAJA_DEVICE(int col, int row) {
+                          [=] RAJA_DEVICE(int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -521,7 +534,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               For<0, RAJA::hip_thread_x_loop, RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-                          [=] RAJA_DEVICE(int col, int row) {
+                          [=] RAJA_DEVICE(int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -568,7 +582,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
-                          [=] RAJA_DEVICE(int col, int row) {
+                          [=] RAJA_DEVICE(int col, int row)
+                          {
                             double dot = 0.0;
                             for (int k = 0; k < N; ++k)
                             {
@@ -638,9 +653,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=](double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=](int col, int row, int k, double& dot) {
-        dot += Aview(row, k) * Bview(k, col);
-      },
+      [=](int col, int row, int k, double& dot)
+      { dot += Aview(row, k) * Bview(k, col); },
 
       // lambda 2
       [=](int col, int row, double& dot) { Cview(row, col) = dot; }
@@ -693,9 +707,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=](double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=](int col, int row, int k, double& dot) {
-        dot += Aview(row, k) * Bview(k, col);
-      },
+      [=](int col, int row, int k, double& dot)
+      { dot += Aview(row, k) * Bview(k, col); },
 
       // lambda 2
       [=](int col, int row, double& dot) { Cview(row, col) = dot; }
@@ -740,9 +753,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=](double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=](int col, int row, int k, double& dot) {
-        dot += Aview(row, k) * Bview(k, col);
-      },
+      [=](int col, int row, int k, double& dot)
+      { dot += Aview(row, k) * Bview(k, col); },
 
       // lambda 2
       [=](int col, int row, double& dot) { Cview(row, col) = dot; }
@@ -789,9 +801,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_DEVICE(double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=] RAJA_DEVICE(int col, int row, int k, double& dot) {
-        dot += Aview(row, k) * Bview(k, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int k, double& dot)
+      { dot += Aview(row, k) * Bview(k, col); },
 
       // lambda 2
       [=] RAJA_DEVICE(int col, int row, double& dot) { Cview(row, col) = dot; }
@@ -845,9 +856,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_DEVICE(double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=] RAJA_DEVICE(int col, int row, int k, double& dot) {
-        dot += Aview(row, k) * Bview(k, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int k, double& dot)
+      { dot += Aview(row, k) * Bview(k, col); },
 
       // lambda 2
       [=] RAJA_DEVICE(int col, int row, double& dot) { Cview(row, col) = dot; }
@@ -899,9 +909,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_DEVICE(double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=] RAJA_DEVICE(int col, int row, int k, double& dot) {
-        dot += Aview(row, k) * Bview(k, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int k, double& dot)
+      { dot += Aview(row, k) * Bview(k, col); },
 
       // lambda 2
       [=] RAJA_DEVICE(int col, int row, double& dot) { Cview(row, col) = dot; }
@@ -1021,34 +1030,29 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::make_tuple(aShared, bShared, cShared),
 
       // Zero out thread local memory for storing dot products
-      [=] RAJA_HOST_DEVICE(int tn, int tp, Shmem& cShared) {
-        cShared(tn, tp) = 0.0;
-      },
+      [=] RAJA_HOST_DEVICE(int tn, int tp, Shmem& cShared)
+      { cShared(tn, tp) = 0.0; },
 
       // Load tile of A
-      [=] RAJA_HOST_DEVICE(int n, int m, int tn, int tm, Shmem& aShared) {
-        aShared(tn, tm) = Aview(n, m);
-      },
+      [=] RAJA_HOST_DEVICE(int n, int m, int tn, int tm, Shmem& aShared)
+      { aShared(tn, tm) = Aview(n, m); },
 
       // Load tile of B
-      [=] RAJA_HOST_DEVICE(int m, int p, int tm, int tp, Shmem& bShared) {
-        bShared(tm, tp) = Bview(m, p);
-      },
+      [=] RAJA_HOST_DEVICE(int m, int p, int tm, int tp, Shmem& bShared)
+      { bShared(tm, tp) = Bview(m, p); },
 
       // Do partial update in shmem
-      [=] RAJA_HOST_DEVICE(int tn,
-                           int tm,
-                           int tp,
+      [=] RAJA_HOST_DEVICE(int    tn,
+                           int    tm,
+                           int    tp,
                            Shmem& aShared,
                            Shmem& bShared,
-                           Shmem& cShared) {
-        cShared(tn, tp) += aShared(tn, tm) * bShared(tm, tp);
-      },
+                           Shmem& cShared)
+      { cShared(tn, tp) += aShared(tn, tm) * bShared(tm, tp); },
 
       // Write out complete result
-      [=] RAJA_HOST_DEVICE(int n, int p, int tn, int tp, Shmem& cShared) {
-        Cview(n, p) = cShared(tn, tp);
-      });
+      [=] RAJA_HOST_DEVICE(int n, int p, int tn, int tp, Shmem& cShared)
+      { Cview(n, p) = cShared(tn, tp); });
 
   checkResult<double>(Cview, N);
 // printResult<double>(Cview, N);
@@ -1118,14 +1122,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_DEVICE(double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=] RAJA_DEVICE(int col, int row, int k, double& dot) {
-        dot += d_Aview(row, k) * d_Bview(k, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int k, double& dot)
+      { dot += d_Aview(row, k) * d_Bview(k, col); },
 
       // lambda 2
-      [=] RAJA_DEVICE(int col, int row, double& dot) {
-        d_Cview(row, col) = dot;
-      }
+      [=] RAJA_DEVICE(int col, int row, double& dot)
+      { d_Cview(row, col) = dot; }
 
   );
 
@@ -1179,14 +1181,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_DEVICE(double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=] RAJA_DEVICE(int col, int row, int k, double& dot) {
-        dot += d_Aview(row, k) * d_Bview(k, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int k, double& dot)
+      { dot += d_Aview(row, k) * d_Bview(k, col); },
 
       // lambda 2
-      [=] RAJA_DEVICE(int col, int row, double& dot) {
-        d_Cview(row, col) = dot;
-      }
+      [=] RAJA_DEVICE(int col, int row, double& dot)
+      { d_Cview(row, col) = dot; }
 
   );
 

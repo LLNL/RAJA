@@ -8,6 +8,11 @@ AccessModifierOffset : -2
 # This must be off so that include order in RAJA is preserved
 SortIncludes: false
 
+# Alignment of consecutive declarations, assignments etc
+AlignConsecutiveAssignments : true
+AlignConsecutiveDeclarations : true
+AlignConsecutiveMacros : true
+
 # Control curly brace placement
 BreakBeforeBraces : Custom
 BraceWrapping:
@@ -23,7 +28,7 @@ BraceWrapping:
   AfterExternBlock: false
   BeforeCatch:     true
   BeforeElse:      true
-  # BeforeLambdaBody: true   # available in clang 11
+  BeforeLambdaBody: true 
   IndentBraces:    false
   SplitEmptyFunction: false
   SplitEmptyRecord: false

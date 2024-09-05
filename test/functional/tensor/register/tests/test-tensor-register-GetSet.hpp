@@ -14,14 +14,14 @@ template <typename REGISTER_TYPE>
 void GetSetImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -36,20 +36,22 @@ void GetSetImpl()
   tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
 
   // Test set and get operations
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x using set
-    register_t x;
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      x.set(input0_dptr[i], i);
-    }
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x using set
+        register_t x;
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          x.set(input0_dptr[i], i);
+        }
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = x.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = x.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -62,22 +64,24 @@ void GetSetImpl()
   //
   // test copy construction
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x using set
-    register_t x;
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      x.set(input0_dptr[i], i);
-    }
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x using set
+        register_t x;
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          x.set(input0_dptr[i], i);
+        }
 
-    register_t cc(x);
+        register_t cc(x);
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = cc.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = cc.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -90,23 +94,25 @@ void GetSetImpl()
   //
   // test explicit copy
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x using set
-    register_t x;
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      x.set(input0_dptr[i], i);
-    }
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x using set
+        register_t x;
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          x.set(input0_dptr[i], i);
+        }
 
-    register_t cc;
-    cc.copy(x);
+        register_t cc;
+        cc.copy(x);
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = cc.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = cc.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -119,22 +125,24 @@ void GetSetImpl()
   //
   // test assignment
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x using set
-    register_t x;
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      x.set(input0_dptr[i], i);
-    }
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x using set
+        register_t x;
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          x.set(input0_dptr[i], i);
+        }
 
-    register_t cc = x;
+        register_t cc = x;
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = cc.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = cc.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -147,15 +155,17 @@ void GetSetImpl()
   //
   // test scalar construction (broadcast)
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t cc = (element_t)5;
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t cc = (element_t)5;
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = cc.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = cc.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -168,16 +178,18 @@ void GetSetImpl()
   //
   // test scalar broadcast by assignment
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t cc = (element_t)0;
-    cc = (element_t)11.0;
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t cc = (element_t)0;
+        cc            = (element_t)11.0;
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = cc.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = cc.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -190,16 +202,18 @@ void GetSetImpl()
   //
   // test scalar explicit broadcast
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t cc = (element_t)0;
-    cc.broadcast(13.0);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t cc = (element_t)0;
+        cc.broadcast(13.0);
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = cc.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = cc.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get

@@ -75,7 +75,7 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
         for (int i = lane; i < numSegments; i += 3)
         {
           RAJA::Index_type start = i * fastDim / numSegments;
-          RAJA::Index_type end = (i + 1) * fastDim / numSegments;
+          RAJA::Index_type end   = (i + 1) * fastDim / numSegments;
           // printf("%d %d\n", start, end) ;
           iset.push_back(RAJA::RangeSegment(start, end));
         }
@@ -104,10 +104,10 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
         for (int i = 0; i < numThreads; ++i)
         {
           RAJA::Index_type startRow = i * midDim / numThreads;
-          RAJA::Index_type endRow = (i + 1) * midDim / numThreads;
-          RAJA::Index_type start = startRow * fastDim;
-          RAJA::Index_type end = endRow * fastDim;
-          RAJA::Index_type len = end - start;
+          RAJA::Index_type endRow   = (i + 1) * midDim / numThreads;
+          RAJA::Index_type start    = startRow * fastDim;
+          RAJA::Index_type end      = endRow * fastDim;
+          RAJA::Index_type len      = end - start;
           // printf("%d %d\n", start + (lane  )*len/3,
           //                   start + (lane+1)*len/3  ) ;
           iset.push_back(RAJA::RangeSegment(start + (lane)*len / 3,
@@ -213,22 +213,22 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
  */
 void buildLockFreeColorIndexset(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource work_res,
-    RAJA::Index_type const* domainToRange,
-    int numEntity,
-    int numRangePerDomain,
-    int numEntityRange,
+    camp::resources::Resource                                   work_res,
+    RAJA::Index_type const*                                     domainToRange,
+    int                                                         numEntity,
+    int               numRangePerDomain,
+    int               numEntityRange,
     RAJA::Index_type* elemPermutation,
     RAJA::Index_type* ielemPermutation)
 {
-  bool done = false;
+  bool  done     = false;
   bool* isMarked = new bool[numEntity];
 
-  RAJA::Index_type numWorkset = 0;
+  RAJA::Index_type  numWorkset   = 0;
   RAJA::Index_type* worksetDelim = new RAJA::Index_type[numEntity];
 
-  RAJA::Index_type worksetSize = 0;
-  RAJA::Index_type* workset = new RAJA::Index_type[numEntity];
+  RAJA::Index_type  worksetSize = 0;
+  RAJA::Index_type* workset     = new RAJA::Index_type[numEntity];
 
   RAJA::Index_type* rangeToDomain =
       new RAJA::Index_type[numEntityRange * numRangePerDomain];
@@ -241,7 +241,7 @@ void buildLockFreeColorIndexset(
   {
     for (int j = 0; j < numRangePerDomain; ++j)
     {
-      RAJA::Index_type id = domainToRange[i * numRangePerDomain + j];
+      RAJA::Index_type id  = domainToRange[i * numRangePerDomain + j];
       RAJA::Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
       if (idx > numEntityRange * numRangePerDomain ||
           rangeToDomainCount[id] > numRangePerDomain)
@@ -326,7 +326,7 @@ void buildLockFreeColorIndexset(
     for (int i = 0; i < numWorkset; ++i)
     {
       RAJA::Index_type begin = end;
-      end = worksetDelim[i];
+      end                    = worksetDelim[i];
       iset.push_back(RAJA::RangeSegment(begin, end));
     }
   }
@@ -336,8 +336,8 @@ void buildLockFreeColorIndexset(
     for (int i = 0; i < numWorkset; ++i)
     {
       RAJA::Index_type begin = end;
-      end = worksetDelim[i];
-      bool isRange = true;
+      end                    = worksetDelim[i];
+      bool isRange           = true;
       for (int j = begin + 1; j < end; ++j)
       {
         if (workset[j - 1] + 1 != workset[j])

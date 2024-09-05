@@ -21,8 +21,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::resources::Cuda def_cuda_res{RAJA::resources::Cuda::get_default()};
   RAJA::resources::Host def_host_res{RAJA::resources::Host::get_default()};
-  int* d_array = def_cuda_res.allocate<int>(N * M);
-  int* h_array = def_host_res.allocate<int>(N * M);
+  int*                  d_array = def_cuda_res.allocate<int>(N * M);
+  int*                  h_array = def_host_res.allocate<int>(N * M);
 
   RAJA::RangeSegment one_range(0, 1);
   RAJA::RangeSegment m_range(0, M);
@@ -34,7 +34,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       statement::For<1, cuda_thread_x_loop, statement::Lambda<0>>>>>;
 
   RAJA::forall<RAJA::seq_exec>(
-      def_host_res, n_range, [=, &def_cuda_res](int i) {
+      def_host_res,
+      n_range,
+      [=, &def_cuda_res](int i)
+      {
         RAJA::resources::Cuda res_cuda;
 
         RAJA::resources::Event e = RAJA::kernel_resource<TEST_POL>(
@@ -51,7 +54,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   int ec_count = 0;
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N * M),
-                               [=, &ec_count](int i) {
+                               [=, &ec_count](int i)
+                               {
                                  if (h_array[i] != i) ec_count++;
                                });
 

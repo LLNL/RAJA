@@ -66,7 +66,7 @@ struct MultiReduceDataSeq<
     RAJA::sequential::MultiReduceTuning<
         RAJA::sequential::multi_reduce_algorithm::left_fold>>
 {
-  using value_type = T;
+  using value_type    = T;
   using MultiReduceOp = t_MultiReduceOp;
 
   MultiReduceDataSeq() = delete;
@@ -90,9 +90,9 @@ struct MultiReduceDataSeq<
         m_data(other.m_data)
   {}
 
-  MultiReduceDataSeq(MultiReduceDataSeq&&) = delete;
+  MultiReduceDataSeq(MultiReduceDataSeq&&)                 = delete;
   MultiReduceDataSeq& operator=(MultiReduceDataSeq const&) = delete;
-  MultiReduceDataSeq& operator=(MultiReduceDataSeq&&) = delete;
+  MultiReduceDataSeq& operator=(MultiReduceDataSeq&&)      = delete;
 
   ~MultiReduceDataSeq()
   {
@@ -108,13 +108,13 @@ struct MultiReduceDataSeq<
   template <typename Container>
   void reset(Container const& container, T identity)
   {
-    m_identity = identity;
+    m_identity          = identity;
     size_t new_num_bins = container.size();
     if (new_num_bins != m_num_bins)
     {
       destroy_data(m_data, m_num_bins);
       m_num_bins = new_num_bins;
-      m_data = create_data(container, m_num_bins);
+      m_data     = create_data(container, m_num_bins);
     }
     else
     {
@@ -137,9 +137,9 @@ struct MultiReduceDataSeq<
 
 private:
   MultiReduceDataSeq const* m_parent;
-  size_t m_num_bins;
-  T m_identity;
-  T* m_data;
+  size_t                    m_num_bins;
+  T                         m_identity;
+  T*                        m_data;
 
   template <typename Container>
   static T* create_data(Container const& container, size_t num_bins)
@@ -149,8 +149,8 @@ private:
       return nullptr;
     }
 
-    auto data = static_cast<T*>(malloc(num_bins * sizeof(T)));
-    size_t bin = 0;
+    auto   data = static_cast<T*>(malloc(num_bins * sizeof(T)));
+    size_t bin  = 0;
     for (auto const& value : container)
     {
       new (&data[bin]) T(value);

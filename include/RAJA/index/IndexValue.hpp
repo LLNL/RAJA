@@ -50,11 +50,11 @@ struct IndexValue : public IndexValueBase
   using value_type = VALUE;
 
   //! Default constructor initializes value to 0.
-  RAJA_INLINE constexpr IndexValue() = default;
-  constexpr RAJA_INLINE IndexValue(IndexValue const&) = default;
-  constexpr RAJA_INLINE IndexValue(IndexValue&&) = default;
-  RAJA_INLINE IndexValue& operator=(IndexValue const&) = default;
-  RAJA_INLINE IndexValue& operator=(IndexValue&&) = default;
+  RAJA_INLINE constexpr IndexValue()                    = default;
+  constexpr RAJA_INLINE   IndexValue(IndexValue const&) = default;
+  constexpr RAJA_INLINE   IndexValue(IndexValue&&)      = default;
+  RAJA_INLINE IndexValue& operator=(IndexValue const&)  = default;
+  RAJA_INLINE IndexValue& operator=(IndexValue&&)       = default;
 
   /*!
    * \brief Explicit constructor.
@@ -379,18 +379,18 @@ using make_signed_t =
  * \param TYPE the name of the type
  * \param NAME a string literal to identify this index type
  */
-#define RAJA_INDEX_VALUE(TYPE, NAME)                                           \
-  class TYPE : public ::RAJA::IndexValue<TYPE>                                 \
-  {                                                                            \
-    using parent = ::RAJA::IndexValue<TYPE>;                                   \
-                                                                               \
-  public:                                                                      \
-    using IndexValueType = TYPE;                                               \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}              \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v)           \
-        : parent::IndexValue(v)                                                \
-    {}                                                                         \
-    static inline std::string getName() { return NAME; }                       \
+#define RAJA_INDEX_VALUE(TYPE, NAME)                                             \
+  class TYPE : public ::RAJA::IndexValue<TYPE>                                   \
+  {                                                                              \
+    using parent = ::RAJA::IndexValue<TYPE>;                                     \
+                                                                                 \
+  public:                                                                        \
+    using IndexValueType = TYPE;                                                 \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}                \
+    RAJA_HOST_DEVICE             RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
+        : parent::IndexValue(v)                                                  \
+    {}                                                                           \
+    static inline std::string getName() { return NAME; }                         \
   };
 
 /*!

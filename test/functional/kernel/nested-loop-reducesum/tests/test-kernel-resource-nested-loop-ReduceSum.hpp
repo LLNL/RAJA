@@ -22,8 +22,8 @@ class KernelNestedLoopReduceSumTest : public ::testing::Test
 
 TYPED_TEST_P(KernelNestedLoopReduceSumTest, NestedLoopReduceSumKernel)
 {
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
-  using REDUCE_POL = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using REDUCE_POL    = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<2>>::type;
 
   // Attain the loop depth type from execpol data.

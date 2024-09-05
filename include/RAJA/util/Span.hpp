@@ -58,14 +58,14 @@ namespace RAJA
 template <typename IterType, typename IndexType>
 struct Span
 {
-  using element_type = typename std::iterator_traits<IterType>::value_type;
-  using value_type = camp::decay<element_type>;
-  using size_type = IndexType;
+  using element_type    = typename std::iterator_traits<IterType>::value_type;
+  using value_type      = camp::decay<element_type>;
+  using size_type       = IndexType;
   using difference_type = std::ptrdiff_t;
-  using reference = element_type&;
+  using reference       = element_type&;
   using const_reference = const element_type&;
-  using iterator = IterType;
-  using const_iterator = IterType;
+  using iterator        = IterType;
+  using const_iterator  = IterType;
 
   static_assert(type_traits::is_integral<IndexType>::value,
                 "IndexType must "
@@ -81,8 +81,8 @@ struct Span
       : m_begin{begin}, m_end{begin + size}
   {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() { return m_begin; }
-  RAJA_HOST_DEVICE RAJA_INLINE iterator end() { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator       begin() { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator       end() { return m_end; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator begin() const { return m_begin; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator end() const { return m_end; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return m_begin; }
@@ -145,7 +145,7 @@ struct Span
                                           size_type length) const
   {
     auto start = m_begin + begin;
-    auto end = start + length > m_end ? m_end : start + length;
+    auto end   = start + length > m_end ? m_end : start + length;
     return Span(start, end);
   }
 

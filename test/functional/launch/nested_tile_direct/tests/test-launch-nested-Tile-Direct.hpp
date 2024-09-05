@@ -45,9 +45,9 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
   INDEX_TYPE N = static_cast<INDEX_TYPE>(N1 * N2 * N3);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N);
   if (data_len == 0)
@@ -64,35 +64,47 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
 
     constexpr int DIM = 3;
-    using layout_t = RAJA::Layout<DIM, INDEX_TYPE, DIM - 1>;
+    using layout_t    = RAJA::Layout<DIM, INDEX_TYPE, DIM - 1>;
     RAJA::View<INDEX_TYPE, layout_t> Aview(working_array, N3, N2, N1);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
                            RAJA::Threads(threads_x, threads_y, threads_z)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
           RAJA::tile<TEAM_Z_POLICY>(
               ctx,
               tile_size_z,
               r3,
-              [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& z_tile) {
+              [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& z_tile)
+              {
                 RAJA::tile<TEAM_Y_POLICY>(
                     ctx,
                     tile_size_y,
                     r2,
-                    [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& y_tile) {
+                    [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& y_tile)
+                    {
                       RAJA::tile<TEAM_X_POLICY>(
                           ctx,
                           tile_size_x,
                           r1,
-                          [&](RAJA::TypedRangeSegment<INDEX_TYPE> const&
-                                  x_tile) {
+                          [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& x_tile)
+                          {
                             RAJA::loop<THREAD_Z_POLICY>(
-                                ctx, z_tile, [&](INDEX_TYPE tz) {
+                                ctx,
+                                z_tile,
+                                [&](INDEX_TYPE tz)
+                                {
                                   RAJA::loop<THREAD_Y_POLICY>(
-                                      ctx, y_tile, [&](INDEX_TYPE ty) {
+                                      ctx,
+                                      y_tile,
+                                      [&](INDEX_TYPE ty)
+                                      {
                                         RAJA::loop<THREAD_X_POLICY>(
-                                            ctx, x_tile, [&](INDEX_TYPE tx) {
+                                            ctx,
+                                            x_tile,
+                                            [&](INDEX_TYPE tx)
+                                            {
                                               auto idx =
                                                   tx + N1 * (ty + N2 * tz);
 
@@ -117,36 +129,41 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
                            RAJA::Threads(blocks_x, blocks_y, blocks_z)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
           RAJA::tile<TEAM_Z_POLICY>(
               ctx,
               threads_z,
               r3,
-              [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& z_tile) {
+              [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& z_tile)
+              {
                 RAJA::tile<TEAM_Y_POLICY>(
                     ctx,
                     threads_y,
                     r2,
-                    [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& y_tile) {
+                    [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& y_tile)
+                    {
                       RAJA::tile<TEAM_X_POLICY>(
                           ctx,
                           threads_x,
                           r1,
-                          [&](RAJA::TypedRangeSegment<INDEX_TYPE> const&
-                                  x_tile) {
+                          [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& x_tile)
+                          {
                             RAJA::loop<THREAD_Z_POLICY>(
                                 ctx,
                                 z_tile,
-                                [&](INDEX_TYPE RAJA_UNUSED_ARG(tz)) {
+                                [&](INDEX_TYPE RAJA_UNUSED_ARG(tz))
+                                {
                                   RAJA::loop<THREAD_Y_POLICY>(
                                       ctx,
                                       y_tile,
-                                      [&](INDEX_TYPE RAJA_UNUSED_ARG(ty)) {
+                                      [&](INDEX_TYPE RAJA_UNUSED_ARG(ty))
+                                      {
                                         RAJA::loop<THREAD_X_POLICY>(
                                             ctx,
                                             x_tile,
-                                            [&](INDEX_TYPE RAJA_UNUSED_ARG(
-                                                tx)) { working_array[0]++; });
+                                            [&](INDEX_TYPE RAJA_UNUSED_ARG(tx))
+                                            { working_array[0]++; });
                                       });
                                 });
                           });
@@ -186,7 +203,7 @@ class LaunchNestedTileDirectTest : public ::testing::Test
 TYPED_TEST_P(LaunchNestedTileDirectTest, RangeSegmentTeams)
 {
 
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

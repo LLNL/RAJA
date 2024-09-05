@@ -309,7 +309,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data&& data,
                                                 camp::idx_seq<PARAMS...> const&)
 {
 
-  using AllSegs = Segs<SEGS...>;
+  using AllSegs   = Segs<SEGS...>;
   using AllParams = Params<PARAMS...>;
 
   // invoke the expanded Lambda executor, passing in all segments and params
@@ -326,9 +326,9 @@ struct StatementExecutor<statement::Lambda<LambdaIndex>, Types>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(Data&& data)
   {
 
-    using Data_t = camp::decay<Data>;
+    using Data_t         = camp::decay<Data>;
     using offset_tuple_t = typename Data_t::offset_tuple_t;
-    using param_tuple_t = typename Data_t::param_tuple_t;
+    using param_tuple_t  = typename Data_t::param_tuple_t;
 
     invoke_lambda<LambdaIndex, Types>(
         std::forward<Data>(data),

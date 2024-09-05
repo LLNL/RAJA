@@ -18,12 +18,12 @@ template <typename IDX_TYPE,
           typename SEG_TYPE,
           typename EXEC_POLICY,
           typename REDUCE_POLICY>
-void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
+void ForallReduceBitOrBasicTestImpl(const SEG_TYPE&              seg,
                                     const std::vector<IDX_TYPE>& seg_idx,
-                                    camp::resources::Resource working_res)
+                                    camp::resources::Resource    working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
@@ -43,9 +43,9 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
 
   RAJA::ReduceBitOr<REDUCE_POLICY, DATA_TYPE> simpor(5);
 
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-    simpor |= working_array[idx];
-  });
+  RAJA::forall<EXEC_POLICY>(seg,
+                            [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                            { simpor |= working_array[idx]; });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(simpor.get()), 13);
 
@@ -76,7 +76,8 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
       RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
       RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor2),
       RAJA::expt::KernelName("RAJA Reduce BitOr"),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & r1, DATA_TYPE & r2) {
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & r1, DATA_TYPE & r2)
+      {
         r1 |= working_array[idx];
         r2 |= working_array[idx];
       });
@@ -92,9 +93,8 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
     RAJA::forall<EXEC_POLICY>(
         seg,
         RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
-        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & r1) {
-          r1 |= working_array[idx];
-        });
+        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE & r1)
+        { r1 |= working_array[idx]; });
   }
 
   ASSERT_EQ(static_cast<DATA_TYPE>(redor), ref_or);
@@ -112,10 +112,10 @@ class ForallReduceBitOrBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceBitOrBasicTest, ReduceBitOrBasicForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};

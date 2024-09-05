@@ -31,10 +31,12 @@ TYPED_TEST(ForEachUnitTest, EmptyRange)
   std::vector<TypeParam> numbers;
 
   std::vector<TypeParam> copies;
-  RAJA::for_each(numbers, [&](TypeParam& number) {
-    number += 1;
-    copies.push_back(number);
-  });
+  RAJA::for_each(numbers,
+                 [&](TypeParam& number)
+                 {
+                   number += 1;
+                   copies.push_back(number);
+                 });
 
   ASSERT_EQ(copies.size(), 0);
   ASSERT_EQ(numbers.size(), 0);
@@ -49,10 +51,12 @@ TYPED_TEST(ForEachUnitTest, VectorRange)
   }
 
   std::vector<TypeParam> copies;
-  RAJA::for_each(numbers, [&](TypeParam& number) {
-    copies.push_back(number);
-    number += 1;
-  });
+  RAJA::for_each(numbers,
+                 [&](TypeParam& number)
+                 {
+                   copies.push_back(number);
+                   number += 1;
+                 });
 
   ASSERT_EQ(copies.size(), 13);
   for (TypeParam i = 0; i < 13; ++i)
@@ -70,10 +74,12 @@ TYPED_TEST(ForEachUnitTest, RajaSpanRange)
   }
 
   std::vector<TypeParam> copies;
-  RAJA::for_each(RAJA::make_span(numbers.data(), 11), [&](TypeParam& number) {
-    copies.push_back(number);
-    number += 1;
-  });
+  RAJA::for_each(RAJA::make_span(numbers.data(), 11),
+                 [&](TypeParam& number)
+                 {
+                   copies.push_back(number);
+                   number += 1;
+                 });
 
   ASSERT_EQ(copies.size(), 11);
   for (TypeParam i = 0; i < 11; ++i)

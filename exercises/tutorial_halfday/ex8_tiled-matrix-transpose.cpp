@@ -66,7 +66,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -271,9 +271,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       >                                                     // closes Tile 1
                                                   >; // closes policy list
 
-  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(RAJA::make_tuple(col_Range, row_Range),
+                                     [=](int col, int row)
+                                     { Atview(col, row) = Aview(row, col); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);

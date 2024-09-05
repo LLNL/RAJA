@@ -134,10 +134,11 @@ int main(int argc, char* argv[])
       RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
-  RAJA::expt::dynamic_forall<policy_list>(
-      res, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE(int i) {
-        c[i] = a[i] + b[i];
-      });
+  RAJA::expt::dynamic_forall<policy_list>(res,
+                                          pol,
+                                          RAJA::RangeSegment(0, N),
+                                          [=] RAJA_HOST_DEVICE(int i)
+                                          { c[i] = a[i] + b[i]; });
 
   checkResult(c, N);
   // printResult(c, N);

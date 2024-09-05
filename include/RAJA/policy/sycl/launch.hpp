@@ -42,10 +42,10 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
-       const char* kernel_name,
-       BODY_IN&& body_in,
-       ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
+       const LaunchParams&       params,
+       const char*               kernel_name,
+       BODY_IN&&                 body_in,
+       ReduceParams&             RAJA_UNUSED_ARG(launch_reducers))
   {
 
     /*Get the queue from concrete resource */
@@ -73,22 +73,27 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
       RAJA_FT_BEGIN;
 
-      q->submit([&](cl::sycl::handler& h) {
-        auto s_vec = ::sycl::local_accessor<char, 1>(params.shared_mem_size, h);
+      q->submit(
+          [&](cl::sycl::handler& h)
+          {
+            auto s_vec =
+                ::sycl::local_accessor<char, 1>(params.shared_mem_size, h);
 
-        h.parallel_for(
-            cl::sycl::nd_range<3>(gridSize, blockSize),
-            [=](cl::sycl::nd_item<3> itm) {
-              LaunchContext ctx;
-              ctx.itm = &itm;
+            h.parallel_for(
+                cl::sycl::nd_range<3>(gridSize, blockSize),
+                [=](cl::sycl::nd_item<3> itm)
+                {
+                  LaunchContext ctx;
+                  ctx.itm = &itm;
 
-              // Point to shared memory
-              ctx.shared_mem_ptr =
-                  s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
+                  // Point to shared memory
+                  ctx.shared_mem_ptr =
+                      s_vec.get_multi_ptr<::sycl::access::decorated::yes>()
+                          .get();
 
-              body_in(ctx);
-            });
-      });
+                  body_in(ctx);
+                });
+          });
 
       if (!async)
       {
@@ -113,10 +118,10 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
-       const char* kernel_name,
-       BODY_IN&& body_in,
-       ReduceParams launch_reducers)
+       const LaunchParams&       launch_params,
+       const char*               kernel_name,
+       BODY_IN&&                 body_in,
+       ReduceParams              launch_reducers)
   {
 
     /*Get the queue from concrete resource */
@@ -148,7 +153,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
     {
 
 
-      auto combiner = [](ReduceParams x, ReduceParams y) {
+      auto combiner = [](ReduceParams x, ReduceParams y)
+      {
         RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
         return x;
       };
@@ -159,29 +165,34 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
       auto reduction = ::sycl::reduction(res, launch_reducers, combiner);
 
-      q->submit([&](cl::sycl::handler& h) {
-         auto s_vec =
-             ::sycl::local_accessor<char, 1>(launch_params.shared_mem_size, h);
+      q->submit(
+           [&](cl::sycl::handler& h)
+           {
+             auto s_vec = ::sycl::local_accessor<char, 1>(
+                 launch_params.shared_mem_size, h);
 
-         h.parallel_for(
-             cl::sycl::nd_range<3>(gridSize, blockSize),
-             reduction,
-             [=](cl::sycl::nd_item<3> itm, auto& red) {
-               LaunchContext ctx;
-               ctx.itm = &itm;
+             h.parallel_for(
+                 cl::sycl::nd_range<3>(gridSize, blockSize),
+                 reduction,
+                 [=](cl::sycl::nd_item<3> itm, auto& red)
+                 {
+                   LaunchContext ctx;
+                   ctx.itm = &itm;
 
-               // Point to shared memory
-               ctx.shared_mem_ptr =
-                   s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
+                   // Point to shared memory
+                   ctx.shared_mem_ptr =
+                       s_vec.get_multi_ptr<::sycl::access::decorated::yes>()
+                           .get();
 
-               ReduceParams fp;
-               RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+                   ReduceParams fp;
+                   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
 
-               RAJA::expt::invoke_body(fp, body_in, ctx);
+                   RAJA::expt::invoke_body(fp, body_in, ctx);
 
-               red.combine(fp);
-             });
-       }).wait(); // Need to wait for completion to free memory
+                   red.combine(fp);
+                 });
+           })
+          .wait(); // Need to wait for completion to free memory
 
       RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(launch_reducers, *res);
       ::sycl::free(res, *q);
@@ -204,10 +215,10 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
-       const char* kernel_name,
-       BODY_IN&& body_in,
-       ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
+       const LaunchParams&       params,
+       const char*               kernel_name,
+       BODY_IN&&                 body_in,
+       ReduceParams&             RAJA_UNUSED_ARG(launch_reducers))
   {
 
     /*Get the queue from concrete resource */
@@ -244,23 +255,28 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       lbody = (LOOP_BODY*)cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
       q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
 
-      q->submit([&](cl::sycl::handler& h) {
-         auto s_vec =
-             ::sycl::local_accessor<char, 1>(params.shared_mem_size, h);
+      q->submit(
+           [&](cl::sycl::handler& h)
+           {
+             auto s_vec =
+                 ::sycl::local_accessor<char, 1>(params.shared_mem_size, h);
 
-         h.parallel_for(
-             cl::sycl::nd_range<3>(gridSize, blockSize),
-             [=](cl::sycl::nd_item<3> itm) {
-               LaunchContext ctx;
-               ctx.itm = &itm;
+             h.parallel_for(
+                 cl::sycl::nd_range<3>(gridSize, blockSize),
+                 [=](cl::sycl::nd_item<3> itm)
+                 {
+                   LaunchContext ctx;
+                   ctx.itm = &itm;
 
-               // Point to shared memory
-               ctx.shared_mem_ptr =
-                   s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
+                   // Point to shared memory
+                   ctx.shared_mem_ptr =
+                       s_vec.get_multi_ptr<::sycl::access::decorated::yes>()
+                           .get();
 
-               (*lbody)(ctx);
-             });
-       }).wait(); // Need to wait for completion to free memory
+                   (*lbody)(ctx);
+                 });
+           })
+          .wait(); // Need to wait for completion to free memory
 
       cl::sycl::free(lbody, *q);
 
@@ -282,10 +298,10 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
-       const char* kernel_name,
-       BODY_IN&& body_in,
-       ReduceParams launch_reducers)
+       const LaunchParams&       launch_params,
+       const char*               kernel_name,
+       BODY_IN&&                 body_in,
+       ReduceParams              launch_reducers)
   {
 
     /*Get the queue from concrete resource */
@@ -317,7 +333,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
     {
 
 
-      auto combiner = [](ReduceParams x, ReduceParams y) {
+      auto combiner = [](ReduceParams x, ReduceParams y)
+      {
         RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
         return x;
       };
@@ -337,29 +354,34 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
       auto reduction = ::sycl::reduction(res, launch_reducers, combiner);
 
-      q->submit([&](cl::sycl::handler& h) {
-         auto s_vec =
-             ::sycl::local_accessor<char, 1>(launch_params.shared_mem_size, h);
+      q->submit(
+           [&](cl::sycl::handler& h)
+           {
+             auto s_vec = ::sycl::local_accessor<char, 1>(
+                 launch_params.shared_mem_size, h);
 
-         h.parallel_for(
-             cl::sycl::nd_range<3>(gridSize, blockSize),
-             reduction,
-             [=](cl::sycl::nd_item<3> itm, auto& red) {
-               LaunchContext ctx;
-               ctx.itm = &itm;
+             h.parallel_for(
+                 cl::sycl::nd_range<3>(gridSize, blockSize),
+                 reduction,
+                 [=](cl::sycl::nd_item<3> itm, auto& red)
+                 {
+                   LaunchContext ctx;
+                   ctx.itm = &itm;
 
-               // Point to shared memory
-               ctx.shared_mem_ptr =
-                   s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
+                   // Point to shared memory
+                   ctx.shared_mem_ptr =
+                       s_vec.get_multi_ptr<::sycl::access::decorated::yes>()
+                           .get();
 
-               ReduceParams fp;
-               RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+                   ReduceParams fp;
+                   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
 
-               RAJA::expt::invoke_body(fp, *lbody, ctx);
+                   RAJA::expt::invoke_body(fp, *lbody, ctx);
 
-               red.combine(fp);
-             });
-       }).wait(); // Need to wait for completion to free memory
+                   red.combine(fp);
+                 });
+           })
+          .wait(); // Need to wait for completion to free memory
 
       RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(launch_reducers, *res);
       ::sycl::free(res, *q);
@@ -416,9 +438,9 @@ struct LoopExecute<sycl_global_item<DIM0, DIM1>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           BODY const&          body)
   {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -450,10 +472,10 @@ struct LoopExecute<sycl_global_item<DIM0, DIM1, DIM2>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           SEGMENT const& segment2,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           SEGMENT const&       segment2,
+                                           BODY const&          body)
   {
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
@@ -543,9 +565,9 @@ struct LoopExecute<sycl_flatten_group_local_direct<DIM0, DIM1>, SEGMENT>
 
     const int len = segment.end() - segment.begin();
     {
-      const int tx = ctx.itm->get_local_id(DIM0);
-      const int ty = ctx.itm->get_local_id(DIM1);
-      const int bx = ctx.itm->get_local_range(DIM0);
+      const int tx  = ctx.itm->get_local_id(DIM0);
+      const int ty  = ctx.itm->get_local_id(DIM1);
+      const int bx  = ctx.itm->get_local_range(DIM0);
       const int tid = tx + bx * ty;
 
       if (tid < len) body(*(segment.begin() + tid));
@@ -809,9 +831,9 @@ struct LoopExecute<sycl_group_012_direct<DIM0, DIM1>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           BODY const&          body)
   {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -830,10 +852,10 @@ struct LoopExecute<sycl_group_012_direct<DIM0, DIM1, DIM2>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           SEGMENT const& segment2,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           SEGMENT const&       segment2,
+                                           BODY const&          body)
   {
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
@@ -860,9 +882,9 @@ struct LoopICountExecute<sycl_group_012_direct<DIM0, DIM1>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           BODY const&          body)
   {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -881,10 +903,10 @@ struct LoopICountExecute<sycl_group_012_direct<DIM0, DIM1, DIM2>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           SEGMENT const& segment2,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           SEGMENT const&       segment2,
+                                           BODY const&          body)
   {
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
@@ -925,9 +947,9 @@ struct LoopExecute<sycl_group_012_loop<DIM0, DIM1>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           BODY const&          body)
   {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -952,10 +974,10 @@ struct LoopExecute<sycl_group_012_loop<DIM0, DIM1, DIM2>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           SEGMENT const& segment2,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           SEGMENT const&       segment2,
+                                           BODY const&          body)
   {
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
@@ -991,9 +1013,9 @@ struct LoopICountExecute<sycl_group_012_loop<DIM0, DIM1>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           BODY const&          body)
   {
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
@@ -1019,10 +1041,10 @@ struct LoopICountExecute<sycl_group_012_loop<DIM0, DIM1, DIM2>, SEGMENT>
 
   template <typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           SEGMENT const& segment0,
-                                           SEGMENT const& segment1,
-                                           SEGMENT const& segment2,
-                                           BODY const& body)
+                                           SEGMENT const&       segment0,
+                                           SEGMENT const&       segment1,
+                                           SEGMENT const&       segment2,
+                                           BODY const&          body)
   {
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
@@ -1058,9 +1080,9 @@ struct TileExecute<sycl_local_012_loop<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1080,9 +1102,9 @@ struct TileExecute<sycl_local_012_direct<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1102,9 +1124,9 @@ struct TileExecute<sycl_group_012_loop<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1126,9 +1148,9 @@ struct TileExecute<sycl_group_012_direct<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1148,9 +1170,9 @@ struct TileTCountExecute<sycl_local_012_loop<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1170,9 +1192,9 @@ struct TileTCountExecute<sycl_local_012_direct<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1192,9 +1214,9 @@ struct TileTCountExecute<sycl_group_012_loop<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -1214,9 +1236,9 @@ struct TileTCountExecute<sycl_group_012_direct<DIM>, SEGMENT>
 
   template <typename TILE_T, typename BODY>
   static RAJA_INLINE RAJA_DEVICE void exec(LaunchContext const& ctx,
-                                           TILE_T tile_size,
-                                           SEGMENT const& segment,
-                                           BODY const& body)
+                                           TILE_T               tile_size,
+                                           SEGMENT const&       segment,
+                                           BODY const&          body)
   {
 
     const int len = segment.end() - segment.begin();

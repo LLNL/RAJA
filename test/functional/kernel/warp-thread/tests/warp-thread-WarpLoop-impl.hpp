@@ -39,8 +39,8 @@ template <typename EXEC_POL,
           typename WORKING_RES,
           typename... Args>
 typename std::enable_if<USE_RESOURCE>::type
-call_kernel_param(SEGMENTS&& segs,
-                  PARAMS&& params,
+call_kernel_param(SEGMENTS&&  segs,
+                  PARAMS&&    params,
                   WORKING_RES work_res,
                   Args&&... args)
 {
@@ -81,7 +81,7 @@ template <typename WORKING_RES,
 void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARP&,
                           const RAJA::Index_type len)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   RAJA::Index_type* work_array;
@@ -113,10 +113,10 @@ template <typename WORKING_RES,
 void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
                           const RAJA::Index_type numtiles)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
-  RAJA::Index_type flatSize = 32 * numtiles;
+  RAJA::Index_type  flatSize = 32 * numtiles;
   RAJA::Index_type* work_array;
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
@@ -133,7 +133,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
       RAJA::make_tuple((RAJA::Index_type)0),
       work_res,
       [=] RAJA_HOST_DEVICE(RAJA::Index_type RAJA_UNUSED_ARG(i),
-                           RAJA::Index_type j) {
+                           RAJA::Index_type j)
+      {
         worksum += j; // j should only be 0..31
       });
 

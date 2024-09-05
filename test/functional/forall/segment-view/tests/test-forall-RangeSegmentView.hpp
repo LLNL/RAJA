@@ -14,12 +14,12 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first, last);
-  INDEX_TYPE N = r1.end() - r1.begin();
+  INDEX_TYPE                          N = r1.end() - r1.begin();
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       N, working_res, &working_array, &check_array, &test_array);
@@ -31,11 +31,11 @@ void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   using view_type = RAJA::View<INDEX_TYPE, RAJA::Layout<1, INDEX_TYPE, 0>>;
 
   RAJA::Layout<1> layout(N);
-  view_type work_view(working_array, layout);
+  view_type       work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    work_view(idx - rbegin) = idx;
-  });
+  RAJA::forall<EXEC_POLICY>(r1,
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            { work_view(idx - rbegin) = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -54,12 +54,12 @@ void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first,
                                           INDEX_TYPE offset)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(first + offset, last + offset);
-  INDEX_TYPE N = r1.end() - r1.begin();
+  INDEX_TYPE                          N = r1.end() - r1.begin();
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       N, working_res, &working_array, &check_array, &test_array);
@@ -72,7 +72,7 @@ void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first,
 
   INDEX_TYPE f_offset = first + offset;
   INDEX_TYPE l_offset = last + offset;
-  view_type work_view(
+  view_type  work_view(
       working_array,
       RAJA::make_offset_layout<1, INDEX_TYPE>({{f_offset}}, {{l_offset}}));
 
@@ -124,7 +124,7 @@ class ForallRangeSegmentViewTest : public ::testing::Test
 
 TYPED_TEST_P(ForallRangeSegmentViewTest, RangeSegmentForallView)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

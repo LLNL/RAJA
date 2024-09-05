@@ -132,9 +132,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_dotprod_start
   RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::RangeSegment(0, N),
-      [=] RAJA_DEVICE(int i) { cudot += a[i] * b[i]; });
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+                                                 [=] RAJA_DEVICE(int i)
+                                                 { cudot += a[i] * b[i]; });
 
   dot = cudot.get();
   // _rajacuda_dotprod_end
@@ -163,9 +163,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajahip_dotprod_start
   RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
 
-  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      RAJA::RangeSegment(0, N),
-      [=] RAJA_DEVICE(int i) { hpdot += d_a[i] * d_b[i]; });
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+                                               [=] RAJA_DEVICE(int i)
+                                               { hpdot += d_a[i] * d_b[i]; });
 
   dot = hpdot.get();
   // _rajahip_dotprod_end

@@ -6,7 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #define OP_GREATER RAJA::operators::greater<int>
-#define OP_LESS RAJA::operators::less<int>
+#define OP_LESS    RAJA::operators::less<int>
 
 #define CHECK_UNSTABLE_SORT_RESULT(X) checkUnstableSortResult<X>(in, out, N)
 #define CHECK_UNSTABLE_SORT_PAIR_RESULT(X)                                     \
@@ -66,7 +66,7 @@ void checkUnstableSortResult(const T* in,
                              const T* out,
                              const U* in_vals,
                              const U* out_vals,
-                             int N);
+                             int      N);
 //
 template <typename Function, typename T>
 void checkStableSortResult(const T* in, const T* out, int N);
@@ -75,7 +75,7 @@ void checkStableSortResult(const T* in,
                            const T* out,
                            const U* in_vals,
                            const U* out_vals,
-                           int N);
+                           int      N);
 //
 template <typename T>
 void printArray(const T* k, int N);
@@ -97,10 +97,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize vector data
   //
-  int* in = memoryManager::allocate<int>(N);
+  int* in  = memoryManager::allocate<int>(N);
   int* out = memoryManager::allocate<int>(N);
 
-  unsigned* in_vals = memoryManager::allocate<unsigned>(N);
+  unsigned* in_vals  = memoryManager::allocate<unsigned>(N);
   unsigned* out_vals = memoryManager::allocate<unsigned>(N);
 
   std::iota(in, in + N / 2, 0);
@@ -352,7 +352,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
   std::copy_n(in_vals, N, out_vals);
 
-  int* d_out = memoryManager::allocate_gpu<int>(N);
+  int* d_out      = memoryManager::allocate_gpu<int>(N);
   int* d_out_vals = memoryManager::allocate_gpu<int>(N);
 
   hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));
@@ -439,7 +439,7 @@ template <typename Comparator, typename T>
 void checkUnstableSortResult(const T* in, const T* out, int N)
 {
   Comparator comp;
-  bool correct = true;
+  bool       correct = true;
 
   // make map of keys to keys
   using val_map = std::unordered_multiset<T>;
@@ -509,10 +509,10 @@ void checkUnstableSortResult(const T* in,
                              const T* out,
                              const U* in_vals,
                              const U* out_vals,
-                             int N)
+                             int      N)
 {
   Comparator comp;
-  bool correct = true;
+  bool       correct = true;
 
   // make map of keys to vals
   using val_map = std::unordered_multiset<U>;
@@ -591,7 +591,7 @@ template <typename Comparator, typename T>
 void checkStableSortResult(const T* in, const T* out, int N)
 {
   Comparator comp;
-  bool correct = true;
+  bool       correct = true;
 
   // make map of keys to keys
   using val_map = std::list<T>;
@@ -660,10 +660,10 @@ void checkStableSortResult(const T* in,
                            const T* out,
                            const U* in_vals,
                            const U* out_vals,
-                           int N)
+                           int      N)
 {
   Comparator comp;
-  bool correct = true;
+  bool       correct = true;
 
   // make map of keys to vals
   using val_map = std::list<U>;

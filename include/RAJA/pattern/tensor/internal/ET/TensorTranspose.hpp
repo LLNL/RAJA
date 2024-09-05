@@ -40,14 +40,14 @@ template <typename ET_TYPE>
 class TensorTranspose : public TensorExpressionBase<TensorTranspose<ET_TYPE>>
 {
 public:
-  using self_type = TensorTranspose<ET_TYPE>;
-  using rhs_type = ET_TYPE;
-  using tensor_type = typename ET_TYPE::result_type;
+  using self_type    = TensorTranspose<ET_TYPE>;
+  using rhs_type     = ET_TYPE;
+  using tensor_type  = typename ET_TYPE::result_type;
   using element_type = typename tensor_type::element_type;
-  using index_type = typename ET_TYPE::index_type;
+  using index_type   = typename ET_TYPE::index_type;
 
-  using result_type = tensor_type;
-  using tile_type = typename ET_TYPE::tile_type;
+  using result_type                       = tensor_type;
+  using tile_type                         = typename ET_TYPE::tile_type;
   static constexpr camp::idx_t s_num_dims = ET_TYPE::s_num_dims;
 
   RAJA_INLINE

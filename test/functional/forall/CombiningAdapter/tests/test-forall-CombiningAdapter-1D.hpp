@@ -19,12 +19,12 @@ void ForallCombiningAdapter1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::TypedRangeSegment<INDEX_TYPE> r0(RAJA::stripIndexType(first),
                                          RAJA::stripIndexType(last));
   INDEX_TYPE N0 = static_cast<INDEX_TYPE>(r0.end() - r0.begin());
-  INDEX_TYPE N = N0;
+  INDEX_TYPE N  = N0;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N) + 1;
 
@@ -43,7 +43,8 @@ void ForallCombiningAdapter1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
 
     auto adapter = RAJA::make_CombiningAdapter(
-        [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+        [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+        {
           if (idx >= first && idx < last)
           {
             // in bounds
@@ -106,7 +107,7 @@ void runNegativeTests()
 
 TYPED_TEST_P(ForallCombiningAdapter1DTest, Forall1D)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

@@ -59,8 +59,8 @@ struct StaticLayoutBase_impl<IdxLin,
 {
 
   using IndexLinear = IdxLin;
-  using sizes = camp::int_seq<IdxLin, Sizes...>;
-  using strides = camp::int_seq<IdxLin, Strides...>;
+  using sizes       = camp::int_seq<IdxLin, Sizes...>;
+  using strides     = camp::int_seq<IdxLin, Strides...>;
 
   static constexpr camp::idx_t stride_one_dim = RAJA::max<camp::idx_t>(
       (camp::seq_at<RangeInts, strides>::value == 1 ? camp::idx_t(RangeInts)
@@ -165,7 +165,7 @@ struct StrideCalculatorIdx
 {
   static_assert(N == sizeof...(Sizes), "");
 
-  using sizes_seq = camp::int_seq<IdxLin, Sizes...>;
+  using sizes_seq              = camp::int_seq<IdxLin, Sizes...>;
   static constexpr IdxLin size = camp::seq_at<Idx, sizes_seq>::value;
   static constexpr IdxLin size_last =
       StrideCalculatorIdx<IdxLin, N, Idx + 1, Sizes...>::size;
@@ -180,8 +180,8 @@ struct StrideCalculatorIdx<IdxLin, N, N, Sizes...>
 {
   static_assert(N == sizeof...(Sizes), "");
 
-  static constexpr IdxLin size = 1;
-  static constexpr IdxLin value = 1;
+  static constexpr IdxLin size   = 1;
+  static constexpr IdxLin value  = 1;
   static constexpr IdxLin stride = size > 0 ? value : 0;
 };
 
@@ -199,11 +199,11 @@ struct StrideCalculator<IdxLin,
 {
   static_assert(sizeof...(Sizes) == sizeof...(Perm), "");
 
-  using sizes = camp::int_seq<IdxLin, Sizes...>;
+  using sizes               = camp::int_seq<IdxLin, Sizes...>;
   static constexpr IdxLin N = sizeof...(Sizes);
-  using range = camp::int_seq<IdxLin, Range...>;
-  using perm = camp::idx_seq<Perm...>;
-  using inv_perm = invert_permutation<perm>;
+  using range               = camp::int_seq<IdxLin, Range...>;
+  using perm                = camp::idx_seq<Perm...>;
+  using inv_perm            = invert_permutation<perm>;
 
   using strides_unperm = camp::int_seq<
       IdxLin,
@@ -233,9 +233,9 @@ struct StaticLayoutBase_impl<IdxLin,
 
 
   using IndexLinear = IdxLin;
-  using ranges = camp::int_seq<IdxLin, RangeInts...>;
-  using sizes = camp::int_seq<IdxLin, Sizes...>;
-  using strides = camp::int_seq<IdxLin, Strides...>;
+  using ranges      = camp::int_seq<IdxLin, RangeInts...>;
+  using sizes       = camp::int_seq<IdxLin, Sizes...>;
+  using strides     = camp::int_seq<IdxLin, Strides...>;
 
   using InnerLayout =
       StaticLayoutBase_impl<IdxLin, ranges, sizes, strides, void>;
@@ -257,7 +257,7 @@ struct StaticLayoutBase_impl<IdxLin,
   }
 
 
-  static constexpr IndexLinear s_size = InnerLayout::s_size;
+  static constexpr IndexLinear s_size        = InnerLayout::s_size;
   static constexpr IndexLinear s_size_noproj = InnerLayout::s_size_noproj;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr static IndexLinear size()

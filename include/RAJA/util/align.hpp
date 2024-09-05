@@ -45,7 +45,7 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
     size_t d = static_cast<size_t>(p2 - p1);
     if (d <= space - size)
     {
-      r = p2;
+      r   = p2;
       ptr = r;
       space -= d;
     }

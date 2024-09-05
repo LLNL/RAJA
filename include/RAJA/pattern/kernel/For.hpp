@@ -105,7 +105,7 @@ struct StatementExecutor<
     // Create a wrapper, just in case forall_impl needs to thread_privatize
     ForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
-    auto len = segment_length<ArgumentId>(data);
+    auto len    = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
     auto r = data.res;
@@ -139,7 +139,7 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
     // Create a wrapper, just in case forall_impl needs to thread_privatize
     ForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...> for_wrapper(data);
 
-    auto len = segment_length<ArgumentId>(data);
+    auto len    = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
     RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));

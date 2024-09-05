@@ -16,17 +16,17 @@ void ResourceJoinAsyncSemanticsTestImpl()
   constexpr std::size_t ARRAY_SIZE{1000000};
   using namespace RAJA;
 
-  WORKING_RES dev1;
-  WORKING_RES dev2;
+  WORKING_RES     dev1;
+  WORKING_RES     dev2;
   resources::Host host;
 
   int* d_array = resources::Resource{dev1}.allocate<int>(ARRAY_SIZE);
   int* h_array = host.allocate<int>(ARRAY_SIZE);
 
-  forall<policy::sequential::seq_exec>(
-      host, RangeSegment(0, ARRAY_SIZE), [=] RAJA_HOST_DEVICE(int i) {
-        h_array[i] = i;
-      });
+  forall<policy::sequential::seq_exec>(host,
+                                       RangeSegment(0, ARRAY_SIZE),
+                                       [=] RAJA_HOST_DEVICE(int i)
+                                       { h_array[i] = i; });
 
   dev2.memcpy(d_array, h_array, sizeof(int) * ARRAY_SIZE);
 
@@ -44,10 +44,10 @@ void ResourceJoinAsyncSemanticsTestImpl()
 
   dev2.wait();
 
-  forall<policy::sequential::seq_exec>(
-      host, RangeSegment(0, ARRAY_SIZE), [=](int i) {
-        ASSERT_EQ(h_array[i], i + 2);
-      });
+  forall<policy::sequential::seq_exec>(host,
+                                       RangeSegment(0, ARRAY_SIZE),
+                                       [=](int i)
+                                       { ASSERT_EQ(h_array[i], i + 2); });
 
   dev1.deallocate(d_array);
   host.deallocate(h_array);

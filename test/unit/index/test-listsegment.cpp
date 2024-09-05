@@ -83,7 +83,7 @@ TYPED_TEST(ListSegmentUnitTest, Swaps)
 
 TYPED_TEST(ListSegmentUnitTest, Equality)
 {
-  std::vector<TypeParam> idx1{5, 3, 1, 2};
+  std::vector<TypeParam>            idx1{5, 3, 1, 2};
   RAJA::TypedListSegment<TypeParam> list(idx1, host_res);
 
   std::vector<TypeParam> idx2{2, 1, 3, 5};
@@ -97,7 +97,7 @@ TYPED_TEST(ListSegmentUnitTest, Equality)
 
 TYPED_TEST(ListSegmentUnitTest, Iterators)
 {
-  std::vector<TypeParam> idx1{5, 3, 1, 2};
+  std::vector<TypeParam>            idx1{5, 3, 1, 2};
   RAJA::TypedListSegment<TypeParam> list(idx1, host_res);
 
   ASSERT_EQ(TypeParam(5), *list.begin());

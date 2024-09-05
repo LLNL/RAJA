@@ -45,15 +45,15 @@ template <typename T, typename BinaryOp>
 struct LeftFoldReduce
 {
   RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit LeftFoldReduce(
-      T init = BinaryOp::identity(),
-      BinaryOp op = BinaryOp{}) noexcept
+      T        init = BinaryOp::identity(),
+      BinaryOp op   = BinaryOp{}) noexcept
       : m_op(std::move(op)), m_accumulated_value(std::move(init))
   {}
 
-  LeftFoldReduce(LeftFoldReduce const&) = delete;
+  LeftFoldReduce(LeftFoldReduce const&)            = delete;
   LeftFoldReduce& operator=(LeftFoldReduce const&) = delete;
-  LeftFoldReduce(LeftFoldReduce&&) = delete;
-  LeftFoldReduce& operator=(LeftFoldReduce&&) = delete;
+  LeftFoldReduce(LeftFoldReduce&&)                 = delete;
+  LeftFoldReduce& operator=(LeftFoldReduce&&)      = delete;
 
   ~LeftFoldReduce() = default;
 
@@ -93,7 +93,7 @@ struct LeftFoldReduce
 
 private:
   BinaryOp m_op;
-  T m_accumulated_value;
+  T        m_accumulated_value;
 };
 
 /*!
@@ -101,7 +101,7 @@ private:
 */
 template <typename T,
           typename BinaryOp,
-          typename SizeType = size_t,
+          typename SizeType     = size_t,
           SizeType t_num_levels = CHAR_BIT * sizeof(SizeType)>
 struct BinaryTreeReduce
 {
@@ -115,17 +115,17 @@ struct BinaryTreeReduce
   static constexpr SizeType num_levels = t_num_levels;
 
   RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit BinaryTreeReduce(
-      T init = BinaryOp::identity(),
-      BinaryOp op = BinaryOp{}) noexcept
+      T        init = BinaryOp::identity(),
+      BinaryOp op   = BinaryOp{}) noexcept
       : m_op(std::move(op))
   {
     combine(std::move(init));
   }
 
-  BinaryTreeReduce(BinaryTreeReduce const&) = delete;
+  BinaryTreeReduce(BinaryTreeReduce const&)            = delete;
   BinaryTreeReduce& operator=(BinaryTreeReduce const&) = delete;
-  BinaryTreeReduce(BinaryTreeReduce&&) = delete;
-  BinaryTreeReduce& operator=(BinaryTreeReduce&&) = delete;
+  BinaryTreeReduce(BinaryTreeReduce&&)                 = delete;
+  BinaryTreeReduce& operator=(BinaryTreeReduce&&)      = delete;
 
   RAJA_HOST_DEVICE RAJA_INLINE ~BinaryTreeReduce() { clear(); }
 
@@ -324,13 +324,13 @@ high_accuracy_reduce(Iter begin, Iter end, T init, BinaryOp op)
     see https://en.cppreference.com/w/cpp/algorithm/accumulate
 */
 template <typename Container,
-          typename T = detail::ContainerVal<Container>,
+          typename T        = detail::ContainerVal<Container>,
           typename BinaryOp = operators::plus<T>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if_t<T, type_traits::is_range<Container>>
-    accumulate(Container&& c,
-               T init = BinaryOp::identity(),
-               BinaryOp op = BinaryOp{})
+                accumulate(Container&& c,
+                           T           init = BinaryOp::identity(),
+                           BinaryOp    op   = BinaryOp{})
 {
   using std::begin;
   using std::end;
@@ -347,13 +347,13 @@ RAJA_HOST_DEVICE
     see https://en.cppreference.com/w/cpp/algorithm/reduce
 */
 template <typename Container,
-          typename T = detail::ContainerVal<Container>,
+          typename T        = detail::ContainerVal<Container>,
           typename BinaryOp = operators::plus<T>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if_t<T, type_traits::is_range<Container>>
-    binary_tree_reduce(Container&& c,
-                       T init = BinaryOp::identity(),
-                       BinaryOp op = BinaryOp{})
+                binary_tree_reduce(Container&& c,
+                                   T           init = BinaryOp::identity(),
+                                   BinaryOp    op   = BinaryOp{})
 {
   using std::begin;
   using std::end;
@@ -371,13 +371,13 @@ RAJA_HOST_DEVICE
     see https://en.cppreference.com/w/cpp/algorithm/reduce
 */
 template <typename Container,
-          typename T = detail::ContainerVal<Container>,
+          typename T        = detail::ContainerVal<Container>,
           typename BinaryOp = operators::plus<T>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if_t<T, type_traits::is_range<Container>>
-    high_accuracy_reduce(Container&& c,
-                         T init = BinaryOp::identity(),
-                         BinaryOp op = BinaryOp{})
+                high_accuracy_reduce(Container&& c,
+                                     T           init = BinaryOp::identity(),
+                                     BinaryOp    op   = BinaryOp{})
 {
   using std::begin;
   using std::end;

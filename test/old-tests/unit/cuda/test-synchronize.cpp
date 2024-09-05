@@ -21,9 +21,9 @@ GPU_TEST(SynchronizeTest, CUDA)
       [=] RAJA_HOST_DEVICE(RAJA::Index_type i) { managed_data[i] = 1.0 * i; });
   RAJA::synchronize<RAJA::cuda_synchronize>();
 
-  RAJA::forall<RAJA::seq_exec>(
-      RAJA::RangeSegment(0, 50),
-      [=](RAJA::Index_type i) { EXPECT_EQ(managed_data[i], 1.0 * i); });
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 50),
+                               [=](RAJA::Index_type i)
+                               { EXPECT_EQ(managed_data[i], 1.0 * i); });
 
   cudaErrchk(cudaFree(managed_data));
 }

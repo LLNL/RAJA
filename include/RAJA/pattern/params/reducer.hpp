@@ -48,7 +48,7 @@ struct ValLoc
   bool constexpr operator<(const ValLoc& rhs) const { return val < rhs.val; }
   bool constexpr operator>(const ValLoc& rhs) const { return val > rhs.val; }
 
-  value_type getVal() { return val; }
+  value_type       getVal() { return val; }
   RAJA::Index_type getLoc() { return loc; }
 
 private:
@@ -102,21 +102,21 @@ using device_mem_pool_t = RAJA::sycl::device_mempool_type;
 template <typename Op, typename T>
 struct Reducer : public ForallParamBase
 {
-  using op = Op;
+  using op         = Op;
   using value_type = T;
 
   RAJA_HOST_DEVICE Reducer() {}
   Reducer(value_type* target_in) : target(target_in), val(op::identity()) {}
 
   value_type* target = nullptr;
-  value_type val = op::identity();
+  value_type  val    = op::identity();
 
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) ||                   \
     defined(RAJA_SYCL_ACTIVE)
   // Device related attributes.
-  value_type* devicetarget = nullptr;
+  value_type*                                         devicetarget = nullptr;
   RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;
-  unsigned int* device_count = nullptr;
+  unsigned int*                                       device_count = nullptr;
 #endif
 
   using ARG_TUP_T = camp::tuple<value_type*>;
@@ -125,7 +125,7 @@ struct Reducer : public ForallParamBase
     return camp::make_tuple(&val);
   }
 
-  using ARG_LIST_T = typename ARG_TUP_T::TList;
+  using ARG_LIST_T                        = typename ARG_TUP_T::TList;
   static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value;
 };
 
@@ -149,12 +149,12 @@ namespace detail
 template <typename Op, typename T>
 struct ReducerLoc : public Reducer<Op, T>
 {
-  using Base = Reducer<Op, T>;
+  using Base       = Reducer<Op, T>;
   using value_type = typename Base::value_type;
   ReducerLoc(value_type* target_in)
   {
     Base::target = target_in;
-    Base::val = value_type(Op::identity());
+    Base::val    = value_type(Op::identity());
   }
 };
 

@@ -50,7 +50,7 @@ struct ZipIterator
   using value_type =
       zip_val<typename std::iterator_traits<Iters>::value_type...>;
   using difference_type = std::ptrdiff_t;
-  using pointer = void;
+  using pointer         = void;
   using reference = zip_ref<typename std::iterator_traits<Iters>::reference...>;
   using creference =
       zip_ref<const typename std::iterator_traits<Iters>::reference...>;
@@ -164,7 +164,7 @@ struct ZipIterator
     tmp -= rhs;
     return tmp;
   }
-  RAJA_HOST_DEVICE friend ZipIterator operator+(difference_type lhs,
+  RAJA_HOST_DEVICE friend ZipIterator operator+(difference_type    lhs,
                                                 const ZipIterator& rhs)
   {
     ZipIterator tmp(rhs);

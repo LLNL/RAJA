@@ -42,9 +42,9 @@ namespace RAJA
  */
 void buildIndexSetAligned(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource work_res,
-    const RAJA::Index_type* const indices_in,
-    RAJA::Index_type length,
+    camp::resources::Resource                                   work_res,
+    const RAJA::Index_type* const                               indices_in,
+    RAJA::Index_type                                            length,
     RAJA::Index_type range_min_length,
     RAJA::Index_type range_align)
 {
@@ -61,7 +61,7 @@ void buildIndexSetAligned(
     /* first, gather statistics */
     /****************************/
 
-    RAJA::Index_type scanVal = indices_in[0];
+    RAJA::Index_type scanVal    = indices_in[0];
     RAJA::Index_type sliceCount = 0;
     for (RAJA::Index_type ii = 1; ii < length; ++ii)
     {
@@ -87,7 +87,7 @@ void buildIndexSetAligned(
           {
             docount += 1 + sliceCount; /* length + singletons */
           }
-          inrange = 1;
+          inrange    = 1;
           sliceCount = 0;
         }
         ++sliceCount; /* account for scanVal */
@@ -105,7 +105,7 @@ void buildIndexSetAligned(
           /* a range array */
           ++sliceCount;
           docount += 2; /* length + begin */
-          inrange = 0;
+          inrange    = 0;
           sliceCount = 0;
         }
         else
@@ -153,9 +153,9 @@ void buildIndexSetAligned(
       RAJA::Index_type dobegin;
       inrange = -1;
 
-      scanVal = indices_in[0];
+      scanVal    = indices_in[0];
       sliceCount = 0;
-      dobegin = scanVal;
+      dobegin    = scanVal;
       for (RAJA::Index_type ii = 1; ii < length; ++ii)
       {
         RAJA::Index_type lookAhead = indices_in[ii];
@@ -181,8 +181,8 @@ void buildIndexSetAligned(
               iset.push_back(
                   ListSegment(&indices_in[dobegin], sliceCount, work_res));
             }
-            inrange = 1;
-            dobegin = scanVal;
+            inrange    = 1;
+            dobegin    = scanVal;
             sliceCount = 0;
           }
           ++sliceCount; /* account for scanVal */
@@ -200,9 +200,9 @@ void buildIndexSetAligned(
             /* a range array */
             ++sliceCount;
             iset.push_back(RangeSegment(dobegin, dobegin + sliceCount));
-            inrange = 0;
+            inrange    = 0;
             sliceCount = 0;
-            dobegin = ii;
+            dobegin    = ii;
           }
           else
           {

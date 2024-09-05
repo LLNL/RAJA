@@ -28,8 +28,8 @@ typename std::enable_if<std::is_base_of<RunOnDevice, ForOnePol>::value>::type
 call_dispatcher(Invoker invoker, CallArgs... callArgs)
 {
   RAJA::tuple<CallArgs...> lambda_capturable_callArgs(callArgs...);
-  forone<ForOnePol>(
-      [=] RAJA_DEVICE() { camp::invoke(lambda_capturable_callArgs, invoker); });
+  forone<ForOnePol>([=] RAJA_DEVICE()
+                    { camp::invoke(lambda_capturable_callArgs, invoker); });
 }
 #endif
 
@@ -37,16 +37,16 @@ template <typename IndexType, typename... Args>
 struct DispatcherTestCallable
 {
   DispatcherTestCallable(IndexType* _ptr_call,
-                         IndexType _val_call,
+                         IndexType  _val_call,
                          IndexType* _ptr_dtor,
-                         IndexType _val_dtor)
+                         IndexType  _val_dtor)
       : ptr_call(_ptr_call),
         val_call(_val_call),
         ptr_dtor(_ptr_dtor),
         val_dtor(_val_dtor)
   {}
 
-  DispatcherTestCallable(DispatcherTestCallable const&) = delete;
+  DispatcherTestCallable(DispatcherTestCallable const&)            = delete;
   DispatcherTestCallable& operator=(DispatcherTestCallable const&) = delete;
 
   DispatcherTestCallable(DispatcherTestCallable&& o)
@@ -60,10 +60,10 @@ struct DispatcherTestCallable
   }
   DispatcherTestCallable& operator=(DispatcherTestCallable&& o)
   {
-    ptr_call = o.ptr_call;
-    val_call = o.val_call;
-    ptr_dtor = o.ptr_dtor;
-    val_dtor = o.val_dtor;
+    ptr_call     = o.ptr_call;
+    val_call     = o.val_call;
+    ptr_dtor     = o.ptr_dtor;
+    val_dtor     = o.val_dtor;
     o.moved_from = true;
     return *this;
   }
@@ -78,13 +78,13 @@ struct DispatcherTestCallable
 
 private:
   IndexType* ptr_call;
-  IndexType val_call;
+  IndexType  val_call;
   IndexType* ptr_dtor;
-  IndexType val_dtor;
+  IndexType  val_dtor;
 
 public:
   bool move_constructed = false;
-  bool moved_from = false;
+  bool moved_from       = false;
 };
 
 template <typename ExecPolicy,
@@ -103,10 +103,10 @@ struct testWorkGroupDispatcherSingle
     camp::resources::Resource host_res{camp::resources::Host()};
 
     static constexpr auto platform = RAJA::platform_of<ExecPolicy>::value;
-    using DispatchPolicy = typename DispatchTyper::template type<TestCallable>;
+    using DispatchPolicy  = typename DispatchTyper::template type<TestCallable>;
     using Dispatcher_type = RAJA::detail::
         Dispatcher<platform, DispatchPolicy, void, IndexType, Args...>;
-    using Invoker_type = typename Dispatcher_type::invoker_type;
+    using Invoker_type         = typename Dispatcher_type::invoker_type;
     using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
     const Dispatcher_type* dispatcher =
         RAJA::detail::get_Dispatcher<TestCallable, Dispatcher_type>(
@@ -209,7 +209,7 @@ struct testWorkGroupDispatcherSingle
 
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename IndexType,
           typename WORKING_RES,
           typename ForOnePol>
@@ -226,7 +226,7 @@ struct testWorkGroupDispatcherSingle<
 };
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename IndexType,
           typename WORKING_RES,
           typename ForOnePol>
@@ -254,12 +254,12 @@ TYPED_TEST_SUITE_P(WorkGroupBasicDispatcherSingleUnitTest);
 TYPED_TEST_P(WorkGroupBasicDispatcherSingleUnitTest,
              BasicWorkGroupDispatcherSingle)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ExecPolicy    = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<2>>::type;
-  using Args = typename camp::at<TypeParam, camp::num<3>>::type;
-  using ResourceType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using ForOneType = typename camp::at<TypeParam, camp::num<5>>::type;
+  using IndexType     = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Args          = typename camp::at<TypeParam, camp::num<3>>::type;
+  using ResourceType  = typename camp::at<TypeParam, camp::num<4>>::type;
+  using ForOneType    = typename camp::at<TypeParam, camp::num<5>>::type;
 
   testWorkGroupDispatcherSingle<ExecPolicy,
                                 DispatchTyper,

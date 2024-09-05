@@ -62,8 +62,8 @@ struct MultiplyOperator
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static int getDimSize(int dim,
-                        LEFT_OPERAND_TYPE const& left,
+  static int getDimSize(int                       dim,
+                        LEFT_OPERAND_TYPE const&  left,
                         RIGHT_OPERAND_TYPE const& right)
   {
     return dim == 0 ? left.getDimSize(0) : right.getDimSize(1);
@@ -74,8 +74,8 @@ struct MultiplyOperator
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const& left,
+  multiply(TILE_TYPE const&          tile,
+           LEFT_OPERAND_TYPE const&  left,
            RIGHT_OPERAND_TYPE const& right)
       -> decltype(left.eval(tile) * right.eval(tile))
   {
@@ -88,10 +88,10 @@ struct MultiplyOperator
    */
   template <typename TILE_TYPE, typename ADD_OPERAND_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
-               ADD_OPERAND_TYPE const& add)
+               ADD_OPERAND_TYPE const&   add)
       -> decltype(left.eval(tile).multiply_add(right.eval(tile),
                                                add.eval(tile)))
   {
@@ -104,9 +104,9 @@ struct MultiplyOperator
    */
   template <typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply_subtract(TILE_TYPE const& tile,
-                    LEFT_OPERAND_TYPE const& left,
-                    RIGHT_OPERAND_TYPE const& right,
+  multiply_subtract(TILE_TYPE const&             tile,
+                    LEFT_OPERAND_TYPE const&     left,
+                    RIGHT_OPERAND_TYPE const&    right,
                     SUBTRACT_OPERAND_TYPE const& subtract)
       -> decltype(left.eval(tile).multiply_subtract(right.eval(tile),
                                                     subtract.eval(tile)))
@@ -147,8 +147,8 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const& left,
+  multiply(TILE_TYPE const&          tile,
+           LEFT_OPERAND_TYPE const&  left,
            RIGHT_OPERAND_TYPE const& right)
       -> decltype(right.eval(tile).scale(left.eval(tile)))
   {
@@ -161,10 +161,10 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE, typename ADD_OPERAND_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
-               ADD_OPERAND_TYPE const& add)
+               ADD_OPERAND_TYPE const&   add)
       -> decltype(right.eval(tile).scale(left.eval(tile)) + add.eval(tile))
   {
     return right.eval(tile).scale(left.eval(tile)) + add.eval(tile);
@@ -176,9 +176,9 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply_subtract(TILE_TYPE const& tile,
-                    LEFT_OPERAND_TYPE const& left,
-                    RIGHT_OPERAND_TYPE const& right,
+  multiply_subtract(TILE_TYPE const&             tile,
+                    LEFT_OPERAND_TYPE const&     left,
+                    RIGHT_OPERAND_TYPE const&    right,
                     SUBTRACT_OPERAND_TYPE const& subtract)
       -> decltype(right.eval(tile).scale(left.eval(tile)) - subtract.eval(tile))
   {
@@ -217,8 +217,8 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const& left,
+  multiply(TILE_TYPE const&          tile,
+           LEFT_OPERAND_TYPE const&  left,
            RIGHT_OPERAND_TYPE const& right)
       -> decltype(left.eval(tile).scale(right.eval(tile)))
   {
@@ -231,10 +231,10 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE, typename ADD_OPERAND_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
-               ADD_OPERAND_TYPE const& add)
+               ADD_OPERAND_TYPE const&   add)
       -> decltype(left.eval(tile).scale(right.eval(tile)) + add.eval(tile))
   {
     return left.eval(tile).scale(right.eval(tile)) + add.eval(tile);
@@ -246,9 +246,9 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE, typename SUBTRACT_OPERAND_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static auto
-  multiply_subtract(TILE_TYPE const& tile,
-                    LEFT_OPERAND_TYPE const& left,
-                    RIGHT_OPERAND_TYPE const& right,
+  multiply_subtract(TILE_TYPE const&             tile,
+                    LEFT_OPERAND_TYPE const&     left,
+                    RIGHT_OPERAND_TYPE const&    right,
                     SUBTRACT_OPERAND_TYPE const& subtract)
       -> decltype(left.eval(tile).scale(right.eval(tile)) - subtract.eval(tile))
   {
@@ -277,7 +277,7 @@ struct MultiplyOperator<
                             RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
 {
 
-  using left_type = LEFT_OPERAND_TYPE;
+  using left_type  = LEFT_OPERAND_TYPE;
   using right_type = RIGHT_OPERAND_TYPE;
   using result_type =
       typename LEFT_OPERAND_TYPE::result_type::column_vector_type;
@@ -300,8 +300,8 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const& left,
+  multiply(TILE_TYPE const&          tile,
+           LEFT_OPERAND_TYPE const&  left,
            RIGHT_OPERAND_TYPE const& right)
   {
 
@@ -316,10 +316,10 @@ struct MultiplyOperator<
 
   template <typename TILE_TYPE, typename ADD_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
-               ADD_TYPE const& add)
+               ADD_TYPE const&           add)
   {
 
     // evaluate add into result
@@ -337,16 +337,16 @@ private:
 
   template <typename STORAGE, typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static void
-  multiply_into_result(STORAGE& result,
-                       TILE_TYPE const& tile,
-                       LEFT_OPERAND_TYPE const& et_left,
+  multiply_into_result(STORAGE&                  result,
+                       TILE_TYPE const&          tile,
+                       LEFT_OPERAND_TYPE const&  et_left,
                        RIGHT_OPERAND_TYPE const& et_right)
   {
     // using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
 
     // get tile size from matrix type
     auto tile_size = left_type::result_type::s_dim_elem(1);
-    auto k_size = et_left.getDimSize(1);
+    auto k_size    = et_left.getDimSize(1);
     // TODO: check that left and right are compatible
     // m_left.getDimSize(1) == m_right.getDimSize(0)
     // how do we provide checking for this kind of error?
@@ -355,8 +355,8 @@ private:
     auto left_tile =
         LEFT_OPERAND_TYPE::result_type::s_get_default_tile().nonstatic();
     left_tile.m_begin[0] = tile.m_begin[0];
-    left_tile.m_size[0] = tile.m_size[0];
-    left_tile.m_size[1] = tile_size;
+    left_tile.m_size[0]  = tile.m_size[0];
+    left_tile.m_size[1]  = tile_size;
 
     using RightType = typename TILE_TYPE::nonstatic_self_type;
 
@@ -370,10 +370,10 @@ private:
 
       // evaluate both sides of operator
       left_tile.m_begin[1] = k;
-      auto left = et_left.eval(left_tile);
+      auto left            = et_left.eval(left_tile);
 
       right_tile.m_begin[0] = k;
-      auto right = et_right.eval(right_tile);
+      auto right            = et_right.eval(right_tile);
 
       // accumulate product
       result = left.right_multiply_vector_accumulate(right, result);
@@ -381,15 +381,15 @@ private:
     // remainder tile in k
     if (k < k_size)
     {
-      auto& left_part_tile = make_tensor_tile_partial(left_tile);
+      auto& left_part_tile      = make_tensor_tile_partial(left_tile);
       left_part_tile.m_begin[1] = k;
-      left_part_tile.m_size[1] = k_size - k;
-      auto left = et_left.eval(left_part_tile);
+      left_part_tile.m_size[1]  = k_size - k;
+      auto left                 = et_left.eval(left_part_tile);
 
-      auto& right_part_tile = make_tensor_tile_partial(right_tile);
+      auto& right_part_tile      = make_tensor_tile_partial(right_tile);
       right_part_tile.m_begin[0] = k;
-      right_part_tile.m_size[0] = k_size - k;
-      auto right = et_right.eval(right_part_tile);
+      right_part_tile.m_size[0]  = k_size - k;
+      auto right                 = et_right.eval(right_part_tile);
 
       // accumulate product of partial tile
       result = left.right_multiply_vector_accumulate(right, result);
@@ -417,16 +417,16 @@ private:
 
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    static void multiply_into_result(STORAGE& result,
-                                     TILE_TYPE const& tile,
-                                     LEFT_OPERAND_TYPE const& et_left,
+    static void multiply_into_result(STORAGE&                  result,
+                                     TILE_TYPE const&          tile,
+                                     LEFT_OPERAND_TYPE const&  et_left,
                                      RIGHT_OPERAND_TYPE const& et_right)
     {
       // using LHS_STORAGE = typename LEFT_OPERAND_TYPE::result_type;
 
       // get tile size from matrix type
       auto tile_size = left_type::result_type::s_dim_elem(1);
-      auto k_size = et_left.getDimSize(1);
+      auto k_size    = et_left.getDimSize(1);
       // TODO: check that left and right are compatible
       // m_left.getDimSize(1) == m_right.getDimSize(0)
       // how do we provide checking for this kind of error?
@@ -435,8 +435,8 @@ private:
       auto left_tile =
           LEFT_OPERAND_TYPE::result_type::s_get_default_tile().nonstatic();
       left_tile.m_begin[0] = tile.m_begin[0];
-      left_tile.m_size[0] = tile.m_size[0];
-      left_tile.m_size[1] = tile_size;
+      left_tile.m_size[0]  = tile.m_size[0];
+      left_tile.m_size[1]  = tile_size;
 
       using RightType = typename TILE_TYPE::nonstatic_self_type;
 
@@ -450,10 +450,10 @@ private:
 
         // evaluate both sides of operator
         left_tile.m_begin[1] = k;
-        auto left = et_left.eval(left_tile);
+        auto left            = et_left.eval(left_tile);
 
         right_tile.m_begin[0] = k;
-        auto right = et_right.eval(right_tile);
+        auto right            = et_right.eval(right_tile);
 
         // accumulate product
         result = left.right_multiply_vector_accumulate(right, result);
@@ -461,15 +461,15 @@ private:
       // remainder tile in k
       if (k < k_size)
       {
-        auto& left_part_tile = make_tensor_tile_partial(left_tile);
+        auto& left_part_tile      = make_tensor_tile_partial(left_tile);
         left_part_tile.m_begin[1] = k;
-        left_part_tile.m_size[1] = k_size - k;
-        auto left = et_left.eval(left_part_tile);
+        left_part_tile.m_size[1]  = k_size - k;
+        auto left                 = et_left.eval(left_part_tile);
 
-        auto& right_part_tile = make_tensor_tile_partial(right_tile);
+        auto& right_part_tile      = make_tensor_tile_partial(right_tile);
         right_part_tile.m_begin[0] = k;
-        right_part_tile.m_size[0] = k_size - k;
-        auto right = et_right.eval(right_part_tile);
+        right_part_tile.m_size[0]  = k_size - k;
+        auto right                 = et_right.eval(right_part_tile);
 
         // accumulate product of partial tile
         result = left.right_multiply_vector_accumulate(right, result);
@@ -482,7 +482,7 @@ private:
             typename STORAGE,
             typename INDEX_TYPE,
             TensorTileSize TENSOR_SIZE,
-            INDEX_TYPE Begin0,
+            INDEX_TYPE     Begin0,
             INDEX_TYPE... BeginTail,
             INDEX_TYPE Size0,
             INDEX_TYPE... SizeTail>
@@ -503,15 +503,15 @@ private:
 
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    static void multiply_into_result(STORAGE& result,
-                                     TileType const& tile,
-                                     LEFT_OPERAND_TYPE const& et_left,
+    static void multiply_into_result(STORAGE&                  result,
+                                     TileType const&           tile,
+                                     LEFT_OPERAND_TYPE const&  et_left,
                                      RIGHT_OPERAND_TYPE const& et_right)
     {
 
       // get tile size from matrix type
       const auto tile_size = left_type::result_type::s_dim_elem(1);
-      const auto k_size = et_left.getDimSize(1);
+      const auto k_size    = et_left.getDimSize(1);
 
       auto const offset = INDEX * tile_size;
 
@@ -569,7 +569,7 @@ private:
   template <typename STORAGE,
             typename INDEX_TYPE,
             TensorTileSize TENSOR_SIZE,
-            INDEX_TYPE Begin0,
+            INDEX_TYPE     Begin0,
             INDEX_TYPE... BeginTail,
             INDEX_TYPE Size0,
             INDEX_TYPE... SizeTail>
@@ -592,13 +592,13 @@ private:
     RAJA_HOST_DEVICE
     static void multiply_into_result(STORAGE& result,
                                      TileType const&,
-                                     LEFT_OPERAND_TYPE const& et_left,
+                                     LEFT_OPERAND_TYPE const&  et_left,
                                      RIGHT_OPERAND_TYPE const& et_right)
     {
 
       // get tile size from matrix type
       const auto tile_size = left_type::result_type::s_dim_elem(1);
-      const auto k_size = et_left.getDimSize(1);
+      const auto k_size    = et_left.getDimSize(1);
 
       auto const offset = 0;
 
@@ -651,7 +651,7 @@ private:
   template <typename STORAGE,
             typename INDEX_TYPE,
             TensorTileSize TENSOR_SIZE,
-            INDEX_TYPE Begin0,
+            INDEX_TYPE     Begin0,
             INDEX_TYPE... BeginTail,
             INDEX_TYPE Size0,
             INDEX_TYPE... SizeTail>
@@ -672,14 +672,14 @@ private:
 
     RAJA_INLINE
     RAJA_HOST_DEVICE
-    static void multiply_into_result(STORAGE& result,
-                                     TileType const& tile,
-                                     LEFT_OPERAND_TYPE const& et_left,
+    static void multiply_into_result(STORAGE&                  result,
+                                     TileType const&           tile,
+                                     LEFT_OPERAND_TYPE const&  et_left,
                                      RIGHT_OPERAND_TYPE const& et_right)
     {
 
-      const auto tile_size = left_type::result_type::s_dim_elem(1);
-      const auto k_size = et_left.getDimSize(1);
+      const auto   tile_size = left_type::result_type::s_dim_elem(1);
+      const auto   k_size    = et_left.getDimSize(1);
       const size_t iter_count =
           (k_size / tile_size) + ((k_size % tile_size != 0) ? 1 : 0);
 
@@ -718,8 +718,8 @@ struct MultiplyOperator<
                             RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
 {
 
-  using left_type = LEFT_OPERAND_TYPE;
-  using right_type = RIGHT_OPERAND_TYPE;
+  using left_type   = LEFT_OPERAND_TYPE;
+  using right_type  = RIGHT_OPERAND_TYPE;
   using result_type = typename RIGHT_OPERAND_TYPE::result_type::row_vector_type;
   static constexpr camp::idx_t s_num_dims = 1;
 
@@ -740,8 +740,8 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const& left,
+  multiply(TILE_TYPE const&          tile,
+           LEFT_OPERAND_TYPE const&  left,
            RIGHT_OPERAND_TYPE const& right)
   {
     // clear result
@@ -755,10 +755,10 @@ struct MultiplyOperator<
 
   template <typename TILE_TYPE, typename ADD_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
-               ADD_TYPE const& add)
+               ADD_TYPE const&           add)
   {
     // evaluate add into result
     result_type result = add.eval(tile);
@@ -772,14 +772,14 @@ struct MultiplyOperator<
 private:
   template <typename STORAGE, typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static void
-  multiply_into_result(STORAGE& result,
-                       TILE_TYPE const& tile,
-                       LEFT_OPERAND_TYPE const& et_left,
+  multiply_into_result(STORAGE&                  result,
+                       TILE_TYPE const&          tile,
+                       LEFT_OPERAND_TYPE const&  et_left,
                        RIGHT_OPERAND_TYPE const& et_right)
   {
     // get tile size from matrix type
     auto tile_size = right_type::result_type::s_dim_elem(0);
-    auto k_size = et_right.getDimSize(0);
+    auto k_size    = et_right.getDimSize(0);
 
 
     // TODO: check that left and right are compatible
@@ -790,8 +790,8 @@ private:
     auto right_tile =
         RIGHT_OPERAND_TYPE::result_type::s_get_default_tile().nonstatic();
     right_tile.m_begin[1] = tile.m_begin[0];
-    right_tile.m_size[1] = tile.m_size[0];
-    right_tile.m_size[0] = tile_size;
+    right_tile.m_size[1]  = tile.m_size[0];
+    right_tile.m_size[0]  = tile_size;
 
     TILE_TYPE left_tile = tile;
     left_tile.m_size[0] = tile_size;
@@ -804,10 +804,10 @@ private:
 
       // evaluate both sides of operator
       right_tile.m_begin[0] = k;
-      auto right = et_right.eval(right_tile);
+      auto right            = et_right.eval(right_tile);
 
       left_tile.m_begin[0] = k;
-      auto left = et_left.eval(left_tile);
+      auto left            = et_left.eval(left_tile);
 
       // accumulate product
       result = right.left_multiply_vector_accumulate(left, result);
@@ -815,15 +815,15 @@ private:
     // remainder tile in k
     if (k < k_size)
     {
-      auto& right_part_tile = make_tensor_tile_partial(right_tile);
+      auto& right_part_tile      = make_tensor_tile_partial(right_tile);
       right_part_tile.m_begin[0] = k;
-      right_part_tile.m_size[0] = k_size - k;
-      auto right = et_right.eval(right_part_tile);
+      right_part_tile.m_size[0]  = k_size - k;
+      auto right                 = et_right.eval(right_part_tile);
 
-      auto& left_part_tile = make_tensor_tile_partial(left_tile);
+      auto& left_part_tile      = make_tensor_tile_partial(left_tile);
       left_part_tile.m_begin[0] = k;
-      left_part_tile.m_size[0] = k_size - k;
-      auto left = et_left.eval(left_part_tile);
+      left_part_tile.m_size[0]  = k_size - k;
+      auto left                 = et_left.eval(left_part_tile);
 
       // compute product into x of partial tile
       result = right.left_multiply_vector_accumulate(left, result);
@@ -847,8 +847,8 @@ struct MultiplyOperator<
                             RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
 {
 
-  using left_type = LEFT_OPERAND_TYPE;
-  using right_type = RIGHT_OPERAND_TYPE;
+  using left_type   = LEFT_OPERAND_TYPE;
+  using right_type  = RIGHT_OPERAND_TYPE;
   using result_type = typename LEFT_OPERAND_TYPE::result_type::product_type;
   static constexpr camp::idx_t s_num_dims = 2;
 
@@ -858,8 +858,8 @@ struct MultiplyOperator<
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static int getDimSize(int dim,
-                        LEFT_OPERAND_TYPE const& left,
+  static int getDimSize(int                       dim,
+                        LEFT_OPERAND_TYPE const&  left,
                         RIGHT_OPERAND_TYPE const& right)
   {
     return dim == 0 ? left.getDimSize(0) : right.getDimSize(1);
@@ -870,8 +870,8 @@ struct MultiplyOperator<
    */
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const& left,
+  multiply(TILE_TYPE const&          tile,
+           LEFT_OPERAND_TYPE const&  left,
            RIGHT_OPERAND_TYPE const& right)
   {
 
@@ -902,10 +902,10 @@ struct MultiplyOperator<
 
   template <typename TILE_TYPE, typename ADD_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static result_type
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
-               ADD_TYPE const& add)
+               ADD_TYPE const&           add)
   {
 
     // start accumulator with addition term
@@ -919,15 +919,15 @@ struct MultiplyOperator<
 private:
   template <typename STORAGE, typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static void
-  multiply_into_result(STORAGE& result,
-                       TILE_TYPE const& tile,
-                       LEFT_OPERAND_TYPE const& et_left,
+  multiply_into_result(STORAGE&                  result,
+                       TILE_TYPE const&          tile,
+                       LEFT_OPERAND_TYPE const&  et_left,
                        RIGHT_OPERAND_TYPE const& et_right)
   {
     // get tile size from matrix type
     using right_tensor_type = typename right_type::result_type;
-    auto tile_size = right_tensor_type::s_dim_elem(0);
-    auto k_size = et_left.getDimSize(1);
+    auto tile_size          = right_tensor_type::s_dim_elem(0);
+    auto k_size             = et_left.getDimSize(1);
 
     // TODO: check that left and right are compatible
     // m_left.getDimSize(1) == m_right.getDimSize(0)
@@ -936,11 +936,11 @@ private:
     // tile over row of left and column of right
     TILE_TYPE left_tile = tile;
     left_tile.m_size[1] = tile_size;
-    auto left_begin = et_left.getDimBegin(1);
+    auto left_begin     = et_left.getDimBegin(1);
 
     TILE_TYPE right_tile = tile;
     right_tile.m_size[0] = tile_size;
-    auto right_begin = et_right.getDimBegin(0);
+    auto right_begin     = et_right.getDimBegin(0);
 
 
     // Do full tiles in k
@@ -950,10 +950,10 @@ private:
 
       // evaluate both sides of operator
       left_tile.m_begin[1] = k + left_begin;
-      auto left = et_left.eval(left_tile);
+      auto left            = et_left.eval(left_tile);
 
       right_tile.m_begin[0] = k + right_begin;
-      auto right = et_right.eval(right_tile);
+      auto right            = et_right.eval(right_tile);
 
       // accumulate product
       left.matrix_multiply_accumulate(result, right);
@@ -962,15 +962,15 @@ private:
     if (k < k_size)
     {
 
-      auto& left_part_tile = make_tensor_tile_partial(left_tile);
+      auto& left_part_tile      = make_tensor_tile_partial(left_tile);
       left_part_tile.m_begin[1] = k + left_begin;
-      left_part_tile.m_size[1] = k_size - k;
-      auto left = et_left.eval(left_part_tile);
+      left_part_tile.m_size[1]  = k_size - k;
+      auto left                 = et_left.eval(left_part_tile);
 
-      auto& right_part_tile = make_tensor_tile_partial(right_tile);
+      auto& right_part_tile      = make_tensor_tile_partial(right_tile);
       right_part_tile.m_begin[0] = k + right_begin;
-      right_part_tile.m_size[0] = k_size - k;
-      auto right = et_right.eval(right_part_tile);
+      right_part_tile.m_size[0]  = k_size - k;
+      auto right                 = et_right.eval(right_part_tile);
 
       // accumulate product
       left.matrix_multiply_accumulate(result, right);
@@ -984,16 +984,16 @@ class RestrictExtents
     : public TensorExpressionBase<RestrictExtents<OPERAND_TYPE, TILE_TYPE>>
 {
 public:
-  using self_type = RestrictExtents<OPERAND_TYPE, TILE_TYPE>;
+  using self_type    = RestrictExtents<OPERAND_TYPE, TILE_TYPE>;
   using operand_type = OPERAND_TYPE;
-  using result_type = typename OPERAND_TYPE::result_type;
-  using index_type = typename TILE_TYPE::index_type;
-  using tile_type = TILE_TYPE;
+  using result_type  = typename OPERAND_TYPE::result_type;
+  using index_type   = typename TILE_TYPE::index_type;
+  using tile_type    = TILE_TYPE;
   static constexpr camp::idx_t s_num_dims = OPERAND_TYPE::s_num_dims;
 
 private:
   operand_type m_operand;
-  tile_type m_tile;
+  tile_type    m_tile;
 
 public:
   RAJA_INLINE
@@ -1037,7 +1037,7 @@ public:
 
 template <typename OPERAND, typename TILE>
 RestrictExtents<OPERAND, TILE> restrictExtents(OPERAND const& operand,
-                                               TILE const& tile)
+                                               TILE const&    tile)
 {
   using tile_type = typename OPERAND::tile_type;
   tile_type new_tile;
@@ -1064,8 +1064,8 @@ struct MultiplyOperator<
         LEFT_OPERAND_TYPE::s_num_dims == 2 &&
         RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
 {
-  using left_type = LEFT_OPERAND_TYPE;
-  using right_type = RIGHT_OPERAND_TYPE;
+  using left_type   = LEFT_OPERAND_TYPE;
+  using right_type  = RIGHT_OPERAND_TYPE;
   using result_type = typename LEFT_OPERAND_TYPE::result_type::product_type;
   static constexpr camp::idx_t s_num_dims = 2;
 
@@ -1091,8 +1091,8 @@ struct MultiplyOperator<
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static int getDimSize(int dim,
-                        LEFT_OPERAND_TYPE const& left,
+  static int getDimSize(int                       dim,
+                        LEFT_OPERAND_TYPE const&  left,
                         RIGHT_OPERAND_TYPE const& right)
   {
     return dim == 0 ? left.getDimSize(0) : right.getDimSize(1);
@@ -1138,8 +1138,8 @@ struct MultiplyOperator<
 
   template <typename TILE_TYPE, typename ADD_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static block_literal
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
+  multiply_add(TILE_TYPE const&          tile,
+               LEFT_OPERAND_TYPE const&  left,
                RIGHT_OPERAND_TYPE const& right,
                ADD_TYPE const&
                    add) //->
@@ -1166,12 +1166,12 @@ struct MultiplyOperator<
     block_tile.copy(tile);
     block_literal result(block_tile);
 
-    using ref_type = typename block_literal::ref_type;
+    using ref_type        = typename block_literal::ref_type;
     using load_store_type = TensorLoadStore<tensor_type, ref_type>;
 
     // initialize the result with our addition term
     auto result_et = load_store_type(result.get_ref()).eval(tile);
-    result_et = add.eval(tile);
+    result_et      = add.eval(tile);
 
     // return TensorMultiplyAdd<decltype(left.eval(tile)),
     // decltype(right.eval(tile)), decltype(add.eval(tile))>(left.eval(tile),
@@ -1188,15 +1188,15 @@ struct MultiplyOperator<
 private:
   template <typename STORAGE, typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE static void
-  multiply_into_result(STORAGE& result,
-                       TILE_TYPE const& tile,
-                       LEFT_OPERAND_TYPE const& et_left,
+  multiply_into_result(STORAGE&                  result,
+                       TILE_TYPE const&          tile,
+                       LEFT_OPERAND_TYPE const&  et_left,
                        RIGHT_OPERAND_TYPE const& et_right)
   {
 
     // get tile size from matrix type
     auto tile_size = result_type::s_dim_elem(1);
-    auto k_size = et_left.getDimSize(1);
+    auto k_size    = et_left.getDimSize(1);
 
     // TODO: check that left and right are compatible
     // m_left.getDimSize(1) == m_right.getDimSize(0)
@@ -1205,11 +1205,11 @@ private:
     // tile over row of left and column of right
     TILE_TYPE left_tile = tile;
     left_tile.m_size[1] = tile_size;
-    auto left_begin = et_left.getDimBegin(1);
+    auto left_begin     = et_left.getDimBegin(1);
 
     TILE_TYPE right_tile = tile;
     right_tile.m_size[0] = tile_size;
-    auto right_begin = et_right.getDimBegin(0);
+    auto right_begin     = et_right.getDimBegin(0);
 
 
     // Do full tiles in k
@@ -1220,10 +1220,10 @@ private:
 
       // evaluate both sides of operator
       left_tile.m_begin[1] = k + left_begin;
-      auto left = et_left.eval(left_tile);
+      auto left            = et_left.eval(left_tile);
 
       right_tile.m_begin[0] = k + right_begin;
-      auto right = et_right.eval(right_tile);
+      auto right            = et_right.eval(right_tile);
 
       // accumulate product
       // left.matrix_multiply_accumulate(result, right);
@@ -1234,15 +1234,15 @@ private:
     if (k < k_size)
     {
 
-      auto& left_part_tile = make_tensor_tile_partial(left_tile);
+      auto& left_part_tile      = make_tensor_tile_partial(left_tile);
       left_part_tile.m_begin[1] = k + left_begin;
-      left_part_tile.m_size[1] = k_size - k;
-      auto left = et_left.eval(left_part_tile);
+      left_part_tile.m_size[1]  = k_size - k;
+      auto left                 = et_left.eval(left_part_tile);
 
-      auto& right_part_tile = make_tensor_tile_partial(right_tile);
+      auto& right_part_tile      = make_tensor_tile_partial(right_tile);
       right_part_tile.m_begin[0] = k + right_begin;
-      right_part_tile.m_size[0] = k_size - k;
-      auto right = et_right.eval(right_part_tile);
+      right_part_tile.m_size[0]  = k_size - k;
+      auto right                 = et_right.eval(right_part_tile);
 
       // accumulate product
       // left.matrix_multiply_accumulate(result, right);

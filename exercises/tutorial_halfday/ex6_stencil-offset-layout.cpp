@@ -143,8 +143,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize input array
   //
-  int* B = memoryManager::allocate<int>(tot_cells * sizeof(int));
-  int* A = memoryManager::allocate<int>(int_cells * sizeof(int));
+  int* B     = memoryManager::allocate<int>(tot_cells * sizeof(int));
+  int* A     = memoryManager::allocate<int>(int_cells * sizeof(int));
   int* A_ref = memoryManager::allocate<int>(int_cells * sizeof(int));
 
 
@@ -164,7 +164,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int j = 1; j <= Nr_int; ++j)
     {
       int idx = j + Nr_tot * i;
-      B[idx] = 1;
+      B[idx]  = 1;
     }
   }
   // printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Columns);
@@ -184,7 +184,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     {
 
       int idx_out = j + Nr_int * i;
-      int idx_in = (j + 1) + Nr_tot * (i + 1);
+      int idx_in  = (j + 1) + Nr_tot * (i + 1);
 
       A_ref[idx_out] = B[idx_in] +                               // C
                        B[idx_in - Nr_tot] + B[idx_in + Nr_tot] + // W, E
@@ -248,7 +248,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int i = 1; i <= Nc_int; ++i)
     {
       int idx = i + Nc_tot * j;
-      B[idx] = 1;
+      B[idx]  = 1;
     }
   }
   // printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Rows);
@@ -268,7 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     {
 
       int idx_out = i + Nc_int * j;
-      int idx_in = (i + 1) + Nc_tot * (j + 1);
+      int idx_in  = (i + 1) + Nc_tot * (j + 1);
 
       A_ref[idx_out] = B[idx_in] +                               // C
                        B[idx_in - Nc_tot] + B[idx_in + Nc_tot] + // S, N

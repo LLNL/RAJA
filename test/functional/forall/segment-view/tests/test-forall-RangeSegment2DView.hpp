@@ -15,14 +15,14 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegment2DViewTestImpl(INDEX_TYPE N)
 {
   INDEX_TYPE lentot = N * N;
-  const int NDIMS = 2;
+  const int  NDIMS  = 2;
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, lentot);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       lentot, working_res, &working_array, &check_array, &test_array);
@@ -34,11 +34,13 @@ void ForallRangeSegment2DViewTestImpl(INDEX_TYPE N)
 
   view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    const INDEX_TYPE row = idx / N;
-    const INDEX_TYPE col = idx % N;
-    work_view(row, col) = row * N + col;
-  });
+  RAJA::forall<EXEC_POLICY>(r1,
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            {
+                              const INDEX_TYPE row = idx / N;
+                              const INDEX_TYPE col = idx % N;
+                              work_view(row, col)  = row * N + col;
+                            });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * lentot);
 
@@ -55,15 +57,15 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
 {
   const INDEX_TYPE leninterior = N * N;
-  const INDEX_TYPE lentot = (N + 2) * (N + 2);
-  const int NDIMS = 2;
+  const INDEX_TYPE lentot      = (N + 2) * (N + 2);
+  const int        NDIMS       = 2;
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, leninterior);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       lentot, working_res, &working_array, &check_array, &test_array);
@@ -76,7 +78,7 @@ void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
   {
     for (int col = 1; col < N + 1; ++col)
     {
-      int idx = row * (N + 2) + col;
+      int idx         = row * (N + 2) + col;
       test_array[idx] = (row - 1) * N + (col - 1);
     }
   }
@@ -87,11 +89,13 @@ void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
 
   view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-    const INDEX_TYPE row = idx / N;
-    const INDEX_TYPE col = idx % N;
-    work_view(row, col) = idx;
-  });
+  RAJA::forall<EXEC_POLICY>(r1,
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            {
+                              const INDEX_TYPE row = idx / N;
+                              const INDEX_TYPE col = idx % N;
+                              work_view(row, col)  = idx;
+                            });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * lentot);
 
@@ -133,7 +137,7 @@ void runOffsetViewTests()
 
 TYPED_TEST_P(ForallRangeSegment2DViewTest, RangeSegmentForall2DView)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

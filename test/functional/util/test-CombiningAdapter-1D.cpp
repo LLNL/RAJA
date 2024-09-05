@@ -28,8 +28,9 @@ void test_CombiningAdapter_1D(Segment0 const& seg0)
   auto seg0_begin = begin(seg0);
 
   size_t counter0 = 0;
-  auto adapter = RAJA::make_CombiningAdapter(
-      [&](SegIndexType i0) {
+  auto   adapter  = RAJA::make_CombiningAdapter(
+      [&](SegIndexType i0)
+      {
         ASSERT_EQ(seg0_begin[counter0], i0);
         counter0 += 1;
       },

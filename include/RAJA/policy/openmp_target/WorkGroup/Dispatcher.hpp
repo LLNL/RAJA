@@ -67,8 +67,9 @@ inline auto get_cached_value(Factory&& factory)
 template <typename T, typename Dispatcher_T>
 inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
 {
-  static Dispatcher_T dispatcher{
-      Dispatcher_T::template makeDispatcher<T>([](auto&& factory) {
+  static Dispatcher_T dispatcher{Dispatcher_T::template makeDispatcher<T>(
+      [](auto&& factory)
+      {
         return omp_target::get_cached_value(
             std::forward<decltype(factory)>(factory));
       })};

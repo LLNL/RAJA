@@ -59,10 +59,10 @@ void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
                           const RAJA::Index_type dim1,
                           const RAJA::Index_type dim2)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
-  RAJA::Index_type flatSize = dim0 * dim1 * dim2;
+  RAJA::Index_type  flatSize = dim0 * dim1 * dim2;
   RAJA::Index_type* work_array;
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
@@ -82,24 +82,24 @@ void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
                          sizeof(RAJA::Index_type) *
                              RAJA::stripIndexType(flatSize));
 
-  constexpr int Depth = 3;
+  constexpr int                                     Depth = 3;
   RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(
       work_array, dim0, dim1, dim2);
 
   RAJA::ReduceSum<RAJA::seq_reduce, RAJA::Index_type> hostsum(0);
-  RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type> worksum(0);
+  RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type>       worksum(0);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
       RAJA::make_tuple(range0, range1, range2),
       work_res,
       [=] RAJA_HOST_DEVICE(
-          RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k) {
-        worksum += work_view(i, j, k);
-      });
+          RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k)
+      { worksum += work_view(i, j, k); });
 
-  RAJA::forall<RAJA::seq_exec>(rangeflat, [=](RAJA::Index_type i) {
-    hostsum += test_array[RAJA::stripIndexType(i)];
-  });
+  RAJA::forall<RAJA::seq_exec>(rangeflat,
+                               [=](RAJA::Index_type i) {
+                                 hostsum += test_array[RAJA::stripIndexType(i)];
+                               });
 
   ASSERT_EQ(hostsum.get(), worksum.get());
 

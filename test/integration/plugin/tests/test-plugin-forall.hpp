@@ -195,8 +195,8 @@ class PluginForallTest : public ::testing::Test
 
 TYPED_TEST_P(PluginForallTest, PluginForall)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ExecPolicy     = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
   PluginForallTestImpl<ExecPolicy, ResType, PlatformHolder::platform>();
@@ -204,8 +204,8 @@ TYPED_TEST_P(PluginForallTest, PluginForall)
 
 TYPED_TEST_P(PluginForallTest, PluginForAllICount)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ExecPolicy     = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
   PluginForAllICountTestImpl<ExecPolicy, ResType, PlatformHolder::platform>();
@@ -213,8 +213,8 @@ TYPED_TEST_P(PluginForallTest, PluginForAllICount)
 
 TYPED_TEST_P(PluginForallTest, PluginForAllIdxSet)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ExecPolicy     = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
   PluginForAllIdxSetTestImpl<ExecPolicy, ResType, PlatformHolder::platform>();
@@ -222,8 +222,8 @@ TYPED_TEST_P(PluginForallTest, PluginForAllIdxSet)
 
 TYPED_TEST_P(PluginForallTest, PluginForAllIcountIdxSet)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ExecPolicy     = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
   PluginForAllIcountIdxSetTestImpl<ExecPolicy,

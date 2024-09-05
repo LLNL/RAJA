@@ -133,8 +133,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize lattice
   //
-  int* input = memoryManager::allocate<int>(totCells * sizeof(int));
-  int* output = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* input      = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* output     = memoryManager::allocate<int>(totCells * sizeof(int));
   int* output_ref = memoryManager::allocate<int>(totCells * sizeof(int));
 
   std::memset(input, 0, totCells * sizeof(int));
@@ -149,7 +149,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   {
     for (int col = 1; col <= N_c; ++col)
     {
-      int id = col + totCellsInCol * row;
+      int id    = col + totCellsInCol * row;
       input[id] = 1;
     }
   }
@@ -167,7 +167,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int col = 1; col <= N_c; ++col)
     {
 
-      int id = col + totCellsInCol * row;
+      int id         = col + totCellsInCol * row;
       output_ref[id] = input[id] + input[id + 1] + input[id - 1] +
                        input[id + totCellsInCol] + input[id - totCellsInCol];
     }
@@ -221,13 +221,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                 RAJA::seq_exec, // col
                                                 RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<NESTED_EXEC_POL1>(
-      RAJA::make_tuple(col_range, row_range), [=](int col, int row) {
-        outputView(row, col) = inputView(row, col) + inputView(row - 1, col) +
-                               inputView(row + 1, col) +
-                               inputView(row, col - 1) +
-                               inputView(row, col + 1);
-      });
+  RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
+                                 [=](int col, int row)
+                                 {
+                                   outputView(row, col) =
+                                       inputView(row, col) +
+                                       inputView(row - 1, col) +
+                                       inputView(row + 1, col) +
+                                       inputView(row, col - 1) +
+                                       inputView(row, col + 1);
+                                 });
   // _offsetlayout_rajaseq_end
 
   std::cout << "\noutput lattice:\n";
@@ -274,7 +277,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                 RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row) {
+                                 [=] RAJA_DEVICE(int col, int row)
+                                 {
                                    outputView(row, col) =
                                        inputView(row, col) +
                                        inputView(row - 1, col) +
@@ -296,7 +300,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running five-point stencil (RAJA-Kernel - "
                "hip)...\n";
 
-  int* d_input = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
+  int* d_input  = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
   int* d_output = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
 
   hipErrchk(
@@ -314,7 +318,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                 RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<NESTED_EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row) {
+                                 [=] RAJA_DEVICE(int col, int row)
+                                 {
                                    d_outputView(row, col) =
                                        d_inputView(row, col) +
                                        d_inputView(row - 1, col) +

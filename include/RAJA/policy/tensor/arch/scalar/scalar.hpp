@@ -38,9 +38,9 @@ public:
   using base_type = internal::expt::RegisterBase<Register<T, scalar_register>>;
 
   using register_policy = scalar_register;
-  using self_type = Register<T, scalar_register>;
-  using element_type = T;
-  using register_type = T;
+  using self_type       = Register<T, scalar_register>;
+  using element_type    = T;
+  using register_type   = T;
 
   using int_vector_type =
       Register<typename internal::expt::RegisterTraits<scalar_register,

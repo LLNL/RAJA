@@ -30,41 +30,41 @@ namespace expt
 template <>
 struct RegisterTraits<RAJA::expt::avx_register, int32_t>
 {
-  using element_type = int32_t;
-  using register_policy = RAJA::expt::avx_register;
+  using element_type                      = int32_t;
+  using register_policy                   = RAJA::expt::avx_register;
   static constexpr camp::idx_t s_num_bits = 256;
   static constexpr camp::idx_t s_num_elem = 8;
-  using int_element_type = int32_t;
+  using int_element_type                  = int32_t;
 };
 
 template <>
 struct RegisterTraits<RAJA::expt::avx_register, int64_t>
 {
-  using element_type = int64_t;
-  using register_policy = RAJA::expt::avx_register;
+  using element_type                      = int64_t;
+  using register_policy                   = RAJA::expt::avx_register;
   static constexpr camp::idx_t s_num_bits = 256;
   static constexpr camp::idx_t s_num_elem = 4;
-  using int_element_type = int64_t;
+  using int_element_type                  = int64_t;
 };
 
 template <>
 struct RegisterTraits<RAJA::expt::avx_register, float>
 {
-  using element_type = float;
-  using register_policy = RAJA::expt::avx_register;
+  using element_type                      = float;
+  using register_policy                   = RAJA::expt::avx_register;
   static constexpr camp::idx_t s_num_bits = 256;
   static constexpr camp::idx_t s_num_elem = 8;
-  using int_element_type = int32_t;
+  using int_element_type                  = int32_t;
 };
 
 template <>
 struct RegisterTraits<RAJA::expt::avx_register, double>
 {
-  using element_type = double;
-  using register_policy = RAJA::expt::avx_register;
+  using element_type                      = double;
+  using register_policy                   = RAJA::expt::avx_register;
   static constexpr camp::idx_t s_num_bits = 256;
   static constexpr camp::idx_t s_num_elem = 4;
-  using int_element_type = int64_t;
+  using int_element_type                  = int64_t;
 };
 
 } // namespace expt

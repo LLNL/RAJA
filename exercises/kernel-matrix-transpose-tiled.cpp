@@ -77,7 +77,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -188,9 +188,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               RAJA::statement::
                   For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>>>;
 
-  RAJA::kernel<TILED_KERNEL_EXEC_POL>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<TILED_KERNEL_EXEC_POL>(RAJA::make_tuple(col_Range, row_Range),
+                                      [=](int col, int row)
+                                      { Atview(col, row) = Aview(row, col); });
   // _raja_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -305,7 +305,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running hip tiled matrix transpose ...\n";
 
-  int* d_A = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
   int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
   RAJA::View<int, RAJA::Layout<DIM>> d_Aview(d_A, N_r, N_c);
@@ -334,9 +334,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_HIP>(
       RAJA::make_tuple(col_Range, row_Range),
-      [=] RAJA_DEVICE(int col, int row) {
-        d_Atview(col, row) = d_Aview(row, col);
-      });
+      [=] RAJA_DEVICE(int col, int row)
+      { d_Atview(col, row) = d_Aview(row, col); });
 
   hipErrchk(
       hipMemcpy(At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost));

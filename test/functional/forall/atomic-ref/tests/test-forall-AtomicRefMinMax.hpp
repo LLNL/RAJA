@@ -16,9 +16,9 @@
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct MaxEqOtherOp : all_op
 {
-  MaxEqOtherOp(T* dcount,
-               T* hcount,
-               camp::resources::Resource work_res,
+  MaxEqOtherOp(T*                               dcount,
+               T*                               hcount,
+               camp::resources::Resource        work_res,
                RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -32,15 +32,15 @@ struct MaxEqOtherOp : all_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.max((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchMaxOtherOp : all_op
 {
-  FetchMaxOtherOp(T* dcount,
-                  T* hcount,
-                  camp::resources::Resource work_res,
+  FetchMaxOtherOp(T*                               dcount,
+                  T*                               hcount,
+                  camp::resources::Resource        work_res,
                   RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -54,15 +54,15 @@ struct FetchMaxOtherOp : all_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_max((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct MinEqOtherOp : all_op
 {
-  MinEqOtherOp(T* dcount,
-               T* hcount,
-               camp::resources::Resource work_res,
+  MinEqOtherOp(T*                               dcount,
+               T*                               hcount,
+               camp::resources::Resource        work_res,
                RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -76,15 +76,15 @@ struct MinEqOtherOp : all_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.min((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchMinOtherOp : all_op
 {
-  FetchMinOtherOp(T* dcount,
-                  T* hcount,
-                  camp::resources::Resource work_res,
+  FetchMinOtherOp(T*                               dcount,
+                  T*                               hcount,
+                  camp::resources::Resource        work_res,
                   RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -98,7 +98,7 @@ struct FetchMinOtherOp : all_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_min((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename ExecPolicy,
@@ -108,20 +108,22 @@ template <typename ExecPolicy,
           template <typename, typename, typename>
           class OtherOp>
 void testAtomicRefMinMaxOp(RAJA::TypedRangeSegment<IdxType> seg,
-                           T* count,
-                           T* list,
-                           T* hcount,
-                           T* hlist,
-                           camp::resources::Resource work_res,
-                           IdxType N)
+                           T*                               count,
+                           T*                               list,
+                           T*                               hcount,
+                           T*                               hlist,
+                           camp::resources::Resource        work_res,
+                           IdxType                          N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
   RAJA::forall<ExecPolicy>(
       seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    T val = otherop(i);
-    list[i] = val;
-  });
+  RAJA::forall<ExecPolicy>(seg,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           {
+                             T val   = otherop(i);
+                             list[i] = val;
+                           });
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -156,10 +158,10 @@ void ForallAtomicRefMinMaxTestImpl(IdxType N)
   camp::resources::Resource host_res{camp::resources::Host()};
 
   T* count = work_res.allocate<T>(1);
-  T* list = work_res.allocate<T>(N);
+  T* list  = work_res.allocate<T>(N);
 
   T* hcount = host_res.allocate<T>(1);
-  T* hlist = host_res.allocate<T>(N);
+  T* hlist  = host_res.allocate<T>(N);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -192,11 +194,11 @@ class ForallAtomicRefMinMaxTest : public ::testing::Test
 
 TYPED_TEST_P(ForallAtomicRefMinMaxTest, AtomicRefMinMaxForall)
 {
-  using AExec = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol = typename camp::at<TypeParam, camp::num<1>>::type;
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using DType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallAtomicRefMinMaxTestImpl<AExec, APol, ResType, IdxType, DType>(10000);
 }

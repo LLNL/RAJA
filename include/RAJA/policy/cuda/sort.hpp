@@ -48,7 +48,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename Iter,
           typename Compare>
 concepts::enable_if_t<
@@ -93,7 +93,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
@@ -112,9 +112,9 @@ stable(resources::Cuda cuda_res,
 
   using R = RAJA::detail::IterVal<Iter>;
 
-  int len = std::distance(begin, end);
+  int len       = std::distance(begin, end);
   int begin_bit = 0;
-  int end_bit = sizeof(R) * CHAR_BIT;
+  int end_bit   = sizeof(R) * CHAR_BIT;
 
   // Allocate temporary storage for the output array
   R* d_out = cuda::device_mempool_type::getInstance().malloc<R>(len);
@@ -124,7 +124,7 @@ stable(resources::Cuda cuda_res,
   cub::DoubleBuffer<R> d_keys(begin, d_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceRadixSort::SortKeys(d_temp_storage,
                                               temp_storage_bytes,
@@ -171,7 +171,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
@@ -190,9 +190,9 @@ stable(resources::Cuda cuda_res,
 
   using R = RAJA::detail::IterVal<Iter>;
 
-  int len = std::distance(begin, end);
+  int len       = std::distance(begin, end);
   int begin_bit = 0;
-  int end_bit = sizeof(R) * CHAR_BIT;
+  int end_bit   = sizeof(R) * CHAR_BIT;
 
   // Allocate temporary storage for the output array
   R* d_out = cuda::device_mempool_type::getInstance().malloc<R>(len);
@@ -202,7 +202,7 @@ stable(resources::Cuda cuda_res,
   cub::DoubleBuffer<R> d_keys(begin, d_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceRadixSort::SortKeysDescending(d_temp_storage,
                                                         temp_storage_bytes,
@@ -250,7 +250,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename Iter,
           typename Compare>
 concepts::enable_if_t<
@@ -294,20 +294,20 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
-unstable(resources::Cuda cuda_res,
+unstable(resources::Cuda                                 cuda_res,
          ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
                                                   IterationGetter,
                                                   Concretizer,
                                                   BLOCKS_PER_SM,
                                                   Async> p,
-         Iter begin,
-         Iter end,
-         operators::less<RAJA::detail::IterVal<Iter>> comp)
+         Iter                                            begin,
+         Iter                                            end,
+         operators::less<RAJA::detail::IterVal<Iter>>    comp)
 {
   return stable(cuda_res, p, begin, end, comp);
 }
@@ -319,19 +319,19 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename Iter>
 concepts::enable_if_t<resources::EventProxy<resources::Cuda>,
                       type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
                       std::is_pointer<Iter>>
-unstable(resources::Cuda cuda_res,
+unstable(resources::Cuda                                 cuda_res,
          ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
                                                   IterationGetter,
                                                   Concretizer,
                                                   BLOCKS_PER_SM,
                                                   Async> p,
-         Iter begin,
-         Iter end,
+         Iter                                            begin,
+         Iter                                            end,
          operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
   return stable(cuda_res, p, begin, end, comp);
@@ -345,7 +345,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename KeyIter,
           typename ValIter,
           typename Compare>
@@ -398,7 +398,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename KeyIter,
           typename ValIter>
 concepts::enable_if_t<
@@ -422,9 +422,9 @@ stable_pairs(resources::Cuda cuda_res,
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
 
-  int len = std::distance(keys_begin, keys_end);
+  int len       = std::distance(keys_begin, keys_end);
   int begin_bit = 0;
-  int end_bit = sizeof(K) * CHAR_BIT;
+  int end_bit   = sizeof(K) * CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
   K* d_keys_out = cuda::device_mempool_type::getInstance().malloc<K>(len);
@@ -436,7 +436,7 @@ stable_pairs(resources::Cuda cuda_res,
   cub::DoubleBuffer<V> d_vals(vals_begin, d_vals_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceRadixSort::SortPairs(d_temp_storage,
                                                temp_storage_bytes,
@@ -493,7 +493,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename KeyIter,
           typename ValIter>
 concepts::enable_if_t<
@@ -517,9 +517,9 @@ stable_pairs(resources::Cuda cuda_res,
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
 
-  int len = std::distance(keys_begin, keys_end);
+  int len       = std::distance(keys_begin, keys_end);
   int begin_bit = 0;
-  int end_bit = sizeof(K) * CHAR_BIT;
+  int end_bit   = sizeof(K) * CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
   K* d_keys_out = cuda::device_mempool_type::getInstance().malloc<K>(len);
@@ -531,7 +531,7 @@ stable_pairs(resources::Cuda cuda_res,
   cub::DoubleBuffer<V> d_vals(vals_begin, d_vals_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceRadixSort::SortPairsDescending(d_temp_storage,
                                                          temp_storage_bytes,
@@ -589,7 +589,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename KeyIter,
           typename ValIter,
           typename Compare>
@@ -640,7 +640,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename KeyIter,
           typename ValIter>
 concepts::enable_if_t<
@@ -648,15 +648,15 @@ concepts::enable_if_t<
     type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
     std::is_pointer<KeyIter>,
     std::is_pointer<ValIter>>
-unstable_pairs(resources::Cuda cuda_res,
+unstable_pairs(resources::Cuda                                 cuda_res,
                ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
                                                         IterationGetter,
                                                         Concretizer,
                                                         BLOCKS_PER_SM,
                                                         Async> p,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
+               KeyIter                                         keys_begin,
+               KeyIter                                         keys_end,
+               ValIter                                         vals_begin,
                operators::less<RAJA::detail::IterVal<KeyIter>> comp)
 {
   return stable_pairs(cuda_res, p, keys_begin, keys_end, vals_begin, comp);
@@ -669,7 +669,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename KeyIter,
           typename ValIter>
 concepts::enable_if_t<
@@ -677,15 +677,15 @@ concepts::enable_if_t<
     type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
     std::is_pointer<KeyIter>,
     std::is_pointer<ValIter>>
-unstable_pairs(resources::Cuda cuda_res,
+unstable_pairs(resources::Cuda                                    cuda_res,
                ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
                                                         IterationGetter,
                                                         Concretizer,
                                                         BLOCKS_PER_SM,
-                                                        Async> p,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
+                                                        Async>    p,
+               KeyIter                                            keys_begin,
+               KeyIter                                            keys_end,
+               ValIter                                            vals_begin,
                operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
 {
   return stable_pairs(cuda_res, p, keys_begin, keys_end, vals_begin, comp);

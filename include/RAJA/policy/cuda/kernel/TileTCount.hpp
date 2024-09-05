@@ -99,8 +99,8 @@ struct CudaStatementExecutor<
 
     // compute trip count
     const diff_t len = segment.end() - segment.begin();
-    const diff_t t = IndexMapper::template index<diff_t>();
-    const diff_t i = t * static_cast<diff_t>(chunk_size);
+    const diff_t t   = IndexMapper::template index<diff_t>();
+    const diff_t i   = t * static_cast<diff_t>(chunk_size);
 
     // execute enclosed statements if any thread will
     // but mask off threads without work
@@ -180,13 +180,13 @@ struct CudaStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t t_init = IndexMapper::template index<diff_t>();
-    const diff_t i_init = t_init * static_cast<diff_t>(chunk_size);
+    const diff_t len      = segment.end() - segment.begin();
+    const diff_t t_init   = IndexMapper::template index<diff_t>();
+    const diff_t i_init   = t_init * static_cast<diff_t>(chunk_size);
     const diff_t t_stride = IndexMapper::template size<diff_t>();
     const diff_t i_stride = t_stride * static_cast<diff_t>(chunk_size);
 
@@ -272,13 +272,13 @@ struct CudaStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
-    const diff_t len = segment.end() - segment.begin();
-    const diff_t t_init = IndexMapper::template index<diff_t>();
-    const diff_t i_init = t_init * static_cast<diff_t>(chunk_size);
+    const diff_t len      = segment.end() - segment.begin();
+    const diff_t t_init   = IndexMapper::template index<diff_t>();
+    const diff_t i_init   = t_init * static_cast<diff_t>(chunk_size);
     const diff_t t_stride = IndexMapper::template size<diff_t>();
     const diff_t i_stride = t_stride * static_cast<diff_t>(chunk_size);
 

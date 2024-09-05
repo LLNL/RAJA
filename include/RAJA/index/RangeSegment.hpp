@@ -224,10 +224,10 @@ struct TypedRangeSegment
    *   \endverbatim
    */
   RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
-                                                       DiffT length) const
+                                                       DiffT    length) const
   {
     StorageT start = m_begin[0] + begin;
-    StorageT end = start + length > m_end[0] ? m_end[0] : start + length;
+    StorageT end   = start + length > m_end[0] ? m_end[0] : start + length;
 
     return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
   }
@@ -486,11 +486,11 @@ struct TypedRangeStrideSegment
    *   \endverbatim
    */
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
-                                                 DiffT length) const
+                                                 DiffT    length) const
   {
     StorageT stride = m_begin.get_stride();
-    StorageT start = m_begin[0] + begin * stride;
-    StorageT end = start + stride * length;
+    StorageT start  = m_begin[0] + begin * stride;
+    StorageT end    = start + stride * length;
 
     if (stride > 0)
     {
@@ -563,7 +563,7 @@ template <typename BeginT,
           typename EndT,
           typename Common = detail::common_type_t<BeginT, EndT>>
 RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
-                                                      EndT&& end)
+                                                      EndT&&   end)
 {
   return {begin, end};
 }

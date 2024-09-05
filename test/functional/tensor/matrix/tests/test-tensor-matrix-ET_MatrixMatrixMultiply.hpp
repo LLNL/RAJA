@@ -14,8 +14,8 @@ template <typename MATRIX_TYPE>
 void ET_MatrixMatrixMultiplyImpl()
 {
 
-  using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  using matrix_t  = MATRIX_TYPE;
+  using policy_t  = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
 
@@ -55,7 +55,7 @@ void ET_MatrixMatrixMultiplyImpl()
 
   // alloc data3 - The result matrix
 
-  std::vector<element_t> data3_vec(N * N);
+  std::vector<element_t>                 data3_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data3_h(data3_vec.data(), N, N);
 
   element_t* data3_ptr = tensor_malloc<policy_t>(data3_vec);
@@ -98,20 +98,25 @@ void ET_MatrixMatrixMultiplyImpl()
   //
   // Do Operation: A*B
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    auto A_rows = RAJA::expt::RowIndex<int, A_matrix_t>::all();
-    auto A_cols =
-        RAJA::expt::ColIndex<int, A_matrix_t>::template static_range<0, N>();
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        auto A_rows = RAJA::expt::RowIndex<int, A_matrix_t>::all();
+        auto A_cols =
+            RAJA::expt::ColIndex<int, A_matrix_t>::template static_range<0,
+                                                                         N>();
 
-    auto B_rows =
-        RAJA::expt::RowIndex<int, B_matrix_t>::template static_range<0, N>();
-    auto B_cols = RAJA::expt::ColIndex<int, B_matrix_t>::static_all();
+        auto B_rows =
+            RAJA::expt::RowIndex<int, B_matrix_t>::template static_range<0,
+                                                                         N>();
+        auto B_cols = RAJA::expt::ColIndex<int, B_matrix_t>::static_all();
 
-    auto C_rows = RAJA::expt::RowIndex<int, C_matrix_t>::all();
-    auto C_cols = RAJA::expt::ColIndex<int, C_matrix_t>::all();
+        auto C_rows = RAJA::expt::RowIndex<int, C_matrix_t>::all();
+        auto C_cols = RAJA::expt::ColIndex<int, C_matrix_t>::all();
 
-    data3_d(C_rows, C_cols) = data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
-  });
+        data3_d(C_rows, C_cols) =
+            data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
+      });
 
   tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
 
@@ -179,19 +184,27 @@ void ET_MatrixMatrixMultiplyImpl()
       //
       // Do Operation A*B
       //
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        auto A_rows = RAJA::expt::RowIndex<int, A_matrix_t>::range(0, n_size);
-        auto A_cols = RAJA::expt::ColIndex<int, A_matrix_t>::range(0, m_size);
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
+          {
+            auto A_rows =
+                RAJA::expt::RowIndex<int, A_matrix_t>::range(0, n_size);
+            auto A_cols =
+                RAJA::expt::ColIndex<int, A_matrix_t>::range(0, m_size);
 
-        auto B_rows = RAJA::expt::RowIndex<int, B_matrix_t>::range(0, m_size);
-        auto B_cols = RAJA::expt::ColIndex<int, B_matrix_t>::range(0, n_size);
+            auto B_rows =
+                RAJA::expt::RowIndex<int, B_matrix_t>::range(0, m_size);
+            auto B_cols =
+                RAJA::expt::ColIndex<int, B_matrix_t>::range(0, n_size);
 
-        auto C_rows = RAJA::expt::RowIndex<int, C_matrix_t>::range(0, n_size);
-        auto C_cols = RAJA::expt::ColIndex<int, C_matrix_t>::range(0, n_size);
+            auto C_rows =
+                RAJA::expt::RowIndex<int, C_matrix_t>::range(0, n_size);
+            auto C_cols =
+                RAJA::expt::ColIndex<int, C_matrix_t>::range(0, n_size);
 
-        data3_d(C_rows, C_cols) =
-            data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
-      });
+            data3_d(C_rows, C_cols) =
+                data1_d(A_rows, A_cols) * data2_d(B_rows, B_cols);
+          });
 
       tensor_copy_to_host<policy_t>(data3_vec, data3_ptr);
 

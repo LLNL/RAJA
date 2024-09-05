@@ -227,20 +227,20 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
                 xargs<Args...>,
                 ALLOCATOR_T>
 {
-  using exec_policy = EXEC_POLICY_T;
-  using order_policy = ORDER_POLICY_T;
-  using storage_policy = STORAGE_POLICY_T;
+  using exec_policy     = EXEC_POLICY_T;
+  using order_policy    = ORDER_POLICY_T;
+  using storage_policy  = STORAGE_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy,
+  using policy          = WorkGroupPolicy<exec_policy,
                                  order_policy,
                                  storage_policy,
                                  dispatch_policy>;
-  using index_type = INDEX_T;
-  using xarg_type = xargs<Args...>;
-  using Allocator = ALLOCATOR_T;
+  using index_type      = INDEX_T;
+  using xarg_type       = xargs<Args...>;
+  using Allocator       = ALLOCATOR_T;
 
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
-  using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
+  using worksite_type  = WorkSite<policy, index_type, xarg_type, Allocator>;
 
 private:
   using workrunner_type = detail::WorkRunner<exec_policy,
@@ -262,10 +262,10 @@ public:
 
   explicit WorkPool(Allocator const& aloc) : m_storage(aloc) {}
 
-  WorkPool(WorkPool const&) = delete;
+  WorkPool(WorkPool const&)            = delete;
   WorkPool& operator=(WorkPool const&) = delete;
 
-  WorkPool(WorkPool&&) = default;
+  WorkPool(WorkPool&&)            = default;
   WorkPool& operator=(WorkPool&&) = default;
 
   size_t num_loops() const { return m_storage.size(); }
@@ -317,8 +317,8 @@ public:
 
 private:
   storage_type m_storage;
-  size_t m_max_num_loops = 0;
-  size_t m_max_storage_bytes = 0;
+  size_t       m_max_num_loops     = 0;
+  size_t       m_max_storage_bytes = 0;
 
   workrunner_type m_runner;
 };
@@ -338,23 +338,23 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
                  xargs<Args...>,
                  ALLOCATOR_T>
 {
-  using exec_policy = EXEC_POLICY_T;
-  using order_policy = ORDER_POLICY_T;
-  using storage_policy = STORAGE_POLICY_T;
+  using exec_policy     = EXEC_POLICY_T;
+  using order_policy    = ORDER_POLICY_T;
+  using storage_policy  = STORAGE_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy,
+  using policy          = WorkGroupPolicy<exec_policy,
                                  order_policy,
                                  storage_policy,
                                  dispatch_policy>;
-  using index_type = INDEX_T;
-  using xarg_type = xargs<Args...>;
-  using Allocator = ALLOCATOR_T;
+  using index_type      = INDEX_T;
+  using xarg_type       = xargs<Args...>;
+  using Allocator       = ALLOCATOR_T;
 
   using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
   using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
 private:
-  using storage_type = typename workpool_type::storage_type;
+  using storage_type    = typename workpool_type::storage_type;
   using workrunner_type = typename workpool_type::workrunner_type;
 
   friend workpool_type;
@@ -363,10 +363,10 @@ private:
 public:
   using resource_type = typename workpool_type::resource_type;
 
-  WorkGroup(WorkGroup const&) = delete;
+  WorkGroup(WorkGroup const&)            = delete;
   WorkGroup& operator=(WorkGroup const&) = delete;
 
-  WorkGroup(WorkGroup&&) = default;
+  WorkGroup(WorkGroup&&)            = default;
   WorkGroup& operator=(WorkGroup&&) = default;
 
   inline worksite_type run(resource_type r, Args...);
@@ -388,7 +388,7 @@ public:
   ~WorkGroup() { clear(); }
 
 private:
-  storage_type m_storage;
+  storage_type    m_storage;
   workrunner_type m_runner;
 
   WorkGroup(storage_type&& storage, workrunner_type&& runner)
@@ -411,19 +411,19 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
                 xargs<Args...>,
                 ALLOCATOR_T>
 {
-  using exec_policy = EXEC_POLICY_T;
-  using order_policy = ORDER_POLICY_T;
-  using storage_policy = STORAGE_POLICY_T;
+  using exec_policy     = EXEC_POLICY_T;
+  using order_policy    = ORDER_POLICY_T;
+  using storage_policy  = STORAGE_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy,
+  using policy          = WorkGroupPolicy<exec_policy,
                                  order_policy,
                                  storage_policy,
                                  dispatch_policy>;
-  using index_type = INDEX_T;
-  using xarg_type = xargs<Args...>;
-  using Allocator = ALLOCATOR_T;
+  using index_type      = INDEX_T;
+  using xarg_type       = xargs<Args...>;
+  using Allocator       = ALLOCATOR_T;
 
-  using workpool_type = WorkPool<policy, index_type, xarg_type, Allocator>;
+  using workpool_type  = WorkPool<policy, index_type, xarg_type, Allocator>;
   using workgroup_type = WorkGroup<policy, index_type, xarg_type, Allocator>;
 
 private:
@@ -436,10 +436,10 @@ private:
 public:
   using resource_type = typename workpool_type::resource_type;
 
-  WorkSite(WorkSite const&) = delete;
+  WorkSite(WorkSite const&)            = delete;
   WorkSite& operator=(WorkSite const&) = delete;
 
-  WorkSite(WorkSite&&) = default;
+  WorkSite(WorkSite&&)            = default;
   WorkSite& operator=(WorkSite&&) = default;
 
   resource_type get_resource() const { return m_resource; }
@@ -454,7 +454,7 @@ public:
 
 private:
   per_run_storage m_run_storage;
-  resource_type m_resource;
+  resource_type   m_resource;
 
   explicit WorkSite(resource_type r, per_run_storage&& run_storage)
       : m_run_storage(std::move(run_storage)), m_resource(r)
@@ -485,7 +485,7 @@ WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
          ALLOCATOR_T>::instantiate()
 {
   // update max sizes to auto-reserve on reuse
-  m_max_num_loops = std::max(m_storage.size(), m_max_num_loops);
+  m_max_num_loops     = std::max(m_storage.size(), m_max_num_loops);
   m_max_storage_bytes = std::max(m_storage.storage_size(), m_max_storage_bytes);
 
   // move storage into workgroup

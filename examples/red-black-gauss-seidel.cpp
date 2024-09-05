@@ -55,7 +55,7 @@
 struct grid_s
 {
   double o, h;
-  int n;
+  int    n;
 };
 
 /*
@@ -65,7 +65,7 @@ struct grid_s
  * gsColorPolicy - Generates the custom index set for this example
  */
 double solution(double x, double y);
-void computeErr(double* I, grid_s grid);
+void   computeErr(double* I, grid_s grid);
 RAJA::TypedIndexSet<RAJA::ListSegment>
 gsColorPolicy(int N, camp::resources::Resource res);
 
@@ -87,12 +87,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
    */
   double tol = 1e-10;
 
-  int N = 100;
-  int NN = (N + 2) * (N + 2);
+  int N       = 100;
+  int NN      = (N + 2) * (N + 2);
   int maxIter = 100000;
 
   double resI2;
-  int iteration;
+  int    iteration;
 
   grid_s gridx;
   gridx.o = 0.0;
@@ -116,7 +116,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
 #endif
 
-  resI2 = 1;
+  resI2     = 1;
   iteration = 0;
   while (resI2 > tol * tol)
   {
@@ -130,26 +130,29 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     //
     // Gauss-Seidel Iteration
     //
-    RAJA::forall<colorPolicy>(colorSet, [=](RAJA::Index_type id) {
-      //
-      // Compute x,y grid index
-      //
-      int m = id % (N + 2);
-      int n = id / (N + 2);
+    RAJA::forall<colorPolicy>(
+        colorSet,
+        [=](RAJA::Index_type id)
+        {
+          //
+          // Compute x,y grid index
+          //
+          int m = id % (N + 2);
+          int n = id / (N + 2);
 
-      double x = gridx.o + m * gridx.h;
-      double y = gridx.o + n * gridx.h;
+          double x = gridx.o + m * gridx.h;
+          double y = gridx.o + n * gridx.h;
 
-      double f = gridx.h * gridx.h *
-                 (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
+          double f = gridx.h * gridx.h *
+                     (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
-      double newI =
-          -0.25 * (f - I[id - N - 2] - I[id + N + 2] - I[id - 1] - I[id + 1]);
+          double newI = -0.25 * (f - I[id - N - 2] - I[id + N + 2] - I[id - 1] -
+                                 I[id + 1]);
 
-      double oldI = I[id];
-      RAJA_resI2 += (newI - oldI) * (newI - oldI);
-      I[id] = newI;
-    });
+          double oldI = I[id];
+          RAJA_resI2 += (newI - oldI) * (newI - oldI);
+          I[id] = newI;
+        });
     resI2 = RAJA_resI2;
 
     if (iteration > maxIter)
@@ -234,7 +237,7 @@ double solution(double x, double y)
 void computeErr(double* I, grid_s grid)
 {
 
-  RAJA::RangeSegment fdBounds(0, grid.n);
+  RAJA::RangeSegment                        fdBounds(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using errPolicy = RAJA::KernelPolicy<RAJA::statement::For<
@@ -243,10 +246,11 @@ void computeErr(double* I, grid_s grid)
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<errPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                          [=](RAJA::Index_type tx, RAJA::Index_type ty) {
-                            int id = tx + grid.n * ty;
-                            double x = grid.o + tx * grid.h;
-                            double y = grid.o + ty * grid.h;
+                          [=](RAJA::Index_type tx, RAJA::Index_type ty)
+                          {
+                            int    id    = tx + grid.n * ty;
+                            double x     = grid.o + tx * grid.h;
+                            double y     = grid.o + ty * grid.h;
                             double myErr = std::abs(I[id] - solution(x, y));
                             tMax.max(myErr);
                           });

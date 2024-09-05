@@ -48,7 +48,7 @@ struct GenericWrapperBase
 template <typename T>
 struct Privatizer
 {
-  using value_type = camp::decay<T>;
+  using value_type     = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
   static_assert(!has_privatizer<T>::value,

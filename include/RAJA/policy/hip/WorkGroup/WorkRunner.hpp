@@ -37,7 +37,7 @@ namespace detail
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
@@ -64,7 +64,7 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
                                        INDEX_T,
                                        Args...>;
   using base::base;
-  using IndexType = INDEX_T;
+  using IndexType       = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
 
   ///
@@ -72,7 +72,7 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage run(WorkContainer const& storage,
+  per_run_storage run(WorkContainer const&         storage,
                       typename base::resource_type r,
                       Args... args) const
   {
@@ -99,7 +99,7 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
  * and returns any per run resources
  */
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
@@ -126,7 +126,7 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
                                        INDEX_T,
                                        Args...>;
   using base::base;
-  using IndexType = INDEX_T;
+  using IndexType       = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
 
   ///
@@ -134,7 +134,7 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage run(WorkContainer const& storage,
+  per_run_storage run(WorkContainer const&         storage,
                       typename base::resource_type r,
                       Args... args) const
   {
@@ -178,9 +178,9 @@ struct HoldHipDeviceXThreadblockLoop
     // TODO:: decide when to run hooks, may bypass this and use impl directly
     // TODO:: decide whether or not to privatize the loop body
     const index_type i_begin = threadIdx.x + blockIdx.x * blockDim.x;
-    const index_type stride = blockDim.x * gridDim.x;
-    const auto begin = m_segment.begin();
-    const auto end = m_segment.end();
+    const index_type stride  = blockDim.x * gridDim.x;
+    const auto       begin   = m_segment.begin();
+    const auto       end     = m_segment.end();
     const index_type len(end - begin);
     for (index_type i = i_begin; i < len; i += stride)
     {
@@ -190,7 +190,7 @@ struct HoldHipDeviceXThreadblockLoop
 
 private:
   Segment_type m_segment;
-  LoopBody m_body;
+  LoopBody     m_body;
 };
 
 template <size_t BLOCK_SIZE,
@@ -215,7 +215,7 @@ __launch_bounds__(BLOCK_SIZE, 1) __global__
  * by the average number of iterates per loop
  */
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
@@ -232,9 +232,9 @@ struct WorkRunner<
   using order_policy =
       RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using Allocator = ALLOCATOR_T;
-  using index_type = INDEX_T;
-  using resource_type = resources::Hip;
+  using Allocator       = ALLOCATOR_T;
+  using index_type      = INDEX_T;
+  using resource_type   = resources::Hip;
 
   // The type that will hold the segment and loop body in work storage
   struct holder_type
@@ -266,7 +266,7 @@ struct WorkRunner<
 
   WorkRunner() = default;
 
-  WorkRunner(WorkRunner const&) = delete;
+  WorkRunner(WorkRunner const&)            = delete;
   WorkRunner& operator=(WorkRunner const&) = delete;
 
   WorkRunner(WorkRunner&& o) : m_total_iterations(o.m_total_iterations)
@@ -287,9 +287,9 @@ struct WorkRunner<
   inline void
   enqueue(WorkContainer& storage, Iterable&& iter, LoopBody&& loop_body)
   {
-    using Iterator = camp::decay<decltype(std::begin(iter))>;
+    using Iterator  = camp::decay<decltype(std::begin(iter))>;
     using LOOP_BODY = camp::decay<LoopBody>;
-    using ITERABLE = camp::decay<Iterable>;
+    using ITERABLE  = camp::decay<Iterable>;
     using IndexType =
         camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
@@ -298,9 +298,9 @@ struct WorkRunner<
     // using true_value_type = typename WorkContainer::template
     // true_value_type<holder>;
 
-    Iterator begin = std::begin(iter);
-    Iterator end = std::end(iter);
-    IndexType len = std::distance(begin, end);
+    Iterator  begin = std::begin(iter);
+    Iterator  end   = std::end(iter);
+    IndexType len   = std::distance(begin, end);
 
     // Only launch kernel if we have something to iterate over
     if (len > 0 && BLOCK_SIZE > 0)
@@ -330,8 +330,8 @@ struct WorkRunner<
   per_run_storage
   run(WorkContainer const& storage, resource_type r, Args... args) const
   {
-    using Iterator = camp::decay<decltype(std::begin(storage))>;
-    using IndexType = camp::decay<decltype(std::distance(std::begin(storage),
+    using Iterator   = camp::decay<decltype(std::begin(storage))>;
+    using IndexType  = camp::decay<decltype(std::distance(std::begin(storage),
                                                          std::end(storage)))>;
     using value_type = typename WorkContainer::value_type;
 
@@ -346,8 +346,8 @@ struct WorkRunner<
     //
     // Compute the requested iteration space size
     //
-    Iterator begin = std::begin(storage);
-    Iterator end = std::end(storage);
+    Iterator  begin     = std::begin(storage);
+    Iterator  end       = std::end(storage);
     IndexType num_loops = std::distance(begin, end);
 
     // Only launch kernel if we have something to iterate over
@@ -401,7 +401,7 @@ private:
 
 /// leave unsupported runner types incomplete
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename... Args>
@@ -414,7 +414,7 @@ struct WorkRunner<
     Args...>;
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename ALLOCATOR_T,
           typename INDEX_T,
           typename... Args>

@@ -28,14 +28,14 @@ struct testWorkGroupEnqueueMultiple
 {
   template <typename... Args>
   void operator()(RAJA::xargs<Args...>,
-                  bool do_instantiate,
+                  bool   do_instantiate,
                   size_t rep,
                   size_t num) const
   {
     IndexType success = (IndexType)1;
 
     using range_segment = RAJA::TypedRangeSegment<IndexType>;
-    using callable = EnqueueTestCallable<IndexType, Args...>;
+    using callable      = EnqueueTestCallable<IndexType, Args...>;
 
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, callable>>;
@@ -100,7 +100,7 @@ struct testWorkGroupEnqueueMultiple
 
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator>
@@ -118,7 +118,7 @@ struct testWorkGroupEnqueueMultiple<
 };
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator>
@@ -148,15 +148,15 @@ TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueMultipleUnitTest);
 TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest,
              BasicWorkGroupEnqueueMultiple)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ExecPolicy    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using OrderPolicy   = typename camp::at<TypeParam, camp::num<1>>::type;
   using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<5>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
+  using IndexType     = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Xargs         = typename camp::at<TypeParam, camp::num<5>>::type;
+  using Allocator     = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  std::mt19937 rng(std::random_device{}());
+  std::mt19937                          rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist_rep(0, 16);
   std::uniform_int_distribution<size_t> dist_num(0, 64);
 

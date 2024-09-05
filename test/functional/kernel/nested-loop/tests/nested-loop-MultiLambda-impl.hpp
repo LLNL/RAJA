@@ -48,11 +48,11 @@ using MultiLambdaSupportedLoopTypeList =
 template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE>
 void KernelNestedLoopTest()
 {
-  constexpr static int N = 1000;
+  constexpr static int N   = 1000;
   constexpr static int DIM = 2;
 
   camp::resources::Resource host_res{camp::resources::Host()};
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
 
   // Allocate Tests Data
   double* work_arrA = work_res.template allocate<double>(N * N);
@@ -110,14 +110,16 @@ void KernelNestedLoopTest()
       work_res,
 
       // lambda 0
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type j) {
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type j)
+      {
         work_viewB(i, j) = 0.2 * (work_viewA(i, j) + work_viewA(i, j - 1) +
                                   work_viewA(i, j + 1) + work_viewA(i + 1, j) +
                                   work_viewA(i - 1, j));
       },
 
       // lambda 1
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type j) {
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type j)
+      {
         work_viewA(i, j) = 0.2 * (work_viewB(i, j) + work_viewB(i, j - 1) +
                                   work_viewB(i, j + 1) + work_viewB(i + 1, j) +
                                   work_viewB(i - 1, j));
@@ -129,7 +131,9 @@ void KernelNestedLoopTest()
       check_arrB, work_arrB, sizeof(double) * RAJA::stripIndexType(N * N));
 
   RAJA::forall<RAJA::seq_exec>(
-      RAJA::RangeSegment{0, N * N}, [=](RAJA::Index_type i) {
+      RAJA::RangeSegment{0, N * N},
+      [=](RAJA::Index_type i)
+      {
         ASSERT_TRUE(RAJA::test_abs(test_arrA[i] - check_arrA[i]) < 10e-8);
         ASSERT_TRUE(RAJA::test_abs(test_arrB[i] - check_arrB[i]) < 10e-8);
       });

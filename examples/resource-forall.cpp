@@ -65,8 +65,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   for (int i = 0; i < N; ++i)
   {
-    a[i] = -i;
-    b[i] = 2 * i;
+    a[i]  = -i;
+    b[i]  = 2 * i;
     a_[i] = -i;
     b_[i] = 2 * i;
   }
@@ -188,15 +188,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     res_gpu2.memcpy(d_b2, b, sizeof(int) * N);
 
 
-    RAJA::forall<EXEC_POLICY>(
-        res_gpu1, RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int i) {
-          d_c1[i] = d_a1[i] + d_b1[i];
-        });
+    RAJA::forall<EXEC_POLICY>(res_gpu1,
+                              RAJA::RangeSegment(0, N),
+                              [=] RAJA_DEVICE(int i)
+                              { d_c1[i] = d_a1[i] + d_b1[i]; });
 
-    RAJA::forall<EXEC_POLICY>(
-        res_gpu2, RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int i) {
-          d_c2[i] = d_a2[i] + d_b2[i];
-        });
+    RAJA::forall<EXEC_POLICY>(res_gpu2,
+                              RAJA::RangeSegment(0, N),
+                              [=] RAJA_DEVICE(int i)
+                              { d_c2[i] = d_a2[i] + d_b2[i]; });
 
     res_gpu1.memcpy(c, d_c1, sizeof(int) * N);
 
@@ -230,8 +230,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     using EXEC_POLICY = RAJA::cuda_exec_async<GPU_BLOCK_SIZE>;
     // _raja_res_defres_end
 #elif defined(RAJA_ENABLE_HIP)
-    RAJA::resources::Hip res_gpu1;
-    RAJA::resources::Hip res_gpu2;
+    RAJA::resources::Hip  res_gpu1;
+    RAJA::resources::Hip  res_gpu2;
     RAJA::resources::Host res_host;
 
     using EXEC_POLICY = RAJA::hip_exec_async<GPU_BLOCK_SIZE>;
@@ -246,7 +246,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     // _raja_res_alloc_start
     int* d_array1 = res_gpu1.allocate<int>(N);
     int* d_array2 = res_gpu2.allocate<int>(N);
-    int* h_array = res_host.allocate<int>(N);
+    int* h_array  = res_host.allocate<int>(N);
     // _raja_res_alloc_end
 
     // _raja_res_k1_start
@@ -257,9 +257,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     // _raja_res_k2_start
     RAJA::resources::Event e = RAJA::forall<EXEC_POLICY>(
-        res_gpu2, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE(int i) {
-          d_array2[i] = -1;
-        });
+        res_gpu2,
+        RAJA::RangeSegment(0, N),
+        [=] RAJA_HOST_DEVICE(int i) { d_array2[i] = -1; });
     // _raja_res_k2_end
 
     // _raja_res_wait_start
@@ -267,10 +267,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     // _raja_res_wait_end
 
     // _raja_res_k3_start
-    RAJA::forall<EXEC_POLICY>(
-        res_gpu1, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE(int i) {
-          d_array1[i] *= d_array2[i];
-        });
+    RAJA::forall<EXEC_POLICY>(res_gpu1,
+                              RAJA::RangeSegment(0, N),
+                              [=] RAJA_HOST_DEVICE(int i)
+                              { d_array1[i] *= d_array2[i]; });
     // _raja_res_k3_end
 
     // _raja_res_memcpy_start
@@ -279,13 +279,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     // _raja_res_k4_start
     bool check = true;
-    RAJA::forall<RAJA::seq_exec>(
-        res_host, RAJA::RangeSegment(0, N), [&check, h_array](int i) {
-          if (h_array[i] != -i)
-          {
-            check = false;
-          }
-        });
+    RAJA::forall<RAJA::seq_exec>(res_host,
+                                 RAJA::RangeSegment(0, N),
+                                 [&check, h_array](int i)
+                                 {
+                                   if (h_array[i] != -i)
+                                   {
+                                     check = false;
+                                   }
+                                 });
     // _raja_res_k4_end
 
     std::cout << "\n         result -- ";

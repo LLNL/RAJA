@@ -64,7 +64,7 @@ template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicMin(seq_atomic, T* acc, T value)
 {
   T ret = *acc;
-  *acc = ret < value ? ret : value;
+  *acc  = ret < value ? ret : value;
   return ret;
 }
 
@@ -73,7 +73,7 @@ template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicMax(seq_atomic, T* acc, T value)
 {
   T ret = *acc;
-  *acc = value < ret ? ret : value;
+  *acc  = value < ret ? ret : value;
   return ret;
 }
 
@@ -92,7 +92,7 @@ template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicInc(seq_atomic, T* acc, T val)
 {
   T old = *acc;
-  *acc = val <= old ? T(0) : old + T(1);
+  *acc  = val <= old ? T(0) : old + T(1);
   return old;
 }
 
@@ -110,7 +110,7 @@ template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicDec(seq_atomic, T* acc, T val)
 {
   T old = *acc;
-  *acc = old == T(0) || val < old ? val : old - T(1);
+  *acc  = old == T(0) || val < old ? val : old - T(1);
   return old;
 }
 
@@ -146,7 +146,7 @@ template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicExchange(seq_atomic, T* acc, T value)
 {
   T ret = *acc;
-  *acc = value;
+  *acc  = value;
   return ret;
 }
 
@@ -155,7 +155,7 @@ template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicCAS(seq_atomic, T* acc, T compare, T value)
 {
   T ret = *acc;
-  *acc = ret == compare ? value : ret;
+  *acc  = ret == compare ? value : ret;
   return ret;
 }
 

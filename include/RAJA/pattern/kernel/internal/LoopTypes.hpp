@@ -49,7 +49,7 @@ struct LoopTypes<camp::list<SegmentTypes...>, camp::list<OffsetTypes...>>
                 "match");
 
   using segment_types_t = camp::list<SegmentTypes...>;
-  using offset_types_t = camp::list<OffsetTypes...>;
+  using offset_types_t  = camp::list<OffsetTypes...>;
 };
 
 
@@ -66,7 +66,7 @@ template <typename Types, camp::idx_t Segment, typename T, camp::idx_t... SEQ>
 struct SetSegmentTypeHelper<Types, Segment, T, camp::idx_seq<SEQ...>>
 {
   using segment_list = typename Types::segment_types_t;
-  using offset_list = typename Types::offset_types_t;
+  using offset_list  = typename Types::offset_types_t;
 
   static_assert(std::is_same<camp::at_v<segment_list, Segment>, void>::value,
                 "Segment was already assigned: Probably looping over same "

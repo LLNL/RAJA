@@ -69,8 +69,8 @@ template <size_t n_dims,
           typename ValueType,
           typename... IndexTypes>
 RAJA_INLINE View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...>>
-make_index_view(ValueType* ptr,
-                IndexLayout<n_dims, IndexType, IndexTypes...> index_layout)
+            make_index_view(ValueType*                                    ptr,
+                            IndexLayout<n_dims, IndexType, IndexTypes...> index_layout)
 {
   return View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...>>(
       ptr, index_layout);
@@ -145,8 +145,8 @@ removenth(Lay lyout, Tup&& tup) -> decltype(selecttuple<Lay>(
 template <
     typename ValueType,
     typename LayoutType,
-    RAJA::Index_type P2Pidx = 0,
-    typename PointerType = ValueType**,
+    RAJA::Index_type P2Pidx      = 0,
+    typename PointerType         = ValueType**,
     typename NonConstPointerType = camp::type::ptr::add<           // adds *
         camp::type::ptr::add<camp::type::cv::rem<                  // removes cv
             camp::type::ptr::rem<camp::type::ptr::rem<PointerType> // removes
@@ -154,16 +154,16 @@ template <
                                  >>>>>
 struct MultiView
 {
-  using value_type = ValueType;
-  using pointer_type = PointerType;
-  using layout_type = LayoutType;
-  using nc_value_type = camp::decay<value_type>;
+  using value_type      = ValueType;
+  using pointer_type    = PointerType;
+  using layout_type     = LayoutType;
+  using nc_value_type   = camp::decay<value_type>;
   using nc_pointer_type = NonConstPointerType;
   using NonConstView =
       MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
-  nc_pointer_type data;
+  nc_pointer_type   data;
 
   template <typename... Args>
   RAJA_INLINE constexpr MultiView(pointer_type data_ptr, Args... dim_sizes)
@@ -174,10 +174,10 @@ struct MultiView
       : layout(layout), data(data_ptr)
   {}
 
-  RAJA_INLINE constexpr MultiView(MultiView const&) = default;
-  RAJA_INLINE constexpr MultiView(MultiView&&) = default;
+  RAJA_INLINE constexpr MultiView(MultiView const&)  = default;
+  RAJA_INLINE constexpr MultiView(MultiView&&)       = default;
   RAJA_INLINE MultiView& operator=(MultiView const&) = default;
-  RAJA_INLINE MultiView& operator=(MultiView&&) = default;
+  RAJA_INLINE MultiView& operator=(MultiView&&)      = default;
 
   template <bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
@@ -228,10 +228,10 @@ struct MultiView
 template <typename ViewType, typename AtomicPolicy = RAJA::auto_atomic>
 struct AtomicViewWrapper
 {
-  using base_type = ViewType;
+  using base_type    = ViewType;
   using pointer_type = typename base_type::pointer_type;
-  using value_type = typename base_type::value_type;
-  using atomic_type = RAJA::AtomicRef<value_type, AtomicPolicy>;
+  using value_type   = typename base_type::value_type;
+  using atomic_type  = RAJA::AtomicRef<value_type, AtomicPolicy>;
 
   base_type base_;
 
@@ -255,10 +255,10 @@ struct AtomicViewWrapper
 template <typename ViewType>
 struct AtomicViewWrapper<ViewType, RAJA::seq_atomic>
 {
-  using base_type = ViewType;
+  using base_type    = ViewType;
   using pointer_type = typename base_type::pointer_type;
-  using value_type = typename base_type::value_type;
-  using atomic_type = RAJA::AtomicRef<value_type, RAJA::seq_atomic>;
+  using value_type   = typename base_type::value_type;
+  using atomic_type  = RAJA::AtomicRef<value_type, RAJA::seq_atomic>;
 
   base_type base_;
 
@@ -277,7 +277,7 @@ struct AtomicViewWrapper<ViewType, RAJA::seq_atomic>
 
 template <typename AtomicPolicy, typename ViewType>
 RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy>
-make_atomic_view(ViewType const& view)
+            make_atomic_view(ViewType const& view)
 {
 
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);

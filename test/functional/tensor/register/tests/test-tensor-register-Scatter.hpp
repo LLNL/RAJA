@@ -14,26 +14,26 @@ template <typename REGISTER_TYPE>
 void ScatterImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // get the integer indexing types
   using int_register_t = typename register_t::int_vector_type;
-  using index_t = typename int_register_t::element_type;
+  using index_t        = typename int_register_t::element_type;
 
   // Allocate
 
   // Data to be read
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   // Indexing into output0
   std::vector<index_t> input1_vec(num_elem);
-  index_t* input1_hptr = input1_vec.data();
-  index_t* input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
+  index_t*             input1_hptr = input1_vec.data();
+  index_t*             input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
 
   // Scattered output (10x larger than output)
   std::vector<element_t> output0_vec(10 * num_elem);
@@ -66,15 +66,17 @@ void ScatterImpl()
   //
 
   // operator z[b[i]] = a[i]
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    int_register_t idx;
-    idx.load_packed(input1_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        int_register_t idx;
+        idx.load_packed(input1_dptr);
 
-    register_t a;
-    a.load_packed(input0_dptr);
+        register_t a;
+        a.load_packed(input0_dptr);
 
-    a.scatter(output0_dptr, idx);
-  });
+        a.scatter(output0_dptr, idx);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
@@ -111,15 +113,17 @@ void ScatterImpl()
 
 
     // operator z[i] = a[b[i]]
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      int_register_t idx;
-      idx.load_packed(input1_dptr);
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          int_register_t idx;
+          idx.load_packed(input1_dptr);
 
-      register_t a;
-      a.load_packed(input0_dptr);
+          register_t a;
+          a.load_packed(input0_dptr);
 
-      a.scatter_n(output0_dptr, idx, N);
-    });
+          a.scatter_n(output0_dptr, idx, N);
+        });
 
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 

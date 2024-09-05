@@ -114,7 +114,7 @@ struct StatementExecutor<
     ForICountWrapper<ArgumentId, ParamId, Data, NewTypes, EnclosedStmts...>
         for_wrapper(data);
 
-    auto len = segment_length<ArgumentId>(data);
+    auto len    = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
     auto r = resources::get_resource<ExecPolicy>::type::get_default();

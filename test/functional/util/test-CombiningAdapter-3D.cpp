@@ -32,17 +32,18 @@ void test_CombiningAdapter_3D(Segment0 const& seg0,
   using std::begin;
   using std::distance;
   using std::end;
-  auto seg0_begin = begin(seg0);
-  auto seg1_begin = begin(seg1);
-  size_t seg1_len = static_cast<size_t>(seg1.size());
-  auto seg2_begin = begin(seg2);
-  size_t seg2_len = static_cast<size_t>(seg2.size());
+  auto   seg0_begin = begin(seg0);
+  auto   seg1_begin = begin(seg1);
+  size_t seg1_len   = static_cast<size_t>(seg1.size());
+  auto   seg2_begin = begin(seg2);
+  size_t seg2_len   = static_cast<size_t>(seg2.size());
 
   size_t counter0 = 0;
   size_t counter1 = 0;
   size_t counter2 = 0;
-  auto adapter = RAJA::make_CombiningAdapter(
-      [&](SegIndexType0 i0, SegIndexType1 i1, SegIndexType2 i2) {
+  auto   adapter  = RAJA::make_CombiningAdapter(
+      [&](SegIndexType0 i0, SegIndexType1 i1, SegIndexType2 i2)
+      {
         ASSERT_EQ(seg0_begin[counter0], i0);
         ASSERT_EQ(seg1_begin[counter1], i1);
         ASSERT_EQ(seg2_begin[counter2], i2);

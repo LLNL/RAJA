@@ -144,8 +144,8 @@ public:
     return *this;
   }
 #else
-  constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const&) = default;
+  constexpr ValueLoc()                 = default;
+  constexpr ValueLoc(ValueLoc const&)  = default;
   ValueLoc& operator=(ValueLoc const&) = default;
 #endif
 
@@ -156,9 +156,9 @@ public:
       : val{val_}, loc{loc_}
   {}
 
-  RAJA_HOST_DEVICE operator T() const { return val; }
+  RAJA_HOST_DEVICE           operator T() const { return val; }
   RAJA_HOST_DEVICE IndexType getLoc() { return loc; }
-  RAJA_HOST_DEVICE bool operator<(ValueLoc const& rhs) const
+  RAJA_HOST_DEVICE bool      operator<(ValueLoc const& rhs) const
   {
     return val < rhs.val;
   }
@@ -211,7 +211,7 @@ class BaseReduce
   Combiner_t mutable c;
 
 public:
-  using value_type = T;
+  using value_type  = T;
   using reduce_type = Reduce;
 
   RAJA_SUPPRESS_HD_WARN
@@ -267,7 +267,7 @@ class BaseCombinable
 {
 protected:
   BaseCombinable const* parent = nullptr;
-  T identity;
+  T                     identity;
   T mutable my_data;
 
 public:
@@ -285,7 +285,7 @@ public:
   RAJA_HOST_DEVICE
   void reset(T init_val, T identity_)
   {
-    my_data = init_val;
+    my_data  = init_val;
     identity = identity_;
   }
 
@@ -371,24 +371,24 @@ class BaseReduceMinLoc
 {
 public:
   using Base = BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>;
-  using value_type = typename Base::value_type;
+  using value_type  = typename Base::value_type;
   using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMinLoc() : Base(value_type(T(), IndexType())) {}
 
   constexpr BaseReduceMinLoc(
-      T init_val,
+      T         init_val,
       IndexType init_idx,
-      T identity_val_ = reduce_type::identity(),
+      T         identity_val_ = reduce_type::identity(),
       IndexType identity_loc_ = DefaultLoc<IndexType>().value())
       : Base(value_type(init_val, init_idx),
              value_type(identity_val_, identity_loc_))
   {}
 
-  void reset(T init_val,
+  void reset(T         init_val,
              IndexType init_idx,
-             T identity_val_ = reduce_type::identity(),
+             T         identity_val_ = reduce_type::identity(),
              IndexType identity_loc_ = DefaultLoc<IndexType>().value())
   {
     operator T(); // automatic get() before reset
@@ -525,24 +525,24 @@ class BaseReduceMaxLoc : public BaseReduce<ValueLoc<T, IndexType, false>,
 public:
   using Base =
       BaseReduce<ValueLoc<T, IndexType, false>, RAJA::reduce::max, Combiner>;
-  using value_type = typename Base::value_type;
+  using value_type  = typename Base::value_type;
   using reduce_type = typename Base::reduce_type;
   using Base::Base;
 
   constexpr BaseReduceMaxLoc() : Base(value_type(T(), IndexType())) {}
 
   constexpr BaseReduceMaxLoc(
-      T init_val,
+      T         init_val,
       IndexType init_idx,
-      T identity_val_ = reduce_type::identity(),
+      T         identity_val_ = reduce_type::identity(),
       IndexType identity_loc_ = DefaultLoc<IndexType>().value())
       : Base(value_type(init_val, init_idx),
              value_type(identity_val_, identity_loc_))
   {}
 
-  void reset(T init_val,
+  void reset(T         init_val,
              IndexType init_idx,
-             T identity_val_ = reduce_type::identity(),
+             T         identity_val_ = reduce_type::identity(),
              IndexType identity_loc_ = DefaultLoc<IndexType>().value())
   {
     operator T(); // automatic get() before reset

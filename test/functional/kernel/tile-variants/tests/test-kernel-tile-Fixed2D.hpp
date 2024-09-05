@@ -64,9 +64,8 @@ void KernelTileFixed2DTestImpl(const int rows, const int cols)
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange(0, cols);
 
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
-                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr) {
-                              WorkTView(cc, rr) = WorkView(rr, cc);
-                            });
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr)
+                            { WorkTView(cc, rr) = WorkView(rr, cc); });
 
   work_res.memcpy(
       check_array_t, work_array_t, sizeof(DATA_TYPE) * array_length);
@@ -94,8 +93,8 @@ class KernelTileFixed2DTest : public ::testing::Test
 
 TYPED_TEST_P(KernelTileFixed2DTest, TileFixed2DKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE   = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 

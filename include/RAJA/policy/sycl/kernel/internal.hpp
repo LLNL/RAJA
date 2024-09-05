@@ -136,7 +136,7 @@ struct LaunchDims
       else
       {
         launch_local.y = remaining;
-        remaining = remaining / launch_local.y;
+        remaining      = remaining / launch_local.y;
       }
       if (remaining < launch_local.x)
       {

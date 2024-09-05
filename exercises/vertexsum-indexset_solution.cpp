@@ -77,16 +77,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // 2D mesh has N^2 elements (N+1)^2 vertices.
   //
-  constexpr int N = 1000;
-  constexpr int Nelem = N;
+  constexpr int N         = 1000;
+  constexpr int Nelem     = N;
   constexpr int Nelem_tot = Nelem * Nelem;
-  constexpr int Nvert = N + 1;
+  constexpr int Nvert     = N + 1;
   constexpr int Nvert_tot = Nvert * Nvert;
   // _vertexsum_define_end
-  double* areae = memoryManager::allocate<double>(Nelem_tot);
-  double* areav = memoryManager::allocate<double>(Nvert_tot);
+  double* areae     = memoryManager::allocate<double>(Nelem_tot);
+  double* areav     = memoryManager::allocate<double>(Nvert_tot);
   double* areav_ref = memoryManager::allocate<double>(Nvert_tot);
-  int* e2v_map = memoryManager::allocate<int>(4 * Nelem_tot);
+  int*    e2v_map   = memoryManager::allocate<int>(4 * Nelem_tot);
 
   // _vertexsum_elemarea_start
   //
@@ -96,9 +96,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   for (int ie = 0; ie < Nelem_tot; ++ie)
   {
-    int j = ie / Nelem;
-    int imap = 4 * ie;
-    e2v_map[imap] = ie + j;
+    int j             = ie / Nelem;
+    int imap          = 4 * ie;
+    e2v_map[imap]     = ie + j;
     e2v_map[imap + 1] = ie + j + 1;
     e2v_map[imap + 2] = ie + j + Nvert;
     e2v_map[imap + 3] = ie + j + 1 + Nvert;
@@ -112,8 +112,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   for (int ie = 0; ie < Nelem_tot; ++ie)
   {
-    int i = ie % Nelem;
-    int j = ie / Nelem;
+    int i     = ie % Nelem;
+    int j     = ie / Nelem;
     areae[ie] = h * (i + 1) * h * (j + 1);
   }
   // _vertexsum_elemarea_end
@@ -218,12 +218,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   for (int icol = 0; icol < 4; ++icol)
   {
     const std::vector<int>& ievec = idx[icol];
-    const int len = static_cast<int>(ievec.size());
+    const int               len   = static_cast<int>(ievec.size());
 
 #pragma omp parallel for
     for (int i = 0; i < len; ++i)
     {
-      int ie = ievec[i];
+      int  ie = ievec[i];
       int* iv = &(e2v_map[4 * ie]);
       areav[iv[0]] += areae[ie] / 4.0;
       areav[iv[1]] += areae[ie] / 4.0;
@@ -285,13 +285,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL1 =
       RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
 
-  RAJA::forall<EXEC_POL1>(colorset, [=](int ie) {
-    int* iv = &(e2v_map[4 * ie]);
-    areav[iv[0]] += areae[ie] / 4.0;
-    areav[iv[1]] += areae[ie] / 4.0;
-    areav[iv[2]] += areae[ie] / 4.0;
-    areav[iv[3]] += areae[ie] / 4.0;
-  });
+  RAJA::forall<EXEC_POL1>(colorset,
+                          [=](int ie)
+                          {
+                            int* iv = &(e2v_map[4 * ie]);
+                            areav[iv[0]] += areae[ie] / 4.0;
+                            areav[iv[1]] += areae[ie] / 4.0;
+                            areav[iv[2]] += areae[ie] / 4.0;
+                            areav[iv[3]] += areae[ie] / 4.0;
+                          });
   // _raja_vertexarea_omp_end
 
   checkResult(areav, areav_ref, Nvert);
@@ -334,13 +336,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL2 =
       RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL2>(cuda_colorset, [=] RAJA_DEVICE(int ie) {
-    int* iv = &(e2v_map[4 * ie]);
-    areav[iv[0]] += areae[ie] / 4.0;
-    areav[iv[1]] += areae[ie] / 4.0;
-    areav[iv[2]] += areae[ie] / 4.0;
-    areav[iv[3]] += areae[ie] / 4.0;
-  });
+  RAJA::forall<EXEC_POL2>(cuda_colorset,
+                          [=] RAJA_DEVICE(int ie)
+                          {
+                            int* iv = &(e2v_map[4 * ie]);
+                            areav[iv[0]] += areae[ie] / 4.0;
+                            areav[iv[1]] += areae[ie] / 4.0;
+                            areav[iv[2]] += areae[ie] / 4.0;
+                            areav[iv[3]] += areae[ie] / 4.0;
+                          });
   // _raja_vertexarea_cuda_end
 
   checkResult(areav, areav_ref, Nvert);
@@ -359,9 +363,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize device memory arrays
   //
-  double* d_areae = memoryManager::allocate_gpu<double>(Nelem_tot);
-  double* d_areav = memoryManager::allocate_gpu<double>(Nvert_tot);
-  int* d_e2v_map = memoryManager::allocate_gpu<int>(4 * Nelem_tot);
+  double* d_areae   = memoryManager::allocate_gpu<double>(Nelem_tot);
+  double* d_areav   = memoryManager::allocate_gpu<double>(Nvert_tot);
+  int*    d_e2v_map = memoryManager::allocate_gpu<int>(4 * Nelem_tot);
 
   hipMemcpy(d_areae, areae, Nelem_tot * sizeof(double), hipMemcpyHostToDevice);
   hipMemcpy(
@@ -394,13 +398,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL3 =
       RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<HIP_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL3>(hip_colorset, [=] RAJA_DEVICE(int ie) {
-    int* iv = &(d_e2v_map[4 * ie]);
-    d_areav[iv[0]] += d_areae[ie] / 4.0;
-    d_areav[iv[1]] += d_areae[ie] / 4.0;
-    d_areav[iv[2]] += d_areae[ie] / 4.0;
-    d_areav[iv[3]] += d_areae[ie] / 4.0;
-  });
+  RAJA::forall<EXEC_POL3>(hip_colorset,
+                          [=] RAJA_DEVICE(int ie)
+                          {
+                            int* iv = &(d_e2v_map[4 * ie]);
+                            d_areav[iv[0]] += d_areae[ie] / 4.0;
+                            d_areav[iv[1]] += d_areae[ie] / 4.0;
+                            d_areav[iv[2]] += d_areae[ie] / 4.0;
+                            d_areav[iv[3]] += d_areae[ie] / 4.0;
+                          });
   // _raja_vertexarea_hip_end
 
   hipMemcpy(areav, d_areav, Nvert_tot * sizeof(double), hipMemcpyDeviceToHost);

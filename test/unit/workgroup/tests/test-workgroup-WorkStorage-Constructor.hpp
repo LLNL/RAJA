@@ -26,14 +26,15 @@ void testWorkGroupWorkStorageConstructor()
   bool success = true;
 
   static constexpr auto platform = RAJA::Platform::host;
-  using DispatchPolicy = typename DispatchTyper::template type<>;
-  using Dispatcher_type = RAJA::detail::
+  using DispatchPolicy           = typename DispatchTyper::template type<>;
+  using Dispatcher_type          = RAJA::detail::
       Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type =
       RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
 
   {
-    auto test_empty = [&](WorkStorage_type& container) {
+    auto test_empty = [&](WorkStorage_type& container)
+    {
       ASSERT_EQ(container.size(), (size_t)(0));
       ASSERT_EQ(container.storage_size(), (size_t)0);
     };
@@ -76,7 +77,7 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest,
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Allocator     = typename camp::at<TypeParam, camp::num<2>>::type;
 
   testWorkGroupWorkStorageConstructor<StoragePolicy,
                                       DispatchTyper,

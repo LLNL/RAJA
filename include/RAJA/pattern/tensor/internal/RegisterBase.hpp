@@ -54,7 +54,7 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value,
-                            bool>::type = true>
+                            bool>::type                                  = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator+(LEFT const& lhs, RIGHT const& rhs)
 {
   return RIGHT(lhs).add(rhs);
@@ -69,7 +69,7 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value,
-                            bool>::type = true>
+                            bool>::type                                  = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator-(LEFT const& lhs, RIGHT const& rhs)
 {
   return RIGHT(lhs).subtract(rhs);
@@ -84,7 +84,7 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value,
-                            bool>::type = true>
+                            bool>::type                                  = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator*(LEFT const& lhs, RIGHT const& rhs)
 {
   return rhs.scale(lhs);
@@ -99,7 +99,7 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<std::is_base_of<RegisterConcreteBase, RIGHT>::value,
-                            bool>::type = true>
+                            bool>::type                                  = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator/(LEFT const& lhs, RIGHT const& rhs)
 {
   return RIGHT(lhs).divide(rhs);
@@ -120,7 +120,7 @@ class RegisterBase<RAJA::expt::Register<T, REGISTER_POLICY>>
     : public RegisterConcreteBase
 {
 public:
-  using self_type = RAJA::expt::Register<T, REGISTER_POLICY>;
+  using self_type    = RAJA::expt::Register<T, REGISTER_POLICY>;
   using element_type = camp::decay<T>;
 
   using index_type = camp::idx_t;
@@ -207,7 +207,7 @@ public:
    */
   template <typename T2>
   RAJA_HOST_DEVICE RAJA_INLINE self_type&
-  gather(element_type const* ptr,
+  gather(element_type const*                       ptr,
          RAJA::expt::Register<T2, REGISTER_POLICY> offsets)
   {
 #ifdef RAJA_ENABLE_VECTOR_STATS
@@ -232,9 +232,9 @@ public:
    */
   template <typename T2>
   RAJA_HOST_DEVICE RAJA_INLINE self_type&
-  gather_n(element_type const* ptr,
+  gather_n(element_type const*                              ptr,
            RAJA::expt::Register<T2, REGISTER_POLICY> const& offsets,
-           camp::idx_t N)
+           camp::idx_t                                      N)
   {
 #ifdef RAJA_ENABLE_VECTOR_STATS
     RAJA::tensor_stats::num_vector_load_strided_n++;
@@ -260,9 +260,9 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type& segmented_load(element_type const* ptr,
-                            camp::idx_t segbits,
-                            camp::idx_t stride_inner,
-                            camp::idx_t stride_outer)
+                            camp::idx_t         segbits,
+                            camp::idx_t         stride_inner,
+                            camp::idx_t         stride_outer)
   {
     getThis()->gather(
         ptr,
@@ -280,15 +280,15 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type& segmented_load_nm(element_type const* ptr,
-                               camp::idx_t segbits,
-                               camp::idx_t stride_inner,
-                               camp::idx_t stride_outer,
-                               camp::idx_t num_inner,
-                               camp::idx_t num_outer)
+                               camp::idx_t         segbits,
+                               camp::idx_t         stride_inner,
+                               camp::idx_t         stride_outer,
+                               camp::idx_t         num_inner,
+                               camp::idx_t         num_outer)
   {
 
     camp::idx_t num_segments = self_type::s_num_elem >> segbits;
-    camp::idx_t seg_size = 1 << segbits;
+    camp::idx_t seg_size     = 1 << segbits;
 
     camp::idx_t lane = 0;
     for (camp::idx_t seg = 0; seg < num_segments; ++seg)
@@ -329,7 +329,7 @@ public:
    */
   template <typename T2>
   RAJA_HOST_DEVICE RAJA_INLINE self_type const&
-  scatter(element_type* ptr,
+  scatter(element_type*                                    ptr,
           RAJA::expt::Register<T2, REGISTER_POLICY> const& offsets) const
   {
 #ifdef RAJA_ENABLE_VECTOR_STATS
@@ -353,9 +353,9 @@ public:
    */
   template <typename T2>
   RAJA_HOST_DEVICE RAJA_INLINE self_type const&
-  scatter_n(element_type* ptr,
+  scatter_n(element_type*                                    ptr,
             RAJA::expt::Register<T2, REGISTER_POLICY> const& offsets,
-            camp::idx_t N) const
+            camp::idx_t                                      N) const
   {
 #ifdef RAJA_ENABLE_VECTOR_STATS
     RAJA::tensor_stats::num_vector_load_strided_n++;
@@ -381,9 +381,9 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type const& segmented_store(element_type* ptr,
-                                   camp::idx_t segbits,
-                                   camp::idx_t stride_inner,
-                                   camp::idx_t stride_outer) const
+                                   camp::idx_t   segbits,
+                                   camp::idx_t   stride_inner,
+                                   camp::idx_t   stride_outer) const
   {
     getThis()->scatter(
         ptr,
@@ -401,15 +401,15 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type const& segmented_store_nm(element_type* ptr,
-                                      camp::idx_t segbits,
-                                      camp::idx_t stride_inner,
-                                      camp::idx_t stride_outer,
-                                      camp::idx_t num_inner,
-                                      camp::idx_t num_outer) const
+                                      camp::idx_t   segbits,
+                                      camp::idx_t   stride_inner,
+                                      camp::idx_t   stride_outer,
+                                      camp::idx_t   num_inner,
+                                      camp::idx_t   num_outer) const
   {
 
     camp::idx_t num_segments = self_type::s_num_elem >> segbits;
-    camp::idx_t seg_size = 1 << segbits;
+    camp::idx_t seg_size     = 1 << segbits;
 
     camp::idx_t lane = 0;
     for (camp::idx_t seg = 0; seg < num_segments; ++seg)
@@ -869,7 +869,7 @@ public:
     int_vector_type result;
 
     camp::idx_t num_segments = self_type::s_num_elem >> segbits;
-    camp::idx_t seg_size = 1 << segbits;
+    camp::idx_t seg_size     = 1 << segbits;
 
     camp::idx_t lane = 0;
     for (camp::idx_t seg = 0; seg < num_segments; ++seg)
@@ -987,7 +987,7 @@ public:
     for (camp::idx_t i = 0; i < self_type::s_num_elem; ++i)
     {
       camp::idx_t output_i = output_offset + (i & ((1 << segbits) - 1));
-      auto value = getThis()->get(i) + result.get(output_i);
+      auto        value    = getThis()->get(i) + result.get(output_i);
       result.set(value, output_i);
     }
 
@@ -996,7 +996,7 @@ public:
 
 
   RAJA_INLINE
-  self_type segmented_divide_nm(self_type den,
+  self_type segmented_divide_nm(self_type   den,
                                 camp::idx_t segbits,
                                 camp::idx_t num_inner,
                                 camp::idx_t num_outer) const
@@ -1004,7 +1004,7 @@ public:
     self_type result;
 
     camp::idx_t num_segments = self_type::s_num_elem >> segbits;
-    camp::idx_t seg_size = 1 << segbits;
+    camp::idx_t seg_size     = 1 << segbits;
 
     camp::idx_t lane = 0;
     for (camp::idx_t seg = 0; seg < num_segments; ++seg)
@@ -1065,8 +1065,8 @@ public:
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  self_type segmented_dot(camp::idx_t segbits,
-                          camp::idx_t output_segment,
+  self_type segmented_dot(camp::idx_t      segbits,
+                          camp::idx_t      output_segment,
                           self_type const& x) const
   {
     return getThis()->multiply(x).segmented_sum_inner(segbits, output_segment);
@@ -1125,7 +1125,7 @@ public:
   {
     self_type result;
 
-    camp::idx_t mask = (1 << segbits) - 1;
+    camp::idx_t mask   = (1 << segbits) - 1;
     camp::idx_t offset = input_segment << segbits;
 
     // default implementation is dumb, just sum each value into

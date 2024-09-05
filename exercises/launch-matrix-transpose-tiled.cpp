@@ -77,7 +77,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -176,7 +176,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<launch_policy_1>(
       RAJA::LaunchParams(), // LaunchParams may be empty when running on the cpu
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/) {
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/)
+      {
         /*
         RAJA::tile<loop_pol_1>(ctx, TILE_DIM, row_Range, [&]
         (RAJA::TypedRangeSegment<int> const &row_tile) {
@@ -330,7 +331,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::TypedRangeSegment<int> row_Range2(0, N_r);
   RAJA::TypedRangeSegment<int> col_Range2(0, N_c);
 
-  int* d_A = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
   int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
   RAJA::View<int, RAJA::Layout<DIM>> d_Aview(d_A, N_r, N_c);
@@ -343,8 +344,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   constexpr int c_block_sz = TILE_DIM;
   constexpr int r_block_sz = TILE_DIM;
-  const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
-  const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
+  const int     n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
+  const int     n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
   using hip_teams_y = RAJA::LoopPolicy<RAJA::hip_block_y_direct>;
   using hip_teams_x = RAJA::LoopPolicy<RAJA::hip_block_x_direct>;
@@ -352,28 +353,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using hip_threads_y = RAJA::LoopPolicy<RAJA::hip_thread_y_direct>;
   using hip_threads_x = RAJA::LoopPolicy<RAJA::hip_thread_x_direct>;
 
-  const bool hip_async = false;
+  const bool hip_async    = false;
   using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<hip_async>>;
 
   RAJA::launch<hip_launch_policy>(
       RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
                          RAJA::Threads(c_block_sz, r_block_sz)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
         RAJA::tile<hip_teams_y>(
             ctx,
             TILE_DIM,
             row_Range2,
-            [&](RAJA::TypedRangeSegment<int> const& row_tile) {
+            [&](RAJA::TypedRangeSegment<int> const& row_tile)
+            {
               RAJA::tile<hip_teams_x>(
                   ctx,
                   TILE_DIM,
                   col_Range2,
-                  [&](RAJA::TypedRangeSegment<int> const& col_tile) {
-                    RAJA::loop<hip_threads_y>(ctx, row_tile, [&](int row) {
-                      RAJA::loop<hip_threads_x>(ctx, col_tile, [&](int col) {
-                        Atview(col, row) = Aview(row, col);
-                      });
-                    });
+                  [&](RAJA::TypedRangeSegment<int> const& col_tile)
+                  {
+                    RAJA::loop<hip_threads_y>(ctx,
+                                              row_tile,
+                                              [&](int row)
+                                              {
+                                                RAJA::loop<hip_threads_x>(
+                                                    ctx,
+                                                    col_tile,
+                                                    [&](int col) {
+                                                      Atview(col, row) =
+                                                          Aview(row, col);
+                                                    });
+                                              });
                   });
             });
       });

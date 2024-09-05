@@ -43,7 +43,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize vector data.
   //
-  double* a0 = new double[N];
+  double* a0   = new double[N];
   double* aref = new double[N];
 
   double* ta = new double[N];

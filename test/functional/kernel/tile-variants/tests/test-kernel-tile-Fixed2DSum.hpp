@@ -69,9 +69,8 @@ void KernelTileFixed2DSumTestImpl(const int rowsin, const int colsin)
 
   // sum on target platform
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
-                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr) {
-                              worksum += (DATA_TYPE)(rr * 1.1 + cc);
-                            });
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr)
+                            { worksum += (DATA_TYPE)(rr * 1.1 + cc); });
 
   ASSERT_FLOAT_EQ(hostsum, (DATA_TYPE)worksum.get());
 }
@@ -84,10 +83,10 @@ class KernelTileFixed2DSumTest : public ::testing::Test
 
 TYPED_TEST_P(KernelTileFixed2DSumTest, TileFixed2DSumKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   KernelTileFixed2DSumTestImpl<INDEX_TYPE,

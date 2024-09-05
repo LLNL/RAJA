@@ -65,7 +65,7 @@ struct ExecPolicy
     : public RAJA::make_policy_pattern_t<SEG_EXEC_POLICY_T::policy,
                                          RAJA::Pattern::forall>
 {
-  using seg_it = SEG_ITER_POLICY_T;
+  using seg_it   = SEG_ITER_POLICY_T;
   using seg_exec = SEG_EXEC_POLICY_T;
 };
 
@@ -86,7 +86,7 @@ using policy::indexset::ExecPolicy;
 template <typename T0, typename... TREST>
 class TypedIndexSet<T0, TREST...> : public TypedIndexSet<TREST...>
 {
-  using PARENT = TypedIndexSet<TREST...>;
+  using PARENT               = TypedIndexSet<TREST...>;
   static const int T0_TypeId = sizeof...(TREST);
 
 public:
@@ -163,7 +163,7 @@ public:
   ///
   template <typename P0, typename... PREST>
   RAJA_INLINE bool
-  compareSegmentById(size_t segid,
+  compareSegmentById(size_t                             segid,
                      const TypedIndexSet<P0, PREST...>& other) const
   {
     // drill down our types until we have the right type
@@ -249,8 +249,8 @@ public:
 private:
   template <typename... CALL>
   RAJA_INLINE void push_into(TypedIndexSet<CALL...>& c,
-                             PushEnd pend = PUSH_BACK,
-                             PushCopy pcopy = PUSH_COPY)
+                             PushEnd                 pend  = PUSH_BACK,
+                             PushCopy                pcopy = PUSH_COPY)
   {
     Index_type num = getNumSegments();
 
@@ -278,10 +278,10 @@ private:
 
 public:
   template <typename... CALL>
-  RAJA_INLINE void segment_push_into(size_t segid,
+  RAJA_INLINE void segment_push_into(size_t                  segid,
                                      TypedIndexSet<CALL...>& c,
-                                     PushEnd pend = PUSH_BACK,
-                                     PushCopy pcopy = PUSH_COPY)
+                                     PushEnd                 pend  = PUSH_BACK,
+                                     PushCopy                pcopy = PUSH_COPY)
   {
     if (getSegmentTypes()[segid] != T0_TypeId)
     {
@@ -343,7 +343,7 @@ public:
   RAJA_INLINE size_t getLength() const
   {
     size_t total = PARENT::getLength();
-    size_t num = data.size();
+    size_t num   = data.size();
     for (size_t i = 0; i < num; ++i)
     {
       total += data[i]->size();
@@ -512,7 +512,7 @@ public:
   TypedIndexSet<T0, TREST...> createSlice(const T& segIds)
   {
     TypedIndexSet<T0, TREST...> retVal;
-    int numSeg = getNumSegments();
+    int                         numSeg = getNumSegments();
     for (auto& seg : segIds)
     {
       if (seg >= 0 && seg < numSeg)
@@ -527,7 +527,7 @@ public:
   void setSegmentInterval(size_t interval_id, int begin, int end)
   {
     m_seg_interval_begin[interval_id] = begin;
-    m_seg_interval_end[interval_id] = end;
+    m_seg_interval_end[interval_id]   = end;
   }
 
   //! get lower bound of segment identified with interval_id
@@ -642,10 +642,10 @@ public:
   RAJA_INLINE
   TypedIndexSet(TypedIndexSet const& c)
   {
-    segment_types = c.segment_types;
+    segment_types   = c.segment_types;
     segment_offsets = c.segment_offsets;
     segment_icounts = c.segment_icounts;
-    m_len = c.m_len;
+    m_len           = c.m_len;
   }
 
   //! Swap function for copy-and-swap idiom (deep copy).

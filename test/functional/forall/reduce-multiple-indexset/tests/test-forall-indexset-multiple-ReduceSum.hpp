@@ -24,7 +24,7 @@ template <typename IDX_TYPE,
 void ForallIndexSetReduceSumMultipleTestImpl()
 {
   using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
-  using IdxSetType = RAJA::TypedIndexSet<RangeSegType>;
+  using IdxSetType   = RAJA::TypedIndexSet<RangeSegType>;
 
   RAJA::TypedRangeSegment<IDX_TYPE> r1(1, 1037);
   RAJA::TypedRangeSegment<IDX_TYPE> r2(1043, 2036);
@@ -56,7 +56,7 @@ void ForallIndexSetReduceSumMultipleTestImpl()
       alen, working_res, &iworking_array, &icheck_array, &itest_array);
 
   const double dinit_val = 0.1;
-  const int iinit_val = 1;
+  const int    iinit_val = 1;
 
   for (IDX_TYPE i = 0; i < alen; ++i)
   {
@@ -67,27 +67,29 @@ void ForallIndexSetReduceSumMultipleTestImpl()
   working_res.memcpy(dworking_array, dtest_array, sizeof(double) * alen);
   working_res.memcpy(iworking_array, itest_array, sizeof(int) * alen);
 
-  const double drinit = 5.0;
-  const int irinit = 4;
-  const int test_repeat = 4;
+  const double drinit      = 5.0;
+  const int    irinit      = 4;
+  const int    test_repeat = 4;
 
   RAJA::ReduceSum<REDUCE_POLICY, double> dsum0(drinit * 1.0);
-  RAJA::ReduceSum<REDUCE_POLICY, int> isum1(irinit * 2);
+  RAJA::ReduceSum<REDUCE_POLICY, int>    isum1(irinit * 2);
   RAJA::ReduceSum<REDUCE_POLICY, double> dsum2(drinit * 3.0);
-  RAJA::ReduceSum<REDUCE_POLICY, int> isum3(irinit * 4);
+  RAJA::ReduceSum<REDUCE_POLICY, int>    isum3(irinit * 4);
 
   for (int tcount = 1; tcount <= test_repeat; ++tcount)
   {
 
-    RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-      dsum0 += 1.0 * dworking_array[idx];
-      isum1 += 2 * iworking_array[idx];
-      dsum2 += 3.0 * dworking_array[idx];
-      isum3 += 4 * iworking_array[idx];
-    });
+    RAJA::forall<EXEC_POLICY>(iset,
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                              {
+                                dsum0 += 1.0 * dworking_array[idx];
+                                isum1 += 2 * iworking_array[idx];
+                                dsum2 += 3.0 * dworking_array[idx];
+                                isum3 += 4 * iworking_array[idx];
+                              });
 
     double dchk_val = dinit_val * static_cast<double>(iset.getLength());
-    int ichk_val = iinit_val * static_cast<int>(iset.getLength());
+    int    ichk_val = iinit_val * static_cast<int>(iset.getLength());
 
     ASSERT_FLOAT_EQ(static_cast<double>(dsum0.get()),
                     tcount * (1 * dchk_val) + (drinit * 1.0));
@@ -114,9 +116,9 @@ class ForallIndexSetReduceSumMultipleTest : public ::testing::Test
 TYPED_TEST_P(ForallIndexSetReduceSumMultipleTest,
              ReduceSumMultipleForallIndexSet)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
   ForallIndexSetReduceSumMultipleTestImpl<IDX_TYPE,

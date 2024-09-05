@@ -92,7 +92,7 @@ struct testWorkGroupConstructorSingle
 
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator>
@@ -110,7 +110,7 @@ struct testWorkGroupConstructorSingle<
 };
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator>
@@ -140,13 +140,13 @@ TYPED_TEST_SUITE_P(WorkGroupBasicConstructorSingleUnitTest);
 TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest,
              BasicWorkGroupConstructorSingle)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
+  using ExecPolicy    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using OrderPolicy   = typename camp::at<TypeParam, camp::num<1>>::type;
   using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Xargs = typename camp::at<TypeParam, camp::num<5>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<6>>::type;
+  using IndexType     = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Xargs         = typename camp::at<TypeParam, camp::num<5>>::type;
+  using Allocator     = typename camp::at<TypeParam, camp::num<6>>::type;
 
   testWorkGroupConstructorSingle<ExecPolicy,
                                  OrderPolicy,

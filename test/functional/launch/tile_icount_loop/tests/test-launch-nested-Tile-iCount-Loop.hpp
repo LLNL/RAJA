@@ -22,7 +22,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
   // following grid will require loop policies
   constexpr int threads_x = 3;
-  constexpr int blocks_x = 1;
+  constexpr int blocks_x  = 1;
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, M * tile_size + 1);
 
@@ -33,9 +33,9 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
   INDEX_TYPE N = static_cast<INDEX_TYPE>(RAJA::stripIndexType(N1));
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_ttile_array;
-  INDEX_TYPE* check_ttile_array;
-  INDEX_TYPE* test_ttile_array;
+  INDEX_TYPE*               working_ttile_array;
+  INDEX_TYPE*               check_ttile_array;
+  INDEX_TYPE*               test_ttile_array;
 
   INDEX_TYPE* working_iloop_array;
   INDEX_TYPE* check_iloop_array;
@@ -67,15 +67,20 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
           RAJA::tile_tcount<TEAM_X_POLICY>(
               ctx,
               tile_size,
               r1,
               [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& x_tile,
-                  INDEX_TYPE bx) {
+                  INDEX_TYPE                                 bx)
+              {
                 RAJA::loop_icount<THREAD_X_POLICY>(
-                    ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
+                    ctx,
+                    x_tile,
+                    [&](INDEX_TYPE tx, INDEX_TYPE ix)
+                    {
                       working_ttile_array[tx] = bx;
                       working_iloop_array[tx] = ix;
                     });
@@ -93,18 +98,21 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
           RAJA::tile_tcount<TEAM_X_POLICY>(
               ctx,
               tile_size,
               r1,
               [&](RAJA::TypedRangeSegment<INDEX_TYPE> const& x_tile,
-                  INDEX_TYPE RAJA_UNUSED_ARG(bx)) {
+                  INDEX_TYPE RAJA_UNUSED_ARG(bx))
+              {
                 RAJA::loop_icount<THREAD_X_POLICY>(
                     ctx,
                     x_tile,
                     [&](INDEX_TYPE RAJA_UNUSED_ARG(tx),
-                        INDEX_TYPE RAJA_UNUSED_ARG(ix)) {
+                        INDEX_TYPE RAJA_UNUSED_ARG(ix))
+                    {
                       working_ttile_array[0]++;
                       working_iloop_array[0]++;
                     });
@@ -159,7 +167,7 @@ class LaunchNestedTileLoopTest : public ::testing::Test
 TYPED_TEST_P(LaunchNestedTileLoopTest, RangeSegmentTeams)
 {
 
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

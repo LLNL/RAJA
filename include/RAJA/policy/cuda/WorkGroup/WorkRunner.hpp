@@ -38,7 +38,7 @@ namespace detail
  */
 template <size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
@@ -67,7 +67,7 @@ struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
       INDEX_T,
       Args...>;
   using base::base;
-  using IndexType = INDEX_T;
+  using IndexType       = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
 
   ///
@@ -75,7 +75,7 @@ struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage run(WorkContainer const& storage,
+  per_run_storage run(WorkContainer const&         storage,
                       typename base::resource_type r,
                       Args... args) const
   {
@@ -103,7 +103,7 @@ struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
  */
 template <size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
@@ -132,7 +132,7 @@ struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
       INDEX_T,
       Args...>;
   using base::base;
-  using IndexType = INDEX_T;
+  using IndexType       = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
 
   ///
@@ -140,7 +140,7 @@ struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage run(WorkContainer const& storage,
+  per_run_storage run(WorkContainer const&         storage,
                       typename base::resource_type r,
                       Args... args) const
   {
@@ -184,9 +184,9 @@ struct HoldCudaDeviceXThreadblockLoop
     // TODO:: decide when to run hooks, may bypass this and use impl directly
     // TODO:: decide whether or not to privatize the loop body
     const index_type i_begin = threadIdx.x + blockIdx.x * blockDim.x;
-    const index_type stride = blockDim.x * gridDim.x;
-    const auto begin = m_segment.begin();
-    const auto end = m_segment.end();
+    const index_type stride  = blockDim.x * gridDim.x;
+    const auto       begin   = m_segment.begin();
+    const auto       end     = m_segment.end();
     const index_type len(end - begin);
     for (index_type i = i_begin; i < len; i += stride)
     {
@@ -196,7 +196,7 @@ struct HoldCudaDeviceXThreadblockLoop
 
 private:
   Segment_type m_segment;
-  LoopBody m_body;
+  LoopBody     m_body;
 };
 
 template <size_t BLOCK_SIZE,
@@ -223,7 +223,7 @@ __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
  */
 template <size_t BLOCK_SIZE,
           size_t BLOCKS_PER_SM,
-          bool Async,
+          bool   Async,
           typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
@@ -241,9 +241,9 @@ struct WorkRunner<
   using order_policy = RAJA::policy::cuda::
       unordered_cuda_loop_y_block_iter_x_threadblock_average;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using Allocator = ALLOCATOR_T;
-  using index_type = INDEX_T;
-  using resource_type = resources::Cuda;
+  using Allocator       = ALLOCATOR_T;
+  using index_type      = INDEX_T;
+  using resource_type   = resources::Cuda;
 
   // The type that will hold the segment and loop body in work storage
   struct holder_type
@@ -276,7 +276,7 @@ struct WorkRunner<
 
   WorkRunner() = default;
 
-  WorkRunner(WorkRunner const&) = delete;
+  WorkRunner(WorkRunner const&)            = delete;
   WorkRunner& operator=(WorkRunner const&) = delete;
 
   WorkRunner(WorkRunner&& o) : m_total_iterations(o.m_total_iterations)
@@ -297,9 +297,9 @@ struct WorkRunner<
   inline void
   enqueue(WorkContainer& storage, Iterable&& iter, LoopBody&& loop_body)
   {
-    using Iterator = camp::decay<decltype(std::begin(iter))>;
+    using Iterator  = camp::decay<decltype(std::begin(iter))>;
     using LOOP_BODY = camp::decay<LoopBody>;
-    using ITERABLE = camp::decay<Iterable>;
+    using ITERABLE  = camp::decay<Iterable>;
     using IndexType =
         camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
@@ -308,9 +308,9 @@ struct WorkRunner<
     // using true_value_type = typename WorkContainer::template
     // true_value_type<holder>;
 
-    Iterator begin = std::begin(iter);
-    Iterator end = std::end(iter);
-    IndexType len = std::distance(begin, end);
+    Iterator  begin = std::begin(iter);
+    Iterator  end   = std::end(iter);
+    IndexType len   = std::distance(begin, end);
 
     // Only launch kernel if we have something to iterate over
     if (len > 0 && BLOCK_SIZE > 0)
@@ -340,8 +340,8 @@ struct WorkRunner<
   per_run_storage
   run(WorkContainer const& storage, resource_type r, Args... args) const
   {
-    using Iterator = camp::decay<decltype(std::begin(storage))>;
-    using IndexType = camp::decay<decltype(std::distance(std::begin(storage),
+    using Iterator   = camp::decay<decltype(std::begin(storage))>;
+    using IndexType  = camp::decay<decltype(std::distance(std::begin(storage),
                                                          std::end(storage)))>;
     using value_type = typename WorkContainer::value_type;
 
@@ -357,8 +357,8 @@ struct WorkRunner<
     //
     // Compute the requested iteration space size
     //
-    Iterator begin = std::begin(storage);
-    Iterator end = std::end(storage);
+    Iterator  begin     = std::begin(storage);
+    Iterator  end       = std::end(storage);
     IndexType num_loops = std::distance(begin, end);
 
     // Only launch kernel if we have something to iterate over

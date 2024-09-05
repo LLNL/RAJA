@@ -46,7 +46,7 @@ struct OpenMPTargetForWrapper : public GenericWrapperBase
 };
 
 template <camp::idx_t ArgumentId,
-          int N,
+          int         N,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<statement::For<ArgumentId,
@@ -64,7 +64,7 @@ struct StatementExecutor<statement::For<ArgumentId,
     OpenMPTargetForWrapper<ArgumentId, Data, NewTypes, EnclosedStmts...>
         for_wrapper(data);
 
-    auto len = segment_length<ArgumentId>(data);
+    auto len    = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
     auto r = resources::Omp::get_default();

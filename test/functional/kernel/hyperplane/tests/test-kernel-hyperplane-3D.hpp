@@ -83,7 +83,7 @@ KernelHyperplane3DTestImpl(const int groups,
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> oob_count(0);
 
   // perform array arithmetic with a 2D J-K hyperplane
-  RAJA::TypedRangeSegment<INDEX_TYPE> Grange(0, groups);
+  RAJA::TypedRangeSegment<INDEX_TYPE>       Grange(0, groups);
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> Irange(0, idim, 1);
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> Jrange(jdim - 1, -1, -1);
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> Krange(0, kdim, 1);
@@ -91,7 +91,8 @@ KernelHyperplane3DTestImpl(const int groups,
   RAJA::kernel<EXEC_POLICY>(
       RAJA::make_tuple(Grange, Irange, Jrange, Krange),
       [=] RAJA_HOST_DEVICE(
-          INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj, INDEX_TYPE kk) {
+          INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj, INDEX_TYPE kk)
+      {
         if (g < 0 || g >= groups || ii < 0 || ii >= idim || jj < 0 ||
             jj >= jdim || kk < 0 || kk >= kdim)
         {
@@ -186,10 +187,10 @@ class KernelHyperplane3DTest : public ::testing::Test
 
 TYPED_TEST_P(KernelHyperplane3DTest, Hyperplane3DKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   KernelHyperplane3DTestImpl<INDEX_TYPE,

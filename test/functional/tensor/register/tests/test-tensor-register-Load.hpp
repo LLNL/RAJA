@@ -14,14 +14,14 @@ template <typename REGISTER_TYPE>
 void LoadImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
   std::vector<element_t> input0_vec(10 * num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(10 * num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -37,17 +37,19 @@ void LoadImpl()
 
 
   // load stride-1 from pointer
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x using set
-    register_t x;
-    x.load_packed(input0_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x using set
+        register_t x;
+        x.load_packed(input0_dptr);
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = x.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = x.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -60,17 +62,19 @@ void LoadImpl()
   for (camp::idx_t N = 0; N < num_elem; ++N)
   {
     // load stride-1 from pointer
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      // fill x using set
-      register_t x;
-      x.load_packed_n(input0_dptr, N);
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          // fill x using set
+          register_t x;
+          x.load_packed_n(input0_dptr, N);
 
-      // extract from x using get
-      for (camp::idx_t i = 0; i < num_elem; ++i)
-      {
-        output0_dptr[i] = x.get(i);
-      }
-    });
+          // extract from x using get
+          for (camp::idx_t i = 0; i < num_elem; ++i)
+          {
+            output0_dptr[i] = x.get(i);
+          }
+        });
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get
@@ -89,17 +93,19 @@ void LoadImpl()
 
 
   // load stride-2 from pointer
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x using set
-    register_t x;
-    x.load_strided(input0_dptr, 2);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x using set
+        register_t x;
+        x.load_strided(input0_dptr, 2);
 
-    // extract from x using get
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      output0_dptr[i] = x.get(i);
-    }
-  });
+        // extract from x using get
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          output0_dptr[i] = x.get(i);
+        }
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -112,17 +118,19 @@ void LoadImpl()
   for (camp::idx_t N = 0; N < num_elem; ++N)
   {
     // load stride-2 from pointer
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      // fill x using set
-      register_t x;
-      x.load_strided_n(input0_dptr, 2, N);
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          // fill x using set
+          register_t x;
+          x.load_strided_n(input0_dptr, 2, N);
 
-      // extract from x using get
-      for (camp::idx_t i = 0; i < num_elem; ++i)
-      {
-        output0_dptr[i] = x.get(i);
-      }
-    });
+          // extract from x using get
+          for (camp::idx_t i = 0; i < num_elem; ++i)
+          {
+            output0_dptr[i] = x.get(i);
+          }
+        });
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get

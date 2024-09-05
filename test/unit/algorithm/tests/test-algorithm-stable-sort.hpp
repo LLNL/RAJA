@@ -26,8 +26,8 @@
 template <typename policy>
 struct PolicyStableSort : PolicySynchronize<policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::true_type;
 
   std::string m_name;
@@ -51,8 +51,8 @@ struct PolicyStableSort : PolicySynchronize<policy>
 template <typename policy>
 struct PolicyStableSortPairs : PolicySynchronize<policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::true_type;
 
   std::string m_name;

@@ -65,8 +65,8 @@ class PluginKernelTest : public ::testing::Test
 
 TYPED_TEST_P(PluginKernelTest, PluginKernel)
 {
-  using KernelPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using KernelPolicy   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
   PluginKernelTestImpl<KernelPolicy, ResType, PlatformHolder::platform>();

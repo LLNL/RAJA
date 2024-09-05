@@ -59,7 +59,8 @@ void KernelTileFixed2DMinMaxTestImpl(const int rows, const int cols)
 
   // find min and max on target platform
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
-                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr) {
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr)
+                            {
                               workmin.min(WorkView(rr, cc));
                               workmax.max(WorkView(rr, cc));
                             });
@@ -80,10 +81,10 @@ class KernelTileFixed2DMinMaxTest : public ::testing::Test
 
 TYPED_TEST_P(KernelTileFixed2DMinMaxTest, TileFixed2DMinMaxKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   KernelTileFixed2DMinMaxTestImpl<INDEX_TYPE,

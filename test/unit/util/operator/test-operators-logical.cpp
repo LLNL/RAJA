@@ -23,12 +23,12 @@ void logical_and_test()
   using And = RAJA::operators::logical_and<T>;
 
   And a;
-  T i0 = static_cast<T>(0);
-  T i1 = static_cast<T>(1);
-  T i2 = static_cast<T>(2);
-  T j0 = static_cast<T>(0);
-  T j1 = static_cast<T>(1);
-  T j2 = static_cast<T>(2);
+  T   i0 = static_cast<T>(0);
+  T   i1 = static_cast<T>(1);
+  T   i2 = static_cast<T>(2);
+  T   j0 = static_cast<T>(0);
+  T   j1 = static_cast<T>(1);
+  T   j2 = static_cast<T>(2);
   ASSERT_FALSE(a(i0, j0));
   ASSERT_FALSE(a(i0, j1));
   ASSERT_FALSE(a(i1, j0));
@@ -50,12 +50,12 @@ void logical_or_test()
   using Or = RAJA::operators::logical_or<T>;
 
   Or o;
-  T i0 = static_cast<T>(0);
-  T i1 = static_cast<T>(1);
-  T i2 = static_cast<T>(2);
-  T j0 = static_cast<T>(0);
-  T j1 = static_cast<T>(1);
-  T j2 = static_cast<T>(2);
+  T  i0 = static_cast<T>(0);
+  T  i1 = static_cast<T>(1);
+  T  i2 = static_cast<T>(2);
+  T  j0 = static_cast<T>(0);
+  T  j1 = static_cast<T>(1);
+  T  j2 = static_cast<T>(2);
   ASSERT_FALSE(o(i0, j0));
   ASSERT_TRUE(o(i0, j1));
   ASSERT_TRUE(o(i1, j0));
@@ -77,8 +77,8 @@ void logical_not_test()
   using Not = RAJA::operators::logical_not<T>;
 
   Not n;
-  T i0 = static_cast<T>(0);
-  T i1 = static_cast<T>(1);
+  T   i0 = static_cast<T>(0);
+  T   i1 = static_cast<T>(1);
   ASSERT_FALSE(n(i1));
   ASSERT_TRUE(n(i0));
   if (std::is_signed<T>::value)

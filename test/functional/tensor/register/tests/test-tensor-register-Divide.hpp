@@ -14,19 +14,19 @@ template <typename REGISTER_TYPE>
 void DivideImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t* input1_hptr = input1_vec.data();
+  element_t*             input1_hptr = input1_vec.data();
   element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -49,17 +49,19 @@ void DivideImpl()
   //
 
   // operator /
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t x;
-    x.load_packed(input0_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t x;
+        x.load_packed(input0_dptr);
 
-    register_t y;
-    y.load_packed(input1_dptr);
+        register_t y;
+        y.load_packed(input1_dptr);
 
-    register_t z = x / y;
+        register_t z = x / y;
 
-    z.store_packed(output0_dptr);
-  });
+        z.store_packed(output0_dptr);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
@@ -70,19 +72,21 @@ void DivideImpl()
 
 
   // operator /=
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t x;
-    x.load_packed(input0_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t x;
+        x.load_packed(input0_dptr);
 
-    register_t y;
-    y.load_packed(input1_dptr);
+        register_t y;
+        y.load_packed(input1_dptr);
 
-    register_t z = x;
+        register_t z = x;
 
-    z /= y;
+        z /= y;
 
-    z.store_packed(output0_dptr);
-  });
+        z.store_packed(output0_dptr);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
@@ -93,14 +97,16 @@ void DivideImpl()
 
 
   // operator / scalar
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t x;
-    x.load_packed(input0_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t x;
+        x.load_packed(input0_dptr);
 
-    register_t z = x / 7;
+        register_t z = x / 7;
 
-    z.store_packed(output0_dptr);
-  });
+        z.store_packed(output0_dptr);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
@@ -111,16 +117,18 @@ void DivideImpl()
 
 
   // operator += scalar
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    register_t x;
-    x.load_packed(input0_dptr);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        register_t x;
+        x.load_packed(input0_dptr);
 
-    register_t z = x;
+        register_t z = x;
 
-    z /= 3;
+        z /= 3;
 
-    z.store_packed(output0_dptr);
-  });
+        z.store_packed(output0_dptr);
+      });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
@@ -136,17 +144,19 @@ void DivideImpl()
   for (camp::idx_t N = 0; N < num_elem; ++N)
   {
 
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      register_t x;
-      x.load_packed_n(input0_dptr, N);
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          register_t x;
+          x.load_packed_n(input0_dptr, N);
 
-      register_t y;
-      y.load_packed_n(input1_dptr, N);
+          register_t y;
+          y.load_packed_n(input1_dptr, N);
 
-      register_t z = x.divide_n(y, N);
+          register_t z = x.divide_n(y, N);
 
-      z.store_packed(output0_dptr);
-    });
+          z.store_packed(output0_dptr);
+        });
 
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 

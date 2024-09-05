@@ -42,9 +42,9 @@ public:
       internal::expt::RegisterBase<Register<int32_t, avx_register>>;
 
   using register_policy = avx_register;
-  using self_type = Register<int32_t, avx_register>;
-  using element_type = int32_t;
-  using register_type = __m256i;
+  using self_type       = Register<int32_t, avx_register>;
+  using element_type    = int32_t;
+  using register_type   = __m256i;
 
   using int_vector_type = Register<int32_t, avx_register>;
 
@@ -376,13 +376,13 @@ public:
     // no 8-way 32-bit add, but there is a 4-way... split and conquer
 
     // Low 128-bits  - use _mm256_castsi256_si128???
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(b.m_value);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(b.m_value);
     auto res_low = _mm256_castsi128_si256(_mm_add_epi32(low_a, low_b));
 
     // Hi 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(b.m_value, 1);
     auto res_hi = _mm_add_epi32(hi_a, hi_b);
 
     // Stitch back together
@@ -396,13 +396,13 @@ public:
     // no 8-way 32-bit subtract, but there is a 4-way... split and conquer
 
     // Low 128-bits
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(b.m_value);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(b.m_value);
     auto res_low = _mm256_castsi128_si256(_mm_sub_epi32(low_a, low_b));
 
     // Hi 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(b.m_value, 1);
     auto res_hi = _mm_sub_epi32(hi_a, hi_b);
 
     // Stitch back together
@@ -423,13 +423,13 @@ public:
     auto res_low_even = _mm_mul_epi32(low_a, low_b);
 
     // multiply odd lanes 1, 3
-    auto low_a_sh = _mm_shuffle_epi32(low_a, 0xB1);
-    auto low_b_sh = _mm_shuffle_epi32(low_b, 0xB1);
+    auto low_a_sh    = _mm_shuffle_epi32(low_a, 0xB1);
+    auto low_b_sh    = _mm_shuffle_epi32(low_b, 0xB1);
     auto res_low_odd = _mm_mul_epi32(low_a_sh, low_b_sh);
 
     // recombine to get all 4 lanes
     // note: AVX doesn't have a int32 blend, so we use the float32 blend
-    res_low_odd = _mm_shuffle_epi32(res_low_odd, 0xB1);
+    res_low_odd  = _mm_shuffle_epi32(res_low_odd, 0xB1);
     auto res_low = _mm256_castsi128_si256(_mm_castps_si128(_mm_blend_ps(
         _mm_castsi128_ps(res_low_odd), _mm_castsi128_ps(res_low_even), 0x05)));
 
@@ -441,13 +441,13 @@ public:
     auto res_hi_even = _mm_mul_epi32(hi_a, hi_b);
 
     // multiply odd lanes 1, 3
-    auto hi_a_sh = _mm_shuffle_epi32(hi_a, 0xB1);
-    auto hi_b_sh = _mm_shuffle_epi32(hi_b, 0xB1);
+    auto hi_a_sh    = _mm_shuffle_epi32(hi_a, 0xB1);
+    auto hi_b_sh    = _mm_shuffle_epi32(hi_b, 0xB1);
     auto res_hi_odd = _mm_mul_epi32(hi_a_sh, hi_b_sh);
 
     // recombine to get all 4 lanes
     // note: AVX doesn't have a int32 blend, so we use the float32 blend
-    res_hi_odd = _mm_shuffle_epi32(res_hi_odd, 0xB1);
+    res_hi_odd  = _mm_shuffle_epi32(res_hi_odd, 0xB1);
     auto res_hi = _mm_castps_si128(_mm_blend_ps(
         _mm_castsi128_ps(res_hi_odd), _mm_castsi128_ps(res_hi_even), 0x05));
 
@@ -496,20 +496,20 @@ public:
     // Low 128-bits
     auto low = _mm256_castsi256_si128(m_value);
 
-    auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+    auto low_sh1  = _mm_shuffle_epi32(low, 0xB1);
     auto low_red1 = _mm_add_epi32(low, low_sh1);
 
-    auto low_sh2 = _mm_shuffle_epi32(low_red1, 0x1B);
+    auto low_sh2  = _mm_shuffle_epi32(low_red1, 0x1B);
     auto low_red2 = _mm_add_epi32(low_red1, low_sh2);
 
 
     // High 128-bits
     auto hi = _mm256_extractf128_si256(m_value, 1);
 
-    auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+    auto hi_sh1  = _mm_shuffle_epi32(hi, 0xB1);
     auto hi_red1 = _mm_add_epi32(hi, hi_sh1);
 
-    auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+    auto hi_sh2  = _mm_shuffle_epi32(hi_red1, 0x1B);
     auto hi_red2 = _mm_add_epi32(hi_red1, hi_sh2);
 
 
@@ -534,7 +534,7 @@ public:
     // Low 128-bits
     auto low = _mm256_castsi256_si128(m_value);
 
-    auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+    auto low_sh1  = _mm_shuffle_epi32(low, 0xB1);
     auto low_red1 = _mm_max_epi32(low, low_sh1);
 
     auto low_sh2 = _mm_shuffle_epi32(low_red1, 0x1B);
@@ -547,10 +547,10 @@ public:
     auto hi = _mm256_extractf128_si256(m_value, 1);
 
 
-    auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+    auto hi_sh1  = _mm_shuffle_epi32(hi, 0xB1);
     auto hi_red1 = _mm_max_epi32(hi, hi_sh1);
 
-    auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+    auto hi_sh2  = _mm_shuffle_epi32(hi_red1, 0x1B);
     auto hi_red2 = _mm_max_epi32(hi_red1, hi_sh2);
 
 
@@ -583,7 +583,7 @@ public:
     // Low 128-bits
     auto low = _mm256_castsi256_si128(m_value);
 
-    auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+    auto low_sh1  = _mm_shuffle_epi32(low, 0xB1);
     auto low_red1 = _mm_max_epi32(low, low_sh1);
 
     if (N == 2)
@@ -594,7 +594,7 @@ public:
     if (N == 3)
     {
       // get lane 2 into lane 0
-      auto low_sh1a = _mm_shuffle_epi32(low, 0x2);
+      auto low_sh1a  = _mm_shuffle_epi32(low, 0x2);
       auto low_red1a = _mm_max_epi32(low_red1, low_sh1a);
       return _mm_extract_epi32(low_red1a, 0);
     }
@@ -618,7 +618,7 @@ public:
       return _mm_extract_epi32(red_5, 0);
     }
 
-    auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+    auto hi_sh1  = _mm_shuffle_epi32(hi, 0xB1);
     auto hi_red1 = _mm_max_epi32(hi, hi_sh1);
 
     if (N == 6)
@@ -629,13 +629,13 @@ public:
     if (N == 7)
     {
       // get lane 6 (lane 2 of hi) into lane 0
-      auto hi_sh7 = _mm_shuffle_epi32(hi, 0x2);
+      auto hi_sh7   = _mm_shuffle_epi32(hi, 0x2);
       auto hi_red_6 = _mm_max_epi32(hi_sh7, hi_red1);
-      auto red_7 = _mm_max_epi32(low_red2, hi_red_6);
+      auto red_7    = _mm_max_epi32(low_red2, hi_red_6);
       return _mm_extract_epi32(red_7, 0);
     }
 
-    auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+    auto hi_sh2  = _mm_shuffle_epi32(hi_red1, 0x1B);
     auto hi_red2 = _mm_max_epi32(hi_red1, hi_sh2);
 
 
@@ -654,13 +654,13 @@ public:
     // no 8-way 32-bit min, but there is a 4-way... split and conquer
 
     // Low 128-bits  - use _mm256_castsi256_si128???
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(b.m_value);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(b.m_value);
     auto res_low = _mm256_castsi128_si256(_mm_max_epi32(low_a, low_b));
 
     // Hi 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(b.m_value, 1);
     auto res_hi = _mm_max_epi32(hi_a, hi_b);
 
     // Stitch back together
@@ -681,7 +681,7 @@ public:
     // Low 128-bits
     auto low = _mm256_castsi256_si128(m_value);
 
-    auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+    auto low_sh1  = _mm_shuffle_epi32(low, 0xB1);
     auto low_red1 = _mm_min_epi32(low, low_sh1);
 
     auto low_sh2 = _mm_shuffle_epi32(low_red1, 0x1B);
@@ -693,11 +693,11 @@ public:
     // High 128-bits
     auto hi = _mm256_extractf128_si256(m_value, 1);
 
-    auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+    auto hi_sh1  = _mm_shuffle_epi32(hi, 0xB1);
     auto hi_red1 = _mm_min_epi32(hi, hi_sh1);
 
 
-    auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+    auto hi_sh2  = _mm_shuffle_epi32(hi_red1, 0x1B);
     auto hi_red2 = _mm_min_epi32(hi_red1, hi_sh2);
 
 
@@ -729,7 +729,7 @@ public:
     // Low 128-bits
     auto low = _mm256_castsi256_si128(m_value);
 
-    auto low_sh1 = _mm_shuffle_epi32(low, 0xB1);
+    auto low_sh1  = _mm_shuffle_epi32(low, 0xB1);
     auto low_red1 = _mm_min_epi32(low, low_sh1);
 
     if (N == 2)
@@ -740,7 +740,7 @@ public:
     if (N == 3)
     {
       // get lane 2 into lane 0
-      auto low_sh1a = _mm_shuffle_epi32(low, 0x2);
+      auto low_sh1a  = _mm_shuffle_epi32(low, 0x2);
       auto low_red1a = _mm_min_epi32(low_red1, low_sh1a);
       return _mm_extract_epi32(low_red1a, 0);
     }
@@ -764,7 +764,7 @@ public:
       return _mm_extract_epi32(red_5, 0);
     }
 
-    auto hi_sh1 = _mm_shuffle_epi32(hi, 0xB1);
+    auto hi_sh1  = _mm_shuffle_epi32(hi, 0xB1);
     auto hi_red1 = _mm_min_epi32(hi, hi_sh1);
 
     if (N == 6)
@@ -775,13 +775,13 @@ public:
     if (N == 7)
     {
       // get lane 6 (lane 2 of hi) into lane 0
-      auto hi_sh7 = _mm_shuffle_epi32(hi, 0x2);
+      auto hi_sh7   = _mm_shuffle_epi32(hi, 0x2);
       auto hi_red_6 = _mm_min_epi32(hi_sh7, hi_red1);
-      auto red_7 = _mm_min_epi32(low_red2, hi_red_6);
+      auto red_7    = _mm_min_epi32(low_red2, hi_red_6);
       return _mm_extract_epi32(red_7, 0);
     }
 
-    auto hi_sh2 = _mm_shuffle_epi32(hi_red1, 0x1B);
+    auto hi_sh2  = _mm_shuffle_epi32(hi_red1, 0x1B);
     auto hi_red2 = _mm_min_epi32(hi_red1, hi_sh2);
 
 
@@ -800,13 +800,13 @@ public:
     // no 8-way 32-bit min, but there is a 4-way... split and conquer
 
     // Low 128-bits  - use _mm256_castsi256_si128???
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(b.m_value);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(b.m_value);
     auto res_low = _mm256_castsi128_si256(_mm_min_epi32(low_a, low_b));
 
     // Hi 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(b.m_value, 1);
     auto res_hi = _mm_min_epi32(hi_a, hi_b);
 
     // Stitch back together

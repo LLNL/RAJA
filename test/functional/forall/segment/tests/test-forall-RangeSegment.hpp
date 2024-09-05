@@ -19,9 +19,9 @@ void ForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE N = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N);
   if (data_len == 0)
@@ -39,9 +39,10 @@ void ForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-    });
+    RAJA::forall<EXEC_POLICY>(
+        r1,
+        [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+        { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
   }
   else
   { // zero-length segment
@@ -51,10 +52,12 @@ void ForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     working_res.memcpy(
         working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      (void)idx;
-      working_array[0]++;
-    });
+    RAJA::forall<EXEC_POLICY>(r1,
+                              [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                              {
+                                (void)idx;
+                                working_array[0]++;
+                              });
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
@@ -103,7 +106,7 @@ void runNegativeTests()
 
 TYPED_TEST_P(ForallRangeSegmentTest, RangeSegmentForall)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

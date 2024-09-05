@@ -53,10 +53,13 @@ struct StatementExecutor<statement::Region<RegionPolicy, EnclosedStmts...>,
   static RAJA_INLINE void exec(Data&& data)
   {
 
-    RAJA::region<RegionPolicy>([&]() {
-      using data_t = camp::decay<Data>;
-      execute_statement_list<camp::list<EnclosedStmts...>, Types>(data_t(data));
-    });
+    RAJA::region<RegionPolicy>(
+        [&]()
+        {
+          using data_t = camp::decay<Data>;
+          execute_statement_list<camp::list<EnclosedStmts...>, Types>(
+              data_t(data));
+        });
   }
 };
 

@@ -50,7 +50,7 @@ struct tensor_exec : public EXEC_POLICY
   using tensor_type = TENSOR_TYPE;
 
   static constexpr camp::idx_t s_tensor_dim = DIM;
-  static constexpr camp::idx_t s_tile_size = TILE_SIZE;
+  static constexpr camp::idx_t s_tile_size  = TILE_SIZE;
 };
 
 

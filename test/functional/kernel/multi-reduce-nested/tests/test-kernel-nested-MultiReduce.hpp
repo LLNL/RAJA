@@ -47,9 +47,9 @@ template <typename EXEC_POLICY,
 // use enable_if in return type to appease nvcc 11.2
 std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>
 KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
-                                const Container& multi_init,
-                                WORKING_RES working_res,
-                                RandomGenerator& rngen)
+                                const Container&     multi_init,
+                                WORKING_RES          working_res,
+                                RandomGenerator&     rngen)
 {
   using RAJA::get;
   using MULTIREDUCER =
@@ -69,7 +69,7 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
 
   const IDX_TYPE idx_range = dimi * dimj * dimk;
 
-  const int modval = 100;
+  const int    modval   = 100;
   const size_t num_bins = multi_init.size();
 
   IDX_TYPE* working_range;
@@ -104,7 +104,7 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       {
         for (IDX_TYPE i : si)
         {
-          IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
+          IDX_TYPE ii    = (dimi * dimj * k) + (dimi * j) + i;
           test_range[ii] = data_len;
           data_len += work_per_iterate_distribution(rngen);
           test_range[ii + 1] = data_len;
@@ -159,7 +159,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     RAJA::kernel_resource<EXEC_POLICY>(
         segments,
         working_res,
-        [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
+        {
           IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
           for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
                ++idx)
@@ -199,7 +200,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       RAJA::kernel_resource<EXEC_POLICY>(
           segments,
           working_res,
-          [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i) {
+          [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
+          {
             IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
             for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
                  ++idx)
@@ -239,7 +241,7 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
 
 
     std::vector<DATA_TYPE> ref_vals;
-    bool got_ref_vals = false;
+    bool                   got_ref_vals = false;
 
     const int nloops = 2;
     for (int j = 0; j < nloops; ++j)
@@ -249,7 +251,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       RAJA::kernel_resource<EXEC_POLICY>(
           segments,
           working_res,
-          [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i) {
+          [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
+          {
             IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
             for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
                  ++idx)
@@ -342,12 +345,12 @@ struct MultiReduceNestedLoopExec<DEVICE_DEPTH_3, POLICY_DATA>
 
 TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
-  using ABSTRACTION = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ABSTRACTION   = typename camp::at<TypeParam, camp::num<5>>::type;
 
   using LOOP_TYPE = typename EXEC_POL_DATA::LoopType;
   using LOOP_POLS = typename EXEC_POL_DATA::type;
@@ -355,7 +358,7 @@ TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
       typename MultiReduceNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   // for setting random values in arrays
-  auto random_seed = std::random_device{}();
+  auto         random_seed = std::random_device{}();
   std::mt19937 rngen(random_seed);
 
   WORKING_RES working_res{WORKING_RES::get_default()};
@@ -363,13 +366,13 @@ TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
   std::vector<DATA_TYPE> container;
 
   std::vector<size_t> num_bins_max_container({0, 1, 100});
-  size_t num_bins_min = 0;
+  size_t              num_bins_min = 0;
   for (size_t num_bins_max : num_bins_max_container)
   {
 
     std::uniform_int_distribution<size_t> num_bins_dist(num_bins_min,
                                                         num_bins_max);
-    num_bins_min = num_bins_max + 1;
+    num_bins_min    = num_bins_max + 1;
     size_t num_bins = num_bins_dist(rngen);
 
     container.resize(num_bins, DATA_TYPE(2));

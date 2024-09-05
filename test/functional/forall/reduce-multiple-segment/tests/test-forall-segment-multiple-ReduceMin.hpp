@@ -24,20 +24,20 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  DATA_TYPE* working_array;
-  DATA_TYPE* check_array;
-  DATA_TYPE* test_array;
+  DATA_TYPE*                working_array;
+  DATA_TYPE*                check_array;
+  DATA_TYPE*                test_array;
 
   allocateForallTestData<DATA_TYPE>(
       last, working_res, &working_array, &check_array, &test_array);
 
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(SHRT_MAX);
-  const DATA_TYPE big_val = -500;
+  const DATA_TYPE big_val     = -500;
 
-  static std::random_device rd;
-  static std::mt19937 mt(rd());
+  static std::random_device                     rd;
+  static std::mt19937                           mt(rd());
   static std::uniform_real_distribution<double> dist(-100, 100);
-  static std::uniform_int_distribution<int> dist2(static_cast<int>(first),
+  static std::uniform_int_distribution<int>     dist2(static_cast<int>(first),
                                                   static_cast<int>(last) - 1);
 
   // Workaround for broken omp-target reduction interface.
@@ -71,8 +71,8 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
       for (int j = 0; j < nloops; ++j)
       {
 
-        DATA_TYPE roll = static_cast<DATA_TYPE>(dist(mt));
-        IDX_TYPE min_index = static_cast<IDX_TYPE>(dist2(mt));
+        DATA_TYPE roll      = static_cast<DATA_TYPE>(dist(mt));
+        IDX_TYPE  min_index = static_cast<IDX_TYPE>(dist2(mt));
 
         test_array[min_index] = roll;
         working_res.memcpy(&working_array[min_index],
@@ -84,11 +84,13 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
           current_min = roll;
         }
 
-        RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-          min0.min(working_array[idx]);
-          min1.min(2 * working_array[idx]);
-          min2.min(working_array[idx]);
-        });
+        RAJA::forall<EXEC_POLICY>(r1,
+                                  [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                                  {
+                                    min0.min(working_array[idx]);
+                                    min1.min(2 * working_array[idx]);
+                                    min2.min(working_array[idx]);
+                                  });
 
         ASSERT_EQ(current_min, static_cast<DATA_TYPE>(min0.get()));
         ASSERT_EQ(current_min * 2, static_cast<DATA_TYPE>(min1.get()));
@@ -116,10 +118,10 @@ class ForallReduceMinMultipleTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceMinMultipleTest, ReduceMinMultipleForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallReduceMinMultipleTestImpl<IDX_TYPE,

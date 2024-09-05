@@ -22,9 +22,9 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE N = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N);
   if (data_len == 0)
@@ -36,7 +36,7 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
       data_len, working_res, &working_array, &check_array, &test_array);
 
   constexpr int threads = 256;
-  int blocks = (data_len - 1) / threads + 1;
+  int           blocks  = (data_len - 1) / threads + 1;
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -47,10 +47,13 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1, [&](INDEX_TYPE idx) {
-            working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-          });
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<GLOBAL_THREAD_POICY>(
+              ctx,
+              r1,
+              [&](INDEX_TYPE idx)
+              { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
         });
   }
   else
@@ -63,11 +66,12 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<GLOBAL_THREAD_POICY>(
-              ctx, r1, [&](INDEX_TYPE RAJA_UNUSED_ARG(idx)) {
-                working_array[0]++;
-              });
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<GLOBAL_THREAD_POICY>(ctx,
+                                          r1,
+                                          [&](INDEX_TYPE RAJA_UNUSED_ARG(idx))
+                                          { working_array[0]++; });
         });
   }
 
@@ -137,7 +141,7 @@ void runNegativeTests()
 TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)
 {
 
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

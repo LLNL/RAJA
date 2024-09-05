@@ -169,7 +169,7 @@ struct StatementExecutor<
   {
 
     // get h value
-    auto h = camp::get<HpArgumentId>(data.offset_tuple);
+    auto h      = camp::get<HpArgumentId>(data.offset_tuple);
     using idx_t = decltype(h);
 
     // compute actual iterate for HpArgumentId

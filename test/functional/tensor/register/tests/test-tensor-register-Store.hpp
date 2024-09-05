@@ -14,14 +14,14 @@ template <typename REGISTER_TYPE>
 void StoreImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(10 * num_elem);
@@ -45,16 +45,18 @@ void StoreImpl()
 
 
   // store stride-1 to pointer
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x
-    register_t x;
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      x.set(input0_dptr[i], i);
-    }
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x
+        register_t x;
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          x.set(input0_dptr[i], i);
+        }
 
-    x.store_packed(output0_dptr);
-  });
+        x.store_packed(output0_dptr);
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy
@@ -76,16 +78,18 @@ void StoreImpl()
 
 
     // load stride-1 from pointer
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      // fill x
-      register_t x;
-      for (camp::idx_t i = 0; i < num_elem; ++i)
-      {
-        x.set(input0_dptr[i], i);
-      }
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          // fill x
+          register_t x;
+          for (camp::idx_t i = 0; i < num_elem; ++i)
+          {
+            x.set(input0_dptr[i], i);
+          }
 
-      x.store_packed_n(output0_dptr, N);
-    });
+          x.store_packed_n(output0_dptr, N);
+        });
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get
@@ -112,16 +116,18 @@ void StoreImpl()
 
 
   // load stride-2 from pointer
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    // fill x
-    register_t x;
-    for (camp::idx_t i = 0; i < num_elem; ++i)
-    {
-      x.set(input0_dptr[i], i);
-    }
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // fill x
+        register_t x;
+        for (camp::idx_t i = 0; i < num_elem; ++i)
+        {
+          x.set(input0_dptr[i], i);
+        }
 
-    x.store_strided(output0_dptr, 2);
-  });
+        x.store_strided(output0_dptr, 2);
+      });
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
   // check that we were able to copy using set/get
@@ -143,16 +149,18 @@ void StoreImpl()
 
 
     // load stride-2 from pointer
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-      // fill x
-      register_t x;
-      for (camp::idx_t i = 0; i < num_elem; ++i)
-      {
-        x.set(input0_dptr[i], i);
-      }
+    tensor_do<policy_t>(
+        [=] RAJA_HOST_DEVICE()
+        {
+          // fill x
+          register_t x;
+          for (camp::idx_t i = 0; i < num_elem; ++i)
+          {
+            x.set(input0_dptr[i], i);
+          }
 
-      x.store_strided_n(output0_dptr, 2, N);
-    });
+          x.store_strided_n(output0_dptr, 2, N);
+        });
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
     // check that we were able to copy using set/get

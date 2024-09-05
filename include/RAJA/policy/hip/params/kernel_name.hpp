@@ -33,7 +33,7 @@ init(KernelName& kn, const RAJA::hip::detail::hipInfo&)
 // Combine
 template <typename EXEC_POL>
 RAJA_HOST_DEVICE camp::concepts::enable_if<type_traits::is_hip_policy<EXEC_POL>>
-combine(KernelName&)
+                 combine(KernelName&)
 {}
 
 // Resolve

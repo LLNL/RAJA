@@ -55,14 +55,14 @@ constexpr int get_min_iterates_per_task() { return 128; }
                by spawning tasks
 */
 template <typename Sorter, typename Iter, typename Compare>
-inline void sort_task(Sorter sorter,
-                      Iter begin,
+inline void sort_task(Sorter                       sorter,
+                      Iter                         begin,
                       RAJA::detail::IterDiff<Iter> i_begin,
                       RAJA::detail::IterDiff<Iter> i_end,
                       RAJA::detail::IterDiff<Iter> iterates_per_task,
-                      Compare comp)
+                      Compare                      comp)
 {
-  using diff_type = RAJA::detail::IterDiff<Iter>;
+  using diff_type   = RAJA::detail::IterDiff<Iter>;
   const diff_type n = i_end - i_begin;
 
   if (n <= iterates_per_task)
@@ -97,10 +97,10 @@ inline void sort_task(Sorter sorter,
                by manually assigning work to threads
 */
 template <typename Sorter, typename Iter, typename Compare>
-inline void sort_parallel_region(Sorter sorter,
-                                 Iter begin,
+inline void sort_parallel_region(Sorter                       sorter,
+                                 Iter                         begin,
                                  RAJA::detail::IterDiff<Iter> n,
-                                 Compare comp)
+                                 Compare                      comp)
 {
   using RAJA::detail::firstIndex;
   using diff_type = RAJA::detail::IterDiff<Iter>;
@@ -178,7 +178,7 @@ inline void sort(Sorter sorter, Iter begin, Iter end, Compare comp)
     RAJA_UNUSED_VAR(requested_num_threads); // avoid warning in hip device code
 
 #pragma omp parallel num_threads(static_cast <int>(requested_num_threads))
-#pragma omp master
+#pragma omp          master
     {
       sort_task(sorter, begin, 0, n, iterates_per_task, comp);
     }
@@ -210,8 +210,8 @@ concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<ExecPolicy>>
 unstable(resources::Host host_res,
          const ExecPolicy&,
-         Iter begin,
-         Iter end,
+         Iter    begin,
+         Iter    end,
          Compare comp)
 {
   detail::openmp::sort(detail::UnstableSorter{}, begin, end, comp);
@@ -227,8 +227,8 @@ concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_openmp_policy<ExecPolicy>>
 stable(resources::Host host_res,
        const ExecPolicy&,
-       Iter begin,
-       Iter end,
+       Iter    begin,
+       Iter    end,
        Compare comp)
 {
   detail::openmp::sort(detail::StableSorter{}, begin, end, comp);
@@ -252,8 +252,8 @@ unstable_pairs(resources::Host host_res,
                ValIter vals_begin,
                Compare comp)
 {
-  auto begin = RAJA::zip(keys_begin, vals_begin);
-  auto end = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
+  auto begin    = RAJA::zip(keys_begin, vals_begin);
+  auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::openmp::sort(
       detail::UnstableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
@@ -278,8 +278,8 @@ stable_pairs(resources::Host host_res,
              ValIter vals_begin,
              Compare comp)
 {
-  auto begin = RAJA::zip(keys_begin, vals_begin);
-  auto end = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
+  auto begin    = RAJA::zip(keys_begin, vals_begin);
+  auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
   detail::openmp::sort(
       detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));

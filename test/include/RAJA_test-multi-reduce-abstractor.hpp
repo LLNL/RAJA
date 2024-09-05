@@ -224,10 +224,10 @@ struct BitOrAbstractor
 
 
 // Sequential reduction policy types
-using ReduceSumAbstractors = camp::list<SumAbstractor>;
-using ReduceMinAbstractors = camp::list<MinAbstractor>;
-using ReduceMaxAbstractors = camp::list<MaxAbstractor>;
+using ReduceSumAbstractors    = camp::list<SumAbstractor>;
+using ReduceMinAbstractors    = camp::list<MinAbstractor>;
+using ReduceMaxAbstractors    = camp::list<MaxAbstractor>;
 using ReduceBitAndAbstractors = camp::list<BitAndAbstractor>;
-using ReduceBitOrAbstractors = camp::list<BitOrAbstractor>;
+using ReduceBitOrAbstractors  = camp::list<BitOrAbstractor>;
 
 #endif // __RAJA_test_multi_reduce_abstractor_HPP__

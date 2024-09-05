@@ -42,9 +42,9 @@ public:
       internal::expt::RegisterBase<Register<float, avx512_register>>;
 
   using register_policy = avx512_register;
-  using self_type = Register<float, avx512_register>;
-  using element_type = float;
-  using register_type = __m512;
+  using self_type       = Register<float, avx512_register>;
+  using element_type    = float;
+  using register_type   = __m512;
 
   using int_vector_type = Register<int32_t, avx512_register>;
 

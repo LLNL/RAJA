@@ -58,9 +58,9 @@ struct SyclStatementExecutor<
     Types>
 {
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using stmt_list_t      = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = SyclStatementListExecutor<Data, stmt_list_t, Types>;
-  using diff_t = segment_diff_type<ArgumentId, Data>;
+  using diff_t           = segment_diff_type<ArgumentId, Data>;
 
   static inline RAJA_DEVICE void
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
@@ -69,7 +69,7 @@ struct SyclStatementExecutor<
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     diff_t chunk_size = TPol::chunk_size;
@@ -97,7 +97,7 @@ struct SyclStatementExecutor<
   {
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment
@@ -123,7 +123,7 @@ struct SyclStatementExecutor<
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
-          int BlockDim,
+          int         BlockDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -178,7 +178,7 @@ struct SyclStatementExecutor<Data,
   {
 
     // Compute how many blocks
-    diff_t len = segment_length<ArgumentId>(data);
+    diff_t len        = segment_length<ArgumentId>(data);
     diff_t num_blocks = len / chunk_size;
     if (num_blocks * chunk_size < len)
     {
@@ -193,7 +193,7 @@ struct SyclStatementExecutor<Data,
 
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment
@@ -218,7 +218,7 @@ struct SyclStatementExecutor<Data,
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
-          int BlockDim,
+          int         BlockDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -242,12 +242,12 @@ struct SyclStatementExecutor<Data,
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t len = segment.end() - segment.begin();
-    diff_t i_init = item.get_group(BlockDim) * chunk_size;         // TODO
+    diff_t len      = segment.end() - segment.begin();
+    diff_t i_init   = item.get_group(BlockDim) * chunk_size;       // TODO
     diff_t i_stride = item.get_group_range(BlockDim) * chunk_size; // TODO
 
     // Iterate through grid stride of chunks
@@ -270,7 +270,7 @@ struct SyclStatementExecutor<Data,
   {
 
     // Compute how many blocks
-    diff_t len = segment_length<ArgumentId>(data);
+    diff_t len        = segment_length<ArgumentId>(data);
     diff_t num_blocks = len / chunk_size;
     if (num_blocks * chunk_size < len)
     {
@@ -282,7 +282,7 @@ struct SyclStatementExecutor<Data,
 
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment
@@ -308,7 +308,7 @@ struct SyclStatementExecutor<Data,
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
-          int ThreadDim,
+          int         ThreadDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -332,12 +332,12 @@ struct SyclStatementExecutor<Data,
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t i = item.get_local_id(ThreadDim) * chunk_size;
+    diff_t i   = item.get_local_id(ThreadDim) * chunk_size;
 
     // execute enclosed statements if any thread will
     // but mask off threads without work
@@ -345,7 +345,7 @@ struct SyclStatementExecutor<Data,
 
     // Assign our new tiled segment
     diff_t slice_size = have_work ? chunk_size : 0;
-    segment = orig_segment.slice(i, slice_size);
+    segment           = orig_segment.slice(i, slice_size);
 
     // execute enclosed statements
     enclosed_stmts_t::exec(data, item, thread_active && have_work);
@@ -359,7 +359,7 @@ struct SyclStatementExecutor<Data,
   {
 
     // Compute how many blocks
-    diff_t len = segment_length<ArgumentId>(data);
+    diff_t len         = segment_length<ArgumentId>(data);
     diff_t num_threads = len / chunk_size;
     if (num_threads * chunk_size < len)
     {
@@ -371,7 +371,7 @@ struct SyclStatementExecutor<Data,
     set_sycl_dim<ThreadDim>(dims.min_locals, num_threads);
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment
@@ -397,7 +397,7 @@ struct SyclStatementExecutor<Data,
 template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
-          int ThreadDim,
+          int         ThreadDim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -421,12 +421,12 @@ struct SyclStatementExecutor<Data,
     auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t len = segment_length<ArgumentId>(data);
-    diff_t i_init = item.get_local_id(ThreadDim) * chunk_size;
+    diff_t len      = segment_length<ArgumentId>(data);
+    diff_t i_init   = item.get_local_id(ThreadDim) * chunk_size;
     diff_t i_stride = item.get_group_range(ThreadDim) * chunk_size;
 
     // Iterate through grid stride of chunks
@@ -440,7 +440,7 @@ struct SyclStatementExecutor<Data,
 
       // Assign our new tiled segment
       diff_t slice_size = have_work ? chunk_size : 0;
-      segment = orig_segment.slice(i, slice_size);
+      segment           = orig_segment.slice(i, slice_size);
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data, item, thread_active && have_work);
@@ -455,7 +455,7 @@ struct SyclStatementExecutor<Data,
   {
 
     // Compute how many blocks
-    diff_t len = segment_length<ArgumentId>(data);
+    diff_t len         = segment_length<ArgumentId>(data);
     diff_t num_threads = len / chunk_size;
     if (num_threads * chunk_size < len)
     {
@@ -468,7 +468,7 @@ struct SyclStatementExecutor<Data,
     set_sycl_dim<ThreadDim>(dims.min_locals, 1);
 
     // privatize data, so we can mess with the segments
-    using data_t = camp::decay<Data>;
+    using data_t        = camp::decay<Data>;
     data_t private_data = data;
 
     // Get original segment

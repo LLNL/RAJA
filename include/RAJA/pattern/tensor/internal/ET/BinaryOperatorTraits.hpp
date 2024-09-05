@@ -34,7 +34,7 @@ struct TensorOperatorAdd
 {
 
   template <typename LEFT, typename RIGHT>
-  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const& left,
+  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const&  left,
                                                 RIGHT const& right)
       -> decltype(left + right)
   {
@@ -50,7 +50,7 @@ struct TensorOperatorSubtract
 {
 
   template <typename LEFT, typename RIGHT>
-  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const& left,
+  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const&  left,
                                                 RIGHT const& right)
       -> decltype(left - right)
   {
@@ -85,7 +85,7 @@ template <typename LHS_TYPE, typename RHS_TYPE, class ENABLE = void>
 struct OperatorTraits
 {
 
-  using result_type = typename LHS_TYPE::result_type;
+  using result_type                       = typename LHS_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
 
   RAJA_INLINE
@@ -110,7 +110,7 @@ struct OperatorTraits<LHS_TYPE,
                       typename std::enable_if<LHS_TYPE::s_num_dims == 0>::type>
 {
 
-  using result_type = typename RHS_TYPE::result_type;
+  using result_type                       = typename RHS_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = RHS_TYPE::s_num_dims;
 
   RAJA_INLINE
@@ -134,7 +134,7 @@ struct OperatorTraits<LHS_TYPE,
                       typename std::enable_if<RHS_TYPE::s_num_dims == 0>::type>
 {
 
-  using result_type = typename LHS_TYPE::result_type;
+  using result_type                       = typename LHS_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
 
   RAJA_INLINE

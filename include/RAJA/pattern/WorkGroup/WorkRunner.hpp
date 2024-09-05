@@ -54,7 +54,7 @@ struct HoldBodyArgs_base
   {}
 
 protected:
-  LoopBody m_body;
+  LoopBody             m_body;
   camp::tuple<Args...> m_arg_tuple;
 };
 
@@ -113,7 +113,7 @@ template <typename ExecutionPolicy,
 struct HoldForall
 {
   using resource_type = typename resources::get_resource<ExecutionPolicy>::type;
-  using HoldBodyArgs = typename std::conditional<
+  using HoldBodyArgs  = typename std::conditional<
       !type_traits::is_device_exec_policy<ExecutionPolicy>::value,
       HoldBodyArgs_host<LoopBody, index_type, Args...>,
       HoldBodyArgs_device<LoopBody, index_type, Args...>>::type;
@@ -134,7 +134,7 @@ struct HoldForall
 
 private:
   Segment_type m_segment;
-  LoopBody m_body;
+  LoopBody     m_body;
 };
 
 
@@ -162,11 +162,11 @@ template <typename FORALL_EXEC_POLICY,
           typename... Args>
 struct WorkRunnerForallOrdered_base
 {
-  using exec_policy = EXEC_POLICY_T;
-  using order_policy = ORDER_POLICY_T;
+  using exec_policy     = EXEC_POLICY_T;
+  using order_policy    = ORDER_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using Allocator = ALLOCATOR_T;
-  using index_type = INDEX_T;
+  using Allocator       = ALLOCATOR_T;
+  using index_type      = INDEX_T;
   using resource_type =
       typename resources::get_resource<FORALL_EXEC_POLICY>::type;
 
@@ -263,7 +263,7 @@ struct WorkRunnerForallOrdered
 
   // run the loops using forall in the order that they were enqueued
   template <typename WorkContainer>
-  typename base::per_run_storage run(WorkContainer const& storage,
+  typename base::per_run_storage run(WorkContainer const&         storage,
                                      typename base::resource_type r,
                                      Args... args) const
   {
@@ -312,7 +312,7 @@ struct WorkRunnerForallReverse
   // run the loops using forall in the reverse order to the order they were
   // enqueued
   template <typename WorkContainer>
-  typename base::per_run_storage run(WorkContainer const& storage,
+  typename base::per_run_storage run(WorkContainer const&         storage,
                                      typename base::resource_type r,
                                      Args... args) const
   {

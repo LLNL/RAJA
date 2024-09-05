@@ -21,8 +21,8 @@ using namespace RAJA::statement;
 TEST(SIMD, Align)
 {
 
-  int N = 1024;
-  double c = 0.5;
+  int     N = 1024;
+  double  c = 0.5;
   double* a =
       RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN, N * sizeof(double));
   double* b =
@@ -78,9 +78,8 @@ TEST(SIMD, OMPAndSimd)
 
   RAJA::kernel<POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, M)),
-      [=](RAJA::Index_type i, RAJA::Index_type j) {
-        c[i + j * N] = a[i + j * N] + b[i + j * N];
-      });
+      [=](RAJA::Index_type i, RAJA::Index_type j)
+      { c[i + j * N] = a[i + j * N] + b[i + j * N]; });
 
   for (int i = 0; i < N * M; ++i)
   {
@@ -122,9 +121,9 @@ TEST(SIMD, OMPAndSimd_MultiLambda)
 
   for (int i = 0; i < N * M; ++i)
   {
-    a[i] = 1;
-    b[i] = 1;
-    c[i] = 0.0;
+    a[i]  = 1;
+    b[i]  = 1;
+    c[i]  = 0.0;
     a2[i] = 1;
     b2[i] = 1;
     c2[i] = 0.0;
@@ -132,12 +131,10 @@ TEST(SIMD, OMPAndSimd_MultiLambda)
 
   RAJA::kernel<POL>(
       RAJA::make_tuple(RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, M)),
-      [=](RAJA::Index_type i, RAJA::Index_type j) {
-        c[i + j * N] = a[i + j * N] + b[i + j * N];
-      },
-      [=](RAJA::Index_type i, RAJA::Index_type j) {
-        c2[i + j * N] = a2[i + j * N] + b2[i + j * N];
-      });
+      [=](RAJA::Index_type i, RAJA::Index_type j)
+      { c[i + j * N] = a[i + j * N] + b[i + j * N]; },
+      [=](RAJA::Index_type i, RAJA::Index_type j)
+      { c2[i + j * N] = a2[i + j * N] + b2[i + j * N]; });
 
   for (int i = 0; i < N * M; ++i)
   {

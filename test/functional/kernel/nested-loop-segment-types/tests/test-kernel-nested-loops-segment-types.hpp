@@ -19,14 +19,14 @@
 
 template <typename IDX_TYPE, typename DATA_TYPE, typename EXEC_POLICY>
 void KernelNestedLoopsSegmentTypesTestImpl(
-    const RAJA::TypedRangeSegment<IDX_TYPE>& s1,
-    const std::vector<IDX_TYPE>& s1_idx,
+    const RAJA::TypedRangeSegment<IDX_TYPE>&       s1,
+    const std::vector<IDX_TYPE>&                   s1_idx,
     const RAJA::TypedRangeStrideSegment<IDX_TYPE>& s2,
-    const std::vector<IDX_TYPE>& s2_idx,
-    const RAJA::TypedListSegment<IDX_TYPE>& s3,
-    const std::vector<IDX_TYPE>& s3_idx,
-    camp::resources::Resource working_res,
-    int perm)
+    const std::vector<IDX_TYPE>&                   s2_idx,
+    const RAJA::TypedListSegment<IDX_TYPE>&        s3,
+    const std::vector<IDX_TYPE>&                   s3_idx,
+    camp::resources::Resource                      working_res,
+    int                                            perm)
 {
   IDX_TYPE idx1_len = static_cast<IDX_TYPE>(s1_idx.size());
   IDX_TYPE idx2_len = static_cast<IDX_TYPE>(s2_idx.size());
@@ -94,7 +94,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   {
     RAJA::kernel<EXEC_POLICY>(
         RAJA::make_tuple(s1, s2, s3),
-        [=] RAJA_HOST_DEVICE(IDX_TYPE i1, IDX_TYPE i2, IDX_TYPE i3) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i1, IDX_TYPE i2, IDX_TYPE i3)
+        {
           work_view(i1, i2, i3) =
               static_cast<DATA_TYPE>(RAJA::stripIndexType(i1 + i2 + i3));
         });
@@ -104,7 +105,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   {
     RAJA::kernel<EXEC_POLICY>(
         RAJA::make_tuple(s2, s3, s1),
-        [=] RAJA_HOST_DEVICE(IDX_TYPE i2, IDX_TYPE i3, IDX_TYPE i1) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i2, IDX_TYPE i3, IDX_TYPE i1)
+        {
           work_view(i1, i2, i3) =
               static_cast<DATA_TYPE>(RAJA::stripIndexType(i1 + i2 + i3));
         });
@@ -114,7 +116,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   {
     RAJA::kernel<EXEC_POLICY>(
         RAJA::make_tuple(s3, s1, s2),
-        [=] RAJA_HOST_DEVICE(IDX_TYPE i3, IDX_TYPE i1, IDX_TYPE i2) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i3, IDX_TYPE i1, IDX_TYPE i2)
+        {
           work_view(i1, i2, i3) =
               static_cast<DATA_TYPE>(RAJA::stripIndexType(i1 + i2 + i3));
         });
@@ -142,7 +145,7 @@ class KernelNestedLoopsSegmentTypesTest : public ::testing::Test
 
 TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
@@ -189,7 +192,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
 
   // Zero-length range segment
   RAJA::TypedRangeSegment<IDX_TYPE> s4(4, 4);
-  std::vector<IDX_TYPE> s4_idx;
+  std::vector<IDX_TYPE>             s4_idx;
   RAJA::getIndices(s4_idx, s4);
 
   perm = 1;
@@ -206,7 +209,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
 
   // Zero-length range stride segment
   RAJA::TypedRangeStrideSegment<IDX_TYPE> s5(3, 3, 2);
-  std::vector<IDX_TYPE> s5_idx;
+  std::vector<IDX_TYPE>                   s5_idx;
   RAJA::getIndices(s5_idx, s5);
 
   perm = 1;
@@ -222,7 +225,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
       s1, s1_idx, s5, s5_idx, s3, s3_idx, working_res, perm);
 
   // Zero-length list segment
-  std::vector<IDX_TYPE> s6_idx;
+  std::vector<IDX_TYPE>            s6_idx;
   RAJA::TypedListSegment<IDX_TYPE> s6(nullptr, s6_idx.size(), working_res);
 
   perm = 1;

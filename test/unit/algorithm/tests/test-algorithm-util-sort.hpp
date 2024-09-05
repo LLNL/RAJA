@@ -62,8 +62,8 @@ struct MergeSortPairs;
 template <typename test_policy>
 struct InsertionSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::insertion_sort"; }
@@ -79,8 +79,8 @@ template <typename test_policy>
 struct InsertionSortPairs<test_policy, RunOnHost>
     : ForoneSynchronize<test_policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::insertion_sort[pairs]"; }
@@ -92,7 +92,7 @@ struct InsertionSortPairs<test_policy, RunOnHost>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    auto c = RAJA::zip_span(keys, vals);
+    auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
     RAJA::insertion_sort(c, RAJA::compare_first<zip_ref>(comp));
   }
@@ -101,8 +101,8 @@ struct InsertionSortPairs<test_policy, RunOnHost>
 template <typename test_policy>
 struct ShellSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::shell_sort"; }
@@ -117,8 +117,8 @@ struct ShellSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct ShellSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::shell_sort[pairs]"; }
@@ -130,7 +130,7 @@ struct ShellSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    auto c = RAJA::zip_span(keys, vals);
+    auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
     RAJA::shell_sort(c, RAJA::compare_first<zip_ref>(comp));
   }
@@ -139,8 +139,8 @@ struct ShellSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct HeapSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::heap_sort"; }
@@ -155,8 +155,8 @@ struct HeapSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct HeapSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::heap_sort[pairs]"; }
@@ -168,7 +168,7 @@ struct HeapSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    auto c = RAJA::zip_span(keys, vals);
+    auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
     RAJA::heap_sort(c, RAJA::compare_first<zip_ref>(comp));
   }
@@ -177,8 +177,8 @@ struct HeapSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct IntroSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::intro_sort"; }
@@ -193,8 +193,8 @@ struct IntroSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct IntroSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::intro_sort[pairs]"; }
@@ -206,7 +206,7 @@ struct IntroSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    auto c = RAJA::zip_span(keys, vals);
+    auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
     RAJA::intro_sort(c, RAJA::compare_first<zip_ref>(comp));
   }
@@ -215,8 +215,8 @@ struct IntroSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct MergeSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::merge_sort"; }
@@ -231,8 +231,8 @@ struct MergeSort<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct MergeSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   const char* name() { return "RAJA::merge_sort[pairs]"; }
@@ -244,7 +244,7 @@ struct MergeSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    auto c = RAJA::zip_span(keys, vals);
+    auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
     RAJA::merge_sort(c, RAJA::compare_first<zip_ref>(comp));
   }
@@ -255,8 +255,8 @@ struct MergeSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct InsertionSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -285,8 +285,8 @@ template <typename test_policy>
 struct InsertionSortPairs<test_policy, RunOnDevice>
     : ForoneSynchronize<test_policy>
 {
-  using sort_category = stable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = stable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -305,19 +305,21 @@ struct InsertionSortPairs<test_policy, RunOnDevice>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      auto c = RAJA::zip_span(keys, vals);
-      using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
-      RAJA::insertion_sort(c, RAJA::compare_first<zip_ref>(comp));
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        {
+          auto c        = RAJA::zip_span(keys, vals);
+          using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
+          RAJA::insertion_sort(c, RAJA::compare_first<zip_ref>(comp));
+        });
   }
 };
 
 template <typename test_policy>
 struct ShellSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -345,8 +347,8 @@ struct ShellSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct ShellSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -365,19 +367,21 @@ struct ShellSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      auto c = RAJA::zip_span(keys, vals);
-      using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
-      RAJA::shell_sort(c, RAJA::compare_first<zip_ref>(comp));
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        {
+          auto c        = RAJA::zip_span(keys, vals);
+          using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
+          RAJA::shell_sort(c, RAJA::compare_first<zip_ref>(comp));
+        });
   }
 };
 
 template <typename test_policy>
 struct HeapSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -405,8 +409,8 @@ struct HeapSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct HeapSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -425,19 +429,21 @@ struct HeapSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      auto c = RAJA::zip_span(keys, vals);
-      using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
-      RAJA::heap_sort(c, RAJA::compare_first<zip_ref>(comp));
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        {
+          auto c        = RAJA::zip_span(keys, vals);
+          using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
+          RAJA::heap_sort(c, RAJA::compare_first<zip_ref>(comp));
+        });
   }
 };
 
 template <typename test_policy>
 struct IntroSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -465,8 +471,8 @@ struct IntroSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct IntroSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -485,19 +491,21 @@ struct IntroSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      auto c = RAJA::zip_span(keys, vals);
-      using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
-      RAJA::intro_sort(c, RAJA::compare_first<zip_ref>(comp));
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        {
+          auto c        = RAJA::zip_span(keys, vals);
+          using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
+          RAJA::intro_sort(c, RAJA::compare_first<zip_ref>(comp));
+        });
   }
 };
 
 template <typename test_policy>
 struct MergeSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -525,8 +533,8 @@ struct MergeSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct MergeSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using sort_category = unstable_sort_tag;
-  using sort_interface = sort_pairs_interface_tag;
+  using sort_category     = unstable_sort_tag;
+  using sort_interface    = sort_pairs_interface_tag;
   using supports_resource = std::false_type;
 
   std::string m_name;
@@ -545,11 +553,13 @@ struct MergeSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   void
   operator()(KeyContainer&& keys, ValContainer&& vals, Compare comp = Compare{})
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      auto c = RAJA::zip_span(keys, vals);
-      using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
-      RAJA::merge_sort(c, RAJA::compare_first<zip_ref>(comp));
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        {
+          auto c        = RAJA::zip_span(keys, vals);
+          using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
+          RAJA::merge_sort(c, RAJA::compare_first<zip_ref>(comp));
+        });
   }
 };
 

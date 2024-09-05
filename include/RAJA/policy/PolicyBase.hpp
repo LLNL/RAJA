@@ -64,16 +64,16 @@ enum class Launch
 struct PolicyBase
 {};
 
-template <Policy Policy_,
-          Pattern Pattern_,
-          Launch Launch_,
+template <Policy   Policy_,
+          Pattern  Pattern_,
+          Launch   Launch_,
           Platform Platform_,
           typename... Traits>
 struct PolicyBaseT : PolicyBase
 {
-  static constexpr Policy policy = Policy_;
-  static constexpr Pattern pattern = Pattern_;
-  static constexpr Launch launch = Launch_;
+  static constexpr Policy   policy   = Policy_;
+  static constexpr Pattern  pattern  = Pattern_;
+  static constexpr Launch   launch   = Launch_;
   static constexpr Platform platform = Platform_;
 };
 
@@ -128,9 +128,9 @@ struct policy_has_trait_impl : camp::num<false>
 {};
 ///
 template <typename Trait,
-          Policy Policy_,
-          Pattern Pattern_,
-          Launch Launch_,
+          Policy   Policy_,
+          Pattern  Pattern_,
+          Launch   Launch_,
           Platform Platform_,
           typename... Traits>
 struct policy_has_trait_impl<
@@ -165,9 +165,9 @@ template <Policy Pol, Pattern Pat, typename... Args>
 using make_policy_pattern_t =
     PolicyBaseT<Pol, Pat, Launch::undefined, Platform::undefined, Args...>;
 
-template <Policy Policy_,
-          Pattern Pattern_,
-          Launch Launch_,
+template <Policy   Policy_,
+          Pattern  Pattern_,
+          Launch   Launch_,
           Platform Platform_,
           typename... Args>
 using make_policy_pattern_launch_platform_t =
@@ -177,8 +177,8 @@ template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
 
-template <Policy Policy_,
-          Pattern Pattern_,
+template <Policy   Policy_,
+          Pattern  Pattern_,
           Platform Platform_,
           typename... Args>
 using make_policy_pattern_platform_t =

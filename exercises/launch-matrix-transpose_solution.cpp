@@ -60,7 +60,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -125,18 +125,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // using sequential loops.
   //
   // _raja_mattranspose_start
-  using loop_policy_seq = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using loop_policy_seq   = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_seq>(
       RAJA::LaunchParams(), // LaunchParams may be empty when running on the
                             // host
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<loop_policy_seq>(ctx, row_Range, [&](int row) {
-          RAJA::loop<loop_policy_seq>(ctx, col_Range, [&](int col) {
-            Atview(col, row) = Aview(row, col);
-          });
-        });
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<loop_policy_seq>(
+            ctx,
+            row_Range,
+            [&](int row)
+            {
+              RAJA::loop<loop_policy_seq>(
+                  ctx,
+                  col_Range,
+                  [&](int col) { Atview(col, row) = Aview(row, col); });
+            });
       });
   // _raja_mattranspose_end
 
@@ -153,18 +159,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // This policy loops sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using loop_policy_omp = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+  using loop_policy_omp   = RAJA::LoopPolicy<RAJA::omp_for_exec>;
   using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_omp>(
       RAJA::LaunchParams(), // LaunchParams may be empty when running on the
                             // host
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<loop_policy_omp>(ctx, row_Range, [&](int row) {
-          RAJA::loop<loop_policy_seq>(ctx, col_Range, [&](int col) {
-            Atview(col, row) = Aview(row, col);
-          });
-        });
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<loop_policy_omp>(
+            ctx,
+            row_Range,
+            [&](int row)
+            {
+              RAJA::loop<loop_policy_seq>(
+                  ctx,
+                  col_Range,
+                  [&](int col) { Atview(col, row) = Aview(row, col); });
+            });
       });
 
   checkResult<int>(Atview, N_c, N_r);
@@ -181,17 +193,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using cuda_thread_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>;
   using cuda_thread_y = RAJA::LoopPolicy<RAJA::cuda_thread_y_loop>;
 
-  const bool async = false; // execute asynchronously
+  const bool async         = false; // execute asynchronously
   using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
   RAJA::launch<launch_policy_cuda>(
       RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16, 16)),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<cuda_thread_y>(ctx, row_Range, [&](int row) {
-          RAJA::loop<cuda_thread_x>(ctx, col_Range, [&](int col) {
-            Atview(col, row) = Aview(row, col);
-          });
-        });
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<cuda_thread_y>(
+            ctx,
+            row_Range,
+            [&](int row)
+            {
+              RAJA::loop<cuda_thread_x>(
+                  ctx,
+                  col_Range,
+                  [&](int col) { Atview(col, row) = Aview(row, col); });
+            });
       });
   // _raja_mattranspose_cuda_end
 

@@ -17,8 +17,8 @@ template <typename EXEC_POL,
           typename WORKING_RES,
           typename... Args>
 typename std::enable_if<USE_RESOURCE>::type
-call_kernel_param(SEGMENTS&& segs,
-                  PARAMS&& params,
+call_kernel_param(SEGMENTS&&  segs,
+                  PARAMS&&    params,
                   WORKING_RES work_res,
                   Args&&... args)
 {
@@ -59,7 +59,7 @@ template <typename WORKING_RES,
 void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARPREDUCE&,
                           const RAJA::Index_type len)
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   RAJA::Index_type* work_array;
@@ -77,11 +77,11 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARPREDUCE&,
       RAJA::make_tuple((RAJA::Index_type)0),
       work_res,
 
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type & value) {
-        value += i;
-      },
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type & value)
+      { value += i; },
 
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type & value) {
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type & value)
+      {
         // This only gets executed on the "root" thread which received the
         // reduced value.
         worksum += value;
@@ -103,7 +103,7 @@ void KernelWarpThreadTest(
     const DEVICE_DEPTH_2_REDUCESUM_WARPREDUCE&,
     const RAJA::Index_type len) // len needs to be divisible by 10 and 16
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   RAJA::Index_type* work_array;
@@ -126,11 +126,11 @@ void KernelWarpThreadTest(
       work_res,
 
       [=] RAJA_HOST_DEVICE(
-          RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type & value) {
-        value += i + j * outerlen;
-      },
+          RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type & value)
+      { value += i + j * outerlen; },
 
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type & value) {
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type & value)
+      {
         // This only gets executed on the "root" thread which received the
         // reduced value.
         worksum += value;
@@ -152,16 +152,16 @@ void KernelWarpThreadTest(
     const DEVICE_DEPTH_3_REDUCESUM_WARPREDUCE&,
     const RAJA::Index_type len) // len needs to be divisible by 10 and 16
 {
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   RAJA::Index_type* work_array;
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
 
-  RAJA::Index_type innerlen = 10;
+  RAJA::Index_type innerlen  = 10;
   RAJA::Index_type middlelen = 16;
-  RAJA::Index_type outerlen = len / (innerlen * middlelen);
+  RAJA::Index_type outerlen  = len / (innerlen * middlelen);
 
   allocateForallTestData<RAJA::Index_type>(
       len, erased_work_res, &work_array, &check_array, &test_array);
@@ -179,11 +179,11 @@ void KernelWarpThreadTest(
       [=] RAJA_HOST_DEVICE(RAJA::Index_type i,
                            RAJA::Index_type j,
                            RAJA::Index_type k,
-                           RAJA::Index_type & value) {
-        value += i + j * outerlen + k * outerlen * middlelen;
-      },
+                           RAJA::Index_type & value)
+      { value += i + j * outerlen + k * outerlen * middlelen; },
 
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type & value) {
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type & value)
+      {
         // This only gets executed on the "root" thread which received the
         // reduced value.
         worksum += value;

@@ -34,8 +34,8 @@ template <typename BODY>
 __global__ void test_launcher(BODY body_in)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(body_in);
-  auto& body = privatizer.get_priv();
+  auto  privatizer = thread_privatize(body_in);
+  auto& body       = privatizer.get_priv();
   body();
 }
 
@@ -65,8 +65,8 @@ template <typename BODY>
 __global__ void test_launcher(BODY body_in)
 {
   using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(body_in);
-  auto& body = privatizer.get_priv();
+  auto  privatizer = thread_privatize(body_in);
+  auto& body       = privatizer.get_priv();
   body();
 }
 

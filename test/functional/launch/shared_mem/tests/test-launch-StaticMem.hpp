@@ -27,9 +27,9 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
       RAJA::stripIndexType(INDEX_TYPE(0)), RAJA::stripIndexType(thread_range));
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   size_t data_len =
       RAJA::stripIndexType(block_range) * RAJA::stripIndexType(thread_range);
@@ -44,7 +44,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
   {
     for (s_type c = 0; c < RAJA::stripIndexType(thread_range); ++c)
     {
-      s_type idx = c + RAJA::stripIndexType(thread_range) * b;
+      s_type idx      = c + RAJA::stripIndexType(thread_range) * b;
       test_array[idx] = INDEX_TYPE(idx);
     }
   }
@@ -52,34 +52,48 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
   RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(RAJA::stripIndexType(block_range)),
                          RAJA::Threads(RAJA::stripIndexType(thread_range))),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<TEAM_POLICY>(ctx, outer_range, [&](INDEX_TYPE bid) {
-          // Since we are using custom index type we have to first use a
-          // type that the device compiler can intialize, we can then use a
-          // pointer to recast the shared memory to our desired type.
-          // This enables us to work around the following warning:
-          //  warning #3019-D: dynamic initialization is not supported for
-          // a function-scope static __shared__ variable within a
-          // __device__/__global__ function
-          RAJA_TEAM_SHARED char char_Tile[THREAD_RANGE * sizeof(INDEX_TYPE)];
-          INDEX_TYPE* Tile = (INDEX_TYPE*)char_Tile;
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<TEAM_POLICY>(
+            ctx,
+            outer_range,
+            [&](INDEX_TYPE bid)
+            {
+              // Since we are using custom index type we have to first use a
+              // type that the device compiler can intialize, we can then use a
+              // pointer to recast the shared memory to our desired type.
+              // This enables us to work around the following warning:
+              //  warning #3019-D: dynamic initialization is not supported for
+              // a function-scope static __shared__ variable within a
+              // __device__/__global__ function
+              RAJA_TEAM_SHARED char
+                          char_Tile[THREAD_RANGE * sizeof(INDEX_TYPE)];
+              INDEX_TYPE* Tile = (INDEX_TYPE*)char_Tile;
 
-          RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
-            Tile[RAJA::stripIndexType(thread_range) -
-                 RAJA::stripIndexType(tid) - 1] =
-                thread_range - tid - 1 + thread_range * bid;
-          });
+              RAJA::loop<THREAD_POLICY>(
+                  ctx,
+                  inner_range,
+                  [&](INDEX_TYPE tid)
+                  {
+                    Tile[RAJA::stripIndexType(thread_range) -
+                         RAJA::stripIndexType(tid) - 1] =
+                        thread_range - tid - 1 + thread_range * bid;
+                  });
 
-          ctx.teamSync();
+              ctx.teamSync();
 
-          RAJA::loop<THREAD_POLICY>(ctx, inner_range, [&](INDEX_TYPE tid) {
-            INDEX_TYPE idx = tid + thread_range * bid;
-            working_array[RAJA::stripIndexType(idx)] =
-                Tile[RAJA::stripIndexType(tid)];
-          });
+              RAJA::loop<THREAD_POLICY>(
+                  ctx,
+                  inner_range,
+                  [&](INDEX_TYPE tid)
+                  {
+                    INDEX_TYPE idx = tid + thread_range * bid;
+                    working_array[RAJA::stripIndexType(idx)] =
+                        Tile[RAJA::stripIndexType(tid)];
+                  });
 
-          ctx.releaseSharedMemory();
-        });
+              ctx.releaseSharedMemory();
+            });
       });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
@@ -103,7 +117,7 @@ class LaunchStaticMemTest : public ::testing::Test
 TYPED_TEST_P(LaunchStaticMemTest, StaticMemLaunch)
 {
 
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

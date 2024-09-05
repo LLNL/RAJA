@@ -42,9 +42,9 @@ public:
       internal::expt::RegisterBase<Register<float, avx2_register>>;
 
   using register_policy = avx2_register;
-  using self_type = Register<float, avx2_register>;
-  using element_type = float;
-  using register_type = __m256;
+  using self_type       = Register<float, avx2_register>;
+  using element_type    = float;
+  using register_type   = __m256;
 
   using int_vector_type = Register<int32_t, avx2_register>;
 
@@ -381,11 +381,11 @@ public:
   element_type sum() const
   {
     // swap odd-even pairs and add
-    auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+    auto sh1  = _mm256_permute_ps(m_value, 0xB1);
     auto red1 = _mm256_add_ps(m_value, sh1);
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permute_ps(red1, 0x4E);
+    auto sh2  = _mm256_permute_ps(red1, 0x4E);
     auto red2 = _mm256_add_ps(red1, sh2);
 
     return red2[0] + red2[4];
@@ -401,11 +401,11 @@ public:
   {
 
     // swap odd-even pairs and add
-    auto sh1 = _mm256_permutevar8x32_ps(m_value, createPermute1(8));
+    auto sh1  = _mm256_permutevar8x32_ps(m_value, createPermute1(8));
     auto red1 = _mm256_max_ps(m_value, sh1);
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permutevar8x32_ps(red1, createPermute2(8));
+    auto sh2  = _mm256_permutevar8x32_ps(red1, createPermute2(8));
     auto red2 = _mm256_max_ps(red1, sh2);
 
     return std::max<element_type>(red2[0], red2[4]);
@@ -433,7 +433,7 @@ public:
     }
 
     // swap odd-even pairs and add
-    auto sh1 = _mm256_permutevar8x32_ps(m_value, createPermute1(N));
+    auto sh1  = _mm256_permutevar8x32_ps(m_value, createPermute1(N));
     auto red1 = _mm256_max_ps(m_value, sh1);
 
     if (N == 3)
@@ -446,7 +446,7 @@ public:
     }
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permutevar8x32_ps(red1, createPermute2(N));
+    auto sh2  = _mm256_permutevar8x32_ps(red1, createPermute2(N));
     auto red2 = _mm256_max_ps(red1, sh2);
 
     return std::max<element_type>(red2[0], red2[4]);
@@ -471,11 +471,11 @@ public:
   {
 
     // swap odd-even pairs and add
-    auto sh1 = _mm256_permutevar8x32_ps(m_value, createPermute1(8));
+    auto sh1  = _mm256_permutevar8x32_ps(m_value, createPermute1(8));
     auto red1 = _mm256_min_ps(m_value, sh1);
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permutevar8x32_ps(red1, createPermute2(8));
+    auto sh2  = _mm256_permutevar8x32_ps(red1, createPermute2(8));
     auto red2 = _mm256_min_ps(red1, sh2);
 
     return std::min<element_type>(red2[0], red2[4]);
@@ -503,7 +503,7 @@ public:
     }
 
     // swap odd-even pairs and add
-    auto sh1 = _mm256_permutevar8x32_ps(m_value, createPermute1(N));
+    auto sh1  = _mm256_permutevar8x32_ps(m_value, createPermute1(N));
     auto red1 = _mm256_min_ps(m_value, sh1);
 
     if (N == 3)
@@ -516,7 +516,7 @@ public:
     }
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permutevar8x32_ps(red1, createPermute2(N));
+    auto sh2  = _mm256_permutevar8x32_ps(red1, createPermute2(N));
     auto red2 = _mm256_min_ps(red1, sh2);
 
     return std::min<element_type>(red2[0], red2[4]);

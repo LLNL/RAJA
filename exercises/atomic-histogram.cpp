@@ -70,7 +70,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 100000;
 
   int* array = memoryManager::allocate<int>(N);
-  int* hist = memoryManager::allocate<int>(M);
+  int* hist  = memoryManager::allocate<int>(M);
 
   for (int i = 0; i < N; ++i)
   {

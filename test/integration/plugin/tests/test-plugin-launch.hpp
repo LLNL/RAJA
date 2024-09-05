@@ -38,9 +38,8 @@ void PluginLaunchTestImpl()
 
       RAJA::launch<LaunchPolicy>(
           RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
-          [=] RAJA_HOST_DEVICE(RAJA::LaunchContext RAJA_UNUSED_ARG(ctx)) {
-            p_callable(i);
-          });
+          [=] RAJA_HOST_DEVICE(RAJA::LaunchContext RAJA_UNUSED_ARG(ctx))
+          { p_callable(i); });
     }
 
     CounterData loop_data;
@@ -74,8 +73,8 @@ class PluginLaunchTest : public ::testing::Test
 
 TYPED_TEST_P(PluginLaunchTest, PluginLaunch)
 {
-  using LaunchPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using LaunchPolicy   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
   PluginLaunchTestImpl<LaunchPolicy, ResType, PlatformHolder::platform>();

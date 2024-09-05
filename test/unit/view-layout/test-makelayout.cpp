@@ -140,7 +140,7 @@ TEST(LayoutUnitTest, 3D_KJI_ProjJ)
 
 TEST(LayoutUnitTest, 2D_StrideOne)
 {
-  using my_layout = RAJA::Layout<2>;
+  using my_layout    = RAJA::Layout<2>;
   using my_layout_s1 = RAJA::Layout<2, ptrdiff_t, 0>; // first index is stride-1
 
   /*

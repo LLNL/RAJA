@@ -34,7 +34,7 @@ template <multi_reduce_algorithm t_multi_algorithm>
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_multi_algorithm;
-  static constexpr bool consistent =
+  static constexpr bool                   consistent =
       (algorithm == multi_reduce_algorithm::left_fold);
 };
 

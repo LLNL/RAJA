@@ -61,7 +61,7 @@ namespace RAJA
  *
  */
 template <size_t Rank, typename IdxLin = Index_type>
-auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
+auto make_permuted_layout(std::array<IdxLin, Rank>      sizes,
                           std::array<camp::idx_t, Rank> permutation)
     -> Layout<Rank, IdxLin>
 {
@@ -87,10 +87,10 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
   auto ret = Layout<Rank, IdxLin>();
   for (size_t i = 0; i < Rank; ++i)
   {
-    ret.sizes[i] = sizes[i];
-    ret.strides[i] = strides[i];
+    ret.sizes[i]       = sizes[i];
+    ret.strides[i]     = strides[i];
     ret.inv_strides[i] = strides[i] ? strides[i] : 1;
-    ret.inv_mods[i] = sizes[i] ? sizes[i] : 1;
+    ret.inv_mods[i]    = sizes[i] ? sizes[i] : 1;
   }
   return ret;
 }

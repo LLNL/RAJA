@@ -30,7 +30,7 @@ struct LaunchExecute<RAJA::null_launch_t>
 {
   template <typename BODY>
   static void exec(LaunchContext const& RAJA_UNUSED_ARG(ctx),
-                   BODY const& RAJA_UNUSED_ARG(body))
+                   BODY const&          RAJA_UNUSED_ARG(body))
   {
     RAJA_ABORT_OR_THROW("NULL Launch");
   }
@@ -47,16 +47,16 @@ struct LaunchExecute<RAJA::seq_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       LaunchParams const& params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
-       BODY const& body,
-       ReduceParams& RAJA_UNUSED_ARG(ReduceParams))
+       LaunchParams const&       params,
+       const char*               RAJA_UNUSED_ARG(kernel_name),
+       BODY const&               body,
+       ReduceParams&             RAJA_UNUSED_ARG(ReduceParams))
   {
 
     LaunchContext ctx;
 
     char* kernel_local_mem = new char[params.shared_mem_size];
-    ctx.shared_mem_ptr = kernel_local_mem;
+    ctx.shared_mem_ptr     = kernel_local_mem;
 
     body(ctx);
 
@@ -73,16 +73,16 @@ struct LaunchExecute<RAJA::seq_launch_t>
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       LaunchParams const& launch_params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
-       BODY const& body,
-       ReduceParams& launch_reducers)
+       LaunchParams const&       launch_params,
+       const char*               RAJA_UNUSED_ARG(kernel_name),
+       BODY const&               body,
+       ReduceParams&             launch_reducers)
   {
     expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
 
     LaunchContext ctx;
-    char* kernel_local_mem = new char[launch_params.shared_mem_size];
-    ctx.shared_mem_ptr = kernel_local_mem;
+    char*         kernel_local_mem = new char[launch_params.shared_mem_size];
+    ctx.shared_mem_ptr             = kernel_local_mem;
 
     expt::invoke_body(launch_reducers, body, ctx);
 
@@ -103,7 +103,7 @@ struct LoopExecute<seq_exec, SEGMENT>
   RAJA_SUPPRESS_HD_WARN
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(SEGMENT const& segment,
-                                                BODY const& body)
+                                                BODY const&    body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -117,8 +117,8 @@ struct LoopExecute<seq_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment,
-       BODY const& body)
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -131,9 +131,9 @@ struct LoopExecute<seq_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     // block stride loop
@@ -153,10 +153,10 @@ struct LoopExecute<seq_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     // block stride loop
@@ -187,8 +187,8 @@ struct LoopICountExecute<seq_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment,
-       BODY const& body)
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
     const int len = segment.end() - segment.begin();
     for (int i = 0; i < len; i++)
@@ -200,9 +200,9 @@ struct LoopICountExecute<seq_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     // block stride loop
@@ -222,10 +222,10 @@ struct LoopICountExecute<seq_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     // block stride loop
@@ -260,9 +260,9 @@ struct TileExecute<seq_exec, SEGMENT>
   template <typename TILE_T, typename BODY>
   static RAJA_HOST_DEVICE RAJA_INLINE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       TILE_T tile_size,
-       SEGMENT const& segment,
-       BODY const& body)
+       TILE_T              tile_size,
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -281,9 +281,9 @@ struct TileTCountExecute<seq_exec, SEGMENT>
   template <typename TILE_T, typename BODY>
   static RAJA_HOST_DEVICE RAJA_INLINE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       TILE_T tile_size,
-       SEGMENT const& segment,
-       BODY const& body)
+       TILE_T              tile_size,
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     const int len = segment.end() - segment.begin();

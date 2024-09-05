@@ -39,8 +39,8 @@ namespace internal
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          int Dim,
-          int Local_Size,
+          int         Dim,
+          int         Local_Size,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
@@ -65,7 +65,7 @@ struct SyclStatementExecutor<
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
-    auto i = item.get_global_id(Dim);
+    auto i   = item.get_global_id(Dim);
 
     // Assign the x thread to the argument
     data.template assign_offset<ArgumentId>(i);
@@ -83,17 +83,17 @@ struct SyclStatementExecutor<
     if (Dim == 0)
     {
       dims.global.x = len;
-      dims.local.x = Local_Size;
+      dims.local.x  = Local_Size;
     }
     if (Dim == 1)
     {
       dims.global.y = len;
-      dims.local.y = Local_Size;
+      dims.local.y  = Local_Size;
     }
     if (Dim == 2)
     {
       dims.global.z = len;
-      dims.local.z = Local_Size;
+      dims.local.z  = Local_Size;
     }
 
     // combine with enclosed statements
@@ -109,7 +109,7 @@ struct SyclStatementExecutor<
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          int Dim,
+          int         Dim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -133,7 +133,7 @@ struct SyclStatementExecutor<Data,
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
-    auto i = item.get_group(Dim);
+    auto i   = item.get_group(Dim);
 
     // Assign the x thread to the argument
     data.template assign_offset<ArgumentId>(i);
@@ -175,7 +175,7 @@ struct SyclStatementExecutor<Data,
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          int Dim,
+          int         Dim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -198,8 +198,8 @@ struct SyclStatementExecutor<Data,
   static inline RAJA_DEVICE void
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = item.get_group(Dim);
+    auto len      = segment_length<ArgumentId>(data);
+    auto i0       = item.get_group(Dim);
     auto i_stride = item.get_group_range(Dim);
 
     for (auto i = i0; i < len; i += i_stride)
@@ -245,7 +245,7 @@ struct SyclStatementExecutor<Data,
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          int Dim,
+          int         Dim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -269,7 +269,7 @@ struct SyclStatementExecutor<Data,
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
-    auto i = item.get_local_id(Dim);
+    auto i   = item.get_local_id(Dim);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -311,7 +311,7 @@ struct SyclStatementExecutor<Data,
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          int Dim,
+          int         Dim,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<Data,
@@ -334,10 +334,10 @@ struct SyclStatementExecutor<Data,
   static inline RAJA_DEVICE void
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
-    auto len = segment_length<ArgumentId>(data);
-    auto i0 = item.get_local_id(Dim);
+    auto len      = segment_length<ArgumentId>(data);
+    auto i0       = item.get_local_id(Dim);
     auto i_stride = item.get_local_range(Dim);
-    auto i = i0;
+    auto i        = i0;
 
     for (; i < len; i += i_stride)
     {
@@ -391,7 +391,7 @@ struct SyclStatementExecutor<Data,
  */
 template <typename Data,
           camp::idx_t ArgumentId,
-          int Local_Size,
+          int         Local_Size,
           typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
@@ -413,7 +413,7 @@ struct SyclStatementExecutor<
   static inline RAJA_DEVICE void exec(Data& data, cl::sycl::nd_item<3> item)
   {
     auto len = segment_length<ArgumentId>(data);
-    auto i = item.get_global_id(0);
+    auto i   = item.get_global_id(0);
 
     if (i < len)
     {
@@ -433,7 +433,7 @@ struct SyclStatementExecutor<
 
     // request one block per element in the segment
     LaunchDims dims;
-    dims.local.x = Local_Size;
+    dims.local.x  = Local_Size;
     dims.global.x = len;
 
     // combine with enclosed statements

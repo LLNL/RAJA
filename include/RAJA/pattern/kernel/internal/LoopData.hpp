@@ -51,9 +51,9 @@ template <camp::idx_t ArgumentId, typename Policy>
 struct ForTraitBase : public ForBase
 {
   constexpr static camp::idx_t index_val = ArgumentId;
-  using index = camp::num<ArgumentId>;
-  using index_type = camp::nil; // default to invalid type
-  using policy_type = Policy;
+  using index                            = camp::num<ArgumentId>;
+  using index_type                       = camp::nil; // default to invalid type
+  using policy_type                      = Policy;
   using type = ForTraitBase; // make camp::value compatible
 };
 
@@ -129,7 +129,7 @@ struct LoopData
   // Lambdas that were passed into the kernel
   using BodiesTuple = camp::tuple<Bodies...>;
   const BodiesTuple bodies;
-  offset_tuple_t offset_tuple;
+  offset_tuple_t    offset_tuple;
 
   // Vector sizes of each segment.  This is only used by the vector_exec
   // policies
@@ -137,13 +137,13 @@ struct LoopData
   vector_sizes_t vector_sizes;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(SegmentTuple const& s,
-                                                  ParamTuple const& p,
-                                                  Resource r,
+                                                  ParamTuple const&   p,
+                                                  Resource            r,
                                                   Bodies const&... b)
       : segment_tuple(s), param_tuple(p), res(r), bodies(b...)
   {}
   constexpr LoopData(LoopData const&) = default;
-  constexpr LoopData(LoopData&&) = default;
+  constexpr LoopData(LoopData&&)      = default;
 
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE RAJA_INLINE void assign_offset(IndexT const& i)
@@ -209,11 +209,11 @@ struct GenericWrapper : GenericWrapperBase
 template <typename T>
 struct NestedPrivatizer
 {
-  using data_t = typename T::data_t;
-  using value_type = camp::decay<T>;
+  using data_t         = typename T::data_t;
+  using value_type     = camp::decay<T>;
   using reference_type = value_type&;
 
-  data_t privatized_data;
+  data_t     privatized_data;
   value_type privatized_wrapper;
 
   RAJA_INLINE

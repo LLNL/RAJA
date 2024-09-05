@@ -14,8 +14,8 @@ template <typename MATRIX_TYPE>
 void ET_SubtractImpl()
 {
 
-  using matrix_t = MATRIX_TYPE;
-  using policy_t = typename matrix_t::register_policy;
+  using matrix_t  = MATRIX_TYPE;
+  using policy_t  = typename matrix_t::register_policy;
   using element_t = typename matrix_t::element_type;
 
 
@@ -27,7 +27,7 @@ void ET_SubtractImpl()
   //
 
   // alloc data1
-  std::vector<element_t> data1_vec(N * N);
+  std::vector<element_t>                 data1_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), N, N);
 
   element_t* data1_ptr = tensor_malloc<policy_t>(data1_vec);
@@ -35,7 +35,7 @@ void ET_SubtractImpl()
 
 
   // alloc data2
-  std::vector<element_t> data2_vec(N * N);
+  std::vector<element_t>                 data2_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), N, N);
 
   element_t* data2_ptr = tensor_malloc<policy_t>(data2_vec);
@@ -63,7 +63,7 @@ void ET_SubtractImpl()
 
 
   // alloc data5
-  std::vector<element_t> data5_vec(N * N);
+  std::vector<element_t>                 data5_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data5_h(data5_vec.data(), N, N);
 
   element_t* data5_ptr = tensor_malloc<policy_t>(data5_vec);
@@ -91,27 +91,29 @@ void ET_SubtractImpl()
   //
   // Do Operation: Full sum of data1, data2, data3, and data4
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-    auto rows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
-    auto cols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        auto rows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+        auto cols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
-    auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
+        auto SArows = RAJA::expt::RowIndex<int, matrix_t>::static_all();
+        auto SAcols = RAJA::expt::ColIndex<int, matrix_t>::static_all();
 
-    auto SRrows =
-        RAJA::expt::RowIndex<int, matrix_t>::template static_range<0, N>();
-    auto SRcols =
-        RAJA::expt::ColIndex<int, matrix_t>::template static_range<0, N>();
+        auto SRrows =
+            RAJA::expt::RowIndex<int, matrix_t>::template static_range<0, N>();
+        auto SRcols =
+            RAJA::expt::ColIndex<int, matrix_t>::template static_range<0, N>();
 
-    // Access types:
-    // data1_d - Layout with all() and all().
-    // data2_d - Layout with all() and static_range(), which should default to
-    // normal Layout access. data3_d - StaticLayout with static_all() and
-    // static_range(). data4_d - StaticLayout with static_all() and all().
+        // Access types:
+        // data1_d - Layout with all() and all().
+        // data2_d - Layout with all() and static_range(), which should default
+        // to normal Layout access. data3_d - StaticLayout with static_all() and
+        // static_range(). data4_d - StaticLayout with static_all() and all().
 
-    data5_d(cols, rows) = data1_d(rows, cols) - data2_d(cols, SRrows) +
-                          data3_d(SArows, SRcols) - data4_d(SAcols, rows);
-  });
+        data5_d(cols, rows) = data1_d(rows, cols) - data2_d(cols, SRrows) +
+                              data3_d(SArows, SRcols) - data4_d(SAcols, rows);
+      });
 
   tensor_copy_to_host<policy_t>(data5_vec, data5_ptr);
 
@@ -156,17 +158,19 @@ void ET_SubtractImpl()
       //
       // Do Operation: Perform partial sum
       //
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        // Load data using a View
-        auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
-        auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
+          {
+            // Load data using a View
+            auto rows = RAJA::expt::RowIndex<int, matrix_t>::range(0, n_size);
+            auto cols = RAJA::expt::ColIndex<int, matrix_t>::range(0, m_size);
 
-        // Access types:
-        // Layout with range() and range() because loop iterate cannot be
-        // determined statically.
+            // Access types:
+            // Layout with range() and range() because loop iterate cannot be
+            // determined statically.
 
-        data5_d(cols, rows) = data1_d(rows, cols) - data2_d(cols, rows);
-      });
+            data5_d(cols, rows) = data1_d(rows, cols) - data2_d(cols, rows);
+          });
 
       tensor_copy_to_host<policy_t>(data5_vec, data5_ptr);
 

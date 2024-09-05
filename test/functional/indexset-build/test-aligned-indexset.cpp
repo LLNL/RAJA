@@ -21,7 +21,7 @@
 TEST(IndexSetBuild, Aligned)
 {
   const RAJA::Index_type range_min_length = 8;
-  const RAJA::Index_type range_align = 2;
+  const RAJA::Index_type range_align      = 2;
 
   using RSType = RAJA::RangeSegment;
   using LSType = RAJA::ListSegment;

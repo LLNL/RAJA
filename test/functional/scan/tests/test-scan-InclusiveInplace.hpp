@@ -14,7 +14,7 @@ template <typename OP>
 ::testing::AssertionResult
 check_inclusive(const typename OP::result_type* actual,
                 const typename OP::result_type* original,
-                int N)
+                int                             N)
 {
   typename OP::result_type init = OP::identity();
   for (int i = 0; i < N; ++i)
@@ -36,7 +36,7 @@ void ScanInclusiveInplaceTestImpl(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  WORKING_RES res{WORKING_RES::get_default()};
+  WORKING_RES               res{WORKING_RES::get_default()};
   camp::resources::Resource working_res{res};
 
   T* work_in;
@@ -82,9 +82,9 @@ class ScanInclusiveInplaceTest : public ::testing::Test
 
 TYPED_TEST_P(ScanInclusiveInplaceTest, ScanInclusiveInplace)
 {
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<0>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using OP_TYPE = typename camp::at<TypeParam, camp::num<2>>::type;
+  using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ScanInclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(0);
   ScanInclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(357);

@@ -54,14 +54,14 @@ TYPED_TEST_SUITE_P(AtomicBasicIncDecUnitTest);
 
 TYPED_TEST_P(AtomicBasicIncDecUnitTest, BasicIncDecs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   // test "wrapping" increment
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
 
-  T inc_init = (T)0;
+  T  inc_init   = (T)0;
   T* inc_result = &inc_init;
 
   // oldval < val, increment oldval
@@ -81,7 +81,7 @@ TYPED_TEST_P(AtomicBasicIncDecUnitTest, BasicIncDecs)
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
 
-  T dec_init = (T)1;
+  T  dec_init   = (T)1;
   T* dec_result = &dec_init;
 
   // oldval > 0, decrement oldval
@@ -123,7 +123,7 @@ TYPED_TEST_SUITE_P(AtomicCUDAIncDecUnitTest);
 
 GPU_TYPED_TEST_P(AtomicCUDAIncDecUnitTest, CUDAIncDecs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   T* inc_result = nullptr;
@@ -138,21 +138,21 @@ GPU_TYPED_TEST_P(AtomicCUDAIncDecUnitTest, CUDAIncDecs)
 
   inc_result[0] = (T)0;
   // oldval < val, increment oldval
-  forone<test_cuda>(
-      [=] __device__() { RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1); });
+  forone<test_cuda>([=] __device__()
+                    { RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(inc_result[0], (T)1);
 
   // oldval == val, wrap to 0
-  forone<test_cuda>(
-      [=] __device__() { RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1); });
+  forone<test_cuda>([=] __device__()
+                    { RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(inc_result[0], (T)0);
 
   // oldval > val, wrap to 0
   inc_result[0] = (T)2;
-  forone<test_cuda>(
-      [=] __device__() { RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1); });
+  forone<test_cuda>([=] __device__()
+                    { RAJA::atomicInc<AtomicPolicy>(inc_result, (T)1); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(inc_result[0], (T)0);
 
@@ -162,21 +162,21 @@ GPU_TYPED_TEST_P(AtomicCUDAIncDecUnitTest, CUDAIncDecs)
 
   dec_result[0] = (T)1;
   // oldval > 0, decrement oldval
-  forone<test_cuda>(
-      [=] __device__() { RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1); });
+  forone<test_cuda>([=] __device__()
+                    { RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(dec_result[0], (T)0);
 
   // oldval == 0, wrap to val
-  forone<test_cuda>(
-      [=] __device__() { RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1); });
+  forone<test_cuda>([=] __device__()
+                    { RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(dec_result[0], (T)1);
 
   // oldval > val, wrap to val
   dec_result[0] = (T)3;
-  forone<test_cuda>(
-      [=] __device__() { RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1); });
+  forone<test_cuda>([=] __device__()
+                    { RAJA::atomicDec<AtomicPolicy>(dec_result, (T)1); });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(dec_result[0], (T)1);
 

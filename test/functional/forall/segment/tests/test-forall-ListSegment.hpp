@@ -69,9 +69,10 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
     working_res.memcpy(
         working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      working_array[RAJA::stripIndexType(idx)] = idx;
-    });
+    RAJA::forall<EXEC_POLICY>(lseg,
+                              [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+                                working_array[RAJA::stripIndexType(idx)] = idx;
+                              });
   }
   else
   { // zero-length segment
@@ -81,10 +82,12 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
     working_res.memcpy(
         working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      (void)idx;
-      working_array[0]++;
-    });
+    RAJA::forall<EXEC_POLICY>(lseg,
+                              [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                              {
+                                (void)idx;
+                                working_array[0]++;
+                              });
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
@@ -107,9 +110,9 @@ class ForallListSegmentTest : public ::testing::Test
 
 TYPED_TEST_P(ForallListSegmentTest, ListSegmentForall)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
   // test zero-length list segment
   ForallListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(

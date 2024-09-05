@@ -113,7 +113,7 @@ void testBasicMultiReducerConstructor(size_t num_bins)
 TYPED_TEST_P(MultiReducerBasicConstructorUnitTest, MultiReducerConstructor)
 {
   using MultiReducePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using NumericType       = typename camp::at<TypeParam, camp::num<1>>::type;
 
   testBasicMultiReducerConstructor<MultiReducePolicy, NumericType>(0);
   testBasicMultiReducerConstructor<MultiReducePolicy, NumericType>(1);
@@ -123,7 +123,7 @@ TYPED_TEST_P(MultiReducerBasicConstructorUnitTest, MultiReducerConstructor)
 
 
 template <typename MultiReducePolicy, typename NumericType>
-void testMultiReducerSingleInitConstructorRegular(size_t num_bins,
+void testMultiReducerSingleInitConstructorRegular(size_t      num_bins,
                                                   NumericType initVal)
 {
   RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(
@@ -150,7 +150,7 @@ void testMultiReducerSingleInitConstructorRegular(size_t num_bins,
 }
 
 template <typename MultiReducePolicy, typename NumericType>
-void testMultiReducerSingleInitConstructorBitwise(size_t num_bins,
+void testMultiReducerSingleInitConstructorBitwise(size_t      num_bins,
                                                   NumericType initVal)
 {
   RAJA::MultiReduceBitOr<MultiReducePolicy, NumericType> multi_reduce_or(
@@ -194,7 +194,7 @@ void testMultiReducerSingleInitConstructor(size_t num_bins, NumericType initVal)
 TYPED_TEST_P(MultiReducerSingleInitConstructorUnitTest, MultiReducerConstructor)
 {
   using MultiReducePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using NumericType       = typename camp::at<TypeParam, camp::num<1>>::type;
 
   testMultiReducerSingleInitConstructor<MultiReducePolicy, NumericType>(
       0, NumericType(2));
@@ -284,11 +284,11 @@ TYPED_TEST_P(MultiReducerContainerInitConstructorUnitTest,
              MultiReducerConstructor)
 {
   using MultiReducePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using NumericType = typename camp::at<TypeParam, camp::num<1>>::type;
+  using NumericType       = typename camp::at<TypeParam, camp::num<1>>::type;
 
   std::vector<NumericType> c0(0);
   std::vector<NumericType> c1(1, 3);
-  std::set<NumericType> c2;
+  std::set<NumericType>    c2;
   c2.emplace(5);
   c2.emplace(8);
   std::list<NumericType> c10;

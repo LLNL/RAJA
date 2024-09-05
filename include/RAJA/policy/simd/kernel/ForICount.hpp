@@ -59,9 +59,9 @@ struct StatementExecutor<
     // Set the argument type for this loop
     using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
-    auto iter = get<ArgumentId>(data.segment_tuple);
-    auto begin = std::begin(iter);
-    auto end = std::end(iter);
+    auto iter     = get<ArgumentId>(data.segment_tuple);
+    auto begin    = std::begin(iter);
+    auto end      = std::end(iter);
     auto distance = std::distance(begin, end);
 
     RAJA_SIMD
@@ -74,7 +74,7 @@ struct StatementExecutor<
 
       // Privatize data for SIMD correctness reasons
       using RAJA::internal::thread_privatize;
-      auto privatizer = thread_privatize(data);
+      auto  privatizer   = thread_privatize(data);
       auto& private_data = privatizer.get_priv();
 
       Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(

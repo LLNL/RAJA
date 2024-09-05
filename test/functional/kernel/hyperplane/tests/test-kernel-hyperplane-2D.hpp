@@ -57,7 +57,8 @@ void KernelHyperplane2DTestImpl(const int groups,
 
   RAJA::kernel<EXEC_POLICY>(
       RAJA::make_tuple(Grange, Irange, Jrange),
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj) {
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj)
+      {
         if ((int)g < 0 || (int)g >= groups || (int)ii < 0 || (int)ii >= idim ||
             (int)jj < 0 || (int)jj >= jdim)
         {
@@ -133,10 +134,10 @@ class KernelHyperplane2DTest : public ::testing::Test
 
 TYPED_TEST_P(KernelHyperplane2DTest, Hyperplane2DKernel)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   KernelHyperplane2DTestImpl<INDEX_TYPE,

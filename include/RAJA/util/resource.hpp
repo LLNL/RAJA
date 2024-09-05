@@ -74,7 +74,7 @@ template <typename IterationMapping,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async>
+          bool   Async>
 struct get_resource<::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
                                                              IterationGetter,
                                                              Concretizer,
@@ -97,7 +97,7 @@ template <typename ISetIter,
           typename IterationGetter,
           typename Concretizer,
           size_t BLOCKS_PER_SM,
-          bool Async>
+          bool   Async>
 struct get_resource<
     ExecPolicy<ISetIter,
                ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,

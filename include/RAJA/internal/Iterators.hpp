@@ -61,7 +61,7 @@ RAJA_HOST_DEVICE bool is_addition_overflow(Type lhs, DifferenceType rhs)
 }
 
 template <typename Type, typename DifferenceType>
-RAJA_HOST_DEVICE bool is_subtraction_overflow(Type lhs,
+RAJA_HOST_DEVICE bool is_subtraction_overflow(Type           lhs,
                                               DifferenceType rhs,
                                               bool iterator_on_left = true)
 {
@@ -97,7 +97,7 @@ RAJA_HOST_DEVICE void check_is_addition_overflow(Type lhs, DifferenceType rhs)
 }
 
 template <typename Type, typename DifferenceType>
-RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type lhs,
+RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type           lhs,
                                                     DifferenceType rhs)
 {
   if (is_subtraction_overflow(lhs, rhs))
@@ -105,24 +105,24 @@ RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type lhs,
 }
 #endif
 
-template <typename Type = Index_type,
+template <typename Type           = Index_type,
           typename DifferenceType = Type,
-          typename PointerType = Type*>
+          typename PointerType    = Type*>
 class numeric_iterator
 {
 public:
-  using value_type = Type;
+  using value_type          = Type;
   using stripped_value_type = strip_index_type_t<Type>;
-  using difference_type = DifferenceType;
-  using pointer = PointerType;
-  using reference = value_type&;
-  using iterator_category = std::random_access_iterator_tag;
+  using difference_type     = DifferenceType;
+  using pointer             = PointerType;
+  using reference           = value_type&;
+  using iterator_category   = std::random_access_iterator_tag;
 
-  constexpr numeric_iterator() noexcept = default;
-  constexpr numeric_iterator(const numeric_iterator&) noexcept = default;
-  constexpr numeric_iterator(numeric_iterator&&) noexcept = default;
+  constexpr numeric_iterator() noexcept                         = default;
+  constexpr numeric_iterator(const numeric_iterator&) noexcept  = default;
+  constexpr numeric_iterator(numeric_iterator&&) noexcept       = default;
   numeric_iterator& operator=(const numeric_iterator&) noexcept = default;
-  numeric_iterator& operator=(numeric_iterator&&) noexcept = default;
+  numeric_iterator& operator=(numeric_iterator&&) noexcept      = default;
 
   RAJA_HOST_DEVICE constexpr numeric_iterator(const stripped_value_type& rhs)
       : val(rhs)
@@ -275,18 +275,18 @@ private:
   stripped_value_type val = 0;
 };
 
-template <typename Type = Index_type,
+template <typename Type           = Index_type,
           typename DifferenceType = Type,
-          typename PointerType = Type*>
+          typename PointerType    = Type*>
 class strided_numeric_iterator
 {
 public:
-  using value_type = Type;
+  using value_type          = Type;
   using stripped_value_type = strip_index_type_t<Type>;
-  using difference_type = DifferenceType;
-  using pointer = DifferenceType*;
-  using reference = DifferenceType&;
-  using iterator_category = std::random_access_iterator_tag;
+  using difference_type     = DifferenceType;
+  using pointer             = DifferenceType*;
+  using reference           = DifferenceType&;
+  using iterator_category   = std::random_access_iterator_tag;
 
   constexpr strided_numeric_iterator() noexcept = default;
   constexpr strided_numeric_iterator(const strided_numeric_iterator&) noexcept =
@@ -300,7 +300,7 @@ public:
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       stripped_value_type rhs,
-      DifferenceType stride_ = DifferenceType(1))
+      DifferenceType      stride_ = DifferenceType(1))
       : val(rhs), stride(stride_)
   {}
 
@@ -419,8 +419,8 @@ public:
   }
 
 private:
-  stripped_value_type val = 0;
-  DifferenceType stride = 1;
+  stripped_value_type val    = 0;
+  DifferenceType      stride = 1;
 };
 
 

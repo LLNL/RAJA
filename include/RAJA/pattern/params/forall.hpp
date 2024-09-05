@@ -38,7 +38,7 @@ struct ForallParamPack
   Base param_tup;
 
   static constexpr size_t param_tup_sz = camp::tuple_size<Base>::value;
-  using params_seq = camp::make_idx_seq_t<param_tup_sz>;
+  using params_seq                     = camp::make_idx_seq_t<param_tup_sz>;
 
 private:
   // Init
@@ -57,7 +57,7 @@ private:
   RAJA_HOST_DEVICE static constexpr void
   detail_combine(EXEC_POL,
                  camp::idx_seq<Seq...>,
-                 ForallParamPack& out,
+                 ForallParamPack&       out,
                  const ForallParamPack& in)
   {
     CAMP_EXPAND(detail::combine<EXEC_POL>(camp::get<Seq>(out.param_tup),
@@ -434,7 +434,7 @@ RAJA_HOST_DEVICE constexpr auto get_lambda_args(FP& fpp)
 CAMP_SUPPRESS_HD_WARN
 template <typename Fn, camp::idx_t... Sequence, typename Params, typename... Ts>
 RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
-                                                  Fn&& f,
+                                                  Fn&&     f,
                                                   camp::idx_seq<Sequence...>,
                                                   Ts&&... extra)
 {

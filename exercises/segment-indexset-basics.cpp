@@ -39,11 +39,11 @@
 // (so example code is less verbose)
 //----------------------------------------------------------------------------//
 // _raja_segment_type_start
-using IdxType = int;
-using RangeSegType = RAJA::TypedRangeSegment<IdxType>;
+using IdxType            = int;
+using RangeSegType       = RAJA::TypedRangeSegment<IdxType>;
 using RangeStrideSegType = RAJA::TypedRangeStrideSegment<IdxType>;
-using ListSegType = RAJA::TypedListSegment<IdxType>;
-using IndexSetType = RAJA::TypedIndexSet<RangeSegType, ListSegType>;
+using ListSegType        = RAJA::TypedListSegment<IdxType>;
+using IndexSetType       = RAJA::TypedIndexSet<RangeSegType, ListSegType>;
 // _raja_segment_type_end
 
 

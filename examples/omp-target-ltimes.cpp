@@ -26,7 +26,7 @@ RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
 
-void runLTimesRajaKernel(bool debug,
+void runLTimesRajaKernel(bool       debug,
                          Index_type num_moments,
                          Index_type num_directions,
                          Index_type num_groups,
@@ -94,16 +94,16 @@ void runLTimesRajaKernel(bool debug,
 
   // create views on data
   std::array<RAJA::idx_t, 2> ell_perm{{0, 1}};
-  EllView ell(d_ell,
+  EllView                    ell(d_ell,
               make_permuted_layout({{num_moments, num_directions}}, ell_perm));
 
   std::array<RAJA::idx_t, 3> psi_perm{{0, 1, 2}};
-  PsiView psi(d_psi,
+  PsiView                    psi(d_psi,
               make_permuted_layout({{num_directions, num_groups, num_zones}},
                                    psi_perm));
 
   std::array<RAJA::idx_t, 3> phi_perm{{0, 1, 2}};
-  PhiView phi(
+  PhiView                    phi(
       d_phi,
       make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
 
@@ -127,9 +127,8 @@ void runLTimesRajaKernel(bool debug,
       segments,
 
       // Lambda_CalcPhi
-      [=](IMoment m, IDirection d, IGroup g, IZone z) {
-        phi(m, g, z) += ell(m, d) * psi(d, g, z);
-      });
+      [=](IMoment m, IDirection d, IGroup g, IZone z)
+      { phi(m, g, z) += ell(m, d) * psi(d, g, z); });
 
 
   timer.stop();
@@ -140,7 +139,7 @@ void runLTimesRajaKernel(bool debug,
   if (debug)
   {
 
-    size_t errors = 0;
+    size_t errors      = 0;
     double total_error = 0.;
     for (IZone z(0); z < num_zones; ++z)
     {

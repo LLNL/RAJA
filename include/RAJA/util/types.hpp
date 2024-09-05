@@ -41,7 +41,7 @@ namespace RAJA
 ///
 enum named_usage : int
 {
-  ignored = -1,
+  ignored     = -1,
   unspecified = 0
 };
 
@@ -246,7 +246,7 @@ using Real_type = double;
 
 #elif defined(RAJA_USE_FLOAT)
 ///
-using Real_type = float;
+using Real_type         = float;
 
 #else
 #error RAJA Real_type is undefined!
@@ -833,51 +833,51 @@ private:
  ******************************************************************************
  */
 #if defined(RAJA_USE_BARE_PTR)
-using Real_ptr = Real_type*;
+using Real_ptr       = Real_type*;
 using const_Real_ptr = const Real_type*;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = Complex_type*;
+using Complex_ptr       = Complex_type*;
 using const_Complex_ptr = const Complex_type*;
 #endif
 
-using UnalignedReal_ptr = Real_type*;
+using UnalignedReal_ptr       = Real_type*;
 using const_UnalignedReal_ptr = const Real_type*;
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
-using Real_ptr = Real_type* RAJA_RESTRICT;
-using const_Real_ptr = const Real_type* RAJA_RESTRICT;
+using Real_ptr          = Real_type*                   RAJA_RESTRICT;
+using const_Real_ptr    = const Real_type*       RAJA_RESTRICT;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = Complex_type* RAJA_RESTRICT;
+using Complex_ptr       = Complex_type*             RAJA_RESTRICT;
 using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
 #endif
 
-using UnalignedReal_ptr = Real_type* RAJA_RESTRICT;
+using UnalignedReal_ptr       = Real_type*             RAJA_RESTRICT;
 using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
-using Real_ptr = TDRAReal_ptr;
-using const_Real_ptr = const_TDRAReal_ptr;
+using Real_ptr           = TDRAReal_ptr;
+using const_Real_ptr     = const_TDRAReal_ptr;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = Complex_type* RAJA_RESTRICT;
-using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
+using Complex_ptr        = Complex_type*             RAJA_RESTRICT;
+using const_Complex_ptr  = const Complex_type* RAJA_RESTRICT;
 #endif
 
-using UnalignedReal_ptr = Real_type* RAJA_RESTRICT;
+using UnalignedReal_ptr       = Real_type*             RAJA_RESTRICT;
 using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_PTR_CLASS)
-using Real_ptr = RestrictAlignedRealPtr;
-using const_Real_ptr = ConstRestrictAlignedRealPtr;
+using Real_ptr           = RestrictAlignedRealPtr;
+using const_Real_ptr     = ConstRestrictAlignedRealPtr;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = RestrictComplexPtr;
-using const_Complex_ptr = ConstRestrictComplexPtr;
+using Complex_ptr        = RestrictComplexPtr;
+using const_Complex_ptr  = ConstRestrictComplexPtr;
 #endif
 
-using UnalignedReal_ptr = RestrictRealPtr;
+using UnalignedReal_ptr       = RestrictRealPtr;
 using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 
 #else
@@ -1007,16 +1007,16 @@ struct ScopedAssignment
     m_ref_to_val = std::move(new_val);
   }
 
-  ScopedAssignment(ScopedAssignment const&) = delete;
-  ScopedAssignment(ScopedAssignment&&) = delete;
+  ScopedAssignment(ScopedAssignment const&)            = delete;
+  ScopedAssignment(ScopedAssignment&&)                 = delete;
   ScopedAssignment& operator=(ScopedAssignment const&) = delete;
-  ScopedAssignment& operator=(ScopedAssignment&&) = delete;
+  ScopedAssignment& operator=(ScopedAssignment&&)      = delete;
 
   ~ScopedAssignment() { m_ref_to_val = std::move(m_prev_val); }
 
 private:
   T& m_ref_to_val;
-  T m_prev_val;
+  T  m_prev_val;
 };
 
 } // namespace detail

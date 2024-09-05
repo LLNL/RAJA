@@ -72,7 +72,7 @@ struct SyclStatementExecutor<
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
-    auto i = item.get_local_id(ThreadDim);
+    auto   i   = item.get_local_id(ThreadDim);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -132,8 +132,8 @@ struct SyclStatementExecutor<
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
-    auto i0 = item.get_local_id(0);
-    diff_t i = mask_t::maskValue(i0);
+    auto   i0  = item.get_local_id(0);
+    diff_t i   = mask_t::maskValue(i0);
 
     // assign thread id directly to offset
     data.template assign_offset<ArgumentId>(i);
@@ -193,9 +193,9 @@ struct SyclStatementExecutor<
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // masked size strided loop
-    diff_t len = segment_length<ArgumentId>(data);
-    auto i0 = item.get_local_id(0);
-    diff_t i_init = mask_t::maskValue(i0);
+    diff_t len      = segment_length<ArgumentId>(data);
+    auto   i0       = item.get_local_id(0);
+    diff_t i_init   = mask_t::maskValue(i0);
     diff_t i_stride = (diff_t)mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
@@ -260,9 +260,9 @@ struct SyclStatementExecutor<
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // block stride loop
-    diff_t len = segment_length<ArgumentId>(data);
-    auto i_init = item.get_local_id(ThreadDim);
-    auto i_stride = item.get_local_range(ThreadDim);
+    diff_t len      = segment_length<ArgumentId>(data);
+    auto   i_init   = item.get_local_id(ThreadDim);
+    auto   i_stride = item.get_local_range(ThreadDim);
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride)
@@ -326,7 +326,7 @@ struct SyclStatementExecutor<
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
-    auto i = item.get_group(BlockDim);
+    auto   i   = item.get_group(BlockDim);
 
     if (i < len)
     {
@@ -383,9 +383,9 @@ struct SyclStatementExecutor<
   exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // grid stride loop
-    diff_t len = segment_length<ArgumentId>(data);
-    auto i_init = item.get_group(BlockDim);
-    auto i_stride = item.get_group_range(BlockDim);
+    diff_t len      = segment_length<ArgumentId>(data);
+    auto   i_init   = item.get_group(BlockDim);
+    auto   i_stride = item.get_group_range(BlockDim);
 
     // Iterate through grid stride of chunks
     for (diff_t i = i_init; i < len; i += i_stride)

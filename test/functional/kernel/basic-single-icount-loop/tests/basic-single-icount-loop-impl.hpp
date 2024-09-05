@@ -21,12 +21,12 @@ template <typename IDX_TYPE,
           typename WORKING_RES,
           typename SEG_TYPE>
 void KernelBasicSingleICountLoopTestImpl(
-    const SEG_TYPE& seg,
+    const SEG_TYPE&              seg,
     const std::vector<IDX_TYPE>& seg_idx,
-    WORKING_RES working_res,
-    camp::resources::Resource erased_working_res)
+    WORKING_RES                  working_res,
+    camp::resources::Resource    erased_working_res)
 {
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
   IDX_TYPE data_len = IDX_TYPE(0);
   if (seg_idx.size() > 0)
   {
@@ -80,8 +80,9 @@ void KernelBasicSingleICountLoopTestImpl(
         RAJA::make_tuple(seg),
         RAJA::make_tuple(IDX_TYPE(0)),
 
-        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx) {
-          working_array[RAJA::stripIndexType(idx)] = IDX_TYPE(idx);
+        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx)
+        {
+          working_array[RAJA::stripIndexType(idx)]     = IDX_TYPE(idx);
           working_array_i[RAJA::stripIndexType(i_idx)] = IDX_TYPE(i_idx);
         });
   }
@@ -92,7 +93,8 @@ void KernelBasicSingleICountLoopTestImpl(
         RAJA::make_tuple(seg),
         RAJA::make_tuple(IDX_TYPE(0)),
 
-        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx)
+        {
           (void)idx;
           (void)i_idx;
           working_array[0]++;

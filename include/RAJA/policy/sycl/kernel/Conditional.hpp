@@ -45,7 +45,7 @@ struct SyclStatementExecutor<Data,
                              Types>
 {
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using stmt_list_t      = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = SyclStatementListExecutor<Data, stmt_list_t, Types>;
 
 

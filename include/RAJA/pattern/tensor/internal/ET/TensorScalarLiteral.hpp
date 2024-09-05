@@ -41,11 +41,11 @@ template <typename T>
 class TensorScalarLiteral : public TensorExpressionBase<TensorScalarLiteral<T>>
 {
 public:
-  using self_type = TensorScalarLiteral<T>;
-  using tensor_type = RAJA::expt::ScalarRegister<T>;
+  using self_type    = TensorScalarLiteral<T>;
+  using tensor_type  = RAJA::expt::ScalarRegister<T>;
   using element_type = T;
-  using result_type = T;
-  using index_type = RAJA::Index_type;
+  using result_type  = T;
+  using index_type   = RAJA::Index_type;
 
   static constexpr camp::idx_t s_num_dims = 0;
 

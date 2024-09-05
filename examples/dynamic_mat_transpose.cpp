@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
   //
   // Allocate matrix data
   //
-  int* A = host_res.allocate<int>(N_r * N_c);
+  int* A  = host_res.allocate<int>(N_r * N_c);
   int* At = host_res.allocate<int>(N_r * N_c);
   //
   // In the following implementations of matrix transpose, we
@@ -329,7 +329,7 @@ int main(int argc, char* argv[])
   if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
   {
 
-    d_A = device_res.allocate<int>(N_r * N_c);
+    d_A  = device_res.allocate<int>(N_r * N_c);
     d_At = device_res.allocate<int>(N_r * N_c);
 
     device_res.memcpy(d_A, A, sizeof(int) * N_r * N_c);
@@ -352,59 +352,85 @@ int main(int argc, char* argv[])
                          RAJA::Threads(TILE_DIM, TILE_DIM),
                          dynamic_shared_mem_size),
       "Matrix tranpose with dynamic shared memory kernel",
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-        RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&](int by) {
-          RAJA::loop<outer0>(
-              ctx, RAJA::RangeSegment(0, outer_Dimc), [&](int bx) {
-                // Request memory from shared memory pool
-                int* tile_ptr = ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
+        RAJA::loop<outer1>(
+            ctx,
+            RAJA::RangeSegment(0, outer_Dimr),
+            [&](int by)
+            {
+              RAJA::loop<outer0>(
+                  ctx,
+                  RAJA::RangeSegment(0, outer_Dimc),
+                  [&](int bx)
+                  {
+                    // Request memory from shared memory pool
+                    int* tile_ptr =
+                        ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
 
-                // Use RAJA View for simplified indexing
-                RAJA::View<int, RAJA::Layout<2>> Tile(
-                    tile_ptr, TILE_DIM, TILE_DIM);
+                    // Use RAJA View for simplified indexing
+                    RAJA::View<int, RAJA::Layout<2>> Tile(
+                        tile_ptr, TILE_DIM, TILE_DIM);
 
-                RAJA::loop<inner1>(
-                    ctx, RAJA::RangeSegment(0, TILE_DIM), [&](int ty) {
-                      RAJA::loop<inner0>(
-                          ctx, RAJA::RangeSegment(0, TILE_DIM), [&](int tx) {
-                            int col = bx * TILE_DIM + tx; // Matrix column index
-                            int row = by * TILE_DIM + ty; // Matrix row index
+                    RAJA::loop<inner1>(ctx,
+                                       RAJA::RangeSegment(0, TILE_DIM),
+                                       [&](int ty)
+                                       {
+                                         RAJA::loop<inner0>(
+                                             ctx,
+                                             RAJA::RangeSegment(0, TILE_DIM),
+                                             [&](int tx)
+                                             {
+                                               int col =
+                                                   bx * TILE_DIM +
+                                                   tx; // Matrix column index
+                                               int row = by * TILE_DIM +
+                                                         ty; // Matrix row index
 
-                            // Bounds check
-                            if (row < N_r && col < N_c)
-                            {
-                              Tile(ty, tx) = Aview(row, col);
-                            }
-                          });
-                    });
+                                               // Bounds check
+                                               if (row < N_r && col < N_c)
+                                               {
+                                                 Tile(ty, tx) = Aview(row, col);
+                                               }
+                                             });
+                                       });
 
-                // Barrier is needed to ensure all threads have written to Tile
-                ctx.teamSync();
+                    // Barrier is needed to ensure all threads have written to
+                    // Tile
+                    ctx.teamSync();
 
-                RAJA::loop<inner1>(
-                    ctx, RAJA::RangeSegment(0, TILE_DIM), [&](int ty) {
-                      RAJA::loop<inner0>(
-                          ctx, RAJA::RangeSegment(0, TILE_DIM), [&](int tx) {
-                            int col = bx * TILE_DIM + tx; // Matrix column index
-                            int row = by * TILE_DIM + ty; // Matrix row index
+                    RAJA::loop<inner1>(
+                        ctx,
+                        RAJA::RangeSegment(0, TILE_DIM),
+                        [&](int ty)
+                        {
+                          RAJA::loop<inner0>(
+                              ctx,
+                              RAJA::RangeSegment(0, TILE_DIM),
+                              [&](int tx)
+                              {
+                                int col =
+                                    bx * TILE_DIM + tx; // Matrix column index
+                                int row =
+                                    by * TILE_DIM + ty; // Matrix row index
 
-                            // Bounds check
-                            if (row < N_r && col < N_c)
-                            {
-                              Atview(col, row) = Tile(ty, tx);
-                            }
-                          });
-                    });
+                                // Bounds check
+                                if (row < N_r && col < N_c)
+                                {
+                                  Atview(col, row) = Tile(ty, tx);
+                                }
+                              });
+                        });
 
-                // The launch context uses bump style allocator in which calls
-                // to getSharedMemory moves a memory buffer pointer to return
-                // different segments of shared memory. To avoid requesting
-                // beyond the pre-allocated memory quantity we reset the
-                // allocator offset counter in the launch context effectively
-                // releasing shared memory.
-                ctx.releaseSharedMemory();
-              });
-        });
+                    // The launch context uses bump style allocator in which
+                    // calls to getSharedMemory moves a memory buffer pointer to
+                    // return different segments of shared memory. To avoid
+                    // requesting beyond the pre-allocated memory quantity we
+                    // reset the allocator offset counter in the launch context
+                    // effectively releasing shared memory.
+                    ctx.releaseSharedMemory();
+                  });
+            });
       });
   // _dynamic_mattranspose_kernel_end
 

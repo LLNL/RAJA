@@ -62,7 +62,7 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
       data_len, working_res, &working_array, &check_array, &test_array);
 
   constexpr int threads = 256;
-  int blocks = (data_len - 1) / threads + 1;
+  int           blocks  = (data_len - 1) / threads + 1;
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -77,10 +77,13 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
-            working_array[RAJA::stripIndexType(idx)] = idx;
-          });
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<GLOBAL_THREAD_POICY>(
+              ctx,
+              lseg,
+              [&](INDEX_TYPE idx)
+              { working_array[RAJA::stripIndexType(idx)] = idx; });
         });
   }
   else
@@ -93,11 +96,15 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg, [&](INDEX_TYPE idx) {
-            (void)idx;
-            working_array[0]++;
-          });
+        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+        {
+          RAJA::loop<GLOBAL_THREAD_POICY>(ctx,
+                                          lseg,
+                                          [&](INDEX_TYPE idx)
+                                          {
+                                            (void)idx;
+                                            working_array[0]++;
+                                          });
         });
   }
 
@@ -129,7 +136,7 @@ class LaunchListSegmentTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchListSegmentTest, ListSegmentTeams)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY =
       typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,

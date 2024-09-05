@@ -14,19 +14,19 @@ template <typename REGISTER_TYPE>
 void SegmentedDotProductImpl()
 {
   using register_t = REGISTER_TYPE;
-  using element_t = typename register_t::element_type;
-  using policy_t = typename register_t::register_policy;
+  using element_t  = typename register_t::element_type;
+  using policy_t   = typename register_t::register_policy;
 
   static constexpr camp::idx_t num_elem = register_t::s_num_elem;
 
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t* input0_hptr = input0_vec.data();
+  element_t*             input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t* input1_hptr = input1_vec.data();
+  element_t*             input1_hptr = input1_vec.data();
   element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -55,16 +55,18 @@ void SegmentedDotProductImpl()
     {
 
 
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
-        register_t x;
-        x.load_packed(input0_dptr);
+      tensor_do<policy_t>(
+          [=] RAJA_HOST_DEVICE()
+          {
+            register_t x;
+            x.load_packed(input0_dptr);
 
-        register_t y;
-        y.load_packed(input1_dptr);
+            register_t y;
+            y.load_packed(input1_dptr);
 
-        register_t dp = x.segmented_dot(segbits, output_segment, y);
-        dp.store_packed(output0_dptr);
-      });
+            register_t dp = x.segmented_dot(segbits, output_segment, y);
+            dp.store_packed(output0_dptr);
+          });
 
 
       // Move result to host

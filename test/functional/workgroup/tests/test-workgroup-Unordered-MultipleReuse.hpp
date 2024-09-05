@@ -22,8 +22,8 @@
 template <typename IndexType, typename type1>
 struct callable1
 {
-  type1* working_ptr1;
-  type1 const test_val1;
+  type1*                working_ptr1;
+  type1 const           test_val1;
   RAJA_HOST_DEVICE void operator()(IndexType i) const
   {
     working_ptr1[i] += type1(i) + test_val1;
@@ -33,8 +33,8 @@ struct callable1
 template <typename IndexType, typename type2>
 struct callable2
 {
-  type2* working_ptr2;
-  type2 const test_val2;
+  type2*                working_ptr2;
+  type2 const           test_val2;
   RAJA_HOST_DEVICE void operator()(IndexType i) const
   {
     working_ptr2[i] += type2(i) + test_val2;
@@ -44,8 +44,8 @@ struct callable2
 template <typename IndexType, typename type3>
 struct callable3
 {
-  type3* working_ptr3;
-  type3 const test_val3;
+  type3*                working_ptr3;
+  type3 const           test_val3;
   RAJA_HOST_DEVICE void operator()(IndexType i) const
   {
     working_ptr3[i] += type3(i) + test_val3;
@@ -63,13 +63,13 @@ template <typename ExecPolicy,
 struct testWorkGroupUnorderedMultiple
 {
   void operator()(std::mt19937& rng,
-                  IndexType max_begin,
-                  IndexType min_end,
-                  IndexType num1,
-                  IndexType num2,
-                  IndexType num3,
-                  IndexType pool_reuse,
-                  IndexType group_reuse) const
+                  IndexType     max_begin,
+                  IndexType     min_end,
+                  IndexType     num1,
+                  IndexType     num2,
+                  IndexType     num3,
+                  IndexType     pool_reuse,
+                  IndexType     group_reuse) const
   {
     ASSERT_GT(min_end, max_begin);
     IndexType N = min_end + max_begin;
@@ -100,7 +100,7 @@ struct testWorkGroupUnorderedMultiple
       }
     }
 
-    WORKING_RES res = WORKING_RES::get_default();
+    WORKING_RES               res = WORKING_RES::get_default();
     camp::resources::Resource working_res{res};
 
     using type1 = IndexType;
@@ -108,16 +108,16 @@ struct testWorkGroupUnorderedMultiple
     using type3 = double;
 
     type1* working_array1 = nullptr;
-    type1* check_array1 = nullptr;
-    type1* test_array1 = nullptr;
+    type1* check_array1   = nullptr;
+    type1* test_array1    = nullptr;
 
     type2* working_array2 = nullptr;
-    type2* check_array2 = nullptr;
-    type2* test_array2 = nullptr;
+    type2* check_array2   = nullptr;
+    type2* test_array2    = nullptr;
 
     type3* working_array3 = nullptr;
-    type3* check_array3 = nullptr;
-    type3* test_array3 = nullptr;
+    type3* check_array3   = nullptr;
+    type3* test_array3    = nullptr;
 
     allocateForallTestData<type1>(
         N * num1, working_res, &working_array1, &check_array1, &test_array1);
@@ -278,7 +278,7 @@ struct testWorkGroupUnorderedMultiple
 
           for (IndexType j = IndexType(0); j < num1; j++)
           {
-            type1* test_ptr1 = test_array1 + N * j;
+            type1* test_ptr1  = test_array1 + N * j;
             type1* check_ptr1 = check_array1 + N * j;
             for (IndexType i = IndexType(0); i < begin1[j]; i++)
             {
@@ -296,7 +296,7 @@ struct testWorkGroupUnorderedMultiple
 
           for (IndexType j = IndexType(0); j < num2; j++)
           {
-            type2* test_ptr2 = test_array2 + N * j;
+            type2* test_ptr2  = test_array2 + N * j;
             type2* check_ptr2 = check_array2 + N * j;
             for (IndexType i = IndexType(0); i < begin2[j]; i++)
             {
@@ -314,7 +314,7 @@ struct testWorkGroupUnorderedMultiple
 
           for (IndexType j = IndexType(0); j < num3; j++)
           {
-            type3* test_ptr3 = test_array3 + N * j;
+            type3* test_ptr3  = test_array3 + N * j;
             type3* check_ptr3 = check_array3 + N * j;
             for (IndexType i = IndexType(0); i < begin3[j]; i++)
             {
@@ -352,7 +352,7 @@ struct testWorkGroupUnorderedMultiple
 
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
@@ -378,7 +378,7 @@ struct testWorkGroupUnorderedMultiple<
 };
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
@@ -417,12 +417,12 @@ TYPED_TEST_SUITE_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest);
 TYPED_TEST_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest,
              BasicWorkGroupUnorderedMultipleReuse)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ExecPolicy       = typename camp::at<TypeParam, camp::num<0>>::type;
+  using OrderPolicy      = typename camp::at<TypeParam, camp::num<1>>::type;
+  using StoragePolicy    = typename camp::at<TypeParam, camp::num<2>>::type;
+  using DispatchTyper    = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType        = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Allocator        = typename camp::at<TypeParam, camp::num<5>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
 
   std::mt19937 rng(std::random_device{}());
@@ -432,7 +432,7 @@ TYPED_TEST_P(WorkGroupBasicUnorderedMultipleReuseFunctionalTest,
   IndexType num2 = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType num3 = dist_type(IndexType(0), IndexType(8))(rng);
 
-  IndexType pool_reuse = dist_type(IndexType(0), IndexType(8))(rng);
+  IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
   testWorkGroupUnorderedMultiple<ExecPolicy,

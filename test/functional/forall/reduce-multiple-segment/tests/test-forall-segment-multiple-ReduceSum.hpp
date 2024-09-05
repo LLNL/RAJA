@@ -21,9 +21,9 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first, IDX_TYPE last)
   RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  DATA_TYPE* working_array;
-  DATA_TYPE* check_array;
-  DATA_TYPE* test_array;
+  DATA_TYPE*                working_array;
+  DATA_TYPE*                check_array;
+  DATA_TYPE*                test_array;
 
   allocateForallTestData<DATA_TYPE>(
       last, working_res, &working_array, &check_array, &test_array);
@@ -53,16 +53,18 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first, IDX_TYPE last)
   for (int j = 0; j < nloops; ++j)
   {
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-      sum0 += working_array[idx];
-      sum1 += working_array[idx] * 2;
-      sum2 += working_array[idx] * 3;
-      sum3 += working_array[idx] * 4;
-      sum4 += working_array[idx] * 5;
-      sum5 += working_array[idx] * 6;
-      sum6 += working_array[idx] * 7;
-      sum7 += working_array[idx] * 8;
-    });
+    RAJA::forall<EXEC_POLICY>(r1,
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                              {
+                                sum0 += working_array[idx];
+                                sum1 += working_array[idx] * 2;
+                                sum2 += working_array[idx] * 3;
+                                sum3 += working_array[idx] * 4;
+                                sum4 += working_array[idx] * 5;
+                                sum5 += working_array[idx] * 6;
+                                sum6 += working_array[idx] * 7;
+                                sum7 += working_array[idx] * 8;
+                              });
 
     DATA_TYPE check_val = initval * index_len * (j + 1);
 
@@ -94,9 +96,9 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first, IDX_TYPE last)
   RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  DATA_TYPE* working_array;
-  DATA_TYPE* check_array;
-  DATA_TYPE* test_array;
+  DATA_TYPE*                working_array;
+  DATA_TYPE*                check_array;
+  DATA_TYPE*                test_array;
 
   allocateForallTestData<DATA_TYPE>(
       last, working_res, &working_array, &check_array, &test_array);
@@ -137,16 +139,18 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first, IDX_TYPE last)
   for (int j = 0; j < nloops; ++j)
   {
 
-    RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-      sum0 += working_array[idx];
-      sum1 += working_array[idx] * 2;
-      sum2 += working_array[idx] * 3;
-      sum3 += working_array[idx] * 4;
-      sum4 += working_array[idx] * 5;
-      sum5 += working_array[idx] * 6;
-      sum6 += working_array[idx] * 7;
-      sum7 += working_array[idx] * 8;
-    });
+    RAJA::forall<EXEC_POLICY>(r1,
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                              {
+                                sum0 += working_array[idx];
+                                sum1 += working_array[idx] * 2;
+                                sum2 += working_array[idx] * 3;
+                                sum3 += working_array[idx] * 4;
+                                sum4 += working_array[idx] * 5;
+                                sum5 += working_array[idx] * 6;
+                                sum6 += working_array[idx] * 7;
+                                sum7 += working_array[idx] * 8;
+                              });
 
     DATA_TYPE check_val = initval * index_len * (j + 1);
 
@@ -175,10 +179,10 @@ class ForallReduceSumMultipleTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceSumMultipleTest, ReduceSumMultipleForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallReduceSumMultipleStaggeredTestImpl<IDX_TYPE,

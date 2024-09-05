@@ -42,9 +42,9 @@ public:
       internal::expt::RegisterBase<Register<int64_t, avx2_register>>;
 
   using register_policy = avx2_register;
-  using self_type = Register<int64_t, avx2_register>;
-  using element_type = int64_t;
-  using register_type = __m256i;
+  using self_type       = Register<int64_t, avx2_register>;
+  using element_type    = int64_t;
+  using register_type   = __m256i;
 
   using int_vector_type = Register<int64_t, avx2_register>;
 
@@ -418,7 +418,7 @@ public:
   {
 
     // swap pairs and add
-    auto sh1 = permute<0x5>(m_value);
+    auto sh1  = permute<0x5>(m_value);
     auto red1 = _mm256_add_epi64(m_value, sh1);
 
     // add lower and upper
@@ -437,13 +437,13 @@ public:
     auto red = get(0);
 
     auto v1 = get(1);
-    red = red < v1 ? v1 : red;
+    red     = red < v1 ? v1 : red;
 
     auto v2 = get(2);
-    red = red < v2 ? v2 : red;
+    red     = red < v2 ? v2 : red;
 
     auto v3 = get(3);
-    red = red < v3 ? v3 : red;
+    red     = red < v3 ? v3 : red;
 
     return red;
   }
@@ -466,17 +466,17 @@ public:
     if (N > 1)
     {
       auto v1 = get(1);
-      red = red < v1 ? v1 : red;
+      red     = red < v1 ? v1 : red;
     }
     if (N > 2)
     {
       auto v2 = get(2);
-      red = red < v2 ? v2 : red;
+      red     = red < v2 ? v2 : red;
     }
     if (N > 3)
     {
       auto v3 = get(3);
-      red = red < v3 ? v3 : red;
+      red     = red < v3 ? v3 : red;
     }
 
     return red;
@@ -506,13 +506,13 @@ public:
     auto red = get(0);
 
     auto v1 = get(1);
-    red = red > v1 ? v1 : red;
+    red     = red > v1 ? v1 : red;
 
     auto v2 = get(2);
-    red = red > v2 ? v2 : red;
+    red     = red > v2 ? v2 : red;
 
     auto v3 = get(3);
-    red = red > v3 ? v3 : red;
+    red     = red > v3 ? v3 : red;
 
     return red;
   }
@@ -535,17 +535,17 @@ public:
     if (N > 1)
     {
       auto v1 = get(1);
-      red = red > v1 ? v1 : red;
+      red     = red > v1 ? v1 : red;
     }
     if (N > 2)
     {
       auto v2 = get(2);
-      red = red > v2 ? v2 : red;
+      red     = red > v2 ? v2 : red;
     }
     if (N > 3)
     {
       auto v3 = get(3);
-      red = red > v3 ? v3 : red;
+      red     = red > v3 ? v3 : red;
     }
 
     return red;

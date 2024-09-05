@@ -29,13 +29,13 @@ TYPED_TEST_SUITE_P(AtomicRefBasicAccessorUnitTest);
 
 TYPED_TEST_P(AtomicRefBasicAccessorUnitTest, BasicAccessors)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   // should also work with CUDA
-  T theval = (T)0;
+  T  theval  = (T)0;
   T* memaddr = &theval;
-  T result;
+  T  result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
@@ -76,11 +76,11 @@ TYPED_TEST_SUITE_P(AtomicRefCUDAAccessorUnitTest);
 
 GPU_TYPED_TEST_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   T* memaddr = nullptr;
-  T* result = nullptr;
+  T* result  = nullptr;
   cudaErrchk(cudaMallocManaged((void**)&memaddr, sizeof(T)));
   cudaErrchk(cudaMallocManaged((void**)&result, sizeof(T)));
   cudaErrchk(cudaDeviceSynchronize());
@@ -99,19 +99,23 @@ GPU_TYPED_TEST_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors)
   ASSERT_EQ(test1, (T)23);
 
   // test load method
-  forone<test_cuda>([=] __device__() {
-    test1 = (T)29;
-    result[0] = test1.load();
-  });
+  forone<test_cuda>(
+      [=] __device__()
+      {
+        test1     = (T)29;
+        result[0] = test1.load();
+      });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(result[0], (T)29);
   ASSERT_EQ(test1, (T)29);
 
   // test T()
-  forone<test_cuda>([=] __device__() {
-    test1 = (T)47;
-    result[0] = test1;
-  });
+  forone<test_cuda>(
+      [=] __device__()
+      {
+        test1     = (T)47;
+        result[0] = test1;
+      });
   cudaErrchk(cudaDeviceSynchronize());
   ASSERT_EQ(result[0], (T)47);
   ASSERT_EQ(test1, (T)47);

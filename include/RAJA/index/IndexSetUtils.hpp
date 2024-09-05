@@ -45,7 +45,7 @@ namespace RAJA
  ******************************************************************************
  */
 template <typename CONTAINER_T, typename... SEG_TYPES>
-RAJA_INLINE void getIndices(CONTAINER_T& con,
+RAJA_INLINE void getIndices(CONTAINER_T&                       con,
                             const TypedIndexSet<SEG_TYPES...>& iset)
 {
   CONTAINER_T tcon;
@@ -79,13 +79,15 @@ RAJA_INLINE void getIndices(CONTAINER_T& con, const SEGMENT_T& seg)
  ******************************************************************************
  */
 template <typename CONTAINER_T, typename... SEG_TYPES, typename CONDITIONAL>
-RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
+RAJA_INLINE void getIndicesConditional(CONTAINER_T&                       con,
                                        const TypedIndexSet<SEG_TYPES...>& iset,
                                        CONDITIONAL conditional)
 {
   CONTAINER_T tcon;
   forall<ExecPolicy<seq_segit, seq_exec>>(
-      iset, [&](typename CONTAINER_T::value_type idx) {
+      iset,
+      [&](typename CONTAINER_T::value_type idx)
+      {
         if (conditional(idx)) tcon.push_back(idx);
       });
   con = tcon;
@@ -100,14 +102,16 @@ RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
  ******************************************************************************
  */
 template <typename CONTAINER_T, typename SEGMENT_T, typename CONDITIONAL>
-RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
+RAJA_INLINE void getIndicesConditional(CONTAINER_T&     con,
                                        const SEGMENT_T& seg,
-                                       CONDITIONAL conditional)
+                                       CONDITIONAL      conditional)
 {
   CONTAINER_T tcon;
-  forall<seq_exec>(seg, [&](typename CONTAINER_T::value_type idx) {
-    if (conditional(idx)) tcon.push_back(idx);
-  });
+  forall<seq_exec>(seg,
+                   [&](typename CONTAINER_T::value_type idx)
+                   {
+                     if (conditional(idx)) tcon.push_back(idx);
+                   });
   con = tcon;
 }
 

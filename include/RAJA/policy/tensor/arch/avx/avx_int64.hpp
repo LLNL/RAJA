@@ -42,9 +42,9 @@ public:
       internal::expt::RegisterBase<Register<int64_t, avx_register>>;
 
   using register_policy = avx_register;
-  using self_type = Register<int64_t, avx_register>;
-  using element_type = int64_t;
-  using register_type = __m256i;
+  using self_type       = Register<int64_t, avx_register>;
+  using element_type    = int64_t;
+  using register_type   = __m256i;
 
   using int_vector_type = Register<int64_t, avx_register>;
 
@@ -317,13 +317,13 @@ public:
     // no 4-way 64-bit add, but there is a 2-way SSE... split and conquer
 
     // Low 128-bits  - use _mm256_castsi256_si128???
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(b.m_value);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(b.m_value);
     auto res_low = _mm256_castsi128_si256(_mm_add_epi64(low_a, low_b));
 
     // Hi 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(b.m_value, 1);
     auto res_hi = _mm_add_epi64(hi_a, hi_b);
 
     // Stitch back together
@@ -337,13 +337,13 @@ public:
     // no 4-way 64-bit subtract, but there is a 2-way SSE... split and conquer
 
     // Low 128-bits  - use _mm256_castsi256_si128???
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(b.m_value);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(b.m_value);
     auto res_low = _mm256_castsi128_si256(_mm_sub_epi64(low_a, low_b));
 
     // Hi 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(b.m_value, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(b.m_value, 1);
     auto res_hi = _mm_sub_epi64(hi_a, hi_b);
 
     // Stitch back together
@@ -395,13 +395,13 @@ public:
     auto sh1 = permute<0x5>(m_value);
 
     // Add lower 128-bits
-    auto low_a = _mm256_castsi256_si128(m_value);
-    auto low_b = _mm256_castsi256_si128(sh1);
+    auto low_a   = _mm256_castsi256_si128(m_value);
+    auto low_b   = _mm256_castsi256_si128(sh1);
     auto res_low = _mm_add_epi64(low_a, low_b);
 
     // Add upper 128-bits
-    auto hi_a = _mm256_extractf128_si256(m_value, 1);
-    auto hi_b = _mm256_extractf128_si256(sh1, 1);
+    auto hi_a   = _mm256_extractf128_si256(m_value, 1);
+    auto hi_b   = _mm256_extractf128_si256(sh1, 1);
     auto res_hi = _mm_add_epi64(hi_a, hi_b);
 
     // Sum upper and lower
@@ -423,13 +423,13 @@ public:
     auto red = get(0);
 
     auto v1 = get(1);
-    red = red < v1 ? v1 : red;
+    red     = red < v1 ? v1 : red;
 
     auto v2 = get(2);
-    red = red < v2 ? v2 : red;
+    red     = red < v2 ? v2 : red;
 
     auto v3 = get(3);
-    red = red < v3 ? v3 : red;
+    red     = red < v3 ? v3 : red;
 
     return red;
   }
@@ -452,17 +452,17 @@ public:
     if (N > 1)
     {
       auto v1 = get(1);
-      red = red < v1 ? v1 : red;
+      red     = red < v1 ? v1 : red;
     }
     if (N > 2)
     {
       auto v2 = get(2);
-      red = red < v2 ? v2 : red;
+      red     = red < v2 ? v2 : red;
     }
     if (N > 3)
     {
       auto v3 = get(3);
-      red = red < v3 ? v3 : red;
+      red     = red < v3 ? v3 : red;
     }
 
     return red;
@@ -493,13 +493,13 @@ public:
     auto red = get(0);
 
     auto v1 = get(1);
-    red = red > v1 ? v1 : red;
+    red     = red > v1 ? v1 : red;
 
     auto v2 = get(2);
-    red = red > v2 ? v2 : red;
+    red     = red > v2 ? v2 : red;
 
     auto v3 = get(3);
-    red = red > v3 ? v3 : red;
+    red     = red > v3 ? v3 : red;
 
     return red;
   }
@@ -522,17 +522,17 @@ public:
     if (N > 1)
     {
       auto v1 = get(1);
-      red = red > v1 ? v1 : red;
+      red     = red > v1 ? v1 : red;
     }
     if (N > 2)
     {
       auto v2 = get(2);
-      red = red > v2 ? v2 : red;
+      red     = red > v2 ? v2 : red;
     }
     if (N > 3)
     {
       auto v3 = get(3);
-      red = red > v3 ? v3 : red;
+      red     = red > v3 ? v3 : red;
     }
 
     return red;

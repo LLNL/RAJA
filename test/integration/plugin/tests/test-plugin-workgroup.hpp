@@ -72,11 +72,11 @@ struct PluginWorkGroupTestImpl
       for (int i = 0; i < 10; i++)
       {
         loop_data[i].capture_platform_active = RAJA::Platform::undefined;
-        loop_data[i].capture_counter_pre = -1;
-        loop_data[i].capture_counter_post = -1;
-        loop_data[i].launch_platform_active = RAJA::Platform::undefined;
-        loop_data[i].launch_counter_pre = -1;
-        loop_data[i].launch_counter_post = -1;
+        loop_data[i].capture_counter_pre     = -1;
+        loop_data[i].capture_counter_post    = -1;
+        loop_data[i].launch_platform_active  = RAJA::Platform::undefined;
+        loop_data[i].launch_counter_pre      = -1;
+        loop_data[i].launch_counter_post     = -1;
       }
       plugin_test_resource->memcpy(
           data, &loop_data[0], 10 * sizeof(CounterData));
@@ -189,7 +189,7 @@ struct PluginWorkGroupTestImpl
 
 /// leave unsupported types untested
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
@@ -209,7 +209,7 @@ struct PluginWorkGroupTestImpl<
 };
 ///
 template <size_t BLOCK_SIZE,
-          bool Async,
+          bool   Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
@@ -238,14 +238,14 @@ class PluginWorkGroupTest : public ::testing::Test
 
 TYPED_TEST_P(PluginWorkGroupTest, PluginWorkGroup)
 {
-  using ExecPolicy = typename camp::at<TypeParam, camp::num<0>>::type;
-  using OrderPolicy = typename camp::at<TypeParam, camp::num<1>>::type;
-  using StoragePolicy = typename camp::at<TypeParam, camp::num<2>>::type;
-  using DispatchTyper = typename camp::at<TypeParam, camp::num<3>>::type;
-  using IndexType = typename camp::at<TypeParam, camp::num<4>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<5>>::type;
+  using ExecPolicy       = typename camp::at<TypeParam, camp::num<0>>::type;
+  using OrderPolicy      = typename camp::at<TypeParam, camp::num<1>>::type;
+  using StoragePolicy    = typename camp::at<TypeParam, camp::num<2>>::type;
+  using DispatchTyper    = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IndexType        = typename camp::at<TypeParam, camp::num<4>>::type;
+  using Allocator        = typename camp::at<TypeParam, camp::num<5>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
-  using PlatformHolder = typename camp::at<TypeParam, camp::num<7>>::type;
+  using PlatformHolder   = typename camp::at<TypeParam, camp::num<7>>::type;
 
   PluginWorkGroupTestImpl<ExecPolicy,
                           OrderPolicy,

@@ -372,7 +372,7 @@ public:
   bool compare_exchange_strong(value_type& expect, value_type rhs) const
   {
     value_type compare = expect;
-    value_type old = RAJA::atomicCAS<Policy>(m_value_ptr, compare, rhs);
+    value_type old     = RAJA::atomicCAS<Policy>(m_value_ptr, compare, rhs);
     if (compare == old)
     {
       return true;

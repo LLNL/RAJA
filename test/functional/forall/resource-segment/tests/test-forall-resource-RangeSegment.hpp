@@ -15,13 +15,13 @@ void ForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first),
                                          RAJA::stripIndexType(last));
-  INDEX_TYPE N = INDEX_TYPE(r1.end() - r1.begin());
+  INDEX_TYPE                          N = INDEX_TYPE(r1.end() - r1.begin());
 
-  WORKING_RES working_res;
+  WORKING_RES               working_res;
   camp::resources::Resource erased_working_res{working_res};
-  INDEX_TYPE* working_array;
-  INDEX_TYPE* check_array;
-  INDEX_TYPE* test_array;
+  INDEX_TYPE*               working_array;
+  INDEX_TYPE*               check_array;
+  INDEX_TYPE*               test_array;
 
   allocateForallTestData<INDEX_TYPE>(
       N, erased_working_res, &working_array, &check_array, &test_array);
@@ -31,9 +31,10 @@ void ForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
   RAJA::forall<EXEC_POLICY>(
-      working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-        working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
-      });
+      working_res,
+      r1,
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+      { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
 
   working_res.memcpy(
       check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
@@ -78,7 +79,7 @@ void runNegativeTests()
 
 TYPED_TEST_P(ForallResourceRangeSegmentTest, ResourceRangeSegmentForall)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 

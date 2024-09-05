@@ -38,7 +38,7 @@ struct Accumulate;
 template <typename test_policy>
 struct BinaryTreeReduce<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using reduce_category = unordered_reduce_tag;
+  using reduce_category  = unordered_reduce_tag;
   using reduce_interface = reduce_interface_tag;
 
   const char* name() { return "RAJA::binary_tree_reduce"; }
@@ -53,7 +53,7 @@ struct BinaryTreeReduce<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 template <typename test_policy>
 struct Accumulate<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 {
-  using reduce_category = left_fold_reduce_tag;
+  using reduce_category  = left_fold_reduce_tag;
   using reduce_interface = reduce_interface_tag;
 
   const char* name() { return "RAJA::accumulate"; }
@@ -71,7 +71,7 @@ template <typename test_policy>
 struct BinaryTreeReduce<test_policy, RunOnDevice>
     : ForoneSynchronize<test_policy>
 {
-  using reduce_category = unordered_reduce_tag;
+  using reduce_category  = unordered_reduce_tag;
   using reduce_interface = reduce_interface_tag;
 
   std::string m_name;
@@ -86,36 +86,36 @@ struct BinaryTreeReduce<test_policy, RunOnDevice>
   template <typename T, typename Container>
   void operator()(T* reduced_value, Container&& c)
   {
-    forone<test_policy>(
-        [=] RAJA_DEVICE() { *reduced_value = RAJA::binary_tree_reduce(c); });
+    forone<test_policy>([=] RAJA_DEVICE()
+                        { *reduced_value = RAJA::binary_tree_reduce(c); });
   }
 
   template <typename T, typename Container>
-  void operator()(T* reduced_value,
-                  Container&& c,
+  void operator()(T*                                    reduced_value,
+                  Container&&                           c,
                   RAJA::detail::ContainerVal<Container> init)
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      *reduced_value = RAJA::binary_tree_reduce(c, init);
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        { *reduced_value = RAJA::binary_tree_reduce(c, init); });
   }
 
   template <typename T, typename Container, typename BinaryOp>
-  void operator()(T* reduced_value,
-                  Container&& c,
+  void operator()(T*                                    reduced_value,
+                  Container&&                           c,
                   RAJA::detail::ContainerVal<Container> init,
-                  BinaryOp op)
+                  BinaryOp                              op)
   {
-    forone<test_policy>([=] RAJA_DEVICE() {
-      *reduced_value = RAJA::binary_tree_reduce(c, init, op);
-    });
+    forone<test_policy>(
+        [=] RAJA_DEVICE()
+        { *reduced_value = RAJA::binary_tree_reduce(c, init, op); });
   }
 };
 
 template <typename test_policy>
 struct Accumulate<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
 {
-  using reduce_category = left_fold_reduce_tag;
+  using reduce_category  = left_fold_reduce_tag;
   using reduce_interface = reduce_interface_tag;
 
   std::string m_name;
@@ -130,27 +130,27 @@ struct Accumulate<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   template <typename T, typename Container>
   void operator()(T* reduced_value, Container&& c)
   {
-    forone<test_policy>(
-        [=] RAJA_DEVICE() { *reduced_value = RAJA::accumulate(c); });
+    forone<test_policy>([=] RAJA_DEVICE()
+                        { *reduced_value = RAJA::accumulate(c); });
   }
 
   template <typename T, typename Container>
-  void operator()(T* reduced_value,
-                  Container&& c,
+  void operator()(T*                                    reduced_value,
+                  Container&&                           c,
                   RAJA::detail::ContainerVal<Container> init)
   {
-    forone<test_policy>(
-        [=] RAJA_DEVICE() { *reduced_value = RAJA::accumulate(c, init); });
+    forone<test_policy>([=] RAJA_DEVICE()
+                        { *reduced_value = RAJA::accumulate(c, init); });
   }
 
   template <typename T, typename Container, typename BinaryOp>
-  void operator()(T* reduced_value,
-                  Container&& c,
+  void operator()(T*                                    reduced_value,
+                  Container&&                           c,
                   RAJA::detail::ContainerVal<Container> init,
-                  BinaryOp op)
+                  BinaryOp                              op)
   {
-    forone<test_policy>(
-        [=] RAJA_DEVICE() { *reduced_value = RAJA::accumulate(c, init, op); });
+    forone<test_policy>([=] RAJA_DEVICE()
+                        { *reduced_value = RAJA::accumulate(c, init, op); });
   }
 };
 

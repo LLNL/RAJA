@@ -54,11 +54,11 @@ public:
   template <typename rhs_accessor>
   using rebind_accessor = SoAPtr<T, mempool, rhs_accessor>;
 
-  SoAPtr() = default;
-  SoAPtr(SoAPtr const&) = default;
-  SoAPtr(SoAPtr&&) = default;
+  SoAPtr()                         = default;
+  SoAPtr(SoAPtr const&)            = default;
+  SoAPtr(SoAPtr&&)                 = default;
   SoAPtr& operator=(SoAPtr const&) = default;
-  SoAPtr& operator=(SoAPtr&&) = default;
+  SoAPtr& operator=(SoAPtr&&)      = default;
 
   explicit SoAPtr(size_t size)
       : mem(mempool::getInstance().template malloc<value_type>(size))
@@ -112,7 +112,7 @@ class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>,
              mempool,
              accessor>
 {
-  using first_type = T;
+  using first_type  = T;
   using second_type = IndexType;
 
   template <typename, typename, typename>
@@ -124,11 +124,11 @@ public:
   template <typename rhs_accessor>
   using rebind_accessor = SoAPtr<value_type, mempool, rhs_accessor>;
 
-  SoAPtr() = default;
-  SoAPtr(SoAPtr const&) = default;
-  SoAPtr(SoAPtr&&) = default;
+  SoAPtr()                         = default;
+  SoAPtr(SoAPtr const&)            = default;
+  SoAPtr(SoAPtr&&)                 = default;
   SoAPtr& operator=(SoAPtr const&) = default;
-  SoAPtr& operator=(SoAPtr&&) = default;
+  SoAPtr& operator=(SoAPtr&&)      = default;
 
   explicit SoAPtr(size_t size)
       : mem(mempool::getInstance().template malloc<first_type>(size)),
@@ -145,7 +145,7 @@ public:
 
   SoAPtr& allocate(size_t size)
   {
-    mem = mempool::getInstance().template malloc<first_type>(size);
+    mem     = mempool::getInstance().template malloc<first_type>(size);
     mem_idx = mempool::getInstance().template malloc<second_type>(size);
     return *this;
   }
@@ -172,7 +172,7 @@ public:
   }
 
 private:
-  first_type* mem = nullptr;
+  first_type*  mem     = nullptr;
   second_type* mem_idx = nullptr;
 };
 

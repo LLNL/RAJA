@@ -396,7 +396,7 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T* acc, Oper&& oper)
   do
   {
     expected = old;
-    old = hip_atomicCAS(acc, expected, oper(expected));
+    old      = hip_atomicCAS(acc, expected, oper(expected));
   } while (!hip_atomicCAS_equal(old, expected));
 
   return old;
@@ -410,8 +410,8 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T* acc, Oper&& oper)
  * result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_INLINE __device__ T hip_atomicCAS_loop(T* acc,
-                                            Oper&& oper,
+RAJA_INLINE __device__ T hip_atomicCAS_loop(T*             acc,
+                                            Oper&&         oper,
                                             ShortCircuit&& sc)
 {
   T old = hip_atomicLoad(acc);
@@ -426,7 +426,7 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T* acc,
   do
   {
     expected = old;
-    old = hip_atomicCAS(acc, expected, oper(expected));
+    old      = hip_atomicCAS(acc, expected, oper(expected));
   } while (!hip_atomicCAS_equal(old, expected) && !sc(old));
 
   return old;
@@ -598,9 +598,11 @@ RAJA_INLINE __device__ T hip_atomicMax(T* acc, T value)
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicInc(T* acc, T value)
 {
-  return hip_atomicCAS_loop(acc, [value](T old) {
-    return value <= old ? static_cast<T>(0) : old + static_cast<T>(1);
-  });
+  return hip_atomicCAS_loop(acc,
+                            [value](T old) {
+                              return value <= old ? static_cast<T>(0)
+                                                  : old + static_cast<T>(1);
+                            });
 }
 
 
@@ -620,10 +622,13 @@ RAJA_INLINE __device__ T hip_atomicInc(T* acc)
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicDec(T* acc, T value)
 {
-  return hip_atomicCAS_loop(acc, [value](T old) {
-    return old == static_cast<T>(0) || value < old ? value
-                                                   : old - static_cast<T>(1);
-  });
+  return hip_atomicCAS_loop(acc,
+                            [value](T old)
+                            {
+                              return old == static_cast<T>(0) || value < old
+                                         ? value
+                                         : old - static_cast<T>(1);
+                            });
 }
 
 
@@ -740,7 +745,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAdd(acc, value);
@@ -753,7 +758,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicSub(acc, value);
@@ -766,7 +771,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMin(acc, value);
@@ -779,7 +784,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMax(acc, value);
@@ -792,7 +797,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc, value);
@@ -817,7 +822,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc, value);
@@ -842,7 +847,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAnd(acc, value);
@@ -855,7 +860,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(hip_atomic_explicit<host_policy>,
                                         T* acc,
-                                        T value)
+                                        T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicOr(acc, value);
@@ -868,7 +873,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(hip_atomic_explicit<host_policy>,
                                          T* acc,
-                                         T value)
+                                         T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicXor(acc, value);
@@ -881,7 +886,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(hip_atomic_explicit<host_policy>,
                                               T* acc,
-                                              T value)
+                                              T  value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicExchange(acc, value);

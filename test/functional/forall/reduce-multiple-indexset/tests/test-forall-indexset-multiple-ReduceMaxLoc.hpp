@@ -26,7 +26,7 @@ template <typename IDX_TYPE,
 void ForallIndexSetReduceMaxLocMultipleTestImpl()
 {
   using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
-  using IdxSetType = RAJA::TypedIndexSet<RangeSegType>;
+  using IdxSetType   = RAJA::TypedIndexSet<RangeSegType>;
 
   RAJA::TypedRangeSegment<IDX_TYPE> r1(1, 1037);
   RAJA::TypedRangeSegment<IDX_TYPE> r2(1043, 2036);
@@ -50,7 +50,7 @@ void ForallIndexSetReduceMaxLocMultipleTestImpl()
   allocateForallTestData<double>(
       alen, working_res, &working_array, &check_array, &test_array);
 
-  double current_max = -DBL_MAX;
+  double   current_max = -DBL_MAX;
   IDX_TYPE current_loc = -1;
 
   for (IDX_TYPE i = 0; i < alen; ++i)
@@ -81,10 +81,12 @@ void ForallIndexSetReduceMaxLocMultipleTestImpl()
 
     working_res.memcpy(working_array, test_array, sizeof(double) * alen);
 
-    RAJA::forall<EXEC_POLICY>(iset, [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
-      dmax0.maxloc(working_array[i], i);
-      dmax1.maxloc(2 * working_array[i], i);
-    });
+    RAJA::forall<EXEC_POLICY>(iset,
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE i)
+                              {
+                                dmax0.maxloc(working_array[i], i);
+                                dmax1.maxloc(2 * working_array[i], i);
+                              });
 
     ASSERT_FLOAT_EQ(static_cast<double>(dmax0.get()), current_max);
     ASSERT_EQ(static_cast<IDX_TYPE>(dmax0.getLoc()), current_loc);
@@ -104,9 +106,9 @@ class ForallIndexSetReduceMaxLocMultipleTest : public ::testing::Test
 TYPED_TEST_P(ForallIndexSetReduceMaxLocMultipleTest,
              ReduceMaxLocMultipleForallIndexSet)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
   ForallIndexSetReduceMaxLocMultipleTestImpl<IDX_TYPE,

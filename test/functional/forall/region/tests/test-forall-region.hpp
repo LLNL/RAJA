@@ -40,15 +40,17 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * N);
 
-  RAJA::region<REG_POLICY>([=]() {
-    RAJA::forall<EXEC_POLICY>(rseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      working_array[idx - first] += 1;
-    });
+  RAJA::region<REG_POLICY>(
+      [=]()
+      {
+        RAJA::forall<EXEC_POLICY>(rseg,
+                                  [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                                  { working_array[idx - first] += 1; });
 
-    RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      working_array[idx - first] += 2;
-    });
-  });
+        RAJA::forall<EXEC_POLICY>(lseg,
+                                  [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                                  { working_array[idx - first] += 2; });
+      });
 
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
@@ -70,9 +72,9 @@ class ForallRegionTest : public ::testing::Test
 
 TYPED_TEST_P(ForallRegionTest, RegionForall)
 {
-  using INDEX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
+  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using REG_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
+  using REG_POLICY  = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
   ForallRegionTestImpl<INDEX_TYPE, WORKING_RES, REG_POLICY, EXEC_POLICY>(0, 25);

@@ -16,8 +16,8 @@ template <typename EXEC_POL,
           typename PARAMS,
           typename WORKING_RES,
           typename... Args>
-typename std::enable_if<USE_RESOURCE>::type call_kernel(SEGMENTS&& segs,
-                                                        PARAMS&& params,
+typename std::enable_if<USE_RESOURCE>::type call_kernel(SEGMENTS&&  segs,
+                                                        PARAMS&&    params,
                                                         WORKING_RES work_res,
                                                         Args&&... args)
 {
@@ -56,7 +56,7 @@ template <typename WORKING_RES,
 void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
 {
 
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res{work_res};
 
   // Allocate Tests Data
@@ -86,14 +86,12 @@ void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
       work_res,
 
       // lambda 0, only runs for sequential
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, int& value) {
-        value = work_array[i];
-      },
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, int& value)
+      { value = work_array[i]; },
 
       // lambda 1, only runs for device
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, int& value) {
-        value += work_array[i];
-      },
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, int& value)
+      { value += work_array[i]; },
 
       // lambda 2, (reduction) runs for both sequential and device
       // Device: This only gets executed on the "root" thread which received the

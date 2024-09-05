@@ -94,9 +94,9 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE static RAJA_INLINE
       typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
-      multiply_accumulate(left_type const& A,
+      multiply_accumulate(left_type const&  A,
                           right_type const& B,
-                          result_type& C)
+                          result_type&      C)
   {
 #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
     RAJA::tensor_stats::num_matrix_mm_multacc_row_row++;
@@ -108,7 +108,7 @@ struct MatrixMatrixMultiplyHelper<
     for (camp::idx_t c_reg = 0; c_reg < result_type::s_num_registers; ++c_reg)
     {
       camp::idx_t bc_col_reg = c_reg % num_bc_reg_per_row;
-      camp::idx_t ac_row = c_reg / num_bc_reg_per_row;
+      camp::idx_t ac_row     = c_reg / num_bc_reg_per_row;
 
       RAJA_UNROLL
       for (camp::idx_t a_col = 0; a_col < M_SIZE; ++a_col)
@@ -129,18 +129,18 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE RAJA_INLINE static
       typename std::enable_if<(s_C_minor_dim_registers == 0), dummy>::type
-      multiply_accumulate(left_type const& A,
+      multiply_accumulate(left_type const&  A,
                           right_type const& B,
-                          result_type& C)
+                          result_type&      C)
   {
-    constexpr camp::idx_t bc_segbits = result_type::s_segbits;
+    constexpr camp::idx_t bc_segbits              = result_type::s_segbits;
     constexpr camp::idx_t a_segments_per_register = 1 << bc_segbits;
 
     RAJA_UNROLL
     for (camp::idx_t ac_row = 0; ac_row < N_SIZE; ++ac_row)
     {
-      camp::idx_t c_reg = ac_row / result_type::s_major_dim_per_register;
-      camp::idx_t c_segment = ac_row % result_type::s_major_dim_per_register;
+      camp::idx_t   c_reg     = ac_row / result_type::s_major_dim_per_register;
+      camp::idx_t   c_segment = ac_row % result_type::s_major_dim_per_register;
       register_type c_tmp;
 
       RAJA_UNROLL
@@ -148,7 +148,7 @@ struct MatrixMatrixMultiplyHelper<
       {
 
         camp::idx_t a_segment = ac_row * right_type::s_num_registers + b_reg;
-        camp::idx_t a_reg = a_segment / a_segments_per_register;
+        camp::idx_t a_reg     = a_segment / a_segments_per_register;
         camp::idx_t a_reg_segment = a_segment % a_segments_per_register;
 
         auto a_tmp = A.get_register(a_reg).segmented_broadcast_outer(
@@ -249,9 +249,9 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE static RAJA_INLINE
       typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
-      multiply_accumulate(left_type const& A,
+      multiply_accumulate(left_type const&  A,
                           right_type const& B,
-                          result_type& C)
+                          result_type&      C)
   {
 
 #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
@@ -265,7 +265,7 @@ struct MatrixMatrixMultiplyHelper<
     for (camp::idx_t c_reg = 0; c_reg < result_type::s_num_registers; ++c_reg)
     {
       camp::idx_t ac_row_reg = c_reg % num_ac_reg_per_col;
-      camp::idx_t bc_col = c_reg / num_ac_reg_per_col;
+      camp::idx_t bc_col     = c_reg / num_ac_reg_per_col;
 
       RAJA_UNROLL
       for (camp::idx_t b_row = 0; b_row < M_SIZE; ++b_row)
@@ -286,11 +286,11 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE RAJA_INLINE static
       typename std::enable_if<(s_C_minor_dim_registers == 0), dummy>::type
-      multiply_accumulate(left_type const& A,
+      multiply_accumulate(left_type const&  A,
                           right_type const& B,
-                          result_type& C)
+                          result_type&      C)
   {
-    constexpr camp::idx_t ac_segbits = result_type::s_segbits;
+    constexpr camp::idx_t ac_segbits              = result_type::s_segbits;
     constexpr camp::idx_t b_segments_per_register = 1 << ac_segbits;
 
     camp::idx_t bc_col = 0;
@@ -316,7 +316,7 @@ struct MatrixMatrixMultiplyHelper<
 
 
           camp::idx_t b_segment = bc_col * right_type::s_num_registers + a_reg;
-          camp::idx_t b_reg = b_segment / b_segments_per_register;
+          camp::idx_t b_reg     = b_segment / b_segments_per_register;
           camp::idx_t b_reg_segment = b_segment % b_segments_per_register;
 
           register_type b_tmp = B.get_register(b_reg).segmented_broadcast_outer(

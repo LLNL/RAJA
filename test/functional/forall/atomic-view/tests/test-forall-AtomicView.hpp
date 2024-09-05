@@ -26,9 +26,9 @@ void ForallAtomicViewTestImpl(IdxType N)
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T* hsource = host_res.allocate<T>(N);
-  T* source = work_res.allocate<T>(N);
-  T* dest = work_res.allocate<T>(N / 2);
+  T* hsource     = host_res.allocate<T>(N);
+  T* source      = work_res.allocate<T>(N);
+  T* dest        = work_res.allocate<T>(N / 2);
   T* check_array = host_res.allocate<T>(N / 2);
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -63,9 +63,9 @@ void ForallAtomicViewTestImpl(IdxType N)
       seg_half, [=] RAJA_HOST_DEVICE(IdxType i) { sum_atomic_view(i) = (T)0; });
 
   // Assign values to dest using atomic view
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    sum_atomic_view(i / 2) += vec_view(i);
-  });
+  RAJA::forall<ExecPolicy>(seg,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           { sum_atomic_view(i / 2) += vec_view(i); });
 
   work_res.memcpy(check_array, dest, sizeof(T) * N / 2);
 
@@ -95,11 +95,11 @@ class ForallAtomicViewTest : public ::testing::Test
 
 TYPED_TEST_P(ForallAtomicViewTest, AtomicViewForall)
 {
-  using AExec = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol = typename camp::at<TypeParam, camp::num<1>>::type;
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using DType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallAtomicViewTestImpl<AExec, APol, ResType, IdxType, DType>(100000);
 }

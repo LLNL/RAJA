@@ -16,8 +16,8 @@ template <typename EXEC_POL,
           typename PARAMS,
           typename WORKING_RES,
           typename... Args>
-typename std::enable_if<USE_RESOURCE>::type call_kernel(SEGMENTS&& segs,
-                                                        PARAMS&& params,
+typename std::enable_if<USE_RESOURCE>::type call_kernel(SEGMENTS&&  segs,
+                                                        PARAMS&&    params,
                                                         WORKING_RES work_res,
                                                         Args&&... args)
 {
@@ -53,11 +53,11 @@ template <typename WORKING_RES, typename EXEC_POLICY, bool USE_RESOURCE>
 void KernelNestedLoopTest()
 {
 
-  constexpr static int N = 100;
+  constexpr static int N   = 100;
   constexpr static int DIM = 2;
 
   camp::resources::Resource host_res{camp::resources::Host()};
-  WORKING_RES work_res{WORKING_RES::get_default()};
+  WORKING_RES               work_res{WORKING_RES::get_default()};
 
   // Allocate Tests Data
   double* work_arrA = work_res.template allocate<double>(N * N);
@@ -127,14 +127,12 @@ void KernelNestedLoopTest()
       [=] RAJA_HOST_DEVICE(double& dot) { dot = 0.0; },
 
       // lambda 1
-      [=] RAJA_HOST_DEVICE(int col, int row, int k, double& dot) {
-        dot += work_viewA(row, k) * work_viewB(k, col);
-      },
+      [=] RAJA_HOST_DEVICE(int col, int row, int k, double& dot)
+      { dot += work_viewA(row, k) * work_viewB(k, col); },
 
       // lambda 2
-      [=] RAJA_HOST_DEVICE(int col, int row, double& dot) {
-        work_viewC(row, col) = dot;
-      }
+      [=] RAJA_HOST_DEVICE(int col, int row, double& dot)
+      { work_viewC(row, col) = dot; }
 
   );
 
@@ -142,9 +140,9 @@ void KernelNestedLoopTest()
       check_arrC, work_arrC, sizeof(double) * RAJA::stripIndexType(N * N));
 
   RAJA::forall<RAJA::seq_exec>(
-      RAJA::RangeSegment{0, N * N}, [=](RAJA::Index_type i) {
-        ASSERT_TRUE(RAJA::test_abs(test_arrC[i] - check_arrC[i]) < 10e-8);
-      });
+      RAJA::RangeSegment{0, N * N},
+      [=](RAJA::Index_type i)
+      { ASSERT_TRUE(RAJA::test_abs(test_arrC[i] - check_arrC[i]) < 10e-8); });
 
   work_res.deallocate(work_arrA);
   work_res.deallocate(work_arrB);

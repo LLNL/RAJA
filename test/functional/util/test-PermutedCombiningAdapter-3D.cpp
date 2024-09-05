@@ -27,16 +27,17 @@ void test_PermutedCombiningAdapter_3D(Segment const& seg0,
   using std::begin;
   using std::distance;
   using std::end;
-  auto seg0_begin = begin(seg0);
-  auto seg1_begin = begin(seg1);
-  auto seg2_begin = begin(seg2);
+  auto   seg0_begin  = begin(seg0);
+  auto   seg1_begin  = begin(seg1);
+  auto   seg2_begin  = begin(seg2);
   size_t seg_lens[3] = {static_cast<size_t>(seg0.size()),
                         static_cast<size_t>(seg1.size()),
                         static_cast<size_t>(seg2.size())};
 
   size_t counters[3] = {0, 0, 0};
-  auto adapter = RAJA::make_PermutedCombiningAdapter<Perm>(
-      [&](IndexType i0, IndexType i1, IndexType i2) {
+  auto   adapter     = RAJA::make_PermutedCombiningAdapter<Perm>(
+      [&](IndexType i0, IndexType i1, IndexType i2)
+      {
         ASSERT_EQ(seg0_begin[counters[0]], i0);
         ASSERT_EQ(seg1_begin[counters[1]], i1);
         ASSERT_EQ(seg2_begin[counters[2]], i2);

@@ -96,7 +96,7 @@ public:
   RAJA_SUPPRESS_HD_WARN
   template <typename RHS>
   RAJA_INLINE RAJA_HOST_DEVICE TensorAdd<self_type, normalize_operand_t<RHS>>
-  operator+(RHS const& rhs) const
+                               operator+(RHS const& rhs) const
   {
     return TensorAdd<self_type, normalize_operand_t<RHS>>(
         *getThis(), normalizeOperand(rhs));
@@ -106,7 +106,7 @@ public:
   template <typename RHS>
   RAJA_INLINE
       RAJA_HOST_DEVICE TensorSubtract<self_type, normalize_operand_t<RHS>>
-      operator-(RHS const& rhs) const
+                       operator-(RHS const& rhs) const
   {
     return TensorSubtract<self_type, normalize_operand_t<RHS>>(
         *getThis(), normalizeOperand(rhs));
@@ -124,7 +124,7 @@ public:
   template <typename RHS>
   RAJA_INLINE
       RAJA_HOST_DEVICE TensorMultiply<self_type, normalize_operand_t<RHS>>
-      operator*(RHS const& rhs) const
+                       operator*(RHS const& rhs) const
   {
     return TensorMultiply<self_type, normalize_operand_t<RHS>>(
         *getThis(), normalizeOperand(rhs));
@@ -133,7 +133,7 @@ public:
   RAJA_SUPPRESS_HD_WARN
   template <typename RHS>
   RAJA_INLINE RAJA_HOST_DEVICE TensorDivide<self_type, normalize_operand_t<RHS>>
-  operator/(RHS const& rhs) const
+                               operator/(RHS const& rhs) const
   {
     return TensorDivide<self_type, normalize_operand_t<RHS>>(
         *getThis(), normalizeOperand(rhs));

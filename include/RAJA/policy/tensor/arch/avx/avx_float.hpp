@@ -42,9 +42,9 @@ public:
   using base_type = internal::expt::RegisterBase<Register<float, avx_register>>;
 
   using register_policy = avx_register;
-  using self_type = Register<float, avx_register>;
-  using element_type = float;
-  using register_type = __m256;
+  using self_type       = Register<float, avx_register>;
+  using element_type    = float;
+  using register_type   = __m256;
 
   using int_vector_type = Register<int32_t, avx_register>;
 
@@ -321,11 +321,11 @@ public:
   element_type sum() const
   {
     // swap odd-even pairs and add
-    auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+    auto sh1  = _mm256_permute_ps(m_value, 0xB1);
     auto red1 = _mm256_add_ps(m_value, sh1);
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permute_ps(red1, 0x4E);
+    auto sh2  = _mm256_permute_ps(red1, 0x4E);
     auto red2 = _mm256_add_ps(red1, sh2);
 
     return red2[0] + red2[4];
@@ -340,11 +340,11 @@ public:
   element_type max() const
   {
     // swap odd-even pairs and combine
-    auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+    auto sh1  = _mm256_permute_ps(m_value, 0xB1);
     auto red1 = _mm256_max_ps(m_value, sh1);
 
     // swap odd-even quads and combine
-    auto sh2 = _mm256_permute_ps(red1, 0x4E);
+    auto sh2  = _mm256_permute_ps(red1, 0x4E);
     auto red2 = _mm256_max_ps(red1, sh2);
 
     // combine quads
@@ -391,7 +391,7 @@ public:
 
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permute_ps(red1, 0x4E);
+    auto sh2  = _mm256_permute_ps(red1, 0x4E);
     auto red2 = _mm256_max_ps(red1, sh2);
 
     if (N == 4)
@@ -429,11 +429,11 @@ public:
   element_type min() const
   {
     // swap odd-even pairs and combine
-    auto sh1 = _mm256_permute_ps(m_value, 0xB1);
+    auto sh1  = _mm256_permute_ps(m_value, 0xB1);
     auto red1 = _mm256_min_ps(m_value, sh1);
 
     // swap odd-even quads and combine
-    auto sh2 = _mm256_permute_ps(red1, 0x4E);
+    auto sh2  = _mm256_permute_ps(red1, 0x4E);
     auto red2 = _mm256_min_ps(red1, sh2);
 
     // combine quads
@@ -480,7 +480,7 @@ public:
 
 
     // swap odd-even quads and add
-    auto sh2 = _mm256_permute_ps(red1, 0x4E);
+    auto sh2  = _mm256_permute_ps(red1, 0x4E);
     auto red2 = _mm256_min_ps(red1, sh2);
 
     if (N == 4)

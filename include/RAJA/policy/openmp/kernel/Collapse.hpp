@@ -111,9 +111,9 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     const auto l0 = segment_length<Arg0>(data);
     const auto l1 = segment_length<Arg1>(data);
     const auto l2 = segment_length<Arg2>(data);
-    auto i0 = l0;
-    auto i1 = l1;
-    auto i2 = l2;
+    auto       i0 = l0;
+    auto       i1 = l1;
+    auto       i2 = l2;
 
     // Set the argument types for this loop
     using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;

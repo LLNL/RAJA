@@ -39,7 +39,7 @@ namespace detail
 
 
 template <typename Range,
-          typename IdxLin = Index_type,
+          typename IdxLin        = Index_type,
           ptrdiff_t StrideOneDim = -1>
 struct LayoutBase_impl;
 
@@ -72,26 +72,26 @@ struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>
 {
 public:
   using IndexLinear = IdxLin;
-  using IndexRange = camp::make_idx_seq_t<sizeof...(RangeInts)>;
+  using IndexRange  = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
-  static constexpr size_t n_dims = sizeof...(RangeInts);
-  static constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
+  static constexpr size_t    n_dims = sizeof...(RangeInts);
+  static constexpr IdxLin    limit  = RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride_one_dim = StrideOneDim;
 
-  IdxLin sizes[n_dims] = {0};
-  IdxLin strides[n_dims] = {0};
+  IdxLin sizes[n_dims]       = {0};
+  IdxLin strides[n_dims]     = {0};
   IdxLin inv_strides[n_dims] = {0};
-  IdxLin inv_mods[n_dims] = {0};
+  IdxLin inv_mods[n_dims]    = {0};
 
 
   /*!
    * Default constructor with zero sizes and strides.
    */
-  constexpr RAJA_INLINE LayoutBase_impl() = default;
-  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl const&) = default;
-  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl&&) = default;
+  constexpr RAJA_INLINE LayoutBase_impl()                        = default;
+  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl const&)  = default;
+  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl&&)       = default;
   RAJA_INLINE LayoutBase_impl& operator=(LayoutBase_impl const&) = default;
-  RAJA_INLINE LayoutBase_impl& operator=(LayoutBase_impl&&) = default;
+  RAJA_INLINE LayoutBase_impl& operator=(LayoutBase_impl&&)      = default;
 
   /*!
    * Construct a layout given the size of each dimension.
@@ -337,8 +337,8 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
 {
 
   using StrippedIdxLin = strip_index_type_t<IdxLin>;
-  using Self = TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>;
-  using Base = Layout<sizeof...(DimTypes), StrippedIdxLin, StrideOne>;
+  using Self   = TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>;
+  using Base   = Layout<sizeof...(DimTypes), StrippedIdxLin, StrideOne>;
   using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
 
   // Pull in base constructors
@@ -403,7 +403,7 @@ private:
  */
 template <ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
 RAJA_INLINE Layout<n_dims, IdxLin, s1_dim>
-make_stride_one(Layout<n_dims, IdxLin> const& l)
+            make_stride_one(Layout<n_dims, IdxLin> const& l)
 {
   return Layout<n_dims, IdxLin, s1_dim>(l);
 }
@@ -415,10 +415,10 @@ make_stride_one(Layout<n_dims, IdxLin> const& l)
  */
 template <ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
 RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim>
-make_stride_one(TypedLayout<IdxLin, IdxTuple> const& l)
+            make_stride_one(TypedLayout<IdxLin, IdxTuple> const& l)
 {
   // strip l to it's base-class type
-  using Base = typename TypedLayout<IdxLin, IdxTuple>::Base;
+  using Base    = typename TypedLayout<IdxLin, IdxTuple>::Base;
   Base const& b = (Base const&)l;
 
   // Use non-typed layout to initialize new typed layout

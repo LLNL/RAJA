@@ -122,7 +122,7 @@ void KokkosPluginLoader::initDirectory(const std::string& path)
     return;
   }
 
-  DIR* dir;
+  DIR*           dir;
   struct dirent* file;
 
   if ((dir = opendir(path.c_str())) != NULL)

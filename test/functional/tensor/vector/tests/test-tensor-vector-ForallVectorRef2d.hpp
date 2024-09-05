@@ -23,7 +23,7 @@ typename std::enable_if<
     !TensorTestHelper<typename VECTOR_TYPE::register_policy>::is_device>::type
 ForallVectorRef2dImpl()
 {
-  using vector_t = VECTOR_TYPE;
+  using vector_t  = VECTOR_TYPE;
   using element_t = typename vector_t::element_type;
 
   using index_t = ptrdiff_t;
@@ -51,7 +51,7 @@ ForallVectorRef2dImpl()
   RAJA::View<element_t, RAJA::Layout<2>> Z(C.data(), N, M);
 
   using idx_t = RAJA::expt::VectorIndex<index_t, vector_t>;
-  auto all = idx_t::all();
+  auto all    = idx_t::all();
 
   //
   // Test with kernel, using sequential policies and ::all()
@@ -95,9 +95,8 @@ ForallVectorRef2dImpl()
       RAJA::make_tuple(RAJA::TypedRangeSegment<index_t>(0, N),
                        RAJA::TypedRangeSegment<index_t>(0, M)),
 
-      [=](index_t i, index_t j) {
-        Z(i, j) = 3 + (X(i, j) * (5 / Y(i, j))) + 9;
-      });
+      [=](index_t i, index_t j)
+      { Z(i, j) = 3 + (X(i, j) * (5 / Y(i, j))) + 9; });
 
   for (index_t i = 0; i < N * M; i++)
   {

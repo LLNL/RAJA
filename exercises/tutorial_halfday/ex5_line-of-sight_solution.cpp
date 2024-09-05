@@ -83,19 +83,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Define array bounds and initialize distance and altitude arrays.
   //
-  int N = 100;
+  int    N       = 100;
   double alt_max = 100.0;
 
-  double* dist = memoryManager::allocate<double>(N);
-  double* alt = memoryManager::allocate<double>(N);
-  double* ang = memoryManager::allocate<double>(N);
-  double* ang_max = memoryManager::allocate<double>(N);
-  int* visible = memoryManager::allocate<int>(N);
-  int* visible_ref = memoryManager::allocate<int>(N);
+  double* dist        = memoryManager::allocate<double>(N);
+  double* alt         = memoryManager::allocate<double>(N);
+  double* ang         = memoryManager::allocate<double>(N);
+  double* ang_max     = memoryManager::allocate<double>(N);
+  int*    visible     = memoryManager::allocate<int>(N);
+  int*    visible_ref = memoryManager::allocate<int>(N);
 
   for (int i = 0; i < N; ++i)
   {
-    dist[i] = static_cast<double>(i + 1);
+    dist[i]         = static_cast<double>(i + 1);
     double alt_fact = alt_max * ((i + 1) % 5 == 0 ? i * 10 : i + 1);
     alt[i] =
         alt_fact * static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
@@ -160,16 +160,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                   RAJA::operators::maximum<double>{});
 
 
-  RAJA::forall<EXEC_POL1>(RAJA::RangeSegment(0, N), [=](int i) {
-    if (ang[i] >= ang_max[i])
-    {
-      visible[i] = 1;
-    }
-    else
-    {
-      visible[i] = 0;
-    }
-  });
+  RAJA::forall<EXEC_POL1>(RAJA::RangeSegment(0, N),
+                          [=](int i)
+                          {
+                            if (ang[i] >= ang_max[i])
+                            {
+                              visible[i] = 1;
+                            }
+                            else
+                            {
+                              visible[i] = 0;
+                            }
+                          });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
@@ -194,16 +196,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                   RAJA::make_span(ang_max, N),
                                   RAJA::operators::maximum<double>{});
 
-  RAJA::forall<EXEC_POL2>(RAJA::RangeSegment(0, N), [=](int i) {
-    if (ang[i] >= ang_max[i])
-    {
-      visible[i] = 1;
-    }
-    else
-    {
-      visible[i] = 0;
-    }
-  });
+  RAJA::forall<EXEC_POL2>(RAJA::RangeSegment(0, N),
+                          [=](int i)
+                          {
+                            if (ang[i] >= ang_max[i])
+                            {
+                              visible[i] = 1;
+                            }
+                            else
+                            {
+                              visible[i] = 0;
+                            }
+                          });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
@@ -230,16 +234,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                   RAJA::make_span(ang_max, N),
                                   RAJA::operators::maximum<double>{});
 
-  RAJA::forall<EXEC_POL3>(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int i) {
-    if (ang[i] >= ang_max[i])
-    {
-      visible[i] = 1;
-    }
-    else
-    {
-      visible[i] = 0;
-    }
-  });
+  RAJA::forall<EXEC_POL3>(RAJA::RangeSegment(0, N),
+                          [=] RAJA_DEVICE(int i)
+                          {
+                            if (ang[i] >= ang_max[i])
+                            {
+                              visible[i] = 1;
+                            }
+                            else
+                            {
+                              visible[i] = 0;
+                            }
+                          });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";

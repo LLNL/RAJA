@@ -47,7 +47,7 @@ struct WorkStruct;
 template <typename Dispatcher_T>
 using GenericWorkStruct = WorkStruct<RAJA_MAX_ALIGN, Dispatcher_T>;
 
-template <size_t size,
+template <size_t   size,
           Platform platform,
           typename dispatch_policy,
           typename DispatcherID,
@@ -62,12 +62,12 @@ struct WorkStruct<
   // construct a WorkStruct with a value of type holder from the args and
   // check a variety of constraints at compile time
   template <typename holder, typename... holder_ctor_args>
-  static RAJA_INLINE void construct(void* ptr,
+  static RAJA_INLINE void construct(void*                  ptr,
                                     const dispatcher_type* dispatcher,
                                     holder_ctor_args&&... ctor_args)
   {
     using true_value_type = WorkStruct<sizeof(holder), dispatcher_type>;
-    using value_type = GenericWorkStruct<dispatcher_type>;
+    using value_type      = GenericWorkStruct<dispatcher_type>;
 
     static_assert(sizeof(holder) <= sizeof(true_value_type::obj),
                   "holder must fit in WorkStruct::obj");
@@ -83,7 +83,7 @@ struct WorkStruct<
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
     value_ptr->dispatcher = dispatcher;
-    value_ptr->invoke = dispatcher->invoke;
+    value_ptr->invoke     = dispatcher->invoke;
     new (&value_ptr->obj) holder(std::forward<holder_ctor_args>(ctor_args)...);
   }
 
@@ -92,7 +92,7 @@ struct WorkStruct<
                                        WorkStruct* value_src)
   {
     value_dst->dispatcher = value_src->dispatcher;
-    value_dst->invoke = value_src->invoke;
+    value_dst->invoke     = value_src->invoke;
     value_dst->dispatcher->move_construct_destroy(&value_dst->obj,
                                                   &value_src->obj);
   }
@@ -117,8 +117,8 @@ struct WorkStruct<
     value_ptr->invoke(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }
 
-  const dispatcher_type* dispatcher;
-  typename dispatcher_type::invoker_type invoke;
+  const dispatcher_type*                                    dispatcher;
+  typename dispatcher_type::invoker_type                    invoke;
   typename std::aligned_storage<size, RAJA_MAX_ALIGN>::type obj;
 };
 

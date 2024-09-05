@@ -87,7 +87,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
   int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
@@ -412,13 +412,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                        RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=](int col, int row, int tx, int ty, TILE_MEM& Tile_Array) {
-        Tile_Array(ty, tx) = Aview(row, col);
-      },
+      [=](int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
+      { Tile_Array(ty, tx) = Aview(row, col); },
 
-      [=](int col, int row, int tx, int ty, TILE_MEM& Tile_Array) {
-        Atview(col, row) = Tile_Array(ty, tx);
-      });
+      [=](int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
+      { Atview(col, row) = Tile_Array(ty, tx); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_r, N_c);
@@ -493,13 +491,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                        RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array) {
-        Tile_Array(ty, tx) = Aview(row, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
+      { Tile_Array(ty, tx) = Aview(row, col); },
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array) {
-        Atview(col, row) = Tile_Array(ty, tx);
-      });
+      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
+      { Atview(col, row) = Tile_Array(ty, tx); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -511,7 +507,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - HIP matrix transpose exercise ...\n";
 
-  int* d_A = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
   int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
   //
@@ -591,13 +587,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                        RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array) {
-        Tile_Array(ty, tx) = d_Aview(row, col);
-      },
+      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
+      { Tile_Array(ty, tx) = d_Aview(row, col); },
 
-      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array) {
-        d_Atview(col, row) = Tile_Array(ty, tx);
-      });
+      [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
+      { d_Atview(col, row) = Tile_Array(ty, tx); });
 
   hipErrchk(
       hipMemcpy(At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost));

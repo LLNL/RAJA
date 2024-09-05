@@ -50,24 +50,24 @@ class TensorMultiply
 {
 public:
   using self_type = TensorMultiply<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
-  using left_operand_type = LEFT_OPERAND_TYPE;
+  using left_operand_type  = LEFT_OPERAND_TYPE;
   using right_operand_type = RIGHT_OPERAND_TYPE;
   using multiply_op = MultiplyOperator<LEFT_OPERAND_TYPE, RIGHT_OPERAND_TYPE>;
 
   using element_type = typename LEFT_OPERAND_TYPE::element_type;
-  using index_type = typename LEFT_OPERAND_TYPE::index_type;
+  using index_type   = typename LEFT_OPERAND_TYPE::index_type;
 
-  using result_type = typename multiply_op::result_type;
+  using result_type                       = typename multiply_op::result_type;
   static constexpr camp::idx_t s_num_dims = multiply_op::s_num_dims;
 
 private:
-  left_operand_type m_left_operand;
+  left_operand_type  m_left_operand;
   right_operand_type m_right_operand;
 
 public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorMultiply(left_operand_type const& left_operand,
+  TensorMultiply(left_operand_type const&  left_operand,
                  right_operand_type const& right_operand)
       : m_left_operand{left_operand}, m_right_operand{right_operand}
   {}
@@ -117,7 +117,7 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE TensorMultiplyAdd<left_operand_type,
                                                  right_operand_type,
                                                  normalize_operand_t<ADD>>
-  operator+(ADD const& add) const
+                               operator+(ADD const& add) const
   {
     return TensorMultiplyAdd<left_operand_type,
                              right_operand_type,

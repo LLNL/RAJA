@@ -28,7 +28,7 @@ void testWorkGroupWorkStorageInsertCall()
   using callable = TestCallable<double>;
 
   static constexpr auto platform = RAJA::Platform::host;
-  using DispatchPolicy = typename DispatchTyper::template type<callable>;
+  using DispatchPolicy  = typename DispatchTyper::template type<callable>;
   using Dispatcher_type = RAJA::detail::
       Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type =
@@ -39,12 +39,14 @@ void testWorkGroupWorkStorageInsertCall()
       RAJA::detail::get_Dispatcher<callable, Dispatcher_type>(RAJA::seq_work{});
 
   {
-    auto test_empty = [&](WorkStorage_type& container) {
+    auto test_empty = [&](WorkStorage_type& container)
+    {
       ASSERT_EQ(container.size(), (size_t)(0));
       ASSERT_EQ(container.storage_size(), (size_t)0);
     };
 
-    auto fill_contents = [&](WorkStorage_type& container, double init_val) {
+    auto fill_contents = [&](WorkStorage_type& container, double init_val)
+    {
       callable c(init_val);
 
       ASSERT_FALSE(c.move_constructed);
@@ -59,15 +61,16 @@ void testWorkGroupWorkStorageInsertCall()
       ASSERT_TRUE(container.storage_size() >= sizeof(callable));
     };
 
-    auto test_contents = [&](WorkStorage_type& container, double init_val) {
+    auto test_contents = [&](WorkStorage_type& container, double init_val)
+    {
       ASSERT_EQ(container.size(), (size_t)1);
       ASSERT_TRUE(container.storage_size() >= sizeof(callable));
 
       auto iter = container.begin();
 
-      double test_val = -1;
-      bool move_constructed = false;
-      bool moved_from = true;
+      double test_val         = -1;
+      bool   move_constructed = false;
+      bool   moved_from       = true;
       WorkStruct_type::host_call(
           &*iter, (void*)&test_val, &move_constructed, &moved_from);
 
@@ -128,7 +131,7 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest,
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Allocator     = typename camp::at<TypeParam, camp::num<2>>::type;
 
   testWorkGroupWorkStorageInsertCall<StoragePolicy, DispatchTyper, Allocator>();
 }

@@ -25,8 +25,8 @@ void plus_test()
   ASSERT_EQ(ident, T(0));
 
   Plus p;
-  T i = static_cast<T>(1);
-  T j = static_cast<T>(2);
+  T    i = static_cast<T>(1);
+  T    j = static_cast<T>(2);
   ASSERT_EQ(p(i, j), T(3));
 
   if (std::is_signed<T>::value)
@@ -43,8 +43,8 @@ void minus_test()
   using Minus = RAJA::operators::minus<T>;
 
   Minus m;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(2);
+  T     i = static_cast<T>(5);
+  T     j = static_cast<T>(2);
   ASSERT_EQ(m(i, j), T(3));
 
   if (std::is_signed<T>::value)
@@ -63,8 +63,8 @@ void multiplies_test()
   ASSERT_EQ(ident, T(1));
 
   Mult m;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(2);
+  T    i = static_cast<T>(5);
+  T    j = static_cast<T>(2);
   ASSERT_EQ(m(i, j), T(10));
 
   if (std::is_signed<T>::value)
@@ -81,8 +81,8 @@ void divides_test()
   using Div = RAJA::operators::divides<T>;
 
   Div d;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(2);
+  T   i = static_cast<T>(5);
+  T   j = static_cast<T>(2);
   if (std::is_floating_point<T>::value)
     ASSERT_EQ(d(i, j), T(2.5));
   else

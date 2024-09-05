@@ -70,9 +70,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize vector data to random numbers in [1, 10].
   //
-  int* a = memoryManager::allocate<int>(N);
-  int* b = memoryManager::allocate<int>(N);
-  int* c = memoryManager::allocate<int>(N);
+  int* a     = memoryManager::allocate<int>(N);
+  int* b     = memoryManager::allocate<int>(N);
+  int* c     = memoryManager::allocate<int>(N);
   int* c_ref = memoryManager::allocate<int>(N);
 
   for (int i = 0; i < N; ++i)

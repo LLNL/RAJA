@@ -107,8 +107,8 @@ struct SortData;
 template <typename Res, typename K, typename V>
 struct SortData<Res, sort_interface_tag, K, V>
 {
-  K* orig_keys = nullptr;
-  K* sorted_keys = nullptr;
+  K*  orig_keys   = nullptr;
+  K*  sorted_keys = nullptr;
   Res m_res;
 
   template <typename RandomGenerator>
@@ -136,7 +136,7 @@ struct SortData<Res, sort_interface_tag, K, V>
 
   Res resource() { return m_res; }
 
-  SortData(SortData const&) = delete;
+  SortData(SortData const&)            = delete;
   SortData& operator=(SortData const&) = delete;
 
   ~SortData()
@@ -156,7 +156,7 @@ struct SortData<Res, sort_pairs_interface_tag, K, V>
 {
   using base = SortData<Res, sort_interface_tag, K, V>;
 
-  V* orig_vals = nullptr;
+  V* orig_vals   = nullptr;
   V* sorted_vals = nullptr;
 
   template <typename RandomGenerator>
@@ -184,7 +184,7 @@ struct SortData<Res, sort_pairs_interface_tag, K, V>
     this->m_res.memcpy(sorted_vals, orig_vals, N * sizeof(V));
   }
 
-  SortData(SortData const&) = delete;
+  SortData(SortData const&)            = delete;
   SortData& operator=(SortData const&) = delete;
 
   ~SortData()
@@ -201,7 +201,7 @@ struct SortData<Res, sort_pairs_interface_tag, K, V>
 
 template <typename Res, typename T, typename Compare, typename Sorter>
 void doSort(SortData<Res, sort_interface_tag, T>& data,
-            RAJA::Index_type N,
+            RAJA::Index_type                      N,
             Compare,
             Sorter sorter,
             sort_interface_tag,
@@ -215,9 +215,9 @@ void doSort(SortData<Res, sort_interface_tag, T>& data,
 
 template <typename Res, typename T, typename Compare, typename Sorter>
 void doSort(SortData<Res, sort_interface_tag, T>& data,
-            RAJA::Index_type N,
-            Compare comp,
-            Sorter sorter,
+            RAJA::Index_type                      N,
+            Compare                               comp,
+            Sorter                                sorter,
             sort_interface_tag,
             sort_comp_interface_tag)
 {
@@ -229,7 +229,7 @@ void doSort(SortData<Res, sort_interface_tag, T>& data,
 
 template <typename Res, typename T, typename Compare, typename Sorter>
 void doSort(SortData<Res, sort_interface_tag, T>& data,
-            RAJA::Index_type N,
+            RAJA::Index_type                      N,
             Compare,
             Sorter sorter,
             sort_interface_tag,
@@ -242,9 +242,9 @@ void doSort(SortData<Res, sort_interface_tag, T>& data,
 
 template <typename Res, typename T, typename Compare, typename Sorter>
 void doSort(SortData<Res, sort_interface_tag, T>& data,
-            RAJA::Index_type N,
-            Compare comp,
-            Sorter sorter,
+            RAJA::Index_type                      N,
+            Compare                               comp,
+            Sorter                                sorter,
             sort_interface_tag,
             sort_res_comp_interface_tag)
 {
@@ -259,7 +259,7 @@ template <typename Res,
           typename Compare,
           typename Sorter>
 void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
-            RAJA::Index_type N,
+            RAJA::Index_type                               N,
             Compare,
             Sorter sorter,
             sort_pairs_interface_tag,
@@ -278,9 +278,9 @@ template <typename Res,
           typename Compare,
           typename Sorter>
 void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
-            RAJA::Index_type N,
-            Compare comp,
-            Sorter sorter,
+            RAJA::Index_type                               N,
+            Compare                                        comp,
+            Sorter                                         sorter,
             sort_pairs_interface_tag,
             sort_comp_interface_tag)
 {
@@ -298,7 +298,7 @@ template <typename Res,
           typename Compare,
           typename Sorter>
 void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
-            RAJA::Index_type N,
+            RAJA::Index_type                               N,
             Compare,
             Sorter sorter,
             sort_pairs_interface_tag,
@@ -317,9 +317,9 @@ template <typename Res,
           typename Compare,
           typename Sorter>
 void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
-            RAJA::Index_type N,
-            Compare comp,
-            Sorter sorter,
+            RAJA::Index_type                               N,
+            Compare                                        comp,
+            Sorter                                         sorter,
             sort_pairs_interface_tag,
             sort_res_comp_interface_tag)
 {
@@ -337,15 +337,15 @@ template <typename Res,
           typename Compare,
           typename TestSorter,
           typename CompareInterface>
-::testing::AssertionResult testSort(const char* test_name,
+::testing::AssertionResult testSort(const char*    test_name,
                                     const unsigned seed,
                                     SortData<Res, sort_interface_tag, T>& data,
-                                    RAJA::Index_type N,
-                                    Compare comp,
+                                    RAJA::Index_type                      N,
+                                    Compare                               comp,
                                     TestSorter test_sorter,
                                     unstable_sort_tag,
                                     sort_interface_tag si,
-                                    CompareInterface ci)
+                                    CompareInterface   ci)
 {
   doSort(data, N, comp, test_sorter, si, ci);
 
@@ -402,15 +402,15 @@ template <typename Res,
           typename Compare,
           typename TestSorter,
           typename CompareInterface>
-::testing::AssertionResult testSort(const char* test_name,
+::testing::AssertionResult testSort(const char*    test_name,
                                     const unsigned seed,
                                     SortData<Res, sort_interface_tag, T>& data,
-                                    RAJA::Index_type N,
-                                    Compare comp,
+                                    RAJA::Index_type                      N,
+                                    Compare                               comp,
                                     TestSorter test_sorter,
                                     stable_sort_tag,
                                     sort_interface_tag si,
-                                    CompareInterface ci)
+                                    CompareInterface   ci)
 {
   doSort(data, N, comp, test_sorter, si, ci);
 
@@ -469,15 +469,15 @@ template <typename Res,
           typename TestSorter,
           typename CompareInterface>
 ::testing::AssertionResult
-testSort(const char* test_name,
-         const unsigned seed,
+testSort(const char*                                    test_name,
+         const unsigned                                 seed,
          SortData<Res, sort_pairs_interface_tag, K, V>& data,
-         RAJA::Index_type N,
-         Compare comp,
-         TestSorter test_sorter,
+         RAJA::Index_type                               N,
+         Compare                                        comp,
+         TestSorter                                     test_sorter,
          unstable_sort_tag,
          sort_pairs_interface_tag si,
-         CompareInterface ci)
+         CompareInterface         ci)
 {
   doSort(data, N, comp, test_sorter, si, ci);
 
@@ -540,15 +540,15 @@ template <typename Res,
           typename TestSorter,
           typename CompareInterface>
 ::testing::AssertionResult
-testSort(const char* test_name,
-         const unsigned seed,
+testSort(const char*                                    test_name,
+         const unsigned                                 seed,
          SortData<Res, sort_pairs_interface_tag, K, V>& data,
-         RAJA::Index_type N,
-         Compare comp,
-         TestSorter test_sorter,
+         RAJA::Index_type                               N,
+         Compare                                        comp,
+         TestSorter                                     test_sorter,
          stable_sort_tag,
          sort_pairs_interface_tag si,
-         CompareInterface ci)
+         CompareInterface         ci)
 {
   doSort(data, N, comp, test_sorter, si, ci);
 
@@ -618,15 +618,15 @@ void testSorterResInterfaces(
 template <typename Res, typename K, typename V, typename Sorter>
 void testSorterResInterfaces(
     std::true_type,
-    unsigned seed,
+    unsigned                                              seed,
     SortData<Res, typename Sorter::sort_interface, K, V>& data,
-    RAJA::Index_type N,
-    Sorter sorter)
+    RAJA::Index_type                                      N,
+    Sorter                                                sorter)
 {
   // Sorter supports resource interface, res tests
-  using stability_category = typename Sorter::sort_category;
-  using pairs_category = typename Sorter::sort_interface;
-  using resource_no_comparator = sort_res_default_interface_tag;
+  using stability_category      = typename Sorter::sort_category;
+  using pairs_category          = typename Sorter::sort_interface;
+  using resource_no_comparator  = sort_res_default_interface_tag;
   using resource_use_comparator = sort_res_comp_interface_tag;
 
   ASSERT_TRUE(testSort("resource+default",
@@ -659,18 +659,18 @@ void testSorterResInterfaces(
 }
 
 template <typename K, typename Sorter, typename Res>
-void testSorterInterfaces(unsigned seed,
+void testSorterInterfaces(unsigned         seed,
                           RAJA::Index_type MaxN,
-                          Sorter sorter,
-                          Res res)
+                          Sorter           sorter,
+                          Res              res)
 {
   using stability_category = typename Sorter::sort_category;
-  using pairs_category = typename Sorter::sort_interface;
-  using supports_resource = typename Sorter::supports_resource;
-  using no_comparator = sort_default_interface_tag;
-  using use_comparator = sort_comp_interface_tag;
+  using pairs_category     = typename Sorter::sort_interface;
+  using supports_resource  = typename Sorter::supports_resource;
+  using no_comparator      = sort_default_interface_tag;
+  using use_comparator     = sort_comp_interface_tag;
 
-  std::mt19937 rng(seed);
+  std::mt19937     rng(seed);
   RAJA::Index_type N = std::uniform_int_distribution<RAJA::Index_type>(
       (MaxN + 1) / 2, MaxN)(rng);
   std::uniform_int_distribution<RAJA::Index_type> dist(-N, N);
@@ -733,15 +733,15 @@ class SortUnitTest : public ::testing::Test
 
 TYPED_TEST_P(SortUnitTest, UnitSort)
 {
-  using Sorter = typename camp::at<TypeParam, camp::num<0>>::type;
-  using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
-  using KeyType = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Sorter   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using ResType  = typename camp::at<TypeParam, camp::num<1>>::type;
+  using KeyType  = typename camp::at<TypeParam, camp::num<2>>::type;
   using MaxNType = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  unsigned seed = get_random_seed();
+  unsigned         seed = get_random_seed();
   RAJA::Index_type MaxN = MaxNType::value;
-  Sorter sorter{};
-  ResType res = ResType::get_default();
+  Sorter           sorter{};
+  ResType          res = ResType::get_default();
 
   testSorter<KeyType>(seed, MaxN, sorter, res);
 }

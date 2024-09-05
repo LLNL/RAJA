@@ -18,18 +18,18 @@ inline __host__ __device__ void gpu_time_wait_for(float time, float clockrate)
 {
   clock_t time_in_clocks = time * clockrate;
 
-  unsigned int start_clock = (unsigned int)clock();
-  clock_t clock_offset = 0;
+  unsigned int start_clock  = (unsigned int)clock();
+  clock_t      clock_offset = 0;
   while (clock_offset < time_in_clocks)
   {
     unsigned int end_clock = (unsigned int)clock();
-    clock_offset = (clock_t)(end_clock - start_clock);
+    clock_offset           = (clock_t)(end_clock - start_clock);
   }
 }
 
 int get_clockrate()
 {
-  int cuda_device = 0;
+  int            cuda_device = 0;
   cudaDeviceProp deviceProp;
   cudaGetDevice(&cuda_device);
   cudaGetDeviceProperties(&deviceProp, cuda_device);
@@ -60,23 +60,23 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   using namespace RAJA;
 
   constexpr std::size_t NUM_STREAMS{8};
-  WORKING_RES dev[NUM_STREAMS];
-  resources::Host host;
+  WORKING_RES           dev[NUM_STREAMS];
+  resources::Host       host;
 
   int clockrate{get_clockrate()};
   ASSERT_TRUE(clockrate != -1);
 
   using AsyncExecPol = RAJA::cuda_exec<BLOCK_SIZE, true>;
-  using SyncExecPol = RAJA::cuda_exec<BLOCK_SIZE, false>;
+  using SyncExecPol  = RAJA::cuda_exec<BLOCK_SIZE, false>;
 
   RAJA::Timer sync_timer;
   sync_timer.start();
   for (std::size_t stream = 0; stream < NUM_STREAMS; ++stream)
   {
-    forall<SyncExecPol>(
-        dev[stream], RangeSegment(0, ARRAY_SIZE), [=] RAJA_HOST_DEVICE(int i) {
-          gpu_time_wait_for(100, clockrate);
-        });
+    forall<SyncExecPol>(dev[stream],
+                        RangeSegment(0, ARRAY_SIZE),
+                        [=] RAJA_HOST_DEVICE(int i)
+                        { gpu_time_wait_for(100, clockrate); });
   }
   sync_timer.stop();
   RAJA::Timer::ElapsedType t_sync = sync_timer.elapsed();
@@ -85,10 +85,10 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   async_timer.start();
   for (std::size_t stream = 0; stream < NUM_STREAMS; ++stream)
   {
-    forall<AsyncExecPol>(
-        dev[stream], RangeSegment(0, ARRAY_SIZE), [=] RAJA_HOST_DEVICE(int i) {
-          gpu_time_wait_for(100, clockrate);
-        });
+    forall<AsyncExecPol>(dev[stream],
+                         RangeSegment(0, ARRAY_SIZE),
+                         [=] RAJA_HOST_DEVICE(int i)
+                         { gpu_time_wait_for(100, clockrate); });
   }
   async_timer.stop();
   RAJA::Timer::ElapsedType t_async = async_timer.elapsed();

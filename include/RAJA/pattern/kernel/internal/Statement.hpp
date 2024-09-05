@@ -38,7 +38,7 @@ struct Statement
   Statement() = delete;
 
   using enclosed_statements_t = StatementList<EnclosedStmts...>;
-  using execution_policy_t = ExecPolicy;
+  using execution_policy_t    = ExecPolicy;
 };
 
 

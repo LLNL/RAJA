@@ -43,7 +43,7 @@ struct RSMultiplexer<IdxType, RAJA::TypedRangeStrideSegment<IdxType>>
 template <typename IdxType>
 struct RSMultiplexer<IdxType, RAJA::TypedListSegment<IdxType>>
 {
-  RAJA::TypedListSegment<IdxType> makeseg(IdxType N,
+  RAJA::TypedListSegment<IdxType> makeseg(IdxType                   N,
                                           camp::resources::Resource work_res)
   {
     std::vector<IdxType> temp(N);
@@ -79,36 +79,39 @@ void ForallAtomicBasicTestImpl(IdxType seglimit)
       len, work_res, &work_array, &check_array, &test_array);
 
   // use atomic add to reduce the array
-  test_array[0] = static_cast<T>(0);
-  test_array[1] = static_cast<T>(seglimit);
-  test_array[2] = static_cast<T>(seglimit);
-  test_array[3] = static_cast<T>(0);
-  test_array[4] = static_cast<T>(0);
-  test_array[5] = static_cast<T>(seglimit + 1);
-  test_array[6] = static_cast<T>(seglimit);
-  test_array[7] = static_cast<T>(0);
-  test_array[8] = static_cast<T>(0);
-  test_array[9] = static_cast<T>(0);
+  test_array[0]  = static_cast<T>(0);
+  test_array[1]  = static_cast<T>(seglimit);
+  test_array[2]  = static_cast<T>(seglimit);
+  test_array[3]  = static_cast<T>(0);
+  test_array[4]  = static_cast<T>(0);
+  test_array[5]  = static_cast<T>(seglimit + 1);
+  test_array[6]  = static_cast<T>(seglimit);
+  test_array[7]  = static_cast<T>(0);
+  test_array[8]  = static_cast<T>(0);
+  test_array[9]  = static_cast<T>(0);
   test_array[10] = static_cast<T>(0);
   test_array[11] = static_cast<T>(0);
 
   work_res.memcpy(work_array, test_array, sizeof(T) * len);
 
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    RAJA::atomicAdd<AtomicPolicy>(work_array + 0, static_cast<T>(1));
-    RAJA::atomicSub<AtomicPolicy>(work_array + 1, static_cast<T>(1));
-    RAJA::atomicMin<AtomicPolicy>(work_array + 2, static_cast<T>(i));
-    RAJA::atomicMax<AtomicPolicy>(work_array + 3, static_cast<T>(i));
-    RAJA::atomicInc<AtomicPolicy>(work_array + 4);
-    RAJA::atomicDec<AtomicPolicy>(work_array + 5);
-    RAJA::atomicExchange<AtomicPolicy>(work_array + 6, static_cast<T>(i));
-    RAJA::atomicCAS<AtomicPolicy>(
-        work_array + 7, static_cast<T>(i), static_cast<T>(i + 1));
-    RAJA::atomicLoad<AtomicPolicy>(work_array + 8);
-    RAJA::atomicStore<AtomicPolicy>(work_array + 9, static_cast<T>(1));
-    RAJA::atomicInc<AtomicPolicy>(work_array + 10, static_cast<T>(16));
-    RAJA::atomicDec<AtomicPolicy>(work_array + 11, static_cast<T>(16));
-  });
+  RAJA::forall<ExecPolicy>(
+      seg,
+      [=] RAJA_HOST_DEVICE(IdxType i)
+      {
+        RAJA::atomicAdd<AtomicPolicy>(work_array + 0, static_cast<T>(1));
+        RAJA::atomicSub<AtomicPolicy>(work_array + 1, static_cast<T>(1));
+        RAJA::atomicMin<AtomicPolicy>(work_array + 2, static_cast<T>(i));
+        RAJA::atomicMax<AtomicPolicy>(work_array + 3, static_cast<T>(i));
+        RAJA::atomicInc<AtomicPolicy>(work_array + 4);
+        RAJA::atomicDec<AtomicPolicy>(work_array + 5);
+        RAJA::atomicExchange<AtomicPolicy>(work_array + 6, static_cast<T>(i));
+        RAJA::atomicCAS<AtomicPolicy>(
+            work_array + 7, static_cast<T>(i), static_cast<T>(i + 1));
+        RAJA::atomicLoad<AtomicPolicy>(work_array + 8);
+        RAJA::atomicStore<AtomicPolicy>(work_array + 9, static_cast<T>(1));
+        RAJA::atomicInc<AtomicPolicy>(work_array + 10, static_cast<T>(16));
+        RAJA::atomicDec<AtomicPolicy>(work_array + 11, static_cast<T>(16));
+      });
 
   work_res.memcpy(check_array, work_array, sizeof(T) * len);
   work_res.wait();
@@ -138,11 +141,11 @@ class ForallAtomicBasicTest : public ::testing::Test
 
 TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
 {
-  using AExec = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol = typename camp::at<TypeParam, camp::num<1>>::type;
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using DType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallAtomicBasicTestImpl<AExec,
                             APol,

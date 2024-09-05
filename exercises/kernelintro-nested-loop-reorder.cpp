@@ -105,9 +105,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                 RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<KJI_EXECPOL>(
-      RAJA::make_tuple(IRange, JRange, KRange), [=](IIDX i, JIDX j, KIDX k) {
-        printf(" (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
-      });
+      RAJA::make_tuple(IRange, JRange, KRange),
+      [=](IIDX i, JIDX j, KIDX k)
+      { printf(" (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k)); });
   // _raja_kji_loops_end
 
   //----------------------------------------------------------------------------//

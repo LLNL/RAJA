@@ -29,7 +29,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       make_tuple(TileSize{5}, TileSize{10}),
       // make_tuple(TileSize(10)), // not sure we need this, good for
       // static_assert
-      [=](int i, int j, TileSize x, TileSize y) {
+      [=](int i, int j, TileSize x, TileSize y)
+      {
         std::cout << "Running index (" << i << "," << j << ") of " << x.size
                   << "x" << y.size << " tile." << std::endl;
       });

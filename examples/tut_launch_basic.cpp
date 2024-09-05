@@ -185,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
 
   // __compute_grid_start
-  const int Nteams = 2;
+  const int Nteams   = 2;
   const int Nthreads = 2;
   // __compute_grid_end
 
@@ -194,20 +194,29 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
       RAJA::LaunchParams(RAJA::Teams(Nteams, Nteams),
                          RAJA::Threads(Nthreads, Nthreads)),
 
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
+      {
         // _team_loops_start
         RAJA::loop<teams_y>(
-            ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&](int by) {
+            ctx,
+            RAJA::TypedRangeSegment<int>(0, Nteams),
+            [&](int by)
+            {
               RAJA::loop<teams_x>(
-                  ctx, RAJA::TypedRangeSegment<int>(0, Nteams), [&](int bx) {
+                  ctx,
+                  RAJA::TypedRangeSegment<int>(0, Nteams),
+                  [&](int bx)
+                  {
                     RAJA::loop<threads_y>(
                         ctx,
                         RAJA::TypedRangeSegment<int>(0, Nthreads),
-                        [&](int ty) {
+                        [&](int ty)
+                        {
                           RAJA::loop<threads_x>(
                               ctx,
                               RAJA::TypedRangeSegment<int>(0, Nthreads),
-                              [&](int tx) {
+                              [&](int tx)
+                              {
                                 printf("RAJA Teams: threadId_x %d threadId_y "
                                        "%d teamId_x %d teamId_y %d \n",
                                        tx,

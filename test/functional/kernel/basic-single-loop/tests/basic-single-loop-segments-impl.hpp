@@ -43,12 +43,12 @@ template <typename IDX_TYPE,
           typename WORKING_RES,
           typename SEG_TYPE,
           bool USE_RESOURCE>
-void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg,
+void KernelBasicSingleLoopTestImpl(const SEG_TYPE&              seg,
                                    const std::vector<IDX_TYPE>& seg_idx,
-                                   WORKING_RES working_res,
+                                   WORKING_RES                  working_res,
                                    camp::resources::Resource erased_working_res)
 {
-  IDX_TYPE idx_len = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
   IDX_TYPE data_len = IDX_TYPE(0);
   if (seg_idx.size() > 0)
   {
@@ -85,18 +85,21 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE& seg,
     }
 
     call_kernel<EXEC_POLICY, USE_RESOURCE>(
-        RAJA::make_tuple(seg), working_res, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-          working_array[RAJA::stripIndexType(idx)] = idx;
-        });
+        RAJA::make_tuple(seg),
+        working_res,
+        [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+        { working_array[RAJA::stripIndexType(idx)] = idx; });
   }
   else
   { // zero-length segment
 
-    call_kernel<EXEC_POLICY, USE_RESOURCE>(
-        RAJA::make_tuple(seg), working_res, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-          (void)idx;
-          working_array[0]++;
-        });
+    call_kernel<EXEC_POLICY, USE_RESOURCE>(RAJA::make_tuple(seg),
+                                           working_res,
+                                           [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                                           {
+                                             (void)idx;
+                                             working_array[0]++;
+                                           });
   }
 
   working_res.memcpy(check_array,

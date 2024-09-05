@@ -42,9 +42,9 @@ public:
       internal::expt::RegisterBase<Register<int64_t, avx512_register>>;
 
   using register_policy = avx512_register;
-  using self_type = Register<int64_t, avx512_register>;
-  using element_type = int64_t;
-  using register_type = __m512i;
+  using self_type       = Register<int64_t, avx512_register>;
+  using element_type    = int64_t;
+  using register_type   = __m512i;
 
   using int_vector_type = Register<int64_t, avx512_register>;
 
@@ -85,7 +85,7 @@ private:
   {
     // Generate a strided offset list
     auto vstride = _mm512_set1_epi64(stride);
-    auto vseq = _mm512_set_epi64(7, 6, 5, 4, 3, 2, 1, 0);
+    auto vseq    = _mm512_set_epi64(7, 6, 5, 4, 3, 2, 1, 0);
     return _mm512_mullo_epi64(vstride, vseq);
   }
 

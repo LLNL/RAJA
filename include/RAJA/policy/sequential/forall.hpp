@@ -65,8 +65,8 @@ RAJA_INLINE concepts::enable_if_t<
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(Resource res,
             const seq_exec&,
-            Iterable&& iter,
-            Func&& body,
+            Iterable&&  iter,
+            Func&&      body,
             ForallParam f_params)
 {
   expt::ParamMultiplexer::init<seq_exec>(f_params);
@@ -93,7 +93,7 @@ RAJA_INLINE concepts::enable_if_t<
 forall_impl(Resource res,
             const seq_exec&,
             Iterable&& iter,
-            Func&& body,
+            Func&&     body,
             ForallParam)
 {
   RAJA_EXTRACT_BED_IT(iter);

@@ -34,24 +34,26 @@ struct LaunchExecute<RAJA::omp_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       LaunchParams const& params,
+       LaunchParams const&       params,
        const char*,
-       BODY const& body,
+       BODY const&   body,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      LaunchContext ctx;
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          LaunchContext ctx;
 
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
-      ctx.shared_mem_ptr = (char*)malloc(params.shared_mem_size);
+          ctx.shared_mem_ptr = (char*)malloc(params.shared_mem_size);
 
-      loop_body.get_priv()(ctx);
+          loop_body.get_priv()(ctx);
 
-      free(ctx.shared_mem_ptr);
-      ctx.shared_mem_ptr = nullptr;
-    });
+          free(ctx.shared_mem_ptr);
+          ctx.shared_mem_ptr = nullptr;
+        });
 
     return resources::EventProxy<resources::Resource>(res);
   }
@@ -63,10 +65,10 @@ struct LaunchExecute<RAJA::omp_launch_t>
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       LaunchParams const& launch_params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
-       BODY const& body,
-       ReduceParams& f_params)
+       LaunchParams const&       launch_params,
+       const char*               RAJA_UNUSED_ARG(kernel_name),
+       BODY const&               body,
+       ReduceParams&             f_params)
   {
 
     using EXEC_POL = RAJA::omp_launch_t;
@@ -106,81 +108,87 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment,
-       BODY const& body)
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     int len = segment.end() - segment.begin();
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 #pragma omp for
-      for (int i = 0; i < len; i++)
-      {
+          for (int i = 0; i < len; i++)
+          {
 
-        loop_body.get_priv()(*(segment.begin() + i));
-      }
-    });
+            loop_body.get_priv()(*(segment.begin() + i));
+          }
+        });
   }
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for
-      for (int j = 0; j < len1; j++)
-      {
-        for (int i = 0; i < len0; i++)
-        {
+          for (int j = 0; j < len1; j++)
+          {
+            for (int i = 0; i < len0; i++)
+            {
 
-          loop_body.get_priv()(*(segment0.begin() + i),
-                               *(segment1.begin() + j));
-        }
-      }
-    });
+              loop_body.get_priv()(*(segment0.begin() + i),
+                                   *(segment1.begin() + j));
+            }
+          }
+        });
   }
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for
-      for (int k = 0; k < len2; k++)
-      {
-        for (int j = 0; j < len1; j++)
-        {
-          for (int i = 0; i < len0; i++)
+          for (int k = 0; k < len2; k++)
           {
-            loop_body.get_priv()(*(segment0.begin() + i),
-                                 *(segment1.begin() + j),
-                                 *(segment2.begin() + k));
+            for (int j = 0; j < len1; j++)
+            {
+              for (int i = 0; i < len0; i++)
+              {
+                loop_body.get_priv()(*(segment0.begin() + i),
+                                     *(segment1.begin() + j),
+                                     *(segment2.begin() + k));
+              }
+            }
           }
-        }
-      }
-    });
+        });
   }
 };
 
@@ -191,8 +199,8 @@ struct LoopExecute<omp_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment,
-       BODY const& body)
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     int len = segment.end() - segment.begin();
@@ -207,9 +215,9 @@ struct LoopExecute<omp_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -229,10 +237,10 @@ struct LoopExecute<omp_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -265,8 +273,8 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment,
-       BODY const& body)
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     int len = segment.end() - segment.begin();
@@ -281,9 +289,9 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -303,10 +311,10 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -342,62 +350,66 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for RAJA_COLLAPSE(2)
-      for (int j = 0; j < len1; j++)
-      {
-        for (int i = 0; i < len0; i++)
-        {
+          for (int j = 0; j < len1; j++)
+          {
+            for (int i = 0; i < len0; i++)
+            {
 
-          loop_body.get_priv()(*(segment0.begin() + i),
-                               *(segment1.begin() + j));
-        }
-      }
-    });
+              loop_body.get_priv()(*(segment0.begin() + i),
+                                   *(segment1.begin() + j));
+            }
+          }
+        });
   }
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for RAJA_COLLAPSE(3)
-      for (int k = 0; k < len2; k++)
-      {
-        for (int j = 0; j < len1; j++)
-        {
-          for (int i = 0; i < len0; i++)
+          for (int k = 0; k < len2; k++)
           {
-            loop_body.get_priv()(*(segment0.begin() + i),
-                                 *(segment1.begin() + j),
-                                 *(segment2.begin() + k));
+            for (int j = 0; j < len1; j++)
+            {
+              for (int i = 0; i < len0; i++)
+              {
+                loop_body.get_priv()(*(segment0.begin() + i),
+                                     *(segment1.begin() + j),
+                                     *(segment2.begin() + k));
+              }
+            }
           }
-        }
-      }
-    });
+        });
   }
 };
 
@@ -409,65 +421,69 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT>
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       BODY const&         body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for RAJA_COLLAPSE(2)
-      for (int j = 0; j < len1; j++)
-      {
-        for (int i = 0; i < len0; i++)
-        {
+          for (int j = 0; j < len1; j++)
+          {
+            for (int i = 0; i < len0; i++)
+            {
 
-          loop_body.get_priv()(
-              *(segment0.begin() + i), *(segment1.begin() + j), i, j);
-        }
-      }
-    });
+              loop_body.get_priv()(
+                  *(segment0.begin() + i), *(segment1.begin() + j), i, j);
+            }
+          }
+        });
   }
 
   template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       SEGMENT const& segment0,
-       SEGMENT const& segment1,
-       SEGMENT const& segment2,
-       BODY const& body)
+       SEGMENT const&      segment0,
+       SEGMENT const&      segment1,
+       SEGMENT const&      segment2,
+       BODY const&         body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
     const int len1 = segment1.end() - segment1.begin();
     const int len0 = segment0.end() - segment0.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for RAJA_COLLAPSE(3)
-      for (int k = 0; k < len2; k++)
-      {
-        for (int j = 0; j < len1; j++)
-        {
-          for (int i = 0; i < len0; i++)
+          for (int k = 0; k < len2; k++)
           {
-            loop_body.get_priv()(*(segment0.begin() + i),
-                                 *(segment1.begin() + j),
-                                 *(segment2.begin() + k),
-                                 i,
-                                 j,
-                                 k);
+            for (int j = 0; j < len1; j++)
+            {
+              for (int i = 0; i < len0; i++)
+              {
+                loop_body.get_priv()(*(segment0.begin() + i),
+                                     *(segment1.begin() + j),
+                                     *(segment2.begin() + k),
+                                     i,
+                                     j,
+                                     k);
+              }
+            }
           }
-        }
-      }
-    });
+        });
   }
 };
 
@@ -479,23 +495,25 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT>
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       TILE_T tile_size,
-       SEGMENT const& segment,
-       BODY const& body)
+       TILE_T              tile_size,
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     int len = segment.end() - segment.begin();
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp for
-      for (int i = 0; i < len; i += tile_size)
-      {
-        loop_body.get_priv()(segment.slice(i, tile_size));
-      }
-    });
+          for (int i = 0; i < len; i += tile_size)
+          {
+            loop_body.get_priv()(segment.slice(i, tile_size));
+          }
+        });
   }
 };
 
@@ -506,25 +524,27 @@ struct TileTCountExecute<omp_parallel_for_exec, SEGMENT>
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       TILE_T tile_size,
-       SEGMENT const& segment,
-       BODY const& body)
+       TILE_T              tile_size,
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
-    const int len = segment.end() - segment.begin();
+    const int len      = segment.end() - segment.begin();
     const int numTiles = (len - 1) / tile_size + 1;
 
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
+    RAJA::region<RAJA::omp_parallel_region>(
+        [&]()
+        {
+          using RAJA::internal::thread_privatize;
+          auto loop_body = thread_privatize(body);
 
 #pragma omp parallel for
-      for (int i = 0; i < numTiles; i++)
-      {
-        const int i_tile_size = i * tile_size;
-        loop_body.get_priv()(segment.slice(i_tile_size, tile_size), i);
-      }
-    });
+          for (int i = 0; i < numTiles; i++)
+          {
+            const int i_tile_size = i * tile_size;
+            loop_body.get_priv()(segment.slice(i_tile_size, tile_size), i);
+          }
+        });
   }
 };
 
@@ -535,9 +555,9 @@ struct TileExecute<omp_for_exec, SEGMENT>
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       TILE_T tile_size,
-       SEGMENT const& segment,
-       BODY const& body)
+       TILE_T              tile_size,
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
     int len = segment.end() - segment.begin();
@@ -556,12 +576,12 @@ struct TileTCountExecute<omp_for_exec, SEGMENT>
   template <typename BODY, typename TILE_T>
   static RAJA_INLINE RAJA_HOST_DEVICE void
   exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
-       TILE_T tile_size,
-       SEGMENT const& segment,
-       BODY const& body)
+       TILE_T              tile_size,
+       SEGMENT const&      segment,
+       BODY const&         body)
   {
 
-    const int len = segment.end() - segment.begin();
+    const int len      = segment.end() - segment.begin();
     const int numTiles = (len - 1) / tile_size + 1;
 
 #pragma omp for

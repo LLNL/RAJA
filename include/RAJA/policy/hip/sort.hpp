@@ -135,9 +135,9 @@ stable(resources::Hip hip_res,
 
   using R = RAJA::detail::IterVal<Iter>;
 
-  int len = std::distance(begin, end);
+  int len       = std::distance(begin, end);
   int begin_bit = 0;
-  int end_bit = sizeof(R) * CHAR_BIT;
+  int end_bit   = sizeof(R) * CHAR_BIT;
 
   // Allocate temporary storage for the output array
   R* d_out = hip::device_mempool_type::getInstance().malloc<R>(len);
@@ -147,7 +147,7 @@ stable(resources::Hip hip_res,
   detail::double_buffer<R> d_keys(begin, d_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::radix_sort_keys(d_temp_storage,
@@ -229,9 +229,9 @@ stable(resources::Hip hip_res,
 
   using R = RAJA::detail::IterVal<Iter>;
 
-  int len = std::distance(begin, end);
+  int len       = std::distance(begin, end);
   int begin_bit = 0;
-  int end_bit = sizeof(R) * CHAR_BIT;
+  int end_bit   = sizeof(R) * CHAR_BIT;
 
   // Allocate temporary storage for the output array
   R* d_out = hip::device_mempool_type::getInstance().malloc<R>(len);
@@ -241,7 +241,7 @@ stable(resources::Hip hip_res,
   detail::double_buffer<R> d_keys(begin, d_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::radix_sort_keys_desc(d_temp_storage,
@@ -358,8 +358,8 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
 unstable(resources::Hip hip_res,
          ::RAJA::policy::hip::
              hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-         Iter begin,
-         Iter end,
+         Iter                                         begin,
+         Iter                                         end,
          operators::less<RAJA::detail::IterVal<Iter>> comp)
 {
   return stable(hip_res, p, begin, end, comp);
@@ -379,8 +379,8 @@ concepts::enable_if_t<resources::EventProxy<resources::Hip>,
 unstable(resources::Hip hip_res,
          ::RAJA::policy::hip::
              hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-         Iter begin,
-         Iter end,
+         Iter                                            begin,
+         Iter                                            end,
          operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
   return stable(hip_res, p, begin, end, comp);
@@ -463,9 +463,9 @@ stable_pairs(
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
 
-  int len = std::distance(keys_begin, keys_end);
+  int len       = std::distance(keys_begin, keys_end);
   int begin_bit = 0;
-  int end_bit = sizeof(K) * CHAR_BIT;
+  int end_bit   = sizeof(K) * CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
   K* d_keys_out = hip::device_mempool_type::getInstance().malloc<K>(len);
@@ -477,7 +477,7 @@ stable_pairs(
   detail::double_buffer<V> d_vals(vals_begin, d_vals_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::radix_sort_pairs(d_temp_storage,
@@ -577,9 +577,9 @@ stable_pairs(
   using K = RAJA::detail::IterVal<KeyIter>;
   using V = RAJA::detail::IterVal<ValIter>;
 
-  int len = std::distance(keys_begin, keys_end);
+  int len       = std::distance(keys_begin, keys_end);
   int begin_bit = 0;
-  int end_bit = sizeof(K) * CHAR_BIT;
+  int end_bit   = sizeof(K) * CHAR_BIT;
 
   // Allocate temporary storage for the output arrays
   K* d_keys_out = hip::device_mempool_type::getInstance().malloc<K>(len);
@@ -591,7 +591,7 @@ stable_pairs(
   detail::double_buffer<V> d_vals(vals_begin, d_vals_out);
 
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
   hipErrchk(::rocprim::radix_sort_pairs_desc(d_temp_storage,
@@ -730,9 +730,9 @@ unstable_pairs(
     resources::Hip hip_res,
     ::RAJA::policy::hip::
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-    KeyIter keys_begin,
-    KeyIter keys_end,
-    ValIter vals_begin,
+    KeyIter                                         keys_begin,
+    KeyIter                                         keys_end,
+    ValIter                                         vals_begin,
     operators::less<RAJA::detail::IterVal<KeyIter>> comp)
 {
   return stable_pairs(hip_res, p, keys_begin, keys_end, vals_begin, comp);
@@ -756,9 +756,9 @@ unstable_pairs(
     resources::Hip hip_res,
     ::RAJA::policy::hip::
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-    KeyIter keys_begin,
-    KeyIter keys_end,
-    ValIter vals_begin,
+    KeyIter                                            keys_begin,
+    KeyIter                                            keys_end,
+    ValIter                                            vals_begin,
     operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
 {
   return stable_pairs(hip_res, p, keys_begin, keys_end, vals_begin, comp);

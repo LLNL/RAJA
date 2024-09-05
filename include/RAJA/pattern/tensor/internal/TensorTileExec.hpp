@@ -54,7 +54,7 @@ struct TensorTileExec<STORAGE, camp::idx_seq<DIM0, DIM_REST...>>
   {
 
     auto const orig_begin = otile.m_begin[DIM0];
-    auto const orig_size = otile.m_size[DIM0];
+    auto const orig_size  = otile.m_size[DIM0];
 
     // Do the full tile sizes
     for (tile.m_begin[DIM0] = orig_begin;
@@ -101,7 +101,7 @@ struct TensorTileExec<STORAGE, camp::idx_seq<DIM0, DIM_REST...>>
 
 
     auto constexpr orig_begin = OTILE::begin_type::value_at(DIM0);
-    auto constexpr orig_size = OTILE::size_type::value_at(DIM0);
+    auto constexpr orig_size  = OTILE::size_type::value_at(DIM0);
 
     auto constexpr tile_begin = TTYPE::begin_type::value_at(DIM0);
 
@@ -159,7 +159,7 @@ template <typename STORAGE,
           camp::idx_t... DIM_SEQ>
 RAJA_INLINE RAJA_HOST_DEVICE void
 tensorTileExec_expanded(TILE_TYPE const& orig_tile,
-                        BODY&& body,
+                        BODY&&           body,
                         camp::idx_seq<IDX_SEQ...> const&,
                         camp::idx_seq<DIM_SEQ...> const&)
 {
@@ -180,7 +180,7 @@ tensorTileExec_expanded(TILE_TYPE const& orig_tile,
 
   // Do all of the tiling loops in layout order, this may improve
   // cache performance
-  using layout_order = typename STORAGE::layout_type::seq_t;
+  using layout_order       = typename STORAGE::layout_type::seq_t;
   using tensor_tile_exec_t = TensorTileExec<STORAGE, layout_order>;
 
 
@@ -223,7 +223,7 @@ struct StaticTensorTileExec<STORAGE,
   {
 
     auto constexpr orig_begin = OTILE::begin_type::value_at(DIM0);
-    auto constexpr orig_size = OTILE::size_type::value_at(DIM0);
+    auto constexpr orig_size  = OTILE::size_type::value_at(DIM0);
 
     auto constexpr tile_begin = TTYPE::begin_type::value_at(DIM0);
 
@@ -279,7 +279,7 @@ struct StaticTensorTileExec<STORAGE,
   exec(OTILE const& otile, TTYPE const& tile, BODY&& body)
   {
     auto constexpr orig_begin = OTILE::begin_type::value_at(DIM0);
-    auto constexpr orig_size = OTILE::size_type::value_at(DIM0);
+    auto constexpr orig_size  = OTILE::size_type::value_at(DIM0);
 
     auto constexpr tile_begin = TTYPE::begin_type::value_at(DIM0);
 
@@ -339,7 +339,7 @@ template <typename STORAGE,
           camp::idx_t... DIM_SEQ>
 RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
     StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, TBEGIN, TSIZE> const& orig_tile,
-    BODY&& body,
+    BODY&&                                                          body,
     camp::idx_seq<IDX_SEQ...> const&,
     camp::idx_seq<DIM_SEQ...> const&)
 {
@@ -358,7 +358,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
 
   // Do all of the tiling loops in layout order, this may improve
   // cache performance
-  using layout_order = typename STORAGE::layout_type::seq_t;
+  using layout_order       = typename STORAGE::layout_type::seq_t;
   using tensor_tile_exec_t = TensorTileExec<STORAGE, layout_order>;
 
 
@@ -368,7 +368,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
 
 template <typename STORAGE, typename TILE_TYPE, typename BODY>
 RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec(TILE_TYPE const& tile,
-                                                 BODY&& body)
+                                                 BODY&&           body)
 {
   using layout_type = typename STORAGE::layout_type;
   tensorTileExec_expanded<STORAGE>(

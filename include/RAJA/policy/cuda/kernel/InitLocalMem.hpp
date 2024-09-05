@@ -51,7 +51,7 @@ struct CudaStatementExecutor<Data,
                              Types>
 {
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using stmt_list_t      = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
@@ -137,7 +137,7 @@ struct CudaStatementExecutor<Data,
                              Types>
 {
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using stmt_list_t      = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 

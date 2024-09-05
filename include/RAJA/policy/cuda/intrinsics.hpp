@@ -98,7 +98,7 @@ struct AccessorDeviceScopeUseBlockFence
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
-    auto ptr = const_cast<integer_type*>(
+    auto      ptr = const_cast<integer_type*>(
         reinterpret_cast<const integer_type*>(in_ptr + idx));
 
     for (size_t i = 0; i < u.array_size(); ++i)
@@ -218,7 +218,7 @@ shfl_xor_sync<unsigned long>(unsigned long var, int laneMask)
 
 template <>
 RAJA_DEVICE RAJA_INLINE long long shfl_xor_sync<long long>(long long var,
-                                                           int laneMask)
+                                                           int       laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
@@ -289,7 +289,7 @@ shfl_sync<unsigned long>(unsigned long var, int srcLane)
 
 template <>
 RAJA_DEVICE RAJA_INLINE long long shfl_sync<long long>(long long var,
-                                                       int srcLane)
+                                                       int       srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
@@ -358,7 +358,7 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
     for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
     {
       int srcLane = threadId ^ i;
-      T rhs = shfl_sync(temp, srcLane);
+      T   rhs     = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads)
       {
@@ -401,7 +401,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
 
-  int warpId = threadId % policy::cuda::device_constants.WARP_SIZE;
+  int warpId  = threadId % policy::cuda::device_constants.WARP_SIZE;
   int warpNum = threadId / policy::cuda::device_constants.WARP_SIZE;
 
   T temp = val;
@@ -423,7 +423,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
     {
       int srcLane = threadId ^ i;
-      T rhs = shfl_sync(temp, srcLane);
+      T   rhs     = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads)
       {

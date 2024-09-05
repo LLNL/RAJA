@@ -70,7 +70,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 100000;
 
   int* array = memoryManager::allocate<int>(N);
-  int* hist = memoryManager::allocate<int>(M);
+  int* hist  = memoryManager::allocate<int>(M);
 
   for (int i = 0; i < N; ++i)
   {
@@ -131,9 +131,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::TypedRangeSegment<int> array_range(0, N);
   // _range_atomic_histogram_end
 
-  RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
-    RAJA::atomicAdd<RAJA::seq_atomic>(&hist[array[i]], 1);
-  });
+  RAJA::forall<RAJA::seq_exec>(
+      array_range,
+      [=](int i) { RAJA::atomicAdd<RAJA::seq_atomic>(&hist[array[i]], 1); });
 
   checkResult(hist, hist_ref, M);
   // printArray(hist, M);
@@ -150,9 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(hist, 0, M * sizeof(int));
 
   // _rajaomp_atomic_histogram_start
-  RAJA::forall<RAJA::omp_parallel_for_exec>(array_range, [=](int i) {
-    RAJA::atomicAdd<RAJA::omp_atomic>(&hist[array[i]], 1);
-  });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(
+      array_range,
+      [=](int i) { RAJA::atomicAdd<RAJA::omp_atomic>(&hist[array[i]], 1); });
   // _rajaomp_atomic_histogram_end
 
   checkResult(hist, hist_ref, M);
@@ -172,9 +172,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::memset(hist, 0, M * sizeof(int));
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(array_range, [=](int i) {
-    RAJA::atomicAdd<RAJA::auto_atomic>(&hist[array[i]], 1);
-  });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(
+      array_range,
+      [=](int i) { RAJA::atomicAdd<RAJA::auto_atomic>(&hist[array[i]], 1); });
 
   checkResult(hist, hist_ref, M);
   // printArray(hist, M);
@@ -194,9 +194,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _rajacuda_atomic_histogram_start
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      array_range, [=] RAJA_DEVICE(int i) {
-        RAJA::atomicAdd<RAJA::cuda_atomic>(&hist[array[i]], 1);
-      });
+      array_range,
+      [=] RAJA_DEVICE(int i)
+      { RAJA::atomicAdd<RAJA::cuda_atomic>(&hist[array[i]], 1); });
   // _rajacuda_atomic_histogram_end
 
   checkResult(hist, hist_ref, M);
@@ -218,9 +218,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _rajacuda_atomicauto_histogram_start
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      array_range, [=] RAJA_DEVICE(int i) {
-        RAJA::atomicAdd<RAJA::auto_atomic>(&hist[array[i]], 1);
-      });
+      array_range,
+      [=] RAJA_DEVICE(int i)
+      { RAJA::atomicAdd<RAJA::auto_atomic>(&hist[array[i]], 1); });
   // _rajacuda_atomicauto_histogram_end
 
   checkResult(hist, hist_ref, M);
@@ -240,9 +240,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _rajahip_atomic_histogram_start
   RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      array_range, [=] RAJA_DEVICE(int i) {
-        RAJA::atomicAdd<RAJA::hip_atomic>(&hist[array[i]], 1);
-      });
+      array_range,
+      [=] RAJA_DEVICE(int i)
+      { RAJA::atomicAdd<RAJA::hip_atomic>(&hist[array[i]], 1); });
   // _rajahip_atomic_histogram_end
 
   checkResult(hist, hist_ref, M);
@@ -264,9 +264,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _rajahip_atomicauto_histogram_start
   RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      array_range, [=] RAJA_DEVICE(int i) {
-        RAJA::atomicAdd<RAJA::auto_atomic>(&hist[array[i]], 1);
-      });
+      array_range,
+      [=] RAJA_DEVICE(int i)
+      { RAJA::atomicAdd<RAJA::auto_atomic>(&hist[array[i]], 1); });
   // _rajahip_atomicauto_histogram_end
 
   checkResult(hist, hist_ref, M);

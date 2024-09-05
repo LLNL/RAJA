@@ -32,16 +32,16 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
 
   using layout = RAJA::Layout<1>;
 
-  TypeParam a1[10];
-  TypeParam a2[10];
+  TypeParam  a1[10];
+  TypeParam  a2[10];
   TypeParam* data[2];
 
   data[0] = a1;
   data[1] = a2;
 
   constexpr int val = 8;
-  a1[0] = val;
-  a2[0] = val;
+  a1[0]             = val;
+  a2[0]             = val;
 
   RAJA::MultiView<TypeParam, layout> view(data, layout(10));
   ASSERT_EQ(val, view(0, 0));
@@ -107,12 +107,12 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
 TYPED_TEST(MultiViewUnitTest, Accessor)
 {
 
-  const int Nx = 3;
-  const int Ny = 5;
-  const int Nz = 2;
-  const int N = Nx * Ny * Nz;
-  TypeParam* b = new TypeParam[N];
-  TypeParam* c = new TypeParam[N];
+  const int  Nx = 3;
+  const int  Ny = 5;
+  const int  Nz = 2;
+  const int  N  = Nx * Ny * Nz;
+  TypeParam* b  = new TypeParam[N];
+  TypeParam* c  = new TypeParam[N];
   TypeParam* a[2];
 
   a[0] = b;
@@ -129,9 +129,9 @@ TYPED_TEST(MultiViewUnitTest, Accessor)
   /*
    * 1D Accessor
    */
-  RAJA::MultiView<TypeParam, RAJA::Layout<1>> view_1D(a, N);
+  RAJA::MultiView<TypeParam, RAJA::Layout<1>>    view_1D(a, N);
   RAJA::MultiView<TypeParam, RAJA::Layout<1>, 1> view_1D1p(a, N);
-  TypeParam val{0};
+  TypeParam                                      val{0};
   for (int i = 0; i < N; ++i)
   {
     ASSERT_EQ(val, view_1D(0, i));
@@ -144,7 +144,7 @@ TYPED_TEST(MultiViewUnitTest, Accessor)
   /*
    * 2D Accessor
    */
-  RAJA::MultiView<TypeParam, RAJA::Layout<2>> view_2D(a, Ny, Nx);
+  RAJA::MultiView<TypeParam, RAJA::Layout<2>>    view_2D(a, Ny, Nx);
   RAJA::MultiView<TypeParam, RAJA::Layout<2>, 1> view_2D1p(a, Ny, Nx);
   val = TypeParam{0};
   for (int j = 0; j < Ny; ++j)
@@ -162,7 +162,7 @@ TYPED_TEST(MultiViewUnitTest, Accessor)
   /*
    * 3D Accessor
    */
-  RAJA::MultiView<TypeParam, RAJA::Layout<3>> view_3D(a, Nz, Ny, Nx);
+  RAJA::MultiView<TypeParam, RAJA::Layout<3>>    view_3D(a, Nz, Ny, Nx);
   RAJA::MultiView<TypeParam, RAJA::Layout<3>, 2> view_3D1p(a, Nz, Ny, Nx);
   val = TypeParam{0};
   for (int k = 0; k < Nz; ++k)
@@ -198,8 +198,8 @@ TYPED_TEST(OffsetLayoutMultiViewUnitTest, View)
   /*
    * MultiView is constructed by passing in the layout.
    */
-  std::array<RAJA::Index_type, 1> lower{{1}};
-  std::array<RAJA::Index_type, 1> upper{{11}};
+  std::array<RAJA::Index_type, 1>    lower{{1}};
+  std::array<RAJA::Index_type, 1>    upper{{11}};
   RAJA::MultiView<TypeParam, layout> view(
       data, RAJA::make_offset_layout<1>(lower, upper));
   RAJA::MultiView<TypeParam, layout, 1> view1p(
@@ -223,7 +223,7 @@ TYPED_TEST(OffsetLayoutMultiViewUnitTest, View)
 TYPED_TEST(MultiViewUnitTest, Shift1D)
 {
 
-  int N = 10;
+  int        N     = 10;
   TypeParam* reala = new TypeParam[N];
   TypeParam* realb = new TypeParam[N];
   TypeParam* a[2];
@@ -231,10 +231,10 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
   a[1] = realb;
 
   // Create a view from a base view
-  const int DIM = 1;
+  const int               DIM    = 1;
   RAJA::OffsetLayout<DIM> layout = RAJA::make_offset_layout<DIM>({{0}}, {{N}});
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> A(a, layout);
-  RAJA::MultiView<TypeParam, RAJA::Layout<DIM>> B(a, N);
+  RAJA::MultiView<TypeParam, RAJA::Layout<DIM>>       B(a, N);
 
   for (int i = 0; i < N; ++i)
   {
@@ -266,12 +266,12 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
 
 
   // Create a shifted view from a view with a typed layout
-  using TLayout = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
+  using TLayout       = RAJA::TypedLayout<TIL, RAJA::tuple<TIX>>;
   using TOffsetLayout = RAJA::TypedOffsetLayout<TIL, RAJA::tuple<TIX>>;
 
   TLayout myLayout(10);
 
-  RAJA::MultiView<TypeParam, TLayout> D(a, myLayout);
+  RAJA::MultiView<TypeParam, TLayout>       D(a, myLayout);
   RAJA::MultiView<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
 
   for (TIX i = TIX{N}; i < TIX{2 * N}; ++i)
@@ -286,18 +286,18 @@ TYPED_TEST(MultiViewUnitTest, Shift1D)
 TYPED_TEST(MultiViewUnitTest, Shift2D)
 {
 
-  int N = 10;
+  int        N  = 10;
   TypeParam* a0 = new TypeParam[N * N];
   TypeParam* b0 = new TypeParam[N * N];
   TypeParam* a[2];
   a[0] = a0;
   a[1] = b0;
 
-  const int DIM = 2;
+  const int               DIM = 2;
   RAJA::OffsetLayout<DIM> layout =
       RAJA::make_offset_layout<DIM>({{0, 0}}, {{N, N}});
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> A(a, layout);
-  RAJA::MultiView<TypeParam, RAJA::Layout<DIM>> B(a, N, N);
+  RAJA::MultiView<TypeParam, RAJA::Layout<DIM>>       B(a, N, N);
 
   for (int y = 0; y < N; ++y)
   {
@@ -325,7 +325,7 @@ TYPED_TEST(MultiViewUnitTest, Shift2D)
 
   // Create a view from a base view with permuted layout
   std::array<RAJA::idx_t, 2> perm{{1, 0}};
-  RAJA::OffsetLayout<2> playout =
+  RAJA::OffsetLayout<2>      playout =
       RAJA::make_permuted_offset_layout<2>({{0, 0}}, {{N, N}}, perm);
 
   RAJA::MultiView<TypeParam, RAJA::OffsetLayout<DIM>> C(a, playout);

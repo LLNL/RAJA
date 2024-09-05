@@ -89,7 +89,7 @@
     {                                                                          \
     private:                                                                   \
       typedef SuiteName<gtest_TypeParam_> TestFixture;                         \
-      typedef gtest_TypeParam_ TypeParam;                                      \
+      typedef gtest_TypeParam_            TypeParam;                           \
                                                                                \
     public:                                                                    \
       void TestBody() override;                                                \

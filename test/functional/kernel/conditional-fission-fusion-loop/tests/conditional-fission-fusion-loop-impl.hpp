@@ -21,10 +21,10 @@ template <typename IDX_TYPE,
           typename WORKING_RES,
           typename SEG_TYPE>
 void KernelConditionalFissionFusionLoopTestImpl(
-    const SEG_TYPE& seg,
+    const SEG_TYPE&              seg,
     const std::vector<IDX_TYPE>& seg_idx,
-    WORKING_RES working_res,
-    camp::resources::Resource erased_working_res)
+    WORKING_RES                  working_res,
+    camp::resources::Resource    erased_working_res)
 {
   IDX_TYPE data_len = IDX_TYPE(0);
 
@@ -66,12 +66,14 @@ void KernelConditionalFissionFusionLoopTestImpl(
 
         RAJA::make_tuple(param),
 
-        [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i)
+        {
           RAJA::atomicAdd<RAJA::auto_atomic>(
               &working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE)1);
         },
 
-        [=] RAJA_HOST_DEVICE(IDX_TYPE i) {
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i)
+        {
           RAJA::atomicAdd<RAJA::auto_atomic>(
               &working_array_x[RAJA::stripIndexType(i)], (DATA_TYPE)2);
         }
@@ -86,9 +88,12 @@ void KernelConditionalFissionFusionLoopTestImpl(
            0,
            sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-    RAJA::forall<RAJA::seq_exec>(working_res, seg_idx, [=](IDX_TYPE i) {
-      check_array_y[RAJA::stripIndexType(i)] = 3 + 3 * param;
-    });
+    RAJA::forall<RAJA::seq_exec>(working_res,
+                                 seg_idx,
+                                 [=](IDX_TYPE i) {
+                                   check_array_y[RAJA::stripIndexType(i)] =
+                                       3 + 3 * param;
+                                 });
 
 
     for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i)

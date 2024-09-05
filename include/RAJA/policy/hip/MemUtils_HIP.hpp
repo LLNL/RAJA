@@ -120,7 +120,7 @@ struct DeviceZeroedAllocator
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
-    auto res = ::camp::resources::Hip::get_default();
+    auto  res = ::camp::resources::Hip::get_default();
     void* ptr;
     hipErrchk(hipMalloc(&ptr, nbytes));
     hipErrchk(hipMemsetAsync(ptr, 0, nbytes, res.get_stream()));
@@ -169,12 +169,12 @@ namespace detail
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct hipInfo
 {
-  const void* func = nullptr;
-  hip_dim_t gridDim{0, 0, 0};
-  hip_dim_t blockDim{0, 0, 0};
-  size_t* dynamic_smem = nullptr;
+  const void*            func = nullptr;
+  hip_dim_t              gridDim{0, 0, 0};
+  hip_dim_t              blockDim{0, 0, 0};
+  size_t*                dynamic_smem = nullptr;
   ::RAJA::resources::Hip res{::RAJA::resources::Hip::HipFromStream(0, 0)};
-  bool setup_reducers = false;
+  bool                   setup_reducers = false;
 };
 struct hipStatusInfo : hipInfo
 {
@@ -211,7 +211,7 @@ void synchronize()
     if (!val.second)
     {
       synchronize = true;
-      val.second = true;
+      val.second  = true;
     }
   }
   if (synchronize)
@@ -266,14 +266,14 @@ void launch(::RAJA::resources::Hip res, bool async = true)
 
 //! Launch kernel and indicate resource synchronization status
 RAJA_INLINE
-void launch(const void* func,
-            hip_dim_t gridDim,
-            hip_dim_t blockDim,
-            void** args,
-            size_t shmem,
+void launch(const void*            func,
+            hip_dim_t              gridDim,
+            hip_dim_t              blockDim,
+            void**                 args,
+            size_t                 shmem,
             ::RAJA::resources::Hip res,
-            bool async = true,
-            const char* name = nullptr)
+            bool                   async = true,
+            const char*            name  = nullptr)
 {
 #if defined(RAJA_ENABLE_ROCTX)
   if (name) roctxRangePush(name);
@@ -348,13 +348,13 @@ constexpr size_t dynamic_smem_allocation_failure =
 //  takes the failure return path.
 template <typename T, typename GetNFromMax>
 RAJA_INLINE size_t allocateDynamicShmem(GetNFromMax&& get_n_from_max,
-                                        size_t align = alignof(T))
+                                        size_t        align = alignof(T))
 {
   const size_t unaligned_shmem = *detail::tl_status.dynamic_smem;
-  const size_t align_offset = ((unaligned_shmem % align) != size_t(0))
-                                  ? align - (unaligned_shmem % align)
-                                  : size_t(0);
-  const size_t aligned_shmem = unaligned_shmem + align_offset;
+  const size_t align_offset    = ((unaligned_shmem % align) != size_t(0))
+                                     ? align - (unaligned_shmem % align)
+                                     : size_t(0);
+  const size_t aligned_shmem   = unaligned_shmem + align_offset;
 
   const size_t max_shmem_bytes = maxDynamicShmem() - aligned_shmem;
   const size_t n_bytes = sizeof(T) * std::forward<GetNFromMax>(get_n_from_max)(
@@ -382,12 +382,12 @@ RAJA_INLINE
 // resources.
 template <typename LOOP_BODY>
 RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type
-make_launch_body(const void* func,
-                 hip_dim_t gridDim,
-                 hip_dim_t blockDim,
-                 size_t& dynamic_smem,
+make_launch_body(const void*            func,
+                 hip_dim_t              gridDim,
+                 hip_dim_t              blockDim,
+                 size_t&                dynamic_smem,
                  ::RAJA::resources::Hip res,
-                 LOOP_BODY&& loop_body)
+                 LOOP_BODY&&            loop_body)
 {
   ::RAJA::detail::ScopedAssignment<detail::hipInfo> info_sa(
       detail::tl_status,
@@ -398,7 +398,7 @@ make_launch_body(const void* func,
 }
 
 
-static constexpr int hip_occupancy_uninitialized_int = -1;
+static constexpr int    hip_occupancy_uninitialized_int = -1;
 static constexpr size_t hip_occupancy_uninitialized_size_t =
     std::numeric_limits<size_t>::max();
 
@@ -423,15 +423,15 @@ HipFixedMaxBlocksData hip_max_blocks()
 struct HipOccMaxBlocksThreadsData
 {
   size_t func_dynamic_shmem_per_block = hip_occupancy_uninitialized_size_t;
-  int func_max_blocks_per_device = hip_occupancy_uninitialized_int;
-  int func_max_threads_per_block = hip_occupancy_uninitialized_int;
+  int    func_max_blocks_per_device   = hip_occupancy_uninitialized_int;
+  int    func_max_threads_per_block   = hip_occupancy_uninitialized_int;
 };
 
 //! Get the maximum occupancy of a kernel with unknown threads per block
 template <typename RAJA_UNUSED_ARG(UniqueMarker)>
 RAJA_INLINE HipOccMaxBlocksThreadsData
 hip_occupancy_max_blocks_threads(const void* func,
-                                 size_t func_dynamic_shmem_per_block)
+                                 size_t      func_dynamic_shmem_per_block)
 {
   static thread_local HipOccMaxBlocksThreadsData data;
 
@@ -448,7 +448,7 @@ hip_occupancy_max_blocks_threads(const void* func,
                                           func_dynamic_shmem_per_block));
 #else
     RAJA_UNUSED_VAR(func);
-    hipDeviceProp_t& prop = hip::device_prop();
+    hipDeviceProp_t& prop           = hip::device_prop();
     data.func_max_blocks_per_device = prop.multiProcessorCount;
     data.func_max_threads_per_block = 1024;
 #endif
@@ -461,8 +461,8 @@ hip_occupancy_max_blocks_threads(const void* func,
 struct HipOccMaxBlocksData : HipFixedMaxBlocksData
 {
   size_t func_dynamic_shmem_per_block = hip_occupancy_uninitialized_size_t;
-  int func_threads_per_block = hip_occupancy_uninitialized_int;
-  int func_max_blocks_per_sm = hip_occupancy_uninitialized_int;
+  int    func_threads_per_block       = hip_occupancy_uninitialized_int;
+  int    func_max_blocks_per_sm       = hip_occupancy_uninitialized_int;
 };
 
 //! Get the maximum occupancy of a kernel with compile time threads per block
@@ -476,7 +476,7 @@ hip_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
   {
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
-    data.func_threads_per_block = func_threads_per_block;
+    data.func_threads_per_block       = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
@@ -502,8 +502,8 @@ hip_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
 template <typename RAJA_UNUSED_ARG(UniqueMarker)>
 RAJA_INLINE HipOccMaxBlocksData
 hip_occupancy_max_blocks(const void* func,
-                         size_t func_dynamic_shmem_per_block,
-                         int func_threads_per_block)
+                         size_t      func_dynamic_shmem_per_block,
+                         int         func_threads_per_block)
 {
   static thread_local HipOccMaxBlocksData data;
 
@@ -512,7 +512,7 @@ hip_occupancy_max_blocks(const void* func,
   {
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
-    data.func_threads_per_block = func_threads_per_block;
+    data.func_threads_per_block       = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
@@ -565,8 +565,8 @@ template <typename IdxT, typename Concretizer, typename UniqueMarker>
 struct ConcretizerImpl
 {
   ConcretizerImpl(const void* func,
-                  size_t func_dynamic_shmem_per_block,
-                  IdxT len)
+                  size_t      func_dynamic_shmem_per_block,
+                  IdxT        len)
       : m_func(func),
         m_func_dynamic_shmem_per_block(func_dynamic_shmem_per_block),
         m_len(len)
@@ -645,8 +645,8 @@ struct ConcretizerImpl
 
 private:
   const void* m_func;
-  size_t m_func_dynamic_shmem_per_block;
-  IdxT m_len;
+  size_t      m_func_dynamic_shmem_per_block;
+  IdxT        m_len;
 };
 
 } // namespace hip

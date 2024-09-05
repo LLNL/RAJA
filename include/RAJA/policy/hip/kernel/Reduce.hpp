@@ -56,7 +56,7 @@ struct HipStatementExecutor<Data,
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // block reduce on the specified parameter
-    auto value = data.template get_param<ParamId>();
+    auto value    = data.template get_param<ParamId>();
     using value_t = decltype(value);
     value_t ident = value_t();
 
@@ -118,7 +118,7 @@ struct HipStatementExecutor<Data,
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // block reduce on the specified parameter
-    auto value = data.template get_param<ParamId>();
+    auto value    = data.template get_param<ParamId>();
     using value_t = decltype(value);
     value_t ident = value_t();
 

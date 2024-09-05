@@ -41,8 +41,8 @@
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#define RAJA_HOST __host__
+#define RAJA_DEVICE      __device__
+#define RAJA_HOST        __host__
 
 #if defined(RAJA_ENABLE_CLANG_CUDA)
 #define RAJA_SUPPRESS_HD_WARN
@@ -52,8 +52,8 @@
 
 #elif defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
 #define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#define RAJA_HOST __host__
+#define RAJA_DEVICE      __device__
+#define RAJA_HOST        __host__
 #define RAJA_SUPPRESS_HD_WARN
 
 #define RAJA_USE_HIP_INTRINSICS
@@ -167,9 +167,9 @@ inline void RAJA_ABORT_OR_THROW(const char* str)
 #else
 #ifdef RAJA_COMPILER_MSVC
   fflush(stdout);
-  char* value;
+  char*  value;
   size_t len;
-  bool no_except = false;
+  bool   no_except = false;
   if (_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr)
   {
     no_except = true;
@@ -204,7 +204,7 @@ inline void RAJA_ABORT_OR_THROW(const char* str)
  */
 
 #if (__cplusplus >= 201402L)
-#define RAJA_HAS_CXX14 1
+#define RAJA_HAS_CXX14                    1
 #define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
 #elif defined(__has_cpp_attribute)
 #if __has_cpp_attribute(deprecated)
@@ -214,7 +214,7 @@ inline void RAJA_ABORT_OR_THROW(const char* str)
 
 #if defined(RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED)
 // When using a C++14 compiler, use the standard-specified deprecated attribute
-#define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
+#define RAJA_DEPRECATE(Msg)       [[deprecated(Msg)]]
 #define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
 
 #elif defined(_MSC_VER)

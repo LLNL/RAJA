@@ -46,9 +46,9 @@ public:
       internal::expt::RegisterBase<Register<ELEMENT_TYPE, hip_wave_register>>;
 
   using register_policy = hip_wave_register;
-  using self_type = Register<ELEMENT_TYPE, hip_wave_register>;
-  using element_type = ELEMENT_TYPE;
-  using register_type = ELEMENT_TYPE;
+  using self_type       = Register<ELEMENT_TYPE, hip_wave_register>;
+  using element_type    = ELEMENT_TYPE;
+  using register_type   = ELEMENT_TYPE;
 
   using int_vector_type = Register<int64_t, hip_wave_register>;
 
@@ -258,15 +258,15 @@ public:
   RAJA_DEVICE
   RAJA_INLINE
   self_type& segmented_load(element_type const* ptr,
-                            camp::idx_t segbits,
-                            camp::idx_t stride_inner,
-                            camp::idx_t stride_outer)
+                            camp::idx_t         segbits,
+                            camp::idx_t         stride_inner,
+                            camp::idx_t         stride_outer)
   {
     auto lane = get_lane();
 
     // compute segment and segment_size
     auto seg = lane >> segbits;
-    auto i = lane & ((1 << segbits) - 1);
+    auto i   = lane & ((1 << segbits) - 1);
 
     m_value = ptr[seg * stride_outer + i * stride_inner];
 
@@ -283,17 +283,17 @@ public:
   RAJA_DEVICE
   RAJA_INLINE
   self_type& segmented_load_nm(element_type const* ptr,
-                               camp::idx_t segbits,
-                               camp::idx_t stride_inner,
-                               camp::idx_t stride_outer,
-                               camp::idx_t num_inner,
-                               camp::idx_t num_outer)
+                               camp::idx_t         segbits,
+                               camp::idx_t         stride_inner,
+                               camp::idx_t         stride_outer,
+                               camp::idx_t         num_inner,
+                               camp::idx_t         num_outer)
   {
     auto lane = get_lane();
 
     // compute segment and segment_size
     auto seg = lane >> segbits;
-    auto i = lane & ((1 << segbits) - 1);
+    auto i   = lane & ((1 << segbits) - 1);
 
     if (seg >= num_outer || i >= num_inner)
     {
@@ -389,7 +389,7 @@ public:
    */
   template <typename T2>
   RAJA_DEVICE RAJA_INLINE self_type const& scatter(element_type* ptr,
-                                                   T2 const& offsets) const
+                                                   T2 const&     offsets) const
   {
 
     ptr[offsets.get_raw_value()] = m_value;
@@ -427,15 +427,15 @@ public:
   RAJA_DEVICE
   RAJA_INLINE
   self_type const& segmented_store(element_type* ptr,
-                                   camp::idx_t segbits,
-                                   camp::idx_t stride_inner,
-                                   camp::idx_t stride_outer) const
+                                   camp::idx_t   segbits,
+                                   camp::idx_t   stride_inner,
+                                   camp::idx_t   stride_outer) const
   {
     auto lane = get_lane();
 
     // compute segment and segment_size
     auto seg = lane >> segbits;
-    auto i = lane & ((1 << segbits) - 1);
+    auto i   = lane & ((1 << segbits) - 1);
 
     ptr[seg * stride_outer + i * stride_inner] = m_value;
 
@@ -450,17 +450,17 @@ public:
   RAJA_DEVICE
   RAJA_INLINE
   self_type const& segmented_store_nm(element_type* ptr,
-                                      camp::idx_t segbits,
-                                      camp::idx_t stride_inner,
-                                      camp::idx_t stride_outer,
-                                      camp::idx_t num_inner,
-                                      camp::idx_t num_outer) const
+                                      camp::idx_t   segbits,
+                                      camp::idx_t   stride_inner,
+                                      camp::idx_t   stride_outer,
+                                      camp::idx_t   num_inner,
+                                      camp::idx_t   num_outer) const
   {
     auto lane = get_lane();
 
     // compute segment and segment_size
     auto seg = lane >> segbits;
-    auto i = lane & ((1 << segbits) - 1);
+    auto i   = lane & ((1 << segbits) - 1);
 
     if (seg >= num_outer || i >= num_inner)
     {
@@ -664,7 +664,7 @@ public:
                                          RAJA::operators::maximum>;
 
     auto ident = RAJA::operators::limits<element_type>::min();
-    auto lane = get_lane();
+    auto lane  = get_lane();
     auto value = lane < N ? m_value : ident;
     return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(value);
   }
@@ -710,7 +710,7 @@ public:
                                          RAJA::operators::minimum>;
 
     auto ident = RAJA::operators::limits<element_type>::max();
-    auto lane = get_lane();
+    auto lane  = get_lane();
     auto value = lane < N ? m_value : ident;
     return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(value);
   }
@@ -746,7 +746,7 @@ public:
 
     // compute segment and segment_size
     auto seg = lane >> segbits;
-    auto i = lane & ((1 << segbits) - 1);
+    auto i   = lane & ((1 << segbits) - 1);
 
     result.get_raw_value() = seg * stride_outer + i * stride_inner;
 
@@ -813,8 +813,8 @@ public:
     // Third: mask off everything but output_segment
     //        this is because all output segments are valid at this point
     // (5-segbits), the 5 is since the warp-width is 32 == 1<<5
-    int our_output_segment = get_lane() >> (6 - segbits);
-    bool in_output_segment = our_output_segment == output_segment;
+    int  our_output_segment = get_lane() >> (6 - segbits);
+    bool in_output_segment  = our_output_segment == output_segment;
     if (!in_output_segment)
     {
       result.get_raw_value() = 0;
@@ -867,8 +867,8 @@ public:
     {
 
       // tree shuffle
-      int delta = s_num_elem >> (i + 1);
-      element_type y = hip::impl::shfl_sync(x, get_lane() + delta);
+      int          delta = s_num_elem >> (i + 1);
+      element_type y     = hip::impl::shfl_sync(x, get_lane() + delta);
 
       // reduce
       x += y;
@@ -876,7 +876,7 @@ public:
 
     // Second: send result to output segment lanes
     self_type result;
-    int get_from = get_lane() & ((1 << segbits) - 1);
+    int       get_from     = get_lane() & ((1 << segbits) - 1);
     result.get_raw_value() = hip::impl::shfl_sync(x, get_from);
 
     int mask = (get_lane() >> segbits) == output_segment;
@@ -893,7 +893,7 @@ public:
 
   RAJA_INLINE
   RAJA_DEVICE
-  self_type segmented_divide_nm(self_type den,
+  self_type segmented_divide_nm(self_type   den,
                                 camp::idx_t segbits,
                                 camp::idx_t num_inner,
                                 camp::idx_t num_outer) const
@@ -904,7 +904,7 @@ public:
 
     // compute segment and segment_size
     auto seg = lane >> segbits;
-    auto i = lane & ((1 << segbits) - 1);
+    auto i   = lane & ((1 << segbits) - 1);
 
     if (seg >= num_outer || i >= num_inner)
     {
@@ -973,7 +973,7 @@ public:
   {
     self_type result;
 
-    camp::idx_t mask = (1 << segbits) - 1;
+    camp::idx_t mask   = (1 << segbits) - 1;
     camp::idx_t offset = input_segment << segbits;
 
 

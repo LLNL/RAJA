@@ -29,10 +29,10 @@
 typedef enum omp_sched_t
 {
   // schedule kinds
-  omp_sched_static = 0x1,
+  omp_sched_static  = 0x1,
   omp_sched_dynamic = 0x2,
-  omp_sched_guided = 0x3,
-  omp_sched_auto = 0x4,
+  omp_sched_guided  = 0x3,
+  omp_sched_auto    = 0x4,
 
   // schedule modifier
   omp_sched_monotonic = 0x80000000u
@@ -56,7 +56,7 @@ template <multi_reduce_algorithm t_algorithm>
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_algorithm;
-  static constexpr bool consistent =
+  static constexpr bool                   consistent =
       (algorithm == multi_reduce_algorithm::combine_on_get);
 };
 
@@ -75,9 +75,9 @@ struct ScheduleTag
 template <omp_sched_t Sched, int Chunk>
 struct Schedule : public ScheduleTag
 {
-  constexpr static omp_sched_t schedule = Sched;
-  constexpr static int chunk_size = Chunk;
-  constexpr static Policy policy = Policy::openmp;
+  constexpr static omp_sched_t schedule   = Sched;
+  constexpr static int         chunk_size = Chunk;
+  constexpr static Policy      policy     = Policy::openmp;
 };
 } // namespace internal
 

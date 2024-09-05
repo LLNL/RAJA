@@ -43,19 +43,19 @@ namespace scan
 template <typename ExecPolicy, typename Iter, typename BinFn>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
                                   type_traits::is_sequential_policy<ExecPolicy>>
-inclusive_inplace(resources::Host host_res,
-                  const ExecPolicy&,
-                  Iter begin,
-                  Iter end,
-                  BinFn f)
+            inclusive_inplace(resources::Host host_res,
+                              const ExecPolicy&,
+                              Iter  begin,
+                              Iter  end,
+                              BinFn f)
 {
   using ValueT = typename std::remove_reference<decltype(*begin)>::type;
-  ValueT agg = *begin;
+  ValueT agg   = *begin;
 
   for (Iter i = ++begin; i != end; ++i)
   {
     agg = f(agg, *i);
-    *i = agg;
+    *i  = agg;
   }
 
   return resources::EventProxy<resources::Host>(host_res);
@@ -68,25 +68,25 @@ inclusive_inplace(resources::Host host_res,
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
                                   type_traits::is_sequential_policy<ExecPolicy>>
-exclusive_inplace(resources::Host host_res,
-                  const ExecPolicy&,
-                  Iter begin,
-                  Iter end,
-                  BinFn f,
-                  T v)
+            exclusive_inplace(resources::Host host_res,
+                              const ExecPolicy&,
+                              Iter  begin,
+                              Iter  end,
+                              BinFn f,
+                              T     v)
 {
   using std::distance;
-  const auto n = distance(begin, end);
+  const auto n    = distance(begin, end);
   using DistanceT = typename std::remove_const<decltype(n)>::type;
 
   using ValueT = typename std::remove_reference<decltype(*begin)>::type;
-  ValueT agg = v;
+  ValueT agg   = v;
 
   for (DistanceT i = 0; i < n; ++i)
   {
-    auto t = begin[i];
+    auto t   = begin[i];
     begin[i] = agg;
-    agg = f(agg, t);
+    agg      = f(agg, t);
   }
 
   return resources::EventProxy<resources::Host>(host_res);
@@ -99,20 +99,20 @@ exclusive_inplace(resources::Host host_res,
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
                                   type_traits::is_sequential_policy<ExecPolicy>>
-inclusive(resources::Host host_res,
-          const ExecPolicy&,
-          const Iter begin,
-          const Iter end,
-          OutIter out,
-          BinFn f)
+            inclusive(resources::Host host_res,
+                      const ExecPolicy&,
+                      const Iter begin,
+                      const Iter end,
+                      OutIter    out,
+                      BinFn      f)
 {
   using ValueT = typename std::remove_reference<decltype(*out)>::type;
-  ValueT agg = *begin;
-  *out++ = agg;
+  ValueT agg   = *begin;
+  *out++       = agg;
 
   for (Iter i = begin + 1; i != end; ++i)
   {
-    agg = f(agg, *i);
+    agg    = f(agg, *i);
     *out++ = agg;
   }
 
@@ -130,23 +130,23 @@ template <typename ExecPolicy,
           typename T>
 RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
                                   type_traits::is_sequential_policy<ExecPolicy>>
-exclusive(resources::Host host_res,
-          const ExecPolicy&,
-          const Iter begin,
-          const Iter end,
-          OutIter out,
-          BinFn f,
-          T v)
+            exclusive(resources::Host host_res,
+                      const ExecPolicy&,
+                      const Iter begin,
+                      const Iter end,
+                      OutIter    out,
+                      BinFn      f,
+                      T          v)
 {
   using ValueT = typename std::remove_reference<decltype(*out)>::type;
-  ValueT agg = v;
-  OutIter o = out;
-  *o++ = v;
+  ValueT  agg  = v;
+  OutIter o    = out;
+  *o++         = v;
 
   for (Iter i = begin; i != end - 1; ++i, ++o)
   {
     agg = f(agg, *i);
-    *o = agg;
+    *o  = agg;
   }
 
   return resources::EventProxy<resources::Host>(host_res);

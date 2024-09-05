@@ -16,9 +16,9 @@
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct AndEqOtherOp : int_op
 {
-  AndEqOtherOp(T* dcount,
-               T* hcount,
-               camp::resources::Resource work_res,
+  AndEqOtherOp(T*                               dcount,
+               T*                               hcount,
+               camp::resources::Resource        work_res,
                RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -32,15 +32,15 @@ struct AndEqOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other &= (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchAndOtherOp : int_op
 {
-  FetchAndOtherOp(T* dcount,
-                  T* hcount,
-                  camp::resources::Resource work_res,
+  FetchAndOtherOp(T*                               dcount,
+                  T*                               hcount,
+                  camp::resources::Resource        work_res,
                   RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -54,15 +54,15 @@ struct FetchAndOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_and((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct OrEqOtherOp : int_op
 {
-  OrEqOtherOp(T* dcount,
-              T* hcount,
-              camp::resources::Resource work_res,
+  OrEqOtherOp(T*                               dcount,
+              T*                               hcount,
+              camp::resources::Resource        work_res,
               RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -76,15 +76,15 @@ struct OrEqOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other |= (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchOrOtherOp : int_op
 {
-  FetchOrOtherOp(T* dcount,
-                 T* hcount,
-                 camp::resources::Resource work_res,
+  FetchOrOtherOp(T*                               dcount,
+                 T*                               hcount,
+                 camp::resources::Resource        work_res,
                  RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -98,15 +98,15 @@ struct FetchOrOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_or((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct XorEqOtherOp : int_op
 {
-  XorEqOtherOp(T* dcount,
-               T* hcount,
-               camp::resources::Resource work_res,
+  XorEqOtherOp(T*                               dcount,
+               T*                               hcount,
+               camp::resources::Resource        work_res,
                RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -125,15 +125,15 @@ struct XorEqOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other ^= (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchXorOtherOp : int_op
 {
-  FetchXorOtherOp(T* dcount,
-                  T* hcount,
-                  camp::resources::Resource work_res,
+  FetchXorOtherOp(T*                               dcount,
+                  T*                               hcount,
+                  camp::resources::Resource        work_res,
                   RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
@@ -152,7 +152,7 @@ struct FetchXorOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_xor((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T min, max, final_min, final_max;
+  T                                min, max, final_min, final_max;
 };
 
 template <typename ExecPolicy,
@@ -166,12 +166,12 @@ typename std::enable_if<
     (std::is_floating_point<T>::value &&
      std::is_base_of<int_op, OtherOp<T, AtomicPolicy, IdxType>>::value)>::type
 testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg),
-                       T* RAJA_UNUSED_ARG(count),
-                       T* RAJA_UNUSED_ARG(list),
-                       T* RAJA_UNUSED_ARG(hcount),
-                       T* RAJA_UNUSED_ARG(hlist),
+                       T*                               RAJA_UNUSED_ARG(count),
+                       T*                               RAJA_UNUSED_ARG(list),
+                       T*                               RAJA_UNUSED_ARG(hcount),
+                       T*                               RAJA_UNUSED_ARG(hlist),
                        camp::resources::Resource RAJA_UNUSED_ARG(work_res),
-                       IdxType RAJA_UNUSED_ARG(N))
+                       IdxType                   RAJA_UNUSED_ARG(N))
 {}
 
 template <typename ExecPolicy,
@@ -186,20 +186,22 @@ typename std::enable_if<
      std::is_base_of<int_op, OtherOp<T, AtomicPolicy, IdxType>>::value) ||
     (std::is_base_of<all_op, OtherOp<T, AtomicPolicy, IdxType>>::value)>::type
 testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> seg,
-                       T* count,
-                       T* list,
-                       T* hcount,
-                       T* hlist,
-                       camp::resources::Resource work_res,
-                       IdxType N)
+                       T*                               count,
+                       T*                               list,
+                       T*                               hcount,
+                       T*                               hlist,
+                       camp::resources::Resource        work_res,
+                       IdxType                          N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
   RAJA::forall<ExecPolicy>(
       seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    T val = otherop(i);
-    list[i] = val;
-  });
+  RAJA::forall<ExecPolicy>(seg,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           {
+                             T val   = otherop(i);
+                             list[i] = val;
+                           });
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -234,10 +236,10 @@ void ForallAtomicRefLogicalTestImpl(IdxType N)
   camp::resources::Resource host_res{camp::resources::Host()};
 
   T* count = work_res.allocate<T>(1);
-  T* list = work_res.allocate<T>(N);
+  T* list  = work_res.allocate<T>(N);
 
   T* hcount = host_res.allocate<T>(1);
-  T* hlist = host_res.allocate<T>(N);
+  T* hlist  = host_res.allocate<T>(N);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -276,11 +278,11 @@ class ForallAtomicRefLogicalTest : public ::testing::Test
 
 TYPED_TEST_P(ForallAtomicRefLogicalTest, AtomicRefLogicalForall)
 {
-  using AExec = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol = typename camp::at<TypeParam, camp::num<1>>::type;
+  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using DType = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallAtomicRefLogicalTestImpl<AExec, APol, ResType, IdxType, DType>(10000);
 }

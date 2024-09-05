@@ -24,8 +24,8 @@ void equal_test()
   using Eq = RAJA::operators::equal_to<T>;
 
   Eq eq;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(5);
+  T  i = static_cast<T>(5);
+  T  j = static_cast<T>(5);
   ASSERT_TRUE(eq(i, j));
 
   if (std::is_signed<T>::value)
@@ -42,8 +42,8 @@ void not_equal_test()
   using NEq = RAJA::operators::not_equal_to<T>;
 
   NEq neq;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(3);
+  T   i = static_cast<T>(5);
+  T   j = static_cast<T>(3);
   ASSERT_TRUE(neq(i, j));
 
   if (std::is_signed<T>::value)
@@ -100,18 +100,18 @@ void greater_eq_test()
   using G = RAJA::operators::greater_equal<T>;
 
   G g;
-  T i = static_cast<T>(5);
+  T i  = static_cast<T>(5);
   T i2 = static_cast<T>(5);
-  T j = static_cast<T>(4);
+  T j  = static_cast<T>(4);
   ASSERT_TRUE(g(i, j));
   ASSERT_TRUE(g(i, i2));
   ASSERT_FALSE(g(j, i));
 
   if (std::is_signed<T>::value)
   {
-    i = static_cast<T>(-4);
+    i  = static_cast<T>(-4);
     i2 = static_cast<T>(-4);
-    j = static_cast<T>(-5);
+    j  = static_cast<T>(-5);
     ASSERT_TRUE(g(i, j));
     ASSERT_TRUE(g(i, i2));
     ASSERT_FALSE(g(j, i));
@@ -124,18 +124,18 @@ void less_eq_test()
   using L = RAJA::operators::less_equal<T>;
 
   L l;
-  T i = static_cast<T>(4);
+  T i  = static_cast<T>(4);
   T i2 = static_cast<T>(4);
-  T j = static_cast<T>(5);
+  T j  = static_cast<T>(5);
   ASSERT_TRUE(l(i, j));
   ASSERT_TRUE(l(i, i2));
   ASSERT_FALSE(l(j, i));
 
   if (std::is_signed<T>::value)
   {
-    i = static_cast<T>(-5);
+    i  = static_cast<T>(-5);
     i2 = static_cast<T>(-5);
-    j = static_cast<T>(-4);
+    j  = static_cast<T>(-4);
     ASSERT_TRUE(l(i, j));
     ASSERT_TRUE(l(i, i2));
     ASSERT_FALSE(l(j, i));
@@ -148,8 +148,8 @@ void maximum_test()
   using Max = RAJA::operators::maximum<T>;
 
   Max m;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(2);
+  T   i = static_cast<T>(5);
+  T   j = static_cast<T>(2);
   ASSERT_EQ(m(i, j), i);
 
   if (std::is_signed<T>::value)
@@ -166,8 +166,8 @@ void minimum_test()
   using Min = RAJA::operators::minimum<T>;
 
   Min m;
-  T i = static_cast<T>(5);
-  T j = static_cast<T>(2);
+  T   i = static_cast<T>(5);
+  T   j = static_cast<T>(2);
   ASSERT_EQ(m(i, j), j);
 
   if (std::is_signed<T>::value)

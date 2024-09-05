@@ -58,8 +58,8 @@ public:
                                  T,
                                  RAJA::expt::VectorLayout,
                                  camp::idx_seq<SIZE>>>;
-  using element_type = camp::decay<T>;
-  using layout_type = TensorLayout<0>;
+  using element_type  = camp::decay<T>;
+  using layout_type   = TensorLayout<0>;
   using register_type = Register<T, REGISTER_POLICY>;
 
   static constexpr camp::idx_t s_num_elem = SIZE;
@@ -228,7 +228,7 @@ public:
   template <typename POINTER_TYPE,
             typename INDEX_TYPE,
             RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-            camp::idx_t STRIDE_ONE_DIM>
+            camp::idx_t                          STRIDE_ONE_DIM>
   struct RefBridge<
       RAJA::internal::expt::
           TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM>>
@@ -347,10 +347,10 @@ public:
   template <typename POINTER_TYPE,
             typename INDEX_TYPE,
             RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-            INDEX_TYPE STRIDE_VALUE,
-            INDEX_TYPE BEGIN_VALUE,
-            INDEX_TYPE SIZE_VALUE,
-            camp::idx_t STRIDE_ONE_DIM>
+            INDEX_TYPE                           STRIDE_VALUE,
+            INDEX_TYPE                           BEGIN_VALUE,
+            INDEX_TYPE                           SIZE_VALUE,
+            camp::idx_t                          STRIDE_ONE_DIM>
   struct RefBridge<RAJA::internal::expt::StaticTensorRef<
       POINTER_TYPE,
       INDEX_TYPE,
@@ -771,7 +771,7 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type const& scatter(element_type* ptr,
+  self_type const& scatter(element_type*          ptr,
                            int_vector_type const& offsets) const
   {
     for (camp::idx_t reg = 0; reg < s_num_full_registers; ++reg)
@@ -797,9 +797,9 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type const& scatter_n(element_type* ptr,
+  self_type const& scatter_n(element_type*          ptr,
                              int_vector_type const& offsets,
-                             camp::idx_t N) const
+                             camp::idx_t            N) const
   {
     for (camp::idx_t reg = 0; reg < s_num_full_registers; ++reg)
     {

@@ -13,8 +13,8 @@
 template <typename OP, typename T>
 ::testing::AssertionResult check_exclusive(const T* actual,
                                            const T* original,
-                                           int N,
-                                           T init = OP::identity())
+                                           int      N,
+                                           T        init = OP::identity())
 {
   for (int i = 0; i < N; ++i)
   {
@@ -32,12 +32,12 @@ template <typename OP, typename T>
 
 template <typename EXEC_POLICY, typename WORKING_RES, typename OP_TYPE>
 void ScanExclusiveInplaceTestImpl(
-    int N,
+    int                           N,
     typename OP_TYPE::result_type offset = OP_TYPE::identity())
 {
   using T = typename OP_TYPE::result_type;
 
-  WORKING_RES res{WORKING_RES::get_default()};
+  WORKING_RES               res{WORKING_RES::get_default()};
   camp::resources::Resource working_res{res};
 
   T* work_in;
@@ -83,9 +83,9 @@ class ScanExclusiveInplaceTest : public ::testing::Test
 
 TYPED_TEST_P(ScanExclusiveInplaceTest, ScanExclusiveInplace)
 {
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<0>>::type;
+  using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using OP_TYPE = typename camp::at<TypeParam, camp::num<2>>::type;
+  using OP_TYPE          = typename camp::at<TypeParam, camp::num<2>>::type;
 
   ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(0);
   ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(357);

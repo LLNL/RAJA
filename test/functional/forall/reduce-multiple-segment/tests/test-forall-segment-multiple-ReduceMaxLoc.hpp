@@ -24,21 +24,21 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  DATA_TYPE* working_array;
-  DATA_TYPE* check_array;
-  DATA_TYPE* test_array;
+  DATA_TYPE*                working_array;
+  DATA_TYPE*                check_array;
+  DATA_TYPE*                test_array;
 
   allocateForallTestData<DATA_TYPE>(
       last, working_res, &working_array, &check_array, &test_array);
 
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(-SHRT_MAX);
-  const IDX_TYPE default_loc = -1;
-  const DATA_TYPE big_val = 500;
+  const IDX_TYPE  default_loc = -1;
+  const DATA_TYPE big_val     = 500;
 
-  static std::random_device rd;
-  static std::mt19937 mt(rd());
+  static std::random_device                     rd;
+  static std::mt19937                           mt(rd());
   static std::uniform_real_distribution<double> dist(-100, 100);
-  static std::uniform_int_distribution<int> dist2(static_cast<int>(first),
+  static std::uniform_int_distribution<int>     dist2(static_cast<int>(first),
                                                   static_cast<int>(last) - 1);
 
   RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> max0(default_val,
@@ -62,7 +62,7 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
     ASSERT_EQ(default_loc, static_cast<IDX_TYPE>(max2.getLoc()));
 
     DATA_TYPE current_max = default_val;
-    IDX_TYPE current_loc = default_loc;
+    IDX_TYPE  current_loc = default_loc;
 
     const int nMiddleLoops = 2;
     for (int k = 0; k < nMiddleLoops; ++k)
@@ -78,8 +78,8 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
       for (int j = 0; j < nloops; ++j)
       {
 
-        DATA_TYPE roll = static_cast<DATA_TYPE>(dist(mt));
-        IDX_TYPE max_index = static_cast<IDX_TYPE>(dist2(mt));
+        DATA_TYPE roll      = static_cast<DATA_TYPE>(dist(mt));
+        IDX_TYPE  max_index = static_cast<IDX_TYPE>(dist2(mt));
 
         if (current_max != roll)
         { // avoid two indices getting the same value
@@ -95,11 +95,13 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
           }
         }
 
-        RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-          max0.maxloc(working_array[idx], idx);
-          max1.maxloc(2 * working_array[idx], idx);
-          max2.maxloc(working_array[idx], idx);
-        });
+        RAJA::forall<EXEC_POLICY>(r1,
+                                  [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+                                  {
+                                    max0.maxloc(working_array[idx], idx);
+                                    max1.maxloc(2 * working_array[idx], idx);
+                                    max2.maxloc(working_array[idx], idx);
+                                  });
 
         ASSERT_EQ(current_max, static_cast<DATA_TYPE>(max0.get()));
         ASSERT_EQ(current_loc, static_cast<IDX_TYPE>(max0.getLoc()));
@@ -137,10 +139,10 @@ class ForallReduceMaxLocMultipleTest : public ::testing::Test
 
 TYPED_TEST_P(ForallReduceMaxLocMultipleTest, ReduceMaxLocMultipleForall)
 {
-  using IDX_TYPE = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
   ForallReduceMaxLocMultipleTestImpl<IDX_TYPE,

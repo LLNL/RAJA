@@ -96,10 +96,10 @@ template <typename Res,
           typename Selector,
           typename... Policies>
 RAJA_INLINE resources::EventProxy<Res>
-forall_impl(Res r,
-            MultiPolicy<Selector, Policies...> p,
-            Iterable&& iter,
-            Body&& body)
+            forall_impl(Res                                r,
+                        MultiPolicy<Selector, Policies...> p,
+                        Iterable&&                         iter,
+                        Body&&                             body)
 {
   p.invoke(iter, body);
   return resources::EventProxy<Res>(r);
@@ -115,7 +115,7 @@ namespace detail
 
 template <camp::idx_t... Indices, typename... Policies, typename Selector>
 auto make_multi_policy(camp::idx_seq<Indices...>,
-                       Selector s,
+                       Selector                s,
                        std::tuple<Policies...> policies)
     -> MultiPolicy<Selector, Policies...>
 {

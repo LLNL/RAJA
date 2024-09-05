@@ -50,8 +50,8 @@ struct LaunchDims
   HipDims dims;
   HipDims min_dims;
 
-  LaunchDims() = default;
-  LaunchDims(LaunchDims const&) = default;
+  LaunchDims()                             = default;
+  LaunchDims(LaunchDims const&)            = default;
   LaunchDims& operator=(LaunchDims const&) = default;
 
   RAJA_INLINE
@@ -221,7 +221,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   template <typename IdxT>
   static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
                              HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT len)
+                             IdxT     len)
   {
     if (len > static_cast<IdxT>(1))
     {
@@ -336,7 +336,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   template <typename IdxT>
   static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
                              HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT len)
+                             IdxT     len)
   {
     if (len > static_cast<IdxT>(0))
     {
@@ -405,9 +405,9 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   }
 };
 ///
-template <named_dim dim,
-          int BLOCK_SIZE,
-          int GRID_SIZE,
+template <named_dim               dim,
+          int                     BLOCK_SIZE,
+          int                     GRID_SIZE,
           kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     iteration_mapping::Direct,
@@ -457,7 +457,7 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   template <typename IdxT>
   static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
                              HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT RAJA_UNUSED_ARG(len))
+                             IdxT     RAJA_UNUSED_ARG(len))
   {}
 };
 
@@ -624,9 +624,9 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   }
 };
 ///
-template <named_dim dim,
-          int BLOCK_SIZE,
-          int GRID_SIZE,
+template <named_dim               dim,
+          int                     BLOCK_SIZE,
+          int                     GRID_SIZE,
           kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     iteration_mapping::StridedLoop<named_usage::unspecified>,

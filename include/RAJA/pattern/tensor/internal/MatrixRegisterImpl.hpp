@@ -61,12 +61,12 @@ public:
                      T,
                      TensorLayout<ROW_ORD, COL_ORD>,
                      camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
-  using register_type = Register<T, REGISTER_POLICY>;
-  using row_vector_type = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
+  using register_type      = Register<T, REGISTER_POLICY>;
+  using row_vector_type    = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
   using column_vector_type = VectorRegister<T, REGISTER_POLICY, ROW_SIZE>;
-  using register_policy = REGISTER_POLICY;
-  using element_type = T;
-  using layout_type = TensorLayout<ROW_ORD, COL_ORD>;
+  using register_policy    = REGISTER_POLICY;
+  using element_type       = T;
+  using layout_type        = TensorLayout<ROW_ORD, COL_ORD>;
 
   using transpose_tensor_type =
       TensorRegister<REGISTER_POLICY,
@@ -78,12 +78,12 @@ public:
                                         T,
                                         layout_type,
                                         camp::idx_seq<COL_SIZE, ROW_SIZE>>;
-  using product_type = TensorRegister<REGISTER_POLICY,
+  using product_type   = TensorRegister<REGISTER_POLICY,
                                       T,
                                       layout_type,
                                       camp::idx_seq<ROW_SIZE, ROW_SIZE>>;
 
-  static constexpr camp::idx_t s_num_rows = ROW_SIZE;
+  static constexpr camp::idx_t s_num_rows    = ROW_SIZE;
   static constexpr camp::idx_t s_num_columns = COL_SIZE;
 
 
@@ -260,7 +260,7 @@ public:
   template <typename POINTER_TYPE,
             typename INDEX_TYPE,
             RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-            camp::idx_t STRIDE_ONE_DIM>
+            camp::idx_t                          STRIDE_ONE_DIM>
   struct RefBridge<
       RAJA::internal::expt::
           TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM>>
@@ -373,13 +373,13 @@ public:
   template <typename POINTER_TYPE,
             typename INDEX_TYPE,
             RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-            INDEX_TYPE StrideInt1,
-            INDEX_TYPE StrideInt2,
-            INDEX_TYPE BeginInt1,
-            INDEX_TYPE BeginInt2,
-            INDEX_TYPE SizeInt1,
-            INDEX_TYPE SizeInt2,
-            camp::idx_t STRIDE_ONE_DIM>
+            INDEX_TYPE                           StrideInt1,
+            INDEX_TYPE                           StrideInt2,
+            INDEX_TYPE                           BeginInt1,
+            INDEX_TYPE                           BeginInt2,
+            INDEX_TYPE                           SizeInt1,
+            INDEX_TYPE                           SizeInt2,
+            camp::idx_t                          STRIDE_ONE_DIM>
   struct RefBridge<RAJA::internal::expt::StaticTensorRef<
       POINTER_TYPE,
       INDEX_TYPE,
@@ -663,10 +663,10 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type& load_packed_nm(element_type const* ptr,
-                            int row_stride,
-                            int col_stride,
-                            int num_rows,
-                            int num_cols)
+                            int                 row_stride,
+                            int                 col_stride,
+                            int                 num_rows,
+                            int                 num_cols)
   {
 
     if (layout_type::is_row_major())
@@ -683,7 +683,7 @@ public:
 
             camp::idx_t reg = row * s_minor_dim_registers + colreg;
 
-            camp::idx_t col0 = colreg * s_elements_per_register;
+            camp::idx_t col0   = colreg * s_elements_per_register;
             camp::idx_t offset = row * row_stride + col0;
 
             // loading a complete register
@@ -743,7 +743,7 @@ public:
 
             camp::idx_t reg = col * s_minor_dim_registers + rowreg;
 
-            camp::idx_t row0 = rowreg * s_elements_per_register;
+            camp::idx_t row0   = rowreg * s_elements_per_register;
             camp::idx_t offset = col * col_stride + row0;
 
             // loading a complete register
@@ -798,10 +798,10 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type& load_strided_nm(element_type const* ptr,
-                             int row_stride,
-                             int col_stride,
-                             int num_rows,
-                             int num_cols)
+                             int                 row_stride,
+                             int                 col_stride,
+                             int                 num_rows,
+                             int                 num_cols)
   {
 
     if (layout_type::is_row_major())
@@ -849,9 +849,9 @@ public:
         {
           // figure out how many rows get loaded in this register
           camp::idx_t reg_num_rows = num_rows - i * s_major_dim_per_register;
-          reg_num_rows = reg_num_rows > s_major_dim_per_register
-                             ? s_major_dim_per_register
-                             : reg_num_rows;
+          reg_num_rows             = reg_num_rows > s_major_dim_per_register
+                                         ? s_major_dim_per_register
+                                         : reg_num_rows;
 
           element_type const* ptr_i =
               ptr + i * row_stride * s_major_dim_per_register;
@@ -905,9 +905,9 @@ public:
         {
           // figure out how many columns get loaded in this register
           camp::idx_t reg_num_cols = num_cols - i * s_major_dim_per_register;
-          reg_num_cols = reg_num_cols > s_major_dim_per_register
-                             ? s_major_dim_per_register
-                             : reg_num_cols;
+          reg_num_cols             = reg_num_cols > s_major_dim_per_register
+                                         ? s_major_dim_per_register
+                                         : reg_num_cols;
 
           element_type const* ptr_i =
               ptr + i * col_stride * s_major_dim_per_register;
@@ -1068,10 +1068,10 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type const& store_packed_nm(element_type* ptr,
-                                   int row_stride,
-                                   int col_stride,
-                                   int num_rows,
-                                   int num_cols) const
+                                   int           row_stride,
+                                   int           col_stride,
+                                   int           num_rows,
+                                   int           num_cols) const
   {
 
 
@@ -1089,7 +1089,7 @@ public:
 
             camp::idx_t reg = row * s_minor_dim_registers + colreg;
 
-            camp::idx_t col0 = colreg * s_elements_per_register;
+            camp::idx_t col0   = colreg * s_elements_per_register;
             camp::idx_t offset = row * row_stride + col0;
 
             // store a complete register
@@ -1131,7 +1131,7 @@ public:
 
             camp::idx_t reg = col * s_minor_dim_registers + rowreg;
 
-            camp::idx_t row0 = rowreg * s_elements_per_register;
+            camp::idx_t row0   = rowreg * s_elements_per_register;
             camp::idx_t offset = col * col_stride + row0;
 
             // loading a complete register
@@ -1169,10 +1169,10 @@ public:
   RAJA_HOST_DEVICE
   RAJA_INLINE
   self_type const& store_strided_nm(element_type* ptr,
-                                    int row_stride,
-                                    int col_stride,
-                                    int num_rows,
-                                    int num_cols) const
+                                    int           row_stride,
+                                    int           col_stride,
+                                    int           num_rows,
+                                    int           num_cols) const
   {
 
 
@@ -1217,9 +1217,9 @@ public:
         {
           // figure out how many rows get loaded in this register
           camp::idx_t reg_num_rows = num_rows - i * s_major_dim_per_register;
-          reg_num_rows = reg_num_rows > s_major_dim_per_register
-                             ? s_major_dim_per_register
-                             : reg_num_rows;
+          reg_num_rows             = reg_num_rows > s_major_dim_per_register
+                                         ? s_major_dim_per_register
+                                         : reg_num_rows;
 
           element_type* ptr_i = ptr + i * row_stride * s_major_dim_per_register;
           m_registers[i].segmented_store_nm(
@@ -1268,9 +1268,9 @@ public:
         {
           // figure out how many columns get loaded in this register
           camp::idx_t reg_num_cols = num_cols - i * s_major_dim_per_register;
-          reg_num_cols = reg_num_cols > s_major_dim_per_register
-                             ? s_major_dim_per_register
-                             : reg_num_cols;
+          reg_num_cols             = reg_num_cols > s_major_dim_per_register
+                                         ? s_major_dim_per_register
+                                         : reg_num_cols;
 
           element_type* ptr_i = ptr + i * col_stride * s_major_dim_per_register;
           m_registers[i].segmented_store_nm(
@@ -1329,9 +1329,9 @@ public:
         {
           // figure out how many rows get loaded in this register
           camp::idx_t reg_num_rows = num_rows - i * s_major_dim_per_register;
-          reg_num_rows = reg_num_rows > s_major_dim_per_register
-                             ? s_major_dim_per_register
-                             : reg_num_rows;
+          reg_num_rows             = reg_num_rows > s_major_dim_per_register
+                                         ? s_major_dim_per_register
+                                         : reg_num_rows;
 
           result.m_registers[i] = m_registers[i].segmented_divide_nm(
               mat.m_registers[i], s_segbits, num_cols, reg_num_rows);
@@ -1376,9 +1376,9 @@ public:
         {
           // figure out how many columns get loaded in this register
           camp::idx_t reg_num_cols = num_cols - i * s_major_dim_per_register;
-          reg_num_cols = reg_num_cols > s_major_dim_per_register
-                             ? s_major_dim_per_register
-                             : reg_num_cols;
+          reg_num_cols             = reg_num_cols > s_major_dim_per_register
+                                         ? s_major_dim_per_register
+                                         : reg_num_cols;
 
           result.m_registers[i] = m_registers[i].segmented_divide_nm(
               mat.m_registers[i], s_segbits, num_rows, reg_num_cols);
@@ -1573,7 +1573,7 @@ public:
   RAJA_INLINE
   column_vector_type
   right_multiply_vector_accumulate(row_vector_type const& v,
-                                   column_vector_type result) const
+                                   column_vector_type     result) const
   {
 
     if (layout_type::is_row_major())
@@ -1680,7 +1680,7 @@ public:
           {
 
             auto& mv = result.get_register(rowreg);
-            mv = m_registers[reg].multiply_add(v_col, mv);
+            mv       = m_registers[reg].multiply_add(v_col, mv);
 
             reg++;
 
@@ -1888,7 +1888,7 @@ public:
 
     register_type result(0);
 
-    camp::idx_t num_rows = register_type::s_num_elem >> segbits;
+    camp::idx_t num_rows    = register_type::s_num_elem >> segbits;
     camp::idx_t num_repeats = 1 << segbits;
 
     camp::idx_t col0 = (starting_column + num_rows * segment) % s_num_columns;
@@ -1896,9 +1896,9 @@ public:
 
     for (camp::idx_t i = 0; i < num_rows; ++i)
     {
-      camp::idx_t col = (col0 + i) % s_num_columns;
-      camp::idx_t row = row0 + i;
-      auto value = get(row, col);
+      camp::idx_t col   = (col0 + i) % s_num_columns;
+      camp::idx_t row   = row0 + i;
+      auto        value = get(row, col);
       for (camp::idx_t j = 0; j < num_repeats; ++j)
       {
         result.set(value, (i << segbits) + j);
