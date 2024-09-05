@@ -87,6 +87,9 @@ struct LaunchExecute<RAJA::omp_launch_t>
       ctx.shared_mem_ptr = (char*)malloc(launch_params.shared_mem_size);
 
       expt::invoke_body(f_params, loop_body.get_priv(), ctx);
+
+      free(ctx.shared_mem_ptr);
+      ctx.shared_mem_ptr = nullptr;
     }
 
     expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
