@@ -85,10 +85,8 @@ ForallVectorRef2dImpl()
   }
 
   using policy2_t = RAJA::KernelPolicy<RAJA::statement::For<
-      0,
-      RAJA::seq_exec,
-      RAJA::statement::For<1,
-                           RAJA::expt::vector_exec<vector_t>,
+      0, RAJA::seq_exec,
+      RAJA::statement::For<1, RAJA::expt::vector_exec<vector_t>,
                            RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<policy2_t>(

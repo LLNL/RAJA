@@ -116,8 +116,8 @@ void testAtomicRefLoadStoreOp(RAJA::TypedRangeSegment<IdxType> seg,
                               IdxType                          N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { list[i] = otherop.max + (T)1; });
   RAJA::forall<ExecPolicy>(seg,
                            [=] RAJA_HOST_DEVICE(IdxType i)
                            {
@@ -173,12 +173,9 @@ void ForallAtomicRefLoadStoreTestImpl(IdxType N)
 
   testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T, LoadOtherOp>(
       seg, count, list, hcount, hlist, work_res, N);
-  testAtomicRefLoadStoreOp<ExecPolicy,
-                           AtomicPolicy,
-                           IdxType,
-                           T,
-                           OperatorTOtherOp>(
-      seg, count, list, hcount, hlist, work_res, N);
+  testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T,
+                           OperatorTOtherOp>(seg, count, list, hcount, hlist,
+                                             work_res, N);
   testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T, StoreOtherOp>(
       seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T, AssignOtherOp>(

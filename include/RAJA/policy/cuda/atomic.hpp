@@ -298,10 +298,9 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T* acc, T compare, T value)
 {
   using R = cuda_useReinterpretCAS_t<T>;
 
-  return RAJA::util::reinterp_A_as_B<R, T>(
-      cuda_atomicCAS(reinterpret_cast<R*>(acc),
-                     RAJA::util::reinterp_A_as_B<T, R>(compare),
-                     RAJA::util::reinterp_A_as_B<T, R>(value)));
+  return RAJA::util::reinterp_A_as_B<R, T>(cuda_atomicCAS(
+      reinterpret_cast<R*>(acc), RAJA::util::reinterp_A_as_B<T, R>(compare),
+      RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
 
 /*!
@@ -474,8 +473,7 @@ template <
 RAJA_INLINE __device__ T cuda_atomicMin(T* acc, T value)
 {
   return cuda_atomicCAS_loop(
-      acc,
-      [value](T old) { return value < old ? value : old; },
+      acc, [value](T old) { return value < old ? value : old; },
       [value](T current) { return current <= value; });
 }
 
@@ -498,8 +496,7 @@ template <
 RAJA_INLINE __device__ T cuda_atomicMax(T* acc, T value)
 {
   return cuda_atomicCAS_loop(
-      acc,
-      [value](T old) { return old < value ? value : old; },
+      acc, [value](T old) { return old < value ? value : old; },
       [value](T current) { return value <= current; });
 }
 
@@ -529,11 +526,9 @@ RAJA_INLINE __device__ T cuda_atomicInc(T* acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicinc
-  return cuda_atomicCAS_loop(acc,
-                             [value](T old) {
-                               return value <= old ? static_cast<T>(0)
-                                                   : old + static_cast<T>(1);
-                             });
+  return cuda_atomicCAS_loop(
+      acc, [value](T old)
+      { return value <= old ? static_cast<T>(0) : old + static_cast<T>(1); });
 }
 
 template <

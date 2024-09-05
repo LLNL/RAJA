@@ -70,10 +70,10 @@ void KernelNestedLoopTest()
     test_arrA[i] = i * 1.2;
     test_arrB[i] = i * 0.5;
   }
-  work_res.memcpy(
-      work_arrA, test_arrA, sizeof(double) * RAJA::stripIndexType(N * N));
-  work_res.memcpy(
-      work_arrB, test_arrB, sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrA, test_arrA,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrB, test_arrB,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
 
   // Initialize RAJA Views
   RAJA::View<double, RAJA::Layout<DIM>> test_viewA(test_arrA, N, N);
@@ -125,10 +125,10 @@ void KernelNestedLoopTest()
                                   work_viewB(i - 1, j));
       });
 
-  work_res.memcpy(
-      check_arrA, work_arrA, sizeof(double) * RAJA::stripIndexType(N * N));
-  work_res.memcpy(
-      check_arrB, work_arrB, sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(check_arrA, work_arrA,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(check_arrB, work_arrB,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
 
   RAJA::forall<RAJA::seq_exec>(
       RAJA::RangeSegment{0, N * N},

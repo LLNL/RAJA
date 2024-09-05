@@ -172,8 +172,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
                  launch_params.shared_mem_size, h);
 
              h.parallel_for(
-                 cl::sycl::nd_range<3>(gridSize, blockSize),
-                 reduction,
+                 cl::sycl::nd_range<3>(gridSize, blockSize), reduction,
                  [=](cl::sycl::nd_item<3> itm, auto& red)
                  {
                    LaunchContext ctx;
@@ -361,8 +360,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
                  launch_params.shared_mem_size, h);
 
              h.parallel_for(
-                 cl::sycl::nd_range<3>(gridSize, blockSize),
-                 reduction,
+                 cl::sycl::nd_range<3>(gridSize, blockSize), reduction,
                  [=](cl::sycl::nd_item<3> itm, auto& red)
                  {
                    LaunchContext ctx;
@@ -491,8 +489,7 @@ struct LoopExecute<sycl_global_item<DIM0, DIM1, DIM2>, SEGMENT>
                      ctx.itm->get_local_id(DIM2);
 
       if (tx < len0 && ty < len1 && tz < len2)
-        body(*(segment0.begin() + tx),
-             *(segment1.begin() + ty),
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty),
              *(segment1.begin() + ty));
     }
   }
@@ -865,8 +862,7 @@ struct LoopExecute<sycl_group_012_direct<DIM0, DIM1, DIM2>, SEGMENT>
       const int ty = ctx.itm->get_group(DIM1);
       const int tz = ctx.itm->get_group(DIM2);
       if (tx < len0 && ty < len1 && tz < len2)
-        body(*(segment0.begin() + tx),
-             *(segment1.begin() + ty),
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty),
              *(segment2.begin() + tz));
     }
   }
@@ -916,12 +912,8 @@ struct LoopICountExecute<sycl_group_012_direct<DIM0, DIM1, DIM2>, SEGMENT>
       const int ty = ctx.itm->get_group(DIM1);
       const int tz = ctx.itm->get_group(DIM2);
       if (tx < len0 && ty < len1 && tz < len2)
-        body(*(segment0.begin() + tx),
-             *(segment1.begin() + ty),
-             *(segment2.begin() + tz),
-             tx,
-             ty,
-             tz);
+        body(*(segment0.begin() + tx), *(segment1.begin() + ty),
+             *(segment2.begin() + tz), tx, ty, tz);
     }
   }
 };
@@ -995,8 +987,7 @@ struct LoopExecute<sycl_group_012_loop<DIM0, DIM1, DIM2>, SEGMENT>
              bz += ctx.itm->get_group_range(DIM2))
         {
 
-          body(*(segment0.begin() + bx),
-               *(segment1.begin() + by),
+          body(*(segment0.begin() + bx), *(segment1.begin() + by),
                *(segment2.begin() + bz));
         }
       }
@@ -1062,12 +1053,8 @@ struct LoopICountExecute<sycl_group_012_loop<DIM0, DIM1, DIM2>, SEGMENT>
              bz += ctx.itm->get_group_range(DIM0))
         {
 
-          body(*(segment0.begin() + bx),
-               *(segment1.begin() + by),
-               *(segment2.begin() + bz),
-               bx,
-               by,
-               bz);
+          body(*(segment0.begin() + bx), *(segment1.begin() + by),
+               *(segment2.begin() + bz), bx, by, bz);
         }
       }
     }

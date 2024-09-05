@@ -226,10 +226,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, N_tot * sizeof(double));
 
   // _raja_tensorinit_omp_collapse_start
-  using EXEC_POL3 = RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<2, 1, 0>, // k, j, i
-                                RAJA::statement::Lambda<0>>>;
+  using EXEC_POL3 = RAJA::KernelPolicy<RAJA::statement::Collapse<
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<2, 1, 0>, // k, j, i
+      RAJA::statement::Lambda<0>>>;
 
   RAJA::kernel<EXEC_POL3>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
                                            RAJA::TypedRangeSegment<int>(0, N),
@@ -317,13 +316,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL6 = RAJA::KernelPolicy<RAJA::statement::CudaKernelFixed<
       i_block_sz * j_block_sz * k_block_sz,
       RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<j_block_sz>,
-          RAJA::cuda_block_y_direct,
+          1, RAJA::tile_fixed<j_block_sz>, RAJA::cuda_block_y_direct,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<i_block_sz>,
-              RAJA::cuda_block_x_direct,
+              0, RAJA::tile_fixed<i_block_sz>, RAJA::cuda_block_x_direct,
               RAJA::statement::For<
                   2,
                   RAJA::cuda_block_z_direct, // k
@@ -432,13 +427,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL8 = RAJA::KernelPolicy<RAJA::statement::HipKernelFixed<
       i_block_sz * j_block_sz * k_block_sz,
       RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<j_block_sz>,
-          RAJA::hip_block_y_direct,
+          1, RAJA::tile_fixed<j_block_sz>, RAJA::hip_block_y_direct,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<i_block_sz>,
-              RAJA::hip_block_x_direct,
+              0, RAJA::tile_fixed<i_block_sz>, RAJA::hip_block_x_direct,
               RAJA::statement::For<
                   2,
                   RAJA::hip_block_z_direct, // k

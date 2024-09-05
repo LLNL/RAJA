@@ -26,7 +26,7 @@ void Store_ColMajorImpl()
   // alloc data1 - matrix data will be generated on device, stored into data1
 
   std::vector<element_t>                 data1_vec(4 * matrix_t::s_num_rows *
-                                   matrix_t::s_num_columns);
+                                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), 2 * matrix_t::s_num_columns, 2 * matrix_t::s_num_rows);
 
@@ -38,7 +38,7 @@ void Store_ColMajorImpl()
   // alloc data2 - reference data to compare with data1 on host
 
   std::vector<element_t>                 data2_vec(matrix_t::s_num_rows *
-                                   matrix_t::s_num_columns);
+                                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 
@@ -161,13 +161,13 @@ void Store_ColMajorImpl()
             // Store matrix to memory
             if (matrix_t::layout_type::is_column_major())
             {
-              m.store_packed_nm(
-                  data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size, m_size);
+              m.store_packed_nm(data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size,
+                                m_size);
             }
             else
             {
-              m.store_strided_nm(
-                  data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size, m_size);
+              m.store_strided_nm(data1_ptr, 1, 2 * matrix_t::s_num_rows, n_size,
+                                 m_size);
             }
           });
 

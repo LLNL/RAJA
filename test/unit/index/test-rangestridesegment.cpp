@@ -32,8 +32,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Constructors)
 TYPED_TEST(RangeStrideSegmentUnitTest, Assignments)
 {
   auto r = RAJA::make_strided_range<TypeParam>(
-      static_cast<TypeParam>(0),
-      static_cast<TypeParam>(5),
+      static_cast<TypeParam>(0), static_cast<TypeParam>(5),
       static_cast<typename std::make_signed<TypeParam>::type>(3));
   RAJA::TypedRangeStrideSegment<TypeParam> seg1 = r;
   ASSERT_EQ(r, seg1);
@@ -122,8 +121,7 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
   ASSERT_EQ(segment11.size(), difftype_t(2));
 
   // PRIMES
-  RAJA::TypedRangeStrideSegment<TypeParam> segment12(0,
-                                                     7,
+  RAJA::TypedRangeStrideSegment<TypeParam> segment12(0, 7,
                                                      3); // should produce 0,3,6
   ASSERT_EQ(segment12.size(), difftype_t(3));
 

@@ -45,8 +45,8 @@ void ForallIcountIndexSetViewTestImpl()
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -63,8 +63,7 @@ void ForallIcountIndexSetViewTestImpl()
       working_array, layout);
 
   RAJA::forall_Icount<EXEC_POLICY>(
-      iset,
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx)
+      iset, [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx)
       { work_view(icount) = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
@@ -75,8 +74,8 @@ void ForallIcountIndexSetViewTestImpl()
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 

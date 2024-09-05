@@ -297,14 +297,12 @@ struct MatrixMatrixMultiplyHelper<
 
     RAJA_UNROLL
     for (camp::idx_t c_reg = 0;
-         c_reg < N_SIZE / result_type::s_major_dim_per_register;
-         ++c_reg)
+         c_reg < N_SIZE / result_type::s_major_dim_per_register; ++c_reg)
     {
 
       RAJA_UNROLL
       for (camp::idx_t c_segment = 0;
-           c_segment < result_type::s_major_dim_per_register;
-           ++c_segment)
+           c_segment < result_type::s_major_dim_per_register; ++c_segment)
       {
 
         register_type c_tmp;

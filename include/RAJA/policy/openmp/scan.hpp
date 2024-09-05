@@ -67,18 +67,14 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
     const DistanceT idx_end   = firstIndex(n, p, pid + 1);
     if (idx_begin != idx_end)
     {
-      inclusive_inplace(
-          host_res, ::RAJA::seq_exec{}, begin + idx_begin, begin + idx_end, f);
+      inclusive_inplace(host_res, ::RAJA::seq_exec{}, begin + idx_begin,
+                        begin + idx_end, f);
       sums[pid] = begin[idx_end - 1];
     }
 #pragma omp barrier
 #pragma omp          single
-    exclusive_inplace(host_res,
-                      ::RAJA::seq_exec{},
-                      sums.data(),
-                      sums.data() + p,
-                      f,
-                      BinFn::identity());
+    exclusive_inplace(host_res, ::RAJA::seq_exec{}, sums.data(),
+                               sums.data() + p, f, BinFn::identity());
     for (auto i = idx_begin; i < idx_end; ++i)
     {
                begin[i] = f(begin[i], sums[pid]);
@@ -119,17 +115,13 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
 #pragma omp barrier
     if (idx_begin != idx_end)
     {
-      exclusive_inplace(
-          host_res, seq_exec{}, begin + idx_begin, begin + idx_end, f, init);
+      exclusive_inplace(host_res, seq_exec{}, begin + idx_begin,
+                        begin + idx_end, f, init);
       sums[pid] = begin[idx_end - 1];
     }
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(host_res,
-                      seq_exec{},
-                      sums.data(),
-                      sums.data() + p,
-                      f,
+    exclusive_inplace(host_res, seq_exec{}, sums.data(), sums.data() + p, f,
                       BinFn::identity());
     for (auto i = idx_begin; i < idx_end; ++i)
     {
@@ -180,8 +172,8 @@ RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
 {
   using std::distance;
   ::std::copy(begin, end, out);
-  return exclusive_inplace(
-      host_res, exec, out, out + distance(begin, end), f, v);
+  return exclusive_inplace(host_res, exec, out, out + distance(begin, end), f,
+                           v);
 }
 
 } // namespace scan

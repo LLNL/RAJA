@@ -244,8 +244,7 @@ RAJA_INLINE void forall_impl(const Policy&, Iterable&& iter, Func&& loop_body)
   int         prev_chunk;
   omp_get_schedule(&prev_sched, &prev_chunk);
   omp_set_schedule(Policy::schedule, Policy::chunk_size);
-  forall_impl(::RAJA::policy::omp::Runtime{},
-              std::forward<Iterable>(iter),
+  forall_impl(::RAJA::policy::omp::Runtime{}, std::forward<Iterable>(iter),
               std::forward<Func>(loop_body));
   omp_set_schedule(prev_sched, prev_chunk);
 }
@@ -344,8 +343,8 @@ forall_impl(resources::Host host_res,
             Func&&     loop_body,
             ForallParam)
 {
-  internal::forall_impl(
-      Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
+  internal::forall_impl(Schedule{}, std::forward<Iterable>(iter),
+                        std::forward<Func>(loop_body));
   return resources::EventProxy<resources::Host>(host_res);
 }
 
@@ -363,8 +362,8 @@ forall_impl(resources::Host host_res,
             Func&&     loop_body,
             ForallParam)
 {
-  internal::forall_impl_nowait(
-      Schedule{}, std::forward<Iterable>(iter), std::forward<Func>(loop_body));
+  internal::forall_impl_nowait(Schedule{}, std::forward<Iterable>(iter),
+                               std::forward<Func>(loop_body));
   return resources::EventProxy<resources::Host>(host_res);
 }
 

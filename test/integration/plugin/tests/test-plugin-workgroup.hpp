@@ -38,30 +38,20 @@ struct PluginWorkGroupTestImpl
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, PluginTestCallable>>;
 
-    using WorkPool_type = RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<>,
-                                         Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy,
-                                              OrderPolicy,
-                                              StoragePolicy,
-                                              DispatchPolicy>,
-                        IndexType,
-                        RAJA::xargs<>,
-                        Allocator>;
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkSite_type = RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<>,
-                                         Allocator>;
+    using WorkSite_type =
+        RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     SetupPluginVars spv(WORKINGRES{});
 
@@ -78,8 +68,8 @@ struct PluginWorkGroupTestImpl
         loop_data[i].launch_counter_pre      = -1;
         loop_data[i].launch_counter_post     = -1;
       }
-      plugin_test_resource->memcpy(
-          data, &loop_data[0], 10 * sizeof(CounterData));
+      plugin_test_resource->memcpy(data, &loop_data[0],
+                                   10 * sizeof(CounterData));
     }
 
     WorkPool_type pool(Allocator{});
@@ -91,8 +81,8 @@ struct PluginWorkGroupTestImpl
 
     {
       CounterData plugin_data;
-      plugin_test_resource->memcpy(
-          &plugin_data, plugin_test_data, sizeof(CounterData));
+      plugin_test_resource->memcpy(&plugin_data, plugin_test_data,
+                                   sizeof(CounterData));
       ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
       ASSERT_EQ(plugin_data.capture_counter_pre, 10);
       ASSERT_EQ(plugin_data.capture_counter_post, 10);
@@ -103,8 +93,8 @@ struct PluginWorkGroupTestImpl
 
     {
       CounterData loop_data[10];
-      plugin_test_resource->memcpy(
-          &loop_data[0], data, 10 * sizeof(CounterData));
+      plugin_test_resource->memcpy(&loop_data[0], data,
+                                   10 * sizeof(CounterData));
 
       for (int i = 0; i < 10; i++)
       {
@@ -123,8 +113,8 @@ struct PluginWorkGroupTestImpl
 
     {
       CounterData plugin_data;
-      plugin_test_resource->memcpy(
-          &plugin_data, plugin_test_data, sizeof(CounterData));
+      plugin_test_resource->memcpy(&plugin_data, plugin_test_data,
+                                   sizeof(CounterData));
       ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
       ASSERT_EQ(plugin_data.capture_counter_pre, 10);
       ASSERT_EQ(plugin_data.capture_counter_post, 10);
@@ -135,8 +125,8 @@ struct PluginWorkGroupTestImpl
 
     {
       CounterData loop_data[10];
-      plugin_test_resource->memcpy(
-          &loop_data[0], data, 10 * sizeof(CounterData));
+      plugin_test_resource->memcpy(&loop_data[0], data,
+                                   10 * sizeof(CounterData));
 
       for (int i = 0; i < 10; i++)
       {
@@ -155,8 +145,8 @@ struct PluginWorkGroupTestImpl
 
     {
       CounterData plugin_data;
-      plugin_test_resource->memcpy(
-          &plugin_data, plugin_test_data, sizeof(CounterData));
+      plugin_test_resource->memcpy(&plugin_data, plugin_test_data,
+                                   sizeof(CounterData));
       ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
       ASSERT_EQ(plugin_data.capture_counter_pre, 10);
       ASSERT_EQ(plugin_data.capture_counter_post, 10);
@@ -247,13 +237,8 @@ TYPED_TEST_P(PluginWorkGroupTest, PluginWorkGroup)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
   using PlatformHolder   = typename camp::at<TypeParam, camp::num<7>>::type;
 
-  PluginWorkGroupTestImpl<ExecPolicy,
-                          OrderPolicy,
-                          StoragePolicy,
-                          DispatchTyper,
-                          IndexType,
-                          Allocator,
-                          WORKING_RESOURCE,
+  PluginWorkGroupTestImpl<ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper,
+                          IndexType, Allocator, WORKING_RESOURCE,
                           PlatformHolder::platform>{}();
 }
 

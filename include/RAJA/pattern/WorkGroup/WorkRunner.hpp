@@ -126,9 +126,7 @@ struct HoldForall
 
   RAJA_INLINE void operator()(resource_type r, Args... args) const
   {
-    wrap::forall(r,
-                 ExecutionPolicy(),
-                 m_segment,
+    wrap::forall(r, ExecutionPolicy(), m_segment,
                  HoldBodyArgs{m_body, std::forward<Args>(args)...});
   }
 
@@ -222,8 +220,7 @@ struct WorkRunnerForallOrdered_base
 
     storage.template emplace<holder>(
         get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
-        std::forward<segment_T>(seg),
-        std::forward<loop_T>(loop));
+        std::forward<segment_T>(seg), std::forward<loop_T>(loop));
   }
 
   // clear any state so ready to be destroyed or reused

@@ -120,8 +120,7 @@ template <typename Tuple, typename UnaryFunc>
 RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func)
 {
   return detail::for_each_tuple(
-      std::forward<Tuple>(t),
-      std::move(func),
+      std::forward<Tuple>(t), std::move(func),
       camp::make_idx_seq_t<std::tuple_size<camp::decay<Tuple>>::value>{});
 }
 

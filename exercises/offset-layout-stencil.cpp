@@ -329,8 +329,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                  });
   // _offsetlayout_rajahip_end
 
-  hipErrchk(hipMemcpy(
-      output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(output, d_output, totCells * sizeof(int),
+                      hipMemcpyDeviceToHost));
 
   std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);

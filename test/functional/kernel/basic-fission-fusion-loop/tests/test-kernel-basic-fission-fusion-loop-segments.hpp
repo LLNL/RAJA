@@ -31,18 +31,14 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
   RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 37);
   RAJA::getIndices(seg_idx, r1);
 
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedRangeSegment<IDX_TYPE>>(
       r1, seg_idx, working_res, erased_working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2(3, 2057);
   RAJA::getIndices(seg_idx, r2);
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedRangeSegment<IDX_TYPE>>(
       r2, seg_idx, working_res, erased_working_res);
 
@@ -51,9 +47,7 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
   RAJA::TypedRangeSegment<IDX_TYPE> r3(5, 5);
   RAJA::getIndices(seg_idx, r3);
 
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedRangeSegment<IDX_TYPE>>(
       r3, seg_idx, working_res, erased_working_res);
 
@@ -61,18 +55,14 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs1(0, 188, 2);
   RAJA::getIndices(seg_idx, rs1);
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedRangeStrideSegment<IDX_TYPE>>(
       rs1, seg_idx, working_res, erased_working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs2(2, 1029, 3);
   RAJA::getIndices(seg_idx, rs2);
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedRangeStrideSegment<IDX_TYPE>>(
       rs2, seg_idx, working_res, erased_working_res);
 
@@ -80,9 +70,7 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> rs3(2, 2, 3);
   RAJA::getIndices(seg_idx, rs3);
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedRangeStrideSegment<IDX_TYPE>>(
       rs3, seg_idx, working_res, erased_working_res);
 
@@ -98,21 +86,17 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
       seg_idx.push_back(i);
     }
   }
-  RAJA::TypedListSegment<IDX_TYPE> l1(
-      &seg_idx[0], seg_idx.size(), erased_working_res);
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0], seg_idx.size(),
+                                      erased_working_res);
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedListSegment<IDX_TYPE>>(
       l1, seg_idx, working_res, erased_working_res);
 
   // test zero-length list segment
   seg_idx.clear();
-  RAJA::TypedListSegment<IDX_TYPE> l2(
-      nullptr, seg_idx.size(), erased_working_res);
-  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
-                                       EXEC_POLICY,
-                                       WORKING_RES,
+  RAJA::TypedListSegment<IDX_TYPE> l2(nullptr, seg_idx.size(),
+                                      erased_working_res);
+  KernelBasicFissionFusionLoopTestImpl<IDX_TYPE, EXEC_POLICY, WORKING_RES,
                                        RAJA::TypedListSegment<IDX_TYPE>>(
       l2, seg_idx, working_res, erased_working_res);
 }

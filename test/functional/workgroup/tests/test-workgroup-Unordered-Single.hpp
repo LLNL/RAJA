@@ -41,8 +41,8 @@ struct testWorkGroupUnorderedSingle
     IndexType* check_array;
     IndexType* test_array;
 
-    allocateForallTestData<IndexType>(
-        N, working_res, &working_array, &check_array, &test_array);
+    allocateForallTestData<IndexType>(N, working_res, &working_array,
+                                      &check_array, &test_array);
 
     IndexType const test_val(5);
 
@@ -54,30 +54,20 @@ struct testWorkGroupUnorderedSingle
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, decltype(callable)>>;
 
-    using WorkPool_type = RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<>,
-                                         Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy,
-                                              OrderPolicy,
-                                              StoragePolicy,
-                                              DispatchPolicy>,
-                        IndexType,
-                        RAJA::xargs<>,
-                        Allocator>;
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkSite_type = RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<>,
-                                         Allocator>;
+    using WorkSite_type =
+        RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     using resource_type = typename WorkSite_type::resource_type;
     static_assert(std::is_same<WORKING_RES, resource_type>::value,
@@ -128,8 +118,8 @@ struct testWorkGroupUnorderedSingle
     }
 
 
-    deallocateForallTestData<IndexType>(
-        working_res, working_array, check_array, test_array);
+    deallocateForallTestData<IndexType>(working_res, working_array, check_array,
+                                        test_array);
   }
 };
 
@@ -206,26 +196,14 @@ TYPED_TEST_P(WorkGroupBasicUnorderedSingleFunctionalTest,
   IndexType b3 = dist_type(e2, IndexType(1023))(rng);
   IndexType e3 = dist_type(b3, IndexType(1024))(rng);
 
-  testWorkGroupUnorderedSingle<ExecPolicy,
-                               OrderPolicy,
-                               StoragePolicy,
-                               DispatchTyper,
-                               IndexType,
-                               Allocator,
+  testWorkGroupUnorderedSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                               DispatchTyper, IndexType, Allocator,
                                WORKING_RESOURCE>{}(b1, e1);
-  testWorkGroupUnorderedSingle<ExecPolicy,
-                               OrderPolicy,
-                               StoragePolicy,
-                               DispatchTyper,
-                               IndexType,
-                               Allocator,
+  testWorkGroupUnorderedSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                               DispatchTyper, IndexType, Allocator,
                                WORKING_RESOURCE>{}(b2, e2);
-  testWorkGroupUnorderedSingle<ExecPolicy,
-                               OrderPolicy,
-                               StoragePolicy,
-                               DispatchTyper,
-                               IndexType,
-                               Allocator,
+  testWorkGroupUnorderedSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                               DispatchTyper, IndexType, Allocator,
                                WORKING_RESOURCE>{}(b3, e3);
 }
 

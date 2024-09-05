@@ -23,7 +23,7 @@ void CtorGetSetImpl()
   // Allocate Data
   //
   std::vector<element_t>                 data1_vec(matrix_t::s_num_rows *
-                                   matrix_t::s_num_columns);
+                                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
@@ -33,7 +33,7 @@ void CtorGetSetImpl()
 
 
   std::vector<element_t>                 data2_vec(matrix_t::s_num_rows *
-                                   matrix_t::s_num_columns);
+                                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 

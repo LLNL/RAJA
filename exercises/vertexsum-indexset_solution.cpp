@@ -368,8 +368,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int*    d_e2v_map = memoryManager::allocate_gpu<int>(4 * Nelem_tot);
 
   hipMemcpy(d_areae, areae, Nelem_tot * sizeof(double), hipMemcpyHostToDevice);
-  hipMemcpy(
-      d_e2v_map, e2v_map, 4 * Nelem_tot * sizeof(int), hipMemcpyHostToDevice);
+  hipMemcpy(d_e2v_map, e2v_map, 4 * Nelem_tot * sizeof(int),
+            hipMemcpyHostToDevice);
 
   std::memset(areav, 0, Nvert_tot * sizeof(double));
   hipMemcpy(d_areav, areav, Nvert_tot * sizeof(double), hipMemcpyHostToDevice);

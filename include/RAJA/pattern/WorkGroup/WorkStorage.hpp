@@ -419,8 +419,7 @@ private:
     value_type::move_destroy(value_ptr, other_value_and_size.ptr);
 
     allocator_traits_type::deallocate(
-        rhs.m_aloc,
-        reinterpret_cast<char*>(other_value_and_size.ptr),
+        rhs.m_aloc, reinterpret_cast<char*>(other_value_and_size.ptr),
         other_value_and_size.size);
 
     return pointer_and_size{value_ptr, other_value_and_size.size};
@@ -431,8 +430,7 @@ private:
   {
     value_type::destroy(value_and_size_ptr.ptr);
     allocator_traits_type::deallocate(
-        m_aloc,
-        reinterpret_cast<char*>(value_and_size_ptr.ptr),
+        m_aloc, reinterpret_cast<char*>(value_and_size_ptr.ptr),
         value_and_size_ptr.size);
   }
 };
@@ -591,8 +589,8 @@ public:
     array_clear();
     if (m_array_begin != nullptr)
     {
-      allocator_traits_type::deallocate(
-          m_aloc, m_array_begin, storage_capacity());
+      allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                        storage_capacity());
       m_array_begin = nullptr;
       m_array_end   = nullptr;
       m_array_cap   = nullptr;
@@ -684,8 +682,8 @@ private:
 
       if (m_array_begin != nullptr)
       {
-        allocator_traits_type::deallocate(
-            m_aloc, m_array_begin, storage_capacity());
+        allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                          storage_capacity());
       }
 
       m_array_begin = new_array_begin;
@@ -896,8 +894,8 @@ public:
     array_clear();
     if (m_array_begin != nullptr)
     {
-      allocator_traits_type::deallocate(
-          m_aloc, m_array_begin, storage_capacity());
+      allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                        storage_capacity());
       m_array_begin = nullptr;
       m_array_end   = nullptr;
       m_array_cap   = nullptr;
@@ -992,8 +990,8 @@ private:
 
       if (m_array_begin != nullptr)
       {
-        allocator_traits_type::deallocate(
-            m_aloc, m_array_begin, storage_capacity());
+        allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                          storage_capacity());
       }
 
       m_stride      = new_stride;

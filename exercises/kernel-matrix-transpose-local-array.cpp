@@ -195,8 +195,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
 
   // _mattranspose_localarray_start
-  using TILE_MEM = RAJA::
-      LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+  using TILE_MEM = RAJA::LocalArray<int, RAJA::Perm<0, 1>,
+                                    RAJA::SizeList<TILE_DIM, TILE_DIM>>;
   TILE_MEM Tile_Array;
   // _mattranspose_localarray_end
 
@@ -362,31 +362,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       //      tiles needed to carry out the transpose
       //
       RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<TILE_DIM>,
-          RAJA::seq_exec,
+          1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<TILE_DIM>,
-              RAJA::seq_exec,
+              0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
               // This statement will initalize local array memory inside a
               // kernel. The cpu_tile_mem policy specifies that memory should be
               // allocated on the stack. The entries in the RAJA::ParamList
               // identify RAJA local arrays to intialize in the parameter tuple.
               RAJA::statement::InitLocalMem<
-                  RAJA::cpu_tile_mem,
-                  RAJA::ParamList<2>,
+                  RAJA::cpu_tile_mem, RAJA::ParamList<2>,
                   //
                   // (1) Execution policies for the first set of inner
                   // loops. These loops copy data from the global matrices
                   // to the local tile.
                   //
                   RAJA::statement::ForICount<
-                      1,
-                      RAJA::statement::Param<1>,
-                      RAJA::omp_parallel_for_exec,
-                      RAJA::statement::ForICount<0,
-                                                 RAJA::statement::Param<0>,
+                      1, RAJA::statement::Param<1>, RAJA::omp_parallel_for_exec,
+                      RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
                                                  RAJA::seq_exec,
                                                  RAJA::statement::Lambda<0>>>,
                   //
@@ -398,13 +390,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //     index has unit stride.
                   //
                   RAJA::statement::ForICount<
-                      0,
-                      RAJA::statement::Param<0>,
-                      RAJA::seq_exec,
+                      0, RAJA::statement::Param<0>, RAJA::seq_exec,
                       RAJA::statement::ForICount<
-                          1,
-                          RAJA::statement::Param<1>,
-                          RAJA::seq_exec,
+                          1, RAJA::statement::Param<1>, RAJA::seq_exec,
                           RAJA::statement::Lambda<1>>>>>>>;
 
   RAJA::kernel_param<OPENMP_EXEC_2_POL>(
@@ -435,31 +423,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       //      tiles needed to carry out the transpose
       //
       RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<TILE_DIM>,
-          RAJA::cuda_block_y_loop,
+          1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<TILE_DIM>,
-              RAJA::cuda_block_x_loop,
+              0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
               // This statement will initalize local array memory inside a
               // kernel. The cpu_tile_mem policy specifies that memory should be
               // allocated on the stack. The entries in the RAJA::ParamList
               // identify RAJA local arrays to intialize in the parameter tuple.
               RAJA::statement::InitLocalMem<
-                  RAJA::cuda_shared_mem,
-                  RAJA::ParamList<2>,
+                  RAJA::cuda_shared_mem, RAJA::ParamList<2>,
                   //
                   // (1) Execution policies for the first set of inner
                   // loops. These loops copy data from the global matrices
                   // to the local tile.
                   //
                   RAJA::statement::ForICount<
-                      1,
-                      RAJA::statement::Param<0>,
-                      RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<0,
-                                                 RAJA::statement::Param<1>,
+                      1, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
+                      RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
                                                  RAJA::cuda_thread_x_direct,
                                                  RAJA::statement::Lambda<0>>>,
                   // Synchronize threads to ensure all loads
@@ -474,11 +454,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //     index has unit stride.
                   //
                   RAJA::statement::ForICount<
-                      0,
-                      RAJA::statement::Param<1>,
-                      RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<1,
-                                                 RAJA::statement::Param<0>,
+                      0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
+                      RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
                                                  RAJA::cuda_thread_x_direct,
                                                  RAJA::statement::Lambda<1>>>,
                   // Synchronize threads to ensure all reads
@@ -531,31 +508,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       //      tiles needed to carry out the transpose
       //
       RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<TILE_DIM>,
-          RAJA::hip_block_y_loop,
+          1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<TILE_DIM>,
-              RAJA::hip_block_x_loop,
+              0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
               // This statement will initalize local array memory inside a
               // kernel. The cpu_tile_mem policy specifies that memory should be
               // allocated on the stack. The entries in the RAJA::ParamList
               // identify RAJA local arrays to intialize in the parameter tuple.
               RAJA::statement::InitLocalMem<
-                  RAJA::hip_shared_mem,
-                  RAJA::ParamList<2>,
+                  RAJA::hip_shared_mem, RAJA::ParamList<2>,
                   //
                   // (1) Execution policies for the first set of inner
                   // loops. These loops copy data from the global matrices
                   // to the local tile.
                   //
                   RAJA::statement::ForICount<
-                      1,
-                      RAJA::statement::Param<0>,
-                      RAJA::hip_thread_y_direct,
-                      RAJA::statement::ForICount<0,
-                                                 RAJA::statement::Param<1>,
+                      1, RAJA::statement::Param<0>, RAJA::hip_thread_y_direct,
+                      RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
                                                  RAJA::hip_thread_x_direct,
                                                  RAJA::statement::Lambda<0>>>,
                   // Synchronize threads to ensure all loads
@@ -570,11 +539,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //     index has unit stride.
                   //
                   RAJA::statement::ForICount<
-                      0,
-                      RAJA::statement::Param<1>,
-                      RAJA::hip_thread_y_direct,
-                      RAJA::statement::ForICount<1,
-                                                 RAJA::statement::Param<0>,
+                      0, RAJA::statement::Param<1>, RAJA::hip_thread_y_direct,
+                      RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
                                                  RAJA::hip_thread_x_direct,
                                                  RAJA::statement::Lambda<1>>>,
                   // Synchronize threads to ensure all reads

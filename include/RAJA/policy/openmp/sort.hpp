@@ -85,8 +85,8 @@ inline void sort_task(Sorter                       sorter,
 
     // std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end,
     // comp);
-    RAJA::detail::inplace_merge(
-        begin + i_begin, begin + i_middle, begin + i_end, comp);
+    RAJA::detail::inplace_merge(begin + i_begin, begin + i_middle,
+                                begin + i_end, comp);
   }
 }
 
@@ -137,8 +137,8 @@ inline void sort_parallel_region(Sorter                       sorter,
       // this thread merges ranges [i_begin, i_middle) and [i_middle, i_end)
       // std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end,
       // comp);
-      RAJA::detail::inplace_merge(
-          begin + i_begin, begin + i_middle, begin + i_end, comp);
+      RAJA::detail::inplace_merge(begin + i_begin, begin + i_middle,
+                                  begin + i_end, comp);
     }
   }
 }
@@ -255,8 +255,8 @@ unstable_pairs(resources::Host host_res,
   auto begin    = RAJA::zip(keys_begin, vals_begin);
   auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::openmp::sort(
-      detail::UnstableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
+  detail::openmp::sort(detail::UnstableSorter{}, begin, end,
+                       RAJA::compare_first<zip_ref>(comp));
 
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -281,8 +281,8 @@ stable_pairs(resources::Host host_res,
   auto begin    = RAJA::zip(keys_begin, vals_begin);
   auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::openmp::sort(
-      detail::StableSorter{}, begin, end, RAJA::compare_first<zip_ref>(comp));
+  detail::openmp::sort(detail::StableSorter{}, begin, end,
+                       RAJA::compare_first<zip_ref>(comp));
 
   return resources::EventProxy<resources::Host>(host_res);
 }

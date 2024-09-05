@@ -81,8 +81,7 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,
   static void RAJA_INLINE exec_expanded(Data&& data)
   {
     using varType = typename camp::tuple_element_t<
-        Pos,
-        typename camp::decay<Data>::param_tuple_t>::value_type;
+        Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
 
     // Initialize memory
 #ifdef RAJA_COMPILER_MSVC

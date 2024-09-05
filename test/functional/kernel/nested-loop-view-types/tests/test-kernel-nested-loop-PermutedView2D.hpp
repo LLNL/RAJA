@@ -23,8 +23,8 @@ void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2>    dim,
        static_cast<RAJA::idx_t>(RAJA::stripIndexType(dim.at(1)))}};
   RAJA::idx_t N = dim_strip.at(0) * dim_strip.at(1);
 
-  allocateForallTestData<IDX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<IDX_TYPE>(N, working_res, &working_array, &check_array,
+                                   &test_array);
 
   memset(static_cast<void*>(test_array), 0, sizeof(IDX_TYPE) * N);
 
@@ -55,8 +55,8 @@ void KernelPermutedView2DTestImpl(std::array<IDX_TYPE, 2>    dim,
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, working_array, check_array,
+                                     test_array);
 }
 
 

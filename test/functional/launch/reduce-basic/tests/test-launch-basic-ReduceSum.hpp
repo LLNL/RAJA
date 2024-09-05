@@ -34,8 +34,8 @@ void LaunchReduceSumBasicTestImpl(const SEG_TYPE&              seg,
   constexpr int threads = 256;
   int           blocks  = (seg.size() - 1) / threads + 1;
 
-  allocateForallTestData<DATA_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(data_len, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const int modval = 100;
 
@@ -60,8 +60,7 @@ void LaunchReduceSumBasicTestImpl(const SEG_TYPE&              seg,
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx,
-                                         seg,
+        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg,
                                          [&](IDX_TYPE idx)
                                          {
                                            sum += working_array[idx];
@@ -90,8 +89,8 @@ void LaunchReduceSumBasicTestImpl(const SEG_TYPE&              seg,
   ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), nloops * ref_sum);
 
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 
@@ -120,52 +119,42 @@ TYPED_TEST_P(LaunchReduceSumBasicTest, ReduceSumBasicForall)
   // Range segment tests
   RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 28);
   RAJA::getIndices(seg_idx, r1);
-  LaunchReduceSumBasicTestImpl<IDX_TYPE,
-                               DATA_TYPE,
-                               RAJA::TypedRangeSegment<IDX_TYPE>,
-                               LAUNCH_POLICY,
-                               GLOBAL_THREAD_POLICY,
-                               REDUCE_POLICY>(r1, seg_idx, working_res);
+  LaunchReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                               RAJA::TypedRangeSegment<IDX_TYPE>, LAUNCH_POLICY,
+                               GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+      r1, seg_idx, working_res);
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2(3, 642);
   RAJA::getIndices(seg_idx, r2);
-  LaunchReduceSumBasicTestImpl<IDX_TYPE,
-                               DATA_TYPE,
-                               RAJA::TypedRangeSegment<IDX_TYPE>,
-                               LAUNCH_POLICY,
-                               GLOBAL_THREAD_POLICY,
-                               REDUCE_POLICY>(r2, seg_idx, working_res);
+  LaunchReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                               RAJA::TypedRangeSegment<IDX_TYPE>, LAUNCH_POLICY,
+                               GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+      r2, seg_idx, working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r3(0, 2057);
   RAJA::getIndices(seg_idx, r3);
-  LaunchReduceSumBasicTestImpl<IDX_TYPE,
-                               DATA_TYPE,
-                               RAJA::TypedRangeSegment<IDX_TYPE>,
-                               LAUNCH_POLICY,
-                               GLOBAL_THREAD_POLICY,
-                               REDUCE_POLICY>(r3, seg_idx, working_res);
+  LaunchReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                               RAJA::TypedRangeSegment<IDX_TYPE>, LAUNCH_POLICY,
+                               GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+      r3, seg_idx, working_res);
 
   // Range-stride segment tests
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r4(0, 188, 2);
   RAJA::getIndices(seg_idx, r4);
-  LaunchReduceSumBasicTestImpl<IDX_TYPE,
-                               DATA_TYPE,
-                               RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                               LAUNCH_POLICY,
-                               GLOBAL_THREAD_POLICY,
-                               REDUCE_POLICY>(r4, seg_idx, working_res);
+  LaunchReduceSumBasicTestImpl<
+      IDX_TYPE, DATA_TYPE, RAJA::TypedRangeStrideSegment<IDX_TYPE>,
+      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(r4, seg_idx,
+                                                          working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r5(3, 1029, 3);
   RAJA::getIndices(seg_idx, r5);
-  LaunchReduceSumBasicTestImpl<IDX_TYPE,
-                               DATA_TYPE,
-                               RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                               LAUNCH_POLICY,
-                               GLOBAL_THREAD_POLICY,
-                               REDUCE_POLICY>(r5, seg_idx, working_res);
+  LaunchReduceSumBasicTestImpl<
+      IDX_TYPE, DATA_TYPE, RAJA::TypedRangeStrideSegment<IDX_TYPE>,
+      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(r5, seg_idx,
+                                                          working_res);
 
   // List segment tests
   seg_idx.clear();
@@ -180,12 +169,10 @@ TYPED_TEST_P(LaunchReduceSumBasicTest, ReduceSumBasicForall)
     }
   }
   RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0], seg_idx.size(), working_res);
-  LaunchReduceSumBasicTestImpl<IDX_TYPE,
-                               DATA_TYPE,
-                               RAJA::TypedListSegment<IDX_TYPE>,
-                               LAUNCH_POLICY,
-                               GLOBAL_THREAD_POLICY,
-                               REDUCE_POLICY>(l1, seg_idx, working_res);
+  LaunchReduceSumBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                               RAJA::TypedListSegment<IDX_TYPE>, LAUNCH_POLICY,
+                               GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+      l1, seg_idx, working_res);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchReduceSumBasicTest, ReduceSumBasicForall);

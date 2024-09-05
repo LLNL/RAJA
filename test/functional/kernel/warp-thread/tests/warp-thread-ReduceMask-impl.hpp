@@ -88,10 +88,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK&,
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
 
-  allocateForallTestData<RAJA::Index_type>(directlen * looplen,
-                                           erased_work_res,
-                                           &work_array,
-                                           &check_array,
+  allocateForallTestData<RAJA::Index_type>(directlen * looplen, erased_work_res,
+                                           &work_array, &check_array,
                                            &test_array);
 
   RAJA::ReduceMax<REDUCE_POL, int>              max_thread(0);
@@ -113,8 +111,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK&,
   ASSERT_EQ(trip_count.get(), looplen * directlen);
   ASSERT_EQ(worksum.get(), looplen * directlen * (directlen - 1) / 2);
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 template <typename WORKING_RES,
@@ -132,10 +130,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
 
-  allocateForallTestData<RAJA::Index_type>(directlen * looplen,
-                                           erased_work_res,
-                                           &work_array,
-                                           &check_array,
+  allocateForallTestData<RAJA::Index_type>(directlen * looplen, erased_work_res,
+                                           &work_array, &check_array,
                                            &test_array);
 
   RAJA::ReduceMax<REDUCE_POL, int>              max_thread(0);
@@ -145,12 +141,10 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
   call_kernel_param<EXEC_POLICY, USE_RESOURCE>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, directlen),
                        RAJA::TypedRangeSegment<RAJA::Index_type>(0, looplen)),
-      RAJA::make_tuple((RAJA::Index_type)0, (RAJA::Index_type)0),
-      work_res,
+      RAJA::make_tuple((RAJA::Index_type)0, (RAJA::Index_type)0), work_res,
       [=] RAJA_DEVICE(RAJA::Index_type RAJA_UNUSED_ARG(i),
                       RAJA::Index_type RAJA_UNUSED_ARG(j),
-                      RAJA::Index_type RAJA_UNUSED_ARG(x),
-                      RAJA::Index_type y)
+                      RAJA::Index_type RAJA_UNUSED_ARG(x), RAJA::Index_type y)
       {
         trip_count += 1;
         worksum += y; // y should only be 0..3
@@ -161,8 +155,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARPMASK_FORI&,
   ASSERT_EQ(trip_count.get(), looplen * directlen);
   ASSERT_EQ(worksum.get(), looplen * directlen * (looplen - 1) / 2);
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 //

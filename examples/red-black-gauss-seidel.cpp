@@ -241,8 +241,7 @@ void computeErr(double* I, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using errPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<errPolicy>(RAJA::make_tuple(fdBounds, fdBounds),

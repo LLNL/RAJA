@@ -391,10 +391,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // This is the same as using an OpenMP 'parallel for' directive on the
   // outer loop with a 'collapse(2) clause.
   //
-  using EXEC_POL3 = RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<1, 0>, // row, col
-                                RAJA::statement::Lambda<0>>>;
+  using EXEC_POL3 = RAJA::KernelPolicy<RAJA::statement::Collapse<
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<1, 0>, // row, col
+      RAJA::statement::Lambda<0>>>;
 
   RAJA::kernel<EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
                           [=](int col, int row)
@@ -429,12 +428,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
-  using EXEC_POL4 =
-      RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::For<
-          1,
-          RAJA::cuda_block_x_loop,
-          RAJA::statement::
-              For<0, RAJA::cuda_thread_x_loop, RAJA::statement::Lambda<0>>>>>;
+  using EXEC_POL4 = RAJA::KernelPolicy<RAJA::statement::CudaKernel<
+      RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+                           RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                                                RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
                           [=] RAJA_DEVICE(int col, int row)
@@ -467,18 +464,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   using EXEC_POL5 =
       RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-          RAJA::cuda_block_y_loop,
+          1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-              RAJA::cuda_block_x_loop,
+              0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
               RAJA::statement::For<
-                  1,
-                  RAJA::cuda_thread_y_loop,
-                  RAJA::statement::For<0,
-                                       RAJA::cuda_thread_x_loop,
+                  1, RAJA::cuda_thread_y_loop,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
@@ -526,12 +517,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // and blocksize N; i.e., kernel<<<N, N>>> and defining row = blockIdx.x
   // and col = threadIdx.x in the kernel.
   //
-  using EXEC_POL4 =
-      RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::For<
-          1,
-          RAJA::hip_block_x_loop,
-          RAJA::statement::
-              For<0, RAJA::hip_thread_x_loop, RAJA::statement::Lambda<0>>>>>;
+  using EXEC_POL4 = RAJA::KernelPolicy<RAJA::statement::HipKernel<
+      RAJA::statement::For<1, RAJA::hip_block_x_loop,
+                           RAJA::statement::For<0, RAJA::hip_thread_x_loop,
+                                                RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
                           [=] RAJA_DEVICE(int col, int row)
@@ -567,18 +556,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   using EXEC_POL5 =
       RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<HIP_BLOCK_SIZE>,
-          RAJA::hip_block_y_loop,
+          1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<HIP_BLOCK_SIZE>,
-              RAJA::hip_block_x_loop,
+              0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
               RAJA::statement::For<
-                  1,
-                  RAJA::hip_thread_y_loop,
-                  RAJA::statement::For<0,
-                                       RAJA::hip_thread_x_loop,
+                  1, RAJA::hip_thread_y_loop,
+                  RAJA::statement::For<0, RAJA::hip_thread_x_loop,
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
@@ -626,22 +609,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // _matmult_3lambdakernel_seq_start
   using EXEC_POL6a = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<
-          0,
-          RAJA::seq_exec,
-          RAJA::statement::Lambda<0, RAJA::Params<0>>, // dot = 0.0
-          RAJA::statement::For<2,
-                               RAJA::seq_exec,
+          0, RAJA::seq_exec, RAJA::statement::Lambda<0, RAJA::Params<0>>, // dot
+                                                                          // =
+                                                                          // 0.0
+          RAJA::statement::For<2, RAJA::seq_exec,
                                RAJA::statement::Lambda<1> // inner loop: dot +=
                                                           // ...
                                >,
-          RAJA::statement::
-              Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>> // set
-                                                           // C(row,
-                                                           // col)
-                                                           // = dot
+          RAJA::statement::Lambda<2, RAJA::Segs<0, 1>,
+                                  RAJA::Params<0>> // set
+                                                   // C(row,
+                                                   // col)
+                                                   // = dot
           >>>;
 
   RAJA::kernel_param<EXEC_POL6a>(
@@ -684,18 +665,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using RAJA::Segs;
 
   using EXEC_POL6b = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<
-          0,
-          RAJA::seq_exec,
-          RAJA::statement::Lambda<0, Params<0>>, // dot = 0.0
-          RAJA::statement::For<
-              2,
-              RAJA::seq_exec,
-              RAJA::statement::Lambda<1, Segs<0, 1, 2>, Params<0>> // dot += ...
-              >,
-          RAJA::statement::Lambda<2, Segs<0, 1>, Params<0>> // C(row, col) = dot
+          0, RAJA::seq_exec, RAJA::statement::Lambda<0, Params<0>>, // dot =
+                                                                    // 0.0
+          RAJA::statement::For<2, RAJA::seq_exec,
+                               RAJA::statement::Lambda<1, Segs<0, 1, 2>,
+                                                       Params<0>> // dot += ...
+                               >,
+          RAJA::statement::Lambda<2, Segs<0, 1>, Params<0>> // C(row, col) =
+                                                            // dot
           >>>;
 
   RAJA::kernel_param<EXEC_POL6b>(
@@ -730,11 +709,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_ompcollapse_start
   using EXEC_POL7 = RAJA::KernelPolicy<RAJA::statement::Collapse<
-      RAJA::omp_parallel_collapse_exec,
-      RAJA::ArgList<1, 0>,                         // row, col
-      RAJA::statement::Lambda<0, RAJA::Params<0>>, // dot = 0.0
-      RAJA::statement::For<2,
-                           RAJA::seq_exec,
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<1, 0>, // row, col
+      RAJA::statement::Lambda<0, RAJA::Params<0>>,           // dot = 0.0
+      RAJA::statement::For<2, RAJA::seq_exec,
                            RAJA::statement::Lambda<1> // inner loop: dot += ...
                            >,
       RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>> // set
@@ -783,12 +760,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0,
               RAJA::cuda_thread_x_loop,                    // col
               RAJA::statement::Lambda<0, RAJA::Params<0>>, // dot = 0.0
-              RAJA::statement::For<2,
-                                   RAJA::seq_exec,
+              RAJA::statement::For<2, RAJA::seq_exec,
                                    RAJA::statement::Lambda<1> // dot += ...
                                    >,
-              RAJA::statement::
-                  Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>> // set C = ...
+              RAJA::statement::Lambda<2, RAJA::Segs<0, 1>,
+                                      RAJA::Params<0>> // set C = ...
               >>>>;
   // _matmult_3lambdakernel_cuda_end
 
@@ -822,13 +798,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _matmult_3lambdakernel_cudatiled_start
   using EXEC_POL9a =
       RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-          RAJA::cuda_block_y_loop,
+          1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-              RAJA::cuda_block_x_loop,
+              0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
               RAJA::statement::For<
                   1,
                   RAJA::cuda_thread_y_loop, // row
@@ -836,14 +808,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                       0,
                       RAJA::cuda_thread_x_loop,                    // col
                       RAJA::statement::Lambda<0, RAJA::Params<0>>, // dot = 0.0
-                      RAJA::statement::For<2,
-                                           RAJA::seq_exec,
+                      RAJA::statement::For<2, RAJA::seq_exec,
                                            RAJA::statement::Lambda<1> // dot +=
                                                                       // ...
                                            >,
-                      RAJA::statement::
-                          Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>> // set C
-                                                                       // = ...
+                      RAJA::statement::Lambda<2, RAJA::Segs<0, 1>,
+                                              RAJA::Params<0>> // set C
+                                                               // = ...
                       >>>>>>;
   // _matmult_3lambdakernel_cudatiled_end
 
@@ -876,13 +847,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL9b =
       RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-          RAJA::cuda_block_y_loop,
+          1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-              RAJA::cuda_block_x_loop,
+              0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_loop,
               RAJA::statement::For<
                   1,
                   RAJA::cuda_thread_y_loop, // row
@@ -891,13 +858,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                       RAJA::cuda_thread_x_loop,              // col
                       RAJA::statement::Lambda<0, Params<0>>, // dot = 0.0
                       RAJA::statement::For<
-                          2,
-                          RAJA::seq_exec,
-                          RAJA::statement::
-                              Lambda<1, Segs<0, 1, 2>, Params<0>> // dot += ...
+                          2, RAJA::seq_exec,
+                          RAJA::statement::Lambda<1, Segs<0, 1, 2>,
+                                                  Params<0>> // dot += ...
                           >,
-                      RAJA::statement::Lambda<2, Segs<0, 1>, Params<0>> // set C
-                                                                        // = ...
+                      RAJA::statement::Lambda<2, Segs<0, 1>, Params<0>> // set
+                                                                        // C =
+                                                                        // ...
                       >>>>>>;
 
   RAJA::kernel_param<EXEC_POL9b>(
@@ -935,87 +902,75 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // for an introduction to RAJA LocalArray types and thread synchronization.
 
   using Shmem =
-      RAJA::LocalArray<double,
-                       RAJA::PERM_IJ,
+      RAJA::LocalArray<double, RAJA::PERM_IJ,
                        RAJA::SizeList<CUDA_BLOCK_SIZE, CUDA_BLOCK_SIZE>>;
 
   using shmem_Lambda0 =
       RAJA::statement::Lambda<0, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
-  using shmem_Lambda1 = RAJA::statement::
-      Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>, RAJA::Params<0>>;
-  using shmem_Lambda2 = RAJA::statement::
-      Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>, RAJA::Params<1>>;
+  using shmem_Lambda1 =
+      RAJA::statement::Lambda<1, RAJA::Segs<0, 1>, RAJA::Offsets<0, 1>,
+                              RAJA::Params<0>>;
+  using shmem_Lambda2 =
+      RAJA::statement::Lambda<2, RAJA::Segs<1, 2>, RAJA::Offsets<1, 2>,
+                              RAJA::Params<1>>;
   using shmem_Lambda3 =
       RAJA::statement::Lambda<3, RAJA::Offsets<0, 1, 2>, RAJA::Params<0, 1, 2>>;
-  using shmem_Lambda4 = RAJA::statement::
-      Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
+  using shmem_Lambda4 =
+      RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>,
+                              RAJA::Params<2>>;
 
   using EXEC_POL10 = RAJA::KernelPolicy<RAJA::statement::CudaKernelFixed<
       CUDA_BLOCK_SIZE * CUDA_BLOCK_SIZE,
       // Initalize thread private value
       RAJA::statement::InitLocalMem<
-          RAJA::cuda_shared_mem,
-          RAJA::ParamList<2, 1, 0>,
+          RAJA::cuda_shared_mem, RAJA::ParamList<2, 1, 0>,
 
           // Tile rows and cols of C (the result matrix C)
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-              RAJA::cuda_block_x_direct,
+              0, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_x_direct,
               RAJA::statement::Tile<
-                  2,
-                  RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
+                  2, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
                   RAJA::cuda_block_y_direct,
 
                   // zero out shmem tile of C
                   RAJA::statement::For<
-                      2,
-                      RAJA::cuda_thread_y_loop,
-                      RAJA::statement::
-                          For<0, RAJA::cuda_thread_x_loop, shmem_Lambda0>>,
+                      2, RAJA::cuda_thread_y_loop,
+                      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                                           shmem_Lambda0>>,
 
                   // Slide window across matrix: Load tiles of global matrices
                   // A, B and compute local dot products
                   RAJA::statement::Tile<
-                      1,
-                      RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
-                      RAJA::seq_exec,
+                      1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::seq_exec,
 
                       // Load tile of A into shmem
                       RAJA::statement::For<
-                          1,
-                          RAJA::cuda_thread_y_loop,
-                          RAJA::statement::
-                              For<0, RAJA::cuda_thread_x_loop, shmem_Lambda1>>,
+                          1, RAJA::cuda_thread_y_loop,
+                          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                                               shmem_Lambda1>>,
 
                       // Load tile of B into shmem
                       RAJA::statement::For<
-                          2,
-                          RAJA::cuda_thread_y_loop,
-                          RAJA::statement::
-                              For<1, RAJA::cuda_thread_x_loop, shmem_Lambda2>>,
+                          2, RAJA::cuda_thread_y_loop,
+                          RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
+                                               shmem_Lambda2>>,
 
                       RAJA::statement::CudaSyncThreads,
 
                       // Partial multiplication
                       RAJA::statement::For<
-                          2,
-                          RAJA::cuda_thread_y_loop,
+                          2, RAJA::cuda_thread_y_loop,
                           RAJA::statement::For<
-                              1,
-                              RAJA::seq_exec,
-                              RAJA::statement::For<0,
-                                                   RAJA::cuda_thread_x_loop,
+                              1, RAJA::seq_exec,
+                              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                                                    shmem_Lambda3>>>,
 
                       RAJA::statement::CudaSyncThreads>, // sliding window
 
                   // Write memory out to global matrix
                   RAJA::statement::For<
-                      2,
-                      RAJA::cuda_thread_y_loop,
-                      RAJA::statement::For<0,
-                                           RAJA::cuda_thread_x_loop,
+                      2, RAJA::cuda_thread_y_loop,
+                      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                                            shmem_Lambda4>>>>> // Create shared
                                                               // memory
       >                                                       // Cuda kernel
@@ -1042,12 +997,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       { bShared(tm, tp) = Bview(m, p); },
 
       // Do partial update in shmem
-      [=] RAJA_HOST_DEVICE(int    tn,
-                           int    tm,
-                           int    tp,
-                           Shmem& aShared,
-                           Shmem& bShared,
-                           Shmem& cShared)
+      [=] RAJA_HOST_DEVICE(int tn, int tm, int tp, Shmem& aShared,
+                           Shmem& bShared, Shmem& cShared)
       { cShared(tn, tp) += aShared(tn, tm) * bShared(tm, tp); },
 
       // Write out complete result
@@ -1104,12 +1055,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0,
               RAJA::hip_thread_x_loop,                     // col
               RAJA::statement::Lambda<0, RAJA::Params<0>>, // dot = 0.0
-              RAJA::statement::For<2,
-                                   RAJA::seq_exec,
+              RAJA::statement::For<2, RAJA::seq_exec,
                                    RAJA::statement::Lambda<1> // dot += ...
                                    >,
-              RAJA::statement::
-                  Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>> // set C = ...
+              RAJA::statement::Lambda<2, RAJA::Segs<0, 1>,
+                                      RAJA::Params<0>> // set C = ...
               >>>>;
   // _matmult_3lambdakernel_hip_end
 
@@ -1147,13 +1097,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _matmult_3lambdakernel_hiptiled_start
   using EXEC_POL9b =
       RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<HIP_BLOCK_SIZE>,
-          RAJA::hip_block_y_loop,
+          1, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<HIP_BLOCK_SIZE>,
-              RAJA::hip_block_x_loop,
+              0, RAJA::tile_fixed<HIP_BLOCK_SIZE>, RAJA::hip_block_x_loop,
               RAJA::statement::For<
                   1,
                   RAJA::hip_thread_y_loop, // row
@@ -1162,13 +1108,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                       RAJA::hip_thread_x_loop,               // col
                       RAJA::statement::Lambda<0, Params<0>>, // dot = 0.0
                       RAJA::statement::For<
-                          2,
-                          RAJA::seq_exec,
-                          RAJA::statement::
-                              Lambda<1, Segs<0, 1, 2>, Params<0>> // dot += ...
+                          2, RAJA::seq_exec,
+                          RAJA::statement::Lambda<1, Segs<0, 1, 2>,
+                                                  Params<0>> // dot += ...
                           >,
-                      RAJA::statement::Lambda<2, Segs<0, 1>, Params<0>> // set C
-                                                                        // = ...
+                      RAJA::statement::Lambda<2, Segs<0, 1>, Params<0>> // set
+                                                                        // C =
+                                                                        // ...
                       >>>>>>;
   // _matmult_3lambdakernel_hiptiled_end
 
@@ -1211,8 +1157,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // (int)griddim.y, (int)blockdim.x, (int)blockdim.y);
 
   // Launch HIP kernel defined near the top of this file.
-  hipLaunchKernelGGL(
-      (matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
+  hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N,
+                     d_C, d_A, d_B);
 
   hipDeviceSynchronize();
 

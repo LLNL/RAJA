@@ -43,8 +43,8 @@ void ForallResourceIndexSetTestImpl()
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -55,8 +55,7 @@ void ForallResourceIndexSetTestImpl()
     test_array[is_indices[i]] = is_indices[i];
   }
 
-  RAJA::forall<EXEC_POLICY>(working_res,
-                            iset,
+  RAJA::forall<EXEC_POLICY>(working_res, iset,
                             [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
                             { working_array[idx] = idx; });
 
@@ -68,8 +67,8 @@ void ForallResourceIndexSetTestImpl()
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 

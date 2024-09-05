@@ -194,8 +194,8 @@ testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> seg,
                        IdxType                          N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { list[i] = otherop.max + (T)1; });
   RAJA::forall<ExecPolicy>(seg,
                            [=] RAJA_HOST_DEVICE(IdxType i)
                            {

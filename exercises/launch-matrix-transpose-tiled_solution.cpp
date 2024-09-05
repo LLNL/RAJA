@@ -169,28 +169,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the cpu
+      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
+                            // cpu
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<loop_pol_1>(
-            ctx,
-            TILE_DIM,
-            row_Range,
+            ctx, TILE_DIM, row_Range,
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<loop_pol_1>(
-                  ctx,
-                  TILE_DIM,
-                  col_Range,
+                  ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<loop_pol_1>(ctx,
-                                           row_tile,
+                    RAJA::loop<loop_pol_1>(ctx, row_tile,
                                            [&](int row)
                                            {
                                              RAJA::loop<loop_pol_1>(
-                                                 ctx,
-                                                 col_tile,
+                                                 ctx, col_tile,
                                                  [&](int col) {
                                                    Atview(col, row) =
                                                        Aview(row, col);
@@ -220,28 +215,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the cpu
+      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
+                            // cpu
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<omp_for_pol_2>(
-            ctx,
-            TILE_DIM,
-            row_Range,
+            ctx, TILE_DIM, row_Range,
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<loop_pol_2>(
-                  ctx,
-                  TILE_DIM,
-                  col_Range,
+                  ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<loop_pol_2>(ctx,
-                                           row_tile,
+                    RAJA::loop<loop_pol_2>(ctx, row_tile,
                                            [&](int row)
                                            {
                                              RAJA::loop<loop_pol_2>(
-                                                 ctx,
-                                                 col_tile,
+                                                 ctx, col_tile,
                                                  [&](int col) {
                                                    Atview(col, row) =
                                                        Aview(row, col);
@@ -285,24 +275,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<cuda_teams_y>(
-            ctx,
-            TILE_DIM,
-            row_Range,
+            ctx, TILE_DIM, row_Range,
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<cuda_teams_x>(
-                  ctx,
-                  TILE_DIM,
-                  col_Range,
+                  ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<cuda_threads_y>(ctx,
-                                               row_tile,
+                    RAJA::loop<cuda_threads_y>(ctx, row_tile,
                                                [&](int row)
                                                {
                                                  RAJA::loop<cuda_threads_x>(
-                                                     ctx,
-                                                     col_tile,
+                                                     ctx, col_tile,
                                                      [&](int col) {
                                                        Atview(col, row) =
                                                            Aview(row, col);
@@ -353,24 +337,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<hip_teams_y>(
-            ctx,
-            TILE_DIM,
-            row_Range,
+            ctx, TILE_DIM, row_Range,
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<hip_teams_x>(
-                  ctx,
-                  TILE_DIM,
-                  col_Range,
+                  ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<hip_threads_y>(ctx,
-                                              row_tile,
+                    RAJA::loop<hip_threads_y>(ctx, row_tile,
                                               [&](int row)
                                               {
                                                 RAJA::loop<hip_threads_x>(
-                                                    ctx,
-                                                    col_tile,
+                                                    ctx, col_tile,
                                                     [&](int col) {
                                                       d_Atview(col, row) =
                                                           d_Aview(row, col);

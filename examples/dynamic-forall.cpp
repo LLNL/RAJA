@@ -100,8 +100,7 @@ int main(int argc, char* argv[])
   //----------------------------------------------------------------------------//
 
   // policy is chosen from the list
-  RAJA::expt::dynamic_forall<policy_list>(pol,
-                                          RAJA::RangeSegment(0, N),
+  RAJA::expt::dynamic_forall<policy_list>(pol, RAJA::RangeSegment(0, N),
                                           [=] RAJA_HOST_DEVICE(int i)
                                           { c[i] = a[i] + b[i]; });
   // _rajaseq_vector_add_end

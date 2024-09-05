@@ -294,8 +294,7 @@ forall_impl(resources::Sycl& sycl_res,
     q->submit(
         [&](::sycl::handler& h)
         {
-          h.parallel_for(::sycl::range<1>(len),
-                         reduction,
+          h.parallel_for(::sycl::range<1>(len), reduction,
                          [=](::sycl::item<1> it, auto& red)
                          {
                            ForallParam fp;
@@ -391,8 +390,7 @@ forall_impl(resources::Sycl& sycl_res,
     q->submit(
          [&](::sycl::handler& h)
          {
-           h.parallel_for(::sycl::range<1>(len),
-                          reduction,
+           h.parallel_for(::sycl::range<1>(len), reduction,
                           [=](::sycl::item<1> it, auto& red)
                           {
                             Index_type  ii = it.get_id(0);
@@ -451,8 +449,8 @@ RAJA_INLINE resources::EventProxy<resources::Sycl>
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi)
   {
-    iset.segmentCall(
-        r, isi, detail::CallForall(), sycl_exec<BlockSize, true>(), loop_body);
+    iset.segmentCall(r, isi, detail::CallForall(), sycl_exec<BlockSize, true>(),
+                     loop_body);
   } // iterate over segments of index set
 
   if (!Async)

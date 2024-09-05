@@ -27,16 +27,16 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first,
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
     test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
   }
 
-  working_res.memcpy(
-      working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(working_array, test_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   INDEX_TYPE idx = first;
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i)
@@ -46,13 +46,12 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first,
   }
 
   RAJA::forall<EXEC_POLICY>(
-      working_res,
-      r1,
+      working_res, r1,
       [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
       { working_array[RAJA::stripIndexType((idx - first) / stride)] = idx; });
 
-  working_res.memcpy(
-      check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
@@ -60,8 +59,8 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first,
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 
@@ -87,31 +86,21 @@ template <typename INDEX_TYPE,
               RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeStrideTests()
 {
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(-10), INDEX_TYPE(-1), DIFF_TYPE(2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(-5), INDEX_TYPE(0), DIFF_TYPE(2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(-5), INDEX_TYPE(5), DIFF_TYPE(3));
 
   // Test negative strides
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(10), INDEX_TYPE(-1), DIFF_TYPE(-1));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(10), INDEX_TYPE(0), DIFF_TYPE(-2));
 }
@@ -126,51 +115,33 @@ TYPED_TEST_P(ForallResourceRangeStrideSegmentTest,
   using DIFF_TYPE =
       typename std::make_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::type;
 
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(1));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(1));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(21), DIFF_TYPE(2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(21), DIFF_TYPE(2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(255), DIFF_TYPE(2));
 
   // Test size zero segments
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(-2));
-  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                           DIFF_TYPE,
-                                           WORKING_RES,
+  ForallResourceRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
                                            EXEC_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(-2));
 

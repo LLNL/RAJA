@@ -35,8 +35,8 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
@@ -60,8 +60,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::loop<GLOBAL_THREAD_POICY>(
-              ctx,
-              r1,
+              ctx, r1,
               [&](INDEX_TYPE idx) {
                 working_array[RAJA::stripIndexType((idx - first) / stride)] =
                     idx;
@@ -75,8 +74,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx,
-                                          r1,
+          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1,
                                           [&](INDEX_TYPE RAJA_UNUSED_ARG(idx))
                                           { working_array[0]++; });
         });
@@ -99,8 +97,8 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first,
     ASSERT_EQ(test_array[0], check_array[0]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -128,37 +126,22 @@ template <typename INDEX_TYPE,
               RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeStrideTests()
 {
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(-10), INDEX_TYPE(-1), DIFF_TYPE(2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(-5), INDEX_TYPE(0), DIFF_TYPE(2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(-5), INDEX_TYPE(5), DIFF_TYPE(3));
 
   // Test negative strides
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(10), INDEX_TYPE(-1), DIFF_TYPE(-1));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(10), INDEX_TYPE(0), DIFF_TYPE(-2));
 }
 
@@ -176,67 +159,37 @@ TYPED_TEST_P(LaunchRangeStrideSegmentTest, RangeStrideSegmentTeams)
   using DIFF_TYPE =
       typename std::make_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::type;
 
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(1));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(1));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(21), DIFF_TYPE(2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(21), DIFF_TYPE(2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(255), DIFF_TYPE(2));
 
   // Test size zero segments
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(0), INDEX_TYPE(20), DIFF_TYPE(-2));
-  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE,
-                                   DIFF_TYPE,
-                                   WORKING_RES,
-                                   LAUNCH_POLICY,
-                                   GLOBAL_THREAD_POLICY>(
+  LaunchRangeStrideSegmentTestImpl<INDEX_TYPE, DIFF_TYPE, WORKING_RES,
+                                   LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       INDEX_TYPE(1), INDEX_TYPE(20), DIFF_TYPE(-2));
 
-  runNegativeStrideTests<INDEX_TYPE,
-                         DIFF_TYPE,
-                         WORKING_RES,
-                         LAUNCH_POLICY,
+  runNegativeStrideTests<INDEX_TYPE, DIFF_TYPE, WORKING_RES, LAUNCH_POLICY,
                          GLOBAL_THREAD_POLICY>();
 }
 

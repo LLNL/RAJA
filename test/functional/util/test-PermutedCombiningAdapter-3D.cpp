@@ -55,9 +55,7 @@ void test_PermutedCombiningAdapter_3D(Segment const& seg0,
           }
         }
       },
-      seg0,
-      seg1,
-      seg2);
+      seg0, seg1, seg2);
 
   ASSERT_EQ(adapter.size(), seg0.size() * seg1.size() * seg2.size());
 
@@ -95,10 +93,10 @@ TEST(PermutedCombiningAdapter, test3D)
   test_types_PermutedCombiningAdapter_3D<RAJA::PERM_JKI, int>(0, 0, 0, 0, 0, 5);
 
   test_types_PermutedCombiningAdapter_3D<RAJA::PERM_KIJ, int>(0, 3, 0, 4, 0, 5);
-  test_types_PermutedCombiningAdapter_3D<RAJA::PERM_KJI, long>(
-      -3, 5, 0, 6, 2, 5);
-  test_types_PermutedCombiningAdapter_3D<RAJA::PERM_IJK, long>(
-      4, 13, -2, 7, -3, 0);
-  test_types_PermutedCombiningAdapter_3D<RAJA::PERM_IKJ, long>(
-      -8, -2, -5, 3, 1, 4);
+  test_types_PermutedCombiningAdapter_3D<RAJA::PERM_KJI, long>(-3, 5, 0, 6, 2,
+                                                               5);
+  test_types_PermutedCombiningAdapter_3D<RAJA::PERM_IJK, long>(4, 13, -2, 7, -3,
+                                                               0);
+  test_types_PermutedCombiningAdapter_3D<RAJA::PERM_IKJ, long>(-8, -2, -5, 3, 1,
+                                                               4);
 }

@@ -193,8 +193,8 @@ struct HipStatementListExecutor<Data, StatementList<Stmts...>, Types>
   static inline LaunchDims calculateDimensions(Data const& data)
   {
     // Compute this statements launch dimensions
-    return HipStatementListExecutorHelper<0, num_stmts, enclosed_stmts_t>::
-        calculateDimensions(data);
+    return HipStatementListExecutorHelper<
+        0, num_stmts, enclosed_stmts_t>::calculateDimensions(data);
   }
 };
 

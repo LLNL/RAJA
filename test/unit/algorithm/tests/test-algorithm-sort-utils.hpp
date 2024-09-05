@@ -287,8 +287,7 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
   data.copy_data(N);
   data.resource().wait();
   sorter(RAJA::make_span(data.sorted_keys, N),
-         RAJA::make_span(data.sorted_vals, N),
-         comp);
+         RAJA::make_span(data.sorted_vals, N), comp);
   sorter.synchronize();
 }
 
@@ -305,8 +304,7 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
             sort_res_default_interface_tag)
 {
   data.copy_data(N);
-  sorter(data.resource(),
-         RAJA::make_span(data.sorted_keys, N),
+  sorter(data.resource(), RAJA::make_span(data.sorted_keys, N),
          RAJA::make_span(data.sorted_vals, N));
   data.resource().wait();
 }
@@ -324,10 +322,8 @@ void doSort(SortData<Res, sort_pairs_interface_tag, K, V>& data,
             sort_res_comp_interface_tag)
 {
   data.copy_data(N);
-  sorter(data.resource(),
-         RAJA::make_span(data.sorted_keys, N),
-         RAJA::make_span(data.sorted_vals, N),
-         comp);
+  sorter(data.resource(), RAJA::make_span(data.sorted_keys, N),
+         RAJA::make_span(data.sorted_vals, N), comp);
   data.resource().wait();
 }
 
@@ -629,32 +625,15 @@ void testSorterResInterfaces(
   using resource_no_comparator  = sort_res_default_interface_tag;
   using resource_use_comparator = sort_res_comp_interface_tag;
 
-  ASSERT_TRUE(testSort("resource+default",
-                       seed,
-                       data,
-                       N,
-                       RAJA::operators::less<K>{},
-                       sorter,
-                       stability_category{},
-                       pairs_category{},
-                       resource_no_comparator{}));
-  ASSERT_TRUE(testSort("resource+ascending",
-                       seed,
-                       data,
-                       N,
-                       RAJA::operators::less<K>{},
-                       sorter,
-                       stability_category{},
-                       pairs_category{},
-                       resource_use_comparator{}));
-  ASSERT_TRUE(testSort("resource+descending",
-                       seed,
-                       data,
-                       N,
-                       RAJA::operators::greater<K>{},
-                       sorter,
-                       stability_category{},
-                       pairs_category{},
+  ASSERT_TRUE(testSort("resource+default", seed, data, N,
+                       RAJA::operators::less<K>{}, sorter, stability_category{},
+                       pairs_category{}, resource_no_comparator{}));
+  ASSERT_TRUE(testSort("resource+ascending", seed, data, N,
+                       RAJA::operators::less<K>{}, sorter, stability_category{},
+                       pairs_category{}, resource_use_comparator{}));
+  ASSERT_TRUE(testSort("resource+descending", seed, data, N,
+                       RAJA::operators::greater<K>{}, sorter,
+                       stability_category{}, pairs_category{},
                        resource_use_comparator{}));
 }
 
@@ -677,33 +656,15 @@ void testSorterInterfaces(unsigned         seed,
 
   SortData<Res, pairs_category, K> data(N, res, [&]() { return dist(rng); });
 
-  ASSERT_TRUE(testSort("default",
-                       seed,
-                       data,
-                       N,
-                       RAJA::operators::less<K>{},
-                       sorter,
-                       stability_category{},
-                       pairs_category{},
+  ASSERT_TRUE(testSort("default", seed, data, N, RAJA::operators::less<K>{},
+                       sorter, stability_category{}, pairs_category{},
                        no_comparator{}));
-  ASSERT_TRUE(testSort("ascending",
-                       seed,
-                       data,
-                       N,
-                       RAJA::operators::less<K>{},
-                       sorter,
-                       stability_category{},
-                       pairs_category{},
+  ASSERT_TRUE(testSort("ascending", seed, data, N, RAJA::operators::less<K>{},
+                       sorter, stability_category{}, pairs_category{},
                        use_comparator{}));
-  ASSERT_TRUE(testSort("descending",
-                       seed,
-                       data,
-                       N,
-                       RAJA::operators::greater<K>{},
-                       sorter,
-                       stability_category{},
-                       pairs_category{},
-                       use_comparator{}));
+  ASSERT_TRUE(testSort(
+      "descending", seed, data, N, RAJA::operators::greater<K>{}, sorter,
+      stability_category{}, pairs_category{}, use_comparator{}));
 
   testSorterResInterfaces(supports_resource(), seed, data, N, sorter);
 }

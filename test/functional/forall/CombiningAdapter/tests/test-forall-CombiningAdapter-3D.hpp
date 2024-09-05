@@ -39,8 +39,8 @@ void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
 
   size_t data_len = RAJA::stripIndexType(N) + 1;
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   {
 
@@ -76,9 +76,7 @@ void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
             working_array[RAJA::stripIndexType(N)]++;
           }
         },
-        r0,
-        r1,
-        r2);
+        r0, r1, r2);
 
     RAJA::forall<EXEC_POLICY>(adapter.getRange(), adapter);
   }
@@ -91,8 +89,8 @@ void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -118,27 +116,15 @@ void runNegativeTests()
 {
   // test zero-length range segment
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(-5),
-      INDEX_TYPE(-5),
-      INDEX_TYPE(-3),
-      INDEX_TYPE(-3),
-      INDEX_TYPE(-1),
-      INDEX_TYPE(-1));
+      INDEX_TYPE(-5), INDEX_TYPE(-5), INDEX_TYPE(-3), INDEX_TYPE(-3),
+      INDEX_TYPE(-1), INDEX_TYPE(-1));
 
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(-5),
-      INDEX_TYPE(0),
-      INDEX_TYPE(-3),
-      INDEX_TYPE(0),
-      INDEX_TYPE(-4),
-      INDEX_TYPE(0));
+      INDEX_TYPE(-5), INDEX_TYPE(0), INDEX_TYPE(-3), INDEX_TYPE(0),
+      INDEX_TYPE(-4), INDEX_TYPE(0));
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(-5),
-      INDEX_TYPE(5),
-      INDEX_TYPE(-3),
-      INDEX_TYPE(2),
-      INDEX_TYPE(-7),
-      INDEX_TYPE(-2));
+      INDEX_TYPE(-5), INDEX_TYPE(5), INDEX_TYPE(-3), INDEX_TYPE(2),
+      INDEX_TYPE(-7), INDEX_TYPE(-2));
 }
 
 
@@ -150,55 +136,27 @@ TYPED_TEST_P(ForallCombiningAdapter3DTest, Forall3D)
 
   // test zero-length range segment
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(3),
-      INDEX_TYPE(3),
-      INDEX_TYPE(5),
-      INDEX_TYPE(5),
-      INDEX_TYPE(7),
+      INDEX_TYPE(3), INDEX_TYPE(3), INDEX_TYPE(5), INDEX_TYPE(5), INDEX_TYPE(7),
       INDEX_TYPE(7));
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(3),
-      INDEX_TYPE(3),
-      INDEX_TYPE(5),
-      INDEX_TYPE(6),
-      INDEX_TYPE(7),
+      INDEX_TYPE(3), INDEX_TYPE(3), INDEX_TYPE(5), INDEX_TYPE(6), INDEX_TYPE(7),
       INDEX_TYPE(8));
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(3),
-      INDEX_TYPE(4),
-      INDEX_TYPE(5),
-      INDEX_TYPE(5),
-      INDEX_TYPE(7),
+      INDEX_TYPE(3), INDEX_TYPE(4), INDEX_TYPE(5), INDEX_TYPE(5), INDEX_TYPE(7),
       INDEX_TYPE(8));
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(3),
-      INDEX_TYPE(4),
-      INDEX_TYPE(5),
-      INDEX_TYPE(6),
-      INDEX_TYPE(7),
+      INDEX_TYPE(3), INDEX_TYPE(4), INDEX_TYPE(5), INDEX_TYPE(6), INDEX_TYPE(7),
       INDEX_TYPE(7));
 
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(0),
-      INDEX_TYPE(7),
-      INDEX_TYPE(0),
-      INDEX_TYPE(6),
-      INDEX_TYPE(0),
+      INDEX_TYPE(0), INDEX_TYPE(7), INDEX_TYPE(0), INDEX_TYPE(6), INDEX_TYPE(0),
       INDEX_TYPE(3));
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(1),
-      INDEX_TYPE(13),
-      INDEX_TYPE(4),
-      INDEX_TYPE(17),
-      INDEX_TYPE(6),
-      INDEX_TYPE(11));
+      INDEX_TYPE(1), INDEX_TYPE(13), INDEX_TYPE(4), INDEX_TYPE(17),
+      INDEX_TYPE(6), INDEX_TYPE(11));
   ForallCombiningAdapter3DTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
-      INDEX_TYPE(13),
-      INDEX_TYPE(46),
-      INDEX_TYPE(17),
-      INDEX_TYPE(51),
-      INDEX_TYPE(4),
-      INDEX_TYPE(31));
+      INDEX_TYPE(13), INDEX_TYPE(46), INDEX_TYPE(17), INDEX_TYPE(51),
+      INDEX_TYPE(4), INDEX_TYPE(31));
 
   runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }

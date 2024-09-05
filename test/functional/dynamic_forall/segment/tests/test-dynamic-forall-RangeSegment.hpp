@@ -32,8 +32,8 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -43,8 +43,7 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
     RAJA::expt::dynamic_forall<POLICY_LIST>(
-        pol,
-        r1,
+        pol, r1,
         [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
         { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
   }
@@ -53,11 +52,10 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::expt::dynamic_forall<POLICY_LIST>(pol,
-                                            r1,
+    RAJA::expt::dynamic_forall<POLICY_LIST>(pol, r1,
                                             [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
                                             {
                                               (void)idx;
@@ -73,8 +71,8 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 

@@ -28,8 +28,8 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   DATA_TYPE*                check_array;
   DATA_TYPE*                test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      last, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(last, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(SHRT_MAX);
   const DATA_TYPE big_val     = -500;
@@ -38,7 +38,7 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   static std::mt19937                           mt(rd());
   static std::uniform_real_distribution<double> dist(-100, 100);
   static std::uniform_int_distribution<int>     dist2(static_cast<int>(first),
-                                                  static_cast<int>(last) - 1);
+                                                      static_cast<int>(last) - 1);
 
   // Workaround for broken omp-target reduction interface.
   // This should be `min0;` not `min0(0);`
@@ -75,8 +75,7 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
         IDX_TYPE  min_index = static_cast<IDX_TYPE>(dist2(mt));
 
         test_array[min_index] = roll;
-        working_res.memcpy(&working_array[min_index],
-                           &test_array[min_index],
+        working_res.memcpy(&working_array[min_index], &test_array[min_index],
                            sizeof(DATA_TYPE));
 
         if (current_min > roll)
@@ -107,8 +106,8 @@ void ForallReduceMinMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   ASSERT_EQ(default_val, static_cast<DATA_TYPE>(min1.get()));
   ASSERT_EQ(big_val, static_cast<DATA_TYPE>(min2.get()));
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallReduceMinMultipleTest);
@@ -124,10 +123,7 @@ TYPED_TEST_P(ForallReduceMinMultipleTest, ReduceMinMultipleForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMinMultipleTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
-                                  WORKING_RES,
-                                  EXEC_POLICY,
+  ForallReduceMinMultipleTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                                   REDUCE_POLICY>(0, 2115);
 }
 

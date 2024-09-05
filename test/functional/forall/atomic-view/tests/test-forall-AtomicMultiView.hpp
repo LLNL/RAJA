@@ -50,17 +50,15 @@ void ForallAtomicMultiViewTestImpl(IdxType N)
 #endif
 
   // assumes each source[] will be 2x size of each dest[], src_side x dst_side
-  RAJA::forall<ExecPolicy>(seg_srcside,
-                           [=] RAJA_HOST_DEVICE(IdxType ii)
+  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
                            { source[ii] = actualsource + (ii * dst_side); });
 
   // assumes each dest[] will be a square matrix, dst_side x dst_side
-  RAJA::forall<ExecPolicy>(seg_dstside,
-                           [=] RAJA_HOST_DEVICE(IdxType ii)
+  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
                            { dest[ii] = actualdest + (ii * dst_side); });
 
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { actualsource[i] = (T)1; });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { actualsource[i] = (T)1; });
 
   // use atomic add to reduce the array
   // 1D defaut MultiView

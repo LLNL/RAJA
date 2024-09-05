@@ -126,8 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // Sequential policy
   using fdPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   // OpenMP policy
@@ -198,8 +197,7 @@ void computeErr(double* P, double tf, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using initialPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
@@ -231,8 +229,7 @@ void setIC(double* P1, double* P2, double t0, double t1, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
   using initialPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
@@ -259,8 +256,8 @@ void wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx)
         //
         // Coefficients for fourth order stencil
         //
-        double coeff[5] = {
-            -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
+        double coeff[5] = {-1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0,
+                           -1.0 / 12.0};
 
         const int id     = tx + ty * nx;
         double    P_old  = P1[id];

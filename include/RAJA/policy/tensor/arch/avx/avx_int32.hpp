@@ -56,56 +56,35 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi32(N >= 8 ? -1 : 0,
-                            N >= 7 ? -1 : 0,
-                            N >= 6 ? -1 : 0,
-                            N >= 5 ? -1 : 0,
-                            N >= 4 ? -1 : 0,
-                            N >= 3 ? -1 : 0,
-                            N >= 2 ? -1 : 0,
-                            N >= 1 ? -1 : 0);
+    return _mm256_set_epi32(N >= 8 ? -1 : 0, N >= 7 ? -1 : 0, N >= 6 ? -1 : 0,
+                            N >= 5 ? -1 : 0, N >= 4 ? -1 : 0, N >= 3 ? -1 : 0,
+                            N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
   }
 
   RAJA_INLINE
   __m256i createStridedOffsets(camp::idx_t stride) const
   {
     // Generate a strided offset list
-    return _mm256_set_epi32(7 * stride,
-                            6 * stride,
-                            5 * stride,
-                            4 * stride,
-                            3 * stride,
-                            2 * stride,
-                            stride,
-                            0);
+    return _mm256_set_epi32(7 * stride, 6 * stride, 5 * stride, 4 * stride,
+                            3 * stride, 2 * stride, stride, 0);
   }
 
   RAJA_INLINE
   __m256i createPermute1(camp::idx_t N) const
   {
     // Generate a permutation for first round of min/max routines
-    return _mm256_set_epi32(N >= 7 ? 6 : 0,
-                            N >= 8 ? 7 : 0,
-                            N >= 5 ? 4 : 0,
-                            N >= 6 ? 5 : 0,
-                            N >= 3 ? 2 : 0,
-                            N >= 4 ? 3 : 0,
-                            N >= 1 ? 0 : 0,
-                            N >= 2 ? 1 : 0);
+    return _mm256_set_epi32(N >= 7 ? 6 : 0, N >= 8 ? 7 : 0, N >= 5 ? 4 : 0,
+                            N >= 6 ? 5 : 0, N >= 3 ? 2 : 0, N >= 4 ? 3 : 0,
+                            N >= 1 ? 0 : 0, N >= 2 ? 1 : 0);
   }
 
   RAJA_INLINE
   __m256i createPermute2(camp::idx_t N) const
   {
     // Generate a permutation for second round of min/max routines
-    return _mm256_set_epi32(N >= 6 ? 5 : 0,
-                            N >= 5 ? 4 : 0,
-                            N >= 8 ? 7 : 0,
-                            N >= 7 ? 6 : 0,
-                            N >= 2 ? 1 : 0,
-                            N >= 1 ? 0 : 0,
-                            N >= 4 ? 3 : 0,
-                            N >= 2 ? 2 : 0);
+    return _mm256_set_epi32(N >= 6 ? 5 : 0, N >= 5 ? 4 : 0, N >= 8 ? 7 : 0,
+                            N >= 7 ? 6 : 0, N >= 2 ? 1 : 0, N >= 1 ? 0 : 0,
+                            N >= 4 ? 3 : 0, N >= 2 ? 2 : 0);
   }
 
 public:
@@ -243,8 +222,7 @@ public:
   RAJA_INLINE
   self_type const& store_packed_n(element_type* ptr, camp::idx_t N) const
   {
-    _mm256_maskstore_ps(reinterpret_cast<float*>(ptr),
-                        createMask(N),
+    _mm256_maskstore_ps(reinterpret_cast<float*>(ptr), createMask(N),
                         reinterpret_cast<__m256>(m_value));
     return *this;
   }
@@ -460,14 +438,10 @@ public:
   self_type divide(self_type const& b) const
   {
     // AVX2 does not supply an integer divide, so do it manually
-    return self_type(_mm256_set_epi32(get(7) / b.get(7),
-                                      get(6) / b.get(6),
-                                      get(5) / b.get(5),
-                                      get(4) / b.get(4),
-                                      get(3) / b.get(3),
-                                      get(2) / b.get(2),
-                                      get(1) / b.get(1),
-                                      get(0) / b.get(0)));
+    return self_type(_mm256_set_epi32(get(7) / b.get(7), get(6) / b.get(6),
+                                      get(5) / b.get(5), get(4) / b.get(4),
+                                      get(3) / b.get(3), get(2) / b.get(2),
+                                      get(1) / b.get(1), get(0) / b.get(0)));
   }
 
   RAJA_HOST_DEVICE
@@ -475,14 +449,11 @@ public:
   self_type divide_n(self_type const& b, camp::idx_t N) const
   {
     // AVX2 does not supply an integer divide, so do it manually
-    return self_type(_mm256_set_epi32(N >= 8 ? get(7) / b.get(7) : 0,
-                                      N >= 7 ? get(6) / b.get(6) : 0,
-                                      N >= 6 ? get(5) / b.get(5) : 0,
-                                      N >= 5 ? get(4) / b.get(4) : 0,
-                                      N >= 4 ? get(3) / b.get(3) : 0,
-                                      N >= 3 ? get(2) / b.get(2) : 0,
-                                      N >= 2 ? get(1) / b.get(1) : 0,
-                                      N >= 1 ? get(0) / b.get(0) : 0));
+    return self_type(_mm256_set_epi32(
+        N >= 8 ? get(7) / b.get(7) : 0, N >= 7 ? get(6) / b.get(6) : 0,
+        N >= 6 ? get(5) / b.get(5) : 0, N >= 5 ? get(4) / b.get(4) : 0,
+        N >= 4 ? get(3) / b.get(3) : 0, N >= 3 ? get(2) / b.get(2) : 0,
+        N >= 2 ? get(1) / b.get(1) : 0, N >= 1 ? get(0) / b.get(0) : 0));
   }
 
 

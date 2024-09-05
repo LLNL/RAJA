@@ -630,17 +630,13 @@ forall_impl(resources::Cuda cuda_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                            IterationGetter,
-                                                            Concretizer,
-                                                            BlocksPerSM,
-                                                            Async>;
-  using UniqueMarker = ::camp::
-      list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping,
-                                                              IterationGetter,
-                                                              Concretizer,
-                                                              UniqueMarker>;
+  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<
+      IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
+  using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
+                                    LOOP_BODY, Iterator, ForallParam>;
+  using DimensionCalculator =
+      impl::ForallDimensionCalculator<IterationMapping, IterationGetter,
+                                      Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -653,12 +649,9 @@ forall_impl(resources::Cuda cuda_res,
   if (len > 0)
   {
 
-    auto func =
-        reinterpret_cast<const void*>(&impl::forall_cuda_kernel<EXEC_POL,
-                                                                BlocksPerSM,
-                                                                Iterator,
-                                                                LOOP_BODY,
-                                                                IndexType>);
+    auto func = reinterpret_cast<const void*>(
+        &impl::forall_cuda_kernel<EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY,
+                                  IndexType>);
 
     //
     // Setup shared memory buffers
@@ -677,20 +670,16 @@ forall_impl(resources::Cuda cuda_res,
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body =
-          RAJA::cuda::make_launch_body(func,
-                                       dims.blocks,
-                                       dims.threads,
-                                       shmem,
-                                       cuda_res,
-                                       std::forward<LoopBody>(loop_body));
+      LOOP_BODY body = RAJA::cuda::make_launch_body(
+          func, dims.blocks, dims.threads, shmem, cuda_res,
+          std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
       void* args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch(
-          func, dims.blocks, dims.threads, args, shmem, cuda_res, Async);
+      RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res,
+                         Async);
     }
 
     RAJA_FT_END;
@@ -727,21 +716,14 @@ forall_impl(resources::Cuda cuda_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                            IterationGetter,
-                                                            Concretizer,
-                                                            BlocksPerSM,
-                                                            Async>;
-  using UniqueMarker        = ::camp::list<IterationMapping,
-                                    IterationGetter,
-                                    camp::num<BlocksPerSM>,
-                                    LOOP_BODY,
-                                    Iterator,
-                                    ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping,
-                                                              IterationGetter,
-                                                              Concretizer,
-                                                              UniqueMarker>;
+  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<
+      IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
+  using UniqueMarker =
+      ::camp::list<IterationMapping, IterationGetter, camp::num<BlocksPerSM>,
+                   LOOP_BODY, Iterator, ForallParam>;
+  using DimensionCalculator =
+      impl::ForallDimensionCalculator<IterationMapping, IterationGetter,
+                                      Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -755,12 +737,8 @@ forall_impl(resources::Cuda cuda_res,
   {
 
     auto func = reinterpret_cast<const void*>(
-        &impl::forallp_cuda_kernel<EXEC_POL,
-                                   BlocksPerSM,
-                                   Iterator,
-                                   LOOP_BODY,
-                                   IndexType,
-                                   camp::decay<ForallParam>>);
+        &impl::forallp_cuda_kernel<EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY,
+                                   IndexType, camp::decay<ForallParam>>);
 
     //
     // Setup shared memory buffers
@@ -786,21 +764,17 @@ forall_impl(resources::Cuda cuda_res,
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body =
-          RAJA::cuda::make_launch_body(func,
-                                       dims.blocks,
-                                       dims.threads,
-                                       shmem,
-                                       cuda_res,
-                                       std::forward<LoopBody>(loop_body));
+      LOOP_BODY body = RAJA::cuda::make_launch_body(
+          func, dims.blocks, dims.threads, shmem, cuda_res,
+          std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
-      void* args[] = {
-          (void*)&body, (void*)&begin, (void*)&len, (void*)&f_params};
-      RAJA::cuda::launch(
-          func, dims.blocks, dims.threads, args, shmem, cuda_res, Async);
+      void* args[] = {(void*)&body, (void*)&begin, (void*)&len,
+                      (void*)&f_params};
+      RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res,
+                         Async);
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
     }
@@ -851,15 +825,12 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> forall_impl(
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi)
   {
-    iset.segmentCall(r,
-                     isi,
-                     detail::CallForall(),
-                     ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                              IterationGetter,
-                                                              Concretizer,
-                                                              BlocksPerSM,
-                                                              true>(),
-                     loop_body);
+    iset.segmentCall(
+        r, isi, detail::CallForall(),
+        ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
+                                                 IterationGetter, Concretizer,
+                                                 BlocksPerSM, true>(),
+        loop_body);
   } // iterate over segments of index set
 
   if (!Async) RAJA::cuda::synchronize(r);

@@ -335,13 +335,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                          RAJA::Threads(THREAD_SZ, THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<global_thread_y>(ctx,
-                                    col_range,
+        RAJA::loop<global_thread_y>(ctx, col_range,
                                     [&](int col)
                                     {
                                       RAJA::loop<global_thread_x>(
-                                          ctx,
-                                          row_range,
+                                          ctx, row_range,
                                           [&](int row)
                                           {
                                             double dot = 0.0;
@@ -382,13 +380,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::LaunchParams(),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<omp_col_policy0>(ctx,
-                                    col_range,
+        RAJA::loop<omp_col_policy0>(ctx, col_range,
                                     [&](int col)
                                     {
                                       RAJA::loop<omp_row_policy0>(
-                                          ctx,
-                                          row_range,
+                                          ctx, row_range,
                                           [&](int row)
                                           {
                                             double dot = 0.0;
@@ -418,14 +414,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   using global_thread_xy = RAJA::LoopPolicy<RAJA::omp_for_exec>;
 
-  RAJA::launch<omp_launch_policy>(RAJA::ExecPlace::HOST,
-                                  RAJA::LaunchParams(),
+  RAJA::launch<omp_launch_policy>(RAJA::ExecPlace::HOST, RAJA::LaunchParams(),
                                   [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
                                   {
                                     RAJA::expt::loop<global_thread_xy>(
-                                        ctx,
-                                        col_range,
-                                        row_range,
+                                        ctx, col_range, row_range,
                                         [&](int col, int row)
                                         {
                                           double dot = 0.0;
@@ -465,13 +458,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<teams_x>(ctx,
-                            col_range,
+        RAJA::loop<teams_x>(ctx, col_range,
                             [&](int col)
                             {
                               RAJA::loop<threads_x>(
-                                  ctx,
-                                  row_range,
+                                  ctx, row_range,
                                   [&](int row)
                                   {
                                     double dot = 0.0;
@@ -508,25 +499,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                          RAJA::Threads(THREAD_SZ, THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::tile<teams_y>(ctx,
-                            THREAD_SZ,
-                            row_range,
+        RAJA::tile<teams_y>(ctx, THREAD_SZ, row_range,
                             [&](RAJA::RangeSegment const& row_tile)
                             {
                               RAJA::tile<teams_x>(
-                                  ctx,
-                                  THREAD_SZ,
-                                  col_range,
+                                  ctx, THREAD_SZ, col_range,
                                   [&](RAJA::RangeSegment const& col_tile)
                                   {
                                     RAJA::loop<threads_y>(
-                                        ctx,
-                                        row_tile,
+                                        ctx, row_tile,
                                         [&](int col)
                                         {
                                           RAJA::loop<threads_x>(
-                                              ctx,
-                                              col_tile,
+                                              ctx, col_tile,
                                               [&](int row)
                                               {
                                                 double dot = 0.0;
@@ -582,13 +567,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::LaunchParams(RAJA::Teams(N), RAJA::Threads(N)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<teams_x>(ctx,
-                            col_range,
+        RAJA::loop<teams_x>(ctx, col_range,
                             [&](int col)
                             {
                               RAJA::loop<threads_x>(
-                                  ctx,
-                                  row_range,
+                                  ctx, row_range,
                                   [&](int row)
                                   {
                                     double dot = 0.0;
@@ -629,25 +612,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                          RAJA::Threads(THREAD_SZ, THREAD_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::tile<teams_y>(ctx,
-                            THREAD_SZ,
-                            row_range,
+        RAJA::tile<teams_y>(ctx, THREAD_SZ, row_range,
                             [&](RAJA::RangeSegment const& row_tile)
                             {
                               RAJA::tile<teams_x>(
-                                  ctx,
-                                  THREAD_SZ,
-                                  col_range,
+                                  ctx, THREAD_SZ, col_range,
                                   [&](RAJA::RangeSegment const& col_tile)
                                   {
                                     RAJA::loop<threads_y>(
-                                        ctx,
-                                        row_tile,
+                                        ctx, row_tile,
                                         [&](int col)
                                         {
                                           RAJA::loop<threads_x>(
-                                              ctx,
-                                              col_tile,
+                                              ctx, col_tile,
                                               [&](int row)
                                               {
                                                 double dot = 0.0;
@@ -697,58 +674,46 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         // Loop over teams
         //
         RAJA::tile<teams_y>(
-            ctx,
-            THREAD_SZ,
-            row_range,
+            ctx, THREAD_SZ, row_range,
             [&](RAJA::RangeSegment const& y_tile)
             {
               RAJA::tile<teams_x>(
-                  ctx,
-                  THREAD_SZ,
-                  col_range,
+                  ctx, THREAD_SZ, col_range,
                   [&](RAJA::RangeSegment const& x_tile)
                   {
                     RAJA_TEAM_SHARED double As[THREAD_SZ][THREAD_SZ];
                     RAJA_TEAM_SHARED double Bs[THREAD_SZ][THREAD_SZ];
                     RAJA_TEAM_SHARED double Cs[THREAD_SZ][THREAD_SZ];
 
-                    RAJA::loop_icount<threads_y>(ctx,
-                                                 y_tile,
+                    RAJA::loop_icount<threads_y>(ctx, y_tile,
                                                  [&](int row, int ty)
                                                  {
                                                    RAJA::loop_icount<threads_x>(
-                                                       ctx,
-                                                       x_tile,
+                                                       ctx, x_tile,
                                                        [&](int col, int tx)
                                                        { Cs[ty][tx] = 0.0; });
                                                  });
 
                     RAJA::tile<seq_loop>(
-                        ctx,
-                        THREAD_SZ,
-                        dot_range,
+                        ctx, THREAD_SZ, dot_range,
                         [&](RAJA::RangeSegment const& k_tile)
                         {
                           RAJA::loop_icount<threads_y>(
-                              ctx,
-                              y_tile,
+                              ctx, y_tile,
                               [&](int row, int ty)
                               {
                                 RAJA::loop_icount<threads_x>(
-                                    ctx,
-                                    k_tile,
+                                    ctx, k_tile,
                                     [&](int k_id, int tx)
                                     { As[ty][tx] = Aview(row, k_id); });
                               });
 
                           RAJA::loop_icount<threads_y>(
-                              ctx,
-                              k_tile,
+                              ctx, k_tile,
                               [&](int k_id, int ty)
                               {
                                 RAJA::loop_icount<threads_x>(
-                                    ctx,
-                                    x_tile,
+                                    ctx, x_tile,
                                     [&](int col, int tx)
                                     { Bs[ty][tx] = Bview(k_id, col); });
                               });
@@ -756,18 +721,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                           ctx.teamSync();
 
                           RAJA::loop_icount<threads_y>(
-                              ctx,
-                              y_tile,
+                              ctx, y_tile,
                               [&](int row, int ty)
                               {
                                 RAJA::loop_icount<threads_x>(
-                                    ctx,
-                                    x_tile,
+                                    ctx, x_tile,
                                     [&](int col, int tx)
                                     {
                                       RAJA::loop_icount<seq_loop>(
-                                          ctx,
-                                          k_tile,
+                                          ctx, k_tile,
                                           [&](int gid, int e) {
                                             Cs[ty][tx] += As[ty][e] * Bs[e][tx];
                                           });
@@ -777,13 +739,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                           ctx.teamSync();
                         }); // slide across matrix
 
-                    RAJA::loop_icount<threads_y>(ctx,
-                                                 y_tile,
+                    RAJA::loop_icount<threads_y>(ctx, y_tile,
                                                  [&](int row, int ty)
                                                  {
                                                    RAJA::loop_icount<threads_x>(
-                                                       ctx,
-                                                       x_tile,
+                                                       ctx, x_tile,
                                                        [&](int col, int tx) {
                                                          Cview(col, row) =
                                                              Cs[ty][tx];
@@ -852,8 +812,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy(d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice));
 
   // Launch HIP kernel defined near the top of this file.
-  hipLaunchKernelGGL(
-      (matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
+  hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N,
+                     d_C, d_A, d_B);
 
   hipDeviceSynchronize();
 
@@ -868,15 +828,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy(d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice));
 
   // Launch HIP kernel defined near the top of this file.
-  hipLaunchKernelGGL((sharedMatMultKernel),
-                     dim3(griddim),
-                     dim3(blockdim),
-                     0,
-                     0,
-                     N,
-                     d_C,
-                     d_A,
-                     d_B);
+  hipLaunchKernelGGL((sharedMatMultKernel), dim3(griddim), dim3(blockdim), 0, 0,
+                     N, d_C, d_A, d_B);
 
   hipDeviceSynchronize();
 

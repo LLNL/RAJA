@@ -64,8 +64,8 @@ void KernelTileFixed2DSumTestImpl(const int rowsin, const int colsin)
     colidx.push_back(ii);
   }
 
-  RAJA::TypedListSegment<INDEX_TYPE> colrange(
-      &colidx[0], colidx.size(), work_res);
+  RAJA::TypedListSegment<INDEX_TYPE> colrange(&colidx[0], colidx.size(),
+                                              work_res);
 
   // sum on target platform
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
@@ -89,20 +89,11 @@ TYPED_TEST_P(KernelTileFixed2DSumTest, TileFixed2DSumKernel)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  KernelTileFixed2DSumTestImpl<INDEX_TYPE,
-                               DATA_TYPE,
-                               WORKING_RES,
-                               EXEC_POLICY,
+  KernelTileFixed2DSumTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                                REDUCE_POLICY>(10, 10);
-  KernelTileFixed2DSumTestImpl<INDEX_TYPE,
-                               DATA_TYPE,
-                               WORKING_RES,
-                               EXEC_POLICY,
+  KernelTileFixed2DSumTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                                REDUCE_POLICY>(151, 111);
-  KernelTileFixed2DSumTestImpl<INDEX_TYPE,
-                               DATA_TYPE,
-                               WORKING_RES,
-                               EXEC_POLICY,
+  KernelTileFixed2DSumTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                                REDUCE_POLICY>(362, 362);
 }
 

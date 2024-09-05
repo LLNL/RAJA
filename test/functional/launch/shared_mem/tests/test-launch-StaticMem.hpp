@@ -34,8 +34,8 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
   size_t data_len =
       RAJA::stripIndexType(block_range) * RAJA::stripIndexType(thread_range);
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   // determine the underlying type of block_range
   using s_type = decltype(RAJA::stripIndexType(block_range));
@@ -55,8 +55,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<TEAM_POLICY>(
-            ctx,
-            outer_range,
+            ctx, outer_range,
             [&](INDEX_TYPE bid)
             {
               // Since we are using custom index type we have to first use a
@@ -71,8 +70,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
               INDEX_TYPE* Tile = (INDEX_TYPE*)char_Tile;
 
               RAJA::loop<THREAD_POLICY>(
-                  ctx,
-                  inner_range,
+                  ctx, inner_range,
                   [&](INDEX_TYPE tid)
                   {
                     Tile[RAJA::stripIndexType(thread_range) -
@@ -83,8 +81,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
               ctx.teamSync();
 
               RAJA::loop<THREAD_POLICY>(
-                  ctx,
-                  inner_range,
+                  ctx, inner_range,
                   [&](INDEX_TYPE tid)
                   {
                     INDEX_TYPE idx = tid + thread_range * bid;
@@ -104,8 +101,8 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -130,19 +127,11 @@ TYPED_TEST_P(LaunchStaticMemTest, StaticMemLaunch)
                         camp::num<2>>::type;
 
 
-  LaunchStaticMemTestImpl<INDEX_TYPE,
-                          WORKING_RES,
-                          LAUNCH_POLICY,
-                          TEAM_POLICY,
-                          THREAD_POLICY,
-                          2>(INDEX_TYPE(4));
+  LaunchStaticMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
+                          THREAD_POLICY, 2>(INDEX_TYPE(4));
 
-  LaunchStaticMemTestImpl<INDEX_TYPE,
-                          WORKING_RES,
-                          LAUNCH_POLICY,
-                          TEAM_POLICY,
-                          THREAD_POLICY,
-                          32>(INDEX_TYPE(5));
+  LaunchStaticMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
+                          THREAD_POLICY, 32>(INDEX_TYPE(5));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchStaticMemTest, StaticMemLaunch);

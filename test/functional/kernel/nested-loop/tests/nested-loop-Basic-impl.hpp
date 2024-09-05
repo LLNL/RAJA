@@ -77,17 +77,15 @@ void KernelNestedLoopTest(const DEPTH_2&,
   std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
   constexpr int                                     Depth = 2;
-  RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(
-      work_array, dim1, dim0);
+  RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(work_array, dim1,
+                                                              dim0);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
-      RAJA::make_tuple(range1, range0),
-      work_res,
+      RAJA::make_tuple(range1, range0), work_res,
       [=] RAJA_HOST_DEVICE(RAJA::Index_type j, RAJA::Index_type i)
       { work_view(j, i) = (j * dim0) + i; });
 
-  work_res.memcpy(check_array,
-                  work_array,
+  work_res.memcpy(check_array, work_array,
                   sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
   RAJA::forall<RAJA::seq_exec>(rangeflat,
                                [=](RAJA::Index_type i)
@@ -97,8 +95,8 @@ void KernelNestedLoopTest(const DEPTH_2&,
                                      check_array[RAJA::stripIndexType(i)]);
                                });
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 // DEPTH_2_COLLAPSE and DEVICE_DEPTH_2 execution policies use the above DEPTH_2
@@ -153,18 +151,16 @@ void KernelNestedLoopTest(const DEPTH_3&,
   std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
   constexpr int                                     Depth = 3;
-  RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(
-      work_array, dim2, dim1, dim0);
+  RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(work_array, dim2,
+                                                              dim1, dim0);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
-      RAJA::make_tuple(range2, range1, range0),
-      work_res,
-      [=] RAJA_HOST_DEVICE(
-          RAJA::Index_type k, RAJA::Index_type j, RAJA::Index_type i)
+      RAJA::make_tuple(range2, range1, range0), work_res,
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type k, RAJA::Index_type j,
+                           RAJA::Index_type i)
       { work_view(k, j, i) = (dim0 * dim1 * k) + (dim0 * j) + i; });
 
-  work_res.memcpy(check_array,
-                  work_array,
+  work_res.memcpy(check_array, work_array,
                   sizeof(RAJA::Index_type) * RAJA::stripIndexType(flatSize));
   RAJA::forall<RAJA::seq_exec>(rangeflat,
                                [=](RAJA::Index_type i)
@@ -174,8 +170,8 @@ void KernelNestedLoopTest(const DEPTH_3&,
                                      check_array[RAJA::stripIndexType(i)]);
                                });
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 // DEPTH_3_COLLAPSE execution policies use the above DEPTH_3 test.

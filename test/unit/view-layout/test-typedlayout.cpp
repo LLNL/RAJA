@@ -145,11 +145,8 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_StaticLayout)
 {
   RAJA::Layout<2, TypeParam> dynamic_layout(7, 5);
   using static_layout =
-      RAJA::TypedStaticLayout<RAJA::PERM_IJ,
-                              TypeParam,
-                              RAJA::list<TypeParam, TypeParam>,
-                              7,
-                              5>;
+      RAJA::TypedStaticLayout<RAJA::PERM_IJ, TypeParam,
+                              RAJA::list<TypeParam, TypeParam>, 7, 5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)
@@ -167,11 +164,8 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
   auto dynamic_layout = RAJA::make_permuted_layout(
       {{7, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
   using static_layout =
-      RAJA::TypedStaticLayout<RAJA::PERM_JI,
-                              TypeParam,
-                              RAJA::list<TypeParam, TypeParam>,
-                              7,
-                              5>;
+      RAJA::TypedStaticLayout<RAJA::PERM_JI, TypeParam,
+                              RAJA::list<TypeParam, TypeParam>, 7, 5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)
@@ -188,12 +182,9 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
   auto dynamic_layout = RAJA::make_permuted_layout(
       {{7, 13, 5}}, RAJA::as_array<RAJA::PERM_JKI>::get());
   using static_layout =
-      RAJA::TypedStaticLayout<RAJA::PERM_JKI,
-                              TypeParam,
-                              RAJA::list<TypeParam, TypeParam, TypeParam>,
-                              7,
-                              13,
-                              5>;
+      RAJA::TypedStaticLayout<RAJA::PERM_JKI, TypeParam,
+                              RAJA::list<TypeParam, TypeParam, TypeParam>, 7,
+                              13, 5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)
@@ -215,13 +206,8 @@ TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
   auto dynamic_layout = RAJA::make_permuted_layout(
       {{7, 13, 5, 17}}, RAJA::as_array<RAJA::PERM_LJKI>::get());
   using static_layout = RAJA::TypedStaticLayout<
-      RAJA::PERM_LJKI,
-      TypeParam,
-      RAJA::list<TypeParam, TypeParam, TypeParam, TypeParam>,
-      7,
-      13,
-      5,
-      17>;
+      RAJA::PERM_LJKI, TypeParam,
+      RAJA::list<TypeParam, TypeParam, TypeParam, TypeParam>, 7, 13, 5, 17>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)

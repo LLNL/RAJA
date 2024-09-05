@@ -28,8 +28,8 @@ void ForallReduceMinLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   DATA_TYPE*                check_array;
   DATA_TYPE*                test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      last, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(last, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(SHRT_MAX);
   const IDX_TYPE  default_loc = -1;
@@ -39,7 +39,7 @@ void ForallReduceMinLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   static std::mt19937                           mt(rd());
   static std::uniform_real_distribution<double> dist(-100, 100);
   static std::uniform_int_distribution<int>     dist2(static_cast<int>(first),
-                                                  static_cast<int>(last) - 1);
+                                                      static_cast<int>(last) - 1);
 
   printf("min0 init { %f, %f }\n", (double)default_val, (double)default_loc);
   RAJA::ReduceMinLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> min0(default_val,
@@ -88,8 +88,7 @@ void ForallReduceMinLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
         if (current_min != roll)
         { // avoid two indices getting the same value
           test_array[min_index] = roll;
-          working_res.memcpy(&working_array[min_index],
-                             &test_array[min_index],
+          working_res.memcpy(&working_array[min_index], &test_array[min_index],
                              sizeof(DATA_TYPE));
 
           if (current_min > roll)
@@ -98,8 +97,8 @@ void ForallReduceMinLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
             current_loc = min_index;
           }
         }
-        printf(
-            "current { %f, %f }\n", (double)current_min, (double)current_loc);
+        printf("current { %f, %f }\n", (double)current_min,
+               (double)current_loc);
 
         RAJA::forall<EXEC_POLICY>(r1,
                                   [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
@@ -137,8 +136,8 @@ void ForallReduceMinLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   ASSERT_EQ(big_val, static_cast<DATA_TYPE>(min2.get()));
   ASSERT_EQ(default_loc, static_cast<IDX_TYPE>(min2.getLoc()));
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallReduceMinLocMultipleTest);
@@ -154,11 +153,8 @@ TYPED_TEST_P(ForallReduceMinLocMultipleTest, ReduceMinLocMultipleForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMinLocMultipleTestImpl<IDX_TYPE,
-                                     DATA_TYPE,
-                                     WORKING_RES,
-                                     EXEC_POLICY,
-                                     REDUCE_POLICY>(0, 2115);
+  ForallReduceMinLocMultipleTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES,
+                                     EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceMinLocMultipleTest,

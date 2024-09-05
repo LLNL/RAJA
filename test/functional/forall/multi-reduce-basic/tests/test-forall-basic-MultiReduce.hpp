@@ -74,8 +74,8 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
 
   IDX_TYPE data_len = 0;
 
-  allocateForallTestData(
-      idx_range + 1, working_res, &working_range, &check_range, &test_range);
+  allocateForallTestData(idx_range + 1, working_res, &working_range,
+                         &check_range, &test_range);
 
   for (IDX_TYPE i = 0; i < idx_range + 1; ++i)
   {
@@ -95,11 +95,11 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
     }
   }
 
-  allocateForallTestData(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData(data_len, working_res, &working_array, &check_array,
+                         &test_array);
 
-  allocateForallTestData(
-      data_len, working_res, &working_bins, &check_bins, &test_bins);
+  allocateForallTestData(data_len, working_res, &working_bins, &check_bins,
+                         &test_bins);
 
   if (data_len > IDX_TYPE(0))
   {
@@ -119,8 +119,8 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
     }
   }
 
-  working_res.memcpy(
-      working_range, test_range, sizeof(IDX_TYPE) * (idx_range + 1));
+  working_res.memcpy(working_range, test_range,
+                     sizeof(IDX_TYPE) * (idx_range + 1));
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
   working_res.memcpy(working_bins, test_bins, sizeof(IDX_TYPE) * data_len);
 
@@ -177,16 +177,16 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
             ABSTRACTION::combine(ref_vals[test_bins[i]], test_array[i]);
       }
 
-      RAJA::forall<EXEC_POLICY>(
-          seg,
-          [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
-          {
-            for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
-                 ++idx)
-            {
-              ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
-            }
-          });
+      RAJA::forall<EXEC_POLICY>(seg,
+                                [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
+                                {
+                                  for (IDX_TYPE idx = working_range[ii];
+                                       idx < working_range[ii + 1]; ++idx)
+                                  {
+                                    ABSTRACTION::reduce(red[working_bins[idx]],
+                                                        working_array[idx]);
+                                  }
+                                });
     }
 
     for (size_t bin = 0; bin < num_bins; ++bin)
@@ -213,8 +213,8 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
       {
         test_array[i] = DATA_TYPE(array_flt_distribution(rngen));
       }
-      working_res.memcpy(
-          working_array, test_array, sizeof(DATA_TYPE) * data_len);
+      working_res.memcpy(working_array, test_array,
+                         sizeof(DATA_TYPE) * data_len);
     }
 
 
@@ -226,16 +226,16 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE&              seg,
     {
       red.reset();
 
-      RAJA::forall<EXEC_POLICY>(
-          seg,
-          [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
-          {
-            for (IDX_TYPE idx = working_range[ii]; idx < working_range[ii + 1];
-                 ++idx)
-            {
-              ABSTRACTION::reduce(red[working_bins[idx]], working_array[idx]);
-            }
-          });
+      RAJA::forall<EXEC_POLICY>(seg,
+                                [=] RAJA_HOST_DEVICE(IDX_TYPE ii)
+                                {
+                                  for (IDX_TYPE idx = working_range[ii];
+                                       idx < working_range[ii + 1]; ++idx)
+                                  {
+                                    ABSTRACTION::reduce(red[working_bins[idx]],
+                                                        working_array[idx]);
+                                  }
+                                });
 
       if (!got_ref_vals)
       {
@@ -299,30 +299,24 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
     // Range segment tests
     RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 28);
     RAJA::getIndices(seg_idx, r1);
-    ForallMultiReduceBasicTestImpl<EXEC_POLICY,
-                                   REDUCE_POLICY,
-                                   ABSTRACTION,
-                                   DATA_TYPE>(
-        r1, container, seg_idx, working_res, rngen);
+    ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                   DATA_TYPE>(r1, container, seg_idx,
+                                              working_res, rngen);
 
     seg_idx.clear();
     RAJA::TypedRangeSegment<IDX_TYPE> r3(3, 2060);
     RAJA::getIndices(seg_idx, r3);
-    ForallMultiReduceBasicTestImpl<EXEC_POLICY,
-                                   REDUCE_POLICY,
-                                   ABSTRACTION,
-                                   DATA_TYPE>(
-        r3, container, seg_idx, working_res, rngen);
+    ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                   DATA_TYPE>(r3, container, seg_idx,
+                                              working_res, rngen);
 
     // Range-stride segment test
     seg_idx.clear();
     RAJA::TypedRangeStrideSegment<IDX_TYPE> r5(3, 1029, 3);
     RAJA::getIndices(seg_idx, r5);
-    ForallMultiReduceBasicTestImpl<EXEC_POLICY,
-                                   REDUCE_POLICY,
-                                   ABSTRACTION,
-                                   DATA_TYPE>(
-        r5, container, seg_idx, working_res, rngen);
+    ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                   DATA_TYPE>(r5, container, seg_idx,
+                                              working_res, rngen);
 
     // List segment test
     seg_idx.clear();
@@ -336,13 +330,11 @@ TYPED_TEST_P(ForallMultiReduceBasicTest, MultiReduceBasicForall)
         seg_idx.push_back(i);
       }
     }
-    RAJA::TypedListSegment<IDX_TYPE> l1(
-        &seg_idx[0], seg_idx.size(), working_res);
-    ForallMultiReduceBasicTestImpl<EXEC_POLICY,
-                                   REDUCE_POLICY,
-                                   ABSTRACTION,
-                                   DATA_TYPE>(
-        l1, container, seg_idx, working_res, rngen);
+    RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0], seg_idx.size(),
+                                        working_res);
+    ForallMultiReduceBasicTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                   DATA_TYPE>(l1, container, seg_idx,
+                                              working_res, rngen);
   }
 }
 

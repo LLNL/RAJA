@@ -26,7 +26,7 @@ void Load_RowMajorImpl()
   // alloc data1
 
   std::vector<element_t>                 data1_vec(4 * matrix_t::s_num_rows *
-                                   matrix_t::s_num_columns);
+                                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), 2 * matrix_t::s_num_rows, 2 * matrix_t::s_num_columns);
 
@@ -38,7 +38,7 @@ void Load_RowMajorImpl()
   // alloc data2
 
   std::vector<element_t>                 data2_vec(matrix_t::s_num_rows *
-                                   matrix_t::s_num_columns);
+                                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
@@ -133,13 +133,13 @@ void Load_RowMajorImpl()
             matrix_t m;
             if (matrix_t::layout_type::is_row_major())
             {
-              m.load_packed_nm(
-                  data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
+              m.load_packed_nm(data1_ptr, 2 * matrix_t::s_num_columns, 1,
+                               n_size, m_size);
             }
             else
             {
-              m.load_strided_nm(
-                  data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
+              m.load_strided_nm(data1_ptr, 2 * matrix_t::s_num_columns, 1,
+                                n_size, m_size);
             }
 
             // write out to a second view so we can check it on the host

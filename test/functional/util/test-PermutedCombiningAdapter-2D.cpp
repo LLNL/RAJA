@@ -44,8 +44,7 @@ void test_PermutedCombiningAdapter_2D(Segment const& seg0, Segment const& seg1)
           counters[camp::seq_at<0, Perm>::value] += 1;
         }
       },
-      seg0,
-      seg1);
+      seg0, seg1);
 
   ASSERT_EQ(adapter.size(), seg0.size() * seg1.size());
 

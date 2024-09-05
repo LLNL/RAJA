@@ -73,8 +73,8 @@ sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare{})
 
   if (N > 1)
   {
-    return impl::sort::unstable(
-        r, std::forward<ExecPolicy>(p), begin_it, end_it, comp);
+    return impl::sort::unstable(r, std::forward<ExecPolicy>(p), begin_it,
+                                end_it, comp);
   }
   else
   {
@@ -139,8 +139,8 @@ stable_sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare{})
 
   if (N > 1)
   {
-    return impl::sort::stable(
-        r, std::forward<ExecPolicy>(p), begin_it, end_it, comp);
+    return impl::sort::stable(r, std::forward<ExecPolicy>(p), begin_it, end_it,
+                              comp);
   }
   else
   {
@@ -214,8 +214,8 @@ sort_pairs(ExecPolicy&&   p,
 
   if (N > 1)
   {
-    return impl::sort::unstable_pairs(
-        r, std::forward<ExecPolicy>(p), begin_key, end_key, begin(vals), comp);
+    return impl::sort::unstable_pairs(r, std::forward<ExecPolicy>(p), begin_key,
+                                      end_key, begin(vals), comp);
   }
   else
   {
@@ -243,11 +243,8 @@ sort_pairs(ExecPolicy&&   p,
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::sort_pairs(
-      std::forward<ExecPolicy>(p),
-      r,
-      std::forward<KeyContainer>(keys),
-      std::forward<ValContainer>(vals),
-      comp);
+      std::forward<ExecPolicy>(p), r, std::forward<KeyContainer>(keys),
+      std::forward<ValContainer>(vals), comp);
 }
 
 /*!
@@ -298,8 +295,8 @@ stable_sort_pairs(ExecPolicy&&   p,
 
   if (N > 1)
   {
-    return impl::sort::stable_pairs(
-        r, std::forward<ExecPolicy>(p), begin_key, end_key, begin(vals), comp);
+    return impl::sort::stable_pairs(r, std::forward<ExecPolicy>(p), begin_key,
+                                    end_key, begin(vals), comp);
   }
   else
   {
@@ -327,11 +324,8 @@ stable_sort_pairs(ExecPolicy&&   p,
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::stable_sort_pairs(
-      std::forward<ExecPolicy>(p),
-      r,
-      std::forward<KeyContainer>(keys),
-      std::forward<ValContainer>(vals),
-      comp);
+      std::forward<ExecPolicy>(p), r, std::forward<KeyContainer>(keys),
+      std::forward<ValContainer>(vals), comp);
 }
 
 } // namespace policy_by_value_interface
@@ -362,8 +356,8 @@ concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_resource<Res>>
 sort(Res r, Args&&... args)
 {
-  return ::RAJA::policy_by_value_interface::sort(
-      ExecPolicy(), r, std::forward<Args>(args)...);
+  return ::RAJA::policy_by_value_interface::sort(ExecPolicy(), r,
+                                                 std::forward<Args>(args)...);
 }
 
 /*!

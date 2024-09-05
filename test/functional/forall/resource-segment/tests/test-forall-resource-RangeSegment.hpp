@@ -23,21 +23,20 @@ void ForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   const INDEX_TYPE rbegin = *r1.begin();
 
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
   RAJA::forall<EXEC_POLICY>(
-      working_res,
-      r1,
+      working_res, r1,
       [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
       { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
 
-  working_res.memcpy(
-      check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
@@ -45,8 +44,8 @@ void ForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 

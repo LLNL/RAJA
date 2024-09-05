@@ -34,9 +34,7 @@
 
 #define GPU_TEST_F(test_fixture, test_name)                                    \
   static void gpu_test_f_##test_fixture##_##test_name();                       \
-  GTEST_TEST_(test_fixture,                                                    \
-              test_name,                                                       \
-              test_fixture,                                                    \
+  GTEST_TEST_(test_fixture, test_name, test_fixture,                           \
               ::testing::internal::GetTypeId<test_fixture>())                  \
   {                                                                            \
     gpu_test_f_##test_fixture##_##test_name();                                 \
@@ -65,8 +63,7 @@
               #test_case_name,                                                 \
               ::testing::internal::CodeLocation(__FILE__, __LINE__))           \
           ->AddTestPattern(                                                    \
-              #test_case_name,                                                 \
-              #test_name,                                                      \
+              #test_case_name, #test_name,                                     \
               new ::testing::internal::TestMetaFactory<GTEST_TEST_CLASS_NAME_( \
                   test_case_name, test_name)>());                              \
       return 0;                                                                \
@@ -96,9 +93,7 @@
     };                                                                         \
     static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =          \
         GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).AddTestName(                \
-            __FILE__,                                                          \
-            __LINE__,                                                          \
-            GTEST_STRINGIFY_(SuiteName),                                       \
+            __FILE__, __LINE__, GTEST_STRINGIFY_(SuiteName),                   \
             GTEST_STRINGIFY_(TestName));                                       \
   }                                                                            \
   template <typename gtest_TypeParam_>                                         \

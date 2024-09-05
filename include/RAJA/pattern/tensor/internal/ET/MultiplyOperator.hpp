@@ -54,8 +54,7 @@ struct MultiplyOperator
   RAJA_HOST_DEVICE
   static void print_ast()
   {
-    printf("Elemental(%d,%d)",
-           (int)s_num_dims,
+    printf("Elemental(%d,%d)", (int)s_num_dims,
            (int)RIGHT_OPERAND_TYPE::s_num_dims);
   }
 
@@ -519,16 +518,14 @@ private:
       {
 
         using LeftType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_SIZE,
+            StaticTensorTile<INDEX_TYPE, TENSOR_SIZE,
                              camp::int_seq<INDEX_TYPE, Begin0, offset>,
                              camp::int_seq<INDEX_TYPE, Size0, tile_size>>;
         // evaluate both sides of operator
         auto left = et_left.eval(LeftType());
 
         using RightType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_SIZE,
+            StaticTensorTile<INDEX_TYPE, TENSOR_SIZE,
                              camp::int_seq<INDEX_TYPE, offset>,
                              camp::int_seq<INDEX_TYPE, tile_size>>;
 
@@ -536,8 +533,7 @@ private:
 
         // accumulate product
         auto temp = left.right_multiply_vector_accumulate(right, result);
-        MultiplyBridge<STORAGE,
-                       TileType,
+        MultiplyBridge<STORAGE, TileType,
                        camp::integral_constant<size_t, INDEX - 1>>::
             multiply_into_result(result, tile, et_left, et_right);
         result += temp;
@@ -546,15 +542,13 @@ private:
       {
 
         using LeftType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_PARTIAL,
+            StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL,
                              camp::int_seq<INDEX_TYPE, Begin0, offset>,
                              camp::int_seq<INDEX_TYPE, Size0, k_size - offset>>;
         auto left = et_left.eval(LeftType());
 
         using RightType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_PARTIAL,
+            StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL,
                              camp::int_seq<INDEX_TYPE, offset>,
                              camp::int_seq<INDEX_TYPE, k_size - offset>>;
         auto right = et_right.eval(RightType());
@@ -606,16 +600,14 @@ private:
       {
 
         using LeftType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_SIZE,
+            StaticTensorTile<INDEX_TYPE, TENSOR_SIZE,
                              camp::int_seq<INDEX_TYPE, Begin0, offset>,
                              camp::int_seq<INDEX_TYPE, Size0, tile_size>>;
         // evaluate both sides of operator
         auto left = et_left.eval(LeftType());
 
         using RightType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_SIZE,
+            StaticTensorTile<INDEX_TYPE, TENSOR_SIZE,
                              camp::int_seq<INDEX_TYPE, offset>,
                              camp::int_seq<INDEX_TYPE, tile_size>>;
 
@@ -629,15 +621,13 @@ private:
       {
 
         using LeftType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_PARTIAL,
+            StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL,
                              camp::int_seq<INDEX_TYPE, Begin0, offset>,
                              camp::int_seq<INDEX_TYPE, Size0, k_size - offset>>;
         auto left = et_left.eval(LeftType());
 
         using RightType =
-            StaticTensorTile<INDEX_TYPE,
-                             TENSOR_PARTIAL,
+            StaticTensorTile<INDEX_TYPE, TENSOR_PARTIAL,
                              camp::int_seq<INDEX_TYPE, offset>,
                              camp::int_seq<INDEX_TYPE, k_size - offset>>;
         auto right = et_right.eval(RightType());
@@ -683,8 +673,7 @@ private:
       const size_t iter_count =
           (k_size / tile_size) + ((k_size % tile_size != 0) ? 1 : 0);
 
-      MultiplyBridge<STORAGE,
-                     TileType,
+      MultiplyBridge<STORAGE, TileType,
                      camp::integral_constant<size_t, iter_count>>::
           multiply_into_result(result, tile, et_left, et_right);
     }

@@ -63,8 +63,8 @@ void ScanInclusiveInplaceTestImpl(int N)
   // test interface with resource
   res.memcpy(work_in, host_in, sizeof(T) * N);
 
-  RAJA::inclusive_scan_inplace<EXEC_POLICY>(
-      res, RAJA::make_span(work_in, N), OP_TYPE{});
+  RAJA::inclusive_scan_inplace<EXEC_POLICY>(res, RAJA::make_span(work_in, N),
+                                            OP_TYPE{});
 
   res.memcpy(host_out, work_in, sizeof(T) * N);
   res.wait();

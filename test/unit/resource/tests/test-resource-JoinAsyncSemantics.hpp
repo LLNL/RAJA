@@ -23,8 +23,7 @@ void ResourceJoinAsyncSemanticsTestImpl()
   int* d_array = resources::Resource{dev1}.allocate<int>(ARRAY_SIZE);
   int* h_array = host.allocate<int>(ARRAY_SIZE);
 
-  forall<policy::sequential::seq_exec>(host,
-                                       RangeSegment(0, ARRAY_SIZE),
+  forall<policy::sequential::seq_exec>(host, RangeSegment(0, ARRAY_SIZE),
                                        [=] RAJA_HOST_DEVICE(int i)
                                        { h_array[i] = i; });
 
@@ -34,8 +33,7 @@ void ResourceJoinAsyncSemanticsTestImpl()
   dev1.wait_for(&e1);
 
   RAJA::resources::Event e2 =
-      forall<EXEC_POLICY>(dev1,
-                          RangeSegment(0, ARRAY_SIZE),
+      forall<EXEC_POLICY>(dev1, RangeSegment(0, ARRAY_SIZE),
                           [=] RAJA_HOST_DEVICE(int i) { d_array[i] = i + 2; });
 
   dev2.wait_for(&e2);
@@ -44,8 +42,7 @@ void ResourceJoinAsyncSemanticsTestImpl()
 
   dev2.wait();
 
-  forall<policy::sequential::seq_exec>(host,
-                                       RangeSegment(0, ARRAY_SIZE),
+  forall<policy::sequential::seq_exec>(host, RangeSegment(0, ARRAY_SIZE),
                                        [=](int i)
                                        { ASSERT_EQ(h_array[i], i + 2); });
 

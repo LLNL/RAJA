@@ -44,8 +44,8 @@ void ForallResourceIcountIndexSetTestImpl()
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -58,8 +58,7 @@ void ForallResourceIcountIndexSetTestImpl()
   }
 
   RAJA::forall_Icount<EXEC_POLICY>(
-      working_res,
-      iset,
+      working_res, iset,
       [=] RAJA_HOST_DEVICE(INDEX_TYPE icount, INDEX_TYPE idx)
       { working_array[icount] = idx; });
 
@@ -70,8 +69,8 @@ void ForallResourceIcountIndexSetTestImpl()
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 
@@ -86,8 +85,7 @@ TYPED_TEST_P(ForallResourceIcountIndexSetTest, ResourceIndexSetForallIcount)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallResourceIcountIndexSetTestImpl<INDEX_TYPE,
-                                       WORKING_RESOURCE,
+  ForallResourceIcountIndexSetTestImpl<INDEX_TYPE, WORKING_RESOURCE,
                                        EXEC_POLICY>();
 }
 

@@ -257,18 +257,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // to/from the tile.
   //
   using KERNEL_EXEC_POL_OMP2 = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1,
-      RAJA::tile_fixed<TILE_SZ>,
-      RAJA::seq_exec,
-      RAJA::statement::Tile<0,
-                            RAJA::tile_fixed<TILE_SZ>,
-                            RAJA::seq_exec,
-                            RAJA::statement::Collapse<
-                                RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<0, 1>,
-                                RAJA::statement::Lambda<0>> // closes collapse
-                            >                               // closes Tile 0
-      >                                                     // closes Tile 1
+      1, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+      RAJA::statement::Tile<
+          0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
+          RAJA::statement::Collapse<
+              RAJA::omp_parallel_collapse_exec, RAJA::ArgList<0, 1>,
+              RAJA::statement::Lambda<0>>            // closes collapse
+          >                                          // closes Tile 0
+      >                                              // closes Tile 1
                                                   >; // closes policy list
 
   RAJA::kernel<KERNEL_EXEC_POL_OMP2>(RAJA::make_tuple(col_Range, row_Range),

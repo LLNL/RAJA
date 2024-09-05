@@ -450,8 +450,7 @@ struct TensorRef
   RAJA_INLINE
   void print() const
   {
-    printf("TensorRef: dims=%d, m_pointer=%p, m_stride=[",
-           (int)NUM_DIMS,
+    printf("TensorRef: dims=%d, m_pointer=%p, m_stride=[", (int)NUM_DIMS,
            m_pointer);
 
     for (camp::idx_t i = 0; i < NUM_DIMS; ++i)
@@ -527,8 +526,7 @@ struct StaticTensorRef<POINTER_TYPE,
   RAJA_INLINE
   void print() const
   {
-    printf("StaticTensorRef: dims=%d, m_pointer=%p, m_stride=",
-           (int)s_num_dims,
+    printf("StaticTensorRef: dims=%d, m_pointer=%p, m_stride=", (int)s_num_dims,
            m_pointer);
 
     m_stride.print();
@@ -575,8 +573,9 @@ struct MergeRefTile<REF_TYPE, TILE_TYPE, camp::idx_seq<DIM_SEQ...>>
   RAJA_HOST_DEVICE
   static constexpr merge_type merge(REF_TYPE const& ref, TILE_TYPE const& tile)
   {
-    return merge_type{
-        ref.m_pointer, {tile_index_type(ref.m_stride[DIM_SEQ])...}, tile};
+    return merge_type{ref.m_pointer,
+                      {tile_index_type(ref.m_stride[DIM_SEQ])...},
+                      tile};
   }
 
   RAJA_INLINE
@@ -679,8 +678,7 @@ struct MergeRefTile<StaticTensorRef<POINTER_TYPE,
     return shift_type{ref.m_pointer -
                           RAJA::sum<camp::idx_t>((tile_origin.m_begin[DIM_SEQ] *
                                                   ref.m_stride[DIM_SEQ])...),
-                      new_stride_type(),
-                      shift_tile_type()};
+                      new_stride_type(), shift_tile_type()};
   }
 };
 
@@ -693,8 +691,7 @@ merge_ref_tile(REF_TYPE const& ref, TILE_TYPE const& tile) ->
         TILE_TYPE,
         camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge_type
 {
-  return MergeRefTile<REF_TYPE,
-                      TILE_TYPE,
+  return MergeRefTile<REF_TYPE, TILE_TYPE,
                       camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge(ref,
                                                                           tile);
 }
@@ -713,8 +710,7 @@ shift_tile_origin(REF_TYPE const& ref, TILE_TYPE const& tile_origin) ->
         camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::shift_type
 {
   return MergeRefTile<
-      REF_TYPE,
-      TILE_TYPE,
+      REF_TYPE, TILE_TYPE,
       camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::shift_origin(ref,
                                                                  tile_origin);
 }

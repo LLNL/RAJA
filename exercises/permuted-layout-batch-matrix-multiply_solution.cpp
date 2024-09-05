@@ -557,10 +557,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       hipMemcpy(d_A, A, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
   hipErrchk(
       hipMemcpy(d_B, B, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(
-      d_A2, A2, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(
-      d_B2, B2, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_A2, A2, N_c * N_r * N * sizeof(double),
+                      hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_B2, B2, N_c * N_r * N * sizeof(double),
+                      hipMemcpyHostToDevice));
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i)
@@ -665,8 +665,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     timer.reset();
   }
 
-  hipErrchk(hipMemcpy(
-      C2, d_C2, N_c * N_r * N * sizeof(double), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(C2, d_C2, N_c * N_r * N * sizeof(double),
+                      hipMemcpyDeviceToHost));
 
   std::cout << "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview2, N, N_r, N_c);

@@ -620,14 +620,14 @@ forall_impl(
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::hip::
-      hip_exec<IterationMapping, IterationGetter, Concretizer, Async>;
-  using UniqueMarker = ::camp::
-      list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping,
-                                                              IterationGetter,
-                                                              Concretizer,
-                                                              UniqueMarker>;
+  using EXEC_POL =
+      ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
+                                    Concretizer, Async>;
+  using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
+                                    LOOP_BODY, Iterator, ForallParam>;
+  using DimensionCalculator =
+      impl::ForallDimensionCalculator<IterationMapping, IterationGetter,
+                                      Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -660,20 +660,16 @@ forall_impl(
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body =
-          RAJA::hip::make_launch_body(func,
-                                      dims.blocks,
-                                      dims.threads,
-                                      shmem,
-                                      hip_res,
-                                      std::forward<LoopBody>(loop_body));
+      LOOP_BODY body = RAJA::hip::make_launch_body(
+          func, dims.blocks, dims.threads, shmem, hip_res,
+          std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
       void* args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::hip::launch(
-          func, dims.blocks, dims.threads, args, shmem, hip_res, Async);
+      RAJA::hip::launch(func, dims.blocks, dims.threads, args, shmem, hip_res,
+                        Async);
     }
 
     RAJA_FT_END;
@@ -707,14 +703,14 @@ forall_impl(
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::hip::
-      hip_exec<IterationMapping, IterationGetter, Concretizer, Async>;
-  using UniqueMarker = ::camp::
-      list<IterationMapping, IterationGetter, LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator = impl::ForallDimensionCalculator<IterationMapping,
-                                                              IterationGetter,
-                                                              Concretizer,
-                                                              UniqueMarker>;
+  using EXEC_POL =
+      ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
+                                    Concretizer, Async>;
+  using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
+                                    LOOP_BODY, Iterator, ForallParam>;
+  using DimensionCalculator =
+      impl::ForallDimensionCalculator<IterationMapping, IterationGetter,
+                                      Concretizer, UniqueMarker>;
 
   //
   // Compute the requested iteration space size
@@ -728,10 +724,7 @@ forall_impl(
   {
 
     auto func = reinterpret_cast<const void*>(
-        &impl::forallp_hip_kernel<EXEC_POL,
-                                  Iterator,
-                                  LOOP_BODY,
-                                  IndexType,
+        &impl::forallp_hip_kernel<EXEC_POL, Iterator, LOOP_BODY, IndexType,
                                   camp::decay<ForallParam>>);
 
     //
@@ -758,21 +751,17 @@ forall_impl(
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
       //
-      LOOP_BODY body =
-          RAJA::hip::make_launch_body(func,
-                                      dims.blocks,
-                                      dims.threads,
-                                      shmem,
-                                      hip_res,
-                                      std::forward<LoopBody>(loop_body));
+      LOOP_BODY body = RAJA::hip::make_launch_body(
+          func, dims.blocks, dims.threads, shmem, hip_res,
+          std::forward<LoopBody>(loop_body));
 
       //
       // Launch the kernels
       //
-      void* args[] = {
-          (void*)&body, (void*)&begin, (void*)&len, (void*)&f_params};
-      RAJA::hip::launch(
-          func, dims.blocks, dims.threads, args, shmem, hip_res, Async);
+      void* args[] = {(void*)&body, (void*)&begin, (void*)&len,
+                      (void*)&f_params};
+      RAJA::hip::launch(func, dims.blocks, dims.threads, args, shmem, hip_res,
+                        Async);
 
       RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
     }
@@ -821,11 +810,9 @@ RAJA_INLINE resources::EventProxy<resources::Hip> forall_impl(
   for (int isi = 0; isi < num_seg; ++isi)
   {
     iset.segmentCall(
-        r,
-        isi,
-        detail::CallForall(),
-        ::RAJA::policy::hip::
-            hip_exec<IterationMapping, IterationGetter, Concretizer, true>(),
+        r, isi, detail::CallForall(),
+        ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
+                                      Concretizer, true>(),
         loop_body);
   } // iterate over segments of index set
 

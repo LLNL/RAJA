@@ -269,18 +269,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<cuda_teams_z_3>(
-            ctx,
-            RAJA::TypedRangeSegment<int>(0, N),
+            ctx, RAJA::TypedRangeSegment<int>(0, N),
             [&](int k)
             {
               RAJA::loop<cuda_global_thread_y_3>(
-                  ctx,
-                  RAJA::TypedRangeSegment<int>(0, N),
+                  ctx, RAJA::TypedRangeSegment<int>(0, N),
                   [&](int j)
                   {
                     RAJA::loop<cuda_global_thread_x_3>(
-                        ctx,
-                        RAJA::TypedRangeSegment<int>(0, N),
+                        ctx, RAJA::TypedRangeSegment<int>(0, N),
                         [&](int i) { aView(i, j, k) = c * i * j * k; });
                   });
             });
@@ -314,30 +311,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<cuda_teams_z_4>(
-            ctx,
-            RAJA::TypedRangeSegment<int>(0, N),
+            ctx, RAJA::TypedRangeSegment<int>(0, N),
             [&](int k)
             {
               RAJA::tile<cuda_teams_y_4>(
-                  ctx,
-                  j_block_sz,
-                  RAJA::TypedRangeSegment<int>(0, N),
+                  ctx, j_block_sz, RAJA::TypedRangeSegment<int>(0, N),
                   [&](RAJA::TypedRangeSegment<int> const& j_tile)
                   {
                     RAJA::tile<cuda_teams_x_4>(
-                        ctx,
-                        i_block_sz,
-                        RAJA::TypedRangeSegment<int>(0, N),
+                        ctx, i_block_sz, RAJA::TypedRangeSegment<int>(0, N),
                         [&](RAJA::TypedRangeSegment<int> const& i_tile)
                         {
                           RAJA::loop<cuda_threads_y_4>(
-                              ctx,
-                              j_tile,
+                              ctx, j_tile,
                               [&](int j)
                               {
                                 RAJA::loop<cuda_threads_x_4>(
-                                    ctx,
-                                    i_tile,
+                                    ctx, i_tile,
                                     [&](int i)
                                     { aView(i, j, k) = c * i * j * k; });
                               });
@@ -420,18 +410,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<hip_teams_z_5>(
-            ctx,
-            RAJA::TypedRangeSegment<int>(0, N),
+            ctx, RAJA::TypedRangeSegment<int>(0, N),
             [&](int k)
             {
               RAJA::loop<hip_global_thread_y_5>(
-                  ctx,
-                  RAJA::TypedRangeSegment<int>(0, N),
+                  ctx, RAJA::TypedRangeSegment<int>(0, N),
                   [&](int j)
                   {
                     RAJA::loop<hip_global_thread_x_5>(
-                        ctx,
-                        RAJA::TypedRangeSegment<int>(0, N),
+                        ctx, RAJA::TypedRangeSegment<int>(0, N),
                         [&](int i) { d_aView(i, j, k) = c * i * j * k; });
                   });
             });
@@ -466,29 +453,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<hip_teams_z_6>(
-            ctx,
-            RAJA::TypedRangeSegment<int>(0, N),
+            ctx, RAJA::TypedRangeSegment<int>(0, N),
             [&](int k)
             {
               RAJA::tile<hip_teams_y_6>(
-                  ctx,
-                  j_block_sz,
-                  RAJA::TypedRangeSegment<int>(0, N),
+                  ctx, j_block_sz, RAJA::TypedRangeSegment<int>(0, N),
                   [&](RAJA::TypedRangeSegment<int> const& j_tile)
                   {
                     RAJA::tile<hip_teams_x_6>(
-                        ctx,
-                        i_block_sz,
-                        RAJA::TypedRangeSegment<int>(0, N),
+                        ctx, i_block_sz, RAJA::TypedRangeSegment<int>(0, N),
                         [&](RAJA::TypedRangeSegment<int> const& i_tile)
                         {
                           RAJA::loop<hip_threads_y_6>(
-                              ctx,
-                              j_tile,
+                              ctx, j_tile,
                               [&](int j)
                               {
-                                RAJA::loop<hip_threads_x_6>(ctx,
-                                                            i_tile,
+                                RAJA::loop<hip_threads_x_6>(ctx, i_tile,
                                                             [&](int i) {
                                                               d_aView(i, j, k) =
                                                                   c * i * j * k;

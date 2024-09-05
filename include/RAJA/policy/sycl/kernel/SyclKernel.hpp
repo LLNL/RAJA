@@ -144,8 +144,7 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
           [&](cl::sycl::handler& h)
           {
             h.parallel_for(
-                launch_dims.fit_nd_range(qu),
-                [=](cl::sycl::nd_item<3> item)
+                launch_dims.fit_nd_range(qu), [=](cl::sycl::nd_item<3> item)
                 { SyclKernelLauncher<Data, executor_t>(*m_data, item); });
           })
         .wait(); // Need to wait to free memory
@@ -212,10 +211,7 @@ struct StatementExecutor<
     using executor_t =
         sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
     using launch_t = SyclLaunchHelper<std::is_trivially_copyable<data_t>::value,
-                                      LaunchConfig,
-                                      stmt_list_t,
-                                      data_t,
-                                      Types>;
+                                      LaunchConfig, stmt_list_t, data_t, Types>;
 
     camp::resources::Sycl res = data.get_resource();
     ::sycl::queue*        q   = res.get_queue();

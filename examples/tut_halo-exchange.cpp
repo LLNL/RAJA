@@ -260,13 +260,13 @@ int main(int argc, char** argv)
   //
   std::vector<int*> pack_index_lists(num_neighbors, nullptr);
   std::vector<int>  pack_index_list_lengths(num_neighbors, 0);
-  create_pack_lists(
-      pack_index_lists, pack_index_list_lengths, halo_width, grid_dims);
+  create_pack_lists(pack_index_lists, pack_index_list_lengths, halo_width,
+                    grid_dims);
 
   std::vector<int*> unpack_index_lists(num_neighbors, nullptr);
   std::vector<int>  unpack_index_list_lengths(num_neighbors, 0);
-  create_unpack_lists(
-      unpack_index_lists, unpack_index_list_lengths, halo_width, grid_dims);
+  create_unpack_lists(unpack_index_lists, unpack_index_list_lengths, halo_width,
+                      grid_dims);
   // _halo_exchange_index_list_generate_end
 
 
@@ -447,8 +447,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len),
-                                        [=](int i)
+            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i)
                                         { buffer[i] = var[list[i]]; });
 
             buffer += len;
@@ -474,8 +473,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len),
-                                        [=](int i)
+            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i)
                                         { var[list[i]] = buffer[i]; });
 
             buffer += len;
@@ -519,24 +517,17 @@ int main(int argc, char** argv)
     using forall_policy = RAJA::seq_exec;
 
     using workgroup_policy =
-        RAJA::WorkGroupPolicy<RAJA::seq_work,
-                              RAJA::ordered,
+        RAJA::WorkGroupPolicy<RAJA::seq_work, RAJA::ordered,
                               RAJA::ragged_array_of_objects,
                               RAJA::indirect_function_call_dispatch>;
 
-    using workpool = RAJA::WorkPool<workgroup_policy,
-                                    int,
-                                    RAJA::xargs<>,
+    using workpool = RAJA::WorkPool<workgroup_policy, int, RAJA::xargs<>,
                                     memory_manager_allocator<char>>;
 
-    using workgroup = RAJA::WorkGroup<workgroup_policy,
-                                      int,
-                                      RAJA::xargs<>,
+    using workgroup = RAJA::WorkGroup<workgroup_policy, int, RAJA::xargs<>,
                                       memory_manager_allocator<char>>;
 
-    using worksite = RAJA::WorkSite<workgroup_policy,
-                                    int,
-                                    RAJA::xargs<>,
+    using worksite = RAJA::WorkSite<workgroup_policy, int, RAJA::xargs<>,
                                     memory_manager_allocator<char>>;
     // _halo_exchange_seq_workgroup_policies_end
 
@@ -702,8 +693,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len),
-                                        [=](int i)
+            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i)
                                         { buffer[i] = var[list[i]]; });
 
             buffer += len;
@@ -729,8 +719,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            RAJA::forall<forall_policy>(range_segment(0, len),
-                                        [=](int i)
+            RAJA::forall<forall_policy>(range_segment(0, len), [=](int i)
                                         { var[list[i]] = buffer[i]; });
 
             buffer += len;
@@ -772,24 +761,17 @@ int main(int argc, char** argv)
     using forall_policy = RAJA::omp_parallel_for_exec;
 
     using workgroup_policy =
-        RAJA::WorkGroupPolicy<RAJA::omp_work,
-                              RAJA::ordered,
+        RAJA::WorkGroupPolicy<RAJA::omp_work, RAJA::ordered,
                               RAJA::ragged_array_of_objects,
                               RAJA::indirect_function_call_dispatch>;
 
-    using workpool = RAJA::WorkPool<workgroup_policy,
-                                    int,
-                                    RAJA::xargs<>,
+    using workpool = RAJA::WorkPool<workgroup_policy, int, RAJA::xargs<>,
                                     memory_manager_allocator<char>>;
 
-    using workgroup = RAJA::WorkGroup<workgroup_policy,
-                                      int,
-                                      RAJA::xargs<>,
+    using workgroup = RAJA::WorkGroup<workgroup_policy, int, RAJA::xargs<>,
                                       memory_manager_allocator<char>>;
 
-    using worksite = RAJA::WorkSite<workgroup_policy,
-                                    int,
-                                    RAJA::xargs<>,
+    using worksite = RAJA::WorkSite<workgroup_policy, int, RAJA::xargs<>,
                                     memory_manager_allocator<char>>;
     // _halo_exchange_openmp_workgroup_policies_end
 
@@ -928,17 +910,13 @@ int main(int argc, char** argv)
     {
       int pack_len             = pack_index_list_lengths[l];
       cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      cudaErrchk(cudaMemcpy(cuda_pack_index_lists[l],
-                            pack_index_lists[l],
-                            pack_len * sizeof(int),
-                            cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(cuda_pack_index_lists[l], pack_index_lists[l],
+                            pack_len * sizeof(int), cudaMemcpyDefault));
 
       int unpack_len             = unpack_index_list_lengths[l];
       cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      cudaErrchk(cudaMemcpy(cuda_unpack_index_lists[l],
-                            unpack_index_lists[l],
-                            unpack_len * sizeof(int),
-                            cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(cuda_unpack_index_lists[l], unpack_index_lists[l],
+                            unpack_len * sizeof(int), cudaMemcpyDefault));
     }
 
     std::swap(vars, cuda_vars);
@@ -1050,8 +1028,8 @@ int main(int argc, char** argv)
 
     for (int v = 0; v < num_vars; ++v)
     {
-      cudaErrchk(cudaMemcpy(
-          vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(vars[v], cuda_vars[v], var_size * sizeof(double),
+                            cudaMemcpyDefault));
       memoryManager::deallocate_gpu(cuda_vars[v]);
     }
 
@@ -1093,17 +1071,13 @@ int main(int argc, char** argv)
     {
       int pack_len             = pack_index_list_lengths[l];
       cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      cudaErrchk(cudaMemcpy(cuda_pack_index_lists[l],
-                            pack_index_lists[l],
-                            pack_len * sizeof(int),
-                            cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(cuda_pack_index_lists[l], pack_index_lists[l],
+                            pack_len * sizeof(int), cudaMemcpyDefault));
 
       int unpack_len             = unpack_index_list_lengths[l];
       cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      cudaErrchk(cudaMemcpy(cuda_unpack_index_lists[l],
-                            unpack_index_lists[l],
-                            unpack_len * sizeof(int),
-                            cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(cuda_unpack_index_lists[l], unpack_index_lists[l],
+                            unpack_len * sizeof(int), cudaMemcpyDefault));
     }
 
     std::swap(vars, cuda_vars);
@@ -1120,14 +1094,14 @@ int main(int argc, char** argv)
         RAJA::constant_stride_array_of_objects,
         RAJA::indirect_function_call_dispatch>;
 
-    using workpool = RAJA::
-        WorkPool<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using workpool = RAJA::WorkPool<workgroup_policy, int, RAJA::xargs<>,
+                                    pinned_allocator<char>>;
 
-    using workgroup = RAJA::
-        WorkGroup<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using workgroup = RAJA::WorkGroup<workgroup_policy, int, RAJA::xargs<>,
+                                      pinned_allocator<char>>;
 
-    using worksite = RAJA::
-        WorkSite<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using worksite = RAJA::WorkSite<workgroup_policy, int, RAJA::xargs<>,
+                                    pinned_allocator<char>>;
     // _halo_exchange_cuda_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
@@ -1173,8 +1147,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_pack.enqueue(range_segment(0, len),
-                              [=] RAJA_DEVICE(int i)
+            pool_pack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i)
                               { buffer[i] = var[list[i]]; });
 
             buffer += len;
@@ -1206,8 +1179,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_unpack.enqueue(range_segment(0, len),
-                                [=] RAJA_DEVICE(int i)
+            pool_unpack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i)
                                 { var[list[i]] = buffer[i]; });
 
             buffer += len;
@@ -1241,8 +1213,8 @@ int main(int argc, char** argv)
 
     for (int v = 0; v < num_vars; ++v)
     {
-      cudaErrchk(cudaMemcpy(
-          vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(vars[v], cuda_vars[v], var_size * sizeof(double),
+                            cudaMemcpyDefault));
       memoryManager::deallocate_gpu(cuda_vars[v]);
     }
 
@@ -1291,17 +1263,13 @@ int main(int argc, char** argv)
     {
       int pack_len            = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy(hip_pack_index_lists[l],
-                          pack_index_lists[l],
-                          pack_len * sizeof(int),
-                          hipMemcpyHostToDevice));
+      hipErrchk(hipMemcpy(hip_pack_index_lists[l], pack_index_lists[l],
+                          pack_len * sizeof(int), hipMemcpyHostToDevice));
 
       int unpack_len            = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy(hip_unpack_index_lists[l],
-                          unpack_index_lists[l],
-                          unpack_len * sizeof(int),
-                          hipMemcpyHostToDevice));
+      hipErrchk(hipMemcpy(hip_unpack_index_lists[l], unpack_index_lists[l],
+                          unpack_len * sizeof(int), hipMemcpyHostToDevice));
     }
 
     std::swap(vars, hip_vars);
@@ -1413,9 +1381,7 @@ int main(int argc, char** argv)
 
     for (int v = 0; v < num_vars; ++v)
     {
-      hipErrchk(hipMemcpy(vars[v],
-                          hip_vars[v],
-                          var_size * sizeof(double),
+      hipErrchk(hipMemcpy(vars[v], hip_vars[v], var_size * sizeof(double),
                           hipMemcpyDeviceToHost));
       memoryManager::deallocate_gpu(hip_vars[v]);
     }
@@ -1460,17 +1426,13 @@ int main(int argc, char** argv)
     {
       int pack_len            = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy(hip_pack_index_lists[l],
-                          pack_index_lists[l],
-                          pack_len * sizeof(int),
-                          hipMemcpyHostToDevice));
+      hipErrchk(hipMemcpy(hip_pack_index_lists[l], pack_index_lists[l],
+                          pack_len * sizeof(int), hipMemcpyHostToDevice));
 
       int unpack_len            = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy(hip_unpack_index_lists[l],
-                          unpack_index_lists[l],
-                          unpack_len * sizeof(int),
-                          hipMemcpyHostToDevice));
+      hipErrchk(hipMemcpy(hip_unpack_index_lists[l], unpack_index_lists[l],
+                          unpack_len * sizeof(int), hipMemcpyHostToDevice));
     }
 
     std::swap(vars, hip_vars);
@@ -1487,14 +1449,14 @@ int main(int argc, char** argv)
         RAJA::constant_stride_array_of_objects,
         RAJA::indirect_function_call_dispatch>;
 
-    using workpool = RAJA::
-        WorkPool<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using workpool = RAJA::WorkPool<workgroup_policy, int, RAJA::xargs<>,
+                                    pinned_allocator<char>>;
 
-    using workgroup = RAJA::
-        WorkGroup<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using workgroup = RAJA::WorkGroup<workgroup_policy, int, RAJA::xargs<>,
+                                      pinned_allocator<char>>;
 
-    using worksite = RAJA::
-        WorkSite<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using worksite = RAJA::WorkSite<workgroup_policy, int, RAJA::xargs<>,
+                                    pinned_allocator<char>>;
     // _halo_exchange_hip_workgroup_policies_end
 
     std::vector<double*> buffers(num_neighbors, nullptr);
@@ -1540,8 +1502,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_pack.enqueue(range_segment(0, len),
-                              [=] RAJA_DEVICE(int i)
+            pool_pack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i)
                               { buffer[i] = var[list[i]]; });
 
             buffer += len;
@@ -1573,8 +1534,7 @@ int main(int argc, char** argv)
 
             double* var = vars[v];
 
-            pool_unpack.enqueue(range_segment(0, len),
-                                [=] RAJA_DEVICE(int i)
+            pool_unpack.enqueue(range_segment(0, len), [=] RAJA_DEVICE(int i)
                                 { var[list[i]] = buffer[i]; });
 
             buffer += len;
@@ -1608,9 +1568,7 @@ int main(int argc, char** argv)
 
     for (int v = 0; v < num_vars; ++v)
     {
-      hipErrchk(hipMemcpy(vars[v],
-                          hip_vars[v],
-                          var_size * sizeof(double),
+      hipErrchk(hipMemcpy(vars[v], hip_vars[v], var_size * sizeof(double),
                           hipMemcpyDeviceToHost));
       memoryManager::deallocate_gpu(hip_vars[v]);
     }
@@ -1654,17 +1612,13 @@ int main(int argc, char** argv)
     {
       int pack_len            = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy(hip_pack_index_lists[l],
-                          pack_index_lists[l],
-                          pack_len * sizeof(int),
-                          hipMemcpyHostToDevice));
+      hipErrchk(hipMemcpy(hip_pack_index_lists[l], pack_index_lists[l],
+                          pack_len * sizeof(int), hipMemcpyHostToDevice));
 
       int unpack_len            = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy(hip_unpack_index_lists[l],
-                          unpack_index_lists[l],
-                          unpack_len * sizeof(int),
-                          hipMemcpyHostToDevice));
+      hipErrchk(hipMemcpy(hip_unpack_index_lists[l], unpack_index_lists[l],
+                          unpack_len * sizeof(int), hipMemcpyHostToDevice));
     }
 
     std::swap(vars, hip_vars);
@@ -1697,14 +1651,14 @@ int main(int argc, char** argv)
         RAJA::direct_dispatch<camp::list<range_segment, Packer>,
                               camp::list<range_segment, UnPacker>>>;
 
-    using workpool = RAJA::
-        WorkPool<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using workpool = RAJA::WorkPool<workgroup_policy, int, RAJA::xargs<>,
+                                    pinned_allocator<char>>;
 
-    using workgroup = RAJA::
-        WorkGroup<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using workgroup = RAJA::WorkGroup<workgroup_policy, int, RAJA::xargs<>,
+                                      pinned_allocator<char>>;
 
-    using worksite = RAJA::
-        WorkSite<workgroup_policy, int, RAJA::xargs<>, pinned_allocator<char>>;
+    using worksite = RAJA::WorkSite<workgroup_policy, int, RAJA::xargs<>,
+                                    pinned_allocator<char>>;
 
     std::vector<double*> buffers(num_neighbors, nullptr);
 
@@ -1810,9 +1764,7 @@ int main(int argc, char** argv)
 
     for (int v = 0; v < num_vars; ++v)
     {
-      hipErrchk(hipMemcpy(vars[v],
-                          hip_vars[v],
-                          var_size * sizeof(double),
+      hipErrchk(hipMemcpy(vars[v], hip_vars[v], var_size * sizeof(double),
                           hipMemcpyDeviceToHost));
       memoryManager::deallocate_gpu(hip_vars[v]);
     }
@@ -1927,166 +1879,88 @@ void create_pack_lists(std::vector<int*>& pack_index_lists,
   std::vector<Extent> pack_index_list_extents(num_neighbors);
 
   // faces
-  pack_index_list_extents[0] = Extent{halo_width,
-                                      halo_width + halo_width,
-                                      halo_width,
-                                      grid_dims[1] + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[1] = Extent{grid_dims[0],
-                                      grid_dims[0] + halo_width,
-                                      halo_width,
-                                      grid_dims[1] + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[2] = Extent{halo_width,
-                                      grid_dims[0] + halo_width,
-                                      halo_width,
-                                      halo_width + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[3] = Extent{halo_width,
-                                      grid_dims[0] + halo_width,
-                                      grid_dims[1],
-                                      grid_dims[1] + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[4] = Extent{halo_width,
-                                      grid_dims[0] + halo_width,
-                                      halo_width,
-                                      grid_dims[1] + halo_width,
-                                      halo_width,
-                                      halo_width + halo_width};
-  pack_index_list_extents[5] = Extent{halo_width,
-                                      grid_dims[0] + halo_width,
-                                      halo_width,
-                                      grid_dims[1] + halo_width,
-                                      grid_dims[2],
-                                      grid_dims[2] + halo_width};
+  pack_index_list_extents[0] = Extent{halo_width, halo_width + halo_width,
+                                      halo_width, grid_dims[1] + halo_width,
+                                      halo_width, grid_dims[2] + halo_width};
+  pack_index_list_extents[1] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                      halo_width,   grid_dims[1] + halo_width,
+                                      halo_width,   grid_dims[2] + halo_width};
+  pack_index_list_extents[2] = Extent{halo_width, grid_dims[0] + halo_width,
+                                      halo_width, halo_width + halo_width,
+                                      halo_width, grid_dims[2] + halo_width};
+  pack_index_list_extents[3] = Extent{halo_width,   grid_dims[0] + halo_width,
+                                      grid_dims[1], grid_dims[1] + halo_width,
+                                      halo_width,   grid_dims[2] + halo_width};
+  pack_index_list_extents[4] = Extent{halo_width, grid_dims[0] + halo_width,
+                                      halo_width, grid_dims[1] + halo_width,
+                                      halo_width, halo_width + halo_width};
+  pack_index_list_extents[5] = Extent{halo_width,   grid_dims[0] + halo_width,
+                                      halo_width,   grid_dims[1] + halo_width,
+                                      grid_dims[2], grid_dims[2] + halo_width};
 
   // edges
-  pack_index_list_extents[6]  = Extent{halo_width,
-                                      halo_width + halo_width,
-                                      halo_width,
-                                      halo_width + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[7]  = Extent{halo_width,
-                                      halo_width + halo_width,
-                                      grid_dims[1],
-                                      grid_dims[1] + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[8]  = Extent{grid_dims[0],
-                                      grid_dims[0] + halo_width,
-                                      halo_width,
-                                      halo_width + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[9]  = Extent{grid_dims[0],
-                                      grid_dims[0] + halo_width,
-                                      grid_dims[1],
-                                      grid_dims[1] + halo_width,
-                                      halo_width,
-                                      grid_dims[2] + halo_width};
-  pack_index_list_extents[10] = Extent{halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       grid_dims[1] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[11] = Extent{halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       grid_dims[1] + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[12] = Extent{grid_dims[0],
-                                       grid_dims[0] + halo_width,
-                                       halo_width,
-                                       grid_dims[1] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[13] = Extent{grid_dims[0],
-                                       grid_dims[0] + halo_width,
-                                       halo_width,
-                                       grid_dims[1] + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[14] = Extent{halo_width,
-                                       grid_dims[0] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[15] = Extent{halo_width,
-                                       grid_dims[0] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[16] = Extent{halo_width,
-                                       grid_dims[0] + halo_width,
-                                       grid_dims[1],
-                                       grid_dims[1] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[17] = Extent{halo_width,
-                                       grid_dims[0] + halo_width,
-                                       grid_dims[1],
-                                       grid_dims[1] + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
+  pack_index_list_extents[6]  = Extent{halo_width, halo_width + halo_width,
+                                      halo_width, halo_width + halo_width,
+                                      halo_width, grid_dims[2] + halo_width};
+  pack_index_list_extents[7]  = Extent{halo_width,   halo_width + halo_width,
+                                      grid_dims[1], grid_dims[1] + halo_width,
+                                      halo_width,   grid_dims[2] + halo_width};
+  pack_index_list_extents[8]  = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                      halo_width,   halo_width + halo_width,
+                                      halo_width,   grid_dims[2] + halo_width};
+  pack_index_list_extents[9]  = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                      grid_dims[1], grid_dims[1] + halo_width,
+                                      halo_width,   grid_dims[2] + halo_width};
+  pack_index_list_extents[10] = Extent{halo_width, halo_width + halo_width,
+                                       halo_width, grid_dims[1] + halo_width,
+                                       halo_width, halo_width + halo_width};
+  pack_index_list_extents[11] = Extent{halo_width,   halo_width + halo_width,
+                                       halo_width,   grid_dims[1] + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
+  pack_index_list_extents[12] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                       halo_width,   grid_dims[1] + halo_width,
+                                       halo_width,   halo_width + halo_width};
+  pack_index_list_extents[13] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                       halo_width,   grid_dims[1] + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
+  pack_index_list_extents[14] = Extent{halo_width, grid_dims[0] + halo_width,
+                                       halo_width, halo_width + halo_width,
+                                       halo_width, halo_width + halo_width};
+  pack_index_list_extents[15] = Extent{halo_width,   grid_dims[0] + halo_width,
+                                       halo_width,   halo_width + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
+  pack_index_list_extents[16] = Extent{halo_width,   grid_dims[0] + halo_width,
+                                       grid_dims[1], grid_dims[1] + halo_width,
+                                       halo_width,   halo_width + halo_width};
+  pack_index_list_extents[17] = Extent{halo_width,   grid_dims[0] + halo_width,
+                                       grid_dims[1], grid_dims[1] + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
 
   // corners
-  pack_index_list_extents[18] = Extent{halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[19] = Extent{halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[20] = Extent{halo_width,
-                                       halo_width + halo_width,
-                                       grid_dims[1],
-                                       grid_dims[1] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[21] = Extent{halo_width,
-                                       halo_width + halo_width,
-                                       grid_dims[1],
-                                       grid_dims[1] + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[22] = Extent{grid_dims[0],
-                                       grid_dims[0] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[23] = Extent{grid_dims[0],
-                                       grid_dims[0] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
-  pack_index_list_extents[24] = Extent{grid_dims[0],
-                                       grid_dims[0] + halo_width,
-                                       grid_dims[1],
-                                       grid_dims[1] + halo_width,
-                                       halo_width,
-                                       halo_width + halo_width};
-  pack_index_list_extents[25] = Extent{grid_dims[0],
-                                       grid_dims[0] + halo_width,
-                                       grid_dims[1],
-                                       grid_dims[1] + halo_width,
-                                       grid_dims[2],
-                                       grid_dims[2] + halo_width};
+  pack_index_list_extents[18] = Extent{halo_width, halo_width + halo_width,
+                                       halo_width, halo_width + halo_width,
+                                       halo_width, halo_width + halo_width};
+  pack_index_list_extents[19] = Extent{halo_width,   halo_width + halo_width,
+                                       halo_width,   halo_width + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
+  pack_index_list_extents[20] = Extent{halo_width,   halo_width + halo_width,
+                                       grid_dims[1], grid_dims[1] + halo_width,
+                                       halo_width,   halo_width + halo_width};
+  pack_index_list_extents[21] = Extent{halo_width,   halo_width + halo_width,
+                                       grid_dims[1], grid_dims[1] + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
+  pack_index_list_extents[22] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                       halo_width,   halo_width + halo_width,
+                                       halo_width,   halo_width + halo_width};
+  pack_index_list_extents[23] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                       halo_width,   halo_width + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
+  pack_index_list_extents[24] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                       grid_dims[1], grid_dims[1] + halo_width,
+                                       halo_width,   halo_width + halo_width};
+  pack_index_list_extents[25] = Extent{grid_dims[0], grid_dims[0] + halo_width,
+                                       grid_dims[1], grid_dims[1] + halo_width,
+                                       grid_dims[2], grid_dims[2] + halo_width};
 
   const int grid_i_stride = 1;
   const int grid_j_stride = grid_dims[0] + 2 * halo_width;
@@ -2149,36 +2023,27 @@ void create_unpack_lists(std::vector<int*>& unpack_index_lists,
   std::vector<Extent> unpack_index_list_extents(num_neighbors);
 
   // faces
-  unpack_index_list_extents[0] = Extent{0,
-                                        halo_width,
-                                        halo_width,
-                                        grid_dims[1] + halo_width,
-                                        halo_width,
-                                        grid_dims[2] + halo_width};
+  unpack_index_list_extents[0] = Extent{0,          halo_width,
+                                        halo_width, grid_dims[1] + halo_width,
+                                        halo_width, grid_dims[2] + halo_width};
   unpack_index_list_extents[1] = Extent{grid_dims[0] + halo_width,
                                         grid_dims[0] + 2 * halo_width,
                                         halo_width,
                                         grid_dims[1] + halo_width,
                                         halo_width,
                                         grid_dims[2] + halo_width};
-  unpack_index_list_extents[2] = Extent{halo_width,
-                                        grid_dims[0] + halo_width,
-                                        0,
-                                        halo_width,
-                                        halo_width,
-                                        grid_dims[2] + halo_width};
+  unpack_index_list_extents[2] =
+      Extent{halo_width, grid_dims[0] + halo_width, 0, halo_width,
+             halo_width, grid_dims[2] + halo_width};
   unpack_index_list_extents[3] = Extent{halo_width,
                                         grid_dims[0] + halo_width,
                                         grid_dims[1] + halo_width,
                                         grid_dims[1] + 2 * halo_width,
                                         halo_width,
                                         grid_dims[2] + halo_width};
-  unpack_index_list_extents[4] = Extent{halo_width,
-                                        grid_dims[0] + halo_width,
-                                        halo_width,
-                                        grid_dims[1] + halo_width,
-                                        0,
-                                        halo_width};
+  unpack_index_list_extents[4] = Extent{halo_width, grid_dims[0] + halo_width,
+                                        halo_width, grid_dims[1] + halo_width,
+                                        0,          halo_width};
   unpack_index_list_extents[5] = Extent{halo_width,
                                         grid_dims[0] + halo_width,
                                         halo_width,
@@ -2229,12 +2094,9 @@ void create_unpack_lists(std::vector<int*>& unpack_index_lists,
                                          grid_dims[2] + 2 * halo_width};
   unpack_index_list_extents[14] = Extent{
       halo_width, grid_dims[0] + halo_width, 0, halo_width, 0, halo_width};
-  unpack_index_list_extents[15] = Extent{halo_width,
-                                         grid_dims[0] + halo_width,
-                                         0,
-                                         halo_width,
-                                         grid_dims[2] + halo_width,
-                                         grid_dims[2] + 2 * halo_width};
+  unpack_index_list_extents[15] = Extent{
+      halo_width, grid_dims[0] + halo_width, 0,
+      halo_width, grid_dims[2] + halo_width, grid_dims[2] + 2 * halo_width};
   unpack_index_list_extents[16] = Extent{halo_width,
                                          grid_dims[0] + halo_width,
                                          grid_dims[1] + halo_width,
@@ -2257,12 +2119,9 @@ void create_unpack_lists(std::vector<int*>& unpack_index_lists,
                                          halo_width,
                                          grid_dims[2] + halo_width,
                                          grid_dims[2] + 2 * halo_width};
-  unpack_index_list_extents[20] = Extent{0,
-                                         halo_width,
-                                         grid_dims[1] + halo_width,
-                                         grid_dims[1] + 2 * halo_width,
-                                         0,
-                                         halo_width};
+  unpack_index_list_extents[20] = Extent{
+      0, halo_width, grid_dims[1] + halo_width, grid_dims[1] + 2 * halo_width,
+      0, halo_width};
   unpack_index_list_extents[21] = Extent{0,
                                          halo_width,
                                          grid_dims[1] + halo_width,
@@ -2275,24 +2134,19 @@ void create_unpack_lists(std::vector<int*>& unpack_index_lists,
                                          halo_width,
                                          0,
                                          halo_width};
-  unpack_index_list_extents[23] = Extent{grid_dims[0] + halo_width,
-                                         grid_dims[0] + 2 * halo_width,
-                                         0,
-                                         halo_width,
-                                         grid_dims[2] + halo_width,
-                                         grid_dims[2] + 2 * halo_width};
+  unpack_index_list_extents[23] = Extent{
+      grid_dims[0] + halo_width, grid_dims[0] + 2 * halo_width, 0, halo_width,
+      grid_dims[2] + halo_width, grid_dims[2] + 2 * halo_width};
   unpack_index_list_extents[24] = Extent{grid_dims[0] + halo_width,
                                          grid_dims[0] + 2 * halo_width,
                                          grid_dims[1] + halo_width,
                                          grid_dims[1] + 2 * halo_width,
                                          0,
                                          halo_width};
-  unpack_index_list_extents[25] = Extent{grid_dims[0] + halo_width,
-                                         grid_dims[0] + 2 * halo_width,
-                                         grid_dims[1] + halo_width,
-                                         grid_dims[1] + 2 * halo_width,
-                                         grid_dims[2] + halo_width,
-                                         grid_dims[2] + 2 * halo_width};
+  unpack_index_list_extents[25] =
+      Extent{grid_dims[0] + halo_width, grid_dims[0] + 2 * halo_width,
+             grid_dims[1] + halo_width, grid_dims[1] + 2 * halo_width,
+             grid_dims[2] + halo_width, grid_dims[2] + 2 * halo_width};
 
   const int grid_i_stride = 1;
   const int grid_j_stride = grid_dims[0] + 2 * halo_width;

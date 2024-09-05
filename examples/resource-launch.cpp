@@ -35,23 +35,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using threads_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>;
 
   RAJA::forall<RAJA::seq_exec>(
-      def_host_res,
-      n_range,
+      def_host_res, n_range,
       [=, &def_cuda_res](int i)
       {
         RAJA::resources::Cuda res_cuda;
 
         RAJA::resources::Event e = RAJA::launch<launch_policy>(
-            res_cuda,
-            RAJA::LaunchParams(RAJA::Teams(64), RAJA::Threads(1)),
+            res_cuda, RAJA::LaunchParams(RAJA::Teams(64), RAJA::Threads(1)),
             [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
             {
-              RAJA::loop<teams_x>(ctx,
-                                  m_range,
+              RAJA::loop<teams_x>(ctx, m_range,
                                   [&](int j)
                                   {
-                                    RAJA::loop<threads_x>(ctx,
-                                                          one_range,
+                                    RAJA::loop<threads_x>(ctx, one_range,
                                                           [&](int k) {
                                                             d_array[i * M + j] =
                                                                 i * M + j;

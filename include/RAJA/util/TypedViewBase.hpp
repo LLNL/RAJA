@@ -149,9 +149,8 @@ RAJA_INLINE RAJA_HOST_DEVICE static constexpr camp::idx_t
   return RAJA::max<camp::idx_t>(
       internal::expt::getTensorDim<ARGS>() == DIM
           ? internal::expt::getTensorBegin<ARGS>(
-                args,
-                layout.template get_dim_begin<
-                    GetTensorArgIdx<DIM, ARGS...>::value>())
+                args, layout.template get_dim_begin<
+                          GetTensorArgIdx<DIM, ARGS...>::value>())
           : 0 ...);
 }
 
@@ -165,9 +164,8 @@ RAJA_INLINE RAJA_HOST_DEVICE static constexpr camp::idx_t
   return RAJA::max<camp::idx_t>(
       internal::expt::getTensorDim<ARGS>() == DIM
           ? internal::expt::getTensorSize<ARGS>(
-                args,
-                layout.template get_dim_size<
-                    GetTensorArgIdx<DIM, ARGS...>::value>())
+                args, layout.template get_dim_size<
+                          GetTensorArgIdx<DIM, ARGS...>::value>())
           : 0 ...);
 }
 #endif
@@ -461,10 +459,7 @@ RAJA_INLINE RAJA_HOST_DEVICE constexpr view_return_type_t<ElementType,
 {
   return detail::ViewReturnHelper<
       camp::make_idx_seq_t<count_num_tensor_args<Args...>::value>,
-      camp::list<Args...>,
-      ElementType,
-      PointerType,
-      LinIdx,
+      camp::list<Args...>, ElementType, PointerType, LinIdx,
       LayoutType>::make_return(layout, data, args...);
 }
 
@@ -782,8 +777,7 @@ public:
                    operator()(Args... args) const
   {
     return view_make_return_value<value_type, linear_index_type>(
-        Base::m_layout,
-        Base::m_data,
+        Base::m_layout, Base::m_data,
         match_typed_view_arg<IndexTypes>(args)...);
   }
 
@@ -803,8 +797,7 @@ public:
                    operator[](Args... args) const
   {
     return view_make_return_value<value_type, linear_index_type>(
-        Base::m_layout,
-        Base::m_data,
+        Base::m_layout, Base::m_data,
         match_typed_view_arg<IndexTypes>(args)...);
   }
 

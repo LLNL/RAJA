@@ -191,8 +191,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment jacobiRange(1, (N + 1));
 
   using jacobiSeqNestedPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   printf("RAJA: Sequential Policy - Nested ForallN \n");
@@ -267,8 +266,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
    */
 
   using jacobiOmpNestedPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::omp_parallel_for_exec,
+      1, RAJA::omp_parallel_for_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   while (resI2 > tol * tol)
@@ -329,18 +327,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy =
       RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<32>,
-          RAJA::cuda_block_y_loop,
+          1, RAJA::tile_fixed<32>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<32>,
-              RAJA::cuda_block_x_loop,
+              0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
               RAJA::statement::For<
-                  1,
-                  RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<0,
-                                       RAJA::cuda_thread_x_direct,
+                  1, RAJA::cuda_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   resI2     = 1;
@@ -411,18 +403,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using jacobiHIPNestedPolicy =
       RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<32>,
-          RAJA::hip_block_y_loop,
+          1, RAJA::tile_fixed<32>, RAJA::hip_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<32>,
-              RAJA::hip_block_x_loop,
+              0, RAJA::tile_fixed<32>, RAJA::hip_block_x_loop,
               RAJA::statement::For<
-                  1,
-                  RAJA::hip_thread_y_direct,
-                  RAJA::statement::For<0,
-                                       RAJA::hip_thread_x_direct,
+                  1, RAJA::hip_thread_y_direct,
+                  RAJA::statement::For<0, RAJA::hip_thread_x_direct,
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   resI2     = 1;
@@ -512,8 +498,7 @@ void computeErr(double* I, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using jacobiSeqNestedPolicy = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::seq_exec,
+      1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
   RAJA::kernel<jacobiSeqNestedPolicy>(

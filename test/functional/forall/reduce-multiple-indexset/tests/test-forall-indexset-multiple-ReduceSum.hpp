@@ -45,15 +45,15 @@ void ForallIndexSetReduceSumMultipleTestImpl()
   double* dcheck_array;
   double* dtest_array;
 
-  allocateForallTestData<double>(
-      alen, working_res, &dworking_array, &dcheck_array, &dtest_array);
+  allocateForallTestData<double>(alen, working_res, &dworking_array,
+                                 &dcheck_array, &dtest_array);
 
   int* iworking_array;
   int* icheck_array;
   int* itest_array;
 
-  allocateForallTestData<int>(
-      alen, working_res, &iworking_array, &icheck_array, &itest_array);
+  allocateForallTestData<int>(alen, working_res, &iworking_array, &icheck_array,
+                              &itest_array);
 
   const double dinit_val = 0.1;
   const int    iinit_val = 1;
@@ -101,11 +101,11 @@ void ForallIndexSetReduceSumMultipleTestImpl()
               tcount * (4 * ichk_val) + (irinit * 4));
   }
 
-  deallocateForallTestData<double>(
-      working_res, dworking_array, dcheck_array, dtest_array);
+  deallocateForallTestData<double>(working_res, dworking_array, dcheck_array,
+                                   dtest_array);
 
-  deallocateForallTestData<int>(
-      working_res, iworking_array, icheck_array, itest_array);
+  deallocateForallTestData<int>(working_res, iworking_array, icheck_array,
+                                itest_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceSumMultipleTest);
@@ -121,9 +121,7 @@ TYPED_TEST_P(ForallIndexSetReduceSumMultipleTest,
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceSumMultipleTestImpl<IDX_TYPE,
-                                          WORKING_RES,
-                                          EXEC_POLICY,
+  ForallIndexSetReduceSumMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
                                           REDUCE_POLICY>();
 }
 

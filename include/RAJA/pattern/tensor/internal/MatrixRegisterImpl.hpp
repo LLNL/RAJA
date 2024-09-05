@@ -291,11 +291,8 @@ public:
         // partial
         else
         {
-          self.load_packed_nm(ptr,
-                              ref.m_stride[0],
-                              ref.m_stride[1],
-                              ref.m_tile.m_size[0],
-                              ref.m_tile.m_size[1]);
+          self.load_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                              ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -309,11 +306,8 @@ public:
         // partial
         else
         {
-          self.load_strided_nm(ptr,
-                               ref.m_stride[0],
-                               ref.m_stride[1],
-                               ref.m_tile.m_size[0],
-                               ref.m_tile.m_size[1]);
+          self.load_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -341,11 +335,8 @@ public:
         // partial
         else
         {
-          self.store_packed_nm(ptr,
-                               ref.m_stride[0],
-                               ref.m_stride[1],
-                               ref.m_tile.m_size[0],
-                               ref.m_tile.m_size[1]);
+          self.store_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -359,11 +350,8 @@ public:
         // partial
         else
         {
-          self.store_strided_nm(ptr,
-                                ref.m_stride[0],
-                                ref.m_stride[1],
-                                ref.m_tile.m_size[0],
-                                ref.m_tile.m_size[1]);
+          self.store_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -421,11 +409,8 @@ public:
         // partial
         else
         {
-          self.load_packed_nm(ptr,
-                              ref.m_stride[0],
-                              ref.m_stride[1],
-                              ref.m_tile.m_size[0],
-                              ref.m_tile.m_size[1]);
+          self.load_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                              ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -439,11 +424,8 @@ public:
         // partial
         else
         {
-          self.load_strided_nm(ptr,
-                               ref.m_stride[0],
-                               ref.m_stride[1],
-                               ref.m_tile.m_size[0],
-                               ref.m_tile.m_size[1]);
+          self.load_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -471,11 +453,8 @@ public:
         // partial
         else
         {
-          self.store_packed_nm(ptr,
-                               ref.m_stride[0],
-                               ref.m_stride[1],
-                               ref.m_tile.m_size[0],
-                               ref.m_tile.m_size[1]);
+          self.store_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -489,11 +468,8 @@ public:
         // partial
         else
         {
-          self.store_strided_nm(ptr,
-                                ref.m_stride[0],
-                                ref.m_stride[1],
-                                ref.m_tile.m_size[0],
-                                ref.m_tile.m_size[1]);
+          self.store_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -617,8 +593,8 @@ public:
         {
           element_type const* ptr_i =
               ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load(
-              ptr_i, s_segbits, col_stride, row_stride);
+          m_registers[i].segmented_load(ptr_i, s_segbits, col_stride,
+                                        row_stride);
         }
       }
     }
@@ -648,8 +624,8 @@ public:
         {
           element_type const* ptr_i =
               ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load(
-              ptr_i, s_segbits, row_stride, col_stride);
+          m_registers[i].segmented_load(ptr_i, s_segbits, row_stride,
+                                        col_stride);
         }
       }
     }
@@ -830,8 +806,7 @@ public:
               reg_num_cols = num_cols - col;
               m_registers[i].load_strided_n(ptr + row * row_stride +
                                                 col * col_stride,
-                                            col_stride,
-                                            reg_num_cols);
+                                            col_stride, reg_num_cols);
             }
             else
             {
@@ -855,8 +830,8 @@ public:
 
           element_type const* ptr_i =
               ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load_nm(
-              ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
+          m_registers[i].segmented_load_nm(ptr_i, s_segbits, col_stride,
+                                           row_stride, num_cols, reg_num_rows);
         }
       }
     }
@@ -887,8 +862,7 @@ public:
               reg_num_rows = num_rows - row;
               m_registers[i].load_strided_n(ptr + row * row_stride +
                                                 col * col_stride,
-                                            row_stride,
-                                            reg_num_rows);
+                                            row_stride, reg_num_rows);
             }
             else
             {
@@ -911,8 +885,8 @@ public:
 
           element_type const* ptr_i =
               ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load_nm(
-              ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
+          m_registers[i].segmented_load_nm(ptr_i, s_segbits, row_stride,
+                                           col_stride, num_rows, reg_num_cols);
         }
       }
     }
@@ -1025,8 +999,8 @@ public:
         for (camp::idx_t i = 0; i < s_num_registers; ++i)
         {
           element_type* ptr_i = ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store(
-              ptr_i, s_segbits, col_stride, row_stride);
+          m_registers[i].segmented_store(ptr_i, s_segbits, col_stride,
+                                         row_stride);
         }
       }
     }
@@ -1053,8 +1027,8 @@ public:
         for (camp::idx_t i = 0; i < s_num_registers; ++i)
         {
           element_type* ptr_i = ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store(
-              ptr_i, s_segbits, row_stride, col_stride);
+          m_registers[i].segmented_store(ptr_i, s_segbits, row_stride,
+                                         col_stride);
         }
       }
     }
@@ -1112,8 +1086,8 @@ public:
       else
       {
         // default to strided operation
-        return store_strided_nm(
-            ptr, row_stride, col_stride, num_rows, num_cols);
+        return store_strided_nm(ptr, row_stride, col_stride, num_rows,
+                                num_cols);
       }
     }
     // Do semi-dense store for column-major
@@ -1155,8 +1129,8 @@ public:
       {
 
         // default to strided operation
-        return store_strided_nm(
-            ptr, row_stride, col_stride, num_rows, num_cols);
+        return store_strided_nm(ptr, row_stride, col_stride, num_rows,
+                                num_cols);
       }
     }
 
@@ -1198,8 +1172,7 @@ public:
               reg_num_cols = num_cols - col;
               m_registers[i].store_strided_n(ptr + row * row_stride +
                                                  col * col_stride,
-                                             col_stride,
-                                             reg_num_cols);
+                                             col_stride, reg_num_cols);
             }
             else
             {
@@ -1222,8 +1195,8 @@ public:
                                          : reg_num_rows;
 
           element_type* ptr_i = ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store_nm(
-              ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
+          m_registers[i].segmented_store_nm(ptr_i, s_segbits, col_stride,
+                                            row_stride, num_cols, reg_num_rows);
         }
       }
     }
@@ -1250,8 +1223,7 @@ public:
               reg_num_rows = num_rows - row;
               m_registers[i].store_strided_n(ptr + row * row_stride +
                                                  col * col_stride,
-                                             row_stride,
-                                             reg_num_rows);
+                                             row_stride, reg_num_rows);
             }
             else
             {
@@ -1273,8 +1245,8 @@ public:
                                          : reg_num_cols;
 
           element_type* ptr_i = ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store_nm(
-              ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
+          m_registers[i].segmented_store_nm(ptr_i, s_segbits, row_stride,
+                                            col_stride, num_rows, reg_num_cols);
         }
       }
     }
@@ -1823,9 +1795,8 @@ public:
       MatrixMatrixMultiplyHelper<self_type, RMAT>::result_type
       matrix_multiply(RMAT const& mat) const
   {
-    typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,
-                                                              RMAT>::result_type
-        res(0);
+    typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<
+        self_type, RMAT>::result_type res(0);
     RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::multiply(
         *this, mat, res);
     return res;
@@ -1843,11 +1814,10 @@ public:
               self_type,
               RMAT>::result_type const& C) const
   {
-    typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type,
-                                                              RMAT>::result_type
-        res(C);
-    RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::
-        multiply_accumulate(*this, B, res);
+    typename RAJA::internal::expt::MatrixMatrixMultiplyHelper<
+        self_type, RMAT>::result_type res(C);
+    RAJA::internal::expt::MatrixMatrixMultiplyHelper<
+        self_type, RMAT>::multiply_accumulate(*this, B, res);
     return res;
   }
 
@@ -1858,8 +1828,8 @@ public:
   RAJA_HOST_DEVICE RAJA_INLINE void
   matrix_multiply_accumulate(ACCMAT& acc, RMAT const& B) const
   {
-    RAJA::internal::expt::MatrixMatrixMultiplyHelper<self_type, RMAT>::
-        multiply_accumulate(*this, B, acc);
+    RAJA::internal::expt::MatrixMatrixMultiplyHelper<
+        self_type, RMAT>::multiply_accumulate(*this, B, acc);
   }
 
 

@@ -24,8 +24,8 @@ void LaunchBasicSharedTestImpl()
   int*                      check_array;
   int*                      test_array;
 
-  allocateForallTestData<int>(
-      N * N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<int>(N * N, working_res, &working_array, &check_array,
+                              &test_array);
 
 
   // Select platform
@@ -47,21 +47,19 @@ void LaunchBasicSharedTestImpl()
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<TEAM_POLICY>(
-            ctx,
-            RAJA::RangeSegment(0, N),
+            ctx, RAJA::RangeSegment(0, N),
             [&](int r)
             {
               // Array shared within threads of the same team
               int* s_A = ctx.getSharedMemory<int>(1);
 
-              RAJA::loop<THREAD_POLICY>(
-                  ctx, RAJA::RangeSegment(0, 1), [&](int c) { s_A[c] = r; });
+              RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, 1),
+                                        [&](int c) { s_A[c] = r; });
 
               ctx.teamSync();
 
               // broadcast shared value to all threads and write to array
-              RAJA::loop<THREAD_POLICY>(ctx,
-                                        RAJA::RangeSegment(0, N),
+              RAJA::loop<THREAD_POLICY>(ctx, RAJA::RangeSegment(0, N),
                                         [&](int c)
                                         {
                                           const int idx      = c + N * r;
@@ -83,8 +81,8 @@ void LaunchBasicSharedTestImpl()
     }
   }
 
-  deallocateForallTestData<int>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<int>(working_res, working_array, check_array,
+                                test_array);
 }
 
 
@@ -107,9 +105,7 @@ TYPED_TEST_P(LaunchBasicSharedTest, BasicSharedTeams)
       typename camp::at<typename camp::at<TypeParam, camp::num<1>>::type,
                         camp::num<2>>::type;
 
-  LaunchBasicSharedTestImpl<WORKING_RES,
-                            LAUNCH_POLICY,
-                            TEAM_POLICY,
+  LaunchBasicSharedTestImpl<WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
                             THREAD_POLICY>();
 }
 

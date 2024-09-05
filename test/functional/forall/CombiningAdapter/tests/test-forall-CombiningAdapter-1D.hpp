@@ -28,8 +28,8 @@ void ForallCombiningAdapter1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   size_t data_len = RAJA::stripIndexType(N) + 1;
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   {
 
@@ -69,8 +69,8 @@ void ForallCombiningAdapter1DTestImpl(INDEX_TYPE first, INDEX_TYPE last)
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 

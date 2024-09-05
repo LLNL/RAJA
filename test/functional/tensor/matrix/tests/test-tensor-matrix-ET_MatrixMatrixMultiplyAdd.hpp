@@ -59,8 +59,8 @@ void ET_MatrixMatrixMultiplyAddImpl()
   // alloc data3 - The result matrix
 
   std::vector<element_t>                              data3_vec(N * N);
-  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_h(
-      data3_vec.data(), N, N);
+  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_h(data3_vec.data(),
+                                                              N, N);
 
   element_t* data3_ptr = tensor_malloc<policy_t>(data3_vec);
   RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_d(data3_ptr, N, N);

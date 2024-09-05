@@ -227,12 +227,8 @@ struct MultiReduceDataOMP<
         m_identity(identity),
         m_data(nullptr)
   {
-    m_data = create_data(container,
-                         identity,
-                         m_num_bins,
-                         m_max_threads,
-                         m_padded_bins,
-                         m_padded_threads);
+    m_data = create_data(container, identity, m_num_bins, m_max_threads,
+                         m_padded_bins, m_padded_threads);
   }
 
   MultiReduceDataOMP(MultiReduceDataOMP const& other)
@@ -254,8 +250,8 @@ struct MultiReduceDataOMP<
     {
       if (!m_parent)
       {
-        destroy_data(
-            m_data, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads);
+        destroy_data(m_data, m_num_bins, m_max_threads, m_padded_bins,
+                     m_padded_threads);
       }
     }
   }
@@ -267,16 +263,12 @@ struct MultiReduceDataOMP<
     size_t new_num_bins = container.size();
     if (new_num_bins != m_num_bins)
     {
-      destroy_data(
-          m_data, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads);
+      destroy_data(m_data, m_num_bins, m_max_threads, m_padded_bins,
+                   m_padded_threads);
       m_num_bins    = new_num_bins;
       m_padded_bins = pad_bins(m_num_bins);
-      m_data        = create_data(container,
-                           identity,
-                           m_num_bins,
-                           m_max_threads,
-                           m_padded_bins,
-                           m_padded_threads);
+      m_data = create_data(container, identity, m_num_bins, m_max_threads,
+                           m_padded_bins, m_padded_threads);
     }
     else
     {
@@ -287,8 +279,8 @@ struct MultiReduceDataOMP<
           size_t bin        = 0;
           for (auto const& value : container)
           {
-            m_data[index_data(
-                bin, thread_idx, m_padded_bins, m_padded_threads)] = value;
+            m_data[index_data(bin, thread_idx, m_padded_bins,
+                              m_padded_threads)] = value;
             ++bin;
           }
         }
@@ -296,8 +288,8 @@ struct MultiReduceDataOMP<
         {
           for (size_t bin = 0; bin < m_num_bins; ++bin)
           {
-            m_data[index_data(
-                bin, thread_idx, m_padded_bins, m_padded_threads)] = identity;
+            m_data[index_data(bin, thread_idx, m_padded_bins,
+                              m_padded_threads)] = identity;
           }
         }
       }

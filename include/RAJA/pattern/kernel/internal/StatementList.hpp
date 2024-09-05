@@ -61,9 +61,7 @@ struct StatementListExecutor
     StatementExecutor<statement, Types>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<statement_index + 1,
-                          num_statements,
-                          StmtList,
+    StatementListExecutor<statement_index + 1, num_statements, StmtList,
                           Types>::exec(std::forward<Data>(data));
   }
 };

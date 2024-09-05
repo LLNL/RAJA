@@ -326,8 +326,7 @@ public:
   RAJA_INLINE void push_back(Tnew&& val)
   {
     push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
-                  PUSH_BACK,
-                  PUSH_COPY);
+                  PUSH_BACK, PUSH_COPY);
   }
 
   //! Add copy of segment to front end of index set.
@@ -335,8 +334,7 @@ public:
   RAJA_INLINE void push_front(Tnew&& val)
   {
     push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
-                  PUSH_FRONT,
-                  PUSH_COPY);
+                  PUSH_FRONT, PUSH_COPY);
   }
 
   //! Return total length -- sum of lengths of all segments
@@ -373,8 +371,8 @@ public:
   {
     if (getSegmentTypes()[segid] != T0_TypeId)
     {
-      PARENT::segmentCall(
-          segid, std::forward<BODY>(body), std::forward<ARGS>(args)...);
+      PARENT::segmentCall(segid, std::forward<BODY>(body),
+                          std::forward<ARGS>(args)...);
       return;
     }
     Index_type offset = getSegmentOffsets()[segid];

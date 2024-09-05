@@ -35,20 +35,18 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
+                                     &check_array, &test_array);
 
   working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * N);
 
   RAJA::region<REG_POLICY>(
       [=]()
       {
-        RAJA::forall<EXEC_POLICY>(rseg,
-                                  [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+        RAJA::forall<EXEC_POLICY>(rseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
                                   { working_array[idx - first] += 1; });
 
-        RAJA::forall<EXEC_POLICY>(lseg,
-                                  [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+        RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
                                   { working_array[idx - first] += 2; });
       });
 
@@ -60,8 +58,8 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     ASSERT_EQ(check_array[i], 3);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 

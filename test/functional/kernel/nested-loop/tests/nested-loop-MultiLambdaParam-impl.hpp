@@ -90,12 +90,12 @@ void KernelNestedLoopTest()
     }
   }
 
-  work_res.memcpy(
-      work_arrA, test_arrA, sizeof(double) * RAJA::stripIndexType(N * N));
-  work_res.memcpy(
-      work_arrB, test_arrB, sizeof(double) * RAJA::stripIndexType(N * N));
-  work_res.memcpy(
-      work_arrC, test_arrC, sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrA, test_arrA,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrB, test_arrB,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrC, test_arrC,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
 
   // Calculate Test data
   for (int row = 0; row < N; ++row)
@@ -114,8 +114,7 @@ void KernelNestedLoopTest()
 
   // Calculate Working data
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
-      RAJA::make_tuple(RAJA::RangeSegment{0, N},
-                       RAJA::RangeSegment{0, N},
+      RAJA::make_tuple(RAJA::RangeSegment{0, N}, RAJA::RangeSegment{0, N},
                        RAJA::RangeSegment{0, N}),
 
       RAJA::tuple<double>{0.0},
@@ -136,12 +135,11 @@ void KernelNestedLoopTest()
 
   );
 
-  work_res.memcpy(
-      check_arrC, work_arrC, sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(check_arrC, work_arrC,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
 
   RAJA::forall<RAJA::seq_exec>(
-      RAJA::RangeSegment{0, N * N},
-      [=](RAJA::Index_type i)
+      RAJA::RangeSegment{0, N * N}, [=](RAJA::Index_type i)
       { ASSERT_TRUE(RAJA::test_abs(test_arrC[i] - check_arrC[i]) < 10e-8); });
 
   work_res.deallocate(work_arrA);

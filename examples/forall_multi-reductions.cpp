@@ -154,8 +154,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
         res.memcpy(bins, host_bins, N * sizeof(int));
         res.memcpy(a, host_a, N * sizeof(int));
 
-        example_code<exec_policy, multi_reduce_policy>(
-            arange, num_bins, bins, a);
+        example_code<exec_policy, multi_reduce_policy>(arange, num_bins, bins,
+                                                       a);
 
         res.deallocate(bins);
         res.deallocate(a);

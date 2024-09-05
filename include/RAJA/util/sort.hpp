@@ -143,45 +143,14 @@ get_shell_stride(int i)
   using array_type = long long unsigned[num_shell_strides()];
   return (array_type{
       // strides from M. Ciura 2001
-      1llu,
-      4llu,
-      10llu,
-      23llu,
-      57llu,
-      132llu,
-      301llu,
-      701llu,
-      1750llu,
+      1llu, 4llu, 10llu, 23llu, 57llu, 132llu, 301llu, 701llu, 1750llu,
       // extended up to 2^47 with strides[n] = floor(2.25*strides[n-1])
-      3937llu,
-      8858llu,
-      19930llu,
-      44842llu,
-      100894llu,
-      227011llu,
-      510774llu,
-      1149241llu,
-      2585792llu,
-      5818032llu,
-      13090572llu,
-      29453787llu,
-      66271020llu,
-      149109795llu,
-      335497038llu,
-      754868335llu,
-      1698453753llu,
-      3821520944llu,
-      8598422124llu,
-      19346449779llu,
-      43529512002llu,
-      97941402004llu,
-      220368154509llu,
-      495828347645llu,
-      1115613782201llu,
-      2510131009952llu,
-      5647794772392llu,
-      12707538237882llu,
-      28591961035234llu,
+      3937llu, 8858llu, 19930llu, 44842llu, 100894llu, 227011llu, 510774llu,
+      1149241llu, 2585792llu, 5818032llu, 13090572llu, 29453787llu, 66271020llu,
+      149109795llu, 335497038llu, 754868335llu, 1698453753llu, 3821520944llu,
+      8598422124llu, 19346449779llu, 43529512002llu, 97941402004llu,
+      220368154509llu, 495828347645llu, 1115613782201llu, 2510131009952llu,
+      5647794772392llu, 12707538237882llu, 28591961035234llu,
       64331912329276llu})[i];
 }
 
@@ -683,21 +652,15 @@ RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
         if (copyvalid) // switch arrays per level of merging to avoid copying
                        // back to copyarr
         {
-          detail::merge_like_std(copyarr + start,
-                                 copyarr + start + midpoint,
-                                 copyarr + start + midpoint,
-                                 copyarr + finish,
-                                 begin + start,
-                                 comp);
+          detail::merge_like_std(copyarr + start, copyarr + start + midpoint,
+                                 copyarr + start + midpoint, copyarr + finish,
+                                 begin + start, comp);
         }
         else
         {
-          detail::merge_like_std(begin + start,
-                                 begin + start + midpoint,
-                                 begin + start + midpoint,
-                                 begin + finish,
-                                 copyarr + start,
-                                 comp);
+          detail::merge_like_std(begin + start, begin + start + midpoint,
+                                 begin + start + midpoint, begin + finish,
+                                 copyarr + start, comp);
         }
       }
 

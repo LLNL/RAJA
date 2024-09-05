@@ -26,8 +26,8 @@ void KernelOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   EXPECT_LT(off_dim0, dim.at(0));
   EXPECT_LT(off_dim1, dim.at(1));
 
-  allocateForallTestData<IDX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<IDX_TYPE>(N, working_res, &working_array, &check_array,
+                                   &test_array);
 
   memset(static_cast<void*>(test_array), 0, sizeof(IDX_TYPE) * N);
 
@@ -61,8 +61,8 @@ void KernelOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, working_array, check_array,
+                                     test_array);
 }
 
 
@@ -88,26 +88,26 @@ TYPED_TEST_P(KernelNestedLoopOffsetView2DTest, OffsetView2DKernelTest)
   //
   std::array<RAJA::idx_t, 2> offset_lo{{0, 2}};
   std::array<RAJA::idx_t, 2> offset_hi{{dim0 - 3, dim1 - 4}};
-  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim, offset_lo, offset_hi);
+  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
+                                                                 offset_hi);
 
   offset_lo = std::array<RAJA::idx_t, 2>{{-1, -2}};
   offset_hi = std::array<RAJA::idx_t, 2>{{dim0 - 3, dim1 - 6}};
-  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim, offset_lo, offset_hi);
+  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
+                                                                 offset_hi);
 
   //
   // Non-square views
   //
   offset_lo = std::array<RAJA::idx_t, 2>{{0, 1}};
   offset_hi = std::array<RAJA::idx_t, 2>{{dim0 - 3, dim1 - 1}};
-  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim, offset_lo, offset_hi);
+  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
+                                                                 offset_hi);
 
   offset_lo = std::array<RAJA::idx_t, 2>{{-1, -1}};
   offset_hi = std::array<RAJA::idx_t, 2>{{dim0 - 3, dim1 - 4}};
-  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim, offset_lo, offset_hi);
+  KernelOffsetView2DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
+                                                                 offset_hi);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopOffsetView2DTest,

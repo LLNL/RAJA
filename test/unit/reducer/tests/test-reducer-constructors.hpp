@@ -66,12 +66,10 @@ testReducerConstructor()
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc;
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc;
 
-  RAJA::ReduceMinLoc<ReducePolicy,
-                     NumericType,
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType,
                      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_minloctup;
-  RAJA::ReduceMaxLoc<ReducePolicy,
-                     NumericType,
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType,
                      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_maxloctup;
 
@@ -166,12 +164,10 @@ void testInitReducerConstructor()
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
   RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
-  RAJA::ReduceMinLoc<ReducePolicy,
-                     NumericType,
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType,
                      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_minloctup(initVal, LocTup);
-  RAJA::ReduceMaxLoc<ReducePolicy,
-                     NumericType,
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType,
                      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_maxloctup(initVal, LocTup);
 
@@ -215,9 +211,7 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
   using ForOneType   = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  testInitReducerConstructor<ReduceType,
-                             NumericType,
-                             ResourceType,
+  testInitReducerConstructor<ReduceType, NumericType, ResourceType,
                              ForOneType>();
 }
 

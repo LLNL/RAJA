@@ -42,20 +42,16 @@ void KernelBasicFissionFusionLoopTestImpl(
   DATA_TYPE* test_array_y;
 
   allocateForallTestData<DATA_TYPE>(RAJA::stripIndexType(data_len),
-                                    erased_working_res,
-                                    &working_array_x,
-                                    &check_array_x,
-                                    &test_array_x);
+                                    erased_working_res, &working_array_x,
+                                    &check_array_x, &test_array_x);
 
   allocateForallTestData<DATA_TYPE>(RAJA::stripIndexType(data_len),
-                                    erased_working_res,
-                                    &working_array_y,
-                                    &check_array_y,
-                                    &test_array_y);
+                                    erased_working_res, &working_array_y,
+                                    &check_array_y, &test_array_y);
 
 
-  working_res.memset(
-      working_array_x, 0, sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memset(working_array_x, 0,
+                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   RAJA::kernel<EXEC_POLICY>(
       RAJA::make_tuple(seg, seg),
@@ -74,16 +70,13 @@ void KernelBasicFissionFusionLoopTestImpl(
 
   );
 
-  working_res.memcpy(check_array_x,
-                     working_array_x,
+  working_res.memcpy(check_array_x, working_array_x,
                      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  memset(static_cast<void*>(check_array_y),
-         0,
+  memset(static_cast<void*>(check_array_y), 0,
          sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  RAJA::forall<RAJA::seq_exec>(working_res,
-                               seg_idx,
+  RAJA::forall<RAJA::seq_exec>(working_res, seg_idx,
                                [=](IDX_TYPE i)
                                {
                                  check_array_y[RAJA::stripIndexType(i)] += 1;
@@ -97,12 +90,12 @@ void KernelBasicFissionFusionLoopTestImpl(
               check_array_y[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      erased_working_res, working_array_x, check_array_x, test_array_x);
+  deallocateForallTestData<DATA_TYPE>(erased_working_res, working_array_x,
+                                      check_array_x, test_array_x);
 
 
-  deallocateForallTestData<DATA_TYPE>(
-      erased_working_res, working_array_y, check_array_y, test_array_y);
+  deallocateForallTestData<DATA_TYPE>(erased_working_res, working_array_y,
+                                      check_array_y, test_array_y);
 }
 
 #endif // __BASIC_FISSION_FUSION_LOOP_SEGMENTS_IMPL_HPP__

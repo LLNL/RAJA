@@ -48,8 +48,8 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   RAJA::idx_t Ntot = Ntot_outer * Ntot_middle * Ntot_inner;
 
 
-  allocateForallTestData<IDX_TYPE>(
-      Ntot, working_res, &B_work_array, &B_check_array, &B_test_array);
+  allocateForallTestData<IDX_TYPE>(Ntot, working_res, &B_work_array,
+                                   &B_check_array, &B_test_array);
 
   memset(static_cast<void*>(B_test_array), 0, sizeof(IDX_TYPE) * Ntot);
 
@@ -69,8 +69,8 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   working_res.memcpy(B_work_array, B_test_array, sizeof(IDX_TYPE) * Ntot);
 
 
-  allocateForallTestData<IDX_TYPE>(
-      Nint, working_res, &A_work_array, &A_check_array, &A_test_array);
+  allocateForallTestData<IDX_TYPE>(Nint, working_res, &A_work_array,
+                                   &A_check_array, &A_test_array);
 
   memset(static_cast<void*>(A_test_array), 0, sizeof(IDX_TYPE) * Nint);
 
@@ -102,8 +102,7 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
 
   RAJA::OffsetLayout<3> B_layout = RAJA::make_permuted_offset_layout<3>(
       {{-1, -1, -1}},
-      {{Ntot_len.at(0) - 1, Ntot_len.at(1) - 1, Ntot_len.at(2) - 1}},
-      perm);
+      {{Ntot_len.at(0) - 1, Ntot_len.at(1) - 1, Ntot_len.at(2) - 1}}, perm);
   RAJA::Layout<3> A_layout = RAJA::make_permuted_layout(
       {{Nint_len.at(0), Nint_len.at(1), Nint_len.at(2)}}, perm);
 
@@ -131,11 +130,11 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
     ASSERT_EQ(A_test_array[ii], A_check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, A_work_array, A_check_array, A_test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, A_work_array, A_check_array,
+                                     A_test_array);
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, B_work_array, B_check_array, B_test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, B_work_array, B_check_array,
+                                     B_test_array);
 }
 
 

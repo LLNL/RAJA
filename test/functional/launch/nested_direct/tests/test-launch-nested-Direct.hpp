@@ -51,8 +51,8 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
   // 6 threads total
   constexpr int threads_x = 2;
   constexpr int threads_y = 3;
@@ -69,8 +69,8 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
 
     constexpr int DIM = 6;
     using layout_t    = RAJA::Layout<DIM, INDEX_TYPE, DIM - 1>;
-    RAJA::View<INDEX_TYPE, layout_t> Aview(
-        working_array, N6, N5, N4, N3, N2, N1);
+    RAJA::View<INDEX_TYPE, layout_t> Aview(working_array, N6, N5, N4, N3, N2,
+                                           N1);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
@@ -78,33 +78,27 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::loop<TEAM_Z_POLICY>(
-              ctx,
-              r6,
+              ctx, r6,
               [&](INDEX_TYPE bz)
               {
                 RAJA::loop<TEAM_Y_POLICY>(
-                    ctx,
-                    r5,
+                    ctx, r5,
                     [&](INDEX_TYPE by)
                     {
                       RAJA::loop<TEAM_X_POLICY>(
-                          ctx,
-                          r4,
+                          ctx, r4,
                           [&](INDEX_TYPE bx)
                           {
                             RAJA::loop<THREAD_Z_POLICY>(
-                                ctx,
-                                r3,
+                                ctx, r3,
                                 [&](INDEX_TYPE tz)
                                 {
                                   RAJA::loop<THREAD_Y_POLICY>(
-                                      ctx,
-                                      r2,
+                                      ctx, r2,
                                       [&](INDEX_TYPE ty)
                                       {
                                         RAJA::loop<THREAD_X_POLICY>(
-                                            ctx,
-                                            r1,
+                                            ctx, r1,
                                             [&](INDEX_TYPE tx)
                                             {
                                               auto idx =
@@ -136,8 +130,8 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
@@ -145,33 +139,27 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::loop<TEAM_Z_POLICY>(
-              ctx,
-              r3,
+              ctx, r3,
               [&](INDEX_TYPE RAJA_UNUSED_ARG(bz))
               {
                 RAJA::loop<TEAM_Y_POLICY>(
-                    ctx,
-                    r2,
+                    ctx, r2,
                     [&](INDEX_TYPE RAJA_UNUSED_ARG(by))
                     {
                       RAJA::loop<TEAM_X_POLICY>(
-                          ctx,
-                          r1,
+                          ctx, r1,
                           [&](INDEX_TYPE RAJA_UNUSED_ARG(bx))
                           {
                             RAJA::loop<THREAD_Z_POLICY>(
-                                ctx,
-                                r3,
+                                ctx, r3,
                                 [&](INDEX_TYPE RAJA_UNUSED_ARG(tz))
                                 {
                                   RAJA::loop<THREAD_Y_POLICY>(
-                                      ctx,
-                                      r2,
+                                      ctx, r2,
                                       [&](INDEX_TYPE RAJA_UNUSED_ARG(ty))
                                       {
                                         RAJA::loop<THREAD_X_POLICY>(
-                                            ctx,
-                                            r1,
+                                            ctx, r1,
                                             [&](INDEX_TYPE RAJA_UNUSED_ARG(tx))
                                             { working_array[0]++; });
                                       });
@@ -199,8 +187,8 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
     ASSERT_EQ(test_array[0], check_array[0]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -241,26 +229,16 @@ TYPED_TEST_P(LaunchNestedDirectTest, RangeSegmentTeams)
 
 
   // test zero-length range segment
-  LaunchNestedDirectTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
-                             THREAD_X_POLICY,
-                             THREAD_Y_POLICY,
-                             THREAD_Z_POLICY,
-                             TEAM_X_POLICY,
-                             TEAM_Y_POLICY,
-                             TEAM_Z_POLICY>(INDEX_TYPE(0));
+  LaunchNestedDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+                             THREAD_X_POLICY, THREAD_Y_POLICY, THREAD_Z_POLICY,
+                             TEAM_X_POLICY, TEAM_Y_POLICY, TEAM_Z_POLICY>(
+      INDEX_TYPE(0));
 
   // Keep at one since we are doing a direct thread test
-  LaunchNestedDirectTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
-                             THREAD_X_POLICY,
-                             THREAD_Y_POLICY,
-                             THREAD_Z_POLICY,
-                             TEAM_X_POLICY,
-                             TEAM_Y_POLICY,
-                             TEAM_Z_POLICY>(INDEX_TYPE(1));
+  LaunchNestedDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+                             THREAD_X_POLICY, THREAD_Y_POLICY, THREAD_Z_POLICY,
+                             TEAM_X_POLICY, TEAM_Y_POLICY, TEAM_Z_POLICY>(
+      INDEX_TYPE(1));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchNestedDirectTest, RangeSegmentTeams);

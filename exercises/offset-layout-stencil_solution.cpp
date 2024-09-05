@@ -247,10 +247,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(output, 0, totCells * sizeof(int));
 
   // _offsetlayout_rajaomp_start
-  using NESTED_EXEC_POL2 = RAJA::KernelPolicy<
-      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<1, 0>, // row, col
-                                RAJA::statement::Lambda<0>>>;
+  using NESTED_EXEC_POL2 = RAJA::KernelPolicy<RAJA::statement::Collapse<
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<1, 0>, // row, col
+      RAJA::statement::Lambda<0>>>;
 
   RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row)
@@ -316,8 +315,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(
       hipMemcpy(d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(
-      d_output, output, totCells * sizeof(int), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_output, output, totCells * sizeof(int),
+                      hipMemcpyHostToDevice));
 
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_inputView(d_input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_outputView(d_output, layout);
@@ -342,8 +341,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                  });
   // _offsetlayout_rajahip_end
 
-  hipErrchk(hipMemcpy(
-      output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(output, d_output, totCells * sizeof(int),
+                      hipMemcpyDeviceToHost));
 
   std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);

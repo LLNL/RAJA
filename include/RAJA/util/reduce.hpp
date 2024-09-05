@@ -337,8 +337,8 @@ RAJA_HOST_DEVICE
   static_assert(type_traits::is_binary_function<BinaryOp, T, T, T>::value,
                 "BinaryOp must model BinaryFunction");
 
-  return detail::left_fold_reduce(
-      begin(c), end(c), std::move(init), std::move(op));
+  return detail::left_fold_reduce(begin(c), end(c), std::move(init),
+                                  std::move(op));
 }
 
 /*!
@@ -360,8 +360,8 @@ RAJA_HOST_DEVICE
   static_assert(type_traits::is_binary_function<BinaryOp, T, T, T>::value,
                 "BinaryOp must model BinaryFunction");
 
-  return detail::binary_tree_reduce(
-      begin(c), end(c), std::move(init), std::move(op));
+  return detail::binary_tree_reduce(begin(c), end(c), std::move(init),
+                                    std::move(op));
 }
 
 /*!
@@ -384,8 +384,8 @@ RAJA_HOST_DEVICE
   static_assert(type_traits::is_binary_function<BinaryOp, T, T, T>::value,
                 "BinaryOp must model BinaryFunction");
 
-  return detail::high_accuracy_reduce(
-      begin(c), end(c), std::move(init), std::move(op));
+  return detail::high_accuracy_reduce(begin(c), end(c), std::move(init),
+                                      std::move(op));
 }
 
 } // namespace RAJA

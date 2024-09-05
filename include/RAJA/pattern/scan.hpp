@@ -73,8 +73,8 @@ RAJA_INLINE
   {
     return resources::EventProxy<Res>(r);
   }
-  return impl::scan::inclusive_inplace(
-      r, std::forward<ExecPolicy>(p), begin(c), end(c), binop);
+  return impl::scan::inclusive_inplace(r, std::forward<ExecPolicy>(p), begin(c),
+                                       end(c), binop);
 }
 ///
 template <
@@ -137,8 +137,8 @@ RAJA_INLINE
   {
     return resources::EventProxy<Res>(r);
   }
-  return impl::scan::exclusive_inplace(
-      r, std::forward<ExecPolicy>(p), begin(c), end(c), binop, value);
+  return impl::scan::exclusive_inplace(r, std::forward<ExecPolicy>(p), begin(c),
+                                       end(c), binop, value);
 }
 ///
 template <typename ExecPolicy,
@@ -211,8 +211,8 @@ RAJA_INLINE
   {
     return resources::EventProxy<Res>(r);
   }
-  return impl::scan::inclusive(
-      r, std::forward<ExecPolicy>(p), begin(in), end(in), begin(out), binop);
+  return impl::scan::inclusive(r, std::forward<ExecPolicy>(p), begin(in),
+                               end(in), begin(out), binop);
 }
 ///
 template <typename ExecPolicy,
@@ -235,11 +235,8 @@ inclusive_scan(ExecPolicy&&   p,
 {
   auto r = Res::get_default();
   return ::RAJA::policy_by_value_interface::inclusive_scan(
-      std::forward<ExecPolicy>(p),
-      r,
-      std::forward<InContainer>(in),
-      std::forward<OutContainer>(out),
-      binop);
+      std::forward<ExecPolicy>(p), r, std::forward<InContainer>(in),
+      std::forward<OutContainer>(out), binop);
 }
 
 /*!
@@ -292,13 +289,8 @@ RAJA_INLINE
   {
     return resources::EventProxy<Res>(r);
   }
-  return impl::scan::exclusive(r,
-                               std::forward<ExecPolicy>(p),
-                               begin(in),
-                               end(in),
-                               begin(out),
-                               binop,
-                               value);
+  return impl::scan::exclusive(r, std::forward<ExecPolicy>(p), begin(in),
+                               end(in), begin(out), binop, value);
 }
 ///
 template <typename ExecPolicy,
@@ -322,12 +314,8 @@ exclusive_scan(ExecPolicy&&   p,
 {
   auto r = Res::get_default();
   return ::RAJA::policy_by_value_interface::exclusive_scan(
-      std::forward<ExecPolicy>(p),
-      r,
-      std::forward<InContainer>(in),
-      std::forward<OutContainer>(out),
-      binop,
-      value);
+      std::forward<ExecPolicy>(p), r, std::forward<InContainer>(in),
+      std::forward<OutContainer>(out), binop, value);
 }
 
 } // namespace policy_by_value_interface

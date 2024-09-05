@@ -39,8 +39,7 @@ void PluginResourceLaunchTestImpl()
       PluginTestCallable p_callable{data};
 
       RAJA::launch<LaunchPolicy>(
-          res,
-          RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
+          res, RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(1)),
           [=] RAJA_HOST_DEVICE(RAJA::LaunchContext RAJA_UNUSED_ARG(ctx))
           { p_callable(i); });
     }
@@ -56,8 +55,8 @@ void PluginResourceLaunchTestImpl()
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(
-      &plugin_data, plugin_test_data, sizeof(CounterData));
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data,
+                               sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
   ASSERT_EQ(plugin_data.capture_counter_pre, 10);
   ASSERT_EQ(plugin_data.capture_counter_post, 10);
@@ -80,8 +79,7 @@ TYPED_TEST_P(PluginResourceLaunchTest, PluginResourceLaunch)
   using ResType        = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  PluginResourceLaunchTestImpl<LaunchPolicy,
-                               ResType,
+  PluginResourceLaunchTestImpl<LaunchPolicy, ResType,
                                PlatformHolder::platform>();
 }
 

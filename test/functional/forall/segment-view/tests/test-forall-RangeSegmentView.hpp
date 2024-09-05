@@ -21,8 +21,8 @@ void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
+                                     &check_array, &test_array);
 
   const INDEX_TYPE rbegin = *r1.begin();
 
@@ -33,8 +33,7 @@ void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   RAJA::Layout<1> layout(N);
   view_type       work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(r1,
-                            [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
                             { work_view(idx - rbegin) = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
@@ -44,8 +43,8 @@ void ForallRangeSegmentViewTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
@@ -61,8 +60,8 @@ void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first,
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
+                                     &check_array, &test_array);
 
   const INDEX_TYPE rbegin = *r1.begin();
 
@@ -72,12 +71,11 @@ void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first,
 
   INDEX_TYPE f_offset = first + offset;
   INDEX_TYPE l_offset = last + offset;
-  view_type  work_view(
-      working_array,
-      RAJA::make_offset_layout<1, INDEX_TYPE>({{f_offset}}, {{l_offset}}));
+  view_type  work_view(working_array, RAJA::make_offset_layout<1, INDEX_TYPE>(
+                                         {{f_offset}}, {{l_offset}}));
 
-  RAJA::forall<EXEC_POLICY>(
-      r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) { work_view(idx) = idx; });
+  RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            { work_view(idx) = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -86,8 +84,8 @@ void ForallRangeSegmentOffsetViewTestImpl(INDEX_TYPE first,
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 template <typename INDEX_TYPE,

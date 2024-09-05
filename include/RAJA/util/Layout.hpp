@@ -144,8 +144,7 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
   {
     printf("Error at index %d, value %ld is not within bounds [0, %ld] \n",
-           static_cast<int>(N),
-           static_cast<long int>(idx),
+           static_cast<int>(N), static_cast<long int>(idx),
            static_cast<long int>(sizes[N] - 1));
     RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }

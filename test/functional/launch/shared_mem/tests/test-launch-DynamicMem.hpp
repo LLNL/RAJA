@@ -31,8 +31,8 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
   size_t data_len =
       RAJA::stripIndexType(block_range) * RAJA::stripIndexType(thread_range);
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   // determine the underlying type of block_range
   using s_type = decltype(RAJA::stripIndexType(block_range));
@@ -60,8 +60,7 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<TEAM_POLICY>(
-            ctx,
-            outer_range,
+            ctx, outer_range,
             [&](INDEX_TYPE bid)
             {
               INDEX_TYPE* tile_ptr = ctx.getSharedMemory<INDEX_TYPE>(
@@ -75,8 +74,7 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
                   int_tile_ptr, RAJA::stripIndexType(thread_range));
 
               RAJA::loop<THREAD_POLICY>(
-                  ctx,
-                  inner_range,
+                  ctx, inner_range,
                   [&](INDEX_TYPE tid)
                   {
                     Int_Tile(RAJA::stripIndexType(tid)) =
@@ -89,8 +87,7 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
               ctx.teamSync();
 
               RAJA::loop<THREAD_POLICY>(
-                  ctx,
-                  inner_range,
+                  ctx, inner_range,
                   [&](INDEX_TYPE tid)
                   {
                     INDEX_TYPE idx = tid + thread_range * bid;
@@ -111,8 +108,8 @@ void LaunchDynamicMemTestImpl(INDEX_TYPE block_range, INDEX_TYPE thread_range)
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -137,16 +134,10 @@ TYPED_TEST_P(LaunchDynamicMemTest, DynamicMemLaunch)
                         camp::num<2>>::type;
 
 
-  LaunchDynamicMemTestImpl<INDEX_TYPE,
-                           WORKING_RES,
-                           LAUNCH_POLICY,
-                           TEAM_POLICY,
+  LaunchDynamicMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
                            THREAD_POLICY>(INDEX_TYPE(4), INDEX_TYPE(2));
 
-  LaunchDynamicMemTestImpl<INDEX_TYPE,
-                           WORKING_RES,
-                           LAUNCH_POLICY,
-                           TEAM_POLICY,
+  LaunchDynamicMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
                            THREAD_POLICY>(INDEX_TYPE(5), INDEX_TYPE(32));
 }
 

@@ -265,8 +265,8 @@ void launch(LaunchParams const& launch_params,
   using Res = typename resources::get_resource<
       typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(
-      Res::get_default(), launch_params, kernel_name, p_body, reducers);
+  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body,
+                 reducers);
 
   util::callPostLaunchPlugins(context);
 }
@@ -306,8 +306,8 @@ void launch(LaunchParams const& launch_params,
   using Res = typename resources::get_resource<
       typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(
-      Res::get_default(), launch_params, kernel_name, p_body, reducers);
+  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body,
+                 reducers);
 
   util::callPostLaunchPlugins(context);
 }
@@ -370,9 +370,7 @@ void launch(ExecPlace           place,
     using Res = typename resources::get_resource<
         typename POLICY_LIST::host_policy_t>::type;
     launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(
-        Res::get_default(),
-        launch_params,
-        kernel_name,
+        Res::get_default(), launch_params, kernel_name,
         std::forward<ReduceParams>(rest_of_launch_args)...);
     break;
   }
@@ -382,9 +380,7 @@ void launch(ExecPlace           place,
     using Res = typename resources::get_resource<
         typename POLICY_LIST::device_policy_t>::type;
     launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(
-        Res::get_default(),
-        launch_params,
-        kernel_name,
+        Res::get_default(), launch_params, kernel_name,
         std::forward<ReduceParams>(rest_of_launch_args)...);
     break;
   }
@@ -413,9 +409,7 @@ void launch(ExecPlace           place,
     using Res = typename resources::get_resource<
         typename POLICY_LIST::host_policy_t>::type;
     launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(
-        Res::get_default(),
-        launch_params,
-        kernel_name,
+        Res::get_default(), launch_params, kernel_name,
         std::forward<ReduceParams>(rest_of_launch_args)...);
     break;
   }
@@ -425,9 +419,7 @@ void launch(ExecPlace           place,
     using Res = typename resources::get_resource<
         typename POLICY_LIST::device_policy_t>::type;
     launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(
-        Res::get_default(),
-        launch_params,
-        kernel_name,
+        Res::get_default(), launch_params, kernel_name,
         std::forward<ReduceParams>(rest_of_launch_args)...);
     break;
   }
@@ -664,8 +656,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void
 loop_icount(CONTEXT const& ctx, SEGMENT const& segment, BODY const& body)
 {
 
-  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
-      ctx, segment, body);
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, segment,
+                                                             body);
 }
 
 namespace expt
@@ -682,8 +674,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const& ctx,
                                        BODY const&    body)
 {
 
-  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
-      ctx, segment0, segment1, body);
+  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, segment0, segment1,
+                                                       body);
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -721,8 +713,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
                                        BODY const&    body)
 {
 
-  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
-      ctx, tile_size, segment, body);
+  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, tile_size, segment,
+                                                       body);
 }
 
 template <typename POLICY_LIST,
@@ -735,8 +727,8 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
                                               SEGMENT const& segment,
                                               BODY const&    body)
 {
-  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
-      ctx, tile_size, segment, body);
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, tile_size,
+                                                             segment, body);
 }
 
 namespace expt

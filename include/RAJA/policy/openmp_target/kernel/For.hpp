@@ -68,10 +68,8 @@ struct StatementExecutor<statement::For<ArgumentId,
     using len_t = decltype(len);
 
     auto r = resources::Omp::get_default();
-    forall_impl(r,
-                omp_target_parallel_for_exec<N>{},
-                TypedRangeSegment<len_t>(0, len),
-                for_wrapper,
+    forall_impl(r, omp_target_parallel_for_exec<N>{},
+                TypedRangeSegment<len_t>(0, len), for_wrapper,
                 RAJA::expt::get_empty_forall_param_pack());
   }
 };

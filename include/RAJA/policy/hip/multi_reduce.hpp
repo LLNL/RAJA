@@ -114,8 +114,7 @@ block_multi_reduce_init_shmem(int num_bins,
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
   for (int shmem_offset = threadId;
-       shmem_offset < shared_replication * num_bins;
-       shmem_offset += numThreads)
+       shmem_offset < shared_replication * num_bins; shmem_offset += numThreads)
   {
     shared_mem[shmem_offset] = identity;
   }
@@ -219,8 +218,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
         m_tally_bins(get_tally_bins(m_num_bins)),
         m_tally_replication(get_tally_replication())
   {
-    m_tally_mem = create_tally(
-        container, identity, m_num_bins, m_tally_bins, m_tally_replication);
+    m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins,
+                               m_tally_replication);
   }
 
   MultiReduceGridAtomicHostInit_TallyData() = delete;
@@ -246,8 +245,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
       m_num_bins          = new_num_bins;
       m_tally_bins        = get_tally_bins(m_num_bins);
       m_tally_replication = get_tally_replication();
-      m_tally_mem         = create_tally(
-          container, identity, m_num_bins, m_tally_bins, m_tally_replication);
+      m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins,
+                                 m_tally_replication);
     }
     else
     {
@@ -256,8 +255,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
         int bin       = 0;
         for (auto const& value : container)
         {
-          m_tally_mem[GetTallyOffset{}(
-              bin, m_tally_bins, tally_rep, m_tally_replication)] = value;
+          m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep,
+                                       m_tally_replication)] = value;
           ++bin;
         }
       }
@@ -265,8 +264,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
       {
         for (int bin = 0; bin < m_num_bins; ++bin)
         {
-          m_tally_mem[GetTallyOffset{}(
-              bin, m_tally_bins, tally_rep, m_tally_replication)] = identity;
+          m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep,
+                                       m_tally_replication)] = identity;
         }
       }
     }
@@ -394,8 +393,8 @@ private:
     {
       for (int bin = num_bins; bin > 0; --bin)
       {
-        int tally_offset = GetTallyOffset{}(
-            bin - 1, tally_bins, tally_rep - 1, tally_replication);
+        int tally_offset = GetTallyOffset{}(bin - 1, tally_bins, tally_rep - 1,
+                                            tally_replication);
         tally_mem[tally_offset].~T();
       }
     }
@@ -411,7 +410,8 @@ protected:
   T   m_identity;
   int m_num_bins;
   int m_tally_bins;
-  int m_tally_replication; // power of 2, at least the max number of omp threads
+  int m_tally_replication; // power of 2, at least the max number of omp
+                           // threads
 };
 
 
@@ -452,14 +452,8 @@ struct MultiReduceGridAtomicHostInit_Data
   void combine_device(int bin, T value)
   {
     impl::block_multi_reduce_combine_global_atomic<Combiner, GetTallyIndex>(
-        m_num_bins,
-        m_identity,
-        bin,
-        value,
-        m_tally_mem,
-        GetTallyOffset{},
-        m_tally_replication,
-        m_tally_bins);
+        m_num_bins, m_identity, bin, value, m_tally_mem, GetTallyOffset{},
+        m_tally_replication, m_tally_bins);
   }
 
   //! combine value on host, combine a value into the tally
@@ -573,8 +567,8 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     T* shared_mem = get_shared_mem();
     if (shared_mem != nullptr)
     {
-      impl::block_multi_reduce_init_shmem(
-          m_num_bins, m_identity, shared_mem, m_shared_replication);
+      impl::block_multi_reduce_init_shmem(m_num_bins, m_identity, shared_mem,
+                                          m_shared_replication);
     }
   }
 
@@ -586,15 +580,9 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     if (shared_mem != nullptr)
     {
       impl::grid_multi_reduce_shmem_to_global_atomic<Combiner>(
-          m_num_bins,
-          m_identity,
-          shared_mem,
-          GetSharedOffset{},
-          m_shared_replication,
-          m_tally_mem,
-          GetTallyOffset{},
-          m_tally_replication,
-          m_tally_bins);
+          m_num_bins, m_identity, shared_mem, GetSharedOffset{},
+          m_shared_replication, m_tally_mem, GetTallyOffset{},
+          m_tally_replication, m_tally_bins);
     }
   }
 
@@ -607,25 +595,14 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     if (shared_mem != nullptr)
     {
       impl::block_multi_reduce_combine_shmem_atomic<Combiner, GetSharedIndex>(
-          m_num_bins,
-          m_identity,
-          bin,
-          value,
-          shared_mem,
-          GetSharedOffset{},
+          m_num_bins, m_identity, bin, value, shared_mem, GetSharedOffset{},
           m_shared_replication);
     }
     else
     {
       impl::block_multi_reduce_combine_global_atomic<Combiner, GetTallyIndex>(
-          m_num_bins,
-          m_identity,
-          bin,
-          value,
-          m_tally_mem,
-          GetTallyOffset{},
-          m_tally_replication,
-          m_tally_bins);
+          m_num_bins, m_identity, bin, value, m_tally_mem, GetTallyOffset{},
+          m_tally_replication, m_tally_bins);
     }
   }
 

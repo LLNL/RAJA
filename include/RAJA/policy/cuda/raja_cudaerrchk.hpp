@@ -66,10 +66,7 @@ cudaAssert(cudaError_t code, const char* file, int line, bool abort = true)
     }
     else
     {
-      fprintf(stderr,
-              "CUDAassert: %s %s %d\n",
-              cudaGetErrorString(code),
-              file,
+      fprintf(stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file,
               line);
     }
   }

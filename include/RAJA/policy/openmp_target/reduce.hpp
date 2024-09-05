@@ -129,10 +129,7 @@ struct Reduce_Data
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void*>(device),
                           reinterpret_cast<void*>(host),
-                          omp::MaxNumTeams * sizeof(T),
-                          0,
-                          0,
-                          info.deviceID,
+                          omp::MaxNumTeams * sizeof(T), 0, 0, info.deviceID,
                           info.hostID) != 0)
     {
       printf("Unable to copy memory from host to device\n");
@@ -146,10 +143,7 @@ struct Reduce_Data
     // precondition: host and device are valid pointers
     if (omp_target_memcpy(reinterpret_cast<void*>(host),
                           reinterpret_cast<void*>(device),
-                          omp::MaxNumTeams * sizeof(T),
-                          0,
-                          0,
-                          info.hostID,
+                          omp::MaxNumTeams * sizeof(T), 0, 0, info.hostID,
                           info.deviceID) != 0)
     {
       printf("Unable to copy memory from device to host\n");

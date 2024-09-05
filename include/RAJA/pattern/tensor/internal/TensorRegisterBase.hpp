@@ -236,8 +236,7 @@ public:
                                     camp::int_seq<int, int(SIZES)...>>
   s_get_default_tile()
   {
-    return StaticTensorTile<int,
-                            TENSOR_FULL,
+    return StaticTensorTile<int, TENSOR_FULL,
                             camp::int_seq<int, int(SIZES * 0)...>,
                             camp::int_seq<int, int(SIZES)...>>();
   }

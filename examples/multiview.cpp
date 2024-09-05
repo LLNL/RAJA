@@ -111,8 +111,8 @@ void docs_example()
 
   t3 = MView1(3, 0); // accesses the 4th index of the 0th internal array a1,
                      // returns value of 8
-  t4 = MView1(2, 1); // accesses 3rd index of the 1st internal array a2, returns
-                     // value of 11
+  t4 = MView1(2, 1); // accesses 3rd index of the 1st internal array a2,
+                     // returns value of 11
   // _multiview_example_1Daopindex_end
 
   printf("Comparison of default MultiView with another MultiView that has the "
@@ -181,15 +181,8 @@ int main()
     {
       for (int jj = 0; jj < 3; ++jj)
       {
-        printf("arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n",
-               pp,
-               kk,
-               jj,
-               arrView(pp, kk, jj),
-               kk,
-               pp,
-               jj,
-               arrViewMov(kk, pp, jj));
+        printf("arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n", pp, kk, jj,
+               arrView(pp, kk, jj), kk, pp, jj, arrViewMov(kk, pp, jj));
       }
     }
   }
@@ -215,15 +208,8 @@ int main()
     {
       for (int jj = 0; jj < 3; ++jj)
       {
-        printf("arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n",
-               pp,
-               kk,
-               jj,
-               arrView(pp, kk, jj),
-               kk,
-               pp,
-               jj,
-               arrViewMov(kk, pp, jj));
+        printf("arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n", pp, kk, jj,
+               arrView(pp, kk, jj), kk, pp, jj, arrViewMov(kk, pp, jj));
       }
     }
   }

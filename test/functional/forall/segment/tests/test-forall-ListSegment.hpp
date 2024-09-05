@@ -55,8 +55,8 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -66,8 +66,8 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
       test_array[RAJA::stripIndexType(idx_vals[i])] = idx_vals[i];
     }
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
     RAJA::forall<EXEC_POLICY>(lseg,
                               [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
@@ -79,8 +79,8 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
     RAJA::forall<EXEC_POLICY>(lseg,
                               [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
@@ -98,8 +98,8 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 

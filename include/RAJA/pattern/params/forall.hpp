@@ -153,9 +153,7 @@ struct ParamMultiplexer
   static void constexpr init(ForallParamPack<Params...>& f_params,
                              Args&&... args)
   {
-    FP::detail_init(EXEC_POL(),
-                    typename FP::params_seq(),
-                    f_params,
+    FP::detail_init(EXEC_POL(), typename FP::params_seq(), f_params,
                     std::forward<Args>(args)...);
   }
   template <typename EXEC_POL,
@@ -165,9 +163,7 @@ struct ParamMultiplexer
   static void constexpr combine(ForallParamPack<Params...>& f_params,
                                 Args&&... args)
   {
-    FP::detail_combine(EXEC_POL(),
-                       typename FP::params_seq(),
-                       f_params,
+    FP::detail_combine(EXEC_POL(), typename FP::params_seq(), f_params,
                        std::forward<Args>(args)...);
   }
   template <typename EXEC_POL,
@@ -177,9 +173,7 @@ struct ParamMultiplexer
   static void constexpr resolve(ForallParamPack<Params...>& f_params,
                                 Args&&... args)
   {
-    FP::detail_resolve(EXEC_POL(),
-                       typename FP::params_seq(),
-                       f_params,
+    FP::detail_resolve(EXEC_POL(), typename FP::params_seq(), f_params,
                        std::forward<Args>(args)...);
   }
 };
@@ -365,10 +359,10 @@ constexpr concepts::enable_if<has_empty_op<LAMBDA>>
 check_invocable(LAMBDA&&, const camp::list<EXPECTED_ARGS...>&)
 {
 #if !defined(RAJA_ENABLE_HIP)
-  static_assert(is_invocable<LAMBDA,
-                             typename get_lambda_index_type<LAMBDA>::type,
-                             EXPECTED_ARGS...>::value,
-                "LAMBDA Not invocable w/ EXPECTED_ARGS.");
+  static_assert(
+      is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type,
+                   EXPECTED_ARGS...>::value,
+      "LAMBDA Not invocable w/ EXPECTED_ARGS.");
 #endif
 }
 
@@ -449,8 +443,7 @@ RAJA_HOST_DEVICE constexpr auto
 invoke_body(Params&& params, Fn&& f, Ts&&... extra)
 {
   return detail::invoke_with_order(
-      camp::forward<Params>(params),
-      camp::forward<Fn>(f),
+      camp::forward<Params>(params), camp::forward<Fn>(f),
       typename camp::decay<Params>::lambda_arg_seq(),
       camp::forward<Ts...>(extra)...);
 }

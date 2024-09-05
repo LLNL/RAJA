@@ -25,19 +25,16 @@ void ResourceDependsTestImpl()
   int* h_array  = host.allocate<int>(ARRAY_SIZE);
 
 
-  forall<EXEC_POLICY>(dev1,
-                      RangeSegment(0, ARRAY_SIZE),
+  forall<EXEC_POLICY>(dev1, RangeSegment(0, ARRAY_SIZE),
                       [=] RAJA_HOST_DEVICE(int i) { d_array1[i] = i; });
 
   resources::Event e =
-      forall<EXEC_POLICY>(dev2,
-                          RangeSegment(0, ARRAY_SIZE),
+      forall<EXEC_POLICY>(dev2, RangeSegment(0, ARRAY_SIZE),
                           [=] RAJA_HOST_DEVICE(int i) { d_array2[i] = -1; });
 
   dev1.wait_for(&e);
 
-  forall<EXEC_POLICY>(dev1,
-                      RangeSegment(0, ARRAY_SIZE),
+  forall<EXEC_POLICY>(dev1, RangeSegment(0, ARRAY_SIZE),
                       [=] RAJA_HOST_DEVICE(int i)
                       { d_array1[i] *= d_array2[i]; });
 
@@ -45,8 +42,7 @@ void ResourceDependsTestImpl()
 
   dev1.wait();
 
-  forall<policy::sequential::seq_exec>(host,
-                                       RangeSegment(0, ARRAY_SIZE),
+  forall<policy::sequential::seq_exec>(host, RangeSegment(0, ARRAY_SIZE),
                                        [=](int i)
                                        { ASSERT_EQ(h_array[i], -i); });
 

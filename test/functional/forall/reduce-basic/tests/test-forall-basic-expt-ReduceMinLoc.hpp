@@ -29,8 +29,8 @@ void ForallReduceMinLocBasicTestImpl(const SEG_TYPE&              seg,
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(data_len, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const int       modval       = 100;
   const DATA_TYPE min_init     = modval + 1;
@@ -64,8 +64,7 @@ void ForallReduceMinLocBasicTestImpl(const SEG_TYPE&              seg,
   VL_TYPE min(min_init, minloc_init);
 
   RAJA::forall<EXEC_POLICY>(
-      seg,
-      RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
+      seg, RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
       RAJA::expt::KernelName("RAJA Reduce MinLoc"),
       [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_TYPE & mi, VL_TYPE & m)
@@ -100,8 +99,8 @@ void ForallReduceMinLocBasicTestImpl(const SEG_TYPE&              seg,
   ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
 
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallReduceMinLocBasicTest);
@@ -124,48 +123,43 @@ TYPED_TEST_P(ForallReduceMinLocBasicTest, ReduceMinLocBasicForall)
   // Range segment tests
   RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 28);
   RAJA::getIndices(seg_idx, r1);
-  ForallReduceMinLocBasicTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeSegment<IDX_TYPE>,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(r1, seg_idx, working_res);
+                                  EXEC_POLICY, REDUCE_POLICY>(r1, seg_idx,
+                                                              working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2(3, 642);
   RAJA::getIndices(seg_idx, r2);
-  ForallReduceMinLocBasicTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeSegment<IDX_TYPE>,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(r2, seg_idx, working_res);
+                                  EXEC_POLICY, REDUCE_POLICY>(r2, seg_idx,
+                                                              working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r3(0, 2057);
   RAJA::getIndices(seg_idx, r3);
-  ForallReduceMinLocBasicTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeSegment<IDX_TYPE>,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(r3, seg_idx, working_res);
+                                  EXEC_POLICY, REDUCE_POLICY>(r3, seg_idx,
+                                                              working_res);
 
   // Range-stride segment tests
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r4(0, 188, 2);
   RAJA::getIndices(seg_idx, r4);
-  ForallReduceMinLocBasicTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(r4, seg_idx, working_res);
+                                  EXEC_POLICY, REDUCE_POLICY>(r4, seg_idx,
+                                                              working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r5(3, 1029, 3);
   RAJA::getIndices(seg_idx, r5);
-  ForallReduceMinLocBasicTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(r5, seg_idx, working_res);
+                                  EXEC_POLICY, REDUCE_POLICY>(r5, seg_idx,
+                                                              working_res);
 
   // List segment tests
   seg_idx.clear();
@@ -180,10 +174,8 @@ TYPED_TEST_P(ForallReduceMinLocBasicTest, ReduceMinLocBasicForall)
     }
   }
   RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0], seg_idx.size(), working_res);
-  ForallReduceMinLocBasicTestImpl<IDX_TYPE,
-                                  DATA_TYPE,
-                                  RAJA::TypedListSegment<IDX_TYPE>,
-                                  EXEC_POLICY,
+  ForallReduceMinLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+                                  RAJA::TypedListSegment<IDX_TYPE>, EXEC_POLICY,
                                   REDUCE_POLICY>(l1, seg_idx, working_res);
 }
 

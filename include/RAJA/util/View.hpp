@@ -127,8 +127,7 @@ removenth(Lay lyout, Tup&& tup) -> decltype(selecttuple<Lay>(
               >{}))
 {
   return selecttuple<Lay>(
-      lyout,
-      std::forward<Tup>(tup),
+      lyout, std::forward<Tup>(tup),
       cat_seq_t<camp::make_idx_seq_t<Nth>, // sequence up to Nth
                 offset_seq_t<Nth + 1,      // after Nth
                              camp::make_idx_seq_t<camp::tuple_size<Tup>::value -
@@ -198,8 +197,7 @@ struct MultiView
     typename add_offset<layout_type>::type shift_layout(layout);
     shift_layout.shift(shift);
 
-    return RAJA::MultiView<ValueType,
-                           typename add_offset<layout_type>::type,
+    return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type,
                            P2Pidx>(data, shift_layout);
   }
 

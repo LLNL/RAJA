@@ -116,26 +116,16 @@ struct LaunchExecute<
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
-        BODY body =
-            RAJA::cuda::make_launch_body(func,
-                                         gridSize,
-                                         blockSize,
-                                         shared_mem_size,
-                                         cuda_res,
-                                         std::forward<BODY_IN>(body_in));
+        BODY body = RAJA::cuda::make_launch_body(
+            func, gridSize, blockSize, shared_mem_size, cuda_res,
+            std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void* args[] = {(void*)&body};
-        RAJA::cuda::launch(func,
-                           gridSize,
-                           blockSize,
-                           args,
-                           shared_mem_size,
-                           cuda_res,
-                           async,
-                           kernel_name);
+        RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
+                           cuda_res, async, kernel_name);
       }
 
       RAJA_FT_END;
@@ -195,9 +185,7 @@ struct LaunchExecute<
 
       {
         using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<
-            async,
-            named_usage::unspecified,
-            named_usage::unspecified>;
+            async, named_usage::unspecified, named_usage::unspecified>;
         RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers,
                                                      launch_info);
 
@@ -205,26 +193,16 @@ struct LaunchExecute<
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
-        BODY body =
-            RAJA::cuda::make_launch_body(func,
-                                         gridSize,
-                                         blockSize,
-                                         shared_mem_size,
-                                         cuda_res,
-                                         std::forward<BODY_IN>(body_in));
+        BODY body = RAJA::cuda::make_launch_body(
+            func, gridSize, blockSize, shared_mem_size, cuda_res,
+            std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void* args[] = {(void*)&body, (void*)&launch_reducers};
-        RAJA::cuda::launch(func,
-                           gridSize,
-                           blockSize,
-                           args,
-                           shared_mem_size,
-                           cuda_res,
-                           async,
-                           kernel_name);
+        RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
+                           cuda_res, async, kernel_name);
 
         RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers,
                                                         launch_info);
@@ -331,26 +309,16 @@ struct LaunchExecute<
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
-        BODY body =
-            RAJA::cuda::make_launch_body(func,
-                                         gridSize,
-                                         blockSize,
-                                         shared_mem_size,
-                                         cuda_res,
-                                         std::forward<BODY_IN>(body_in));
+        BODY body = RAJA::cuda::make_launch_body(
+            func, gridSize, blockSize, shared_mem_size, cuda_res,
+            std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void* args[] = {(void*)&body};
-        RAJA::cuda::launch(func,
-                           gridSize,
-                           blockSize,
-                           args,
-                           shared_mem_size,
-                           cuda_res,
-                           async,
-                           kernel_name);
+        RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
+                           cuda_res, async, kernel_name);
       }
 
       RAJA_FT_END;
@@ -376,9 +344,7 @@ struct LaunchExecute<
     using BODY = camp::decay<BODY_IN>;
 
     auto func = reinterpret_cast<const void*>(
-        &launch_new_reduce_global_fcn_fixed<BODY,
-                                            nthreads,
-                                            BLOCKS_PER_SM,
+        &launch_new_reduce_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM,
                                             camp::decay<ReduceParams>>);
 
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
@@ -414,34 +380,25 @@ struct LaunchExecute<
       launch_info.res          = cuda_res;
       {
 
-        using EXEC_POL = RAJA::policy::cuda::
-            cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>;
+        using EXEC_POL =
+            RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
+                                                       BLOCKS_PER_SM>;
         RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers,
                                                      launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
-        BODY body =
-            RAJA::cuda::make_launch_body(func,
-                                         gridSize,
-                                         blockSize,
-                                         shared_mem_size,
-                                         cuda_res,
-                                         std::forward<BODY_IN>(body_in));
+        BODY body = RAJA::cuda::make_launch_body(
+            func, gridSize, blockSize, shared_mem_size, cuda_res,
+            std::forward<BODY_IN>(body_in));
 
         //
         // Launch the kernel
         //
         void* args[] = {(void*)&body, (void*)&launch_reducers};
-        RAJA::cuda::launch(func,
-                           gridSize,
-                           blockSize,
-                           args,
-                           shared_mem_size,
-                           cuda_res,
-                           async,
-                           kernel_name);
+        RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
+                           cuda_res, async, kernel_name);
 
         RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers,
                                                         launch_info);
@@ -550,8 +507,7 @@ struct LoopExecute<
 
     if (i0 < len0 && i1 < len1 && i2 < len2)
     {
-      body(*(segment0.begin() + i0),
-           *(segment1.begin() + i1),
+      body(*(segment0.begin() + i0), *(segment1.begin() + i1),
            *(segment2.begin() + i2));
     }
   }
@@ -673,8 +629,7 @@ struct LoopExecute<
         for (diff_t i2 = i2_init; i2 < len2; i2 += i2_stride)
         {
 
-          body(*(segment0.begin() + i0),
-               *(segment1.begin() + i1),
+          body(*(segment0.begin() + i0), *(segment1.begin() + i1),
                *(segment2.begin() + i2));
         }
       }
@@ -774,12 +729,8 @@ struct LoopICountExecute<
 
     if (i0 < len0 && i1 < len1 && i2 < len2)
     {
-      body(*(segment0.begin() + i0),
-           *(segment1.begin() + i1),
-           *(segment2.begin() + i2),
-           i0,
-           i1,
-           i2);
+      body(*(segment0.begin() + i0), *(segment1.begin() + i1),
+           *(segment2.begin() + i2), i0, i1, i2);
     }
   }
 };
@@ -900,12 +851,8 @@ struct LoopICountExecute<
         for (diff_t i2 = i2_init; i2 < len2; i2 += i2_stride)
         {
 
-          body(*(segment0.begin() + i0),
-               *(segment1.begin() + i1),
-               *(segment2.begin() + i2),
-               i0,
-               i1,
-               i2);
+          body(*(segment0.begin() + i0), *(segment1.begin() + i1),
+               *(segment2.begin() + i2), i0, i1, i2);
         }
       }
     }

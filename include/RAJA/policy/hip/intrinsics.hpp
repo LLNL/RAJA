@@ -93,8 +93,8 @@ struct AccessorDeviceScopeUseBlockFence
   template <typename T>
   static RAJA_DEVICE RAJA_INLINE T get(T* in_ptr, size_t idx)
   {
-    using ArrayType = RAJA::detail::
-        AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
@@ -105,8 +105,8 @@ struct AccessorDeviceScopeUseBlockFence
     {
 #if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
     RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_load)
-      u.array[i] = __hip_atomic_load(
-          &ptr[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+      u.array[i] = __hip_atomic_load(&ptr[i], __ATOMIC_RELAXED,
+                                     __HIP_MEMORY_SCOPE_AGENT);
 #else
       u.array[i] = atomicAdd(&ptr[i], integer_type(0));
 #endif
@@ -118,8 +118,8 @@ struct AccessorDeviceScopeUseBlockFence
   template <typename T>
   static RAJA_DEVICE RAJA_INLINE void set(T* in_ptr, size_t idx, T val)
   {
-    using ArrayType = RAJA::detail::
-        AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
@@ -130,8 +130,8 @@ struct AccessorDeviceScopeUseBlockFence
     {
 #if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
     RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_store)
-      __hip_atomic_store(
-          &ptr[i], u.array[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+      __hip_atomic_store(&ptr[i], u.array[i], __ATOMIC_RELAXED,
+                         __HIP_MEMORY_SCOPE_AGENT);
 #else
       atomicExch(&ptr[i], u.array[i]);
 #endif
@@ -181,9 +181,9 @@ constexpr size_t max_shfl_int_type_size = sizeof(unsigned int);
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
-  RAJA::detail::
-      AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size>
-          u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
   for (size_t i = 0; i < u.array_size(); ++i)
@@ -196,9 +196,9 @@ RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
-  RAJA::detail::
-      AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size>
-          u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
   for (size_t i = 0; i < u.array_size(); ++i)
@@ -348,10 +348,8 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     __shared__ unsigned char tmpsd[sizeof(
         RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>)];
     RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>* sd =
-        reinterpret_cast<
-            RAJA::detail::SoAArray<T,
-                                   policy::hip::device_constants.MAX_WARPS>*>(
-            tmpsd);
+        reinterpret_cast<RAJA::detail::SoAArray<
+            T, policy::hip::device_constants.MAX_WARPS>*>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0)

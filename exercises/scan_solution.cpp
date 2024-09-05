@@ -174,8 +174,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_inclusive_omp_plus_start
   RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(
-      RAJA::make_span(in, N),
-      RAJA::make_span(out, N),
+      RAJA::make_span(in, N), RAJA::make_span(out, N),
       RAJA::operators::plus<int>{});
   // _scan_inclusive_omp_plus_end
 
@@ -244,8 +243,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_exclusive_cuda_plus_start
   RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::make_span(in, N),
-      RAJA::make_span(out, N),
+      RAJA::make_span(in, N), RAJA::make_span(out, N),
       RAJA::operators::plus<int>{});
   // _scan_exclusive_cuda_plus_end
 
@@ -291,8 +289,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));
 
   RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      RAJA::make_span(d_in, N),
-      RAJA::make_span(d_out, N),
+      RAJA::make_span(d_in, N), RAJA::make_span(d_out, N),
       RAJA::operators::plus<int>{});
 
   hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));

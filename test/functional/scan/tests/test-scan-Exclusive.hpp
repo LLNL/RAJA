@@ -55,9 +55,7 @@ void ScanExclusiveTestImpl(
 
   RAJA::exclusive_scan<EXEC_POLICY>(
       RAJA::make_span(static_cast<const T*>(work_in), N),
-      RAJA::make_span(work_out, N),
-      OP_TYPE{},
-      offset);
+      RAJA::make_span(work_out, N), OP_TYPE{}, offset);
 
   res.memcpy(host_out, work_out, sizeof(T) * N);
   res.wait();
@@ -68,11 +66,8 @@ void ScanExclusiveTestImpl(
   res.memcpy(work_in, host_in, sizeof(T) * N);
 
   RAJA::exclusive_scan<EXEC_POLICY>(
-      res,
-      RAJA::make_span(static_cast<const T*>(work_in), N),
-      RAJA::make_span(work_out, N),
-      OP_TYPE{},
-      offset);
+      res, RAJA::make_span(static_cast<const T*>(work_in), N),
+      RAJA::make_span(work_out, N), OP_TYPE{}, offset);
 
   res.memcpy(host_out, work_out, sizeof(T) * N);
   res.wait();

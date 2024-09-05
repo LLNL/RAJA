@@ -93,8 +93,8 @@ struct AccessorDeviceScopeUseBlockFence
   template <typename T>
   static RAJA_DEVICE RAJA_INLINE T get(T* in_ptr, size_t idx)
   {
-    using ArrayType = RAJA::detail::
-        AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
@@ -112,8 +112,8 @@ struct AccessorDeviceScopeUseBlockFence
   template <typename T>
   static RAJA_DEVICE RAJA_INLINE void set(T* in_ptr, size_t idx, T val)
   {
-    using ArrayType = RAJA::detail::
-        AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
@@ -153,9 +153,9 @@ constexpr size_t max_shfl_int_type_size = sizeof(unsigned int);
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
-  RAJA::detail::
-      AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size>
-          u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
   for (size_t i = 0; i < u.array_size(); ++i)
@@ -172,9 +172,9 @@ RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
-  RAJA::detail::
-      AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size>
-          u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
   for (size_t i = 0; i < u.array_size(); ++i)
@@ -448,10 +448,8 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     // Partial placement new: Should call new(tmpsd) here but recasting memory
     // to avoid calling constructor/destructor in shared memory.
     RAJA::detail::SoAArray<T, policy::cuda::device_constants.MAX_WARPS>* sd =
-        reinterpret_cast<
-            RAJA::detail::SoAArray<T,
-                                   policy::cuda::device_constants.MAX_WARPS>*>(
-            tmpsd);
+        reinterpret_cast<RAJA::detail::SoAArray<
+            T, policy::cuda::device_constants.MAX_WARPS>*>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0)

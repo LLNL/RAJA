@@ -31,8 +31,8 @@ void KernelHyperplane2DTestImpl(const int groups,
 
   INDEX_TYPE array_length = groups * idim * jdim;
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array,
+                                    &check_array, &test_array);
 
   RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>> HostView(
       test_array, groups, idim, jdim);
@@ -122,8 +122,8 @@ void KernelHyperplane2DTestImpl(const int groups,
     }
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array, check_array,
+                                      test_array);
 }
 
 
@@ -140,20 +140,11 @@ TYPED_TEST_P(KernelHyperplane2DTest, Hyperplane2DKernel)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  KernelHyperplane2DTestImpl<INDEX_TYPE,
-                             DATA_TYPE,
-                             WORKING_RES,
-                             EXEC_POLICY,
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                              REDUCE_POLICY>(1, 10, 10);
-  KernelHyperplane2DTestImpl<INDEX_TYPE,
-                             DATA_TYPE,
-                             WORKING_RES,
-                             EXEC_POLICY,
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                              REDUCE_POLICY>(2, 111, 205);
-  KernelHyperplane2DTestImpl<INDEX_TYPE,
-                             DATA_TYPE,
-                             WORKING_RES,
-                             EXEC_POLICY,
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
                              REDUCE_POLICY>(3, 213, 123);
 }
 

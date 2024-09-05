@@ -64,23 +64,22 @@ void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
   int* check_array;
   int* test_array;
 
-  allocateForallTestData<int>(
-      N, erased_work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<int>(N, erased_work_res, &work_array, &check_array,
+                              &test_array);
 
   RAJA::TypedRangeSegment<int> range(0, N);
 
   // Initialize Data
   std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
 
-  erased_work_res.memcpy(
-      work_array, test_array, sizeof(int) * RAJA::stripIndexType(N));
+  erased_work_res.memcpy(work_array, test_array,
+                         sizeof(int) * RAJA::stripIndexType(N));
 
   RAJA::ReduceSum<REDUCE_POL, int> worksum(0);
 
   // Calculate Working data
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N)),
-      RAJA::make_tuple<int>(0),
+      RAJA::make_tuple(RAJA::RangeSegment(0, N)), RAJA::make_tuple<int>(0),
 
       // Resource
       work_res,
@@ -102,8 +101,8 @@ void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
 
   ASSERT_EQ(worksum.get(), N * (N - 1) / 2);
 
-  deallocateForallTestData<int>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<int>(erased_work_res, work_array, check_array,
+                                test_array);
 }
 
 // DEVICE_ and DEPTH_1_REDUCESUM execution policies use the above

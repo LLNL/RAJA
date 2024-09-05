@@ -580,8 +580,7 @@ struct HipDims
   {
     if (num_blocks() != 0)
     {
-      return {(blocks.x ? blocks.x : 1),
-              (blocks.y ? blocks.y : 1),
+      return {(blocks.x ? blocks.x : 1), (blocks.y ? blocks.y : 1),
               (blocks.z ? blocks.z : 1)};
     }
     else
@@ -595,8 +594,7 @@ struct HipDims
   {
     if (num_threads() != 0)
     {
-      return {(threads.x ? threads.x : 1),
-              (threads.y ? threads.y : 1),
+      return {(threads.x ? threads.x : 1), (threads.y ? threads.y : 1),
               (threads.z ? threads.z : 1)};
     }
     else

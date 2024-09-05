@@ -254,8 +254,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _sort_stable_pairs_omp_greater_start
   RAJA::stable_sort_pairs<RAJA::omp_parallel_for_exec>(
-      RAJA::make_span(out, N),
-      RAJA::make_span(out_vals, N),
+      RAJA::make_span(out, N), RAJA::make_span(out_vals, N),
       RAJA::operators::greater<int>{});
   // _sort_stable_pairs_omp_greater_end
 
@@ -282,8 +281,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _sort_pairs_cuda_greater_start
   RAJA::sort_pairs<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::make_span(out, N),
-      RAJA::make_span(out_vals, N),
+      RAJA::make_span(out, N), RAJA::make_span(out_vals, N),
       RAJA::operators::greater<int>{});
   // _sort_pairs_cuda_greater_end
 
@@ -332,8 +330,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       hipMemcpy(d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice));
 
   RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      RAJA::make_span(d_out, N),
-      RAJA::make_span(d_out_vals, N),
+      RAJA::make_span(d_out, N), RAJA::make_span(d_out_vals, N),
       RAJA::operators::less<int>{});
 
   hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));

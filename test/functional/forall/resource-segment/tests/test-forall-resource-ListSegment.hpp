@@ -39,37 +39,36 @@ void ForallResourceListSegmentTestImpl(INDEX_TYPE N)
   camp::resources::Resource erased_working_res{working_res};
 
   // Create list segment for tests
-  RAJA::TypedListSegment<INDEX_TYPE> lseg(
-      &idx_array[0], idxlen, erased_working_res);
+  RAJA::TypedListSegment<INDEX_TYPE> lseg(&idx_array[0], idxlen,
+                                          erased_working_res);
 
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
     test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
   }
 
-  working_res.memcpy(
-      working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(working_array, test_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (size_t i = 0; i < idxlen; ++i)
   {
     test_array[RAJA::stripIndexType(idx_array[i])] = idx_array[i];
   }
 
-  RAJA::forall<EXEC_POLICY>(working_res,
-                            lseg,
+  RAJA::forall<EXEC_POLICY>(working_res, lseg,
                             [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
                               working_array[RAJA::stripIndexType(idx)] = idx;
                             });
 
-  working_res.memcpy(
-      check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   //
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
@@ -78,8 +77,8 @@ void ForallResourceListSegmentTestImpl(INDEX_TYPE N)
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 

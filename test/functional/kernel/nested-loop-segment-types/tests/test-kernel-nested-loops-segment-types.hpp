@@ -55,20 +55,18 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      data_len, working_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(data_len, working_res, &work_array,
+                                    &check_array, &test_array);
 
-  RAJA::View<DATA_TYPE, RAJA::Layout<3>> work_view(
-      work_array, dim1, dim2, dim3);
-  RAJA::View<DATA_TYPE, RAJA::Layout<3>> test_view(
-      test_array, dim1, dim2, dim3);
+  RAJA::View<DATA_TYPE, RAJA::Layout<3>> work_view(work_array, dim1, dim2,
+                                                   dim3);
+  RAJA::View<DATA_TYPE, RAJA::Layout<3>> test_view(test_array, dim1, dim2,
+                                                   dim3);
 
-  memset(static_cast<void*>(test_array),
-         0,
+  memset(static_cast<void*>(test_array), 0,
          sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(work_array,
-                     test_array,
+  working_res.memcpy(work_array, test_array,
                      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   if (!zero_legth_segment)
@@ -123,8 +121,7 @@ void KernelNestedLoopsSegmentTypesTestImpl(
         });
   }
 
-  working_res.memcpy(check_array,
-                     work_array,
+  working_res.memcpy(check_array, work_array,
                      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = 0; i < data_len; ++i)
@@ -133,8 +130,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, work_array, check_array,
+                                      test_array);
 }
 
 

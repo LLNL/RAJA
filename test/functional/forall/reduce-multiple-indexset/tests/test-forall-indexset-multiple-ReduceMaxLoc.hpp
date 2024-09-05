@@ -47,8 +47,8 @@ void ForallIndexSetReduceMaxLocMultipleTestImpl()
   double* check_array;
   double* test_array;
 
-  allocateForallTestData<double>(
-      alen, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<double>(alen, working_res, &working_array,
+                                 &check_array, &test_array);
 
   double   current_max = -DBL_MAX;
   IDX_TYPE current_loc = -1;
@@ -94,8 +94,8 @@ void ForallIndexSetReduceMaxLocMultipleTestImpl()
     ASSERT_EQ(static_cast<IDX_TYPE>(dmax1.getLoc()), current_loc);
   }
 
-  deallocateForallTestData<double>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<double>(working_res, working_array, check_array,
+                                   test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceMaxLocMultipleTest);
@@ -111,9 +111,7 @@ TYPED_TEST_P(ForallIndexSetReduceMaxLocMultipleTest,
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMaxLocMultipleTestImpl<IDX_TYPE,
-                                             WORKING_RES,
-                                             EXEC_POLICY,
+  ForallIndexSetReduceMaxLocMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
                                              REDUCE_POLICY>();
 }
 

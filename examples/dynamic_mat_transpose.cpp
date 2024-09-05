@@ -355,13 +355,11 @@ int main(int argc, char* argv[])
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<outer1>(
-            ctx,
-            RAJA::RangeSegment(0, outer_Dimr),
+            ctx, RAJA::RangeSegment(0, outer_Dimr),
             [&](int by)
             {
               RAJA::loop<outer0>(
-                  ctx,
-                  RAJA::RangeSegment(0, outer_Dimc),
+                  ctx, RAJA::RangeSegment(0, outer_Dimc),
                   [&](int bx)
                   {
                     // Request memory from shared memory pool
@@ -369,44 +367,40 @@ int main(int argc, char* argv[])
                         ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
 
                     // Use RAJA View for simplified indexing
-                    RAJA::View<int, RAJA::Layout<2>> Tile(
-                        tile_ptr, TILE_DIM, TILE_DIM);
+                    RAJA::View<int, RAJA::Layout<2>> Tile(tile_ptr, TILE_DIM,
+                                                          TILE_DIM);
 
-                    RAJA::loop<inner1>(ctx,
-                                       RAJA::RangeSegment(0, TILE_DIM),
-                                       [&](int ty)
-                                       {
-                                         RAJA::loop<inner0>(
-                                             ctx,
-                                             RAJA::RangeSegment(0, TILE_DIM),
-                                             [&](int tx)
-                                             {
-                                               int col =
-                                                   bx * TILE_DIM +
-                                                   tx; // Matrix column index
-                                               int row = by * TILE_DIM +
-                                                         ty; // Matrix row index
+                    RAJA::loop<inner1>(
+                        ctx, RAJA::RangeSegment(0, TILE_DIM),
+                        [&](int ty)
+                        {
+                          RAJA::loop<inner0>(
+                              ctx, RAJA::RangeSegment(0, TILE_DIM),
+                              [&](int tx)
+                              {
+                                int col =
+                                    bx * TILE_DIM + tx; // Matrix column index
+                                int row =
+                                    by * TILE_DIM + ty; // Matrix row index
 
-                                               // Bounds check
-                                               if (row < N_r && col < N_c)
-                                               {
-                                                 Tile(ty, tx) = Aview(row, col);
-                                               }
-                                             });
-                                       });
+                                // Bounds check
+                                if (row < N_r && col < N_c)
+                                {
+                                  Tile(ty, tx) = Aview(row, col);
+                                }
+                              });
+                        });
 
                     // Barrier is needed to ensure all threads have written to
                     // Tile
                     ctx.teamSync();
 
                     RAJA::loop<inner1>(
-                        ctx,
-                        RAJA::RangeSegment(0, TILE_DIM),
+                        ctx, RAJA::RangeSegment(0, TILE_DIM),
                         [&](int ty)
                         {
                           RAJA::loop<inner0>(
-                              ctx,
-                              RAJA::RangeSegment(0, TILE_DIM),
+                              ctx, RAJA::RangeSegment(0, TILE_DIM),
                               [&](int tx)
                               {
                                 int col =

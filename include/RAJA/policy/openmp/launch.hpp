@@ -254,8 +254,7 @@ struct LoopExecute<omp_for_exec, SEGMENT>
       {
         for (int i = 0; i < len0; i++)
         {
-          body(*(segment0.begin() + i),
-               *(segment1.begin() + j),
+          body(*(segment0.begin() + i), *(segment1.begin() + j),
                *(segment2.begin() + k));
         }
       }
@@ -328,12 +327,8 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
       {
         for (int i = 0; i < len0; i++)
         {
-          body(*(segment0.begin() + i),
-               *(segment1.begin() + j),
-               *(segment2.begin() + k),
-               i,
-               j,
-               k);
+          body(*(segment0.begin() + i), *(segment1.begin() + j),
+               *(segment2.begin() + k), i, j, k);
         }
       }
     }
@@ -441,8 +436,8 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT>
             for (int i = 0; i < len0; i++)
             {
 
-              loop_body.get_priv()(
-                  *(segment0.begin() + i), *(segment1.begin() + j), i, j);
+              loop_body.get_priv()(*(segment0.begin() + i),
+                                   *(segment1.begin() + j), i, j);
             }
           }
         });
@@ -476,10 +471,7 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT>
               {
                 loop_body.get_priv()(*(segment0.begin() + i),
                                      *(segment1.begin() + j),
-                                     *(segment2.begin() + k),
-                                     i,
-                                     j,
-                                     k);
+                                     *(segment2.begin() + k), i, j, k);
               }
             }
           }

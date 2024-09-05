@@ -47,8 +47,8 @@ void ForallIndexSetReduceMinMultipleTestImpl()
   double* check_array;
   double* test_array;
 
-  allocateForallTestData<double>(
-      alen, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<double>(alen, working_res, &working_array,
+                                 &check_array, &test_array);
 
   const double default_val = DBL_MAX;
 
@@ -97,8 +97,8 @@ void ForallIndexSetReduceMinMultipleTestImpl()
     ASSERT_FLOAT_EQ(static_cast<double>(dmin1.get()), 2 * current_min);
   }
 
-  deallocateForallTestData<double>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<double>(working_res, working_array, check_array,
+                                   test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceMinMultipleTest);
@@ -114,9 +114,7 @@ TYPED_TEST_P(ForallIndexSetReduceMinMultipleTest,
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMinMultipleTestImpl<IDX_TYPE,
-                                          WORKING_RES,
-                                          EXEC_POLICY,
+  ForallIndexSetReduceMinMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
                                           REDUCE_POLICY>();
 }
 

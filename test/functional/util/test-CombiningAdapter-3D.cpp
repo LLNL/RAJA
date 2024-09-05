@@ -59,9 +59,7 @@ void test_CombiningAdapter_3D(Segment0 const& seg0,
           }
         }
       },
-      seg0,
-      seg1,
-      seg2);
+      seg0, seg1, seg2);
 
   ASSERT_EQ(adapter.size(), seg0.size() * seg1.size() * seg2.size());
 

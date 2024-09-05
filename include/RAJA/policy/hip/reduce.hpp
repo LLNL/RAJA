@@ -265,8 +265,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     // to avoid calling constructor/destructor in shared memory.
     RAJA::detail::SoAArray<T, RAJA::policy::hip::device_constants.MAX_WARPS>*
         sd = reinterpret_cast<RAJA::detail::SoAArray<
-            T,
-            RAJA::policy::hip::device_constants.MAX_WARPS>*>(tmpsd);
+            T, RAJA::policy::hip::device_constants.MAX_WARPS>*>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0)
@@ -721,10 +720,11 @@ struct ReduceLastBlock_Data
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
-    T      temp          = value;
-    size_t replicationId = impl::
-        grid_reduce_last_block<Combiner, Accessor, replication, atomic_stride>(
-            temp, identity, device, device_count);
+    T      temp = value;
+    size_t replicationId =
+        impl::grid_reduce_last_block<Combiner, Accessor, replication,
+                                     atomic_stride>(temp, identity, device,
+                                                    device_count);
     if (replicationId != replication)
     {
       output[replicationId] = temp;
@@ -910,11 +910,10 @@ struct ReduceAtomicDeviceInit_Data
   {
     T temp = value;
 
-    size_t replicationId = impl::grid_reduce_atomic_device_init<Combiner,
-                                                                Accessor,
-                                                                replication,
-                                                                atomic_stride>(
-        temp, identity, device, device_count);
+    size_t replicationId =
+        impl::grid_reduce_atomic_device_init<Combiner, Accessor, replication,
+                                             atomic_stride>(
+            temp, identity, device, device_count);
     if (replicationId != replication)
     {
       output[replicationId] = temp;

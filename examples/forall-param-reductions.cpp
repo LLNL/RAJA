@@ -118,20 +118,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT seq_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL1>(
-      host_res,
-      arange,
-      RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
+      host_res, arange, RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_minloc),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
       RAJA::expt::KernelName("RAJA Reduce Seq Kernel"),
-      [=](int         i,
-          int&        _seq_sum,
-          int&        _seq_min,
-          int&        _seq_max,
-          VALLOC_INT& _seq_minloc,
-          VALLOC_INT& _seq_maxloc)
+      [=](int i, int& _seq_sum, int& _seq_min, int& _seq_max,
+          VALLOC_INT& _seq_minloc, VALLOC_INT& _seq_maxloc)
       {
         _seq_sum += a[i];
 
@@ -173,20 +167,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL2>(
-      host_res,
-      arange,
-      RAJA::expt::Reduce<RAJA::operators::plus>(&omp_sum),
+      host_res, arange, RAJA::expt::Reduce<RAJA::operators::plus>(&omp_sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_minloc),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_maxloc),
       RAJA::expt::KernelName("RAJA Reduce OpenMP Kernel"),
-      [=](int         i,
-          int&        _omp_sum,
-          int&        _omp_min,
-          int&        _omp_max,
-          VALLOC_INT& _omp_minloc,
-          VALLOC_INT& _omp_maxloc)
+      [=](int i, int& _omp_sum, int& _omp_min, int& _omp_max,
+          VALLOC_INT& _omp_minloc, VALLOC_INT& _omp_maxloc)
       {
         _omp_sum += a[i];
 
@@ -227,20 +215,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_t_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL3>(
-      omp_res,
-      arange,
-      RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
+      omp_res, arange, RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_minloc),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_maxloc),
       RAJA::expt::KernelName("RAJA Reduce Target OpenMP Kernel"),
-      [=](int         i,
-          int&        _omp_t_sum,
-          int&        _omp_t_min,
-          int&        _omp_t_max,
-          VALLOC_INT& _omp_t_minloc,
-          VALLOC_INT& _omp_t_maxloc)
+      [=](int i, int& _omp_t_sum, int& _omp_t_min, int& _omp_t_max,
+          VALLOC_INT& _omp_t_minloc, VALLOC_INT& _omp_t_maxloc)
       {
         _omp_t_sum += a[i];
 
@@ -285,20 +267,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT cuda_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL3>(
-      cuda_res,
-      arange,
-      RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
+      cuda_res, arange, RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_minloc),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
       RAJA::expt::KernelName("RAJA Reduce CUDA Kernel"),
-      [=] RAJA_DEVICE(int         i,
-                      int&        _cuda_sum,
-                      int&        _cuda_min,
-                      int&        _cuda_max,
-                      VALLOC_INT& _cuda_minloc,
-                      VALLOC_INT& _cuda_maxloc)
+      [=] RAJA_DEVICE(int i, int& _cuda_sum, int& _cuda_min, int& _cuda_max,
+                      VALLOC_INT& _cuda_minloc, VALLOC_INT& _cuda_maxloc)
       {
         _cuda_sum += d_a[i];
 
@@ -342,19 +318,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT hip_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL3>(
-      arange,
-      RAJA::expt::Reduce<RAJA::operators::plus>(&hip_sum),
+      arange, RAJA::expt::Reduce<RAJA::operators::plus>(&hip_sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_minloc),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_maxloc),
       RAJA::expt::KernelName("RAJA Reduce HIP Kernel"),
-      [=] RAJA_DEVICE(int         i,
-                      int&        _hip_sum,
-                      int&        _hip_min,
-                      int&        _hip_max,
-                      VALLOC_INT& _hip_minloc,
-                      VALLOC_INT& _hip_maxloc)
+      [=] RAJA_DEVICE(int i, int& _hip_sum, int& _hip_min, int& _hip_max,
+                      VALLOC_INT& _hip_minloc, VALLOC_INT& _hip_maxloc)
       {
         _hip_sum += d_a[i];
 
@@ -399,20 +370,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT sycl_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL3>(
-      sycl_res,
-      arange,
-      RAJA::expt::Reduce<RAJA::operators::plus>(&sycl_sum),
+      sycl_res, arange, RAJA::expt::Reduce<RAJA::operators::plus>(&sycl_sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_minloc),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
       RAJA::expt::KernelName("RAJA Reduce SYCL Kernel"),
-      [=] RAJA_DEVICE(int         i,
-                      int&        _sycl_sum,
-                      int&        _sycl_min,
-                      int&        _sycl_max,
-                      VALLOC_INT& _sycl_minloc,
-                      VALLOC_INT& _sycl_maxloc)
+      [=] RAJA_DEVICE(int i, int& _sycl_sum, int& _sycl_min, int& _sycl_max,
+                      VALLOC_INT& _sycl_minloc, VALLOC_INT& _sycl_maxloc)
       {
         _sycl_sum += d_a[i];
 

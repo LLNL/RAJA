@@ -133,13 +133,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                             // host
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<loop_policy_seq>(ctx,
-                                    row_Range,
+        RAJA::loop<loop_policy_seq>(ctx, row_Range,
                                     [&](int /*row*/)
                                     {
                                       RAJA::loop<loop_policy_seq>(
-                                          ctx,
-                                          col_Range,
+                                          ctx, col_Range,
                                           [&](int /*col*/)
                                           {
                                             /// TODO...
@@ -205,13 +203,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<cuda_thread_y>(
-            ctx,
-            row_Range,
+            ctx, row_Range,
             [&](int row)
             {
               RAJA::loop<cuda_thread_x>(
-                  ctx,
-                  col_Range,
+                  ctx, col_Range,
                   [&](int col) { Atview(col, row) = Aview(row, col); });
             });
       });

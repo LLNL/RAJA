@@ -31,11 +31,11 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
 
   INDEX_TYPE array_length = rows * cols;
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array,
+                                    &check_array, &test_array);
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array_t, &check_array_t, &test_array_t);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array_t,
+                                    &check_array_t, &test_array_t);
 
   RAJA::View<DATA_TYPE, RAJA::Layout<2>> HostView(test_array, rows, cols);
   RAJA::View<DATA_TYPE, RAJA::Layout<2>> HostTView(test_array_t, cols, rows);
@@ -44,8 +44,7 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
   RAJA::View<DATA_TYPE, RAJA::Layout<2>> CheckTView(check_array_t, cols, rows);
 
   // initialize local array (shared mem)
-  using TILE_MEM = RAJA::LocalArray<DATA_TYPE,
-                                    RAJA::Perm<0, 1>,
+  using TILE_MEM = RAJA::LocalArray<DATA_TYPE, RAJA::Perm<0, 1>,
                                     RAJA::SizeList<tile_dim_x, tile_dim_y>>;
   TILE_MEM Tile_Array;
 
@@ -72,22 +71,16 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
   RAJA::kernel_param<EXEC_POLICY>(
       RAJA::make_tuple(colrange, rowrange),
       RAJA::make_tuple((INDEX_TYPE)0, (INDEX_TYPE)0, Tile_Array),
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE cc,
-                           INDEX_TYPE rr,
-                           INDEX_TYPE tx,
-                           INDEX_TYPE ty,
-                           TILE_MEM & Tile_Array)
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr, INDEX_TYPE tx,
+                           INDEX_TYPE ty, TILE_MEM & Tile_Array)
       { Tile_Array(ty, tx) = WorkView(rr, cc); },
 
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE cc,
-                           INDEX_TYPE rr,
-                           INDEX_TYPE tx,
-                           INDEX_TYPE ty,
-                           TILE_MEM & Tile_Array)
+      [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr, INDEX_TYPE tx,
+                           INDEX_TYPE ty, TILE_MEM & Tile_Array)
       { WorkTView(cc, rr) = Tile_Array(ty, tx); });
 
-  work_res.memcpy(
-      check_array_t, work_array_t, sizeof(DATA_TYPE) * array_length);
+  work_res.memcpy(check_array_t, work_array_t,
+                  sizeof(DATA_TYPE) * array_length);
 
   for (int rr = 0; rr < rows; ++rr)
   {
@@ -97,11 +90,11 @@ void KernelTileLocalArray2DTestImpl(const int rows, const int cols)
     }
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array, check_array,
+                                      test_array);
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array_t, check_array_t, test_array_t);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array_t, check_array_t,
+                                      test_array_t);
 }
 
 
@@ -117,17 +110,11 @@ TYPED_TEST_P(KernelTileLocalArray2DTest, TileLocalArray2DKernel)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  KernelTileLocalArray2DTestImpl<INDEX_TYPE,
-                                 DATA_TYPE,
-                                 WORKING_RES,
+  KernelTileLocalArray2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
                                  EXEC_POLICY>(10, 10);
-  KernelTileLocalArray2DTestImpl<INDEX_TYPE,
-                                 DATA_TYPE,
-                                 WORKING_RES,
+  KernelTileLocalArray2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
                                  EXEC_POLICY>(151, 111);
-  KernelTileLocalArray2DTestImpl<INDEX_TYPE,
-                                 DATA_TYPE,
-                                 WORKING_RES,
+  KernelTileLocalArray2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
                                  EXEC_POLICY>(362, 362);
 }
 

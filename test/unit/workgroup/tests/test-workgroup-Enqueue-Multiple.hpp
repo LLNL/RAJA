@@ -40,22 +40,15 @@ struct testWorkGroupEnqueueMultiple
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, callable>>;
 
-    using WorkPool_type = RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<Args...>,
-                                         Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<Args...>, Allocator>;
 
     using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy,
-                                              OrderPolicy,
-                                              StoragePolicy,
-                                              DispatchPolicy>,
-                        IndexType,
-                        RAJA::xargs<Args...>,
-                        Allocator>;
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<Args...>, Allocator>;
 
     {
       WorkPool_type pool(Allocator{});
@@ -160,19 +153,11 @@ TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest,
   std::uniform_int_distribution<size_t> dist_rep(0, 16);
   std::uniform_int_distribution<size_t> dist_num(0, 64);
 
-  testWorkGroupEnqueueMultiple<ExecPolicy,
-                               OrderPolicy,
-                               StoragePolicy,
-                               DispatchTyper,
-                               IndexType,
-                               Allocator>{}(
+  testWorkGroupEnqueueMultiple<ExecPolicy, OrderPolicy, StoragePolicy,
+                               DispatchTyper, IndexType, Allocator>{}(
       Xargs{}, false, dist_rep(rng), dist_num(rng));
-  testWorkGroupEnqueueMultiple<ExecPolicy,
-                               OrderPolicy,
-                               StoragePolicy,
-                               DispatchTyper,
-                               IndexType,
-                               Allocator>{}(
+  testWorkGroupEnqueueMultiple<ExecPolicy, OrderPolicy, StoragePolicy,
+                               DispatchTyper, IndexType, Allocator>{}(
       Xargs{}, true, dist_rep(rng), dist_num(rng));
 }
 

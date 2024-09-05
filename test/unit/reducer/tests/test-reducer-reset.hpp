@@ -116,28 +116,18 @@ void testReducerReset()
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
   RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
-  RAJA::ReduceMinLoc<ReducePolicy,
-                     NumericType,
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType,
                      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_minloctup(initVal, LocTup);
-  RAJA::ReduceMaxLoc<ReducePolicy,
-                     NumericType,
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType,
                      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_maxloctup(initVal, LocTup);
 
   // initiate some device computation if using device policy
-  exec_dispatcher<ReducePolicy,
-                  NumericType,
-                  RAJA::Index_type,
-                  RAJA::tuple<RAJA::Index_type, RAJA::Index_type>,
-                  ForOnePol>(reduce_sum,
-                             reduce_min,
-                             reduce_max,
-                             reduce_minloc,
-                             reduce_maxloc,
-                             reduce_minloctup,
-                             reduce_maxloctup,
-                             initVal);
+  exec_dispatcher<ReducePolicy, NumericType, RAJA::Index_type,
+                  RAJA::tuple<RAJA::Index_type, RAJA::Index_type>, ForOnePol>(
+      reduce_sum, reduce_min, reduce_max, reduce_minloc, reduce_maxloc,
+      reduce_minloctup, reduce_maxloctup, initVal);
 
   // perform real host resets
   reduce_sum.reset(resetVal[0]);

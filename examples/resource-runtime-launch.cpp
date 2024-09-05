@@ -185,12 +185,10 @@ int main(int argc, char* argv[])
   // How the kernel executes now depends on how the resource is constructed
   // (host or device)
   RAJA::launch<launch_policy>(
-      res,
-      RAJA::LaunchParams(RAJA::Teams(GRID_SZ), RAJA::Threads(TEAM_SZ)),
+      res, RAJA::LaunchParams(RAJA::Teams(GRID_SZ), RAJA::Threads(TEAM_SZ)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<loop_pol>(ctx,
-                             arange,
+        RAJA::loop<loop_pol>(ctx, arange,
                              [&](int i)
                              {
                                kernel_sum += a[i];

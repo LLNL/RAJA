@@ -342,8 +342,7 @@ RAJA_INLINE resources::EventProxy<resources::Host>
                         Func&&      loop_body,
                         ForallParam f_params)
 {
-  expt::internal::forall_impl(Schedule{},
-                              std::forward<Iterable>(iter),
+  expt::internal::forall_impl(Schedule{}, std::forward<Iterable>(iter),
                               std::forward<Func>(loop_body),
                               std::forward<ForallParam>(f_params));
   return resources::EventProxy<resources::Host>(host_res);

@@ -75,8 +75,8 @@ void ForallAtomicBasicTestImpl(IdxType seglimit)
   T* test_array;
   T* check_array;
 
-  allocateForallTestData<T>(
-      len, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<T>(len, work_res, &work_array, &check_array,
+                            &test_array);
 
   // use atomic add to reduce the array
   test_array[0]  = static_cast<T>(0);
@@ -105,8 +105,8 @@ void ForallAtomicBasicTestImpl(IdxType seglimit)
         RAJA::atomicInc<AtomicPolicy>(work_array + 4);
         RAJA::atomicDec<AtomicPolicy>(work_array + 5);
         RAJA::atomicExchange<AtomicPolicy>(work_array + 6, static_cast<T>(i));
-        RAJA::atomicCAS<AtomicPolicy>(
-            work_array + 7, static_cast<T>(i), static_cast<T>(i + 1));
+        RAJA::atomicCAS<AtomicPolicy>(work_array + 7, static_cast<T>(i),
+                                      static_cast<T>(i + 1));
         RAJA::atomicLoad<AtomicPolicy>(work_array + 8);
         RAJA::atomicStore<AtomicPolicy>(work_array + 9, static_cast<T>(1));
         RAJA::atomicInc<AtomicPolicy>(work_array + 10, static_cast<T>(16));
@@ -147,24 +147,13 @@ TYPED_TEST_P(ForallAtomicBasicTest, AtomicBasicForall)
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicBasicTestImpl<AExec,
-                            APol,
-                            ResType,
-                            IdxType,
-                            RAJA::TypedRangeSegment<IdxType>,
-                            DType>(10000);
-  ForallAtomicBasicTestImpl<AExec,
-                            APol,
-                            ResType,
-                            IdxType,
-                            RAJA::TypedRangeStrideSegment<IdxType>,
-                            DType>(10000);
-  ForallAtomicBasicTestImpl<AExec,
-                            APol,
-                            ResType,
-                            IdxType,
-                            RAJA::TypedListSegment<IdxType>,
-                            DType>(10000);
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, IdxType,
+                            RAJA::TypedRangeSegment<IdxType>, DType>(10000);
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, IdxType,
+                            RAJA::TypedRangeStrideSegment<IdxType>, DType>(
+      10000);
+  ForallAtomicBasicTestImpl<AExec, APol, ResType, IdxType,
+                            RAJA::TypedListSegment<IdxType>, DType>(10000);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicBasicTest, AtomicBasicForall);

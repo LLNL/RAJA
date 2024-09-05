@@ -193,7 +193,7 @@ TYPED_TEST(OffsetLayoutViewUnitTest, View)
   std::array<RAJA::Index_type, 1> lower{{1}};
   std::array<RAJA::Index_type, 1> upper{{11}};
   RAJA::View<TypeParam, layout>   view(data,
-                                     RAJA::make_offset_layout<1>(lower, upper));
+                                       RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++)
   {

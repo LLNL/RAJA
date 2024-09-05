@@ -147,14 +147,14 @@ struct testWorkGroupOrderedMultiple
     type3* check_array3   = nullptr;
     type3* test_array3    = nullptr;
 
-    allocateForallTestData<type1>(
-        N * num1, working_res, &working_array1, &check_array1, &test_array1);
+    allocateForallTestData<type1>(N * num1, working_res, &working_array1,
+                                  &check_array1, &test_array1);
 
-    allocateForallTestData<type2>(
-        N * num2, working_res, &working_array2, &check_array2, &test_array2);
+    allocateForallTestData<type2>(N * num2, working_res, &working_array2,
+                                  &check_array2, &test_array2);
 
-    allocateForallTestData<type3>(
-        N * num3, working_res, &working_array3, &check_array3, &test_array3);
+    allocateForallTestData<type3>(N * num3, working_res, &working_array3,
+                                  &check_array3, &test_array3);
 
     type1 const test_val1(5);
     type2 const test_val2(7);
@@ -171,30 +171,20 @@ struct testWorkGroupOrderedMultiple
         camp::list<range_segment, callable31<IndexType, type3>>,
         camp::list<range_segment, callable32<IndexType, type3>>>;
 
-    using WorkPool_type = RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<>,
-                                         Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy,
-                                              OrderPolicy,
-                                              StoragePolicy,
-                                              DispatchPolicy>,
-                        IndexType,
-                        RAJA::xargs<>,
-                        Allocator>;
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkSite_type = RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<>,
-                                         Allocator>;
+    using WorkSite_type =
+        RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     using resource_type = typename WorkGroup_type::resource_type;
 
@@ -384,14 +374,14 @@ struct testWorkGroupOrderedMultiple
     }
 
 
-    deallocateForallTestData<type1>(
-        working_res, working_array1, check_array1, test_array1);
+    deallocateForallTestData<type1>(working_res, working_array1, check_array1,
+                                    test_array1);
 
-    deallocateForallTestData<type2>(
-        working_res, working_array2, check_array2, test_array2);
+    deallocateForallTestData<type2>(working_res, working_array2, check_array2,
+                                    test_array2);
 
-    deallocateForallTestData<type3>(
-        working_res, working_array3, check_array3, test_array3);
+    deallocateForallTestData<type3>(working_res, working_array3, check_array3,
+                                    test_array3);
   }
 };
 
@@ -482,20 +472,11 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest,
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
-  testWorkGroupOrderedMultiple<ExecPolicy,
-                               OrderPolicy,
-                               StoragePolicy,
-                               DispatchTyper,
-                               IndexType,
-                               Allocator,
-                               WORKING_RESOURCE>{}(rng,
-                                                   IndexType(96),
-                                                   IndexType(4000),
-                                                   num1,
-                                                   num2,
-                                                   num3,
-                                                   pool_reuse,
-                                                   group_reuse);
+  testWorkGroupOrderedMultiple<ExecPolicy, OrderPolicy, StoragePolicy,
+                               DispatchTyper, IndexType, Allocator,
+                               WORKING_RESOURCE>{}(
+      rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse,
+      group_reuse);
 }
 
 #endif //__TEST_WORKGROUP_ORDERED_MULTIPLEREUSE__

@@ -76,9 +76,7 @@ struct StaticLayoutBase_impl<IdxLin,
   RAJA_INLINE static void print()
   {
     camp::sink(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
-                      (int)RangeInts,
-                      (int)Sizes,
-                      (int)Strides)...);
+                      (int)RangeInts, (int)Sizes, (int)Strides)...);
   }
 
 

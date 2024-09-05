@@ -73,8 +73,7 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   sync_timer.start();
   for (std::size_t stream = 0; stream < NUM_STREAMS; ++stream)
   {
-    forall<SyncExecPol>(dev[stream],
-                        RangeSegment(0, ARRAY_SIZE),
+    forall<SyncExecPol>(dev[stream], RangeSegment(0, ARRAY_SIZE),
                         [=] RAJA_HOST_DEVICE(int i)
                         { gpu_time_wait_for(100, clockrate); });
   }
@@ -85,8 +84,7 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   async_timer.start();
   for (std::size_t stream = 0; stream < NUM_STREAMS; ++stream)
   {
-    forall<AsyncExecPol>(dev[stream],
-                         RangeSegment(0, ARRAY_SIZE),
+    forall<AsyncExecPol>(dev[stream], RangeSegment(0, ARRAY_SIZE),
                          [=] RAJA_HOST_DEVICE(int i)
                          { gpu_time_wait_for(100, clockrate); });
   }

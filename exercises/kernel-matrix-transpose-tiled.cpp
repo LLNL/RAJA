@@ -175,18 +175,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
 
   using TILED_KERNEL_EXEC_POL = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1,
-      RAJA::tile_fixed<TILE_DIM>,
-      RAJA::seq_exec,
+      1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
       RAJA::statement::Tile<
-          0,
-          RAJA::tile_fixed<TILE_DIM>,
-          RAJA::seq_exec,
+          0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
           RAJA::statement::For<
-              1,
-              RAJA::seq_exec,
-              RAJA::statement::
-                  For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>>>;
+              1, RAJA::seq_exec,
+              RAJA::statement::For<0, RAJA::seq_exec,
+                                   RAJA::statement::Lambda<0>>>>>>;
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL>(RAJA::make_tuple(col_Range, row_Range),
                                       [=](int col, int row)
@@ -243,18 +238,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // to/from the tile.
   //
   using TILED_KERNEL_EXEC_POL_OMP2 = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1,
-      RAJA::tile_fixed<TILE_DIM>,
-      RAJA::seq_exec,
-      RAJA::statement::Tile<0,
-                            RAJA::tile_fixed<TILE_DIM>,
-                            RAJA::seq_exec,
-                            RAJA::statement::Collapse<
-                                RAJA::omp_parallel_collapse_exec,
-                                RAJA::ArgList<0, 1>,
-                                RAJA::statement::Lambda<0>> // closes collapse
-                            >                               // closes Tile 0
-      >                                                     // closes Tile 1
+      1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+      RAJA::statement::Tile<
+          0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::Collapse<
+              RAJA::omp_parallel_collapse_exec, RAJA::ArgList<0, 1>,
+              RAJA::statement::Lambda<0>>                  // closes collapse
+          >                                                // closes Tile 0
+      >                                                    // closes Tile 1
                                                         >; // closes policy list
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP2>(
@@ -318,23 +309,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using TILED_KERNEL_EXEC_POL_HIP =
       RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<TILE_DIM>,
-          RAJA::hip_block_y_loop,
+          1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<TILE_DIM>,
-              RAJA::hip_block_x_loop,
+              0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
               RAJA::statement::For<
-                  1,
-                  RAJA::hip_thread_x_direct,
-                  RAJA::statement::For<0,
-                                       RAJA::hip_thread_y_direct,
+                  1, RAJA::hip_thread_x_direct,
+                  RAJA::statement::For<0, RAJA::hip_thread_y_direct,
                                        RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_HIP>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=] RAJA_DEVICE(int col, int row)
+      RAJA::make_tuple(col_Range, row_Range), [=] RAJA_DEVICE(int col, int row)
       { d_Atview(col, row) = d_Aview(row, col); });
 
   hipErrchk(

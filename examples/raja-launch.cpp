@@ -163,31 +163,25 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
-          RAJA::loop<teams_x>(ctx,
-                              RAJA::RangeSegment(0, N_tri),
+          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri),
                               [&](int r)
                               {
                                 // Array shared within threads of the same team
                                 RAJA_TEAM_SHARED int s_A[1];
 
                                 RAJA::loop<threads_x>(
-                                    ctx,
-                                    RAJA::RangeSegment(0, 1),
+                                    ctx, RAJA::RangeSegment(0, 1),
                                     [&](int c) { s_A[c] = r; }); // loop c
 
                                 ctx.teamSync();
 
                                 RAJA::loop<threads_x>(
-                                    ctx,
-                                    RAJA::RangeSegment(r, N_tri),
+                                    ctx, RAJA::RangeSegment(r, N_tri),
                                     [&](int c)
                                     {
                                       D(r, c) = r * N_tri + c;
                                       printf("r=%d, c=%d : D=%d : s_A = %d \n",
-                                             r,
-                                             c,
-                                             D(r, c),
-                                             s_A[0]);
+                                             r, c, D(r, c), s_A[0]);
                                     }); // loop c
                               });       // loop r
         });                             // outer lambda

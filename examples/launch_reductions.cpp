@@ -175,8 +175,7 @@ int main(int argc, char* argv[])
       "Launch Reductions",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<loop_pol>(ctx,
-                             arange,
+        RAJA::loop<loop_pol>(ctx, arange,
                              [&](int i)
                              {
                                kernel_sum += a[i];

@@ -143,9 +143,9 @@ struct Reduce_Data
     }
 
     // precondition: host and device are valid pointers
-    auto e = q->memcpy(reinterpret_cast<void*>(device),
-                       reinterpret_cast<void*>(host),
-                       sycl::MaxNumTeams * sizeof(T));
+    auto e =
+        q->memcpy(reinterpret_cast<void*>(device),
+                  reinterpret_cast<void*>(host), sycl::MaxNumTeams * sizeof(T));
 
     e.wait();
   }
@@ -246,8 +246,7 @@ struct TargetReduce
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             val.device[i]);
@@ -265,8 +264,7 @@ struct TargetReduce
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             val.device[i]);
@@ -432,8 +430,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -462,8 +459,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -481,8 +477,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -511,8 +506,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -530,8 +524,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -560,8 +553,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -579,8 +571,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -609,8 +600,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);
@@ -628,8 +618,7 @@ public:
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0; //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
     auto atm =
-        ::sycl::atomic_ref<T,
-                           cl::sycl::memory_order_acq_rel,
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
                            cl::sycl::memory_scope::device,
                            cl::sycl::access::address_space::global_space>(
             parent::val.device[i]);

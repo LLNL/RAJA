@@ -45,8 +45,8 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   RAJA::idx_t Ntot = Ntot_outer * Ntot_inner;
 
 
-  allocateForallTestData<IDX_TYPE>(
-      Ntot, working_res, &B_work_array, &B_check_array, &B_test_array);
+  allocateForallTestData<IDX_TYPE>(Ntot, working_res, &B_work_array,
+                                   &B_check_array, &B_test_array);
 
   memset(static_cast<void*>(B_test_array), 0, sizeof(IDX_TYPE) * Ntot);
 
@@ -62,8 +62,8 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
   working_res.memcpy(B_work_array, B_test_array, sizeof(IDX_TYPE) * Ntot);
 
 
-  allocateForallTestData<IDX_TYPE>(
-      Nint, working_res, &A_work_array, &A_check_array, &A_test_array);
+  allocateForallTestData<IDX_TYPE>(Nint, working_res, &A_work_array,
+                                   &A_check_array, &A_test_array);
 
   memset(static_cast<void*>(A_test_array), 0, sizeof(IDX_TYPE) * Nint);
 
@@ -113,11 +113,11 @@ void KernelPermutedOffsetView2DTestImpl(std::array<RAJA::idx_t, 2> dim,
     ASSERT_EQ(A_test_array[ii], A_check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, A_work_array, A_check_array, A_test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, A_work_array, A_check_array,
+                                     A_test_array);
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, B_work_array, B_check_array, B_test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, B_work_array, B_check_array,
+                                     B_test_array);
 }
 
 

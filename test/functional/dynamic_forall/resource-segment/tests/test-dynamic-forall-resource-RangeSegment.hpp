@@ -27,22 +27,20 @@ void DynamicForallResourceRangeSegmentTestImpl(INDEX_TYPE first,
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   const INDEX_TYPE rbegin = *r1.begin();
 
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
   RAJA::expt::dynamic_forall<POLICY_LIST>(
-      working_res,
-      pol,
-      r1,
+      working_res, pol, r1,
       [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
       { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
 
-  working_res.memcpy(
-      check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
@@ -50,8 +48,8 @@ void DynamicForallResourceRangeSegmentTestImpl(INDEX_TYPE first,
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 
@@ -91,8 +89,7 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
     // Loop through policy list
     for (int pol = 0; pol < host_range; ++pol)
     {
-      DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE,
-                                                WORKING_RES,
+      DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES,
                                                 POLICY_LIST>(
           INDEX_TYPE(0), INDEX_TYPE(27), pol);
     }
@@ -106,8 +103,7 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
 #endif
     for (int pol = device_start; pol < N; ++pol)
     {
-      DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE,
-                                                WORKING_RES,
+      DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES,
                                                 POLICY_LIST>(
           INDEX_TYPE(0), INDEX_TYPE(27), pol);
     }

@@ -107,8 +107,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajaomp_dotprod_start
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(
-      RAJA::RangeSegment(0, N), [=](int i) { ompdot += a[i] * b[i]; });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=](int i)
+                                            { ompdot += a[i] * b[i]; });
 
   dot = ompdot.get();
   // _rajaomp_dotprod_end

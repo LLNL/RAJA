@@ -34,8 +34,8 @@ void LaunchParamExptReduceBitAndBasicTestImpl(
   constexpr int threads = 256;
   int           blocks  = (seg.size() - 1) / threads + 1;
 
-  allocateForallTestData<DATA_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(data_len, working_res, &working_array,
+                                    &check_array, &test_array);
 
   //
   // First a simple non-trivial test that is mildly interesting
@@ -85,11 +85,10 @@ void LaunchParamExptReduceBitAndBasicTestImpl(
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
       RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
       RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
-      [=] RAJA_HOST_DEVICE(
-          RAJA::LaunchContext ctx, DATA_TYPE & _redand, DATA_TYPE & _redand2)
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE & _redand,
+                           DATA_TYPE & _redand2)
       {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx,
-                                         seg,
+        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg,
                                          [&](IDX_TYPE idx)
                                          {
                                            _redand &= working_array[idx];
@@ -118,8 +117,8 @@ void LaunchParamExptReduceBitAndBasicTestImpl(
   ASSERT_EQ(static_cast<DATA_TYPE>(redand), ref_and);
 
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 
@@ -147,31 +146,25 @@ TYPED_TEST_P(LaunchParamExptReduceBitAndBasicTest, ReduceBitAndBasicForall)
   // Range segment tests
   RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 28);
   RAJA::getIndices(seg_idx, r1);
-  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE,
-                                           DATA_TYPE,
+  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                            RAJA::TypedRangeSegment<IDX_TYPE>,
-                                           LAUNCH_POLICY,
-                                           GLOBAL_THREAD_POLICY>(
+                                           LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       r1, seg_idx, working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2(3, 642);
   RAJA::getIndices(seg_idx, r2);
-  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE,
-                                           DATA_TYPE,
+  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                            RAJA::TypedRangeSegment<IDX_TYPE>,
-                                           LAUNCH_POLICY,
-                                           GLOBAL_THREAD_POLICY>(
+                                           LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       r2, seg_idx, working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r3(0, 2057);
   RAJA::getIndices(seg_idx, r3);
-  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE,
-                                           DATA_TYPE,
+  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                            RAJA::TypedRangeSegment<IDX_TYPE>,
-                                           LAUNCH_POLICY,
-                                           GLOBAL_THREAD_POLICY>(
+                                           LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       r3, seg_idx, working_res);
 
   // Range-stride segment tests
@@ -179,21 +172,15 @@ TYPED_TEST_P(LaunchParamExptReduceBitAndBasicTest, ReduceBitAndBasicForall)
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r4(0, 188, 2);
   RAJA::getIndices(seg_idx, r4);
   LaunchParamExptReduceBitAndBasicTestImpl<
-      IDX_TYPE,
-      DATA_TYPE,
-      RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-      LAUNCH_POLICY,
-      GLOBAL_THREAD_POLICY>(r4, seg_idx, working_res);
+      IDX_TYPE, DATA_TYPE, RAJA::TypedRangeStrideSegment<IDX_TYPE>,
+      LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(r4, seg_idx, working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r5(3, 1029, 3);
   RAJA::getIndices(seg_idx, r5);
   LaunchParamExptReduceBitAndBasicTestImpl<
-      IDX_TYPE,
-      DATA_TYPE,
-      RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-      LAUNCH_POLICY,
-      GLOBAL_THREAD_POLICY>(r5, seg_idx, working_res);
+      IDX_TYPE, DATA_TYPE, RAJA::TypedRangeStrideSegment<IDX_TYPE>,
+      LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(r5, seg_idx, working_res);
 
   // List segment tests
   seg_idx.clear();
@@ -208,11 +195,9 @@ TYPED_TEST_P(LaunchParamExptReduceBitAndBasicTest, ReduceBitAndBasicForall)
     }
   }
   RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0], seg_idx.size(), working_res);
-  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE,
-                                           DATA_TYPE,
+  LaunchParamExptReduceBitAndBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                            RAJA::TypedListSegment<IDX_TYPE>,
-                                           LAUNCH_POLICY,
-                                           GLOBAL_THREAD_POLICY>(
+                                           LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
       l1, seg_idx, working_res);
 }
 

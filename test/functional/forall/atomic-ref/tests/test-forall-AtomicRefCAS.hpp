@@ -114,8 +114,8 @@ void testAtomicRefCASOp(RAJA::TypedRangeSegment<IdxType> seg,
                         IdxType                          N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { list[i] = otherop.max + (T)1; });
   RAJA::forall<ExecPolicy>(seg,
                            [=] RAJA_HOST_DEVICE(IdxType i)
                            {
@@ -171,18 +171,12 @@ void ForallAtomicRefCASTestImpl(IdxType N)
 
   testAtomicRefCASOp<ExecPolicy, AtomicPolicy, IdxType, T, CASOtherOp>(
       seg, count, list, hcount, hlist, work_res, N);
-  testAtomicRefCASOp<ExecPolicy,
-                     AtomicPolicy,
-                     IdxType,
-                     T,
-                     CompareExchangeWeakOtherOp>(
-      seg, count, list, hcount, hlist, work_res, N);
-  testAtomicRefCASOp<ExecPolicy,
-                     AtomicPolicy,
-                     IdxType,
-                     T,
-                     CompareExchangeStrongOtherOp>(
-      seg, count, list, hcount, hlist, work_res, N);
+  testAtomicRefCASOp<ExecPolicy, AtomicPolicy, IdxType, T,
+                     CompareExchangeWeakOtherOp>(seg, count, list, hcount,
+                                                 hlist, work_res, N);
+  testAtomicRefCASOp<ExecPolicy, AtomicPolicy, IdxType, T,
+                     CompareExchangeStrongOtherOp>(seg, count, list, hcount,
+                                                   hlist, work_res, N);
 
   work_res.deallocate(count);
   work_res.deallocate(list);

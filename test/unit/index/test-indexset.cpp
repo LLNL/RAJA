@@ -214,8 +214,8 @@ TEST(IndexSetUnitTest, ConditionalLessThan100Indices)
   ref_lt100_indices.push_back(99);
 
   RAJA::RAJAVec<int> lt100_indices;
-  getIndicesConditional(
-      lt100_indices, iset, [](int idx) { return (idx < 100); });
+  getIndicesConditional(lt100_indices, iset,
+                        [](int idx) { return (idx < 100); });
 
   EXPECT_EQ(lt100_indices.size(), ref_lt100_indices.size());
   for (size_t i = 0; i < ref_lt100_indices.size(); ++i)

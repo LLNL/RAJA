@@ -29,8 +29,8 @@ void testWorkGroupWorkStorageIterator()
 
   static constexpr auto platform = RAJA::Platform::host;
   using DispatchPolicy  = typename DispatchTyper::template type<callable>;
-  using Dispatcher_type = RAJA::detail::
-      Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<platform, DispatchPolicy,
+                                                   void, void*, bool*, bool*>;
   using WorkStorage_type =
       RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
 

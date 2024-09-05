@@ -65,8 +65,8 @@ template <typename CONTAINER_T, typename SEGMENT_T>
 RAJA_INLINE void getIndices(CONTAINER_T& con, const SEGMENT_T& seg)
 {
   CONTAINER_T tcon;
-  forall<seq_exec>(
-      seg, [&](typename CONTAINER_T::value_type idx) { tcon.push_back(idx); });
+  forall<seq_exec>(seg, [&](typename CONTAINER_T::value_type idx)
+                   { tcon.push_back(idx); });
   con = tcon;
 }
 

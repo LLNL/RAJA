@@ -279,9 +279,9 @@ TEST(IndexLayout, View3DLayout)
   Index_type index_list_j[2] = {1, 2};
   Index_type index_list_k[2] = {2, 3};
 
-  auto index_tuple = make_index_tuple(DirectIndex<>(),
-                                      IndexList<>{&index_list_j[0]},
-                                      IndexList<>{&index_list_k[0]});
+  auto index_tuple =
+      make_index_tuple(DirectIndex<>(), IndexList<>{&index_list_j[0]},
+                       IndexList<>{&index_list_k[0]});
 
   auto index_layout = make_index_layout(index_tuple, 2, 3, 4);
 

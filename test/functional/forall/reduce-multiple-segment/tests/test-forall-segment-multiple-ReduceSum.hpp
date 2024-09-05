@@ -25,8 +25,8 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first, IDX_TYPE last)
   DATA_TYPE*                check_array;
   DATA_TYPE*                test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      last, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(last, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const DATA_TYPE initval = 2;
 
@@ -82,8 +82,8 @@ void ForallReduceSumMultipleStaggeredTestImpl(IDX_TYPE first, IDX_TYPE last)
               static_cast<DATA_TYPE>(sum7.get()));
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 template <typename IDX_TYPE,
@@ -100,8 +100,8 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first, IDX_TYPE last)
   DATA_TYPE*                check_array;
   DATA_TYPE*                test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      last, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(last, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const DATA_TYPE initval = 2;
 
@@ -168,8 +168,8 @@ void ForallReduceSumMultipleStaggered2TestImpl(IDX_TYPE first, IDX_TYPE last)
               static_cast<DATA_TYPE>(sum7.get()));
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallReduceSumMultipleTest);
@@ -185,17 +185,12 @@ TYPED_TEST_P(ForallReduceSumMultipleTest, ReduceSumMultipleForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceSumMultipleStaggeredTestImpl<IDX_TYPE,
-                                           DATA_TYPE,
-                                           WORKING_RES,
-                                           EXEC_POLICY,
-                                           REDUCE_POLICY>(0, 2115);
+  ForallReduceSumMultipleStaggeredTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES,
+                                           EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 
-  ForallReduceSumMultipleStaggered2TestImpl<IDX_TYPE,
-                                            DATA_TYPE,
-                                            WORKING_RES,
-                                            EXEC_POLICY,
-                                            REDUCE_POLICY>(0, 2115);
+  ForallReduceSumMultipleStaggered2TestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES,
+                                            EXEC_POLICY, REDUCE_POLICY>(0,
+                                                                        2115);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceSumMultipleTest,

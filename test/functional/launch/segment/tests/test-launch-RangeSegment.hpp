@@ -32,8 +32,8 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   constexpr int threads = 256;
   int           blocks  = (data_len - 1) / threads + 1;
@@ -50,8 +50,7 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::loop<GLOBAL_THREAD_POICY>(
-              ctx,
-              r1,
+              ctx, r1,
               [&](INDEX_TYPE idx)
               { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
         });
@@ -61,15 +60,14 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx,
-                                          r1,
+          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, r1,
                                           [&](INDEX_TYPE RAJA_UNUSED_ARG(idx))
                                           { working_array[0]++; });
         });
@@ -92,8 +90,8 @@ void LaunchRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     ASSERT_EQ(test_array[0], check_array[0]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -120,20 +118,14 @@ template <typename INDEX_TYPE,
 void runNegativeTests()
 {
   // test zero-length range segment
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5),
                                                    INDEX_TYPE(-5));
 
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5),
                                                    INDEX_TYPE(0));
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(-5),
                                                    INDEX_TYPE(5));
 }
@@ -151,31 +143,21 @@ TYPED_TEST_P(LaunchRangeSegmentTest, RangeSegmentTeams)
                         camp::num<1>>::type;
 
   // test zero-length range segment
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(3),
                                                    INDEX_TYPE(3));
 
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(0),
                                                    INDEX_TYPE(27));
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(1),
                                                    INDEX_TYPE(2047));
-  LaunchRangeSegmentTestImpl<INDEX_TYPE,
-                             WORKING_RES,
-                             LAUNCH_POLICY,
+  LaunchRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                              GLOBAL_THREAD_POLICY>(INDEX_TYPE(1),
                                                    INDEX_TYPE(32000));
 
-  runNegativeTests<INDEX_TYPE,
-                   WORKING_RES,
-                   LAUNCH_POLICY,
+  runNegativeTests<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                    GLOBAL_THREAD_POLICY>();
 }
 

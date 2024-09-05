@@ -45,25 +45,20 @@ void KernelBasicSingleICountLoopTestImpl(
     data_len++;
   }
 
-  allocateForallTestData<IDX_TYPE>(
-      data_len, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<IDX_TYPE>(data_len, erased_working_res, &working_array,
+                                   &check_array, &test_array);
 
-  allocateForallTestData<IDX_TYPE>(data_len,
-                                   erased_working_res,
-                                   &working_array_i,
-                                   &check_array_i,
+  allocateForallTestData<IDX_TYPE>(data_len, erased_working_res,
+                                   &working_array_i, &check_array_i,
                                    &test_array_i);
 
-  memset(static_cast<void*>(test_array),
-         0,
+  memset(static_cast<void*>(test_array), 0,
          sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array,
-                     test_array,
+  working_res.memcpy(working_array, test_array,
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array_i,
-                     test_array_i,
+  working_res.memcpy(working_array_i, test_array_i,
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   if (RAJA::stripIndexType(idx_len) > 0)
@@ -77,8 +72,7 @@ void KernelBasicSingleICountLoopTestImpl(
     }
 
     RAJA::kernel_param<EXEC_POLICY>(
-        RAJA::make_tuple(seg),
-        RAJA::make_tuple(IDX_TYPE(0)),
+        RAJA::make_tuple(seg), RAJA::make_tuple(IDX_TYPE(0)),
 
         [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx)
         {
@@ -90,8 +84,7 @@ void KernelBasicSingleICountLoopTestImpl(
   { // zero-length segment
 
     RAJA::kernel_param<EXEC_POLICY>(
-        RAJA::make_tuple(seg),
-        RAJA::make_tuple(IDX_TYPE(0)),
+        RAJA::make_tuple(seg), RAJA::make_tuple(IDX_TYPE(0)),
 
         [=] RAJA_HOST_DEVICE(IDX_TYPE idx, IDX_TYPE i_idx)
         {
@@ -102,11 +95,9 @@ void KernelBasicSingleICountLoopTestImpl(
         });
   }
 
-  working_res.memcpy(check_array,
-                     working_array,
+  working_res.memcpy(check_array, working_array,
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
-  working_res.memcpy(check_array_i,
-                     working_array_i,
+  working_res.memcpy(check_array_i, working_array_i,
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i)
@@ -117,11 +108,11 @@ void KernelBasicSingleICountLoopTestImpl(
               check_array_i[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<IDX_TYPE>(erased_working_res, working_array,
+                                     check_array, test_array);
 
-  deallocateForallTestData<IDX_TYPE>(
-      erased_working_res, working_array_i, check_array_i, test_array_i);
+  deallocateForallTestData<IDX_TYPE>(erased_working_res, working_array_i,
+                                     check_array_i, test_array_i);
 }
 
 #endif // __BASIC_SINGLE_ICOUNT_LOOP_SEGMENTS_IMPL_HPP__

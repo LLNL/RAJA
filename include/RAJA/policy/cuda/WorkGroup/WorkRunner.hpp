@@ -328,8 +328,7 @@ struct WorkRunner<
 
       storage.template emplace<holder>(
           get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
-          std::forward<Iterable>(iter),
-          std::forward<LoopBody>(loop_body));
+          std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
     }
   }
 
@@ -342,17 +341,14 @@ struct WorkRunner<
   {
     using Iterator   = camp::decay<decltype(std::begin(storage))>;
     using IndexType  = camp::decay<decltype(std::distance(std::begin(storage),
-                                                         std::end(storage)))>;
+                                                          std::end(storage)))>;
     using value_type = typename WorkContainer::value_type;
 
     per_run_storage run_storage{};
 
-    auto func = cuda_unordered_y_block_global<BLOCK_SIZE,
-                                              BLOCKS_PER_SM,
-                                              Iterator,
-                                              value_type,
-                                              index_type,
-                                              Args...>;
+    auto func =
+        cuda_unordered_y_block_global<BLOCK_SIZE, BLOCKS_PER_SM, Iterator,
+                                      value_type, index_type, Args...>;
 
     //
     // Compute the requested iteration space size
@@ -376,8 +372,7 @@ struct WorkRunner<
       cuda_dim_t gridSize{
           static_cast<cuda_dim_member_t>((average_iterations + block_size - 1) /
                                          block_size),
-          static_cast<cuda_dim_member_t>(num_loops),
-          1};
+          static_cast<cuda_dim_member_t>(num_loops), 1};
 
       RAJA_FT_BEGIN;
 
@@ -391,8 +386,8 @@ struct WorkRunner<
         // Launch the kernel
         //
         void* func_args[] = {(void*)&begin, (void*)&args...};
-        RAJA::cuda::launch(
-            (const void*)func, gridSize, blockSize, func_args, shmem, r, Async);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, func_args,
+                           shmem, r, Async);
       }
 
       RAJA_FT_END;

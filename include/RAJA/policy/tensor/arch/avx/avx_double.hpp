@@ -57,8 +57,8 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi64x(
-        N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
+    return _mm256_set_epi64x(N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0,
+                             N >= 1 ? -1 : 0);
   }
 
   RAJA_INLINE
@@ -297,10 +297,9 @@ public:
   self_type divide_n(self_type const& b, camp::idx_t N) const
   {
     // AVX2 does not supply a masked divide, so do it manually
-    return self_type(_mm256_set_pd(N >= 4 ? get(3) / b.get(3) : 0,
-                                   N >= 3 ? get(2) / b.get(2) : 0,
-                                   N >= 2 ? get(1) / b.get(1) : 0,
-                                   N >= 1 ? get(0) / b.get(0) : 0));
+    return self_type(_mm256_set_pd(
+        N >= 4 ? get(3) / b.get(3) : 0, N >= 3 ? get(2) / b.get(2) : 0,
+        N >= 2 ? get(1) / b.get(1) : 0, N >= 1 ? get(0) / b.get(0) : 0));
   }
 
   /*!

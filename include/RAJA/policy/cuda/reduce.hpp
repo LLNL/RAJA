@@ -263,16 +263,15 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   {
 
     // Need to separate declaration and initialization for clang-cuda
-    __shared__ unsigned char tmpsd[sizeof(
-        RAJA::detail::
-            SoAArray<T, RAJA::policy::cuda::device_constants.MAX_WARPS>)];
+    __shared__ unsigned char
+        tmpsd[sizeof(RAJA::detail::SoAArray<
+                     T, RAJA::policy::cuda::device_constants.MAX_WARPS>)];
 
     // Partial placement new: Should call new(tmpsd) here but recasting memory
     // to avoid calling constructor/destructor in shared memory.
     RAJA::detail::SoAArray<T, RAJA::policy::cuda::device_constants.MAX_WARPS>*
         sd = reinterpret_cast<RAJA::detail::SoAArray<
-            T,
-            RAJA::policy::cuda::device_constants.MAX_WARPS>*>(tmpsd);
+            T, RAJA::policy::cuda::device_constants.MAX_WARPS>*>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0)
@@ -730,9 +729,10 @@ struct ReduceLastBlock_Data
   {
     T temp = value;
 
-    size_t replicationId = impl::
-        grid_reduce_last_block<Combiner, Accessor, replication, atomic_stride>(
-            temp, identity, device, device_count);
+    size_t replicationId =
+        impl::grid_reduce_last_block<Combiner, Accessor, replication,
+                                     atomic_stride>(temp, identity, device,
+                                                    device_count);
     if (replicationId != replication)
     {
       output[replicationId] = temp;
@@ -917,11 +917,10 @@ struct ReduceAtomicDeviceInit_Data
   {
     T temp = value;
 
-    size_t replicationId = impl::grid_reduce_atomic_device_init<Combiner,
-                                                                Accessor,
-                                                                replication,
-                                                                atomic_stride>(
-        temp, identity, device, device_count);
+    size_t replicationId =
+        impl::grid_reduce_atomic_device_init<Combiner, Accessor, replication,
+                                             atomic_stride>(
+            temp, identity, device, device_count);
     if (replicationId != replication)
     {
       output[replicationId] = temp;

@@ -91,8 +91,8 @@ public:
                                             m_right_operand,
                                             m_add_operand))
   {
-    return multiply_op::multiply_add(
-        tile, m_left_operand, m_right_operand, m_add_operand);
+    return multiply_op::multiply_add(tile, m_left_operand, m_right_operand,
+                                     m_add_operand);
   }
 
 

@@ -119,8 +119,7 @@ public:
                                                  normalize_operand_t<ADD>>
                                operator+(ADD const& add) const
   {
-    return TensorMultiplyAdd<left_operand_type,
-                             right_operand_type,
+    return TensorMultiplyAdd<left_operand_type, right_operand_type,
                              normalize_operand_t<ADD>>(
         m_left_operand, m_right_operand, normalizeOperand(add));
   }

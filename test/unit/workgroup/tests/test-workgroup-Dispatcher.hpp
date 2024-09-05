@@ -104,9 +104,9 @@ struct testWorkGroupDispatcherSingle
 
     static constexpr auto platform = RAJA::platform_of<ExecPolicy>::value;
     using DispatchPolicy  = typename DispatchTyper::template type<TestCallable>;
-    using Dispatcher_type = RAJA::detail::
-        Dispatcher<platform, DispatchPolicy, void, IndexType, Args...>;
-    using Invoker_type         = typename Dispatcher_type::invoker_type;
+    using Dispatcher_type = RAJA::detail::Dispatcher<platform, DispatchPolicy,
+                                                     void, IndexType, Args...>;
+    using Invoker_type    = typename Dispatcher_type::invoker_type;
     using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
     const Dispatcher_type* dispatcher =
         RAJA::detail::get_Dispatcher<TestCallable, Dispatcher_type>(
@@ -172,12 +172,9 @@ struct testWorkGroupDispatcherSingle
     work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
 
     // move a value onto device and fiddle
-    call_dispatcher<ForOnePol,
-                    Invoker_type,
-                    Dispatcher_cptr_type,
-                    IndexType,
-                    Args...>(
-        dispatcher->invoke, wrk_obj, (IndexType)1, Args{}...);
+    call_dispatcher<ForOnePol, Invoker_type, Dispatcher_cptr_type, IndexType,
+                    Args...>(dispatcher->invoke, wrk_obj, (IndexType)1,
+                             Args{}...);
 
     work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);
 
@@ -261,11 +258,8 @@ TYPED_TEST_P(WorkGroupBasicDispatcherSingleUnitTest,
   using ResourceType  = typename camp::at<TypeParam, camp::num<4>>::type;
   using ForOneType    = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupDispatcherSingle<ExecPolicy,
-                                DispatchTyper,
-                                IndexType,
-                                ResourceType,
-                                ForOneType>{}(Args{});
+  testWorkGroupDispatcherSingle<ExecPolicy, DispatchTyper, IndexType,
+                                ResourceType, ForOneType>{}(Args{});
 }
 
 #endif //__TEST_WORKGROUP_DISPATCHER__

@@ -77,23 +77,21 @@ void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
 
   std::iota(test_array, test_array + RAJA::stripIndexType(flatSize), 0);
 
-  erased_work_res.memcpy(work_array,
-                         test_array,
+  erased_work_res.memcpy(work_array, test_array,
                          sizeof(RAJA::Index_type) *
                              RAJA::stripIndexType(flatSize));
 
   constexpr int                                     Depth = 3;
-  RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(
-      work_array, dim0, dim1, dim2);
+  RAJA::View<RAJA::Index_type, RAJA::Layout<Depth>> work_view(work_array, dim0,
+                                                              dim1, dim2);
 
   RAJA::ReduceSum<RAJA::seq_reduce, RAJA::Index_type> hostsum(0);
   RAJA::ReduceSum<REDUCE_POL, RAJA::Index_type>       worksum(0);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
-      RAJA::make_tuple(range0, range1, range2),
-      work_res,
-      [=] RAJA_HOST_DEVICE(
-          RAJA::Index_type i, RAJA::Index_type j, RAJA::Index_type k)
+      RAJA::make_tuple(range0, range1, range2), work_res,
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i, RAJA::Index_type j,
+                           RAJA::Index_type k)
       { worksum += work_view(i, j, k); });
 
   RAJA::forall<RAJA::seq_exec>(rangeflat,
@@ -103,8 +101,8 @@ void KernelNestedLoopTest(const DEPTH_3_REDUCESUM&,
 
   ASSERT_EQ(hostsum.get(), worksum.get());
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 // DEVICE_ and DEPTH_3_REDUCESUM_SEQ_ execution policies use the above

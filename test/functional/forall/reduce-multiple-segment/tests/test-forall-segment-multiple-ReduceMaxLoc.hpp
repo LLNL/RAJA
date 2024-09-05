@@ -28,8 +28,8 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   DATA_TYPE*                check_array;
   DATA_TYPE*                test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      last, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(last, working_res, &working_array,
+                                    &check_array, &test_array);
 
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(-SHRT_MAX);
   const IDX_TYPE  default_loc = -1;
@@ -39,7 +39,7 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   static std::mt19937                           mt(rd());
   static std::uniform_real_distribution<double> dist(-100, 100);
   static std::uniform_int_distribution<int>     dist2(static_cast<int>(first),
-                                                  static_cast<int>(last) - 1);
+                                                      static_cast<int>(last) - 1);
 
   RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, IDX_TYPE> max0(default_val,
                                                               default_loc);
@@ -84,8 +84,7 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
         if (current_max != roll)
         { // avoid two indices getting the same value
           test_array[max_index] = roll;
-          working_res.memcpy(&working_array[max_index],
-                             &test_array[max_index],
+          working_res.memcpy(&working_array[max_index], &test_array[max_index],
                              sizeof(DATA_TYPE));
 
           if (current_max < roll)
@@ -128,8 +127,8 @@ void ForallReduceMaxLocMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   ASSERT_EQ(big_val, static_cast<DATA_TYPE>(max2.get()));
   ASSERT_EQ(default_loc, static_cast<IDX_TYPE>(max2.getLoc()));
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+                                      test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallReduceMaxLocMultipleTest);
@@ -145,11 +144,8 @@ TYPED_TEST_P(ForallReduceMaxLocMultipleTest, ReduceMaxLocMultipleForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMaxLocMultipleTestImpl<IDX_TYPE,
-                                     DATA_TYPE,
-                                     WORKING_RES,
-                                     EXEC_POLICY,
-                                     REDUCE_POLICY>(0, 2115);
+  ForallReduceMaxLocMultipleTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES,
+                                     EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxLocMultipleTest,

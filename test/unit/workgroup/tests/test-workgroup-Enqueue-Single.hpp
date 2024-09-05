@@ -40,22 +40,15 @@ struct testWorkGroupEnqueueSingle
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, callable>>;
 
-    using WorkPool_type = RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy,
-                                                               OrderPolicy,
-                                                               StoragePolicy,
-                                                               DispatchPolicy>,
-                                         IndexType,
-                                         RAJA::xargs<Args...>,
-                                         Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<Args...>, Allocator>;
 
     using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy,
-                                              OrderPolicy,
-                                              StoragePolicy,
-                                              DispatchPolicy>,
-                        IndexType,
-                        RAJA::xargs<Args...>,
-                        Allocator>;
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<Args...>, Allocator>;
 
     {
       WorkPool_type pool(Allocator{});
@@ -155,18 +148,12 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   using Xargs         = typename camp::at<TypeParam, camp::num<5>>::type;
   using Allocator     = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  testWorkGroupEnqueueSingle<ExecPolicy,
-                             OrderPolicy,
-                             StoragePolicy,
-                             DispatchTyper,
-                             IndexType,
-                             Allocator>{}(Xargs{}, false, 1, 1);
-  testWorkGroupEnqueueSingle<ExecPolicy,
-                             OrderPolicy,
-                             StoragePolicy,
-                             DispatchTyper,
-                             IndexType,
-                             Allocator>{}(Xargs{}, true, 1, 1);
+  testWorkGroupEnqueueSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator>{}(
+      Xargs{}, false, 1, 1);
+  testWorkGroupEnqueueSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator>{}(Xargs{},
+                                                                    true, 1, 1);
 }
 
 #endif //__TEST_WORKGROUP_ENQUEUESINGLE__

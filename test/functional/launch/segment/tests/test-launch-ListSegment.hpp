@@ -58,8 +58,8 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   constexpr int threads = 256;
   int           blocks  = (data_len - 1) / threads + 1;
@@ -72,16 +72,15 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
       test_array[RAJA::stripIndexType(idx_vals[i])] = idx_vals[i];
     }
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::loop<GLOBAL_THREAD_POICY>(
-              ctx,
-              lseg,
+              ctx, lseg,
               [&](INDEX_TYPE idx)
               { working_array[RAJA::stripIndexType(idx)] = idx; });
         });
@@ -91,15 +90,14 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx,
-                                          lseg,
+          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg,
                                           [&](INDEX_TYPE idx)
                                           {
                                             (void)idx;
@@ -124,8 +122,8 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
   }
 
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -146,24 +144,16 @@ TYPED_TEST_P(LaunchListSegmentTest, ListSegmentTeams)
                         camp::num<1>>::type;
 
   // test zero-length list segment
-  LaunchListSegmentTestImpl<INDEX_TYPE,
-                            WORKING_RESOURCE,
-                            LAUNCH_POLICY,
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
                             GLOBAL_THREAD_POLICY>(INDEX_TYPE(0));
 
-  LaunchListSegmentTestImpl<INDEX_TYPE,
-                            WORKING_RESOURCE,
-                            LAUNCH_POLICY,
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
                             GLOBAL_THREAD_POLICY>(INDEX_TYPE(13));
 
-  LaunchListSegmentTestImpl<INDEX_TYPE,
-                            WORKING_RESOURCE,
-                            LAUNCH_POLICY,
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
                             GLOBAL_THREAD_POLICY>(INDEX_TYPE(2047));
 
-  LaunchListSegmentTestImpl<INDEX_TYPE,
-                            WORKING_RESOURCE,
-                            LAUNCH_POLICY,
+  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
                             GLOBAL_THREAD_POLICY>(INDEX_TYPE(32000));
 }
 

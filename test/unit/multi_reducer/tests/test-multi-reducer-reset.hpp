@@ -431,11 +431,9 @@ template <typename MultiReducePolicy,
 void testMultiReducerContainerResetSize(size_t           init_bins,
                                         Container const& container)
 {
-  testMultiReducerContainerResetRegular<MultiReducePolicy,
-                                        NumericType,
+  testMultiReducerContainerResetRegular<MultiReducePolicy, NumericType,
                                         ForOnePol>(false, init_bins, container);
-  testMultiReducerContainerResetBitwise<MultiReducePolicy,
-                                        NumericType,
+  testMultiReducerContainerResetBitwise<MultiReducePolicy, NumericType,
                                         ForOnePol>(false, init_bins, container);
   // avoid using the reducer as forone does not handle reducers correctly
   // forone does not make_lambda_body or privatize the body
@@ -453,8 +451,7 @@ template <typename MultiReducePolicy,
 void testMultiReducerContainerResetSize(size_t           init_bins,
                                         Container const& container)
 {
-  testMultiReducerContainerResetRegular<MultiReducePolicy,
-                                        NumericType,
+  testMultiReducerContainerResetRegular<MultiReducePolicy, NumericType,
                                         ForOnePol>(false, init_bins, container);
   // avoid using the reducer as forone does not handle reducers correctly
   // forone does not make_lambda_body or privatize the body

@@ -76,12 +76,9 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
     }
   }
 
-  using SharedTile = AtomicTypedLocalArray<RAJA::auto_atomic,
-                                           double,
-                                           RAJA::PERM_IJ,
-                                           RAJA::SizeList<TILE_DIM, TILE_DIM>,
-                                           TY,
-                                           TX>;
+  using SharedTile =
+      AtomicTypedLocalArray<RAJA::auto_atomic, double, RAJA::PERM_IJ,
+                            RAJA::SizeList<TILE_DIM, TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
 
   const TX TX_TILE_DIM(16);
@@ -95,8 +92,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
@@ -108,8 +105,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
@@ -175,10 +172,10 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> Aview(A, N_rows, N_cols);
   RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> Bview(B, N_rows, N_cols);
-  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Aview(
-      d_A, N_rows, N_cols);
-  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Bview(
-      d_B, N_rows, N_cols);
+  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Aview(d_A, N_rows,
+                                                             N_cols);
+  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Bview(d_B, N_rows,
+                                                             N_cols);
 
   for (int row = 0; row < N_rows; ++row)
   {
@@ -190,11 +187,9 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   hipMemcpy(d_A, A, Arr_sz * sizeof(double), hipMemcpyHostToDevice);
 
-  using SharedTile = TypedLocalArray<double,
-                                     RAJA::PERM_IJ,
-                                     RAJA::SizeList<TILE_DIM, TILE_DIM>,
-                                     TY,
-                                     TX>;
+  using SharedTile =
+      TypedLocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                      TY, TX>;
   SharedTile myTile, myTile2;
 
   const TX TX_TILE_DIM(16);
@@ -208,8 +203,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
@@ -221,8 +216,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx; // Matrix column index
         TY row = by * TY_TILE_DIM + ty; // Matrix row index
@@ -317,18 +312,13 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
   SharedTile myTile, myTile2;
 
   RAJA::kernel_param<Pol>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0),
-                       RAJA::RangeSegment(0, inner_Dim1),
-                       RAJA::RangeSegment(0, outer_Dim0),
-                       RAJA::RangeSegment(0, outer_Dim1)),
+      RAJA::make_tuple(
+          RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0, inner_Dim1),
+          RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0, outer_Dim1)),
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(int         tx,
-                           int         ty,
-                           int         bx,
-                           int         by,
-                           SharedTile& myTile,
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
                            SharedTile& myTile2)
       {
         int col = bx * TILE_DIM + tx; // Matrix column index
@@ -342,11 +332,7 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(int         tx,
-                           int         ty,
-                           int         bx,
-                           int         by,
-                           SharedTile& myTile,
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
                            SharedTile& myTile2)
       {
         int col = by * TILE_DIM + tx; // Transposed matrix column index
@@ -454,18 +440,13 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   SharedTile myTile, myTile2;
 
   RAJA::kernel_param<Pol>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, inner_Dim0),
-                       RAJA::RangeSegment(0, inner_Dim1),
-                       RAJA::RangeSegment(0, outer_Dim0),
-                       RAJA::RangeSegment(0, outer_Dim1)),
+      RAJA::make_tuple(
+          RAJA::RangeSegment(0, inner_Dim0), RAJA::RangeSegment(0, inner_Dim1),
+          RAJA::RangeSegment(0, outer_Dim0), RAJA::RangeSegment(0, outer_Dim1)),
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(int         tx,
-                           int         ty,
-                           int         bx,
-                           int         by,
-                           SharedTile& myTile,
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
                            SharedTile& myTile2)
       {
         int col = bx * TILE_DIM + tx; // Matrix column index
@@ -479,11 +460,7 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(int         tx,
-                           int         ty,
-                           int         bx,
-                           int         by,
-                           SharedTile& myTile,
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
                            SharedTile& myTile2)
       {
         int col = by * TILE_DIM + tx; // Transposed matrix column index
@@ -582,7 +559,8 @@ using TestTypes = ::testing::Types<
                 // Read data from shared memory
                 RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                           RAJA::ArgList<0, 1>,
-                                          RAJA::statement::Lambda<1>>>> // for 2
+                                          RAJA::statement::Lambda<1>>>> // for
+                                                                        // 2
         >                                                               // for 3
                                   > // close policy
                >                    // close list
@@ -676,7 +654,8 @@ using TestTypes = ::testing::Types<
                 RAJA::statement::For<0,
                                      RAJA::seq_exec,
                                      RAJA::statement::Lambda<1>>>> // close
-                                                                   // shared mem
+                                                                   // shared
+                                                                   // mem
                                                                    // window
         >                           // outer collapsed
                                   > // close policy list
@@ -939,8 +918,7 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
   ThreadPriv pVal;             // iteration dependent data
 
   RAJA::kernel_param<Pol>(
-      RAJA::make_tuple(RAJA::RangeSegment(0, N),
-                       RAJA::RangeSegment(0, M),
+      RAJA::make_tuple(RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, M),
                        RAJA::RangeSegment(0, P)),
       RAJA::make_tuple(aShared, bShared, pVal),
 
@@ -957,12 +935,8 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
       { bShared(tm, tp) = Bview(m, p); },
 
       // Do partial update in shmem
-      [=] RAJA_HOST_DEVICE(int         tn,
-                           int         tm,
-                           int         tp,
-                           Shmem&      aShared,
-                           Shmem&      bShared,
-                           ThreadPriv& pVal)
+      [=] RAJA_HOST_DEVICE(int tn, int tm, int tp, Shmem& aShared,
+                           Shmem& bShared, ThreadPriv& pVal)
       { pVal(tn, tp) += aShared(tn, tm) * bShared(tm, tp); },
 
       // Write out complete result

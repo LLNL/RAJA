@@ -59,12 +59,11 @@ void ForallAtomicViewTestImpl(IdxType N)
 
 
   // Zero out dest using atomic view
-  RAJA::forall<ExecPolicy>(
-      seg_half, [=] RAJA_HOST_DEVICE(IdxType i) { sum_atomic_view(i) = (T)0; });
+  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { sum_atomic_view(i) = (T)0; });
 
   // Assign values to dest using atomic view
-  RAJA::forall<ExecPolicy>(seg,
-                           [=] RAJA_HOST_DEVICE(IdxType i)
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
                            { sum_atomic_view(i / 2) += vec_view(i); });
 
   work_res.memcpy(check_array, dest, sizeof(T) * N / 2);

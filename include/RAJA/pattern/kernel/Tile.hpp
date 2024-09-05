@@ -162,9 +162,9 @@ struct IterableTiler
     RAJA_HOST_DEVICE
     RAJA_INLINE iterator operator+(const difference_type& rhs) const
     {
-      return iterator(itiler,
-                      block_id + rhs >= itiler.num_blocks ? itiler.num_blocks
-                                                          : block_id + rhs);
+      return iterator(itiler, block_id + rhs >= itiler.num_blocks
+                                  ? itiler.num_blocks
+                                  : block_id + rhs);
     }
 
     RAJA_HOST_DEVICE
@@ -250,10 +250,7 @@ struct StatementExecutor<
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r,
-                EPol{},
-                tiled_iterable,
-                tile_wrapper,
+    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper,
                 RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
@@ -291,10 +288,7 @@ struct StatementExecutor<
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r,
-                EPol{},
-                tiled_iterable,
-                tile_wrapper,
+    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper,
                 RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values

@@ -36,8 +36,8 @@ void runLTimesRajaKernel(bool       debug,
   using namespace RAJA::statement;
 
   // psi[direction, group, zone]
-  using PsiView = RAJA::
-      TypedView<double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
+  using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection,
+                                  IGroup, IZone>;
 
   // phi[moment, group, zone]
   using PhiView =
@@ -84,33 +84,31 @@ void runLTimesRajaKernel(bool       debug,
       omp_target_alloc(sizeof(double) * psi_data.size(), did));
 
   // Copy to device
-  omp_target_memcpy(
-      &ell_data[0], d_ell, sizeof(double) * ell_data.size(), 0, 0, hid, did);
-  omp_target_memcpy(
-      &phi_data[0], d_phi, sizeof(double) * phi_data.size(), 0, 0, hid, did);
-  omp_target_memcpy(
-      &psi_data[0], d_psi, sizeof(double) * psi_data.size(), 0, 0, hid, did);
+  omp_target_memcpy(&ell_data[0], d_ell, sizeof(double) * ell_data.size(), 0, 0,
+                    hid, did);
+  omp_target_memcpy(&phi_data[0], d_phi, sizeof(double) * phi_data.size(), 0, 0,
+                    hid, did);
+  omp_target_memcpy(&psi_data[0], d_psi, sizeof(double) * psi_data.size(), 0, 0,
+                    hid, did);
 
 
   // create views on data
   std::array<RAJA::idx_t, 2> ell_perm{{0, 1}};
   EllView                    ell(d_ell,
-              make_permuted_layout({{num_moments, num_directions}}, ell_perm));
+                                 make_permuted_layout({{num_moments, num_directions}}, ell_perm));
 
   std::array<RAJA::idx_t, 3> psi_perm{{0, 1, 2}};
-  PsiView                    psi(d_psi,
-              make_permuted_layout({{num_directions, num_groups, num_zones}},
-                                   psi_perm));
+  PsiView                    psi(d_psi, make_permuted_layout(
+                                            {{num_directions, num_groups, num_zones}}, psi_perm));
 
   std::array<RAJA::idx_t, 3> phi_perm{{0, 1, 2}};
-  PhiView                    phi(
-      d_phi,
-      make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
+  PhiView                    phi(d_phi, make_permuted_layout(
+                                            {{num_moments, num_groups, num_zones}}, phi_perm));
 
 
-  using Pol = RAJA::KernelPolicy<Collapse<omp_target_parallel_collapse_exec,
-                                          ArgList<0, 1, 2>,
-                                          For<3, RAJA::seq_exec, Lambda<0>>>>;
+  using Pol = RAJA::KernelPolicy<
+      Collapse<omp_target_parallel_collapse_exec, ArgList<0, 1, 2>,
+               For<3, RAJA::seq_exec, Lambda<0>>>>;
 
   RAJA::Timer timer;
   timer.start();

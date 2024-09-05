@@ -46,8 +46,7 @@ void test_CombiningAdapter_2D(Segment0 const& seg0, Segment1 const& seg1)
           counter0 += 1;
         }
       },
-      seg0,
-      seg1);
+      seg0, seg1);
 
   ASSERT_EQ(adapter.size(), seg0.size() * seg1.size());
 

@@ -24,8 +24,8 @@ void ForallRangeSegment2DViewTestImpl(INDEX_TYPE N)
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      lentot, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(lentot, working_res, &working_array,
+                                     &check_array, &test_array);
 
   std::iota(test_array, test_array + lentot, 0);
 
@@ -49,8 +49,8 @@ void ForallRangeSegment2DViewTestImpl(INDEX_TYPE N)
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
@@ -67,8 +67,8 @@ void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      lentot, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(lentot, working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * lentot);
 
@@ -104,8 +104,8 @@ void ForallRangeSegment2DOffsetViewTestImpl(INDEX_TYPE N)
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallRangeSegment2DViewTest);

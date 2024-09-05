@@ -170,8 +170,7 @@ struct LoopExecute<seq_exec, SEGMENT>
       {
         for (int i = 0; i < len0; i++)
         {
-          body(*(segment0.begin() + i),
-               *(segment1.begin() + j),
+          body(*(segment0.begin() + i), *(segment1.begin() + j),
                *(segment2.begin() + k));
         }
       }
@@ -239,12 +238,8 @@ struct LoopICountExecute<seq_exec, SEGMENT>
       {
         for (int i = 0; i < len0; i++)
         {
-          body(*(segment0.begin() + i),
-               *(segment1.begin() + j),
-               *(segment2.begin() + k),
-               i,
-               j,
-               k);
+          body(*(segment0.begin() + i), *(segment1.begin() + j),
+               *(segment2.begin() + k), i, j, k);
         }
       }
     }

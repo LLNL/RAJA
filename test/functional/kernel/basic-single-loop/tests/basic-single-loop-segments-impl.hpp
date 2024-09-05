@@ -64,15 +64,13 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE&              seg,
     data_len++;
   }
 
-  allocateForallTestData<IDX_TYPE>(
-      data_len, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<IDX_TYPE>(data_len, erased_working_res, &working_array,
+                                   &check_array, &test_array);
 
-  memset(static_cast<void*>(test_array),
-         0,
+  memset(static_cast<void*>(test_array), 0,
          sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array,
-                     test_array,
+  working_res.memcpy(working_array, test_array,
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   if (RAJA::stripIndexType(idx_len) > 0)
@@ -85,16 +83,14 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE&              seg,
     }
 
     call_kernel<EXEC_POLICY, USE_RESOURCE>(
-        RAJA::make_tuple(seg),
-        working_res,
+        RAJA::make_tuple(seg), working_res,
         [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
         { working_array[RAJA::stripIndexType(idx)] = idx; });
   }
   else
   { // zero-length segment
 
-    call_kernel<EXEC_POLICY, USE_RESOURCE>(RAJA::make_tuple(seg),
-                                           working_res,
+    call_kernel<EXEC_POLICY, USE_RESOURCE>(RAJA::make_tuple(seg), working_res,
                                            [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
                                            {
                                              (void)idx;
@@ -102,8 +98,7 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE&              seg,
                                            });
   }
 
-  working_res.memcpy(check_array,
-                     working_array,
+  working_res.memcpy(check_array, working_array,
                      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i)
@@ -112,8 +107,8 @@ void KernelBasicSingleLoopTestImpl(const SEG_TYPE&              seg,
               check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<IDX_TYPE>(erased_working_res, working_array,
+                                     check_array, test_array);
 }
 
 #endif // __BASIC_SINGLE_LOOP_SEGMENTS_IMPL_HPP__

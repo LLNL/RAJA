@@ -102,14 +102,11 @@ TYPED_TEST_P(IndexingUnitTest, BasicIndexing)
   using threads_type        = typename camp::at<TypeParam, camp::num<3>>::type;
   using blocks_type         = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  using indexer_type = typename indexer_holder_type::
-      template type<dim_type::value, threads_type::value, blocks_type::value>;
+  using indexer_type = typename indexer_holder_type::template type<
+      dim_type::value, threads_type::value, blocks_type::value>;
 
-  testBasicIndexing<test_policy,
-                    indexer_type,
-                    dim_type::value,
-                    threads_type::value,
-                    blocks_type::value>();
+  testBasicIndexing<test_policy, indexer_type, dim_type::value,
+                    threads_type::value, blocks_type::value>();
 }
 
 REGISTER_TYPED_TEST_SUITE_P(IndexingUnitTest, BasicIndexing);

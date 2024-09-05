@@ -86,8 +86,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
 
   IDX_TYPE data_len = 0;
 
-  allocateForallTestData(
-      idx_range + 1, working_res, &working_range, &check_range, &test_range);
+  allocateForallTestData(idx_range + 1, working_res, &working_range,
+                         &check_range, &test_range);
 
   for (IDX_TYPE i = 0; i < idx_range + 1; ++i)
   {
@@ -113,11 +113,11 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     }
   }
 
-  allocateForallTestData(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData(data_len, working_res, &working_array, &check_array,
+                         &test_array);
 
-  allocateForallTestData(
-      data_len, working_res, &working_bins, &check_bins, &test_bins);
+  allocateForallTestData(data_len, working_res, &working_bins, &check_bins,
+                         &test_bins);
 
   if (data_len > IDX_TYPE(0))
   {
@@ -137,8 +137,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     }
   }
 
-  working_res.memcpy(
-      working_range, test_range, sizeof(IDX_TYPE) * (idx_range + 1));
+  working_res.memcpy(working_range, test_range,
+                     sizeof(IDX_TYPE) * (idx_range + 1));
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
   working_res.memcpy(working_bins, test_bins, sizeof(IDX_TYPE) * data_len);
 
@@ -157,8 +157,7 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     }
 
     RAJA::kernel_resource<EXEC_POLICY>(
-        segments,
-        working_res,
+        segments, working_res,
         [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
         {
           IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
@@ -198,8 +197,7 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       }
 
       RAJA::kernel_resource<EXEC_POLICY>(
-          segments,
-          working_res,
+          segments, working_res,
           [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
           {
             IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
@@ -235,8 +233,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       {
         test_array[i] = DATA_TYPE(array_flt_distribution(rngen));
       }
-      working_res.memcpy(
-          working_array, test_array, sizeof(DATA_TYPE) * data_len);
+      working_res.memcpy(working_array, test_array,
+                         sizeof(DATA_TYPE) * data_len);
     }
 
 
@@ -249,8 +247,7 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
       red.reset();
 
       RAJA::kernel_resource<EXEC_POLICY>(
-          segments,
-          working_res,
+          segments, working_res,
           [=] RAJA_HOST_DEVICE(IDX_TYPE k, IDX_TYPE j, IDX_TYPE i)
           {
             IDX_TYPE ii = (dimi * dimj * k) + (dimi * j) + i;
@@ -381,34 +378,25 @@ TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
     auto s1 = RAJA::make_tuple(RAJA::TypedRangeSegment<IDX_TYPE>(0, 2),
                                RAJA::TypedRangeSegment<IDX_TYPE>(0, 7),
                                RAJA::TypedRangeSegment<IDX_TYPE>(0, 3));
-    KernelMultiReduceNestedTestImpl<EXEC_POLICY,
-                                    REDUCE_POLICY,
-                                    ABSTRACTION,
-                                    DATA_TYPE,
-                                    IDX_TYPE>(
-        s1, container, working_res, rngen);
+    KernelMultiReduceNestedTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                    DATA_TYPE, IDX_TYPE>(s1, container,
+                                                         working_res, rngen);
 
     auto s2 = RAJA::make_tuple(RAJA::TypedRangeSegment<IDX_TYPE>(2, 35),
                                RAJA::TypedRangeSegment<IDX_TYPE>(0, 19),
                                RAJA::TypedRangeSegment<IDX_TYPE>(3, 13));
-    KernelMultiReduceNestedTestImpl<EXEC_POLICY,
-                                    REDUCE_POLICY,
-                                    ABSTRACTION,
-                                    DATA_TYPE,
-                                    IDX_TYPE>(
-        s2, container, working_res, rngen);
+    KernelMultiReduceNestedTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                    DATA_TYPE, IDX_TYPE>(s2, container,
+                                                         working_res, rngen);
 
     // Range-stride segment tests
     auto s3 =
         RAJA::make_tuple(RAJA::TypedRangeStrideSegment<IDX_TYPE>(0, 6, 2),
                          RAJA::TypedRangeStrideSegment<IDX_TYPE>(1, 38, 3),
                          RAJA::TypedRangeStrideSegment<IDX_TYPE>(5, 17, 1));
-    KernelMultiReduceNestedTestImpl<EXEC_POLICY,
-                                    REDUCE_POLICY,
-                                    ABSTRACTION,
-                                    DATA_TYPE,
-                                    IDX_TYPE>(
-        s3, container, working_res, rngen);
+    KernelMultiReduceNestedTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
+                                    DATA_TYPE, IDX_TYPE>(s3, container,
+                                                         working_res, rngen);
   }
 }
 

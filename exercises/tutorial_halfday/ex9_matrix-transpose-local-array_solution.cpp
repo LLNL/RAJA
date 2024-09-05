@@ -210,33 +210,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using SEQ_EXEC_POL = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1,
-      RAJA::tile_fixed<TILE_SZ>,
-      RAJA::seq_exec,
+      1, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
       RAJA::statement::Tile<
-          0,
-          RAJA::tile_fixed<TILE_SZ>,
-          RAJA::seq_exec,
+          0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<
-              RAJA::cpu_tile_mem,
-              RAJA::ParamList<2>,
+              RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
               RAJA::statement::ForICount<
-                  1,
-                  RAJA::statement::Param<1>,
-                  RAJA::seq_exec,
-                  RAJA::statement::ForICount<0,
-                                             RAJA::statement::Param<0>,
+                  1, RAJA::statement::Param<1>, RAJA::seq_exec,
+                  RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
                                              RAJA::seq_exec,
                                              RAJA::statement::Lambda<0>>>,
 
               RAJA::statement::ForICount<
-                  0,
-                  RAJA::statement::Param<0>,
-                  RAJA::seq_exec,
-                  RAJA::statement::ForICount<1,
-                                             RAJA::statement::Param<1>,
+                  0, RAJA::statement::Param<0>, RAJA::seq_exec,
+                  RAJA::statement::ForICount<1, RAJA::statement::Param<1>,
                                              RAJA::seq_exec,
                                              RAJA::statement::Lambda<1>>>
 
@@ -264,33 +253,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using OPENMP_EXEC_POL = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1,
-      RAJA::tile_fixed<TILE_SZ>,
-      RAJA::omp_parallel_for_exec,
+      1, RAJA::tile_fixed<TILE_SZ>, RAJA::omp_parallel_for_exec,
       RAJA::statement::Tile<
-          0,
-          RAJA::tile_fixed<TILE_SZ>,
-          RAJA::seq_exec,
+          0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
 
           RAJA::statement::InitLocalMem<
-              RAJA::cpu_tile_mem,
-              RAJA::ParamList<2>,
+              RAJA::cpu_tile_mem, RAJA::ParamList<2>,
 
               RAJA::statement::ForICount<
-                  1,
-                  RAJA::statement::Param<1>,
-                  RAJA::seq_exec,
-                  RAJA::statement::ForICount<0,
-                                             RAJA::statement::Param<0>,
+                  1, RAJA::statement::Param<1>, RAJA::seq_exec,
+                  RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
                                              RAJA::seq_exec,
                                              RAJA::statement::Lambda<0>>>,
 
               RAJA::statement::ForICount<
-                  0,
-                  RAJA::statement::Param<0>,
-                  RAJA::seq_exec,
-                  RAJA::statement::ForICount<1,
-                                             RAJA::statement::Param<1>,
+                  0, RAJA::statement::Param<0>, RAJA::seq_exec,
+                  RAJA::statement::ForICount<1, RAJA::statement::Param<1>,
                                              RAJA::seq_exec,
                                              RAJA::statement::Lambda<1>>>>>>>;
 
@@ -319,35 +297,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using CUDA_EXEC_POL =
       RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::Tile<
-          1,
-          RAJA::tile_fixed<TILE_SZ>,
-          RAJA::cuda_block_y_loop,
+          1, RAJA::tile_fixed<TILE_SZ>, RAJA::cuda_block_y_loop,
           RAJA::statement::Tile<
-              0,
-              RAJA::tile_fixed<TILE_SZ>,
-              RAJA::cuda_block_x_loop,
+              0, RAJA::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
 
               RAJA::statement::InitLocalMem<
-                  RAJA::cuda_shared_mem,
-                  RAJA::ParamList<2>,
+                  RAJA::cuda_shared_mem, RAJA::ParamList<2>,
 
                   RAJA::statement::ForICount<
-                      1,
-                      RAJA::statement::Param<1>,
-                      RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<0,
-                                                 RAJA::statement::Param<0>,
+                      1, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
+                      RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
                                                  RAJA::cuda_thread_x_direct,
                                                  RAJA::statement::Lambda<0>>>,
 
                   RAJA::statement::CudaSyncThreads,
 
                   RAJA::statement::ForICount<
-                      0,
-                      RAJA::statement::Param<0>,
-                      RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<1,
-                                                 RAJA::statement::Param<1>,
+                      0, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
+                      RAJA::statement::ForICount<1, RAJA::statement::Param<1>,
                                                  RAJA::cuda_thread_x_direct,
                                                  RAJA::statement::Lambda<1>>>,
 

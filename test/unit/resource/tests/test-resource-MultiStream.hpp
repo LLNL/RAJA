@@ -24,8 +24,7 @@ void ResourceMultiStreamTestImpl()
   int* d_array = resources::Resource{dev1}.allocate<int>(ARRAY_SIZE);
   int* h_array = host.allocate<int>(ARRAY_SIZE);
 
-  resources::Event e1 = forall<EXEC_POLICY>(dev1,
-                                            RangeSegment(0, ARRAY_SIZE),
+  resources::Event e1 = forall<EXEC_POLICY>(dev1, RangeSegment(0, ARRAY_SIZE),
                                             [=] RAJA_HOST_DEVICE(int i)
                                             {
                                               if (i % 3 == 0)
@@ -34,8 +33,7 @@ void ResourceMultiStreamTestImpl()
                                               }
                                             });
 
-  resources::Event e2 = forall<EXEC_POLICY>(dev2,
-                                            RangeSegment(0, ARRAY_SIZE),
+  resources::Event e2 = forall<EXEC_POLICY>(dev2, RangeSegment(0, ARRAY_SIZE),
                                             [=] RAJA_HOST_DEVICE(int i)
                                             {
                                               if (i % 3 == 1)
@@ -44,8 +42,7 @@ void ResourceMultiStreamTestImpl()
                                               }
                                             });
 
-  resources::Event e3 = forall<EXEC_POLICY>(dev2,
-                                            RangeSegment(0, ARRAY_SIZE),
+  resources::Event e3 = forall<EXEC_POLICY>(dev2, RangeSegment(0, ARRAY_SIZE),
                                             [=] RAJA_HOST_DEVICE(int i)
                                             {
                                               if (i % 3 == 2)
@@ -61,8 +58,7 @@ void ResourceMultiStreamTestImpl()
 
   dev1.wait();
 
-  forall<policy::sequential::seq_exec>(host,
-                                       RangeSegment(0, ARRAY_SIZE),
+  forall<policy::sequential::seq_exec>(host, RangeSegment(0, ARRAY_SIZE),
                                        [=](int i)
                                        { ASSERT_EQ(h_array[i], i); });
 

@@ -47,8 +47,8 @@ void ForallIndexSetReduceMaxMultipleTestImpl()
   double* check_array;
   double* test_array;
 
-  allocateForallTestData<double>(
-      alen, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<double>(alen, working_res, &working_array,
+                                 &check_array, &test_array);
 
   const double default_val = -DBL_MAX;
 
@@ -97,8 +97,8 @@ void ForallIndexSetReduceMaxMultipleTestImpl()
     ASSERT_FLOAT_EQ(static_cast<double>(dmax1.get()), 2 * current_max);
   }
 
-  deallocateForallTestData<double>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<double>(working_res, working_array, check_array,
+                                   test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceMaxMultipleTest);
@@ -114,9 +114,7 @@ TYPED_TEST_P(ForallIndexSetReduceMaxMultipleTest,
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMaxMultipleTestImpl<IDX_TYPE,
-                                          WORKING_RES,
-                                          EXEC_POLICY,
+  ForallIndexSetReduceMaxMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
                                           REDUCE_POLICY>();
 }
 

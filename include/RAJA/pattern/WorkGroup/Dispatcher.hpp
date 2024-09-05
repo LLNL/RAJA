@@ -182,8 +182,7 @@ struct Dispatcher<platform,
   static inline Dispatcher makeDispatcher()
   {
     return {mover_type{&s_move_construct_destroy<T>},
-            invoker_type{&s_host_invoke<T>},
-            destroyer_type{&s_destroy<T>},
+            invoker_type{&s_host_invoke<T>}, destroyer_type{&s_destroy<T>},
             sizeof(T)};
   }
   ///
@@ -205,8 +204,7 @@ struct Dispatcher<platform,
     return {mover_type{&s_move_construct_destroy<T>},
             invoker_type{std::forward<CreateOnDevice>(createOnDevice)(
                 DeviceInvokerFactory<T>{})},
-            destroyer_type{&s_destroy<T>},
-            sizeof(T)};
+            destroyer_type{&s_destroy<T>}, sizeof(T)};
   }
 
   mover_type     move_construct_destroy;
@@ -375,10 +373,8 @@ struct Dispatcher<platform,
   {
     static base_impl_type<T> s_base_impl;
     static host_impl_type<T> s_host_impl;
-    return {mover_type{&s_base_impl},
-            host_invoker_type{&s_host_impl},
-            destroyer_type{&s_base_impl},
-            sizeof(T)};
+    return {mover_type{&s_base_impl}, host_invoker_type{&s_host_impl},
+            destroyer_type{&s_base_impl}, sizeof(T)};
   }
   ///
   /// create a Dispatcher that can be used on the device for objects of type T
@@ -399,10 +395,8 @@ struct Dispatcher<platform,
     static base_impl_type<T>    s_base_impl;
     static device_impl_type<T>* s_device_impl_ptr{std::forward<CreateOnDevice>(
         createOnDevice)(DeviceImplTypeFactory<T>{})};
-    return {mover_type{&s_base_impl},
-            device_invoker_type{s_device_impl_ptr},
-            destroyer_type{&s_base_impl},
-            sizeof(T)};
+    return {mover_type{&s_base_impl}, device_invoker_type{s_device_impl_ptr},
+            destroyer_type{&s_base_impl}, sizeof(T)};
   }
 
   mover_type     move_construct_destroy;
@@ -665,9 +659,7 @@ struct Dispatcher<platform,
 
     void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
-      impl_helper(callable_indices{},
-                  callable_types{},
-                  obj,
+      impl_helper(callable_indices{}, callable_types{}, obj,
                   std::forward<CallArgs>(args)...);
     }
 
@@ -696,9 +688,7 @@ struct Dispatcher<platform,
 
     RAJA_DEVICE void operator()(void_cptr_wrapper obj, CallArgs... args) const
     {
-      impl_helper(callable_indices{},
-                  callable_types{},
-                  obj,
+      impl_helper(callable_indices{}, callable_types{}, obj,
                   std::forward<CallArgs>(args)...);
     }
 
@@ -781,8 +771,8 @@ struct Dispatcher<platform,
     static constexpr id_type id =
         get_id<T>(callable_indices{}, callable_types{});
     static_assert(id != id_type(-1), "T must be in direct_dispatch types");
-    return {
-        mover_type{id}, host_invoker_type{id}, destroyer_type{id}, sizeof(T)};
+    return {mover_type{id}, host_invoker_type{id}, destroyer_type{id},
+            sizeof(T)};
   }
   ///
   /// create a Dispatcher that can be used on the device for objects of type T
@@ -799,8 +789,8 @@ struct Dispatcher<platform,
     static constexpr id_type id =
         get_id<T>(callable_indices{}, callable_types{});
     static_assert(id != id_type(-1), "T must be in direct_dispatch types");
-    return {
-        mover_type{id}, device_invoker_type{id}, destroyer_type{id}, sizeof(T)};
+    return {mover_type{id}, device_invoker_type{id}, destroyer_type{id},
+            sizeof(T)};
   }
 
   mover_type     move_construct_destroy;

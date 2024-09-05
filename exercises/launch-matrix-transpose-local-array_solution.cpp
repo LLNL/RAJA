@@ -193,26 +193,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<loop_pol_1>(
-            ctx,
-            TILE_DIM,
-            RAJA::TypedRangeSegment<int>(0, N_r),
+            ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<loop_pol_1>(
-                  ctx,
-                  TILE_DIM,
-                  RAJA::TypedRangeSegment<int>(0, N_c),
+                  ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
                     RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
                     RAJA::loop_icount<loop_pol_1>(
-                        ctx,
-                        row_tile,
+                        ctx, row_tile,
                         [&](int row, int ty)
                         {
-                          RAJA::loop_icount<loop_pol_1>(ctx,
-                                                        col_tile,
+                          RAJA::loop_icount<loop_pol_1>(ctx, col_tile,
                                                         [&](int col, int tx) {
                                                           Tile_Array[ty][tx] =
                                                               Aview(row, col);
@@ -220,13 +214,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                         });
 
                     RAJA::loop_icount<loop_pol_1>(
-                        ctx,
-                        col_tile,
+                        ctx, col_tile,
                         [&](int col, int tx)
                         {
                           RAJA::loop_icount<loop_pol_1>(
-                              ctx,
-                              row_tile,
+                              ctx, row_tile,
                               [&](int row, int ty)
                               { Atview(col, row) = Tile_Array[ty][tx]; });
                         });
@@ -259,26 +251,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<omp_pol_2>(
-            ctx,
-            TILE_DIM,
-            RAJA::TypedRangeSegment<int>(0, N_r),
+            ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<loop_pol_2>(
-                  ctx,
-                  TILE_DIM,
-                  RAJA::TypedRangeSegment<int>(0, N_c),
+                  ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
                     RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
                     RAJA::loop_icount<loop_pol_2>(
-                        ctx,
-                        row_tile,
+                        ctx, row_tile,
                         [&](int row, int ty)
                         {
-                          RAJA::loop_icount<loop_pol_2>(ctx,
-                                                        col_tile,
+                          RAJA::loop_icount<loop_pol_2>(ctx, col_tile,
                                                         [&](int col, int tx) {
                                                           Tile_Array[ty][tx] =
                                                               Aview(row, col);
@@ -286,13 +272,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                         });
 
                     RAJA::loop_icount<loop_pol_2>(
-                        ctx,
-                        col_tile,
+                        ctx, col_tile,
                         [&](int col, int tx)
                         {
                           RAJA::loop_icount<loop_pol_2>(
-                              ctx,
-                              row_tile,
+                              ctx, row_tile,
                               [&](int row, int ty)
                               { Atview(col, row) = Tile_Array[ty][tx]; });
                         });
@@ -331,39 +315,31 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<cuda_teams_y>(
-            ctx,
-            TILE_DIM,
-            RAJA::TypedRangeSegment<int>(0, N_r),
+            ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<cuda_teams_x>(
-                  ctx,
-                  TILE_DIM,
-                  RAJA::TypedRangeSegment<int>(0, N_c),
+                  ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
                     RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
                     RAJA::loop_icount<cuda_threads_y>(
-                        ctx,
-                        row_tile,
+                        ctx, row_tile,
                         [&](int row, int ty)
                         {
                           RAJA::loop_icount<cuda_threads_x>(
-                              ctx,
-                              col_tile,
+                              ctx, col_tile,
                               [&](int col, int tx)
                               { Tile_Array[ty][tx] = Aview(row, col); });
                         });
 
                     RAJA::loop_icount<cuda_threads_x>(
-                        ctx,
-                        col_tile,
+                        ctx, col_tile,
                         [&](int col, int tx)
                         {
                           RAJA::loop_icount<cuda_threads_y>(
-                              ctx,
-                              row_tile,
+                              ctx, row_tile,
                               [&](int row, int ty)
                               { Atview(col, row) = Tile_Array[ty][tx]; });
                         });
@@ -418,39 +394,31 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<hip_teams_y>(
-            ctx,
-            TILE_DIM,
-            RAJA::TypedRangeSegment<int>(0, N_r),
+            ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
             [&](RAJA::TypedRangeSegment<int> const& row_tile)
             {
               RAJA::tile<hip_teams_x>(
-                  ctx,
-                  TILE_DIM,
-                  RAJA::TypedRangeSegment<int>(0, N_c),
+                  ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
                     RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
                     RAJA::loop_icount<hip_threads_y>(
-                        ctx,
-                        row_tile,
+                        ctx, row_tile,
                         [&](int row, int ty)
                         {
                           RAJA::loop_icount<hip_threads_x>(
-                              ctx,
-                              col_tile,
+                              ctx, col_tile,
                               [&](int col, int tx)
                               { Tile_Array[ty][tx] = d_Aview(row, col); });
                         });
 
                     RAJA::loop_icount<hip_threads_x>(
-                        ctx,
-                        col_tile,
+                        ctx, col_tile,
                         [&](int col, int tx)
                         {
                           RAJA::loop_icount<hip_threads_y>(
-                              ctx,
-                              row_tile,
+                              ctx, row_tile,
                               [&](int row, int ty)
                               { d_Atview(col, row) = Tile_Array[ty][tx]; });
                         });

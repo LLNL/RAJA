@@ -47,8 +47,8 @@ void ForallIndexSetReduceMinLocMultipleTestImpl()
   double* check_array;
   double* test_array;
 
-  allocateForallTestData<double>(
-      alen, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<double>(alen, working_res, &working_array,
+                                 &check_array, &test_array);
 
   double   current_min = DBL_MAX;
   IDX_TYPE current_loc = -1;
@@ -94,8 +94,8 @@ void ForallIndexSetReduceMinLocMultipleTestImpl()
     ASSERT_EQ(static_cast<IDX_TYPE>(dmin1.getLoc()), current_loc);
   }
 
-  deallocateForallTestData<double>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<double>(working_res, working_array, check_array,
+                                   test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceMinLocMultipleTest);
@@ -111,9 +111,7 @@ TYPED_TEST_P(ForallIndexSetReduceMinLocMultipleTest,
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMinLocMultipleTestImpl<IDX_TYPE,
-                                             WORKING_RES,
-                                             EXEC_POLICY,
+  ForallIndexSetReduceMinLocMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
                                              REDUCE_POLICY>();
 }
 

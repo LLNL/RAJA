@@ -264,9 +264,8 @@ public:
                             camp::idx_t         stride_inner,
                             camp::idx_t         stride_outer)
   {
-    getThis()->gather(
-        ptr,
-        self_type::s_segmented_offsets(segbits, stride_inner, stride_outer));
+    getThis()->gather(ptr, self_type::s_segmented_offsets(segbits, stride_inner,
+                                                          stride_outer));
     return *getThis();
   }
 
@@ -385,9 +384,8 @@ public:
                                    camp::idx_t   stride_inner,
                                    camp::idx_t   stride_outer) const
   {
-    getThis()->scatter(
-        ptr,
-        self_type::s_segmented_offsets(segbits, stride_inner, stride_outer));
+    getThis()->scatter(ptr, self_type::s_segmented_offsets(
+                                segbits, stride_inner, stride_outer));
     return *getThis();
   }
 

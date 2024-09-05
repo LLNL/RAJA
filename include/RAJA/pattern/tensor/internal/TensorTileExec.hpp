@@ -234,11 +234,12 @@ struct StaticTensorTileExec<STORAGE,
         camp::integral_constant<typename TTYPE::index_type,
                                 (orig_begin + orig_size) - tile_begin>;
 
-    using NextTile = typename expt::
-        SetStaticTensorTileBegin<TTYPE, NextBegin, (size_t)DIM0>::Type;
+    using NextTile =
+        typename expt::SetStaticTensorTileBegin<TTYPE, NextBegin,
+                                                (size_t)DIM0>::Type;
 
-    using TailTile = typename expt::
-        SetStaticTensorTileSize<TTYPE, TailSize, (size_t)DIM0>::Type;
+    using TailTile = typename expt::SetStaticTensorTileSize<TTYPE, TailSize,
+                                                            (size_t)DIM0>::Type;
     using PartTile = typename TailTile::Partial;
 
 
@@ -290,11 +291,12 @@ struct StaticTensorTileExec<STORAGE,
         camp::integral_constant<typename TTYPE::index_type,
                                 (orig_begin + orig_size) - tile_begin>;
 
-    using NextTile = typename expt::
-        SetStaticTensorTileBegin<TTYPE, NextBegin, (size_t)DIM0>::Type;
+    using NextTile =
+        typename expt::SetStaticTensorTileBegin<TTYPE, NextBegin,
+                                                (size_t)DIM0>::Type;
 
-    using TailTile = typename expt::
-        SetStaticTensorTileSize<TTYPE, TailSize, (size_t)DIM0>::Type;
+    using TailTile = typename expt::SetStaticTensorTileSize<TTYPE, TailSize,
+                                                            (size_t)DIM0>::Type;
     using PartTile = typename TailTile::Partial;
 
 
@@ -349,8 +351,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
   using InputBegin = typename InputType::begin_type;
 
   using Type = StaticTensorTile<
-      INDEX_TYPE,
-      TENSOR_FULL,
+      INDEX_TYPE, TENSOR_FULL,
       camp::int_seq<INDEX_TYPE, InputBegin::value_at(IDX_SEQ)...>,
       camp::int_seq<INDEX_TYPE, STORAGE::s_dim_elem(IDX_SEQ)...>>;
 

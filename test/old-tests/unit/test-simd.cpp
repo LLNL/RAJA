@@ -55,8 +55,7 @@ TEST(SIMD, OMPAndSimd)
 {
 
   using POL = RAJA::KernelPolicy<RAJA::statement::For<
-      1,
-      RAJA::omp_parallel_for_exec,
+      1, RAJA::omp_parallel_for_exec,
       RAJA::statement::For<0, RAJA::simd_exec, RAJA::statement::Lambda<0>>>>;
 
   const RAJA::Index_type N = 32;
@@ -94,13 +93,10 @@ TEST(SIMD, OMPAndSimd)
 TEST(SIMD, OMPAndSimd_MultiLambda)
 {
 
-  using POL = RAJA::KernelPolicy<
-      RAJA::statement::For<1,
-                           RAJA::omp_parallel_for_exec,
-                           RAJA::statement::For<0,
-                                                RAJA::simd_exec,
-                                                RAJA::statement::Lambda<0>,
-                                                RAJA::statement::Lambda<1>>>>;
+  using POL = RAJA::KernelPolicy<RAJA::statement::For<
+      1, RAJA::omp_parallel_for_exec,
+      RAJA::statement::For<0, RAJA::simd_exec, RAJA::statement::Lambda<0>,
+                           RAJA::statement::Lambda<1>>>>;
 
   const RAJA::Index_type N = 32;
   const RAJA::Index_type M = 32;

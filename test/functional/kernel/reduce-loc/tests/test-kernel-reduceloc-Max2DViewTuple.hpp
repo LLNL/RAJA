@@ -28,20 +28,19 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
   // square 2D array, xdim x ydim
   INDEX_TYPE array_length = xdim * ydim;
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array,
+                                    &check_array, &test_array);
 
-  allocateForallTestData<DATA_TYPE*>(
-      ydim, work_res, &workarr2D, &checkarr2D, &testarr2D);
+  allocateForallTestData<DATA_TYPE*>(ydim, work_res, &workarr2D, &checkarr2D,
+                                     &testarr2D);
 
   // set rows to point to check and work _arrays
   RAJA::TypedRangeSegment<INDEX_TYPE> seg(0, ydim);
-  RAJA::forall<FORALL_POLICY>(seg,
-                              [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
+  RAJA::forall<FORALL_POLICY>(seg, [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
                               { workarr2D[zz] = work_array + zz * ydim; });
 
-  RAJA::forall<RAJA::seq_exec>(
-      seg, [=](INDEX_TYPE zz) { checkarr2D[zz] = check_array + zz * ydim; });
+  RAJA::forall<RAJA::seq_exec>(seg, [=](INDEX_TYPE zz)
+                               { checkarr2D[zz] = check_array + zz * ydim; });
 
   // initializing  values
   RAJA::forall<RAJA::seq_exec>(seg,
@@ -67,9 +66,9 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
 
   RAJA::tuple<DATA_TYPE, DATA_TYPE> LocTup(0, 0);
 
-  RAJA::
-      ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE, RAJA::tuple<DATA_TYPE, DATA_TYPE>>
-          maxloc_reducer((DATA_TYPE)0, LocTup);
+  RAJA::ReduceMaxLoc<REDUCE_POLICY, DATA_TYPE,
+                     RAJA::tuple<DATA_TYPE, DATA_TYPE>>
+      maxloc_reducer((DATA_TYPE)0, LocTup);
 
   RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
                             [=] RAJA_HOST_DEVICE(int c, int r)
@@ -102,11 +101,11 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
   ASSERT_EQ(checkraja_loc.idx, RAJA::get<0>(raja_loc));
   ASSERT_EQ(checkraja_loc.idy, RAJA::get<1>(raja_loc));
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array, check_array,
+                                      test_array);
 
-  deallocateForallTestData<DATA_TYPE*>(
-      work_res, workarr2D, checkarr2D, testarr2D);
+  deallocateForallTestData<DATA_TYPE*>(work_res, workarr2D, checkarr2D,
+                                       testarr2D);
 }
 
 
@@ -124,24 +123,15 @@ TYPED_TEST_P(KernelLocMax2DViewTupleTest, LocMax2DViewTupleKernel)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<4>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE,
-                                  DATA_TYPE,
-                                  WORKING_RES,
-                                  FORALL_POLICY,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(10, 10);
-  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE,
-                                  DATA_TYPE,
-                                  WORKING_RES,
-                                  FORALL_POLICY,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(151, 151);
-  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE,
-                                  DATA_TYPE,
-                                  WORKING_RES,
-                                  FORALL_POLICY,
-                                  EXEC_POLICY,
-                                  REDUCE_POLICY>(362, 362);
+  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
+                                  FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(
+      10, 10);
+  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
+                                  FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(
+      151, 151);
+  KernelLocMax2DViewTupleTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
+                                  FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(
+      362, 362);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelLocMax2DViewTupleTest,

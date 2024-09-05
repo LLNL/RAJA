@@ -187,8 +187,8 @@ public:
   self_type& load_strided(element_type const* ptr, camp::idx_t stride)
   {
     // AVX512F
-    m_value = _mm512_i32gather_epi32(
-        createStridedOffsets(stride), ptr, sizeof(element_type));
+    m_value = _mm512_i32gather_epi32(createStridedOffsets(stride), ptr,
+                                     sizeof(element_type));
     return *this;
   }
 
@@ -203,10 +203,8 @@ public:
   load_strided_n(element_type const* ptr, camp::idx_t stride, camp::idx_t N)
   {
     // AVX512F
-    m_value = _mm512_mask_i32gather_epi32(_mm512_setzero_epi32(),
-                                          createMask(N),
-                                          createStridedOffsets(stride),
-                                          ptr,
+    m_value = _mm512_mask_i32gather_epi32(_mm512_setzero_epi32(), createMask(N),
+                                          createStridedOffsets(stride), ptr,
                                           sizeof(element_type));
     return *this;
   }
@@ -248,8 +246,8 @@ public:
   self_type const& store_strided(element_type* ptr, camp::idx_t stride) const
   {
     // AVX512F
-    _mm512_i32scatter_epi32(
-        ptr, createStridedOffsets(stride), m_value, sizeof(element_type));
+    _mm512_i32scatter_epi32(ptr, createStridedOffsets(stride), m_value,
+                            sizeof(element_type));
     return *this;
   }
 
@@ -263,10 +261,8 @@ public:
   store_strided_n(element_type* ptr, camp::idx_t stride, camp::idx_t N) const
   {
     // AVX512F
-    _mm512_mask_i32scatter_epi32(ptr,
-                                 createMask(N),
-                                 createStridedOffsets(stride),
-                                 m_value,
+    _mm512_mask_i32scatter_epi32(ptr, createMask(N),
+                                 createStridedOffsets(stride), m_value,
                                  sizeof(element_type));
     return *this;
   }
@@ -378,22 +374,13 @@ public:
   self_type divide(self_type const& b) const
   {
     // AVX512 does not supply an integer divide, so do it manually
-    return self_type(_mm512_set_epi32(get(15) / b.get(15),
-                                      get(14) / b.get(14),
-                                      get(13) / b.get(13),
-                                      get(12) / b.get(12),
-                                      get(11) / b.get(11),
-                                      get(10) / b.get(10),
-                                      get(9) / b.get(9),
-                                      get(8) / b.get(8),
-                                      get(7) / b.get(7),
-                                      get(6) / b.get(6),
-                                      get(5) / b.get(5),
-                                      get(4) / b.get(4),
-                                      get(3) / b.get(3),
-                                      get(2) / b.get(2),
-                                      get(1) / b.get(1),
-                                      get(0) / b.get(0)));
+    return self_type(_mm512_set_epi32(
+        get(15) / b.get(15), get(14) / b.get(14), get(13) / b.get(13),
+        get(12) / b.get(12), get(11) / b.get(11), get(10) / b.get(10),
+        get(9) / b.get(9), get(8) / b.get(8), get(7) / b.get(7),
+        get(6) / b.get(6), get(5) / b.get(5), get(4) / b.get(4),
+        get(3) / b.get(3), get(2) / b.get(2), get(1) / b.get(1),
+        get(0) / b.get(0)));
   }
 
   RAJA_HOST_DEVICE
@@ -401,22 +388,15 @@ public:
   self_type divide_n(self_type const& b, camp::idx_t N) const
   {
     // AVX512 does not supply an integer divide, so do it manually
-    return self_type(_mm512_set_epi32(N >= 16 ? get(15) / b.get(15) : 0,
-                                      N >= 15 ? get(14) / b.get(14) : 0,
-                                      N >= 14 ? get(13) / b.get(13) : 0,
-                                      N >= 13 ? get(12) / b.get(12) : 0,
-                                      N >= 12 ? get(11) / b.get(11) : 0,
-                                      N >= 11 ? get(10) / b.get(10) : 0,
-                                      N >= 10 ? get(9) / b.get(9) : 0,
-                                      N >= 9 ? get(8) / b.get(8) : 0,
-                                      N >= 8 ? get(7) / b.get(7) : 0,
-                                      N >= 7 ? get(6) / b.get(6) : 0,
-                                      N >= 6 ? get(5) / b.get(5) : 0,
-                                      N >= 5 ? get(4) / b.get(4) : 0,
-                                      N >= 4 ? get(3) / b.get(3) : 0,
-                                      N >= 3 ? get(2) / b.get(2) : 0,
-                                      N >= 2 ? get(1) / b.get(1) : 0,
-                                      N >= 1 ? get(0) / b.get(0) : 0));
+    return self_type(_mm512_set_epi32(
+        N >= 16 ? get(15) / b.get(15) : 0, N >= 15 ? get(14) / b.get(14) : 0,
+        N >= 14 ? get(13) / b.get(13) : 0, N >= 13 ? get(12) / b.get(12) : 0,
+        N >= 12 ? get(11) / b.get(11) : 0, N >= 11 ? get(10) / b.get(10) : 0,
+        N >= 10 ? get(9) / b.get(9) : 0, N >= 9 ? get(8) / b.get(8) : 0,
+        N >= 8 ? get(7) / b.get(7) : 0, N >= 7 ? get(6) / b.get(6) : 0,
+        N >= 6 ? get(5) / b.get(5) : 0, N >= 5 ? get(4) / b.get(4) : 0,
+        N >= 4 ? get(3) / b.get(3) : 0, N >= 3 ? get(2) / b.get(2) : 0,
+        N >= 2 ? get(1) / b.get(1) : 0, N >= 1 ? get(0) / b.get(0) : 0));
   }
 
 

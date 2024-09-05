@@ -283,46 +283,19 @@ void testReducerInterfaces(unsigned         seed,
   ReduceData<Res, interface_category, ValType> data(
       N, res, [&]() { return dist(rng); });
 
-  ASSERT_TRUE(testReduce("default",
-                         seed,
-                         data,
-                         N,
-                         RAJA::operators::plus<ValType>::identity(),
-                         RAJA::operators::plus<ValType>{},
-                         reducer,
-                         reduce_category{},
-                         interface_category{},
-                         no_init_operator{}));
-  ASSERT_TRUE(testReduce("init",
-                         seed,
-                         data,
-                         N,
-                         ValType(N),
-                         RAJA::operators::plus<ValType>{},
-                         reducer,
-                         reduce_category{},
-                         interface_category{},
-                         init_no_operator{}));
-  ASSERT_TRUE(testReduce("minimum",
-                         seed,
-                         data,
-                         N,
-                         ValType(0),
-                         RAJA::operators::minimum<ValType>{},
-                         reducer,
-                         reduce_category{},
-                         interface_category{},
-                         init_operator{}));
-  ASSERT_TRUE(testReduce("Maximum",
-                         seed,
-                         data,
-                         N,
-                         ValType(0),
-                         RAJA::operators::maximum<ValType>{},
-                         reducer,
-                         reduce_category{},
-                         interface_category{},
-                         init_operator{}));
+  ASSERT_TRUE(testReduce(
+      "default", seed, data, N, RAJA::operators::plus<ValType>::identity(),
+      RAJA::operators::plus<ValType>{}, reducer, reduce_category{},
+      interface_category{}, no_init_operator{}));
+  ASSERT_TRUE(testReduce(
+      "init", seed, data, N, ValType(N), RAJA::operators::plus<ValType>{},
+      reducer, reduce_category{}, interface_category{}, init_no_operator{}));
+  ASSERT_TRUE(testReduce(
+      "minimum", seed, data, N, ValType(0), RAJA::operators::minimum<ValType>{},
+      reducer, reduce_category{}, interface_category{}, init_operator{}));
+  ASSERT_TRUE(testReduce(
+      "Maximum", seed, data, N, ValType(0), RAJA::operators::maximum<ValType>{},
+      reducer, reduce_category{}, interface_category{}, init_operator{}));
 }
 
 template <typename ValType, typename Reducer, typename Res>

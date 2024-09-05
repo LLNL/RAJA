@@ -125,8 +125,7 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
     // Add a Collapse policy around our enclosed statements that will handle
     // the inner hyperplane loop's execution
     using kernel_policy = statement::Collapse<
-        ExecPolicy,
-        ArgList<Args...>,
+        ExecPolicy, ArgList<Args...>,
         HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>>;
 
     // Create a For-loop wrapper for the outer loop
@@ -145,11 +144,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
      * arguments actual value (and restrict to valid hyperplane indices)
      */
     auto r = resources::get_resource<HpExecPolicy>::type::get_default();
-    forall_impl(r,
-                HpExecPolicy{},
-                TypedRangeSegment<idx_t>(0, hp_len),
-                outer_wrapper,
-                RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r, HpExecPolicy{}, TypedRangeSegment<idx_t>(0, hp_len),
+                outer_wrapper, RAJA::expt::get_empty_forall_param_pack());
   }
 };
 

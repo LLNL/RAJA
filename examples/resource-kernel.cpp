@@ -29,13 +29,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment n_range(0, N);
 
   using TEST_POL = RAJA::KernelPolicy<statement::CudaKernelAsync<statement::For<
-      0,
-      cuda_block_x_loop,
+      0, cuda_block_x_loop,
       statement::For<1, cuda_thread_x_loop, statement::Lambda<0>>>>>;
 
   RAJA::forall<RAJA::seq_exec>(
-      def_host_res,
-      n_range,
+      def_host_res, n_range,
       [=, &def_cuda_res](int i)
       {
         RAJA::resources::Cuda res_cuda;

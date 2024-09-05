@@ -511,8 +511,7 @@ public:
     if (s_num_partial_lanes)
     {
       m_registers[s_final_register].load_strided_n(
-          ptr + s_final_register * s_register_num_elem * stride,
-          stride,
+          ptr + s_final_register * s_register_num_elem * stride, stride,
           s_num_partial_lanes);
     }
     return *this;
@@ -570,8 +569,7 @@ public:
       {
         m_registers[reg].load_strided_n(ptr +
                                             reg * s_register_num_elem * stride,
-                                        stride,
-                                        N - reg * s_register_num_elem);
+                                        stride, N - reg * s_register_num_elem);
         for (camp::idx_t r = reg + 1; r < s_num_full_registers; ++r)
         {
           m_registers[r].broadcast(0);
@@ -582,8 +580,7 @@ public:
     if (s_num_partial_lanes)
     {
       m_registers[s_final_register].load_strided_n(
-          ptr + s_final_register * s_register_num_elem * stride,
-          stride,
+          ptr + s_final_register * s_register_num_elem * stride, stride,
           N - s_final_register * s_register_num_elem);
     }
     return *this;
@@ -609,8 +606,8 @@ public:
     }
     if (s_num_partial_lanes)
     {
-      m_registers[s_final_register].gather_n(
-          ptr, offsets.vec(s_final_register), s_num_partial_lanes);
+      m_registers[s_final_register].gather_n(ptr, offsets.vec(s_final_register),
+                                             s_num_partial_lanes);
     }
     return *this;
   }
@@ -636,8 +633,8 @@ public:
       }
       else
       {
-        m_registers[reg].gather_n(
-            ptr, offsets.vec(reg), N - reg * s_register_num_elem);
+        m_registers[reg].gather_n(ptr, offsets.vec(reg),
+                                  N - reg * s_register_num_elem);
         for (camp::idx_t r = reg + 1; r < s_num_full_registers; ++r)
         {
           m_registers[r].broadcast(0);
@@ -647,8 +644,7 @@ public:
     }
     if (s_num_partial_lanes)
     {
-      m_registers[s_final_register].gather_n(ptr,
-                                             offsets.vec(s_final_register),
+      m_registers[s_final_register].gather_n(ptr, offsets.vec(s_final_register),
                                              N - s_final_register *
                                                      s_register_num_elem);
     }
@@ -690,8 +686,7 @@ public:
     if (s_num_partial_lanes)
     {
       m_registers[s_final_register].store_strided_n(
-          ptr + s_final_register * s_register_num_elem * stride,
-          stride,
+          ptr + s_final_register * s_register_num_elem * stride, stride,
           s_num_partial_lanes);
     }
     return *this;
@@ -744,16 +739,14 @@ public:
       {
         m_registers[reg].store_strided_n(ptr +
                                              reg * s_register_num_elem * stride,
-                                         stride,
-                                         N - reg * s_register_num_elem);
+                                         stride, N - reg * s_register_num_elem);
         return *this;
       }
     }
     if (s_num_partial_lanes)
     {
       m_registers[s_final_register].store_strided_n(
-          ptr + s_final_register * s_register_num_elem * stride,
-          stride,
+          ptr + s_final_register * s_register_num_elem * stride, stride,
           N - s_final_register * s_register_num_elem);
     }
     return *this;
@@ -809,18 +802,17 @@ public:
       }
       else
       {
-        m_registers[reg].scatter_n(
-            ptr, offsets.vec(reg), N - reg * s_register_num_elem);
+        m_registers[reg].scatter_n(ptr, offsets.vec(reg),
+                                   N - reg * s_register_num_elem);
 
         return *this;
       }
     }
     if (s_num_partial_lanes)
     {
-      m_registers[s_final_register].scatter_n(ptr,
-                                              offsets.vec(s_final_register),
-                                              N - s_num_full_registers *
-                                                      s_register_num_elem);
+      m_registers[s_final_register].scatter_n(
+          ptr, offsets.vec(s_final_register),
+          N - s_num_full_registers * s_register_num_elem);
     }
     return *this;
   }
@@ -938,9 +930,8 @@ public:
     if (N - s_num_full_registers * s_register_num_elem > 0)
     {
       result = RAJA::min<element_type>(
-          result,
-          m_registers[s_final_register].min_n(N - s_final_register *
-                                                      s_register_num_elem));
+          result, m_registers[s_final_register].min_n(
+                      N - s_final_register * s_register_num_elem));
     }
     return result;
   }
@@ -1001,9 +992,8 @@ public:
     if (N - s_num_full_registers * s_register_num_elem > 0)
     {
       result = RAJA::max<element_type>(
-          result,
-          m_registers[s_final_register].max_n(N - s_final_register *
-                                                      s_register_num_elem));
+          result, m_registers[s_final_register].max_n(
+                      N - s_final_register * s_register_num_elem));
     }
     return result;
   }

@@ -79,8 +79,8 @@ struct PinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    hipErrchk(hipHostMalloc(
-        &ptr, nbytes, hipHostMallocMapped | hipHostMallocNonCoherent));
+    hipErrchk(hipHostMalloc(&ptr, nbytes,
+                            hipHostMallocMapped | hipHostMallocNonCoherent));
     return ptr;
   }
 
@@ -441,11 +441,9 @@ hip_occupancy_max_blocks_threads(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    hipErrchk(
-        hipOccupancyMaxPotentialBlockSize(&data.func_max_blocks_per_device,
-                                          &data.func_max_threads_per_block,
-                                          func,
-                                          func_dynamic_shmem_per_block));
+    hipErrchk(hipOccupancyMaxPotentialBlockSize(
+        &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
+        func, func_dynamic_shmem_per_block));
 #else
     RAJA_UNUSED_VAR(func);
     hipDeviceProp_t& prop           = hip::device_prop();
@@ -480,9 +478,7 @@ hip_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.func_max_blocks_per_sm,
-        func,
-        func_threads_per_block,
+        &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block));
 #else
     RAJA_UNUSED_VAR(func);
@@ -516,9 +512,7 @@ hip_occupancy_max_blocks(const void* func,
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.func_max_blocks_per_sm,
-        func,
-        func_threads_per_block,
+        &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block));
 #else
     RAJA_UNUSED_VAR(func);

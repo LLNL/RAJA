@@ -427,8 +427,8 @@ template <typename T,
           std::enable_if_t<builtin_useIntrinsic<T>::value, bool> = true>
 RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T* acc, T compare, T value)
 {
-  __atomic_compare_exchange_n(
-      acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_RELAXED,
+                              __ATOMIC_RELAXED);
   return compare;
 }
 
@@ -554,10 +554,9 @@ RAJA_DEVICE_HIP RAJA_INLINE T builtin_atomicCAS(T* acc, T compare, T value)
 {
   using R = builtin_useReinterpret_t<T>;
 
-  return RAJA::util::reinterp_A_as_B<R, T>(
-      builtin_atomicCAS(reinterpret_cast<R*>(acc),
-                        RAJA::util::reinterp_A_as_B<T, R>(compare),
-                        RAJA::util::reinterp_A_as_B<T, R>(value)));
+  return RAJA::util::reinterp_A_as_B<R, T>(builtin_atomicCAS(
+      reinterpret_cast<R*>(acc), RAJA::util::reinterp_A_as_B<T, R>(compare),
+      RAJA::util::reinterp_A_as_B<T, R>(value)));
 }
 
 
@@ -731,8 +730,7 @@ template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicMin(builtin_atomic, T* acc, T value)
 {
   return detail::builtin_atomicCAS_loop(
-      acc,
-      [value](T old) { return value < old ? value : old; },
+      acc, [value](T old) { return value < old ? value : old; },
       [value](T current) { return current <= value; });
 }
 
@@ -740,8 +738,7 @@ template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicMax(builtin_atomic, T* acc, T value)
 {
   return detail::builtin_atomicCAS_loop(
-      acc,
-      [value](T old) { return old < value ? value : old; },
+      acc, [value](T old) { return old < value ? value : old; },
       [value](T current) { return value <= current; });
 }
 
@@ -755,8 +752,7 @@ template <typename T>
 RAJA_DEVICE_HIP RAJA_INLINE T atomicInc(builtin_atomic, T* acc, T value)
 {
   return detail::builtin_atomicCAS_loop(
-      acc,
-      [value](T old)
+      acc, [value](T old)
       { return value <= old ? static_cast<T>(0) : old + static_cast<T>(1); });
 }
 

@@ -147,8 +147,8 @@ struct DevicePinnedAllocator
     cudaErrchk(cudaMallocManaged(&ptr, nbytes, cudaMemAttachGlobal));
     cudaErrchk(
         cudaMemAdvise(ptr, nbytes, cudaMemAdviseSetPreferredLocation, device));
-    cudaErrchk(cudaMemAdvise(
-        ptr, nbytes, cudaMemAdviseSetAccessedBy, cudaCpuDeviceId));
+    cudaErrchk(cudaMemAdvise(ptr, nbytes, cudaMemAdviseSetAccessedBy,
+                             cudaCpuDeviceId));
 
     return ptr;
   }
@@ -445,11 +445,9 @@ cuda_occupancy_max_blocks_threads(const void* func,
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
-    cudaErrchk(
-        cudaOccupancyMaxPotentialBlockSize(&data.func_max_blocks_per_device,
-                                           &data.func_max_threads_per_block,
-                                           func,
-                                           func_dynamic_shmem_per_block));
+    cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
+        &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
+        func, func_dynamic_shmem_per_block));
   }
 
   return data;
@@ -477,9 +475,7 @@ cuda_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
     data.func_threads_per_block       = func_threads_per_block;
 
     cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.func_max_blocks_per_sm,
-        func,
-        func_threads_per_block,
+        &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block));
   }
 
@@ -503,9 +499,7 @@ cuda_occupancy_max_blocks(const void* func,
     data.func_threads_per_block       = func_threads_per_block;
 
     cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-        &data.func_max_blocks_per_sm,
-        func,
-        func_threads_per_block,
+        &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block));
   }
 

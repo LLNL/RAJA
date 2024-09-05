@@ -223,8 +223,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi          = 0;
   double* d_atomic_pi = memoryManager::allocate_gpu<double>(1);
-  hipErrchk(hipMemcpy(
-      d_atomic_pi, atomic_pi, 1 * sizeof(double), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_atomic_pi, atomic_pi, 1 * sizeof(double),
+                      hipMemcpyHostToDevice));
 
   using ATOMIC_POL4 = RAJA::hip_atomic;
 
@@ -236,8 +236,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                                          dx / (1.0 + x * x));
                           });
 
-  hipErrchk(hipMemcpy(
-      atomic_pi, d_atomic_pi, 1 * sizeof(double), hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(atomic_pi, d_atomic_pi, 1 * sizeof(double),
+                      hipMemcpyDeviceToHost));
   *atomic_pi *= 4.0;
   std::cout << "\tpi = " << std::setprecision(prec) << *atomic_pi << std::endl;
 

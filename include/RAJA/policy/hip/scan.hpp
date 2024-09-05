@@ -68,20 +68,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive_inplace(
   void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             len,
+  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, len,
                                              stream));
 #endif
 
@@ -91,20 +82,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive_inplace(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             len,
+  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, len,
                                              stream));
 #endif
   // Free temporary storage
@@ -142,22 +124,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive_inplace(
   void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, init, len,
                                              stream));
 #endif
   // Allocate temporary storage
@@ -166,22 +137,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive_inplace(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, init, len,
                                              stream));
 #endif
   // Free temporary storage
@@ -219,8 +179,8 @@ RAJA_INLINE resources::EventProxy<resources::Hip>
   void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(
-      d_temp_storage, temp_storage_bytes, begin, out, len, binary_op, stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, len, binary_op, stream));
 #elif defined(__CUDACC__)
   hipErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
@@ -231,8 +191,8 @@ RAJA_INLINE resources::EventProxy<resources::Hip>
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(
-      d_temp_storage, temp_storage_bytes, begin, out, len, binary_op, stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, len, binary_op, stream));
 #elif defined(__CUDACC__)
   hipErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
@@ -274,22 +234,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip>
   void*  d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      out,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             out,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, out, binary_op, init, len,
                                              stream));
 #endif
   // Allocate temporary storage
@@ -298,22 +247,11 @@ RAJA_INLINE resources::EventProxy<resources::Hip>
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      out,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             out,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, out, binary_op, init, len,
                                              stream));
 #endif
   // Free temporary storage

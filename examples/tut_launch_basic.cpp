@@ -125,10 +125,7 @@ __global__ void gpuKernel()
 
           printf("device-iter: threadIdx_tx %d threadIdx_ty %d block_bx %d "
                  "block_by %d \n",
-                 tx,
-                 ty,
-                 bx,
-                 by);
+                 tx, ty, bx, by);
         }
       }
     }
@@ -198,31 +195,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
       {
         // _team_loops_start
         RAJA::loop<teams_y>(
-            ctx,
-            RAJA::TypedRangeSegment<int>(0, Nteams),
+            ctx, RAJA::TypedRangeSegment<int>(0, Nteams),
             [&](int by)
             {
               RAJA::loop<teams_x>(
-                  ctx,
-                  RAJA::TypedRangeSegment<int>(0, Nteams),
+                  ctx, RAJA::TypedRangeSegment<int>(0, Nteams),
                   [&](int bx)
                   {
                     RAJA::loop<threads_y>(
-                        ctx,
-                        RAJA::TypedRangeSegment<int>(0, Nthreads),
+                        ctx, RAJA::TypedRangeSegment<int>(0, Nthreads),
                         [&](int ty)
                         {
                           RAJA::loop<threads_x>(
-                              ctx,
-                              RAJA::TypedRangeSegment<int>(0, Nthreads),
+                              ctx, RAJA::TypedRangeSegment<int>(0, Nthreads),
                               [&](int tx)
                               {
                                 printf("RAJA Teams: threadId_x %d threadId_y "
                                        "%d teamId_x %d teamId_y %d \n",
-                                       tx,
-                                       ty,
-                                       bx,
-                                       by);
+                                       tx, ty, bx, by);
                               });
                         });
                   });
@@ -244,11 +234,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
           for (int tx = 0; tx < Nthreads; ++tx)
           {
 
-            printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n",
-                   tx,
-                   ty,
-                   bx,
-                   by);
+            printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n", tx,
+                   ty, bx, by);
           }
         }
       }

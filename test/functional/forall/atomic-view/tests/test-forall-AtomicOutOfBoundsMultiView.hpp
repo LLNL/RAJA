@@ -96,10 +96,7 @@ TYPED_TEST_P(ForallAtomicOutOfBoundsMultiViewTest,
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicOutOfBoundsMultiViewTestImpl<AExec,
-                                           APol,
-                                           ResType,
-                                           IdxType,
+  ForallAtomicOutOfBoundsMultiViewTestImpl<AExec, APol, ResType, IdxType,
                                            DType>(20000);
 }
 

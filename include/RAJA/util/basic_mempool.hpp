@@ -106,8 +106,8 @@ public:
 
           ptr_out = adj_ptr;
 
-          remove_free_chunk(
-              iter, adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
+          remove_free_chunk(iter, adj_ptr,
+                            static_cast<char*>(adj_ptr) + nbytes);
 
           add_used_chunk(adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 

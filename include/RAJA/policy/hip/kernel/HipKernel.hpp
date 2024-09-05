@@ -527,8 +527,8 @@ struct StatementExecutor<
       //
       int recommended_blocks;
       int recommended_threads;
-      launch_t::recommended_blocks_threads(
-          shmem, recommended_blocks, recommended_threads);
+      launch_t::recommended_blocks_threads(shmem, recommended_blocks,
+                                           recommended_threads);
 
 
       //
@@ -546,8 +546,7 @@ struct StatementExecutor<
       if (recommended_threads >= get_size(launch_dims.min_dims.threads))
       {
 
-        fit_threads = fitHipDims(recommended_threads,
-                                 launch_dims.dims.threads,
+        fit_threads = fitHipDims(recommended_threads, launch_dims.dims.threads,
                                  launch_dims.min_dims.threads);
       }
 
@@ -558,8 +557,7 @@ struct StatementExecutor<
           get_size(fit_threads) != recommended_threads)
       {
 
-        fit_threads = fitHipDims(max_threads,
-                                 launch_dims.dims.threads,
+        fit_threads = fitHipDims(max_threads, launch_dims.dims.threads,
                                  launch_dims.min_dims.threads);
       }
 
@@ -591,8 +589,8 @@ struct StatementExecutor<
         use_blocks = max_blocks;
       }
 
-      launch_dims.dims.blocks = fitHipDims(
-          use_blocks, launch_dims.dims.blocks, launch_dims.min_dims.blocks);
+      launch_dims.dims.blocks = fitHipDims(use_blocks, launch_dims.dims.blocks,
+                                           launch_dims.min_dims.blocks);
 
       //
       // make sure that we fit
@@ -616,23 +614,16 @@ struct StatementExecutor<
         // of the launch_dims and potential changes to shmem here that is
         // currently an unresolved issue.
         //
-        auto hip_data = RAJA::hip::make_launch_body(func,
-                                                    launch_dims.dims.blocks,
-                                                    launch_dims.dims.threads,
-                                                    shmem,
-                                                    res,
-                                                    data);
+        auto hip_data = RAJA::hip::make_launch_body(
+            func, launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res,
+            data);
 
         //
         // Launch the kernel
         //
         void* args[] = {(void*)&hip_data};
-        RAJA::hip::launch(func,
-                          launch_dims.dims.blocks,
-                          launch_dims.dims.threads,
-                          args,
-                          shmem,
-                          res,
+        RAJA::hip::launch(func, launch_dims.dims.blocks,
+                          launch_dims.dims.threads, args, shmem, res,
                           launch_t::async);
       }
     }

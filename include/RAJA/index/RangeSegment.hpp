@@ -501,8 +501,8 @@ struct TypedRangeStrideSegment
       end = end < m_end[0] ? m_end[0] : end;
     }
 
-    return TypedRangeStrideSegment{
-        stripIndexType(start), stripIndexType(end), m_begin.get_stride()};
+    return TypedRangeStrideSegment{stripIndexType(start), stripIndexType(end),
+                                   m_begin.get_stride()};
   }
 
   /*!

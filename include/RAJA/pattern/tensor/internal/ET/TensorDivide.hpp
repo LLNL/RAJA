@@ -211,8 +211,8 @@ struct DivideOperator<
       return numerator.divide(right.eval(tile));
     }
 
-    return numerator.divide_nm(
-        right.eval(tile), tile.m_size[0], tile.m_size[1]);
+    return numerator.divide_nm(right.eval(tile), tile.m_size[0],
+                               tile.m_size[1]);
   }
 };
 
@@ -257,8 +257,8 @@ struct DivideOperator<
     }
     else
     {
-      return left.eval(tile).divide_nm(
-          denominator, tile.m_size[0], tile.m_size[1]);
+      return left.eval(tile).divide_nm(denominator, tile.m_size[0],
+                                       tile.m_size[1]);
     }
   }
 };
@@ -301,8 +301,8 @@ struct DivideOperator<
     }
     else
     {
-      return left.eval(tile).divide_nm(
-          right.eval(tile), tile.m_size[0], tile.m_size[1]);
+      return left.eval(tile).divide_nm(right.eval(tile), tile.m_size[0],
+                                       tile.m_size[1]);
     }
   }
 };

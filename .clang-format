@@ -1,6 +1,7 @@
 BasedOnStyle : LLVM
 # Indent formatting
 IndentWidth : 2
+Language: Cpp
 UseTab: Never
 KeepEmptyLinesAtTheStartOfBlocks : true
 MaxEmptyLinesToKeep : 2
@@ -40,9 +41,10 @@ PointerAlignment: Left
 AllowShortIfStatementsOnASingleLine : true
 AllowShortFunctionsOnASingleLine : true
 AllowShortLoopsOnASingleLine : false
+AllowAllArgumentsOnNextLine : false
 AllowAllParametersOfDeclarationOnNextLine : false
 AlignTrailingComments : true
-BinPackArguments : false
+BinPackArguments : true
 BinPackParameters : false
 ConstructorInitializerAllOnOneLineOrOnePerLine : true
 ColumnLimit : 80

@@ -65,11 +65,8 @@ public:
                                                             value_type(-1)>>
   static_all()
   {
-    return StaticTensorIndex<StaticTensorIndexInner<IDX,
-                                                    TENSOR_TYPE,
-                                                    DIM,
-                                                    index_type(-1),
-                                                    value_type(-1)>>();
+    return StaticTensorIndex<StaticTensorIndexInner<
+        IDX, TENSOR_TYPE, DIM, index_type(-1), value_type(-1)>>();
   }
 
   RAJA_INLINE

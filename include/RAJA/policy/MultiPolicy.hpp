@@ -152,8 +152,8 @@ RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
-  return detail::make_multi_policy(
-      camp::make_idx_seq_t<sizeof...(Policies)>{}, s, policies);
+  return detail::make_multi_policy(camp::make_idx_seq_t<sizeof...(Policies)>{},
+                                   s, policies);
 }
 
 namespace detail
@@ -193,8 +193,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...>
     }
     else
     {
-      NextInvoker::invoke(offset,
-                          std::forward<Iterable>(iter),
+      NextInvoker::invoke(offset, std::forward<Iterable>(iter),
                           std::forward<LoopBody>(loop_body));
     }
   }

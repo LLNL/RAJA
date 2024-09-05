@@ -88,8 +88,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARP&,
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
 
-  allocateForallTestData<RAJA::Index_type>(
-      len, erased_work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<RAJA::Index_type>(len, erased_work_res, &work_array,
+                                           &check_array, &test_array);
 
   RAJA::TypedRangeSegment<RAJA::Index_type> rangelen(0, len);
 
@@ -97,13 +97,12 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARP&,
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, len)),
-      work_res,
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type i) { worksum += i; });
+      work_res, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) { worksum += i; });
 
   ASSERT_EQ(worksum.get(), len * (len - 1) / 2);
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 template <typename WORKING_RES,
@@ -130,8 +129,7 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
 
   call_kernel_param<EXEC_POLICY, USE_RESOURCE>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, flatSize)),
-      RAJA::make_tuple((RAJA::Index_type)0),
-      work_res,
+      RAJA::make_tuple((RAJA::Index_type)0), work_res,
       [=] RAJA_HOST_DEVICE(RAJA::Index_type RAJA_UNUSED_ARG(i),
                            RAJA::Index_type j)
       {
@@ -140,8 +138,8 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
 
   ASSERT_EQ(worksum.get(), numtiles * 32 * (32 - 1) / 2);
 
-  deallocateForallTestData<RAJA::Index_type>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
+                                             check_array, test_array);
 }
 
 // More specific execution policies that use the above

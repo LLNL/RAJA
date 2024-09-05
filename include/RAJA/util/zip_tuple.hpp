@@ -205,8 +205,7 @@ zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
 template <typename Tuple, typename F>
 RAJA_HOST_DEVICE inline void zip_for_each(Tuple&& t, F&& f)
 {
-  zip_for_each_impl(std::forward<Tuple>(t),
-                    std::forward<F>(f),
+  zip_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f),
                     typename camp::decay<Tuple>::IdxSeq{});
 }
 
@@ -219,10 +218,8 @@ RAJA_HOST_DEVICE inline void zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
   static_assert(std::is_same<typename camp::decay<Tuple0>::IdxSeq,
                              typename camp::decay<Tuple1>::IdxSeq>::value,
                 "Tuple0 and Tuple1 must have the same size");
-  zip_for_each_impl(std::forward<Tuple0>(t0),
-                    std::forward<Tuple1>(t1),
-                    std::forward<F>(f),
-                    typename camp::decay<Tuple0>::IdxSeq{});
+  zip_for_each_impl(std::forward<Tuple0>(t0), std::forward<Tuple1>(t1),
+                    std::forward<F>(f), typename camp::decay<Tuple0>::IdxSeq{});
 }
 
 } // end namespace detail
