@@ -28,22 +28,26 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
-using policy_list = camp::list<RAJA::seq_exec
-                               ,RAJA::simd_exec
+using policy_list = camp::list<RAJA::seq_exec,
+                               RAJA::simd_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                               ,RAJA::omp_parallel_for_exec
+                               ,
+                               RAJA::omp_parallel_for_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                               ,RAJA::cuda_exec<256>
-                               ,RAJA::cuda_exec<512>
+                               ,
+                               RAJA::cuda_exec<256>,
+                               RAJA::cuda_exec<512>
 #endif
                                >;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 
-  if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./dynamic-forall N, where N is the index of the policy to run");
+  if (argc != 2)
+  {
+    RAJA_ABORT_OR_THROW("Usage ./dynamic-forall N, where N is the index of the "
+                        "policy to run");
   }
 
   //
@@ -55,58 +59,61 @@ int main(int argc, char *argv[])
   const int pol = std::stoi(argv[1]);
 
   std::cout << "\n\nRAJA vector addition example...\n";
-  std::cout << "Using policy # "<<pol<<std::endl;
+  std::cout << "Using policy # " << pol << std::endl;
 
-//
-// Define vector length
-//
+  //
+  // Define vector length
+  //
   const int N = 1000000;
 
-//
-// Allocate and initialize vector data
-//
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
-  int *c = memoryManager::allocate<int>(N);
+  //
+  // Allocate and initialize vector data
+  //
+  int* a = memoryManager::allocate<int>(N);
+  int* b = memoryManager::allocate<int>(N);
+  int* c = memoryManager::allocate<int>(N);
 
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     a[i] = -i;
     b[i] = i;
   }
 
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running C-style vector addition...\n";
 
   // _cstyle_vector_add_start
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     c[i] = a[i] + b[i];
   }
   // _cstyle_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
+  // printResult(c, N);
 
 
-//----------------------------------------------------------------------------//
-// Example of dynamic policy selection for forall
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Example of dynamic policy selection for forall
+  //----------------------------------------------------------------------------//
 
-  //policy is chosen from the list
-  RAJA::expt::dynamic_forall<policy_list>(pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
-      c[i] = a[i] + b[i];
-  });
+  // policy is chosen from the list
+  RAJA::expt::dynamic_forall<policy_list>(
+      pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE(int i) {
+        c[i] = a[i] + b[i];
+      });
   // _rajaseq_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
+  // printResult(c, N);
 
 
-//----------------------------------------------------------------------------//
-//
-// Clean up.
-//
+  //----------------------------------------------------------------------------//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
   memoryManager::deallocate(c);
@@ -122,12 +129,19 @@ int main(int argc, char *argv[])
 void checkResult(int* res, int len)
 {
   bool correct = true;
-  for (int i = 0; i < len; i++) {
-    if ( res[i] != 0 ) { correct = false; }
+  for (int i = 0; i < len; i++)
+  {
+    if (res[i] != 0)
+    {
+      correct = false;
+    }
   }
-  if ( correct ) {
+  if (correct)
+  {
     std::cout << "\n\t result -- PASS\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\n\t result -- FAIL\n";
   }
 }
@@ -138,7 +152,8 @@ void checkResult(int* res, int len)
 void printResult(int* res, int len)
 {
   std::cout << std::endl;
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; i++)
+  {
     std::cout << "result[" << i << "] = " << res[i] << std::endl;
   }
   std::cout << std::endl;

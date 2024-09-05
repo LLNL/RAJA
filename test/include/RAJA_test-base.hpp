@@ -23,7 +23,8 @@ template <class T>
 struct Test;
 
 template <class... T>
-struct Test<camp::list<T...>> {
+struct Test<camp::list<T...>>
+{
   using Types = ::testing::Types<T...>;
 };
 

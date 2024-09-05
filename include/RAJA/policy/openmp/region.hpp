@@ -35,21 +35,21 @@ namespace omp
  */
 
 template <typename Func>
-RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
+RAJA_INLINE void region_impl(const omp_parallel_region&, Func&& body)
 {
 
 #pragma omp parallel
-    { // curly brackets to ensure body() is encapsulated in omp parallel region
-      //thread private copy of body
-      auto loopbody = body;
-      loopbody();
-    }
+  { // curly brackets to ensure body() is encapsulated in omp parallel region
+    // thread private copy of body
+    auto loopbody = body;
+    loopbody();
+  }
 }
 
-}  // namespace omp
+} // namespace omp
 
-}  // namespace policy
+} // namespace policy
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

@@ -8,7 +8,7 @@
 #ifndef __TEST_TENSOR_MATRIX_Store_RowMajor_HPP__
 #define __TEST_TENSOR_MATRIX_Store_RowMajor_HPP__
 
-#include<RAJA/RAJA.hpp>
+#include <RAJA/RAJA.hpp>
 
 template <typename MATRIX_TYPE>
 void Store_RowMajorImpl()
@@ -24,34 +24,43 @@ void Store_RowMajorImpl()
 
   // alloc data1 - matrix data will be generated on device, stored into data1
 
-  std::vector<element_t> data1_vec(4*matrix_t::s_num_rows*matrix_t::s_num_columns);
-  RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
+  std::vector<element_t> data1_vec(4 * matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_h(
+      data1_vec.data(), 2 * matrix_t::s_num_rows, 2 * matrix_t::s_num_columns);
 
-  element_t *data1_ptr = tensor_malloc<policy_t>(data1_vec);
-  RAJA::View<element_t, RAJA::Layout<2>> data1_d(data1_ptr, 2*matrix_t::s_num_rows, 2*matrix_t::s_num_columns);
+  element_t* data1_ptr = tensor_malloc<policy_t>(data1_vec);
+  RAJA::View<element_t, RAJA::Layout<2>> data1_d(
+      data1_ptr, 2 * matrix_t::s_num_rows, 2 * matrix_t::s_num_columns);
 
 
   // alloc data2 - reference data to compare with data1 on host
 
-  std::vector<element_t> data2_vec(matrix_t::s_num_rows*matrix_t::s_num_columns);
-  RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
+  std::vector<element_t> data2_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::Layout<2>> data2_h(
+      data2_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
 
   //
   // Fill reference data
   //
-  for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-      data2_h(i,j) = 2*i*matrix_t::s_num_columns+j;
+  for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+  {
+    for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+    {
+      data2_h(i, j) = 2 * i * matrix_t::s_num_columns + j;
     }
   }
 
   //
   // Clear data1
   //
-  for(camp::idx_t i = 0;i < 2*matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < 2*matrix_t::s_num_columns; ++ j){
-      data1_h(i,j) = element_t(-2);
+  for (camp::idx_t i = 0; i < 2 * matrix_t::s_num_rows; ++i)
+  {
+    for (camp::idx_t j = 0; j < 2 * matrix_t::s_num_columns; ++j)
+    {
+      data1_h(i, j) = element_t(-2);
     }
   }
   tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
@@ -60,23 +69,26 @@ void Store_RowMajorImpl()
   //
   // Do Operation: Full store
   //
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
     // fill out matrix
     matrix_t m(-1.0);
 
-    for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-      for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-        m.set(2*i*matrix_t::s_num_columns+j, i, j);
+    for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+    {
+      for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+      {
+        m.set(2 * i * matrix_t::s_num_columns + j, i, j);
       }
     }
 
     // Store matrix to memory
-    if(matrix_t::layout_type::is_row_major()){
-      m.store_packed(data1_ptr, 2*matrix_t::s_num_columns, 1);
+    if (matrix_t::layout_type::is_row_major())
+    {
+      m.store_packed(data1_ptr, 2 * matrix_t::s_num_columns, 1);
     }
-    else{
-      m.store_strided(data1_ptr, 2*matrix_t::s_num_columns, 1);
+    else
+    {
+      m.store_strided(data1_ptr, 2 * matrix_t::s_num_columns, 1);
     }
   });
 
@@ -86,33 +98,41 @@ void Store_RowMajorImpl()
   //
   // Check results
   //
-  for(camp::idx_t i = 0;i < 2*matrix_t::s_num_rows; ++ i){
-    for(camp::idx_t j = 0;j < 2*matrix_t::s_num_columns; ++ j){
-      if(i < matrix_t::s_num_rows && j < matrix_t::s_num_columns){
-//        printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1_h(i,j), data2_h(i,j));
-        ASSERT_SCALAR_EQ(data1_h(i,j), data2_h(i,j));
+  for (camp::idx_t i = 0; i < 2 * matrix_t::s_num_rows; ++i)
+  {
+    for (camp::idx_t j = 0; j < 2 * matrix_t::s_num_columns; ++j)
+    {
+      if (i < matrix_t::s_num_rows && j < matrix_t::s_num_columns)
+      {
+        //        printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1_h(i,j),
+        //        data2_h(i,j));
+        ASSERT_SCALAR_EQ(data1_h(i, j), data2_h(i, j));
       }
-      else{
-//        printf("%d,%d:  %lf, -2\n", (int)i, (int)j, data1_h(i,j));
-        ASSERT_SCALAR_EQ(data1_h(i,j), element_t(-2));
+      else
+      {
+        //        printf("%d,%d:  %lf, -2\n", (int)i, (int)j, data1_h(i,j));
+        ASSERT_SCALAR_EQ(data1_h(i, j), element_t(-2));
       }
     }
   }
 
 
-
   //
   // Loop over all possible sub-matrix sizes using the load_*_nm routines
   //
-  for(camp::idx_t n_size = 0;n_size <= matrix_t::s_num_rows; ++ n_size){
-    for(camp::idx_t m_size = 0;m_size <= matrix_t::s_num_columns; ++ m_size){
+  for (camp::idx_t n_size = 0; n_size <= matrix_t::s_num_rows; ++n_size)
+  {
+    for (camp::idx_t m_size = 0; m_size <= matrix_t::s_num_columns; ++m_size)
+    {
 
       //
       // Clear data1
       //
-      for(camp::idx_t i = 0;i < 2*matrix_t::s_num_rows; ++ i){
-        for(camp::idx_t j = 0;j < 2*matrix_t::s_num_columns; ++ j){
-          data1_h(i,j) = element_t(-2);
+      for (camp::idx_t i = 0; i < 2 * matrix_t::s_num_rows; ++i)
+      {
+        for (camp::idx_t j = 0; j < 2 * matrix_t::s_num_columns; ++j)
+        {
+          data1_h(i, j) = element_t(-2);
         }
       }
       tensor_copy_to_device<policy_t>(data1_ptr, data1_vec);
@@ -121,24 +141,29 @@ void Store_RowMajorImpl()
       //
       // Do Operation: Partial Store
       //
-      tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+      tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
         // fill out matrix
         matrix_t m(-1.0);
 
-        for(camp::idx_t i = 0;i < matrix_t::s_num_rows; ++ i){
-          for(camp::idx_t j = 0;j < matrix_t::s_num_columns; ++ j){
-            m.set(2*i*matrix_t::s_num_columns+j, i, j);
+        for (camp::idx_t i = 0; i < matrix_t::s_num_rows; ++i)
+        {
+          for (camp::idx_t j = 0; j < matrix_t::s_num_columns; ++j)
+          {
+            m.set(2 * i * matrix_t::s_num_columns + j, i, j);
           }
         }
 
         // Store matrix to memory
-        if(matrix_t::layout_type::is_row_major()){
-          m.store_packed_nm(data1_ptr, 2*matrix_t::s_num_columns, 1, n_size, m_size);
+        if (matrix_t::layout_type::is_row_major())
+        {
+          m.store_packed_nm(
+              data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
         }
-        else{
-          m.store_strided_nm(data1_ptr, 2*matrix_t::s_num_columns, 1, n_size, m_size);
+        else
+        {
+          m.store_strided_nm(
+              data1_ptr, 2 * matrix_t::s_num_columns, 1, n_size, m_size);
         }
-
       });
 
 
@@ -148,20 +173,24 @@ void Store_RowMajorImpl()
       //
       // Check results
       //
-      for(camp::idx_t i = 0;i < 2*matrix_t::s_num_rows; ++ i){
-        for(camp::idx_t j = 0;j < 2*matrix_t::s_num_columns; ++ j){
-          if(i < n_size && j < m_size){
-//            printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1_h(i,j), data2_h(i,j));
-            ASSERT_SCALAR_EQ(data1_h(i,j), data2_h(i,j));
+      for (camp::idx_t i = 0; i < 2 * matrix_t::s_num_rows; ++i)
+      {
+        for (camp::idx_t j = 0; j < 2 * matrix_t::s_num_columns; ++j)
+        {
+          if (i < n_size && j < m_size)
+          {
+            //            printf("%d,%d:  %lf, %lf\n", (int)i, (int)j,
+            //            data1_h(i,j), data2_h(i,j));
+            ASSERT_SCALAR_EQ(data1_h(i, j), data2_h(i, j));
           }
-          else{
-//            printf("%d,%d:  %lf, -2\n", (int)i, (int)j, data1_h(i,j));
-            ASSERT_SCALAR_EQ(data1_h(i,j), element_t(-2));
+          else
+          {
+            //            printf("%d,%d:  %lf, -2\n", (int)i, (int)j,
+            //            data1_h(i,j));
+            ASSERT_SCALAR_EQ(data1_h(i, j), element_t(-2));
           }
         }
       }
-
-
     }
   }
 
@@ -171,7 +200,6 @@ void Store_RowMajorImpl()
   //
   tensor_free<policy_t>(data1_ptr);
 }
-
 
 
 TYPED_TEST_P(TestTensorMatrix, Store_RowMajor)

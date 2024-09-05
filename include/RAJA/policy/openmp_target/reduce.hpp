@@ -33,15 +33,14 @@ namespace omp
 #pragma omp declare target
 
 template <typename T, typename I>
-struct minloc 
+struct minloc
 {
   static constexpr T identity = T(::RAJA::operators::limits<T>::max());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
-                                               I &loc,
-                                               const T v,
-                                               const I l)
+  RAJA_HOST_DEVICE RAJA_INLINE void
+  operator()(T& val, I& loc, const T v, const I l)
   {
-    if (v < val) {
+    if (v < val)
+    {
       loc = l;
       val = v;
     }
@@ -49,15 +48,14 @@ struct minloc
 };
 
 template <typename T, typename I>
-struct maxloc 
+struct maxloc
 {
   static constexpr T identity = T(::RAJA::operators::limits<T>::min());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
-                                               I &loc,
-                                               const T v,
-                                               const I l)
+  RAJA_HOST_DEVICE RAJA_INLINE void
+  operator()(T& val, I& loc, const T v, const I l)
   {
-    if (v > val) {
+    if (v > val)
+    {
       loc = l;
       val = v;
     }
@@ -70,7 +68,7 @@ struct maxloc
 static constexpr int MaxNumTeams = policy::omp::MAXNUMTHREADS;
 
 //! Information necessary for OpenMP offload to be considered
-struct Offload_Info 
+struct Offload_Info
 {
   int hostID{omp_get_initial_device()};
   int deviceID{omp_get_default_device()};
@@ -78,10 +76,9 @@ struct Offload_Info
 
   Offload_Info() = default;
 
-  Offload_Info(const Offload_Info &other)
+  Offload_Info(const Offload_Info& other)
       : hostID{other.hostID}, deviceID{other.deviceID}, isMapped{other.isMapped}
-  {
-  }
+  {}
 };
 
 //! Reduction data for OpenMP Offload -- stores value, host pointer, and device
@@ -90,8 +87,8 @@ template <typename T>
 struct Reduce_Data
 {
   mutable T value;
-  T *device;
-  T *host;
+  T* device;
+  T* host;
 
   //! disallow default constructor
   Reduce_Data() = delete;
@@ -100,17 +97,19 @@ struct Reduce_Data
    *
    *  allocates data on the host and device and initializes values to default
    */
-  Reduce_Data(T initValue, T identityValue, Offload_Info &info)
-     : value(initValue),
-        device{reinterpret_cast<T *>(
+  Reduce_Data(T initValue, T identityValue, Offload_Info& info)
+      : value(initValue),
+        device{reinterpret_cast<T*>(
             omp_target_alloc(omp::MaxNumTeams * sizeof(T), info.deviceID))},
         host{new T[omp::MaxNumTeams]}
   {
-    if (!host) {
+    if (!host)
+    {
       printf("Unable to allocate space on host\n");
       exit(1);
     }
-    if (!device) {
+    if (!device)
+    {
       printf("Unable to allocate space on device\n");
       exit(1);
     }
@@ -118,78 +117,78 @@ struct Reduce_Data
     hostToDevice(info);
   }
 
-  void reset(T initValue)
-  {
-    value = initValue;
-  }
+  void reset(T initValue) { value = initValue; }
 
 
   //! default copy constructor for POD
-  Reduce_Data(const Reduce_Data &) = default;
+  Reduce_Data(const Reduce_Data&) = default;
 
   //! transfers from the host to the device -- exit() is called upon failure
-  RAJA_INLINE void hostToDevice(Offload_Info &info)
+  RAJA_INLINE void hostToDevice(Offload_Info& info)
   {
     // precondition: host and device are valid pointers
-    if (omp_target_memcpy(reinterpret_cast<void *>(device),
-                          reinterpret_cast<void *>(host),
+    if (omp_target_memcpy(reinterpret_cast<void*>(device),
+                          reinterpret_cast<void*>(host),
                           omp::MaxNumTeams * sizeof(T),
                           0,
                           0,
                           info.deviceID,
-                          info.hostID) != 0) {
+                          info.hostID) != 0)
+    {
       printf("Unable to copy memory from host to device\n");
       exit(1);
     }
   }
 
   //! transfers from the device to the host -- exit() is called upon failure
-  RAJA_INLINE void deviceToHost(Offload_Info &info)
+  RAJA_INLINE void deviceToHost(Offload_Info& info)
   {
     // precondition: host and device are valid pointers
-    if (omp_target_memcpy(reinterpret_cast<void *>(host),
-                          reinterpret_cast<void *>(device),
+    if (omp_target_memcpy(reinterpret_cast<void*>(host),
+                          reinterpret_cast<void*>(device),
                           omp::MaxNumTeams * sizeof(T),
                           0,
                           0,
                           info.hostID,
-                          info.deviceID) != 0) {
+                          info.deviceID) != 0)
+    {
       printf("Unable to copy memory from device to host\n");
       exit(1);
     }
   }
 
   //! frees all data from the offload information passed
-  RAJA_INLINE void cleanup(Offload_Info &info)
+  RAJA_INLINE void cleanup(Offload_Info& info)
   {
-    if (device) {
-      omp_target_free(reinterpret_cast<void *>(device), info.deviceID);
+    if (device)
+    {
+      omp_target_free(reinterpret_cast<void*>(device), info.deviceID);
       device = nullptr;
     }
-    if (host) {
+    if (host)
+    {
       delete[] host;
       host = nullptr;
     }
   }
 };
 
-}  // end namespace omp
+} // end namespace omp
 
 //! OpenMP Target Reduction entity -- generalize on # of teams, reduction, and
 //! type
 template <typename Reducer, typename T>
-struct TargetReduce 
+struct TargetReduce
 {
   TargetReduce() = delete;
-  TargetReduce(const TargetReduce &) = default;
+  TargetReduce(const TargetReduce&) = default;
 
   explicit TargetReduce(T init_val_, T identity_ = Reducer::identity())
       : info(),
         val(identity_, identity_, info),
         initVal(init_val_),
         finalVal(identity_)
-  {
-  }
+  {}
 
   void reset(T init_val_, T identity_ = Reducer::identity())
   {
@@ -205,8 +204,10 @@ struct TargetReduce
   //! apply reduction on device upon destruction
   ~TargetReduce()
   {
-    //assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until XL is fixed 2/25/2019.
-    if (!omp_is_initial_device()) {
+    // assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until
+    // XL is fixed 2/25/2019.
+    if (!omp_is_initial_device())
+    {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
@@ -221,10 +222,12 @@ struct TargetReduce
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    if (!info.isMapped) {
+    if (!info.isMapped)
+    {
       val.deviceToHost(info);
 
-      for (int i = 0; i < omp::MaxNumTeams; ++i) {
+      for (int i = 0; i < omp::MaxNumTeams; ++i)
+      {
         Reducer{}(val.value, val.host[i]);
       }
       val.cleanup(info);
@@ -239,14 +242,14 @@ struct TargetReduce
   T get() { return operator T(); }
 
   //! apply reduction
-  TargetReduce &reduce(T rhsVal)
+  TargetReduce& reduce(T rhsVal)
   {
     Reducer{}(val.value, rhsVal);
     return *this;
   }
 
   //! apply reduction (const version) -- still reduces internal values
-  const TargetReduce &reduce(T rhsVal) const
+  const TargetReduce& reduce(T rhsVal) const
   {
     Reducer{}(val.value, rhsVal);
     return *this;
@@ -264,13 +267,16 @@ private:
 //! OpenMP Target Reduction Location entity -- generalize on # of teams,
 //! reduction, and type
 template <typename Reducer, typename T, typename IndexType>
-struct TargetReduceLoc 
+struct TargetReduceLoc
 {
   TargetReduceLoc() = delete;
-  TargetReduceLoc(const TargetReduceLoc &) = default;
-  explicit TargetReduceLoc(T init_val_, IndexType init_loc,
-                           T identity_val_ = Reducer::identity,
-                           IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  TargetReduceLoc(const TargetReduceLoc&) = default;
+  explicit TargetReduceLoc(
+      T init_val_,
+      IndexType init_loc,
+      T identity_val_ = Reducer::identity,
+      IndexType identity_loc_ =
+          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
         val(identity_val_, identity_val_, info),
         loc(identity_loc_, identity_loc_, info),
@@ -278,12 +284,13 @@ struct TargetReduceLoc
         finalVal(identity_val_),
         initLoc(init_loc),
         finalLoc(identity_loc_)
-  {
-  }
+  {}
 
-  void reset(T init_val_, IndexType init_loc_,
+  void reset(T init_val_,
+             IndexType init_loc_,
              T identity_val_ = Reducer::identity,
-             IndexType identity_loc_ = RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+             IndexType identity_loc_ =
+                 RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
     operator T();
     val.reset(identity_val_);
@@ -297,8 +304,10 @@ struct TargetReduceLoc
   //! apply reduction on device upon destruction
   ~TargetReduceLoc()
   {
-    //assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until XL is fixed 2/25/2019.
-    if (!omp_is_initial_device()) {
+    // assert ( omp_get_num_teams() <= omp::MaxNumTeams );  // Leaving out until
+    // XL is fixed 2/25/2019.
+    if (!omp_is_initial_device())
+    {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
@@ -310,10 +319,12 @@ struct TargetReduceLoc
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    if (!info.isMapped) {
+    if (!info.isMapped)
+    {
       val.deviceToHost(info);
       loc.deviceToHost(info);
-      for (int i = 0; i < omp::MaxNumTeams; ++i) {
+      for (int i = 0; i < omp::MaxNumTeams; ++i)
+      {
         Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
       }
       val.cleanup(info);
@@ -339,14 +350,14 @@ struct TargetReduceLoc
   }
 
   //! apply reduction
-  TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
+  TargetReduceLoc& reduce(T rhsVal, IndexType rhsLoc)
   {
     Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
   }
 
   //! apply reduction (const version) -- still reduces internal values
-  const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
+  const TargetReduceLoc& reduce(T rhsVal, IndexType rhsLoc) const
   {
     Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
@@ -372,20 +383,19 @@ class ReduceSum<omp_target_reduce, T>
     : public TargetReduce<RAJA::reduce::sum<T>, T>
 {
 public:
-
   using self = ReduceSum<omp_target_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::sum<T>, T>;
   using parent::parent;
 
   //! enable operator+= for ReduceSum -- alias for reduce()
-  self &operator+=(T rhsVal)
+  self& operator+=(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
 
   //! enable operator+= for ReduceSum -- alias for reduce()
-  const self &operator+=(T rhsVal) const
+  const self& operator+=(T rhsVal) const
   {
     parent::reduce(rhsVal);
     return *this;
@@ -398,20 +408,19 @@ class ReduceBitOr<omp_target_reduce, T>
     : public TargetReduce<RAJA::reduce::or_bit<T>, T>
 {
 public:
-
   using self = ReduceBitOr<omp_target_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::or_bit<T>, T>;
   using parent::parent;
 
   //! enable operator|= for ReduceBitOr -- alias for reduce()
-  self &operator|=(T rhsVal)
+  self& operator|=(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
 
   //! enable operator|= for ReduceBitOr -- alias for reduce()
-  const self &operator|=(T rhsVal) const
+  const self& operator|=(T rhsVal) const
   {
     parent::reduce(rhsVal);
     return *this;
@@ -424,20 +433,19 @@ class ReduceBitAnd<omp_target_reduce, T>
     : public TargetReduce<RAJA::reduce::and_bit<T>, T>
 {
 public:
-
   using self = ReduceBitAnd<omp_target_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::and_bit<T>, T>;
   using parent::parent;
 
   //! enable operator&= for ReduceBitAnd -- alias for reduce()
-  self &operator&=(T rhsVal)
+  self& operator&=(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
 
   //! enable operator&= for ReduceBitAnd -- alias for reduce()
-  const self &operator&=(T rhsVal) const
+  const self& operator&=(T rhsVal) const
   {
     parent::reduce(rhsVal);
     return *this;
@@ -450,20 +458,19 @@ class ReduceMin<omp_target_reduce, T>
     : public TargetReduce<RAJA::reduce::min<T>, T>
 {
 public:
-
   using self = ReduceMin<omp_target_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::min<T>, T>;
   using parent::parent;
 
   //! enable min() for ReduceMin -- alias for reduce()
-  self &min(T rhsVal)
+  self& min(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
 
   //! enable min() for ReduceMin -- alias for reduce()
-  const self &min(T rhsVal) const
+  const self& min(T rhsVal) const
   {
     parent::reduce(rhsVal);
     return *this;
@@ -477,20 +484,19 @@ class ReduceMax<omp_target_reduce, T>
     : public TargetReduce<RAJA::reduce::max<T>, T>
 {
 public:
-
   using self = ReduceMax<omp_target_reduce, T>;
   using parent = TargetReduce<RAJA::reduce::max<T>, T>;
   using parent::parent;
 
   //! enable max() for ReduceMax -- alias for reduce()
-  self &max(T rhsVal)
+  self& max(T rhsVal)
   {
     parent::reduce(rhsVal);
     return *this;
   }
 
   //! enable max() for ReduceMax -- alias for reduce()
-  const self &max(T rhsVal) const
+  const self& max(T rhsVal) const
   {
     parent::reduce(rhsVal);
     return *this;
@@ -503,21 +509,19 @@ class ReduceMinLoc<omp_target_reduce, T, IndexType>
     : public TargetReduceLoc<omp::minloc<T, IndexType>, T, IndexType>
 {
 public:
-
   using self = ReduceMinLoc<omp_target_reduce, T, IndexType>;
-  using parent =
-      TargetReduceLoc<omp::minloc<T, IndexType>, T, IndexType>;
+  using parent = TargetReduceLoc<omp::minloc<T, IndexType>, T, IndexType>;
   using parent::parent;
 
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
-  self &minloc(T rhsVal, IndexType rhsLoc)
+  self& minloc(T rhsVal, IndexType rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
 
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
-  const self &minloc(T rhsVal, IndexType rhsLoc) const
+  const self& minloc(T rhsVal, IndexType rhsLoc) const
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
@@ -531,21 +535,19 @@ class ReduceMaxLoc<omp_target_reduce, T, IndexType>
     : public TargetReduceLoc<omp::maxloc<T, IndexType>, T, IndexType>
 {
 public:
-
   using self = ReduceMaxLoc<omp_target_reduce, T, IndexType>;
-  using parent =
-      TargetReduceLoc<omp::maxloc<T, IndexType>, T, IndexType>;
+  using parent = TargetReduceLoc<omp::maxloc<T, IndexType>, T, IndexType>;
   using parent::parent;
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
-  self &maxloc(T rhsVal, IndexType rhsLoc)
+  self& maxloc(T rhsVal, IndexType rhsLoc)
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
   }
 
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
-  const self &maxloc(T rhsVal, IndexType rhsLoc) const
+  const self& maxloc(T rhsVal, IndexType rhsLoc) const
   {
     parent::reduce(rhsVal, rhsLoc);
     return *this;
@@ -553,8 +555,8 @@ public:
 };
 
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_TARGET_OPENMP guard
+#endif // closing endif for RAJA_ENABLE_TARGET_OPENMP guard
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

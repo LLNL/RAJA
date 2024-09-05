@@ -74,7 +74,7 @@ RAJA_INLINE
   return gridSize;
 }
 
-}  // namespace impl
+} // namespace impl
 
 
 //
@@ -85,23 +85,28 @@ RAJA_INLINE
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
-          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<resources::Sycl>,
-  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
-  RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(resources::Sycl &sycl_res,
+template <typename Iterable,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename ForallParam,
+          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},
+                                  bool>::type = true>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Sycl>,
+    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+    RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Sycl& sycl_res,
             sycl_exec<BlockSize, Async>,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
 {
 
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using Iterator = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
-  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+  using IndexType =
+      camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
   //
   // Compute the requested iteration space size
@@ -111,7 +116,8 @@ forall_impl(resources::Sycl &sycl_res,
   IndexType len = std::distance(begin, end);
 
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
+  if (len > 0 && BlockSize > 0)
+  {
     // Note: We could fix an incorrect workgroup size.
     //       It would change what was specified.
     //       For now, leave the device compiler to error with invalid WG size.
@@ -125,35 +131,43 @@ forall_impl(resources::Sycl &sycl_res,
     ::sycl::queue* q = sycl_res.get_queue();
 
     q->submit([&](::sycl::handler& h) {
-
-      h.parallel_for( ::sycl::nd_range<1>{gridSize, blockSize},
-                      [=]  (::sycl::nd_item<1> it) {
-
-        IndexType ii = it.get_global_id(0);
-        if (ii < len) {
-          loop_body(begin[ii]);
-        }
-      });
+      h.parallel_for(::sycl::nd_range<1>{gridSize, blockSize},
+                     [=](::sycl::nd_item<1> it) {
+                       IndexType ii = it.get_global_id(0);
+                       if (ii < len)
+                       {
+                         loop_body(begin[ii]);
+                       }
+                     });
     });
 
-    if (!Async) { q->wait(); }
+    if (!Async)
+    {
+      q->wait();
+    }
   }
 
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
-          typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},bool>::type = true>
-RAJA_INLINE 
-resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
+template <typename Iterable,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename ForallParam,
+          typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},
+                                  bool>::type = true>
+RAJA_INLINE resources::EventProxy<resources::Sycl>
+forall_impl(resources::Sycl& sycl_res,
             sycl_exec<BlockSize, Async>,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
 {
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using Iterator = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
-  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+  using IndexType =
+      camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
   //
   // Compute the requested iteration space size
@@ -163,7 +177,8 @@ resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
   IndexType len = std::distance(begin, end);
 
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
+  if (len > 0 && BlockSize > 0)
+  {
 
     // Note: We could fix an incorrect workgroup size.
     //       It would change what was specified.
@@ -186,24 +201,23 @@ resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
     // Kernel body is nontrivially copyable, create space on device and copy to
     // Workaround until "is_device_copyable" is supported
     //
-    lbody = (LOOP_BODY*) ::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+    lbody = (LOOP_BODY*)::sycl::malloc_device(sizeof(LOOP_BODY), *q);
     q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY)).wait();
 
-    beg = (Iterator*) ::sycl::malloc_device(sizeof(Iterator), *q);
+    beg = (Iterator*)::sycl::malloc_device(sizeof(Iterator), *q);
     q->memcpy(beg, &begin, sizeof(Iterator)).wait();
 
     q->submit([&](::sycl::handler& h) {
+       h.parallel_for(::sycl::nd_range<1>{gridSize, blockSize},
+                      [=](::sycl::nd_item<1> it) {
+                        Index_type ii = it.get_global_id(0);
 
-      h.parallel_for( ::sycl::nd_range<1>{gridSize, blockSize},
-                      [=]  (::sycl::nd_item<1> it) {
-
-        Index_type ii = it.get_global_id(0);
-
-        if (ii < len) {
-          (*lbody)((*beg)[ii]);
-        }
-      });
-    }).wait(); // Need to wait for completion to free memory
+                        if (ii < len)
+                        {
+                          (*lbody)((*beg)[ii]);
+                        }
+                      });
+     }).wait(); // Need to wait for completion to free memory
 
     // Free our device memory
     cl::sycl::free(lbody, *q);
@@ -215,23 +229,29 @@ resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
-          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},bool>::type = true>
-RAJA_INLINE
-concepts::enable_if_t< 
-  resources::EventProxy<resources::Sycl>,
-  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
-  concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
-forall_impl(resources::Sycl &sycl_res,
+template <typename Iterable,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename ForallParam,
+          typename std::enable_if<std::is_trivially_copyable<LoopBody>{},
+                                  bool>::type = true>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Sycl>,
+    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+    concepts::negate<
+        RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+forall_impl(resources::Sycl& sycl_res,
             sycl_exec<BlockSize, Async>,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
 
 {
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using Iterator = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
-  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+  using IndexType =
+      camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
   using EXEC_POL = RAJA::sycl_exec<BlockSize, Async>;
   //
   // Compute the requested iteration space size
@@ -243,7 +263,8 @@ forall_impl(resources::Sycl &sycl_res,
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
 
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
+  if (len > 0 && BlockSize > 0)
+  {
 
     //
     // Compute the number of blocks
@@ -253,57 +274,61 @@ forall_impl(resources::Sycl &sycl_res,
 
     ::sycl::queue* q = sycl_res.get_queue();
 
-    auto combiner = []( ForallParam x, ForallParam y ) {
-      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( x, y );
+    auto combiner = [](ForallParam x, ForallParam y) {
+      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
       return x;
     };
 
-    ForallParam* res = ::sycl::malloc_shared<ForallParam>(1,*q);
+    ForallParam* res = ::sycl::malloc_shared<ForallParam>(1, *q);
     RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
     auto reduction = ::sycl::reduction(res, f_params, combiner);
 
     q->submit([&](::sycl::handler& h) {
-      h.parallel_for( ::sycl::range<1>(len),
-                      reduction,
-                      [=]   (::sycl::item<1> it, auto & red)  {
-
-        ForallParam fp;
-	RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
-        IndexType ii = it.get_id(0);
-        if (ii < len) {
-          RAJA::expt::invoke_body(fp, loop_body, begin[ii]);
-        }
-        red.combine(fp);
-      });
+      h.parallel_for(
+          ::sycl::range<1>(len), reduction, [=](::sycl::item<1> it, auto& red) {
+            ForallParam fp;
+            RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+            IndexType ii = it.get_id(0);
+            if (ii < len)
+            {
+              RAJA::expt::invoke_body(fp, loop_body, begin[ii]);
+            }
+            red.combine(fp);
+          });
     });
 
     q->wait();
-    RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( f_params, *res );
+    RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params, *res);
     ::sycl::free(res, *q);
   }
   RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
 
   return resources::EventProxy<resources::Sycl>(sycl_res);
-
 }
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async, typename ForallParam,
-          typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},bool>::type = true>
-RAJA_INLINE
-concepts::enable_if_t< 
-  resources::EventProxy<resources::Sycl>,
-  RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
-  concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>> >
-forall_impl(resources::Sycl &sycl_res,
+template <typename Iterable,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename ForallParam,
+          typename std::enable_if<!std::is_trivially_copyable<LoopBody>{},
+                                  bool>::type = true>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Sycl>,
+    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+    concepts::negate<
+        RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+forall_impl(resources::Sycl& sycl_res,
             sycl_exec<BlockSize, Async>,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
 
 {
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using Iterator = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
-  using IndexType = camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
+  using IndexType =
+      camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
   using EXEC_POL = RAJA::sycl_exec<BlockSize, Async>;
   //
   // Compute the requested iteration space size
@@ -315,7 +340,8 @@ forall_impl(resources::Sycl &sycl_res,
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
 
   // Only launch kernel if we have something to iterate over
-  if (len > 0 && BlockSize > 0) {
+  if (len > 0 && BlockSize > 0)
+  {
     //
     // Compute the number of blocks
     //
@@ -324,8 +350,8 @@ forall_impl(resources::Sycl &sycl_res,
 
     ::sycl::queue* q = sycl_res.get_queue();
 
-    auto combiner = []( ForallParam x, ForallParam y ) {
-      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( x, y );
+    auto combiner = [](ForallParam x, ForallParam y) {
+      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
       return x;
     };
 
@@ -339,45 +365,41 @@ forall_impl(resources::Sycl &sycl_res,
     // Kernel body is nontrivially copyable, create space on device and copy to
     // Workaround until "is_device_copyable" is supported
     //
-    lbody = (LOOP_BODY*) ::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+    lbody = (LOOP_BODY*)::sycl::malloc_device(sizeof(LOOP_BODY), *q);
     q->memcpy(lbody, &loop_body, sizeof(LOOP_BODY)).wait();
 
-    beg = (Iterator*) ::sycl::malloc_device(sizeof(Iterator), *q);
+    beg = (Iterator*)::sycl::malloc_device(sizeof(Iterator), *q);
     q->memcpy(beg, &begin, sizeof(Iterator)).wait();
 
-    ForallParam* res = ::sycl::malloc_shared<ForallParam>(1,*q);
+    ForallParam* res = ::sycl::malloc_shared<ForallParam>(1, *q);
     RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
     auto reduction = ::sycl::reduction(res, f_params, combiner);
 
     q->submit([&](::sycl::handler& h) {
-      h.parallel_for( ::sycl::range<1>(len),
+       h.parallel_for(::sycl::range<1>(len),
                       reduction,
-                      [=]   (::sycl::item<1> it, auto & red)  {
-
-
-        Index_type ii = it.get_id(0);
-        ForallParam fp;
-	RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
-        if (ii < len) {
-          RAJA::expt::invoke_body(fp, *lbody, (*beg)[ii]);
-        }
-        red.combine(fp);
-
-      });
-    }).wait(); // Need to wait for completion to free memory
-    RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( f_params, *res );
+                      [=](::sycl::item<1> it, auto& red) {
+                        Index_type ii = it.get_id(0);
+                        ForallParam fp;
+                        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+                        if (ii < len)
+                        {
+                          RAJA::expt::invoke_body(fp, *lbody, (*beg)[ii]);
+                        }
+                        red.combine(fp);
+                      });
+     }).wait(); // Need to wait for completion to free memory
+    RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params, *res);
     // Free our device memory
     ::sycl::free(res, *q);
     ::sycl::free(lbody, *q);
     ::sycl::free(beg, *q);
 
     RAJA_FT_END;
-
   }
   RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
 
   return resources::EventProxy<resources::Sycl>(sycl_res);
-
 }
 
 
@@ -403,34 +425,34 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &r,
-                                                    ExecPolicy<seq_segit, sycl_exec<BlockSize, Async>>,
-                                                    const TypedIndexSet<SegmentTypes...>& iset,
-                                                    LoopBody&& loop_body)
+RAJA_INLINE resources::EventProxy<resources::Sycl>
+forall_impl(resources::Sycl& r,
+            ExecPolicy<seq_segit, sycl_exec<BlockSize, Async>>,
+            const TypedIndexSet<SegmentTypes...>& iset,
+            LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
-  for (int isi = 0; isi < num_seg; ++isi) {
-    iset.segmentCall(r,
-                     isi,
-                     detail::CallForall(),
-                     sycl_exec<BlockSize, true>(),
-                     loop_body);
-  }  // iterate over segments of index set
+  for (int isi = 0; isi < num_seg; ++isi)
+  {
+    iset.segmentCall(
+        r, isi, detail::CallForall(), sycl_exec<BlockSize, true>(), loop_body);
+  } // iterate over segments of index set
 
-  if ( !Async ) {
+  if (!Async)
+  {
     ::sycl::queue* q = r.get_queue();
-    q->wait(); 
+    q->wait();
   }
 
   return resources::EventProxy<resources::Sycl>(r);
 }
 
-}  // namespace sycl
+} // namespace sycl
 
-}  // namespace policy
+} // namespace policy
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_SYCL guard
+#endif // closing endif for RAJA_ENABLE_SYCL guard
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

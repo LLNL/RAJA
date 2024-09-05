@@ -32,10 +32,12 @@ namespace internal
 //
 template <typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::Collapse<seq_exec, ArgList<>, EnclosedStmts...>, Types> {
+    statement::Collapse<seq_exec, ArgList<>, EnclosedStmts...>,
+    Types>
+{
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &data)
+  static RAJA_INLINE void exec(Data& data)
   {
     // termination case: no more loops, just execute enclosed statements
     execute_statement_list<camp::list<EnclosedStmts...>, Types>(data);
@@ -47,13 +49,17 @@ struct StatementExecutor<
 // Executor that handles collapsing of an arbitrarily deep set of seq_exec
 // loops
 //
-template <camp::idx_t Arg0, camp::idx_t... ArgRest, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::Collapse<seq_exec,
-                                             ArgList<Arg0, ArgRest...>,
-                                             EnclosedStmts...>, Types> {
+template <camp::idx_t Arg0,
+          camp::idx_t... ArgRest,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<
+    statement::Collapse<seq_exec, ArgList<Arg0, ArgRest...>, EnclosedStmts...>,
+    Types>
+{
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &data)
+  static RAJA_INLINE void exec(Data& data)
   {
 
     // Set the argument type for this loop
@@ -61,11 +67,13 @@ struct StatementExecutor<statement::Collapse<seq_exec,
 
     // compute next-most inner loop Executor
     using next_loop_t = StatementExecutor<
-        statement::Collapse<seq_exec, ArgList<ArgRest...>, EnclosedStmts...>, NewTypes>;
+        statement::Collapse<seq_exec, ArgList<ArgRest...>, EnclosedStmts...>,
+        NewTypes>;
 
     auto len0 = segment_length<Arg0>(data);
 
-    for (auto i0 = 0; i0 < len0; ++i0) {
+    for (auto i0 = 0; i0 < len0; ++i0)
+    {
       data.template assign_offset<Arg0>(i0);
 
       next_loop_t::exec(data);
@@ -74,9 +82,9 @@ struct StatementExecutor<statement::Collapse<seq_exec,
 };
 
 
-}  // namespace internal
+} // namespace internal
 
-}  // end namespace RAJA
+} // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

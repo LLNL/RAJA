@@ -21,14 +21,13 @@
 //
 // Reduce data types
 //
-using ReduceDataTypeList =
-  camp::list< int,
+using ReduceDataTypeList = camp::list<int,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-              unsigned,
-              long long,
-              unsigned long long,
+                                      unsigned,
+                                      long long,
+                                      unsigned long long,
 #endif
-              float,
-              double >;
+                                      float,
+                                      double>;
 
 #endif // __RAJA_test_reduce_types_HPP__

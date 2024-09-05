@@ -47,7 +47,8 @@ namespace detail
 {
 
 //! struct containing data necessary to coordinate kernel launches with reducers
-struct syclInfo {
+struct syclInfo
+{
   sycl_dim_t gridDim{0};
   sycl_dim_t blockDim{0};
   cl::sycl::queue qu = cl::sycl::queue();
@@ -64,10 +65,11 @@ extern syclInfo tl_status;
 
 extern std::unordered_map<cl::sycl::queue, bool> g_queue_info_map;
 
-}  // namespace detail
+} // namespace detail
 
 //! Allocator for pinned memory for use in basic_mempool
-struct PinnedAllocator {
+struct PinnedAllocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -89,7 +91,8 @@ struct PinnedAllocator {
 };
 
 //! Allocator for device memory for use in basic_mempool
-struct DeviceAllocator {
+struct DeviceAllocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -112,7 +115,8 @@ struct DeviceAllocator {
 
 //! Allocator for pre-zeroed device memory for use in basic_mempool
 //  Note: Memory must be zero when returned to mempool
-struct DeviceZeroedAllocator {
+struct DeviceZeroedAllocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -139,11 +143,10 @@ using device_zeroed_mempool_type =
     basic_mempool::MemPool<DeviceZeroedAllocator>;
 using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 
-}  // namespace sycl
+} // namespace sycl
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_SYCL
+#endif // closing endif for RAJA_ENABLE_SYCL
 
-#endif  // closing endif for header file include guard
-
+#endif // closing endif for header file include guard

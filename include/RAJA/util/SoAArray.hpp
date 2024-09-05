@@ -52,7 +52,7 @@ private:
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
 template <typename T, typename IndexType, bool doing_min, size_t size>
-class SoAArray< ::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, size>
+class SoAArray<::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>, size>
 {
   using value_type = ::RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
   using first_type = T;
@@ -74,8 +74,8 @@ private:
   second_type mem_idx[size];
 };
 
-}  // namespace detail
+} // namespace detail
 
-}  // namespace RAJA
+} // namespace RAJA
 
 #endif /* RAJA_SOA_ARRAY_HPP */

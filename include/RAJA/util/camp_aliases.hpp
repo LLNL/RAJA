@@ -52,6 +52,6 @@ using ::camp::get;
 
 using ::camp::resources::Platform;
 
-}  // end namespace RAJA
+} // end namespace RAJA
 
 #endif /* RAJA_CAMP_ALIASES_HPP */

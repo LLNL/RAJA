@@ -35,7 +35,8 @@ namespace internal
 // Executor that handles reductions across a single CUDA thread block
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
@@ -44,14 +45,15 @@ struct CudaStatementExecutor<Data,
                                                ReduceOperator,
                                                ParamId,
                                                EnclosedStmts...>,
-                             Types> {
+                             Types>
+{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
-  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // block reduce on the specified parameter
     auto value = data.template get_param<ParamId>();
@@ -59,7 +61,8 @@ struct CudaStatementExecutor<Data,
     value_t ident = value_t();
 
     // if this thread isn't active, just set it to the identity
-    if (!thread_active) {
+    if (!thread_active)
+    {
       value = ident;
     }
 
@@ -73,7 +76,8 @@ struct CudaStatementExecutor<Data,
 
     // execute enclosed statements, and mask off everyone but thread 0
     thread_active = threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0;
-    if(thread_active){
+    if (thread_active)
+    {
       // Only update to new value on root thread
       data.template assign_param<ParamId>(new_value);
     }
@@ -81,7 +85,7 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  static inline LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const& data)
   {
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
@@ -94,7 +98,8 @@ struct CudaStatementExecutor<Data,
 // Executor that handles reductions across a single CUDA thread warp
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
@@ -103,14 +108,15 @@ struct CudaStatementExecutor<Data,
                                                ReduceOperator,
                                                ParamId,
                                                EnclosedStmts...>,
-                             Types> {
+                             Types>
+{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
-  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // block reduce on the specified parameter
     auto value = data.template get_param<ParamId>();
@@ -118,20 +124,21 @@ struct CudaStatementExecutor<Data,
     value_t ident = value_t();
 
     // if this thread isn't active, just set it to the identity
-    if (!thread_active) {
+    if (!thread_active)
+    {
       value = ident;
     }
 
     // Call warp reduction routine
     using combiner_t =
         RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
-    value_t new_value =
-        RAJA::cuda::impl::warp_reduce<combiner_t>(value, ident);
+    value_t new_value = RAJA::cuda::impl::warp_reduce<combiner_t>(value, ident);
     data.template assign_param<ParamId>(new_value);
 
     // execute enclosed statements, and mask off everyone but lane 0
     thread_active = threadIdx.x == 0;
-    if(thread_active){
+    if (thread_active)
+    {
       // Only update to new value on root thread
       data.template assign_param<ParamId>(new_value);
     }
@@ -139,7 +146,7 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  static inline LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const& data)
   {
     // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
@@ -148,9 +155,8 @@ struct CudaStatementExecutor<Data,
 };
 
 
-
-}  // namespace internal
-}  // end namespace RAJA
+} // namespace internal
+} // end namespace RAJA
 
 
 #endif /* RAJA_policy_cuda_kernel_Reduce_HPP */

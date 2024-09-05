@@ -18,11 +18,11 @@
 ///
 /// forone<test_policy>( [=] RAJA_HOST_DEVICE(){ /* code to test */ } );
 ///
-template < typename test_policy, typename L >
+template <typename test_policy, typename L>
 inline void forone(L&& run);
 
 // test_seq implementation
-template < typename L >
+template <typename L>
 inline void forone(test_seq, L&& run)
 {
   std::forward<L>(run)();
@@ -31,7 +31,7 @@ inline void forone(test_seq, L&& run)
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 // test_openmp_target implementation
-template < typename L >
+template <typename L>
 inline void forone(test_openmp_target, L&& run)
 {
 #pragma omp target
@@ -49,12 +49,12 @@ __global__ void forone_cuda_global(L run)
 }
 
 // test_cuda implementation
-template < typename L >
+template <typename L>
 inline void forone(test_cuda, L&& run)
 {
-   forone_cuda_global<<<1,1>>>(std::forward<L>(run));
-   cudaErrchk(cudaGetLastError());
-   cudaErrchk(cudaDeviceSynchronize());
+  forone_cuda_global<<<1, 1>>>(std::forward<L>(run));
+  cudaErrchk(cudaGetLastError());
+  cudaErrchk(cudaDeviceSynchronize());
 }
 
 #endif
@@ -68,17 +68,22 @@ __global__ void forone_hip_global(L run)
 }
 
 // test_hip implementation
-template < typename L >
+template <typename L>
 inline void forone(test_hip, L&& run)
 {
-   hipLaunchKernelGGL(forone_hip_global<camp::decay<L>>, dim3(1), dim3(1), 0, 0, std::forward<L>(run));
-   hipErrchk(hipGetLastError());
-   hipErrchk(hipDeviceSynchronize());
+  hipLaunchKernelGGL(forone_hip_global<camp::decay<L>>,
+                     dim3(1),
+                     dim3(1),
+                     0,
+                     0,
+                     std::forward<L>(run));
+  hipErrchk(hipGetLastError());
+  hipErrchk(hipDeviceSynchronize());
 }
 
 #endif
 
-template < typename test_policy, typename L >
+template <typename test_policy, typename L>
 void forone(L&& run)
 {
   forone(test_policy{}, std::forward<L>(run));

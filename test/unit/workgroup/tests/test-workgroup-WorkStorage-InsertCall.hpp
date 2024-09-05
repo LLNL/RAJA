@@ -20,10 +20,7 @@
 #include <cstddef>
 
 
-template <typename StoragePolicy,
-          typename DispatchTyper,
-          typename Allocator
-          >
+template <typename StoragePolicy, typename DispatchTyper, typename Allocator>
 void testWorkGroupWorkStorageInsertCall()
 {
   bool success = true;
@@ -32,27 +29,22 @@ void testWorkGroupWorkStorageInsertCall()
 
   static constexpr auto platform = RAJA::Platform::host;
   using DispatchPolicy = typename DispatchTyper::template type<callable>;
-  using Dispatcher_type = RAJA::detail::Dispatcher<
-      platform, DispatchPolicy, void, void*, bool*, bool*>;
-  using WorkStorage_type = RAJA::detail::WorkStorage<
-                                                      StoragePolicy,
-                                                      Allocator,
-                                                      Dispatcher_type
-                                                    >;
+  using Dispatcher_type = RAJA::detail::
+      Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
+  using WorkStorage_type =
+      RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
   using WorkStruct_type = typename WorkStorage_type::value_type;
 
-  const Dispatcher_type* dispatcher = RAJA::detail::get_Dispatcher<
-      callable, Dispatcher_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher =
+      RAJA::detail::get_Dispatcher<callable, Dispatcher_type>(RAJA::seq_work{});
 
   {
     auto test_empty = [&](WorkStorage_type& container) {
-
       ASSERT_EQ(container.size(), (size_t)(0));
       ASSERT_EQ(container.storage_size(), (size_t)0);
     };
 
     auto fill_contents = [&](WorkStorage_type& container, double init_val) {
-
       callable c(init_val);
 
       ASSERT_FALSE(c.move_constructed);
@@ -68,7 +60,6 @@ void testWorkGroupWorkStorageInsertCall()
     };
 
     auto test_contents = [&](WorkStorage_type& container, double init_val) {
-
       ASSERT_EQ(container.size(), (size_t)1);
       ASSERT_TRUE(container.storage_size() >= sizeof(callable));
 
@@ -77,7 +68,8 @@ void testWorkGroupWorkStorageInsertCall()
       double test_val = -1;
       bool move_constructed = false;
       bool moved_from = true;
-      WorkStruct_type::host_call(&*iter, (void*)&test_val, &move_constructed, &moved_from);
+      WorkStruct_type::host_call(
+          &*iter, (void*)&test_val, &move_constructed, &moved_from);
 
       ASSERT_EQ(test_val, init_val);
       ASSERT_TRUE(move_constructed);
@@ -126,19 +118,19 @@ void testWorkGroupWorkStorageInsertCall()
 
 template <typename T>
 class WorkGroupBasicWorkStorageInsertCallUnitTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageInsertCallUnitTest);
 
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest, BasicWorkGroupWorkStorageInsertCall)
+TYPED_TEST_P(WorkGroupBasicWorkStorageInsertCallUnitTest,
+             BasicWorkGroupWorkStorageInsertCall)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  testWorkGroupWorkStorageInsertCall< StoragePolicy, DispatchTyper, Allocator >();
+  testWorkGroupWorkStorageInsertCall<StoragePolicy, DispatchTyper, Allocator>();
 }
 
-#endif  //__TEST_WORKGROUP_WORKSTORAGEINSERTCALL__
+#endif //__TEST_WORKGROUP_WORKSTORAGEINSERTCALL__

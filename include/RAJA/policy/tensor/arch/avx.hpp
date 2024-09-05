@@ -17,11 +17,11 @@
 
 #ifdef __AVX__
 
-#include<RAJA/policy/tensor/arch/avx/traits.hpp>
-#include<RAJA/policy/tensor/arch/avx/avx_int64.hpp>
-#include<RAJA/policy/tensor/arch/avx/avx_int32.hpp>
-#include<RAJA/policy/tensor/arch/avx/avx_float.hpp>
-#include<RAJA/policy/tensor/arch/avx/avx_double.hpp>
+#include <RAJA/policy/tensor/arch/avx/traits.hpp>
+#include <RAJA/policy/tensor/arch/avx/avx_int64.hpp>
+#include <RAJA/policy/tensor/arch/avx/avx_int32.hpp>
+#include <RAJA/policy/tensor/arch/avx/avx_float.hpp>
+#include <RAJA/policy/tensor/arch/avx/avx_double.hpp>
 
 
 #endif // __AVX__

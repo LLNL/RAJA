@@ -13,8 +13,7 @@
 TYPED_TEST_SUITE_P(KernelBasicFissionFusionLoopTest);
 template <typename T>
 class KernelBasicFissionFusionLoopTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
              BasicFissionFusionLoopSegmentKernel)
@@ -91,15 +90,16 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
   seg_idx.clear();
   IDX_TYPE last = IDX_TYPE(10567);
   srand(time(NULL));
-  for (IDX_TYPE i = IDX_TYPE(0); i < last; ++i) {
+  for (IDX_TYPE i = IDX_TYPE(0); i < last; ++i)
+  {
     IDX_TYPE randval = IDX_TYPE(rand() % RAJA::stripIndexType(last));
-    if (i < randval) {
+    if (i < randval)
+    {
       seg_idx.push_back(i);
     }
   }
-  RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0],
-                                      seg_idx.size(),
-                                      erased_working_res);
+  RAJA::TypedListSegment<IDX_TYPE> l1(
+      &seg_idx[0], seg_idx.size(), erased_working_res);
   KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
                                        EXEC_POLICY,
                                        WORKING_RES,
@@ -108,9 +108,8 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
 
   // test zero-length list segment
   seg_idx.clear();
-  RAJA::TypedListSegment<IDX_TYPE> l2(nullptr,
-                                      seg_idx.size(),
-                                      erased_working_res);
+  RAJA::TypedListSegment<IDX_TYPE> l2(
+      nullptr, seg_idx.size(), erased_working_res);
   KernelBasicFissionFusionLoopTestImpl<IDX_TYPE,
                                        EXEC_POLICY,
                                        WORKING_RES,
@@ -120,4 +119,4 @@ TYPED_TEST_P(KernelBasicFissionFusionLoopTest,
 
 REGISTER_TYPED_TEST_SUITE_P(KernelBasicFissionFusionLoopTest,
                             BasicFissionFusionLoopSegmentKernel);
-#endif  // __TEST_KERNEL_BASIC_FISSION_FUSION_LOOP_HPP__
+#endif // __TEST_KERNEL_BASIC_FISSION_FUSION_LOOP_HPP__

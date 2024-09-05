@@ -51,7 +51,8 @@ namespace RAJA
  *
  */
 template <bool async0, int num_blocks, int num_threads>
-struct hip_explicit_launch {};
+struct hip_explicit_launch
+{};
 
 /*!
  * HIP kernel launch policy where the user specifies the number of physical
@@ -87,8 +88,10 @@ namespace statement
  */
 template <typename LaunchConfig, typename... EnclosedStmts>
 struct HipKernelExt
-    : public internal::Statement<::RAJA::policy::hip::hip_exec<LaunchConfig, void, void, true>, EnclosedStmts...> {
-};
+    : public internal::Statement<
+          ::RAJA::policy::hip::hip_exec<LaunchConfig, void, void, true>,
+          EnclosedStmts...>
+{};
 
 
 /*!
@@ -99,7 +102,8 @@ struct HipKernelExt
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
 using HipKernelExp =
-    HipKernelExt<hip_explicit_launch<false, num_blocks, num_threads>, EnclosedStmts...>;
+    HipKernelExt<hip_explicit_launch<false, num_blocks, num_threads>,
+                 EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with the flexibility
@@ -109,7 +113,8 @@ using HipKernelExp =
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
 using HipKernelExpAsync =
-    HipKernelExt<hip_explicit_launch<true, num_blocks, num_threads>, EnclosedStmts...>;
+    HipKernelExt<hip_explicit_launch<true, num_blocks, num_threads>,
+                 EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel using the
@@ -135,9 +140,9 @@ using HipKernelOccAsync =
  * The kernel launch is synchronous.
  */
 template <int num_threads, typename... EnclosedStmts>
-using HipKernelFixed =
-    HipKernelExt<hip_explicit_launch<false, operators::limits<int>::max(), num_threads>,
-                  EnclosedStmts...>;
+using HipKernelFixed = HipKernelExt<
+    hip_explicit_launch<false, operators::limits<int>::max(), num_threads>,
+    EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with a fixed
@@ -145,8 +150,9 @@ using HipKernelFixed =
  * The kernel launch is asynchronous.
  */
 template <int num_threads, typename... EnclosedStmts>
-using HipKernelFixedAsync =
-    HipKernelExt<hip_explicit_launch<true, operators::limits<int>::max(), num_threads>, EnclosedStmts...>;
+using HipKernelFixedAsync = HipKernelExt<
+    hip_explicit_launch<true, operators::limits<int>::max(), num_threads>,
+    EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with 1024 threads
@@ -162,7 +168,7 @@ using HipKernel = HipKernelFixed<1024, EnclosedStmts...>;
 template <typename... EnclosedStmts>
 using HipKernelAsync = HipKernelFixedAsync<1024, EnclosedStmts...>;
 
-}  // namespace statement
+} // namespace statement
 
 namespace internal
 {
@@ -210,10 +216,11 @@ __launch_bounds__(BlockSize, 1) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<int BlockSize, typename Data, typename executor_t>
+template <int BlockSize, typename Data, typename executor_t>
 struct HipKernelLauncherGetter
 {
-  using type = camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
+  using type = camp::decay<
+      decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
   static constexpr type get() noexcept
   {
     return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
@@ -224,10 +231,11 @@ struct HipKernelLauncherGetter
  * Helper class specialization for BlockSize == 0 and gets the unfixed max
  * block size version of the kernel.
  */
-template<typename Data, typename executor_t>
+template <typename Data, typename executor_t>
 struct HipKernelLauncherGetter<0, Data, executor_t>
 {
-  using type = camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
+  using type =
+      camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
   static constexpr type get() noexcept
   {
     return &internal::HipKernelLauncher<Data, executor_t>;
@@ -235,12 +243,14 @@ struct HipKernelLauncherGetter<0, Data, executor_t>
 };
 
 
-
 /*!
  * Helper class that handles HIP kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<typename LaunchPolicy, typename StmtList, typename Data, typename Types>
+template <typename LaunchPolicy,
+          typename StmtList,
+          typename Data,
+          typename Types>
 struct HipLaunchHelper;
 
 
@@ -249,16 +259,28 @@ struct HipLaunchHelper;
  * The user may specify the number of threads and blocks or let one or both be
  * determined at runtime using the HIP occupancy calculator.
  */
-template<bool async0, int num_blocks, int num_threads, typename StmtList, typename Data, typename Types>
-struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,StmtList,Data,Types>
+template <bool async0,
+          int num_blocks,
+          int num_threads,
+          typename StmtList,
+          typename Data,
+          typename Types>
+struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,
+                       StmtList,
+                       Data,
+                       Types>
 {
   using Self = HipLaunchHelper;
 
   static constexpr bool async = async0;
 
-  using executor_t = internal::hip_statement_list_executor_t<StmtList, Data, Types>;
+  using executor_t =
+      internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
-  using kernelGetter_t = HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads, Data, executor_t>;
+  using kernelGetter_t =
+      HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,
+                              Data,
+                              executor_t>;
 
   inline static const void* get_func()
   {
@@ -266,13 +288,16 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
   }
 
   inline static void recommended_blocks_threads(size_t shmem_size,
-      int &recommended_blocks, int &recommended_threads)
+                                                int& recommended_blocks,
+                                                int& recommended_threads)
   {
     auto func = Self::get_func();
 
-    if (num_blocks <= 0) {
+    if (num_blocks <= 0)
+    {
 
-      if (num_threads <= 0) {
+      if (num_threads <= 0)
+      {
 
         //
         // determine blocks at runtime
@@ -282,8 +307,9 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
             func, shmem_size);
         recommended_blocks = data.func_max_blocks_per_device;
         recommended_threads = data.func_max_threads_per_block;
-
-      } else {
+      }
+      else
+      {
 
         //
         // determine blocks at runtime
@@ -293,69 +319,73 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
 
         auto data = ::RAJA::hip::hip_occupancy_max_blocks<Self, num_threads>(
             func, shmem_size);
-        recommended_blocks = data.func_max_blocks_per_sm * data.device_sm_per_device;
-
+        recommended_blocks =
+            data.func_max_blocks_per_sm * data.device_sm_per_device;
       }
+    }
+    else
+    {
 
-    } else {
-
-      if (num_threads <= 0) {
+      if (num_threads <= 0)
+      {
 
         //
         // determine threads at runtime, unsure what use 1024
         // this value may be invalid for kernels with high register pressure
         //
         recommended_threads = 1024;
-
-      } else {
+      }
+      else
+      {
 
         //
         // threads determined at compile-time
         //
         recommended_threads = num_threads;
-
       }
 
       //
       // blocks determined at compile-time
       //
       recommended_blocks = num_blocks;
-
     }
   }
 
-  inline static void max_threads(size_t RAJA_UNUSED_ARG(shmem_size), int &max_threads)
+  inline static void max_threads(size_t RAJA_UNUSED_ARG(shmem_size),
+                                 int& max_threads)
   {
-    if (num_threads <= 0) {
+    if (num_threads <= 0)
+    {
 
       //
       // determine threads at runtime, unsure what use 1024
       // this value may be invalid for kernels with high register pressure
       //
       max_threads = 1024;
-
-    } else {
+    }
+    else
+    {
 
       //
       // threads determined at compile-time
       //
       max_threads = num_threads;
-
     }
   }
 
-  inline static void max_blocks(size_t shmem_size,
-      int &max_blocks, int actual_threads)
+  inline static void
+  max_blocks(size_t shmem_size, int& max_blocks, int actual_threads)
   {
     auto func = Self::get_func();
 
-    if (num_blocks <= 0) {
+    if (num_blocks <= 0)
+    {
 
       //
       // determine blocks at runtime
       //
-      if (num_threads <= 0 ||
-          num_threads != actual_threads) {
+      if (num_threads <= 0 || num_threads != actual_threads)
+      {
 
         //
         // determine blocks when actual_threads != num_threads
@@ -363,8 +393,9 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
         auto data = ::RAJA::hip::hip_occupancy_max_blocks<Self>(
             func, shmem_size, actual_threads);
         max_blocks = data.func_max_blocks_per_sm * data.device_sm_per_device;
-
-      } else {
+      }
+      else
+      {
 
         //
         // determine blocks when actual_threads == num_threads
@@ -372,16 +403,15 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
         auto data = ::RAJA::hip::hip_occupancy_max_blocks<Self, num_threads>(
             func, shmem_size);
         max_blocks = data.func_max_blocks_per_sm * data.device_sm_per_device;
-
       }
-
-    } else {
+    }
+    else
+    {
 
       //
       // blocks determined at compile-time
       //
       max_blocks = num_blocks;
-
     }
   }
 };
@@ -395,8 +425,10 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,Stmt
  * The algorithm is greedy (and probably could be improved), and favors
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
-inline
-hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum = hip_dim_t()){
+inline hip_dim_t fitHipDims(hip_dim_member_t limit,
+                            hip_dim_t result,
+                            hip_dim_t minimum = hip_dim_t())
+{
 
 
   // clamp things to at least 1
@@ -409,12 +441,13 @@ hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum
   minimum.z = minimum.z ? minimum.z : 1;
 
   // if we are under the limit, we're done
-  if(result.x * result.y * result.z <= limit) return result;
+  if (result.x * result.y * result.z <= limit) return result;
 
   // Can we reduce z to fit?
-  if(result.x * result.y * minimum.z < limit){
+  if (result.x * result.y * minimum.z < limit)
+  {
     // compute a new z
-    result.z = limit / (result.x*result.y);
+    result.z = limit / (result.x * result.y);
     return result;
   }
   // we don't fit, so reduce z to it's minimum and continue on to y
@@ -422,9 +455,10 @@ hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum
 
 
   // Can we reduce y to fit?
-  if(result.x * minimum.y * result.z < limit){
+  if (result.x * minimum.y * result.z < limit)
+  {
     // compute a new y
-    result.y = limit / (result.x*result.z);
+    result.y = limit / (result.x * result.z);
     return result;
   }
   // we don't fit, so reduce y to it's minimum and continue on to x
@@ -432,9 +466,10 @@ hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum
 
 
   // Can we reduce y to fit?
-  if(minimum.x * result.y * result.z < limit){
+  if (minimum.x * result.y * result.z < limit)
+  {
     // compute a new x
-    result.x = limit / (result.y*result.z);
+    result.x = limit / (result.y * result.z);
     return result;
   }
   // we don't fit, so we'll return the smallest possible thing
@@ -449,18 +484,20 @@ hip_dim_t fitHipDims(hip_dim_member_t limit, hip_dim_t result, hip_dim_t minimum
  */
 template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::HipKernelExt<LaunchConfig, EnclosedStmts...>, Types> {
+    statement::HipKernelExt<LaunchConfig, EnclosedStmts...>,
+    Types>
+{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
-  using StatementType =
-      statement::HipKernelExt<LaunchConfig, EnclosedStmts...>;
+  using StatementType = statement::HipKernelExt<LaunchConfig, EnclosedStmts...>;
 
   template <typename Data>
-  static inline void exec(Data &&data)
+  static inline void exec(Data&& data)
   {
 
     using data_t = camp::decay<Data>;
-    using executor_t = hip_statement_list_executor_t<stmt_list_t, data_t, Types>;
+    using executor_t =
+        hip_statement_list_executor_t<stmt_list_t, data_t, Types>;
     using launch_t = HipLaunchHelper<LaunchConfig, stmt_list_t, data_t, Types>;
 
 
@@ -476,7 +513,8 @@ struct StatementExecutor<
     // Only launch kernel if we have something to iterate over
     int num_blocks = launch_dims.num_blocks();
     int num_threads = launch_dims.num_threads();
-    if (num_blocks > 0 || num_threads > 0) {
+    if (num_blocks > 0 || num_threads > 0)
+    {
 
       //
       // Setup shared memory buffers
@@ -503,24 +541,26 @@ struct StatementExecutor<
       //
       // Fit the requested threads
       //
-      hip_dim_t fit_threads{0,0,0};
+      hip_dim_t fit_threads{0, 0, 0};
 
-      if ( recommended_threads >= get_size(launch_dims.min_dims.threads) ) {
+      if (recommended_threads >= get_size(launch_dims.min_dims.threads))
+      {
 
-        fit_threads = fitHipDims(
-            recommended_threads, launch_dims.dims.threads, launch_dims.min_dims.threads);
-
+        fit_threads = fitHipDims(recommended_threads,
+                                 launch_dims.dims.threads,
+                                 launch_dims.min_dims.threads);
       }
 
       //
       // Redo fit with max threads
       //
-      if ( recommended_threads < max_threads &&
-           get_size(fit_threads) != recommended_threads ) {
+      if (recommended_threads < max_threads &&
+          get_size(fit_threads) != recommended_threads)
+      {
 
-        fit_threads = fitHipDims(
-            max_threads, launch_dims.dims.threads, launch_dims.min_dims.threads);
-
+        fit_threads = fitHipDims(max_threads,
+                                 launch_dims.dims.threads,
+                                 launch_dims.min_dims.threads);
       }
 
       launch_dims.dims.threads = fit_threads;
@@ -534,20 +574,21 @@ struct StatementExecutor<
 
       int use_blocks;
 
-      if ( launch_dims.num_threads() == recommended_threads ) {
+      if (launch_dims.num_threads() == recommended_threads)
+      {
 
         //
         // Fit the requested blocks
         //
         use_blocks = recommended_blocks;
-
-      } else {
+      }
+      else
+      {
 
         //
         // Fit the max blocks
         //
         use_blocks = max_blocks;
-
       }
 
       launch_dims.dims.blocks = fitHipDims(
@@ -560,7 +601,8 @@ struct StatementExecutor<
       if(launch_dims.num_blocks() > max_blocks){
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num blocks");
       }*/
-      if(launch_dims.num_threads() > max_threads){
+      if (launch_dims.num_threads() > max_threads)
+      {
         RAJA_ABORT_OR_THROW("RAJA::kernel exceeds max num threads");
       }
 
@@ -575,22 +617,32 @@ struct StatementExecutor<
         // currently an unresolved issue.
         //
         auto hip_data = RAJA::hip::make_launch_body(func,
-            launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res, data);
+                                                    launch_dims.dims.blocks,
+                                                    launch_dims.dims.threads,
+                                                    shmem,
+                                                    res,
+                                                    data);
 
         //
         // Launch the kernel
         //
-        void *args[] = {(void*)&hip_data};
-        RAJA::hip::launch(func, launch_dims.dims.blocks, launch_dims.dims.threads, args, shmem, res, launch_t::async);
+        void* args[] = {(void*)&hip_data};
+        RAJA::hip::launch(func,
+                          launch_dims.dims.blocks,
+                          launch_dims.dims.threads,
+                          args,
+                          shmem,
+                          res,
+                          launch_t::async);
       }
     }
   }
 };
 
 
-}  // namespace internal
-}  // namespace RAJA
+} // namespace internal
+} // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_HIP guard
+#endif // closing endif for RAJA_ENABLE_HIP guard
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

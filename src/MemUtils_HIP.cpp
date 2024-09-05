@@ -54,11 +54,11 @@ hipStatusInfo tl_status;
 std::unordered_map<hipStream_t, bool> g_stream_info_map;
 
 
-}  // namespace detail
+} // namespace detail
 
-}  // namespace hip
+} // namespace hip
 
-}  // namespace RAJA
+} // namespace RAJA
 
 
-#endif  // if defined(RAJA_ENABLE_HIP)
+#endif // if defined(RAJA_ENABLE_HIP)

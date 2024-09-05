@@ -20,10 +20,7 @@
 #include <cstddef>
 
 
-template <typename StoragePolicy,
-          typename DispatchTyper,
-          typename Allocator
-          >
+template <typename StoragePolicy, typename DispatchTyper, typename Allocator>
 void testWorkGroupWorkStorageIterator()
 {
   bool success = true;
@@ -32,22 +29,19 @@ void testWorkGroupWorkStorageIterator()
 
   static constexpr auto platform = RAJA::Platform::host;
   using DispatchPolicy = typename DispatchTyper::template type<callable>;
-  using Dispatcher_type = RAJA::detail::Dispatcher<
-      platform, DispatchPolicy, void, void*, bool*, bool*>;
-  using WorkStorage_type = RAJA::detail::WorkStorage<
-                                                      StoragePolicy,
-                                                      Allocator,
-                                                      Dispatcher_type
-                                                    >;
+  using Dispatcher_type = RAJA::detail::
+      Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
+  using WorkStorage_type =
+      RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
 
 
-  const Dispatcher_type* dispatcher = RAJA::detail::get_Dispatcher<
-      callable, Dispatcher_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher =
+      RAJA::detail::get_Dispatcher<callable, Dispatcher_type>(RAJA::seq_work{});
 
   {
     WorkStorage_type container(Allocator{});
 
-    ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)0);
+    ASSERT_EQ(container.end() - container.begin(), (std::ptrdiff_t)0);
     ASSERT_FALSE(container.begin() < container.end());
     ASSERT_FALSE(container.begin() > container.end());
     ASSERT_TRUE(container.begin() == container.end());
@@ -57,7 +51,7 @@ void testWorkGroupWorkStorageIterator()
 
     container.template emplace<callable>(dispatcher, callable{-1});
 
-    ASSERT_EQ(container.end()-container.begin(), (std::ptrdiff_t)1);
+    ASSERT_EQ(container.end() - container.begin(), (std::ptrdiff_t)1);
     ASSERT_TRUE(container.begin() < container.end());
     ASSERT_FALSE(container.begin() > container.end());
     ASSERT_FALSE(container.begin() == container.end());
@@ -75,12 +69,12 @@ void testWorkGroupWorkStorageIterator()
       ASSERT_EQ(++iter, container.end());
       ASSERT_EQ(--iter, container.begin());
 
-      ASSERT_EQ(iter+1, container.end());
-      ASSERT_EQ(1+iter, container.end());
+      ASSERT_EQ(iter + 1, container.end());
+      ASSERT_EQ(1 + iter, container.end());
       ASSERT_EQ(++iter, container.end());
-      ASSERT_EQ(iter-1, container.begin());
-      ASSERT_EQ(iter-=1, container.begin());
-      ASSERT_EQ(iter+=1, container.end());
+      ASSERT_EQ(iter - 1, container.begin());
+      ASSERT_EQ(iter -= 1, container.begin());
+      ASSERT_EQ(iter += 1, container.end());
     }
   }
 
@@ -90,19 +84,19 @@ void testWorkGroupWorkStorageIterator()
 
 template <typename T>
 class WorkGroupBasicWorkStorageIteratorUnitTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
 
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest, BasicWorkGroupWorkStorageIterator)
+TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest,
+             BasicWorkGroupWorkStorageIterator)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
   using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  testWorkGroupWorkStorageIterator< StoragePolicy, DispatchTyper, Allocator >();
+  testWorkGroupWorkStorageIterator<StoragePolicy, DispatchTyper, Allocator>();
 }
 
-#endif  //__TEST_WORKGROUP_WORKSTORAGEITERATOR__
+#endif //__TEST_WORKGROUP_WORKSTORAGEITERATOR__

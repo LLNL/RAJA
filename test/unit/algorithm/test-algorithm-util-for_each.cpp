@@ -19,8 +19,9 @@
 #include <vector>
 #include <set>
 
-template<typename T>
-class ForEachUnitTest : public ::testing::Test {};
+template <typename T>
+class ForEachUnitTest : public ::testing::Test
+{};
 
 TYPED_TEST_SUITE(ForEachUnitTest, UnitIndexTypes);
 
@@ -42,7 +43,8 @@ TYPED_TEST(ForEachUnitTest, EmptyRange)
 TYPED_TEST(ForEachUnitTest, VectorRange)
 {
   std::vector<TypeParam> numbers;
-  for (TypeParam i = 0; i < 13; ++i) {
+  for (TypeParam i = 0; i < 13; ++i)
+  {
     numbers.push_back(i);
   }
 
@@ -53,15 +55,17 @@ TYPED_TEST(ForEachUnitTest, VectorRange)
   });
 
   ASSERT_EQ(copies.size(), 13);
-  for (TypeParam i = 0; i < 13; ++i) {
-    ASSERT_EQ(numbers[i], copies[i]+1);
+  for (TypeParam i = 0; i < 13; ++i)
+  {
+    ASSERT_EQ(numbers[i], copies[i] + 1);
   }
 }
 
 TYPED_TEST(ForEachUnitTest, RajaSpanRange)
 {
   std::vector<TypeParam> numbers;
-  for (TypeParam i = 0; i < 11; ++i) {
+  for (TypeParam i = 0; i < 11; ++i)
+  {
     numbers.push_back(i);
   }
 
@@ -72,25 +76,27 @@ TYPED_TEST(ForEachUnitTest, RajaSpanRange)
   });
 
   ASSERT_EQ(copies.size(), 11);
-  for (TypeParam i = 0; i < 11; ++i) {
-    ASSERT_EQ(numbers[i], copies[i]+1);
+  for (TypeParam i = 0; i < 11; ++i)
+  {
+    ASSERT_EQ(numbers[i], copies[i] + 1);
   }
 }
 
 TYPED_TEST(ForEachUnitTest, SetRange)
 {
   std::set<TypeParam> numbers;
-  for (TypeParam i = 0; i < 6; ++i) {
+  for (TypeParam i = 0; i < 6; ++i)
+  {
     numbers.insert(i);
   }
 
   std::vector<TypeParam> copies;
-  RAJA::for_each(numbers, [&](TypeParam const& number) {
-    copies.push_back(number);
-  });
+  RAJA::for_each(numbers,
+                 [&](TypeParam const& number) { copies.push_back(number); });
 
   ASSERT_EQ(copies.size(), 6);
-  for (TypeParam i = 0; i < 6; ++i) {
+  for (TypeParam i = 0; i < 6; ++i)
+  {
     ASSERT_EQ(i, copies[i]);
     ASSERT_EQ(numbers.count(i), 1);
   }
@@ -102,22 +108,21 @@ TYPED_TEST(ForEachUnitTest, EmptyTypeList)
   using numbers = camp::list<>;
 
   std::vector<TypeParam> copies;
-  RAJA::for_each_type(numbers{}, [&](auto number) {
-    copies.push_back(number);
-  });
+  RAJA::for_each_type(numbers{},
+                      [&](auto number) { copies.push_back(number); });
 
   ASSERT_EQ(copies.size(), 0);
 }
 
 
-template < typename T, T val >
+template <typename T, T val>
 T get_num(std::integral_constant<T, val>)
 {
   return val;
 }
 
-template < typename TypeParam,
-           std::enable_if_t<std::is_integral<TypeParam>::value>* = nullptr >
+template <typename TypeParam,
+          std::enable_if_t<std::is_integral<TypeParam>::value>* = nullptr>
 void run_int_type_test()
 {
   using numbers = camp::list<std::integral_constant<TypeParam, 0>,
@@ -127,24 +132,21 @@ void run_int_type_test()
                              std::integral_constant<TypeParam, 4>>;
 
   std::vector<TypeParam> copies;
-  RAJA::for_each_type(numbers{}, [&](auto number) {
-    copies.push_back(get_num(number));
-  });
+  RAJA::for_each_type(numbers{},
+                      [&](auto number) { copies.push_back(get_num(number)); });
 
   ASSERT_EQ(copies.size(), 5);
-  for (TypeParam i = 0; i < 5; ++i) {
+  for (TypeParam i = 0; i < 5; ++i)
+  {
     ASSERT_EQ(i, copies[i]);
   }
 }
 ///
-template < typename TypeParam,
-           std::enable_if_t<!std::is_integral<TypeParam>::value>* = nullptr >
+template <typename TypeParam,
+          std::enable_if_t<!std::is_integral<TypeParam>::value>* = nullptr>
 void run_int_type_test()
 {
   // ignore non-ints
 }
 
-TYPED_TEST(ForEachUnitTest, IntTypeList)
-{
-  run_int_type_test<TypeParam>();
-}
+TYPED_TEST(ForEachUnitTest, IntTypeList) { run_int_type_test<TypeParam>(); }

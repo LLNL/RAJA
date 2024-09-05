@@ -52,11 +52,11 @@ syclInfo tl_status;
 std::unordered_map<cl::sycl::queue, bool> g_queue_info_map{
     {cl::sycl::queue(), true}};
 
-}  // namespace detail
+} // namespace detail
 
-}  // namespace sycl
+} // namespace sycl
 
-}  // namespace RAJA
+} // namespace RAJA
 
 
-#endif  // if defined(RAJA_ENABLE_SYCL)
+#endif // if defined(RAJA_ENABLE_SYCL)

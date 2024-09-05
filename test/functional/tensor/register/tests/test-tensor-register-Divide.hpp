@@ -8,7 +8,7 @@
 #ifndef __TEST_TENSOR_REGISTER_Divide_HPP__
 #define __TEST_TENSOR_REGISTER_Divide_HPP__
 
-#include<RAJA/RAJA.hpp>
+#include <RAJA/RAJA.hpp>
 
 template <typename REGISTER_TYPE>
 void DivideImpl()
@@ -22,21 +22,22 @@ void DivideImpl()
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t *input0_hptr = input0_vec.data();
-  element_t *input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+  element_t* input0_hptr = input0_vec.data();
+  element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t *input1_hptr = input1_vec.data();
-  element_t *input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+  element_t* input1_hptr = input1_vec.data();
+  element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
-  element_t *output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
+  element_t* output0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
 
   // Initialize input data
-  for(camp::idx_t i = 0;i < num_elem; ++ i){
-   input0_hptr[i] = (element_t)(i+1+NO_OPT_RAND);
-   input1_hptr[i] = (element_t)(i*i+1+NO_OPT_RAND);
+  for (camp::idx_t i = 0; i < num_elem; ++i)
+  {
+    input0_hptr[i] = (element_t)(i + 1 + NO_OPT_RAND);
+    input1_hptr[i] = (element_t)(i * i + 1 + NO_OPT_RAND);
   }
 
   tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
@@ -48,8 +49,7 @@ void DivideImpl()
   //
 
   // operator /
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
     register_t x;
     x.load_packed(input0_dptr);
 
@@ -63,15 +63,14 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
+  for (camp::idx_t lane = 0; lane < num_elem; ++lane)
+  {
     ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
   }
 
 
-
   // operator /=
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
     register_t x;
     x.load_packed(input0_dptr);
 
@@ -87,16 +86,14 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
+  for (camp::idx_t lane = 0; lane < num_elem; ++lane)
+  {
     ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
   }
 
 
-
-
   // operator / scalar
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
     register_t x;
     x.load_packed(input0_dptr);
 
@@ -107,16 +104,14 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
+  for (camp::idx_t lane = 0; lane < num_elem; ++lane)
+  {
     ASSERT_SCALAR_EQ(input0_vec[lane] / 7, output0_vec[lane]);
   }
 
 
-
-
   // operator += scalar
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
     register_t x;
     x.load_packed(input0_dptr);
 
@@ -129,7 +124,8 @@ void DivideImpl()
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-  for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
+  for (camp::idx_t lane = 0; lane < num_elem; ++lane)
+  {
     ASSERT_SCALAR_EQ(input0_vec[lane] / 3, output0_vec[lane]);
   }
 
@@ -137,33 +133,35 @@ void DivideImpl()
   //
   // Test variable length operations for all valid lengths
   //
-  for(camp::idx_t  N = 0;N < num_elem; ++N){
+  for (camp::idx_t N = 0; N < num_elem; ++N)
+  {
 
-    tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-
+    tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
       register_t x;
       x.load_packed_n(input0_dptr, N);
 
       register_t y;
       y.load_packed_n(input1_dptr, N);
 
-      register_t z = x.divide_n(y,N);
+      register_t z = x.divide_n(y, N);
 
       z.store_packed(output0_dptr);
     });
 
     tensor_copy_to_host<policy_t>(output0_vec, output0_dptr);
 
-    for(camp::idx_t  lane = 0;lane < num_elem;++ lane){
-      if(lane < N){
-        ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
+    for (camp::idx_t lane = 0; lane < num_elem; ++lane)
+    {
+      if (lane < N)
+      {
+        ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane],
+                         output0_vec[lane]);
       }
-      else{
+      else
+      {
         ASSERT_SCALAR_EQ(0, output0_vec[lane]);
       }
     }
-
-
   }
 
 
@@ -174,11 +172,7 @@ void DivideImpl()
 }
 
 
-
-TYPED_TEST_P(TestTensorRegister, Divide)
-{
-  DivideImpl<TypeParam>();
-}
+TYPED_TEST_P(TestTensorRegister, Divide) { DivideImpl<TypeParam>(); }
 
 
 #endif

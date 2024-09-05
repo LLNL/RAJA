@@ -6,22 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA reducer constructors and initialization.
+/// Source file containing tests for RAJA reducer constructors and
+/// initialization.
 ///
 
 #include "tests/test-reducer-constructors.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaBasicReducerConstructorTypes = 
-  Test< camp::cartesian_product< CudaReducerPolicyList,
+using CudaBasicReducerConstructorTypes =
+    Test<camp::cartesian_product<CudaReducerPolicyList,
                                  DataTypeList,
-                                 CudaResourceList > >::Types;
+                                 CudaResourceList>>::Types;
 
-using CudaInitReducerConstructorTypes = 
-  Test< camp::cartesian_product< CudaReducerPolicyList,
+using CudaInitReducerConstructorTypes =
+    Test<camp::cartesian_product<CudaReducerPolicyList,
                                  DataTypeList,
                                  CudaResourceList,
-                                 CudaUnitTestPolicyList > >::Types;
+                                 CudaUnitTestPolicyList>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(CudaBasicTest,
                                ReducerBasicConstructorUnitTest,
@@ -31,4 +32,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(CudaInitTest,
                                ReducerInitConstructorUnitTest,
                                CudaInitReducerConstructorTypes);
 #endif
-

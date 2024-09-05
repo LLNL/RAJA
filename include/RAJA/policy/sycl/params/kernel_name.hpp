@@ -3,35 +3,38 @@
 
 #include "RAJA/pattern/params/kernel_name.hpp"
 
-namespace RAJA {
-namespace expt {
-namespace detail {
+namespace RAJA
+{
+namespace expt
+{
+namespace detail
+{
 
-#if defined(RAJA_ENABLE_SYCL)  
-  
-  // Init
-  template<typename EXEC_POL>
-  camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  init(KernelName&)
-  {
-    //TODO: Define kernel naming
-  }
+#if defined(RAJA_ENABLE_SYCL)
 
-  // Combine
-  template<typename EXEC_POL, typename T>
-  camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  SYCL_EXTERNAL
-  combine(KernelName&, T) {}
+// Init
+template <typename EXEC_POL>
+camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>>
+init(KernelName&)
+{
+  // TODO: Define kernel naming
+}
 
-  // Resolve
-  template<typename EXEC_POL>
-  camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  resolve(KernelName&)
-  {
-    //TODO: Define kernel naming
-  }
+// Combine
+template <typename EXEC_POL, typename T>
+camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>>
+    SYCL_EXTERNAL combine(KernelName&, T)
+{}
 
-#endif  
+// Resolve
+template <typename EXEC_POL>
+camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>>
+resolve(KernelName&)
+{
+  // TODO: Define kernel naming
+}
+
+#endif
 
 } //  namespace detail
 } //  namespace expt

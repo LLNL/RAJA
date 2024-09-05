@@ -29,9 +29,11 @@ void DepGraphNode::print(std::ostream& os) const
      << m_semaphore_reload_value << std::endl;
 
   os << "     num dep tasks = " << m_num_dep_tasks;
-  if (m_num_dep_tasks > 0) {
+  if (m_num_dep_tasks > 0)
+  {
     os << " ( ";
-    for (int jj = 0; jj < m_num_dep_tasks; ++jj) {
+    for (int jj = 0; jj < m_num_dep_tasks; ++jj)
+    {
       os << m_dep_task[jj] << "  ";
     }
     os << " )";
@@ -39,4 +41,4 @@ void DepGraphNode::print(std::ostream& os) const
   os << std::endl;
 }
 
-}  // namespace RAJA
+} // namespace RAJA

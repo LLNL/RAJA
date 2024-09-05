@@ -27,8 +27,8 @@ TEST(RAJAVecUnitTest, basic_test)
 
   RAJA::RAJAVec<int> a1(a);
   ASSERT_EQ(a.size(), a1.size());
-  int* a_data = a.data(); 
-  int* a1_data = a1.data(); 
+  int* a_data = a.data();
+  int* a1_data = a1.data();
   ASSERT_EQ(a_data[0], a1_data[0]);
   ASSERT_EQ(a_data[1], a1_data[1]);
 

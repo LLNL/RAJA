@@ -40,12 +40,14 @@ namespace internal
  *
  */
 template <class T>
-struct TypeIsLambda {
+struct TypeIsLambda
+{
   static const bool value = false;
 };
 
-template <camp::idx_t BodyIdx, typename ... Args>
-struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx, Args...>> {
+template <camp::idx_t BodyIdx, typename... Args>
+struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx, Args...>>
+{
   static const bool value = true;
 };
 
@@ -59,10 +61,11 @@ template <typename Types, class... Statements>
 struct Invoke_all_Lambda;
 
 template <typename Types>
-struct Invoke_all_Lambda<Types> {
+struct Invoke_all_Lambda<Types>
+{
 
   template <typename Data>
-  static RAJA_INLINE void lambda_special(Data &&)
+  static RAJA_INLINE void lambda_special(Data&&)
   {
     // NOP terminator
   }
@@ -70,7 +73,8 @@ struct Invoke_all_Lambda<Types> {
 
 
 template <typename Types, class Statement, class... StatementRest>
-struct Invoke_all_Lambda<Types, Statement, StatementRest...> {
+struct Invoke_all_Lambda<Types, Statement, StatementRest...>
+{
 
   // Lambda check
   static const bool value = TypeIsLambda<camp::decay<Statement>>::value;
@@ -78,7 +82,7 @@ struct Invoke_all_Lambda<Types, Statement, StatementRest...> {
 
   // Invoke the chain of lambdas
   template <typename Data>
-  static RAJA_INLINE void lambda_special(Data &&data)
+  static RAJA_INLINE void lambda_special(Data&& data)
   {
 
     // Execute this Lambda
@@ -98,10 +102,12 @@ struct Invoke_all_Lambda<Types, Statement, StatementRest...> {
  */
 template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>, Types> {
+    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>,
+    Types>
+{
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  static RAJA_INLINE void exec(Data&& data)
   {
 
     // Set the argument type for this loop
@@ -113,7 +119,8 @@ struct StatementExecutor<
     auto distance = std::distance(begin, end);
 
     RAJA_SIMD
-    for (decltype(distance) i = 0; i < distance; ++i) {
+    for (decltype(distance) i = 0; i < distance; ++i)
+    {
 
       // Privatize data for SIMD correctness reasons
       using RAJA::internal::thread_privatize;
@@ -123,14 +130,15 @@ struct StatementExecutor<
       // Assign offset on privatized data
       private_data.template assign_offset<ArgumentId>(i);
 
-      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(private_data);
+      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(
+          private_data);
     }
   }
 };
 
 
-}  // namespace internal
-}  // end namespace RAJA
+} // namespace internal
+} // end namespace RAJA
 
 
 #endif /* RAJA_pattern_nested_HPP */

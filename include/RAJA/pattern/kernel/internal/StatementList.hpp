@@ -35,8 +35,6 @@ template <typename Policy, typename Types>
 struct StatementExecutor;
 
 
-
-
 template <typename... Stmts>
 using StatementList = camp::list<Stmts...>;
 
@@ -47,11 +45,13 @@ struct StatementListExecutor;
 
 template <camp::idx_t statement_index,
           camp::idx_t num_statements,
-          typename StmtList, typename Types>
-struct StatementListExecutor {
+          typename StmtList,
+          typename Types>
+struct StatementListExecutor
+{
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  static RAJA_INLINE void exec(Data&& data)
   {
 
     // Get the statement we're going to execute
@@ -61,8 +61,10 @@ struct StatementListExecutor {
     StatementExecutor<statement, Types>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<statement_index + 1, num_statements, StmtList, Types>::exec(
-        std::forward<Data>(data));
+    StatementListExecutor<statement_index + 1,
+                          num_statements,
+                          StmtList,
+                          Types>::exec(std::forward<Data>(data));
   }
 };
 
@@ -72,26 +74,25 @@ struct StatementListExecutor {
  */
 
 template <camp::idx_t num_statements, typename StmtList, typename Types>
-struct StatementListExecutor<num_statements, num_statements, StmtList, Types> {
+struct StatementListExecutor<num_statements, num_statements, StmtList, Types>
+{
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&)
-  {
-  }
+  static RAJA_INLINE void exec(Data&&)
+  {}
 };
 
 
 template <typename StmtList, typename Types, typename Data>
-RAJA_INLINE void execute_statement_list(Data &&data)
+RAJA_INLINE void execute_statement_list(Data&& data)
 {
   StatementListExecutor<0, camp::size<StmtList>::value, StmtList, Types>::exec(
       std::forward<Data>(data));
 }
 
 
-
-}  // end namespace internal
-}  // end namespace RAJA
+} // end namespace internal
+} // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_HPP */

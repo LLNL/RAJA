@@ -39,7 +39,7 @@ namespace util
  * Reinterpret any datatype as another datatype of the same size
  */
 template <typename A, typename B>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const &a)
+RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const& a)
 {
   static_assert(sizeof(A) == sizeof(B), "A and B must be the same size");
 
@@ -49,7 +49,7 @@ RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const &a)
 }
 
 
-}  // namespace util
-}  // namespace RAJA
+} // namespace util
+} // namespace RAJA
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

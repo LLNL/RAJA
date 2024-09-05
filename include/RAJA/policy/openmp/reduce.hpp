@@ -55,7 +55,8 @@ public:
 
   ~ReduceOMP()
   {
-    if (Base::parent) {
+    if (Base::parent)
+    {
 #pragma omp critical(ompReduceCritical)
       Reduce()(Base::parent->local(), Base::my_data);
       Base::my_data = Base::identity;
@@ -63,7 +64,7 @@ public:
   }
 };
 
-}  // namespace detail
+} // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP)
 
@@ -107,25 +108,27 @@ public:
 
   T get_combined() const
   {
-    if (Base::my_data != Base::identity) {
+    if (Base::my_data != Base::identity)
+    {
       Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
       Base::my_data = Base::identity;
     }
 
     T res = Base::identity;
-    for (size_t i = 0; i < data->size(); ++i) {
+    for (size_t i = 0; i < data->size(); ++i)
+    {
       Reduce{}(res, (*data)[i]);
     }
     return res;
   }
 };
 
-}  // namespace detail
+} // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered)
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_OPENMP guard
+#endif // closing endif for RAJA_ENABLE_OPENMP guard
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

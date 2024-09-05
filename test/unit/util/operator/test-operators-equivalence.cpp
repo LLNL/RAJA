@@ -12,12 +12,13 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_unit-test-types.hpp"
 
-template<typename T>
-class OperatorsUnitTestEquivalence : public ::testing::Test {};
+template <typename T>
+class OperatorsUnitTestEquivalence : public ::testing::Test
+{};
 
 TYPED_TEST_SUITE(OperatorsUnitTestEquivalence, UnitIntFloatTypes);
 
-template<typename T>
+template <typename T>
 void equal_test()
 {
   using Eq = RAJA::operators::equal_to<T>;
@@ -25,16 +26,17 @@ void equal_test()
   Eq eq;
   T i = static_cast<T>(5);
   T j = static_cast<T>(5);
-  ASSERT_TRUE(eq(i,j));
+  ASSERT_TRUE(eq(i, j));
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-5);
     j = static_cast<T>(-5);
-    ASSERT_TRUE(eq(i,j));
+    ASSERT_TRUE(eq(i, j));
   }
 }
 
-template<typename T>
+template <typename T>
 void not_equal_test()
 {
   using NEq = RAJA::operators::not_equal_to<T>;
@@ -42,16 +44,17 @@ void not_equal_test()
   NEq neq;
   T i = static_cast<T>(5);
   T j = static_cast<T>(3);
-  ASSERT_TRUE(neq(i,j));
+  ASSERT_TRUE(neq(i, j));
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-5);
     j = static_cast<T>(-3);
-    ASSERT_TRUE(neq(i,j));
+    ASSERT_TRUE(neq(i, j));
   }
 }
 
-template<typename T>
+template <typename T>
 void greater_test()
 {
   using G = RAJA::operators::greater<T>;
@@ -59,18 +62,19 @@ void greater_test()
   G g;
   T i = static_cast<T>(5);
   T j = static_cast<T>(4);
-  ASSERT_TRUE(g(i,j));
-  ASSERT_FALSE(g(j,i));
+  ASSERT_TRUE(g(i, j));
+  ASSERT_FALSE(g(j, i));
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-4);
     j = static_cast<T>(-5);
-    ASSERT_TRUE(g(i,j));
-    ASSERT_FALSE(g(j,i));
+    ASSERT_TRUE(g(i, j));
+    ASSERT_FALSE(g(j, i));
   }
 }
 
-template<typename T>
+template <typename T>
 void less_test()
 {
   using L = RAJA::operators::less<T>;
@@ -78,18 +82,19 @@ void less_test()
   L l;
   T i = static_cast<T>(4);
   T j = static_cast<T>(5);
-  ASSERT_TRUE(l(i,j));
-  ASSERT_FALSE(l(j,i));
+  ASSERT_TRUE(l(i, j));
+  ASSERT_FALSE(l(j, i));
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-5);
     j = static_cast<T>(-4);
-    ASSERT_TRUE(l(i,j));
-    ASSERT_FALSE(l(j,i));
+    ASSERT_TRUE(l(i, j));
+    ASSERT_FALSE(l(j, i));
   }
 }
 
-template<typename T>
+template <typename T>
 void greater_eq_test()
 {
   using G = RAJA::operators::greater_equal<T>;
@@ -98,21 +103,22 @@ void greater_eq_test()
   T i = static_cast<T>(5);
   T i2 = static_cast<T>(5);
   T j = static_cast<T>(4);
-  ASSERT_TRUE(g(i,j));
-  ASSERT_TRUE(g(i,i2));
-  ASSERT_FALSE(g(j,i));
+  ASSERT_TRUE(g(i, j));
+  ASSERT_TRUE(g(i, i2));
+  ASSERT_FALSE(g(j, i));
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-4);
     i2 = static_cast<T>(-4);
     j = static_cast<T>(-5);
-    ASSERT_TRUE(g(i,j));
-    ASSERT_TRUE(g(i,i2));
-    ASSERT_FALSE(g(j,i));
+    ASSERT_TRUE(g(i, j));
+    ASSERT_TRUE(g(i, i2));
+    ASSERT_FALSE(g(j, i));
   }
 }
 
-template<typename T>
+template <typename T>
 void less_eq_test()
 {
   using L = RAJA::operators::less_equal<T>;
@@ -121,21 +127,22 @@ void less_eq_test()
   T i = static_cast<T>(4);
   T i2 = static_cast<T>(4);
   T j = static_cast<T>(5);
-  ASSERT_TRUE(l(i,j));
-  ASSERT_TRUE(l(i,i2));
-  ASSERT_FALSE(l(j,i));
+  ASSERT_TRUE(l(i, j));
+  ASSERT_TRUE(l(i, i2));
+  ASSERT_FALSE(l(j, i));
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-5);
     i2 = static_cast<T>(-5);
     j = static_cast<T>(-4);
-    ASSERT_TRUE(l(i,j));
-    ASSERT_TRUE(l(i,i2));
-    ASSERT_FALSE(l(j,i));
+    ASSERT_TRUE(l(i, j));
+    ASSERT_TRUE(l(i, i2));
+    ASSERT_FALSE(l(j, i));
   }
 }
 
-template<typename T>
+template <typename T>
 void maximum_test()
 {
   using Max = RAJA::operators::maximum<T>;
@@ -143,16 +150,17 @@ void maximum_test()
   Max m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), i);
+  ASSERT_EQ(m(i, j), i);
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), j);
+    ASSERT_EQ(m(i, j), j);
   }
 }
 
-template<typename T>
+template <typename T>
 void minimum_test()
 {
   using Min = RAJA::operators::minimum<T>;
@@ -160,16 +168,18 @@ void minimum_test()
   Min m;
   T i = static_cast<T>(5);
   T j = static_cast<T>(2);
-  ASSERT_EQ(m(i,j), j);
+  ASSERT_EQ(m(i, j), j);
 
-  if (std::is_signed<T>::value) {
+  if (std::is_signed<T>::value)
+  {
     i = static_cast<T>(-5);
     j = static_cast<T>(-2);
-    ASSERT_EQ(m(i,j), i);
+    ASSERT_EQ(m(i, j), i);
   }
 }
 
-TYPED_TEST(OperatorsUnitTestEquivalence, equivalence) {
+TYPED_TEST(OperatorsUnitTestEquivalence, equivalence)
+{
   minimum_test<TypeParam>();
   maximum_test<TypeParam>();
   equal_test<TypeParam>();

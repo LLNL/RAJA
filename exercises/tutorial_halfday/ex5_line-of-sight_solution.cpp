@@ -93,52 +93,59 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* visible = memoryManager::allocate<int>(N);
   int* visible_ref = memoryManager::allocate<int>(N);
 
-  for (int i = 0; i < N; ++i) {
-    dist[i] = static_cast<double>(i+1);
-    double alt_fact = alt_max * ( (i+1) % 5 == 0 ? i*10 : i+1 );
-    alt[i] = alt_fact *
-             static_cast<double>( rand() ) / static_cast<double>( RAND_MAX );
+  for (int i = 0; i < N; ++i)
+  {
+    dist[i] = static_cast<double>(i + 1);
+    double alt_fact = alt_max * ((i + 1) % 5 == 0 ? i * 10 : i + 1);
+    alt[i] =
+        alt_fact * static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
   }
 
   //
   // Set angle array
   //
-  for (int i = 0; i < N; ++i) {
-    ang[i] = atan2( alt[i], dist[i] );       // set angle in radians
+  for (int i = 0; i < N; ++i)
+  {
+    ang[i] = atan2(alt[i], dist[i]); // set angle in radians
   }
 
 
-//----------------------------------------------------------------------------//
-// C-style sequential variant establishes reference solution to compare with.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // C-style sequential variant establishes reference solution to compare with.
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running C-style sequential line-of-sight algorithm...\n";
 
   std::memset(visible_ref, 0, N * sizeof(int));
 
   ang_max[0] = ang[0];
-  for (int i = 1; i < N; ++i) {
-      ang_max[i] = std::max(ang[i], ang_max[i-1]);
+  for (int i = 1; i < N; ++i)
+  {
+    ang_max[i] = std::max(ang[i], ang_max[i - 1]);
   }
 
   int num_visible = 0;
 
-  for (int i = 0; i < N; ++i) {
-     if ( ang[i] >= ang_max[i] ) {
-        visible_ref[i] = 1;
-        num_visible++;
-     } else {
-        visible_ref[i] = 0;
-     }
+  for (int i = 0; i < N; ++i)
+  {
+    if (ang[i] >= ang_max[i])
+    {
+      visible_ref[i] = 1;
+      num_visible++;
+    }
+    else
+    {
+      visible_ref[i] = 0;
+    }
   }
 
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
-//printArray(visible_ref, N);
+  // printArray(visible_ref, N);
 
 
-//----------------------------------------------------------------------------//
-// RAJA sequential variant
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // RAJA sequential variant
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running RAJA sequential line-of-sight algorithm...\n";
 
@@ -148,27 +155,30 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL1 = RAJA::seq_exec;
 
-  RAJA::inclusive_scan< EXEC_POL1 >(RAJA::make_span(ang, N),
-                                    RAJA::make_span(ang_max, N),
-                                    RAJA::operators::maximum<double>{} );
+  RAJA::inclusive_scan<EXEC_POL1>(RAJA::make_span(ang, N),
+                                  RAJA::make_span(ang_max, N),
+                                  RAJA::operators::maximum<double>{});
 
 
-  RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=] (int i) {
-    if ( ang[i] >= ang_max[i] ) {
-       visible[i] = 1;
-    } else {
-       visible[i] = 0;
+  RAJA::forall<EXEC_POL1>(RAJA::RangeSegment(0, N), [=](int i) {
+    if (ang[i] >= ang_max[i])
+    {
+      visible[i] = 1;
+    }
+    else
+    {
+      visible[i] = 0;
     }
   });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
-//printArray(visible, N);
+  // printArray(visible, N);
 
 
-//----------------------------------------------------------------------------//
-// RAJA OpenMP multithreading variant
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // RAJA OpenMP multithreading variant
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -180,28 +190,31 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL2 = RAJA::omp_parallel_for_exec;
 
-  RAJA::inclusive_scan< EXEC_POL2 >(RAJA::make_span(ang, N),
-                                    RAJA::make_span(ang_max, N),
-                                    RAJA::operators::maximum<double>{} );
+  RAJA::inclusive_scan<EXEC_POL2>(RAJA::make_span(ang, N),
+                                  RAJA::make_span(ang_max, N),
+                                  RAJA::operators::maximum<double>{});
 
-  RAJA::forall< EXEC_POL2 >(RAJA::RangeSegment(0, N), [=] (int i) {
-    if ( ang[i] >= ang_max[i] ) {
-       visible[i] = 1;
-    } else {
-       visible[i] = 0;
+  RAJA::forall<EXEC_POL2>(RAJA::RangeSegment(0, N), [=](int i) {
+    if (ang[i] >= ang_max[i])
+    {
+      visible[i] = 1;
+    }
+    else
+    {
+      visible[i] = 0;
     }
   });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
-//printArray(visible, N);
+  // printArray(visible, N);
 
 #endif
 
 
-//----------------------------------------------------------------------------//
-// RAJA CUDA variant
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // RAJA CUDA variant
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -213,21 +226,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL3 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
 
-  RAJA::inclusive_scan< EXEC_POL3 >(RAJA::make_span(ang, N),
-                                    RAJA::make_span(ang_max, N),
-                                    RAJA::operators::maximum<double>{} );
+  RAJA::inclusive_scan<EXEC_POL3>(RAJA::make_span(ang, N),
+                                  RAJA::make_span(ang_max, N),
+                                  RAJA::operators::maximum<double>{});
 
-  RAJA::forall< EXEC_POL3 >(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE (int i) {
-    if ( ang[i] >= ang_max[i] ) {
-       visible[i] = 1;
-    } else {
-       visible[i] = 0;
+  RAJA::forall<EXEC_POL3>(RAJA::RangeSegment(0, N), [=] RAJA_DEVICE(int i) {
+    if (ang[i] >= ang_max[i])
+    {
+      visible[i] = 1;
+    }
+    else
+    {
+      visible[i] = 0;
     }
   });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
-//printArray(visible, N);
+  // printArray(visible, N);
 
 #endif
 
@@ -255,13 +271,20 @@ int checkResult(int* visible, int* visible_ref, int len)
   int num_visible = 0;
 
   bool correct = true;
-  for (int i = 0; i < len; i++) {
-    if ( correct && visible[i] != visible_ref[i] ) { correct = false; }
+  for (int i = 0; i < len; i++)
+  {
+    if (correct && visible[i] != visible_ref[i])
+    {
+      correct = false;
+    }
     num_visible += visible[i];
   }
-  if ( correct ) {
+  if (correct)
+  {
     std::cout << "\n\t result -- PASS\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\n\t result -- FAIL\n";
   }
 
@@ -275,7 +298,8 @@ template <typename T>
 void printArray(T* v, int len)
 {
   std::cout << std::endl;
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; i++)
+  {
     std::cout << "v[" << i << "] = " << v[i] << std::endl;
   }
   std::cout << std::endl;

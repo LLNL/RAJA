@@ -37,8 +37,8 @@ namespace statement
  *
  */
 template <typename Condition, typename... EnclosedStmts>
-struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
-};
+struct If : public internal::Statement<camp::nil, EnclosedStmts...>
+{};
 
 
 /*!
@@ -46,10 +46,11 @@ struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
  *
  */
 template <long value>
-struct Value {
+struct Value
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const &)
+  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const&)
   {
     return value;
   }
@@ -60,10 +61,11 @@ struct Value {
  *
  */
 template <typename L, typename R>
-struct Equals {
+struct Equals
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) == R::eval(data);
   }
@@ -74,10 +76,11 @@ struct Equals {
  *
  */
 template <typename L, typename R>
-struct NotEquals {
+struct NotEquals
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) != R::eval(data);
   }
@@ -89,10 +92,11 @@ struct NotEquals {
  *
  */
 template <typename L, typename R>
-struct Or {
+struct Or
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) || R::eval(data);
   }
@@ -104,10 +108,11 @@ struct Or {
  *
  */
 template <typename L, typename R>
-struct And {
+struct And
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) && R::eval(data);
   }
@@ -119,10 +124,11 @@ struct And {
  *
  */
 template <typename L, typename R>
-struct LessThan {
+struct LessThan
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) < R::eval(data);
   }
@@ -134,10 +140,11 @@ struct LessThan {
  *
  */
 template <typename L, typename R>
-struct LessThanEq {
+struct LessThanEq
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) <= R::eval(data);
   }
@@ -149,10 +156,11 @@ struct LessThanEq {
  *
  */
 template <typename L, typename R>
-struct GreaterThan {
+struct GreaterThan
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) > R::eval(data);
   }
@@ -164,10 +172,11 @@ struct GreaterThan {
  *
  */
 template <typename L, typename R>
-struct GreaterThanEq {
+struct GreaterThanEq
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) >= R::eval(data);
   }
@@ -179,31 +188,34 @@ struct GreaterThanEq {
  *
  */
 template <typename L>
-struct Not {
+struct Not
+{
 
   template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return !(L::eval(data));
   }
 };
 
 
-}  // end namespace statement
+} // end namespace statement
 
 namespace internal
 {
 
 
 template <typename Condition, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types> {
+struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types>
+{
 
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  static RAJA_INLINE void exec(Data&& data)
   {
 
-    if (Condition::eval(data)) {
+    if (Condition::eval(data))
+    {
       execute_statement_list<camp::list<EnclosedStmts...>, Types>(
           std::forward<Data>(data));
     }
@@ -211,8 +223,8 @@ struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types> {
 };
 
 
-}  // namespace internal
-}  // end namespace RAJA
+} // namespace internal
+} // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

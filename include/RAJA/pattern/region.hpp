@@ -38,7 +38,7 @@ void region(OuterBody&& outer_body, InnerBody&& inner_body)
   region_impl(ExecutionPolicy(), outer_body, inner_body);
 }
 
-}  // namespace RAJA
+} // namespace RAJA
 
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

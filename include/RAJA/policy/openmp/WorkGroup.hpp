@@ -21,4 +21,4 @@
 #include "RAJA/policy/openmp/WorkGroup/Dispatcher.hpp"
 #include "RAJA/policy/openmp/WorkGroup/WorkRunner.hpp"
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

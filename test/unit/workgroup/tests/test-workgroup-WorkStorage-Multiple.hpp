@@ -20,12 +20,10 @@
 #include <cstddef>
 
 
-template <typename StoragePolicy,
-          typename DispatchTyper,
-          typename Allocator
-          >
-void testWorkGroupWorkStorageMultiple(
-    const size_t num0, const size_t num1, const size_t num2)
+template <typename StoragePolicy, typename DispatchTyper, typename Allocator>
+void testWorkGroupWorkStorageMultiple(const size_t num0,
+                                      const size_t num1,
+                                      const size_t num2)
 {
   bool success = true;
 
@@ -39,14 +37,16 @@ void testWorkGroupWorkStorageMultiple(
   };
   auto make_type1 = [](double init_val, size_t i) {
     type1 obj{};
-    for (size_t j = 0; j < 6; ++j) {
+    for (size_t j = 0; j < 6; ++j)
+    {
       obj[j] = init_val + 10.0 * j + i;
     }
     return obj;
   };
   auto make_type2 = [](double init_val, size_t i) {
     type2 obj{};
-    for (size_t j = 0; j < 14; ++j) {
+    for (size_t j = 0; j < 14; ++j)
+    {
       obj[j] = init_val + 10.0 * j + i;
     }
     return obj;
@@ -57,89 +57,96 @@ void testWorkGroupWorkStorageMultiple(
   using callable2 = TestCallable<type2>;
 
   static constexpr auto platform = RAJA::Platform::host;
-  using DispatchPolicy = typename DispatchTyper::template type<callable0, callable1, callable2>;
-  using Dispatcher_type = RAJA::detail::Dispatcher<
-      platform, DispatchPolicy, void, void*, bool*, bool*>;
-  using WorkStorage_type = RAJA::detail::WorkStorage<
-                                                      StoragePolicy,
-                                                      Allocator,
-                                                      Dispatcher_type
-                                                    >;
+  using DispatchPolicy =
+      typename DispatchTyper::template type<callable0, callable1, callable2>;
+  using Dispatcher_type = RAJA::detail::
+      Dispatcher<platform, DispatchPolicy, void, void*, bool*, bool*>;
+  using WorkStorage_type =
+      RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
   using WorkStruct_type = typename WorkStorage_type::value_type;
 
 
-  const Dispatcher_type* dispatcher0 = RAJA::detail::get_Dispatcher<
-      callable0, Dispatcher_type>(RAJA::seq_work{});
-  const Dispatcher_type* dispatcher1 = RAJA::detail::get_Dispatcher<
-      callable1, Dispatcher_type>(RAJA::seq_work{});
-  const Dispatcher_type* dispatcher2 = RAJA::detail::get_Dispatcher<
-      callable2, Dispatcher_type>(RAJA::seq_work{});
+  const Dispatcher_type* dispatcher0 =
+      RAJA::detail::get_Dispatcher<callable0, Dispatcher_type>(
+          RAJA::seq_work{});
+  const Dispatcher_type* dispatcher1 =
+      RAJA::detail::get_Dispatcher<callable1, Dispatcher_type>(
+          RAJA::seq_work{});
+  const Dispatcher_type* dispatcher2 =
+      RAJA::detail::get_Dispatcher<callable2, Dispatcher_type>(
+          RAJA::seq_work{});
 
   {
     auto test_empty = [&](WorkStorage_type& container) {
-
       ASSERT_EQ(container.size(), (size_t)(0));
       ASSERT_EQ(container.storage_size(), (size_t)0);
     };
 
-    auto fill_contents = [&](WorkStorage_type& container, double init_val0, double init_val1, double init_val2) {
-
+    auto fill_contents = [&](WorkStorage_type& container,
+                             double init_val0,
+                             double init_val1,
+                             double init_val2) {
       std::vector<callable0> vec0;
       vec0.reserve(num0);
-      for (size_t i = 0; i < num0; ++i) {
+      for (size_t i = 0; i < num0; ++i)
+      {
         vec0.emplace_back(make_type0(init_val0, i));
         ASSERT_FALSE(vec0[i].move_constructed);
         ASSERT_FALSE(vec0[i].moved_from);
         container.template emplace<callable0>(dispatcher0, std::move(vec0[i]));
         ASSERT_FALSE(vec0[i].move_constructed);
-        ASSERT_TRUE (vec0[i].moved_from);
+        ASSERT_TRUE(vec0[i].moved_from);
       }
 
       std::vector<callable1> vec1;
       vec1.reserve(num1);
-      for (size_t i = 0; i < num1; ++i) {
+      for (size_t i = 0; i < num1; ++i)
+      {
         vec1.emplace_back(make_type1(init_val1, i));
         ASSERT_FALSE(vec1[i].move_constructed);
         ASSERT_FALSE(vec1[i].moved_from);
         container.template emplace<callable1>(dispatcher1, std::move(vec1[i]));
         ASSERT_FALSE(vec1[i].move_constructed);
-        ASSERT_TRUE (vec1[i].moved_from);
+        ASSERT_TRUE(vec1[i].moved_from);
       }
 
       std::vector<callable2> vec2;
       vec2.reserve(num2);
-      for (size_t i = 0; i < num2; ++i) {
+      for (size_t i = 0; i < num2; ++i)
+      {
         vec2.emplace_back(make_type2(init_val2, i));
         ASSERT_FALSE(vec2[i].move_constructed);
         ASSERT_FALSE(vec2[i].moved_from);
         container.template emplace<callable2>(dispatcher2, std::move(vec2[i]));
         ASSERT_FALSE(vec2[i].move_constructed);
-        ASSERT_TRUE (vec2[i].moved_from);
+        ASSERT_TRUE(vec2[i].moved_from);
       }
 
-      ASSERT_EQ(container.size(), num0+num1+num2);
+      ASSERT_EQ(container.size(), num0 + num1 + num2);
       ASSERT_GE(container.storage_size(),
-          num0*sizeof(callable0) +
-          num1*sizeof(callable1) +
-          num2*sizeof(callable2));
+                num0 * sizeof(callable0) + num1 * sizeof(callable1) +
+                    num2 * sizeof(callable2));
     };
 
-    auto test_contents = [&](WorkStorage_type& container, double init_val0, double init_val1, double init_val2) {
-
-      ASSERT_EQ(container.size(), num0+num1+num2);
+    auto test_contents = [&](WorkStorage_type& container,
+                             double init_val0,
+                             double init_val1,
+                             double init_val2) {
+      ASSERT_EQ(container.size(), num0 + num1 + num2);
       ASSERT_GE(container.storage_size(),
-          num0*sizeof(callable0) +
-          num1*sizeof(callable1) +
-          num2*sizeof(callable2));
+                num0 * sizeof(callable0) + num1 * sizeof(callable1) +
+                    num2 * sizeof(callable2));
 
       {
         auto iter = container.begin();
 
-        for (size_t i = 0; i < num0; ++i) {
+        for (size_t i = 0; i < num0; ++i)
+        {
           type0 val{};
           bool move_constructed = false;
           bool moved_from = true;
-          WorkStruct_type::host_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+          WorkStruct_type::host_call(
+              &*iter, (void*)&val, &move_constructed, &moved_from);
 
           type0 expected = make_type0(init_val0, i);
           ASSERT_EQ(val, expected);
@@ -149,11 +156,13 @@ void testWorkGroupWorkStorageMultiple(
           ++iter;
         }
 
-        for (size_t i = 0; i < num1; ++i) {
+        for (size_t i = 0; i < num1; ++i)
+        {
           type1 val{};
           bool move_constructed = false;
           bool moved_from = true;
-          WorkStruct_type::host_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+          WorkStruct_type::host_call(
+              &*iter, (void*)&val, &move_constructed, &moved_from);
 
           type1 expected = make_type1(init_val1, i);
           ASSERT_EQ(val, expected);
@@ -163,11 +172,13 @@ void testWorkGroupWorkStorageMultiple(
           ++iter;
         }
 
-        for (size_t i = 0; i < num2; ++i) {
+        for (size_t i = 0; i < num2; ++i)
+        {
           type2 val{};
           bool move_constructed = false;
           bool moved_from = true;
-          WorkStruct_type::host_call(&*iter, (void*)&val, &move_constructed, &moved_from);
+          WorkStruct_type::host_call(
+              &*iter, (void*)&val, &move_constructed, &moved_from);
 
           type2 expected = make_type2(init_val2, i);
           ASSERT_EQ(val, expected);
@@ -215,7 +226,6 @@ void testWorkGroupWorkStorageMultiple(
 
     test_empty(container3);
     test_contents(container4, 1.0, 100.0, 1000.0);
-
   }
 
   ASSERT_TRUE(success);
@@ -224,13 +234,13 @@ void testWorkGroupWorkStorageMultiple(
 
 template <typename T>
 class WorkGroupBasicWorkStorageMultipleUnitTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageMultipleUnitTest);
 
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest, BasicWorkGroupWorkStorageMultiple)
+TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest,
+             BasicWorkGroupWorkStorageMultiple)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -239,8 +249,8 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageMultipleUnitTest, BasicWorkGroupWorkStorag
   std::mt19937 rng(std::random_device{}());
   std::uniform_int_distribution<size_t> dist(0, 128);
 
-  testWorkGroupWorkStorageMultiple< StoragePolicy, DispatchTyper, Allocator >(
+  testWorkGroupWorkStorageMultiple<StoragePolicy, DispatchTyper, Allocator>(
       dist(rng), dist(rng), dist(rng));
 }
 
-#endif  //__TEST_WORKGROUP_WORKSTORAGEMULTIPLE__
+#endif //__TEST_WORKGROUP_WORKSTORAGEMULTIPLE__

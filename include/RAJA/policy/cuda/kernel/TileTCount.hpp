@@ -58,35 +58,42 @@ template <typename Data,
           typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::cuda::
+            cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::cuda::
+                  cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+              EnclosedStmts...>,
+          Types>
+{
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-                      EnclosedStmts...>,
-                      Types>;
+      statement::Tile<
+          ArgumentId,
+          RAJA::tile_fixed<chunk_size>,
+          RAJA::policy::cuda::
+              cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+          EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     using segment_t = camp::decay<decltype(segment)>;
 
@@ -129,35 +136,48 @@ template <typename Data,
           typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::cuda::cuda_indexer<
+            iteration_mapping::StridedLoop<named_usage::unspecified>,
+            kernel_sync_requirement::sync,
+            IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::cuda::cuda_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::sync,
+                  IndexMapper>,
+              EnclosedStmts...>,
+          Types>
+{
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                      EnclosedStmts...>,
-                      Types>;
+      statement::Tile<
+          ArgumentId,
+          RAJA::tile_fixed<chunk_size>,
+          RAJA::policy::cuda::cuda_indexer<
+              iteration_mapping::StridedLoop<named_usage::unspecified>,
+              kernel_sync_requirement::sync,
+              IndexMapper>,
+          EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
     using segment_t = camp::decay<decltype(segment)>;
@@ -172,7 +192,8 @@ struct CudaStatementExecutor<
 
     // Iterate through in chunks
     // threads will have the same numbers of iterations
-    for(diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride) {
+    for (diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride)
+    {
       const diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
@@ -207,35 +228,48 @@ template <typename Data,
           typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::cuda::cuda_indexer<
+            iteration_mapping::StridedLoop<named_usage::unspecified>,
+            kernel_sync_requirement::none,
+            IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public CudaStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::cuda::cuda_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::none,
+                  IndexMapper>,
+              EnclosedStmts...>,
+          Types>
+{
 
   using Base = CudaStatementExecutor<
       Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                      EnclosedStmts...>,
-                      Types>;
+      statement::Tile<
+          ArgumentId,
+          RAJA::tile_fixed<chunk_size>,
+          RAJA::policy::cuda::cuda_indexer<
+              iteration_mapping::StridedLoop<named_usage::unspecified>,
+              kernel_sync_requirement::none,
+              IndexMapper>,
+          EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
     using segment_t = camp::decay<decltype(segment)>;
@@ -250,7 +284,8 @@ struct CudaStatementExecutor<
 
     // Iterate through one at a time
     // threads will have the different numbers of iterations
-    for(diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
+    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride)
+    {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
@@ -279,18 +314,27 @@ template <typename Data,
           typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
-: CudaStatementExecutor<Data, statement::TileTCount<ArgumentId, ParamId, TPol,
-    RAJA::policy::cuda::cuda_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
-                                   kernel_sync_requirement::none,
-                                   cuda::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-    EnclosedStmts...>, Types>
-{
+    statement::
+        TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>,
+    Types>
+    : CudaStatementExecutor<
+          Data,
+          statement::TileTCount<
+              ArgumentId,
+              ParamId,
+              TPol,
+              RAJA::policy::cuda::cuda_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::none,
+                  cuda::IndexGlobal<named_dim::x,
+                                    named_usage::ignored,
+                                    named_usage::ignored>>,
+              EnclosedStmts...>,
+          Types>
+{};
 
-};
+} // end namespace internal
+} // end namespace RAJA
 
-}  // end namespace internal
-}  // end namespace RAJA
-
-#endif  // RAJA_ENABLE_CUDA
-#endif  /* RAJA_policy_cuda_kernel_TileTCount_HPP */
+#endif // RAJA_ENABLE_CUDA
+#endif /* RAJA_policy_cuda_kernel_TileTCount_HPP */

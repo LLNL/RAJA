@@ -17,9 +17,11 @@
 //
 TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaTest);
 template <typename T>
-class KernelNestedLoopMultiLambdaTest : public ::testing::Test {};
+class KernelNestedLoopMultiLambdaTest : public ::testing::Test
+{};
 
-TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel) {
+TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel)
+{
   using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
@@ -30,7 +32,8 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel) {
   using LOOP_POLS = typename EXEC_POL_DATA::type;
 
   // Build proper basic kernel exec policy type.
-  using EXEC_POLICY = typename MultiLambdaNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
+  using EXEC_POLICY =
+      typename MultiLambdaNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   constexpr bool USE_RES = true;
 
@@ -41,4 +44,4 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel) {
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaTest,
                             NestedLoopMultiLambdaKernel);
 
-#endif  // __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__
+#endif // __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__

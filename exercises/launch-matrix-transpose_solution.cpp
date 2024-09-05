@@ -44,7 +44,7 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA matrix transpose exercise...\n";
@@ -60,8 +60,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int *A = memoryManager::allocate<int>(N_r * N_c);
-  int *At = memoryManager::allocate<int>(N_r * N_c);
+  int* A = memoryManager::allocate<int>(N_r * N_c);
+  int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
   // In the following implementations of matrix transpose, we
@@ -77,12 +77,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
       Aview(row, col) = col;
     }
   }
-  //printResult<int>(Aview, N_r, N_c);
+  // printResult<int>(Aview, N_r, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of matrix transpose...\n";
@@ -90,9 +92,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _cstyle_mattranspose_start
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
-        Atview(col, row) = Aview(row, col);
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
+      Atview(col, row) = Aview(row, col);
     }
   }
   // _cstyle_mattranspose_end
@@ -104,10 +108,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // The following RAJA variants use the RAJA::kernel method to carryout the
-  // transpose. 
+  // transpose.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
-  // Iterations inside a RAJA loop is given by their global iteration number. 
+  // Iterations inside a RAJA loop is given by their global iteration number.
   //
   RAJA::TypedRangeSegment<int> row_Range(0, N_r);
   RAJA::TypedRangeSegment<int> col_Range(0, N_c);
@@ -118,32 +122,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // The following policy carries out the transpose
-  // using sequential loops. 
+  // using sequential loops.
   //
   // _raja_mattranspose_start
   using loop_policy_seq = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_seq>(
-    RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
-    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
-
-      RAJA::loop<loop_policy_seq>(ctx, row_Range, [&] (int row) {
-        RAJA::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
-
+      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
+                            // host
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        RAJA::loop<loop_policy_seq>(ctx, row_Range, [&](int row) {
+          RAJA::loop<loop_policy_seq>(ctx, col_Range, [&](int col) {
             Atview(col, row) = Aview(row, col);
-
+          });
         });
       });
-
-  });
   // _raja_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running openmp matrix transpose -  parallel top inner loop...\n";
+  std::cout << "\n Running openmp matrix transpose -  parallel top inner "
+               "loop...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -155,56 +157,49 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_omp>(
-    RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
-    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
-
-      RAJA::loop<loop_policy_omp>(ctx, row_Range, [&] (int row) {
-        RAJA::loop<loop_policy_seq>(ctx, col_Range, [&] (int col) {
-
+      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
+                            // host
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        RAJA::loop<loop_policy_omp>(ctx, row_Range, [&](int row) {
+          RAJA::loop<loop_policy_seq>(ctx, col_Range, [&](int col) {
             Atview(col, row) = Aview(row, col);
-
+          });
         });
       });
-
-  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running cuda matrix transpose ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
-  
+
   // _raja_mattranspose_cuda_start
   using cuda_thread_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>;
   using cuda_thread_y = RAJA::LoopPolicy<RAJA::cuda_thread_y_loop>;
 
-  const bool async = false; //execute asynchronously
+  const bool async = false; // execute asynchronously
   using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
-  RAJA::launch<launch_policy_cuda>
-    (RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16,16)),
-    [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
-
-      RAJA::loop<cuda_thread_y>(ctx, row_Range, [&] (int row) {
-        RAJA::loop<cuda_thread_x>(ctx, col_Range, [&] (int col) {
-
+  RAJA::launch<launch_policy_cuda>(
+      RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16, 16)),
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+        RAJA::loop<cuda_thread_y>(ctx, row_Range, [&](int row) {
+          RAJA::loop<cuda_thread_x>(ctx, col_Range, [&](int col) {
             Atview(col, row) = Aview(row, col);
-
+          });
         });
       });
-
-  });
   // _raja_mattranspose_cuda_end
 
   checkResult<int>(Atview, N_c, N_r);
-  //printResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   //
   // Clean up.
@@ -215,7 +210,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n DONE!...\n";
 
   return 0;
-} 
+}
 
 //
 // Function to check result and report P/F.
@@ -224,16 +219,22 @@ template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
   bool match = true;
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
-      if (Atview(row, col) != row) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
+      if (Atview(row, col) != row)
+      {
         match = false;
       }
     }
   }
-  if (match) {
+  if (match)
+  {
     std::cout << "\n\t result -- PASS\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\n\t result -- FAIL\n";
   }
 };
@@ -245,11 +246,13 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
   std::cout << std::endl;
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
       // std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
       //                << std::endl;
-      std::cout<<Atview(row, col)<<" ";
+      std::cout << Atview(row, col) << " ";
     }
     std::cout << "" << std::endl;
   }

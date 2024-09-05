@@ -2,12 +2,14 @@ BasedOnStyle : LLVM
 # Indent formatting
 IndentWidth : 2
 UseTab: Never
-BreakBeforeBraces : Linux
 KeepEmptyLinesAtTheStartOfBlocks : true
 MaxEmptyLinesToKeep : 2
 AccessModifierOffset : -2
+# This must be off so that include order in RAJA is preserved
+SortIncludes: false
 
 # Control curly brace placement
+BreakBeforeBraces : Custom
 BraceWrapping:
   AfterCaseLabel:  true
   AfterClass:      true
@@ -30,22 +32,17 @@ BraceWrapping:
 # Pointer alignment
 DerivePointerAlignment: false
 PointerAlignment: Left
-SortIncludes: false
 AllowShortIfStatementsOnASingleLine : true
-ConstructorInitializerAllOnOneLineOrOnePerLine : true
 AllowShortFunctionsOnASingleLine : true
 AllowShortLoopsOnASingleLine : false
-BinPackParameters : true
 AllowAllParametersOfDeclarationOnNextLine : false
 AlignTrailingComments : true
-ColumnLimit : 80
-PenaltyBreakBeforeFirstCallParameter : 100
-PenaltyReturnTypeOnItsOwnLine : 65000
-PenaltyBreakString : 10
-
-BreakBeforeBinaryOperators : None
-AlignAfterOpenBracket: true
 BinPackArguments : false
+BinPackParameters : false
+ConstructorInitializerAllOnOneLineOrOnePerLine : true
+ColumnLimit : 80
+
+AlignAfterOpenBracket: true
 AlignOperands : true
 AlwaysBreakTemplateDeclarations : true
-
+BreakBeforeBinaryOperators : None

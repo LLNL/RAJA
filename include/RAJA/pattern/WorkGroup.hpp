@@ -38,38 +38,44 @@ namespace RAJA
  *
  * \verbatim
 
-   WorkPool<WorkGroup_policy, Index_type, xargs<int*, int>, Allocator> pool(allocator);
+   WorkPool<WorkGroup_policy, Index_type, xargs<int*, int>, Allocator>
+ pool(allocator);
 
    pool.enqueue(..., [=] (Index_type i, int* xarg0, int xarg1) {
       xarg0[i] = xarg1;
    });
 
-   WorkGroup<WorkGroup_policy, Index_type, xargs<int*, int>, Allocator> group = pool.instantiate();
+   WorkGroup<WorkGroup_policy, Index_type, xargs<int*, int>, Allocator> group =
+ pool.instantiate();
 
    int* xarg0 = ...;
    int xarg1 = ...;
-   WorkSite<WorkGroup_policy, Index_type, xargs<int*, int>, Allocator> site = group.run(xarg0, xarg1);
+   WorkSite<WorkGroup_policy, Index_type, xargs<int*, int>, Allocator> site =
+ group.run(xarg0, xarg1);
 
  * \endverbatim
  *
  ******************************************************************************
  */
-template < typename ... Args >
+template <typename... Args>
 using xargs = camp::list<Args...>;
 
-namespace detail {
+namespace detail
+{
 
-template < typename T >
-struct is_xargs {
+template <typename T>
+struct is_xargs
+{
   static constexpr bool value = false;
 };
 
-template < typename ... Args >
-struct is_xargs<xargs<Args...>> {
+template <typename... Args>
+struct is_xargs<xargs<Args...>>
+{
   static constexpr bool value = true;
 };
 
-}
+} // namespace detail
 
 
 //
@@ -102,7 +108,8 @@ struct is_xargs<xargs<Args...>> {
       data[i] = 1;
    });
 
-   WorkGroup<WorkGroup_policy, Index_type, xargs<>, Allocator> group = pool.instantiate();
+   WorkGroup<WorkGroup_policy, Index_type, xargs<>, Allocator> group =
+ pool.instantiate();
 
  * \endverbatim
  *
@@ -112,11 +119,15 @@ template <typename WORKGROUP_POLICY_T,
           typename INDEX_T,
           typename EXTRA_ARGS_T,
           typename ALLOCATOR_T>
-struct WorkPool {
-  static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
+struct WorkPool
+{
+  static_assert(
+      RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
       "WorkPool: WORKGROUP_POLICY_T must be a workgroup policy");
   static_assert(detail::is_xargs<EXTRA_ARGS_T>::value,
-      "WorkPool: EXTRA_ARGS_T must be a RAJA::xargs<...> type");
+                "WorkPool: EXTRA_ARGS_T "
+                "must be a "
+                "RAJA::xargs<...> type");
 };
 
 /*!
@@ -135,9 +146,11 @@ struct WorkPool {
  *
  * \verbatim
 
-   WorkGroup<WorkGroup_policy, Index_type, xargs<>, Allocator> group = pool.instantiate();
+   WorkGroup<WorkGroup_policy, Index_type, xargs<>, Allocator> group =
+ pool.instantiate();
 
-   WorkSite<WorkGroup_policy, Index_type, xargs<>, Allocator> site = group.run();
+   WorkSite<WorkGroup_policy, Index_type, xargs<>, Allocator> site =
+ group.run();
 
  * \endverbatim
  *
@@ -147,11 +160,15 @@ template <typename WORKGROUP_POLICY_T,
           typename INDEX_T,
           typename EXTRA_ARGS_T,
           typename ALLOCATOR_T>
-struct WorkGroup {
-  static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
+struct WorkGroup
+{
+  static_assert(
+      RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
       "WorkGroup: WORKGROUP_POLICY_T must be a workgroup policy");
   static_assert(detail::is_xargs<EXTRA_ARGS_T>::value,
-      "WorkGroup: EXTRA_ARGS_T must be a RAJA::xargs<...> type");
+                "WorkGroup: "
+                "EXTRA_ARGS_T must be a "
+                "RAJA::xargs<...> type");
 };
 
 /*!
@@ -170,7 +187,8 @@ struct WorkGroup {
  *
  * \verbatim
 
-   WorkSite<WorkGroup_policy, Index_type, xargs<>, Allocator> site = group.run();
+   WorkSite<WorkGroup_policy, Index_type, xargs<>, Allocator> site =
+ group.run();
 
    site.synchronize();
 
@@ -182,11 +200,15 @@ template <typename WORKGROUP_POLICY_T,
           typename INDEX_T,
           typename EXTRA_ARGS_T,
           typename ALLOCATOR_T>
-struct WorkSite {
-  static_assert(RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
+struct WorkSite
+{
+  static_assert(
+      RAJA::pattern_is<WORKGROUP_POLICY_T, RAJA::Pattern::workgroup>::value,
       "WorkSite: WORKGROUP_POLICY_T must be a workgroup policy");
   static_assert(detail::is_xargs<EXTRA_ARGS_T>::value,
-      "WorkSite: EXTRA_ARGS_T must be a RAJA::xargs<...> type");
+                "WorkSite: EXTRA_ARGS_T "
+                "must be a "
+                "RAJA::xargs<...> type");
 };
 
 
@@ -195,7 +217,7 @@ template <typename EXEC_POLICY_T,
           typename STORAGE_POLICY_T,
           typename DISPATCH_POLICY_T,
           typename INDEX_T,
-          typename ... Args,
+          typename... Args,
           typename ALLOCATOR_T>
 struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
                                 ORDER_POLICY_T,
@@ -209,7 +231,10 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using order_policy = ORDER_POLICY_T;
   using storage_policy = STORAGE_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy, dispatch_policy>;
+  using policy = WorkGroupPolicy<exec_policy,
+                                 order_policy,
+                                 storage_policy,
+                                 dispatch_policy>;
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
@@ -218,10 +243,16 @@ struct WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
   using worksite_type = WorkSite<policy, index_type, xarg_type, Allocator>;
 
 private:
-  using workrunner_type = detail::WorkRunner<
-      exec_policy, order_policy, dispatch_policy, Allocator, index_type, Args...>;
-  using storage_type = detail::WorkStorage<
-      storage_policy, Allocator, typename workrunner_type::dispatcher_type>;
+  using workrunner_type = detail::WorkRunner<exec_policy,
+                                             order_policy,
+                                             dispatch_policy,
+                                             Allocator,
+                                             index_type,
+                                             Args...>;
+  using storage_type =
+      detail::WorkStorage<storage_policy,
+                          Allocator,
+                          typename workrunner_type::dispatcher_type>;
 
   friend workgroup_type;
   friend worksite_type;
@@ -229,9 +260,7 @@ private:
 public:
   using resource_type = typename workrunner_type::resource_type;
 
-  explicit WorkPool(Allocator const& aloc)
-    : m_storage(aloc)
-  { }
+  explicit WorkPool(Allocator const& aloc) : m_storage(aloc) {}
 
   WorkPool(WorkPool const&) = delete;
   WorkPool& operator=(WorkPool const&) = delete;
@@ -239,30 +268,26 @@ public:
   WorkPool(WorkPool&&) = default;
   WorkPool& operator=(WorkPool&&) = default;
 
-  size_t num_loops() const
-  {
-    return m_storage.size();
-  }
+  size_t num_loops() const { return m_storage.size(); }
 
-  size_t storage_bytes() const
-  {
-    return m_storage.storage_size();
-  }
+  size_t storage_bytes() const { return m_storage.storage_size(); }
 
   void reserve(size_t num_loops, size_t storage_bytes)
   {
     m_storage.reserve(num_loops, storage_bytes);
   }
 
-  template < typename segment_T, typename loop_T >
+  template <typename segment_T, typename loop_T>
   inline void enqueue(segment_T&& seg, loop_T&& loop_body)
   {
     {
       // ignore zero length loops
-      using std::begin; using std::end;
+      using std::begin;
+      using std::end;
       if (begin(seg) == end(seg)) return;
     }
-    if (m_storage.begin() == m_storage.end()) {
+    if (m_storage.begin() == m_storage.end())
+    {
       // perform auto-reserve on reuse
       reserve(m_max_num_loops, m_max_storage_bytes);
     }
@@ -273,8 +298,7 @@ public:
     using RAJA::util::trigger_updates_before;
     auto body = trigger_updates_before(loop_body);
 
-    m_runner.enqueue(
-        m_storage, std::forward<segment_T>(seg), std::move(body));
+    m_runner.enqueue(m_storage, std::forward<segment_T>(seg), std::move(body));
 
     util::callPostCapturePlugins(context);
   }
@@ -289,10 +313,7 @@ public:
     m_runner.clear();
   }
 
-  ~WorkPool()
-  {
-    clear();
-  }
+  ~WorkPool() { clear(); }
 
 private:
   storage_type m_storage;
@@ -307,7 +328,7 @@ template <typename EXEC_POLICY_T,
           typename STORAGE_POLICY_T,
           typename DISPATCH_POLICY_T,
           typename INDEX_T,
-          typename ... Args,
+          typename... Args,
           typename ALLOCATOR_T>
 struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
                                  ORDER_POLICY_T,
@@ -321,7 +342,10 @@ struct WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
   using order_policy = ORDER_POLICY_T;
   using storage_policy = STORAGE_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy, dispatch_policy>;
+  using policy = WorkGroupPolicy<exec_policy,
+                                 order_policy,
+                                 storage_policy,
+                                 dispatch_policy>;
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
@@ -347,7 +371,8 @@ public:
 
   inline worksite_type run(resource_type r, Args...);
 
-  worksite_type run(Args... args) {
+  worksite_type run(Args... args)
+  {
     auto r = resource_type::get_default();
     return run(r, std::move(args)...);
   }
@@ -360,19 +385,15 @@ public:
     m_runner.clear();
   }
 
-  ~WorkGroup()
-  {
-    clear();
-  }
+  ~WorkGroup() { clear(); }
 
 private:
   storage_type m_storage;
   workrunner_type m_runner;
 
   WorkGroup(storage_type&& storage, workrunner_type&& runner)
-    : m_storage(std::move(storage))
-    , m_runner(std::move(runner))
-  { }
+      : m_storage(std::move(storage)), m_runner(std::move(runner))
+  {}
 };
 
 template <typename EXEC_POLICY_T,
@@ -380,7 +401,7 @@ template <typename EXEC_POLICY_T,
           typename STORAGE_POLICY_T,
           typename DISPATCH_POLICY_T,
           typename INDEX_T,
-          typename ... Args,
+          typename... Args,
           typename ALLOCATOR_T>
 struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
                                 ORDER_POLICY_T,
@@ -394,7 +415,10 @@ struct WorkSite<WorkGroupPolicy<EXEC_POLICY_T,
   using order_policy = ORDER_POLICY_T;
   using storage_policy = STORAGE_POLICY_T;
   using dispatch_policy = DISPATCH_POLICY_T;
-  using policy = WorkGroupPolicy<exec_policy, order_policy, storage_policy, dispatch_policy>;
+  using policy = WorkGroupPolicy<exec_policy,
+                                 order_policy,
+                                 storage_policy,
+                                 dispatch_policy>;
   using index_type = INDEX_T;
   using xarg_type = xargs<Args...>;
   using Allocator = ALLOCATOR_T;
@@ -418,10 +442,7 @@ public:
   WorkSite(WorkSite&&) = default;
   WorkSite& operator=(WorkSite&&) = default;
 
-  resource_type get_resource() const
-  {
-    return m_resource;
-  }
+  resource_type get_resource() const { return m_resource; }
 
   void clear()
   {
@@ -429,19 +450,15 @@ public:
     // TODO: synchronize
   }
 
-  ~WorkSite()
-  {
-    clear();
-  }
+  ~WorkSite() { clear(); }
 
 private:
   per_run_storage m_run_storage;
   resource_type m_resource;
 
   explicit WorkSite(resource_type r, per_run_storage&& run_storage)
-    : m_run_storage(std::move(run_storage))
-    , m_resource(r)
-  { }
+      : m_run_storage(std::move(run_storage)), m_resource(r)
+  {}
 };
 
 
@@ -450,19 +467,22 @@ template <typename EXEC_POLICY_T,
           typename STORAGE_POLICY_T,
           typename DISPATCH_POLICY_T,
           typename INDEX_T,
-          typename ... Args,
+          typename... Args,
           typename ALLOCATOR_T>
-inline
-typename WorkPool<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
-    INDEX_T,
-    xargs<Args...>,
-    ALLOCATOR_T>::workgroup_type
-WorkPool<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
-    INDEX_T,
-    xargs<Args...>,
-    ALLOCATOR_T>::instantiate()
+inline typename WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
+                                         ORDER_POLICY_T,
+                                         STORAGE_POLICY_T,
+                                         DISPATCH_POLICY_T>,
+                         INDEX_T,
+                         xargs<Args...>,
+                         ALLOCATOR_T>::workgroup_type
+WorkPool<WorkGroupPolicy<EXEC_POLICY_T,
+                         ORDER_POLICY_T,
+                         STORAGE_POLICY_T,
+                         DISPATCH_POLICY_T>,
+         INDEX_T,
+         xargs<Args...>,
+         ALLOCATOR_T>::instantiate()
 {
   // update max sizes to auto-reserve on reuse
   m_max_num_loops = std::max(m_storage.size(), m_max_num_loops);
@@ -477,36 +497,43 @@ template <typename EXEC_POLICY_T,
           typename STORAGE_POLICY_T,
           typename DISPATCH_POLICY_T,
           typename INDEX_T,
-          typename ... Args,
+          typename... Args,
           typename ALLOCATOR_T>
-inline
-typename WorkGroup<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
-    INDEX_T,
-    xargs<Args...>,
-    ALLOCATOR_T>::worksite_type
-WorkGroup<
-    WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
-    INDEX_T,
-    xargs<Args...>,
-    ALLOCATOR_T>::run(typename WorkGroup<
-                          WorkGroupPolicy<EXEC_POLICY_T, ORDER_POLICY_T, STORAGE_POLICY_T, DISPATCH_POLICY_T>,
+inline typename WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                                          ORDER_POLICY_T,
+                                          STORAGE_POLICY_T,
+                                          DISPATCH_POLICY_T>,
                           INDEX_T,
                           xargs<Args...>,
-                          ALLOCATOR_T>::resource_type r,
+                          ALLOCATOR_T>::worksite_type
+WorkGroup<
+    WorkGroupPolicy<EXEC_POLICY_T,
+                    ORDER_POLICY_T,
+                    STORAGE_POLICY_T,
+                    DISPATCH_POLICY_T>,
+    INDEX_T,
+    xargs<Args...>,
+    ALLOCATOR_T>::run(typename WorkGroup<WorkGroupPolicy<EXEC_POLICY_T,
+                                                         ORDER_POLICY_T,
+                                                         STORAGE_POLICY_T,
+                                                         DISPATCH_POLICY_T>,
+                                         INDEX_T,
+                                         xargs<Args...>,
+                                         ALLOCATOR_T>::resource_type r,
                       Args... args)
 {
   util::PluginContext context{util::make_context<EXEC_POLICY_T>()};
   util::callPreLaunchPlugins(context);
 
   // move any per run storage into worksite
-  worksite_type site(r, m_runner.run(m_storage, r, std::forward<Args>(args)...));
+  worksite_type site(r,
+                     m_runner.run(m_storage, r, std::forward<Args>(args)...));
 
   util::callPostLaunchPlugins(context);
 
   return site;
 }
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

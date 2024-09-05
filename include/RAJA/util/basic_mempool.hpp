@@ -60,12 +60,13 @@ public:
   using used_value_type = typename used_type::value_type;
 
   MemoryArena(void* ptr, size_t size)
-    : m_allocation{ ptr, static_cast<char*>(ptr)+size },
-      m_free_space(),
-      m_used_space()
+      : m_allocation{ptr, static_cast<char*>(ptr) + size},
+        m_free_space(),
+        m_used_space()
   {
-     m_free_space[ptr] = static_cast<char*>(ptr)+size ;
-    if (m_allocation.begin == nullptr) {
+    m_free_space[ptr] = static_cast<char*>(ptr) + size;
+    if (m_allocation.begin == nullptr)
+    {
       fprintf(stderr, "Attempt to create MemoryArena with no memory");
       std::abort();
     }
@@ -90,22 +91,23 @@ public:
   void* get(size_t nbytes, size_t alignment)
   {
     void* ptr_out = nullptr;
-    if (capacity() >= nbytes) {
+    if (capacity() >= nbytes)
+    {
       free_type::iterator end = m_free_space.end();
-      for (free_type::iterator iter = m_free_space.begin(); iter != end;
-           ++iter) {
+      for (free_type::iterator iter = m_free_space.begin(); iter != end; ++iter)
+      {
 
         void* adj_ptr = iter->first;
         size_t cap =
             static_cast<char*>(iter->second) - static_cast<char*>(adj_ptr);
 
-        if (::RAJA::align(alignment, nbytes, adj_ptr, cap)) {
+        if (::RAJA::align(alignment, nbytes, adj_ptr, cap))
+        {
 
           ptr_out = adj_ptr;
 
-          remove_free_chunk(iter,
-                            adj_ptr,
-                            static_cast<char*>(adj_ptr) + nbytes);
+          remove_free_chunk(
+              iter, adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 
           add_used_chunk(adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 
@@ -118,29 +120,35 @@ public:
 
   bool give(void* ptr)
   {
-    if (m_allocation.begin <= ptr && ptr < m_allocation.end) {
+    if (m_allocation.begin <= ptr && ptr < m_allocation.end)
+    {
 
       used_type::iterator found = m_used_space.find(ptr);
 
-      if (found != m_used_space.end()) {
+      if (found != m_used_space.end())
+      {
 
         add_free_chunk(found->first, found->second);
 
         m_used_space.erase(found);
-
-      } else {
+      }
+      else
+      {
         fprintf(stderr, "Invalid free %p", ptr);
         std::abort();
       }
 
       return true;
-    } else {
+    }
+    else
+    {
       return false;
     }
   }
 
 private:
-  struct memory_chunk {
+  struct memory_chunk
+  {
     void* begin;
     void* end;
   };
@@ -152,19 +160,23 @@ private:
     free_type::iterator next = m_free_space.lower_bound(begin);
 
     // check if prev exists
-    if (next != m_free_space.begin()) {
+    if (next != m_free_space.begin())
+    {
       // check if prev can cover [begin, end)
       free_type::iterator prev = next;
       --prev;
-      if (prev->second == begin) {
+      if (prev->second == begin)
+      {
         // extend prev to cover [begin, end)
         prev->second = end;
 
         // check if prev can cover next too
-        if (next != invl) {
+        if (next != invl)
+        {
           assert(next->first != begin);
 
-          if (next->first == end) {
+          if (next->first == end)
+          {
             // extend prev to cover next too
             prev->second = next->second;
 
@@ -176,10 +188,12 @@ private:
       }
     }
 
-    if (next != invl) {
+    if (next != invl)
+    {
       assert(next->first != begin);
 
-      if (next->first == end) {
+      if (next->first == end)
+      {
         // extend next to cover [begin, end)
         m_free_space.insert(next, free_value_type{begin, next->second});
         m_free_space.erase(next);
@@ -200,28 +214,32 @@ private:
     void* ptr_end = iter->second;
 
     // fixup m_free_space, shrinking and adding chunks as needed
-    if (ptr != begin) {
+    if (ptr != begin)
+    {
 
       // shrink end of current free region to [ptr, begin)
       iter->second = begin;
 
-      if (end != ptr_end) {
+      if (end != ptr_end)
+      {
 
         // insert free region [end, ptr_end) after current free region
         free_type::iterator next = iter;
         ++next;
         m_free_space.insert(next, free_value_type{end, ptr_end});
       }
-
-    } else if (end != ptr_end) {
+    }
+    else if (end != ptr_end)
+    {
 
       // shrink beginning of current free region to [end, ptr_end)
       free_type::iterator next = iter;
       ++next;
       m_free_space.insert(next, free_value_type{end, ptr_end});
       m_free_space.erase(iter);
-
-    } else {
+    }
+    else
+    {
 
       // can not reuse current region, erase
       m_free_space.erase(iter);
@@ -298,8 +316,7 @@ public:
 
   MemPool()
       : m_arenas(), m_default_arena_size(default_default_arena_size), m_alloc()
-  {
-  }
+  {}
 
   ~MemPool()
   {
@@ -316,7 +333,8 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
-    while (!m_arenas.empty()) {
+    while (!m_arenas.empty())
+    {
       void* allocation_ptr = m_arenas.front().get_allocation();
       m_alloc.free(allocation_ptr);
       m_arenas.pop_front();
@@ -354,18 +372,22 @@ public:
     void* ptr = nullptr;
     arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end;
-         ++iter) {
+         ++iter)
+    {
       ptr = iter->get(size, alignment);
-      if (ptr != nullptr) {
+      if (ptr != nullptr)
+      {
         break;
       }
     }
 
-    if (ptr == nullptr) {
+    if (ptr == nullptr)
+    {
       const size_t alloc_size =
           std::max(size + alignment, m_default_arena_size);
       void* arena_ptr = m_alloc.malloc(alloc_size);
-      if (arena_ptr != nullptr) {
+      if (arena_ptr != nullptr)
+      {
         m_arenas.emplace_front(arena_ptr, alloc_size);
         ptr = m_arenas.front().get(size, alignment);
       }
@@ -383,13 +405,16 @@ public:
     void* ptr = const_cast<void*>(cptr);
     arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end;
-         ++iter) {
-      if (iter->give(ptr)) {
+         ++iter)
+    {
+      if (iter->give(ptr))
+      {
         ptr = nullptr;
         break;
       }
     }
-    if (ptr != nullptr) {
+    if (ptr != nullptr)
+    {
       fprintf(stderr, "Unknown pointer %p", ptr);
     }
   }
@@ -407,7 +432,8 @@ private:
 };
 
 //! example allocator for basic_mempool using malloc/free
-struct generic_allocator {
+struct generic_allocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes) { return std::malloc(nbytes); }

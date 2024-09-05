@@ -6,7 +6,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Header file containing basic functional tests for atomic operations with forall and views.
+/// Header file containing basic functional tests for atomic operations with
+/// forall and views.
 ///
 
 #ifndef __TEST_FORALL_ATOMIC_MULTIVIEW_HPP__
@@ -19,12 +20,13 @@ template <typename ExecPolicy,
           typename WORKINGRES,
           typename IdxType,
           typename T>
-void ForallAtomicMultiViewTestImpl( IdxType N )
+void ForallAtomicMultiViewTestImpl(IdxType N)
 {
   // Functionally similar to ForallAtomicViewTestImpl
 
-  int dst_side = static_cast<int>( std::sqrt( static_cast<double>(N/2) ) ); // dest[] dimension
-  int src_side = dst_side*2; // source[] dimension
+  int dst_side = static_cast<int>(
+      std::sqrt(static_cast<double>(N / 2))); // dest[] dimension
+  int src_side = dst_side * 2;                // source[] dimension
 
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
   RAJA::TypedRangeSegment<IdxType> seg_dstside(0, dst_side);
@@ -33,11 +35,11 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   camp::resources::Resource work_res{WORKINGRES()};
   camp::resources::Resource host_res{camp::resources::Host()};
 
-  T *  actualsource = work_res.allocate<T> (N);
-  T ** source       = work_res.allocate<T*>(src_side);
-  T *  actualdest   = work_res.allocate<T> (N/2);
-  T ** dest         = work_res.allocate<T*>(dst_side);
-  T *  check_array  = host_res.allocate<T> (N/2);
+  T* actualsource = work_res.allocate<T>(N);
+  T** source = work_res.allocate<T*>(src_side);
+  T* actualdest = work_res.allocate<T>(N / 2);
+  T** dest = work_res.allocate<T*>(dst_side);
+  T* check_array = host_res.allocate<T>(N / 2);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -48,20 +50,17 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
 #endif
 
   // assumes each source[] will be 2x size of each dest[], src_side x dst_side
-  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
-  {
-    source[ii] = actualsource+(ii*dst_side);
+  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii) {
+    source[ii] = actualsource + (ii * dst_side);
   });
 
   // assumes each dest[] will be a square matrix, dst_side x dst_side
-  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
-  {
-    dest[ii] = actualdest+(ii*dst_side);
+  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii) {
+    dest[ii] = actualdest + (ii * dst_side);
   });
 
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i) {
-    actualsource[i] = (T)1;
-  });
+  RAJA::forall<ExecPolicy>(
+      seg, [=] RAJA_HOST_DEVICE(IdxType i) { actualsource[i] = (T)1; });
 
   // use atomic add to reduce the array
   // 1D defaut MultiView
@@ -74,21 +73,21 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
 
   // Zero out dest using atomic MultiView
   RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType i) {
-    for ( int aopidx = 0; aopidx < dst_side; ++aopidx )
+    for (int aopidx = 0; aopidx < dst_side; ++aopidx)
     {
-      sum_atomic_view(i,aopidx) = (T)0;
+      sum_atomic_view(i, aopidx) = (T)0;
     }
   });
 
   // Assign values to dest using atomic MultiView
   RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType i) {
-    for ( int aopidx = 0; aopidx < dst_side; ++aopidx )
+    for (int aopidx = 0; aopidx < dst_side; ++aopidx)
     {
-      sum_atomic_view(i/2, aopidx) += vec_view(aopidx,i/2);
+      sum_atomic_view(i / 2, aopidx) += vec_view(aopidx, i / 2);
     }
   });
 
-  work_res.memcpy( check_array, actualdest, sizeof(T) * N/2 );
+  work_res.memcpy(check_array, actualdest, sizeof(T) * N / 2);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -98,35 +97,34 @@ void ForallAtomicMultiViewTestImpl( IdxType N )
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  for (IdxType i = 0; i < N / 2; ++i) {
+  for (IdxType i = 0; i < N / 2; ++i)
+  {
     EXPECT_EQ((T)2, check_array[i]);
   }
 
-  work_res.deallocate( actualsource );
-  work_res.deallocate( source );
-  work_res.deallocate( actualdest );
-  work_res.deallocate( dest );
-  host_res.deallocate( check_array );
+  work_res.deallocate(actualsource);
+  work_res.deallocate(source);
+  work_res.deallocate(actualdest);
+  work_res.deallocate(dest);
+  host_res.deallocate(check_array);
 }
 
 TYPED_TEST_SUITE_P(ForallAtomicMultiViewTest);
 template <typename T>
 class ForallAtomicMultiViewTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_P(ForallAtomicMultiViewTest, AtomicMultiViewForall)
 {
-  using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
-  using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
+  using AExec = typename camp::at<TypeParam, camp::num<0>>::type;
+  using APol = typename camp::at<TypeParam, camp::num<1>>::type;
   using ResType = typename camp::at<TypeParam, camp::num<2>>::type;
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
-  using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
+  using DType = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicMultiViewTestImpl<AExec, APol, ResType, IdxType, DType>( 20000 );
+  ForallAtomicMultiViewTestImpl<AExec, APol, ResType, IdxType, DType>(20000);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicMultiViewTest,
-                            AtomicMultiViewForall);
+REGISTER_TYPED_TEST_SUITE_P(ForallAtomicMultiViewTest, AtomicMultiViewForall);
 
-#endif  //__TEST_FORALL_ATOMIC_MULTIVIEW_HPP__
+#endif //__TEST_FORALL_ATOMIC_MULTIVIEW_HPP__

@@ -81,21 +81,18 @@ template <camp::idx_t HpArgumentId,
           typename ArgList,
           typename ExecPolicy,
           typename... EnclosedStmts>
-struct Hyperplane
-    : public internal::Statement<ExecPolicy,
-                                 EnclosedStmts...> {
-};
+struct Hyperplane : public internal::Statement<ExecPolicy, EnclosedStmts...>
+{};
 
-}  // end namespace statement
+} // end namespace statement
 
 namespace internal
 {
 
 
 template <camp::idx_t HpArgumentId, typename ArgList, typename... EnclosedStmts>
-struct HyperplaneInner
-    : public internal::Statement<camp::nil, EnclosedStmts...> {
-};
+struct HyperplaneInner : public internal::Statement<camp::nil, EnclosedStmts...>
+{};
 
 
 template <camp::idx_t HpArgumentId,
@@ -108,11 +105,13 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
                                                HpExecPolicy,
                                                ArgList<Args...>,
                                                ExecPolicy,
-                                               EnclosedStmts...>, Types> {
+                                               EnclosedStmts...>,
+                         Types>
+{
 
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &data)
+  static RAJA_INLINE void exec(Data& data)
   {
 
     // get type of Hp arguments index
@@ -135,9 +134,9 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
 
     // compute manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    idx_t hp_len = segment_length<HpArgumentId>(data) +
-                   foldl(RAJA::operators::plus<idx_t>(),
-                                 segment_length<Args>(data)...);
+    idx_t hp_len =
+        segment_length<HpArgumentId>(data) +
+        foldl(RAJA::operators::plus<idx_t>(), segment_length<Args>(data)...);
 
     /* Execute the outer loop over hyperplanes
      *
@@ -146,7 +145,8 @@ struct StatementExecutor<statement::Hyperplane<HpArgumentId,
      * arguments actual value (and restrict to valid hyperplane indices)
      */
     auto r = resources::get_resource<HpExecPolicy>::type::get_default();
-    forall_impl(r, HpExecPolicy{},
+    forall_impl(r,
+                HpExecPolicy{},
                 TypedRangeSegment<idx_t>(0, hp_len),
                 outer_wrapper,
                 RAJA::expt::get_empty_forall_param_pack());
@@ -159,11 +159,13 @@ template <camp::idx_t HpArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>, Types> {
+    HyperplaneInner<HpArgumentId, ArgList<Args...>, EnclosedStmts...>,
+    Types>
+{
 
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &data)
+  static RAJA_INLINE void exec(Data& data)
   {
 
     // get h value
@@ -173,13 +175,14 @@ struct StatementExecutor<
     // compute actual iterate for HpArgumentId
     // as:  i0 = h - (i1 + i2 + i3 + ...)
     idx_t i = h - foldl(RAJA::operators::plus<idx_t>(),
-                                camp::get<Args>(data.offset_tuple)...);
+                        camp::get<Args>(data.offset_tuple)...);
 
     // get length of Hp indexed argument
     auto len = segment_length<HpArgumentId>(data);
 
     // check bounds
-    if (i >= 0 && i < len) {
+    if (i >= 0 && i < len)
+    {
 
       // store in tuple
       data.template assign_offset<HpArgumentId>(i);
@@ -194,8 +197,8 @@ struct StatementExecutor<
 };
 
 
-}  // end namespace internal
+} // end namespace internal
 
-}  // end namespace RAJA
+} // end namespace RAJA
 
 #endif /* RAJA_pattern_kernel_HPP */

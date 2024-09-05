@@ -31,7 +31,8 @@ template <typename Indices>
 struct as_array;
 
 template <camp::idx_t... Indices>
-struct as_array<camp::idx_seq<Indices...>> {
+struct as_array<camp::idx_seq<Indices...>>
+{
   static constexpr std::array<Index_type, sizeof...(Indices)> get()
   {
     return {{Indices...}};
@@ -193,52 +194,52 @@ using PERM_MLKIJ = camp::idx_seq<4, 3, 2, 0, 1>;
 using PERM_MLKJI = camp::idx_seq<4, 3, 2, 1, 0>;
 
 
-
-
-namespace internal 
+namespace internal
 {
 
 
-template<camp::idx_t I, camp::idx_t J, camp::idx_t N, typename Perm>
+template <camp::idx_t I, camp::idx_t J, camp::idx_t N, typename Perm>
 struct CalcInversePermutationElem
 {
-  static constexpr camp::idx_t value = 
-    camp::seq_at<J, Perm>::value == I ? J : CalcInversePermutationElem<I, J+1, N, Perm>::value;
+  static constexpr camp::idx_t value =
+      camp::seq_at<J, Perm>::value == I
+          ? J
+          : CalcInversePermutationElem<I, J + 1, N, Perm>::value;
 };
 
-template<camp::idx_t I, camp::idx_t N, typename Perm>
+template <camp::idx_t I, camp::idx_t N, typename Perm>
 struct CalcInversePermutationElem<I, N, N, Perm>
 {
   static constexpr camp::idx_t value = I;
 };
 
 
-
-template<typename Range, typename Perm>
+template <typename Range, typename Perm>
 struct InversePermutationHelper;
 
-template<camp::idx_t ... Range, camp::idx_t ... Perm>
-struct InversePermutationHelper<camp::idx_seq<Range...>, 
-                                camp::idx_seq<Perm...>>
+template <camp::idx_t... Range, camp::idx_t... Perm>
+struct InversePermutationHelper<camp::idx_seq<Range...>, camp::idx_seq<Perm...>>
 {
   static_assert(sizeof...(Range) == sizeof...(Perm), "Fatal Error");
-  using type = camp::idx_seq< 
-    CalcInversePermutationElem<Range, 0, sizeof...(Range), camp::idx_seq<Perm...>>::value ...  
-  >;  
+  using type = camp::idx_seq<
+      CalcInversePermutationElem<Range,
+                                 0,
+                                 sizeof...(Range),
+                                 camp::idx_seq<Perm...>>::value...>;
 };
-
 
 
 } // namespace internal
 
 
-
 /*!
   Inverts a permutation
 */
-template<typename Perm>
-using invert_permutation = typename internal::InversePermutationHelper<camp::make_idx_seq_t<camp::size<Perm>::value>, Perm>::type;
+template <typename Perm>
+using invert_permutation = typename internal::InversePermutationHelper<
+    camp::make_idx_seq_t<camp::size<Perm>::value>,
+    Perm>::type;
 
-}  // namespace RAJA
+} // namespace RAJA
 
 #endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

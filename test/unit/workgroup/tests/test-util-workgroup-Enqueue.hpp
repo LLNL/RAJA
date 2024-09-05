@@ -17,14 +17,10 @@
 #include <random>
 
 
-template < typename IndexType,
-           typename ... Args >
+template <typename IndexType, typename... Args>
 struct EnqueueTestCallable
 {
-  EnqueueTestCallable(IndexType* _ptr, IndexType _val)
-    : ptr(_ptr)
-    , val(_val)
-  { }
+  EnqueueTestCallable(IndexType* _ptr, IndexType _val) : ptr(_ptr), val(_val) {}
 
   EnqueueTestCallable(EnqueueTestCallable const&) = default;
   EnqueueTestCallable& operator=(EnqueueTestCallable const&) = default;
@@ -40,7 +36,7 @@ struct EnqueueTestCallable
 
 private:
   IndexType* ptr;
-  IndexType  val;
+  IndexType val;
 };
 
-#endif  //__TEST_UTIL_WORKGROUP_ENQUEUE__
+#endif //__TEST_UTIL_WORKGROUP_ENQUEUE__

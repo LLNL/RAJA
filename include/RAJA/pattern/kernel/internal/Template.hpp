@@ -39,8 +39,8 @@ struct SeqToType
 template <typename T, typename SEQ>
 struct ListOfNHelper;
 
-template <typename T, camp::idx_t ... SEQ>
-struct ListOfNHelper<T, camp::idx_seq<SEQ...> >
+template <typename T, camp::idx_t... SEQ>
+struct ListOfNHelper<T, camp::idx_seq<SEQ...>>
 {
   using type = camp::list<typename SeqToType<T, SEQ>::type...>;
 };
@@ -49,8 +49,8 @@ struct ListOfNHelper<T, camp::idx_seq<SEQ...> >
 template <typename T, typename SEQ>
 struct TupleOfNHelper;
 
-template <typename T, camp::idx_t ... SEQ>
-struct TupleOfNHelper<T, camp::idx_seq<SEQ...> >
+template <typename T, camp::idx_t... SEQ>
+struct TupleOfNHelper<T, camp::idx_seq<SEQ...>>
 {
   using type = camp::tuple<typename SeqToType<T, SEQ>::type...>;
 };
@@ -64,7 +64,8 @@ struct TupleOfNHelper<T, camp::idx_seq<SEQ...> >
  *
  */
 template <typename T, camp::idx_t N>
-using list_of_n = typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
+using list_of_n =
+    typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
 
 /*
@@ -74,12 +75,12 @@ using list_of_n = typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::ty
  *
  */
 template <typename T, camp::idx_t N>
-using tuple_of_n = typename detail::TupleOfNHelper<T, camp::make_idx_seq_t<N>>::type;
+using tuple_of_n =
+    typename detail::TupleOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
 
-
-}  // end namespace internal
-}  // end namespace RAJA
+} // end namespace internal
+} // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_Template_HPP */

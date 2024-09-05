@@ -21,173 +21,169 @@
 // once before and after each kernel invocation for the launch counter.
 
 // test with basic forall
-template <typename ExecPolicy,
-          typename WORKING_RES,
-          RAJA::Platform PLATFORM>
+template <typename ExecPolicy, typename WORKING_RES, RAJA::Platform PLATFORM>
 void PluginForallTestImpl()
 {
   SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++)
+  {
 
-    RAJA::forall<ExecPolicy>(
-      RAJA::RangeSegment(i,i+1),
-      PluginTestCallable{data}
-    );
+    RAJA::forall<ExecPolicy>(RAJA::RangeSegment(i, i + 1),
+                             PluginTestCallable{data});
 
     CounterData loop_data;
     plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
     ASSERT_EQ(loop_data.capture_platform_active, PLATFORM);
-    ASSERT_EQ(loop_data.capture_counter_pre,     i+1);
-    ASSERT_EQ(loop_data.capture_counter_post,    i);
+    ASSERT_EQ(loop_data.capture_counter_pre, i + 1);
+    ASSERT_EQ(loop_data.capture_counter_post, i);
     ASSERT_EQ(loop_data.launch_platform_active, PLATFORM);
-    ASSERT_EQ(loop_data.launch_counter_pre,     i+1);
-    ASSERT_EQ(loop_data.launch_counter_post,    i);
+    ASSERT_EQ(loop_data.launch_counter_pre, i + 1);
+    ASSERT_EQ(loop_data.launch_counter_post, i);
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  plugin_test_resource->memcpy(
+      &plugin_data, plugin_test_data, sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
-  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.capture_counter_pre, 10);
+  ASSERT_EQ(plugin_data.capture_counter_post, 10);
   ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
-  ASSERT_EQ(plugin_data.launch_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_counter_pre, 10);
+  ASSERT_EQ(plugin_data.launch_counter_post, 10);
 
   plugin_test_resource->deallocate(data);
 }
 
 // test with basic forall_Icount
-template <typename ExecPolicy,
-          typename WORKING_RES,
-          RAJA::Platform PLATFORM>
+template <typename ExecPolicy, typename WORKING_RES, RAJA::Platform PLATFORM>
 void PluginForAllICountTestImpl()
 {
   SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++)
+  {
 
     RAJA::forall_Icount<ExecPolicy>(
-      RAJA::RangeSegment(i,i+1), i,
-      PluginTestCallable{data}
-    );
+        RAJA::RangeSegment(i, i + 1), i, PluginTestCallable{data});
 
     CounterData loop_data;
     plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
     ASSERT_EQ(loop_data.capture_platform_active, PLATFORM);
-    ASSERT_EQ(loop_data.capture_counter_pre,     i+1);
-    ASSERT_EQ(loop_data.capture_counter_post,    i);
+    ASSERT_EQ(loop_data.capture_counter_pre, i + 1);
+    ASSERT_EQ(loop_data.capture_counter_post, i);
     ASSERT_EQ(loop_data.launch_platform_active, PLATFORM);
-    ASSERT_EQ(loop_data.launch_counter_pre,     i+1);
-    ASSERT_EQ(loop_data.launch_counter_post,    i);
+    ASSERT_EQ(loop_data.launch_counter_pre, i + 1);
+    ASSERT_EQ(loop_data.launch_counter_post, i);
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  plugin_test_resource->memcpy(
+      &plugin_data, plugin_test_data, sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
-  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.capture_counter_pre, 10);
+  ASSERT_EQ(plugin_data.capture_counter_post, 10);
   ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
-  ASSERT_EQ(plugin_data.launch_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_counter_pre, 10);
+  ASSERT_EQ(plugin_data.launch_counter_post, 10);
 
   plugin_test_resource->deallocate(data);
 }
 
 // test with IndexSet forall
-template <typename ExecPolicy,
-          typename WORKING_RES,
-          RAJA::Platform PLATFORM>
+template <typename ExecPolicy, typename WORKING_RES, RAJA::Platform PLATFORM>
 void PluginForAllIdxSetTestImpl()
 {
   SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++)
+  {
 
-    RAJA::TypedIndexSet< RAJA::RangeSegment > iset;
+    RAJA::TypedIndexSet<RAJA::RangeSegment> iset;
 
-    for (int j = i; j < 10; j++) {
-      iset.push_back(RAJA::RangeSegment(j, j+1));
+    for (int j = i; j < 10; j++)
+    {
+      iset.push_back(RAJA::RangeSegment(j, j + 1));
     }
 
     RAJA::forall<RAJA::ExecPolicy<RAJA::seq_segit, ExecPolicy>>(
-      iset,
-      PluginTestCallable{data}
-    );
+        iset, PluginTestCallable{data});
 
-    for (int j = i; j < 10; j++) {
+    for (int j = i; j < 10; j++)
+    {
       CounterData loop_data;
       plugin_test_resource->memcpy(&loop_data, &data[j], sizeof(CounterData));
       ASSERT_EQ(loop_data.capture_platform_active, PLATFORM);
-      ASSERT_EQ(loop_data.capture_counter_pre,     i+1);
-      ASSERT_EQ(loop_data.capture_counter_post,    i);
+      ASSERT_EQ(loop_data.capture_counter_pre, i + 1);
+      ASSERT_EQ(loop_data.capture_counter_post, i);
       ASSERT_EQ(loop_data.launch_platform_active, PLATFORM);
-      ASSERT_EQ(loop_data.launch_counter_pre,     i+1);
-      ASSERT_EQ(loop_data.launch_counter_post,    i);
+      ASSERT_EQ(loop_data.launch_counter_pre, i + 1);
+      ASSERT_EQ(loop_data.launch_counter_post, i);
     }
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  plugin_test_resource->memcpy(
+      &plugin_data, plugin_test_data, sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
-  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.capture_counter_pre, 10);
+  ASSERT_EQ(plugin_data.capture_counter_post, 10);
   ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
-  ASSERT_EQ(plugin_data.launch_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_counter_pre, 10);
+  ASSERT_EQ(plugin_data.launch_counter_post, 10);
 
   plugin_test_resource->deallocate(data);
 }
 
 // test with IndexSet forall_Icount
-template <typename ExecPolicy,
-          typename WORKING_RES,
-          RAJA::Platform PLATFORM>
+template <typename ExecPolicy, typename WORKING_RES, RAJA::Platform PLATFORM>
 void PluginForAllIcountIdxSetTestImpl()
 {
   SetupPluginVars spv(WORKING_RES::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; i++)
+  {
 
-    RAJA::TypedIndexSet< RAJA::RangeSegment > iset;
+    RAJA::TypedIndexSet<RAJA::RangeSegment> iset;
 
-    for (int j = i; j < 10; j++) {
-      iset.push_back(RAJA::RangeSegment(j, j+1));
+    for (int j = i; j < 10; j++)
+    {
+      iset.push_back(RAJA::RangeSegment(j, j + 1));
     }
 
     RAJA::forall_Icount<RAJA::ExecPolicy<RAJA::seq_segit, ExecPolicy>>(
-      iset,
-      PluginTestCallable{data}
-    );
+        iset, PluginTestCallable{data});
 
-    for (int j = i; j < 10; j++) {
+    for (int j = i; j < 10; j++)
+    {
       CounterData loop_data;
       plugin_test_resource->memcpy(&loop_data, &data[j], sizeof(CounterData));
       ASSERT_EQ(loop_data.capture_platform_active, PLATFORM);
-      ASSERT_EQ(loop_data.capture_counter_pre,     i+1);
-      ASSERT_EQ(loop_data.capture_counter_post,    i);
+      ASSERT_EQ(loop_data.capture_counter_pre, i + 1);
+      ASSERT_EQ(loop_data.capture_counter_post, i);
       ASSERT_EQ(loop_data.launch_platform_active, PLATFORM);
-      ASSERT_EQ(loop_data.launch_counter_pre,     i+1);
-      ASSERT_EQ(loop_data.launch_counter_post,    i);
+      ASSERT_EQ(loop_data.launch_counter_pre, i + 1);
+      ASSERT_EQ(loop_data.launch_counter_post, i);
     }
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+  plugin_test_resource->memcpy(
+      &plugin_data, plugin_test_data, sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.capture_counter_pre,     10);
-  ASSERT_EQ(plugin_data.capture_counter_post,    10);
+  ASSERT_EQ(plugin_data.capture_counter_pre, 10);
+  ASSERT_EQ(plugin_data.capture_counter_post, 10);
   ASSERT_EQ(plugin_data.launch_platform_active, RAJA::Platform::undefined);
-  ASSERT_EQ(plugin_data.launch_counter_pre,     10);
-  ASSERT_EQ(plugin_data.launch_counter_post,    10);
+  ASSERT_EQ(plugin_data.launch_counter_pre, 10);
+  ASSERT_EQ(plugin_data.launch_counter_post, 10);
 
   plugin_test_resource->deallocate(data);
 }
@@ -195,8 +191,7 @@ void PluginForAllIcountIdxSetTestImpl()
 TYPED_TEST_SUITE_P(PluginForallTest);
 template <typename T>
 class PluginForallTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_P(PluginForallTest, PluginForall)
 {
@@ -204,7 +199,7 @@ TYPED_TEST_P(PluginForallTest, PluginForall)
   using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  PluginForallTestImpl<ExecPolicy, ResType, PlatformHolder::platform>( );
+  PluginForallTestImpl<ExecPolicy, ResType, PlatformHolder::platform>();
 }
 
 TYPED_TEST_P(PluginForallTest, PluginForAllICount)
@@ -213,7 +208,7 @@ TYPED_TEST_P(PluginForallTest, PluginForAllICount)
   using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  PluginForAllICountTestImpl<ExecPolicy, ResType, PlatformHolder::platform>( );
+  PluginForAllICountTestImpl<ExecPolicy, ResType, PlatformHolder::platform>();
 }
 
 TYPED_TEST_P(PluginForallTest, PluginForAllIdxSet)
@@ -222,7 +217,7 @@ TYPED_TEST_P(PluginForallTest, PluginForAllIdxSet)
   using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  PluginForAllIdxSetTestImpl<ExecPolicy, ResType, PlatformHolder::platform>( );
+  PluginForAllIdxSetTestImpl<ExecPolicy, ResType, PlatformHolder::platform>();
 }
 
 TYPED_TEST_P(PluginForallTest, PluginForAllIcountIdxSet)
@@ -231,7 +226,9 @@ TYPED_TEST_P(PluginForallTest, PluginForAllIcountIdxSet)
   using ResType = typename camp::at<TypeParam, camp::num<1>>::type;
   using PlatformHolder = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  PluginForAllIcountIdxSetTestImpl<ExecPolicy, ResType, PlatformHolder::platform>( );
+  PluginForAllIcountIdxSetTestImpl<ExecPolicy,
+                                   ResType,
+                                   PlatformHolder::platform>();
 }
 
 REGISTER_TYPED_TEST_SUITE_P(PluginForallTest,
@@ -240,4 +237,4 @@ REGISTER_TYPED_TEST_SUITE_P(PluginForallTest,
                             PluginForAllIdxSet,
                             PluginForAllIcountIdxSet);
 
-#endif  //__TEST_PLUGIN_FORALL_HPP__
+#endif //__TEST_PLUGIN_FORALL_HPP__

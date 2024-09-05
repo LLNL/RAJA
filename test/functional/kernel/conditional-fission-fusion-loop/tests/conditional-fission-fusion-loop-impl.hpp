@@ -28,7 +28,8 @@ void KernelConditionalFissionFusionLoopTestImpl(
 {
   IDX_TYPE data_len = IDX_TYPE(0);
 
-  if (seg_idx.size() > 0) {
+  if (seg_idx.size() > 0)
+  {
     data_len = seg_idx[seg_idx.size() - 1] + 1;
   }
 
@@ -53,11 +54,11 @@ void KernelConditionalFissionFusionLoopTestImpl(
                                     &test_array_y);
 
 
-  working_res.memset(working_array_x,
-                     0,
-                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memset(
+      working_array_x, 0, sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  for (int param = 0; param < 2; ++param) {
+  for (int param = 0; param < 2; ++param)
+  {
 
     RAJA::kernel_param<EXEC_POLICY>(
 
@@ -90,22 +91,19 @@ void KernelConditionalFissionFusionLoopTestImpl(
     });
 
 
-    for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i) {
+    for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i)
+    {
       ASSERT_EQ(check_array_x[RAJA::stripIndexType(i)],
                 check_array_y[RAJA::stripIndexType(i)]);
     }
   }
 
-  deallocateForallTestData<DATA_TYPE>(erased_working_res,
-                                      working_array_x,
-                                      check_array_x,
-                                      test_array_x);
+  deallocateForallTestData<DATA_TYPE>(
+      erased_working_res, working_array_x, check_array_x, test_array_x);
 
 
-  deallocateForallTestData<DATA_TYPE>(erased_working_res,
-                                      working_array_y,
-                                      check_array_y,
-                                      test_array_y);
+  deallocateForallTestData<DATA_TYPE>(
+      erased_working_res, working_array_y, check_array_y, test_array_y);
 }
 
-#endif  // __CONDITIONAL_FISSION_FUSION_LOOP_SEGMENTS_IMPL_HPP__
+#endif // __CONDITIONAL_FISSION_FUSION_LOOP_SEGMENTS_IMPL_HPP__

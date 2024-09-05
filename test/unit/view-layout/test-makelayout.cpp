@@ -9,19 +9,18 @@
 
 TEST(LayoutUnitTest, OffsetVsRegular)
 {
-  const auto layout =
-      RAJA::make_permuted_layout({{6, 6}},
-                                 RAJA::as_array<RAJA::Perm<1, 0>>::get());
-  const auto offset =
-      RAJA::make_permuted_offset_layout({{0, 0}},
-                                        {{6, 6}},
-                                        RAJA::as_array<RAJA::PERM_JI>::get());
+  const auto layout = RAJA::make_permuted_layout(
+      {{6, 6}}, RAJA::as_array<RAJA::Perm<1, 0>>::get());
+  const auto offset = RAJA::make_permuted_offset_layout(
+      {{0, 0}}, {{6, 6}}, RAJA::as_array<RAJA::PERM_JI>::get());
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
    */
-  for (int j = 0; j < 6; ++j) {
-    for (int i = 0; i < 6; ++i) {
+  for (int j = 0; j < 6; ++j)
+  {
+    for (int i = 0; i < 6; ++i)
+    {
       ASSERT_EQ(offset(i, j), layout(i, j))
           << layout.strides[0] << layout.strides[1];
     }
@@ -67,10 +66,8 @@ TEST(OffsetLayoutUnitTest, 2D_JI)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout =
-      RAJA::make_permuted_offset_layout({{-1, -2}},
-                                        {{2, 1}},
-                                        RAJA::as_array<RAJA::PERM_JI>::get());
+  const my_layout layout = RAJA::make_permuted_offset_layout(
+      {{-1, -2}}, {{2, 1}}, RAJA::as_array<RAJA::PERM_JI>::get());
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -107,9 +104,8 @@ TEST(LayoutUnitTest, 3D_KJI_ProjJ)
 
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
-  const my_layout layout =
-      RAJA::make_permuted_layout({{3, 0, 7}},
-                                 RAJA::as_array<RAJA::PERM_KJI>::get());
+  const my_layout layout = RAJA::make_permuted_layout(
+      {{3, 0, 7}}, RAJA::as_array<RAJA::PERM_KJI>::get());
 
   ASSERT_EQ(0, layout(0, 0, 0));
 
@@ -124,7 +120,8 @@ TEST(LayoutUnitTest, 3D_KJI_ProjJ)
   ASSERT_EQ(12, layout(0, 0, 4));
 
   // Check that we get the identity (mod 21)
-  for (int x = 0; x < 40; ++x) {
+  for (int x = 0; x < 40; ++x)
+  {
 
     // inverse map
     int i, j, k;
@@ -155,9 +152,8 @@ TEST(LayoutUnitTest, 2D_StrideOne)
    * Linear indices range from [0, 15)
    *
    */
-  const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}},
-                                 RAJA::as_array<RAJA::PERM_JI>::get());
+  const my_layout layout = RAJA::make_permuted_layout(
+      {{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
 
 
   /*
@@ -167,8 +163,10 @@ TEST(LayoutUnitTest, 2D_StrideOne)
 
 
   // Check that we get the same layout
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 5; ++j) {
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 5; ++j)
+    {
 
       ASSERT_EQ(layout(i, j), layout_s1(i, j));
     }
@@ -178,44 +176,49 @@ TEST(LayoutUnitTest, 2D_StrideOne)
 TEST(StaticLayoutUnitTest, 2D_StaticLayout)
 {
   RAJA::Layout<2> dynamic_layout(7, 5);
-  using static_layout = RAJA::StaticLayout<RAJA::PERM_IJ,7,5>;
-  
-  // Check that we get the same layout
-  for (int i = 0; i < 7; ++i) {
-    for (int j = 0; j < 5; ++j) {
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_IJ, 7, 5>;
 
-      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+  // Check that we get the same layout
+  for (int i = 0; i < 7; ++i)
+  {
+    for (int j = 0; j < 5; ++j)
+    {
+
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i, j));
     }
   }
 }
 
 TEST(StaticLayoutUnitTest, 2D_PermutedStaticLayout)
 {
-  auto dynamic_layout = 
-    RAJA::make_permuted_layout({{7, 5}},
-                               RAJA::as_array<RAJA::PERM_JI>::get());
-  using static_layout = RAJA::StaticLayout<RAJA::PERM_JI, 7,5>;
-  
+  auto dynamic_layout = RAJA::make_permuted_layout(
+      {{7, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_JI, 7, 5>;
+
   // Check that we get the same layout
-  for (int i = 0; i < 7; ++i) {
-    for (int j = 0; j < 5; ++j) {
-      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+  for (int i = 0; i < 7; ++i)
+  {
+    for (int j = 0; j < 5; ++j)
+    {
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i, j));
     }
   }
 }
 
 TEST(StaticLayoutUnitTest, 3D_PermutedStaticLayout)
 {
-  auto dynamic_layout = 
-    RAJA::make_permuted_layout({{7, 13, 5}},
-                               RAJA::as_array<RAJA::PERM_JKI>::get());
-  using static_layout = RAJA::StaticLayout<RAJA::PERM_JKI, 7,13,5>;
+  auto dynamic_layout = RAJA::make_permuted_layout(
+      {{7, 13, 5}}, RAJA::as_array<RAJA::PERM_JKI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_JKI, 7, 13, 5>;
 
   // Check that we get the same layout
-  for (int i = 0; i < 7; ++i) {
-    for (int j = 0; j < 13; ++j) {
-      for (int k = 0; k < 5; ++k) {
-        ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i,j,k));
+  for (int i = 0; i < 7; ++i)
+  {
+    for (int j = 0; j < 13; ++j)
+    {
+      for (int k = 0; k < 5; ++k)
+      {
+        ASSERT_EQ(dynamic_layout(i, j, k), static_layout::s_oper(i, j, k));
       }
     }
   }
@@ -224,21 +227,23 @@ TEST(StaticLayoutUnitTest, 3D_PermutedStaticLayout)
 
 TEST(StaticLayoutUnitTest, 4D_PermutedStaticLayout)
 {
-  auto dynamic_layout = 
-    RAJA::make_permuted_layout({{7, 13, 5, 17}},
-                               RAJA::as_array<RAJA::PERM_LJKI>::get());
-  using static_layout = RAJA::StaticLayout<RAJA::PERM_LJKI, 7,13,5,17>;
+  auto dynamic_layout = RAJA::make_permuted_layout(
+      {{7, 13, 5, 17}}, RAJA::as_array<RAJA::PERM_LJKI>::get());
+  using static_layout = RAJA::StaticLayout<RAJA::PERM_LJKI, 7, 13, 5, 17>;
 
   // Check that we get the same layout
-  for (int i = 0; i < 7; ++i) {
-    for (int j = 0; j < 13; ++j) {
-      for (int k = 0; k < 5; ++k) {
-        for (int l = 0; l < 5; ++l) {
-          ASSERT_EQ(dynamic_layout(i, j, k, l), static_layout::s_oper(i,j,k,l));
-        } 
+  for (int i = 0; i < 7; ++i)
+  {
+    for (int j = 0; j < 13; ++j)
+    {
+      for (int k = 0; k < 5; ++k)
+      {
+        for (int l = 0; l < 5; ++l)
+        {
+          ASSERT_EQ(dynamic_layout(i, j, k, l),
+                    static_layout::s_oper(i, j, k, l));
+        }
       }
     }
   }
 }
-
-

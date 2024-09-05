@@ -205,7 +205,7 @@ class ReduceSum;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceBitOr;
- 
+
 
 /*!
  ******************************************************************************
@@ -231,7 +231,7 @@ class ReduceBitOr;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceBitAnd;
-} //namespace RAJA
+} // namespace RAJA
 
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

@@ -69,7 +69,8 @@ TEST(LayoutUnitTest, 2D_IJ)
   ASSERT_EQ(4, layout(0, 4));
 
   // Check that we get the identity
-  for (int k = 0; k < 15; ++k) {
+  for (int k = 0; k < 15; ++k)
+  {
 
     // inverse map
     int i, j;
@@ -100,9 +101,8 @@ TEST(LayoutUnitTest, 2D_JI)
    * Linear indices range from [0, 15)
    *
    */
-  const my_layout layout =
-      RAJA::make_permuted_layout({{3, 5}},
-                                 RAJA::as_array<RAJA::PERM_JI>::get());
+  const my_layout layout = RAJA::make_permuted_layout(
+      {{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -113,7 +113,8 @@ TEST(LayoutUnitTest, 2D_JI)
   ASSERT_EQ(14, layout(2, 4));
 
   // Check that we get the identity (mod 15)
-  for (int k = 0; k < 15; ++k) {
+  for (int k = 0; k < 15; ++k)
+  {
 
     // inverse map
     int i, j;
@@ -158,7 +159,8 @@ TEST(LayoutUnitTest, 2D_IJ_ProjJ)
   ASSERT_EQ(0, layout(0, 5));
 
   // Check that we get the identity (mod 7)
-  for (int k = 0; k < 20; ++k) {
+  for (int k = 0; k < 20; ++k)
+  {
 
     // inverse map
     int i, j;
@@ -174,4 +176,3 @@ TEST(LayoutUnitTest, 2D_IJ_ProjJ)
     ASSERT_EQ(j, 0);
   }
 }
-

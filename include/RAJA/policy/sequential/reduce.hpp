@@ -51,10 +51,10 @@ public:
 };
 
 
-}  // namespace detail
+} // namespace detail
 
 RAJA_DECLARE_ALL_REDUCERS(seq_reduce, detail::ReduceSeq)
 
-}  // namespace RAJA
+} // namespace RAJA
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

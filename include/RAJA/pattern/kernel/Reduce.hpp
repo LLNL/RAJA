@@ -39,10 +39,12 @@ namespace statement
  *
  */
 template <typename ReducePolicy,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts>
-struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...> {
+struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...>
+{
 
   static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "
@@ -52,10 +54,10 @@ struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...> {
 };
 
 
-}  // end namespace statement
+} // end namespace statement
 
 
-}  // end namespace RAJA
+} // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_Reduce_HPP */

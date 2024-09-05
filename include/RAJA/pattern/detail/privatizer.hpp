@@ -42,16 +42,19 @@ public:
 
 static_assert(!has_privatizer<int>::value, "if this fires, abandon all hope");
 
-struct GenericWrapperBase {
-};
+struct GenericWrapperBase
+{};
 
 template <typename T>
-struct Privatizer {
+struct Privatizer
+{
   using value_type = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
   static_assert(!has_privatizer<T>::value,
-                "Privatizer selected inappropriately, this is almost certainly "
+                "Privatizer selected "
+                "inappropriately, this is almost "
+                "certainly "
                 "a bug");
   static_assert(!std::is_base_of<GenericWrapperBase, T>::value,
                 "Privatizer selected inappropriately, this is almost certainly "
@@ -96,8 +99,8 @@ RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
   return typename T::privatizer{item};
 }
 
-}  // namespace internal
+} // namespace internal
 
-}  // namespace RAJA
+} // namespace RAJA
 
 #endif /* __RAJA_PRIVATIZER_HPP */

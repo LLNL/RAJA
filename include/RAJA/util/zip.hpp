@@ -37,41 +37,40 @@ namespace RAJA
     \brief ZipIterator class for simultaneously iterating over
     multiple iterators. This is not a standards compliant iterator.
 */
-template < typename ... Iters >
+template <typename... Iters>
 struct ZipIterator
 {
-  static_assert(concepts::all_of<type_traits::is_random_access_iterator<Iters>...>::value,
+  static_assert(
+      concepts::all_of<type_traits::is_random_access_iterator<Iters>...>::value,
       "ZipIterator can only contain random access iterators");
   static_assert(sizeof...(Iters) > 1,
-      "ZipIterator must contain one or more iterators");
+                "ZipIterator must contain one or more "
+                "iterators");
 
-  using value_type = zip_val<typename std::iterator_traits<Iters>::value_type...>;
+  using value_type =
+      zip_val<typename std::iterator_traits<Iters>::value_type...>;
   using difference_type = std::ptrdiff_t;
   using pointer = void;
   using reference = zip_ref<typename std::iterator_traits<Iters>::reference...>;
-  using creference = zip_ref<const typename std::iterator_traits<Iters>::reference...>;
+  using creference =
+      zip_ref<const typename std::iterator_traits<Iters>::reference...>;
   using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE inline ZipIterator()
-    : m_iterators()
-  {
-  }
+  RAJA_HOST_DEVICE inline ZipIterator() : m_iterators() {}
 
-  template < typename... Args,
-             typename = concepts::enable_if<type_traits::convertible_to<Args&&, Iters>...> >
+  template <typename... Args,
+            typename = concepts::enable_if<
+                type_traits::convertible_to<Args&&, Iters>...>>
   RAJA_HOST_DEVICE inline ZipIterator(Args&&... args)
-    : m_iterators(std::forward<Args>(args)...)
-  {
-  }
+      : m_iterators(std::forward<Args>(args)...)
+  {}
 
   RAJA_HOST_DEVICE inline ZipIterator(const ZipIterator& rhs)
-    : m_iterators(rhs.m_iterators)
-  {
-  }
+      : m_iterators(rhs.m_iterators)
+  {}
   RAJA_HOST_DEVICE inline ZipIterator(ZipIterator&& rhs)
-    : m_iterators(std::move(rhs.m_iterators))
-  {
-  }
+      : m_iterators(std::move(rhs.m_iterators))
+  {}
 
   RAJA_HOST_DEVICE inline ZipIterator& operator=(const ZipIterator& rhs)
   {
@@ -97,11 +96,11 @@ struct ZipIterator
   }
   RAJA_HOST_DEVICE inline bool operator>(const ZipIterator& rhs) const
   {
-    return RAJA::get<0>(m_iterators) >  RAJA::get<0>(rhs.m_iterators);
+    return RAJA::get<0>(m_iterators) > RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator<(const ZipIterator& rhs) const
   {
-    return RAJA::get<0>(m_iterators) <  RAJA::get<0>(rhs.m_iterators);
+    return RAJA::get<0>(m_iterators) < RAJA::get<0>(rhs.m_iterators);
   }
   RAJA_HOST_DEVICE inline bool operator>=(const ZipIterator& rhs) const
   {
@@ -135,41 +134,38 @@ struct ZipIterator
     return tmp;
   }
 
-  RAJA_HOST_DEVICE inline ZipIterator& operator+=(
-      const difference_type& rhs)
+  RAJA_HOST_DEVICE inline ZipIterator& operator+=(const difference_type& rhs)
   {
     detail::zip_for_each(m_iterators, detail::PlusEq<difference_type>{rhs});
     return *this;
   }
-  RAJA_HOST_DEVICE inline ZipIterator& operator-=(
-      const difference_type& rhs)
+  RAJA_HOST_DEVICE inline ZipIterator& operator-=(const difference_type& rhs)
   {
     detail::zip_for_each(m_iterators, detail::MinusEq<difference_type>{rhs});
     return *this;
   }
 
-  RAJA_HOST_DEVICE inline difference_type operator-(
-      const ZipIterator& rhs) const
+  RAJA_HOST_DEVICE inline difference_type
+  operator-(const ZipIterator& rhs) const
   {
     return RAJA::get<0>(m_iterators) - RAJA::get<0>(rhs.m_iterators);
   }
-  RAJA_HOST_DEVICE inline ZipIterator operator+(
-      const difference_type& rhs) const
+  RAJA_HOST_DEVICE inline ZipIterator
+  operator+(const difference_type& rhs) const
   {
     ZipIterator tmp(*this);
     tmp += rhs;
     return tmp;
   }
-  RAJA_HOST_DEVICE inline ZipIterator operator-(
-      const difference_type& rhs) const
+  RAJA_HOST_DEVICE inline ZipIterator
+  operator-(const difference_type& rhs) const
   {
     ZipIterator tmp(*this);
     tmp -= rhs;
     return tmp;
   }
-  RAJA_HOST_DEVICE friend ZipIterator operator+(
-      difference_type lhs,
-      const ZipIterator& rhs)
+  RAJA_HOST_DEVICE friend ZipIterator operator+(difference_type lhs,
+                                                const ZipIterator& rhs)
   {
     ZipIterator tmp(rhs);
     tmp += lhs;
@@ -190,7 +186,8 @@ struct ZipIterator
     return *((*this) + rhs);
   }
 
-  RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator lhs, ZipIterator rhs)
+  RAJA_HOST_DEVICE friend inline void safe_iter_swap(ZipIterator lhs,
+                                                     ZipIterator rhs)
   {
     detail::zip_for_each(lhs.m_iterators, rhs.m_iterators, detail::IterSwap{});
   }
@@ -198,7 +195,7 @@ struct ZipIterator
 private:
   zip_val<camp::decay<Iters>...> m_iterators;
 
-  template < camp::idx_t ... Is >
+  template <camp::idx_t... Is>
   RAJA_HOST_DEVICE inline reference deref_helper(camp::idx_seq<Is...>) const
   {
     return reference(*RAJA::get<Is>(m_iterators)...);
@@ -210,10 +207,8 @@ private:
     \brief Zip multiple iterators together to iterate them simultaneously with
     a single ZipIterator object.
 */
-template < typename... Args >
-RAJA_HOST_DEVICE
-auto zip(Args&&... args)
-  -> ZipIterator<camp::decay<Args>...>
+template <typename... Args>
+RAJA_HOST_DEVICE auto zip(Args&&... args) -> ZipIterator<camp::decay<Args>...>
 {
   return {std::forward<Args>(args)...};
 }
@@ -223,29 +218,28 @@ auto zip(Args&&... args)
     ZipIterator objects.
 */
 template <typename... Args>
-RAJA_HOST_DEVICE RAJA_INLINE
-auto zip_span(Args&&... args)
-  -> Span<ZipIterator<detail::ContainerIter<camp::decay<Args>>...>,
-          typename ZipIterator<detail::ContainerIter<camp::decay<Args>>...>::difference_type>
+RAJA_HOST_DEVICE RAJA_INLINE auto zip_span(Args&&... args)
+    -> Span<ZipIterator<detail::ContainerIter<camp::decay<Args>>...>,
+            typename ZipIterator<
+                detail::ContainerIter<camp::decay<Args>>...>::difference_type>
 {
   using std::begin;
   using std::end;
   return Span<ZipIterator<detail::ContainerIter<camp::decay<Args>>...>,
-              typename ZipIterator<detail::ContainerIter<camp::decay<Args>>...>::difference_type>(
+              typename ZipIterator<detail::ContainerIter<
+                  camp::decay<Args>>...>::difference_type>(
       zip(begin(std::forward<Args>(args))...),
-      zip(  end(std::forward<Args>(args))...));
+      zip(end(std::forward<Args>(args))...));
 }
 
 /*!
     \brief Comparator object that compares the first member
     of tuple like objects.
 */
-template < typename T, typename Compare >
+template <typename T, typename Compare>
 struct CompareFirst
 {
-  RAJA_HOST_DEVICE inline CompareFirst(Compare comp_)
-    : comp(comp_)
-  { }
+  RAJA_HOST_DEVICE inline CompareFirst(Compare comp_) : comp(comp_) {}
 
   RAJA_HOST_DEVICE inline bool operator()(T const& lhs, T const& rhs)
   {
@@ -260,14 +254,12 @@ private:
     \brief Make a comparator to compare first member of tuple
     like objects of type T.
 */
-template < typename T, typename Compare >
-RAJA_HOST_DEVICE
-auto compare_first(Compare comp)
-  -> CompareFirst<T, Compare>
+template <typename T, typename Compare>
+RAJA_HOST_DEVICE auto compare_first(Compare comp) -> CompareFirst<T, Compare>
 {
   return {comp};
 }
 
-}  // end namespace RAJA
+} // end namespace RAJA
 
 #endif

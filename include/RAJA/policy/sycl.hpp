@@ -37,6 +37,6 @@
 #include "RAJA/policy/sycl/launch.hpp"
 //#include "RAJA/policy/sycl/WorkGroup.hpp"
 
-#endif  // closing endif for if defined(RAJA_ENABLE_SYCL)
+#endif // closing endif for if defined(RAJA_ENABLE_SYCL)
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

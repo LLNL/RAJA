@@ -18,28 +18,32 @@
 #include <new>
 #include <unordered_map>
 
-namespace detail {
+namespace detail
+{
 
-struct indirect_function_call_dispatch_typer {
-  template < typename ... >
+struct indirect_function_call_dispatch_typer
+{
+  template <typename...>
   using type = ::RAJA::indirect_function_call_dispatch;
 };
 
-struct indirect_virtual_function_dispatch_typer {
-  template < typename ... >
+struct indirect_virtual_function_dispatch_typer
+{
+  template <typename...>
   using type = ::RAJA::indirect_virtual_function_dispatch;
 };
 
-struct direct_dispatch_typer {
-  template < typename ... Ts >
+struct direct_dispatch_typer
+{
+  template <typename... Ts>
   using type = ::RAJA::direct_dispatch<Ts...>;
 };
 
 
-template < typename Resource >
+template <typename Resource>
 struct ResourceAllocator
 {
-  template < typename T >
+  template <typename T>
   struct std_allocator
   {
     using value_type = T;
@@ -47,26 +51,29 @@ struct ResourceAllocator
     std_allocator() = default;
 
     std_allocator(std_allocator const&) = default;
-    std_allocator(std_allocator &&) = default;
+    std_allocator(std_allocator&&) = default;
 
     std_allocator& operator=(std_allocator const&) = default;
-    std_allocator& operator=(std_allocator &&) = default;
+    std_allocator& operator=(std_allocator&&) = default;
 
-    template < typename U >
+    template <typename U>
     std_allocator(std_allocator<U> const& other) noexcept
-      : m_res(other.get_resource())
-    { }
+        : m_res(other.get_resource())
+    {}
 
     /*[[nodiscard]]*/
     value_type* allocate(size_t num)
     {
-      if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
+      if (num > std::numeric_limits<size_t>::max() / sizeof(value_type))
+      {
         throw std::bad_alloc();
       }
 
-      value_type* ptr = m_res.template allocate<value_type>(num, camp::resources::MemoryAccess::Pinned);
+      value_type* ptr = m_res.template allocate<value_type>(
+          num, camp::resources::MemoryAccess::Pinned);
 
-      if (!ptr) {
+      if (!ptr)
+      {
         throw std::bad_alloc();
       }
 
@@ -78,19 +85,19 @@ struct ResourceAllocator
       m_res.deallocate(ptr, camp::resources::MemoryAccess::Pinned);
     }
 
-    Resource const& get_resource() const
+    Resource const& get_resource() const { return m_res; }
+
+    template <typename U>
+    friend inline bool operator==(std_allocator const& /*lhs*/,
+                                  std_allocator<U> const& /*rhs*/)
     {
-      return m_res;
+      return true; // lhs.get_resource() == rhs.get_resource(); // TODO not
+                   // equality comparable yet
     }
 
     template <typename U>
-    friend inline bool operator==(std_allocator const& /*lhs*/, std_allocator<U> const& /*rhs*/)
-    {
-      return true; // lhs.get_resource() == rhs.get_resource(); // TODO not equality comparable yet
-    }
-
-    template <typename U>
-    friend inline bool operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator!=(std_allocator const& lhs,
+                                  std_allocator<U> const& rhs)
     {
       return !(lhs == rhs);
     }
@@ -109,10 +116,10 @@ struct NeverEqualAllocator
   NeverEqualAllocator() = default;
 
   NeverEqualAllocator(NeverEqualAllocator const&) = default;
-  NeverEqualAllocator(NeverEqualAllocator &&) = default;
+  NeverEqualAllocator(NeverEqualAllocator&&) = default;
 
   NeverEqualAllocator& operator=(NeverEqualAllocator const&) = default;
-  NeverEqualAllocator& operator=(NeverEqualAllocator &&) = default;
+  NeverEqualAllocator& operator=(NeverEqualAllocator&&) = default;
 
   NeverEqualAllocator select_on_container_copy_construction()
   {
@@ -121,7 +128,8 @@ struct NeverEqualAllocator
 
   ~NeverEqualAllocator()
   {
-    if (!m_allocations.empty()) {
+    if (!m_allocations.empty())
+    {
       RAJA_ABORT_OR_THROW("allocation map not empty at destruction");
     }
   }
@@ -131,7 +139,8 @@ struct NeverEqualAllocator
   {
     void* ptr = malloc(size);
     auto iter_b = m_allocations.emplace(ptr, size);
-    if (!iter_b.second) {
+    if (!iter_b.second)
+    {
       RAJA_ABORT_OR_THROW("failed to add allocation to map");
     }
     return ptr;
@@ -140,20 +149,19 @@ struct NeverEqualAllocator
   void deallocate(void* ptr, size_t size) noexcept
   {
     auto iter = m_allocations.find(ptr);
-    if (iter == m_allocations.end()) {
+    if (iter == m_allocations.end())
+    {
       RAJA_ABORT_OR_THROW("failed to find allocation in map");
     }
-    if (iter->second != size) {
+    if (iter->second != size)
+    {
       RAJA_ABORT_OR_THROW("allocation size does not match known in map");
     }
     m_allocations.erase(iter);
     free(ptr);
   }
 
-  bool operator==(NeverEqualAllocator const&) const
-  {
-    return false;
-  }
+  bool operator==(NeverEqualAllocator const&) const { return false; }
 
 private:
   std::unordered_map<void*, size_t> m_allocations;
@@ -168,31 +176,22 @@ struct AlwaysEqualAllocator
   AlwaysEqualAllocator() = default;
 
   AlwaysEqualAllocator(AlwaysEqualAllocator const&) = default;
-  AlwaysEqualAllocator(AlwaysEqualAllocator &&) = default;
+  AlwaysEqualAllocator(AlwaysEqualAllocator&&) = default;
 
   AlwaysEqualAllocator& operator=(AlwaysEqualAllocator const&) = default;
-  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator &&) = default;
+  AlwaysEqualAllocator& operator=(AlwaysEqualAllocator&&) = default;
 
-  AlwaysEqualAllocator select_on_container_copy_construction()
-  {
-    return *this;
-  }
+  AlwaysEqualAllocator select_on_container_copy_construction() { return *this; }
 
   /*[[nodiscard]]*/
-  void* allocate(size_t size)
-  {
-    return get_allocator().allocate(size);
-  }
+  void* allocate(size_t size) { return get_allocator().allocate(size); }
 
   void deallocate(void* ptr, size_t size) noexcept
   {
     get_allocator().deallocate(ptr, size);
   }
 
-  bool operator==(AlwaysEqualAllocator const&) const
-  {
-    return true;
-  }
+  bool operator==(AlwaysEqualAllocator const&) const { return true; }
 
 private:
   static inline NeverEqualAllocator& get_allocator()
@@ -211,45 +210,49 @@ struct PropogatingAllocator : NeverEqualAllocator
   PropogatingAllocator() = default;
 
   PropogatingAllocator(PropogatingAllocator const&) = default;
-  PropogatingAllocator(PropogatingAllocator &&) = default;
+  PropogatingAllocator(PropogatingAllocator&&) = default;
 
   PropogatingAllocator& operator=(PropogatingAllocator const&) = default;
-  PropogatingAllocator& operator=(PropogatingAllocator &&) = default;
+  PropogatingAllocator& operator=(PropogatingAllocator&&) = default;
 
   PropogatingAllocator select_on_container_copy_construction()
   {
-    return PropogatingAllocator(NeverEqualAllocator::select_on_container_copy_construction());
+    return PropogatingAllocator(
+        NeverEqualAllocator::select_on_container_copy_construction());
   }
 
 private:
   PropogatingAllocator(NeverEqualAllocator&& nea)
-    : NeverEqualAllocator(std::move(nea))
-  { }
+      : NeverEqualAllocator(std::move(nea))
+  {}
 };
 
-template < typename AllocatorImpl >
+template <typename AllocatorImpl>
 struct WorkStorageTestAllocator
 {
-  template < typename T >
+  template <typename T>
   struct std_allocator
   {
     using value_type = T;
-    using propagate_on_container_copy_assignment = typename AllocatorImpl::propagate_on_container_copy_assignment;
-    using propagate_on_container_move_assignment = typename AllocatorImpl::propagate_on_container_move_assignment;
-    using propagate_on_container_swap = typename AllocatorImpl::propagate_on_container_swap;
+    using propagate_on_container_copy_assignment =
+        typename AllocatorImpl::propagate_on_container_copy_assignment;
+    using propagate_on_container_move_assignment =
+        typename AllocatorImpl::propagate_on_container_move_assignment;
+    using propagate_on_container_swap =
+        typename AllocatorImpl::propagate_on_container_swap;
 
     std_allocator() = default;
 
     std_allocator(std_allocator const&) = default;
-    std_allocator(std_allocator &&) = default;
+    std_allocator(std_allocator&&) = default;
 
     std_allocator& operator=(std_allocator const&) = default;
-    std_allocator& operator=(std_allocator &&) = default;
+    std_allocator& operator=(std_allocator&&) = default;
 
-    template < typename U >
+    template <typename U>
     std_allocator(std_allocator<U> const& other) noexcept
-      : m_impl(other.get_impl())
-    { }
+        : m_impl(other.get_impl())
+    {}
 
     std_allocator select_on_container_copy_construction()
     {
@@ -259,13 +262,16 @@ struct WorkStorageTestAllocator
     /*[[nodiscard]]*/
     value_type* allocate(size_t num)
     {
-      if (num > std::numeric_limits<size_t>::max() / sizeof(value_type)) {
+      if (num > std::numeric_limits<size_t>::max() / sizeof(value_type))
+      {
         throw std::bad_alloc();
       }
 
-      value_type* ptr = static_cast<value_type*>(m_impl.allocate(num*sizeof(value_type)));
+      value_type* ptr =
+          static_cast<value_type*>(m_impl.allocate(num * sizeof(value_type)));
 
-      if (!ptr) {
+      if (!ptr)
+      {
         throw std::bad_alloc();
       }
 
@@ -274,30 +280,27 @@ struct WorkStorageTestAllocator
 
     void deallocate(value_type* ptr, size_t num) noexcept
     {
-      m_impl.deallocate(static_cast<void*>(ptr), num*sizeof(value_type));
+      m_impl.deallocate(static_cast<void*>(ptr), num * sizeof(value_type));
     }
 
-    AllocatorImpl const& get_impl() const
-    {
-      return m_impl;
-    }
+    AllocatorImpl const& get_impl() const { return m_impl; }
 
     template <typename U>
-    friend inline bool operator==(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator==(std_allocator const& lhs,
+                                  std_allocator<U> const& rhs)
     {
       return lhs.get_impl() == rhs.get_impl();
     }
 
     template <typename U>
-    friend inline bool operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator!=(std_allocator const& lhs,
+                                  std_allocator<U> const& rhs)
     {
       return !(lhs == rhs);
     }
 
   private:
-    std_allocator(AllocatorImpl&& impl)
-      : m_impl(std::move(impl))
-    { }
+    std_allocator(AllocatorImpl&& impl) : m_impl(std::move(impl)) {}
 
     AllocatorImpl m_impl;
   };
@@ -309,95 +312,64 @@ struct WorkStorageTestAllocator
 //
 // Data types
 //
-using IndexTypeTypeList = camp::list<
-                                 int,
-                                 long,
-                                 RAJA::Index_type
-                               >;
+using IndexTypeTypeList = camp::list<int, long, RAJA::Index_type>;
 
-using XargsTypeList = camp::list<
-                                 RAJA::xargs<>,
-                                 RAJA::xargs<int*>,
-                                 RAJA::xargs<int, int*>
-                               >;
+using XargsTypeList =
+    camp::list<RAJA::xargs<>, RAJA::xargs<int*>, RAJA::xargs<int, int*>>;
 
-using SequentialExecPolicyList =
-    camp::list<
-                RAJA::seq_work
-              >;
+using SequentialExecPolicyList = camp::list<RAJA::seq_work>;
 using SequentialOrderedPolicyList =
-    camp::list<
-                RAJA::ordered,
-                RAJA::reverse_ordered
-              >;
+    camp::list<RAJA::ordered, RAJA::reverse_ordered>;
 using SequentialOrderPolicyList =
-    camp::list<
-                RAJA::ordered,
-                RAJA::reverse_ordered
-              >;
+    camp::list<RAJA::ordered, RAJA::reverse_ordered>;
 using SequentialStoragePolicyList =
-    camp::list<
-                RAJA::array_of_pointers,
-                RAJA::ragged_array_of_objects,
-                RAJA::constant_stride_array_of_objects
-              >;
+    camp::list<RAJA::array_of_pointers,
+               RAJA::ragged_array_of_objects,
+               RAJA::constant_stride_array_of_objects>;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPExecPolicyList =
-    camp::list<
-                RAJA::omp_work
-              >;
+using OpenMPExecPolicyList = camp::list<RAJA::omp_work>;
 using OpenMPOrderedPolicyList = SequentialOrderedPolicyList;
-using OpenMPOrderPolicyList   = SequentialOrderPolicyList;
+using OpenMPOrderPolicyList = SequentialOrderPolicyList;
 using OpenMPStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetExecPolicyList =
-    camp::list<
-                RAJA::omp_target_work
-              >;
+using OpenMPTargetExecPolicyList = camp::list<RAJA::omp_target_work>;
 using OpenMPTargetOrderedPolicyList = SequentialOrderedPolicyList;
-using OpenMPTargetOrderPolicyList   = SequentialOrderPolicyList;
+using OpenMPTargetOrderPolicyList = SequentialOrderPolicyList;
 using OpenMPTargetStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaExecPolicyList =
-    camp::list<
-                #if defined(RAJA_TEST_EXHAUSTIVE)
-                // avoid compilation error:
-                // tpl/camp/include/camp/camp.hpp(104): error #456: excessive recursion at instantiation of class
-                RAJA::cuda_work<256>,
-                #endif
-                RAJA::cuda_work<1024>,
-                RAJA::cuda_work_explicit<256, 2>
-              >;
+using CudaExecPolicyList = camp::list<
+#if defined(RAJA_TEST_EXHAUSTIVE)
+    // avoid compilation error:
+    // tpl/camp/include/camp/camp.hpp(104): error #456: excessive recursion at
+    // instantiation of class
+    RAJA::cuda_work<256>,
+#endif
+    RAJA::cuda_work<1024>,
+    RAJA::cuda_work_explicit<256, 2>>;
 using CudaOrderedPolicyList = SequentialOrderedPolicyList;
-using CudaOrderPolicyList   =
-    camp::list<
-                RAJA::ordered,
-                RAJA::reverse_ordered,
-                RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average
-              >;
+using CudaOrderPolicyList =
+    camp::list<RAJA::ordered,
+               RAJA::reverse_ordered,
+               RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average>;
 using CudaStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipExecPolicyList =
-    camp::list<
-                #if defined(RAJA_TEST_EXHAUSTIVE)
-                RAJA::hip_work<256>,
-                #endif
-                RAJA::hip_work<1024>
-              >;
+using HipExecPolicyList = camp::list<
+#if defined(RAJA_TEST_EXHAUSTIVE)
+    RAJA::hip_work<256>,
+#endif
+    RAJA::hip_work<1024>>;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;
-using HipOrderPolicyList   =
-    camp::list<
-                RAJA::ordered,
-                RAJA::reverse_ordered
-              , RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average
-              >;
+using HipOrderPolicyList =
+    camp::list<RAJA::ordered,
+               RAJA::reverse_ordered,
+               RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average>;
 using HipStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -405,15 +377,18 @@ using HipStoragePolicyList = SequentialStoragePolicyList;
 //
 // Dispatch policy type lists, broken up for compile time reasons
 //
-using IndirectFunctionDispatchTyperList = camp::list<detail::indirect_function_call_dispatch_typer>;
-using IndirectVirtualDispatchTyperList = camp::list<detail::indirect_virtual_function_dispatch_typer>;
+using IndirectFunctionDispatchTyperList =
+    camp::list<detail::indirect_function_call_dispatch_typer>;
+using IndirectVirtualDispatchTyperList =
+    camp::list<detail::indirect_virtual_function_dispatch_typer>;
 using DirectDispatchTyperList = camp::list<detail::direct_dispatch_typer>;
 
 
 //
 // Memory resource Allocator types
 //
-using HostAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Host>::template std_allocator<char>>;
+using HostAllocatorList = camp::list<typename detail::ResourceAllocator<
+    camp::resources::Host>::template std_allocator<char>>;
 
 using SequentialAllocatorList = HostAllocatorList;
 
@@ -422,23 +397,30 @@ using OpenMPAllocatorList = HostAllocatorList;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Cuda>::template std_allocator<char>>;
+using CudaAllocatorList = camp::list<typename detail::ResourceAllocator<
+    camp::resources::Cuda>::template std_allocator<char>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Hip>::template std_allocator<char>>;
+using HipAllocatorList = camp::list<typename detail::ResourceAllocator<
+    camp::resources::Hip>::template std_allocator<char>>;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetAllocatorList = camp::list<typename detail::ResourceAllocator<camp::resources::Omp>::template std_allocator<char>>;
+using OpenMPTargetAllocatorList = camp::list<typename detail::ResourceAllocator<
+    camp::resources::Omp>::template std_allocator<char>>;
 #endif
 
 
 //
 // Memory resource types for testing different std allocator requirements
 //
-using WorkStorageAllocatorList = camp::list<typename detail::WorkStorageTestAllocator<detail::AlwaysEqualAllocator>::template std_allocator<char>,
-                                            typename detail::WorkStorageTestAllocator<detail::NeverEqualAllocator>::template std_allocator<char>,
-                                            typename detail::WorkStorageTestAllocator<detail::PropogatingAllocator>::template std_allocator<char>>;
+using WorkStorageAllocatorList =
+    camp::list<typename detail::WorkStorageTestAllocator<
+                   detail::AlwaysEqualAllocator>::template std_allocator<char>,
+               typename detail::WorkStorageTestAllocator<
+                   detail::NeverEqualAllocator>::template std_allocator<char>,
+               typename detail::WorkStorageTestAllocator<
+                   detail::PropogatingAllocator>::template std_allocator<char>>;
 
-#endif  // __TEST_WORKGROUP_UTILS_HPP__
+#endif // __TEST_WORKGROUP_UTILS_HPP__

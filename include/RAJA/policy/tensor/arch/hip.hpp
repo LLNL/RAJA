@@ -21,8 +21,8 @@
 #ifndef RAJA_policy_tensor_arch_hip_HPP
 #define RAJA_policy_tensor_arch_hip_HPP
 
-#include<RAJA/policy/tensor/arch/hip/traits.hpp>
-#include<RAJA/policy/tensor/arch/hip/hip_wave.hpp>
+#include <RAJA/policy/tensor/arch/hip/traits.hpp>
+#include <RAJA/policy/tensor/arch/hip/hip_wave.hpp>
 
 
 #endif

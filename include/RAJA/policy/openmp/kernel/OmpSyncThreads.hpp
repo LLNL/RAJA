@@ -30,14 +30,13 @@
 #include "RAJA/policy/openmp/policy.hpp"
 
 
-
 namespace RAJA
 {
 
 namespace statement
 {
-struct OmpSyncThreads : public internal::Statement<camp::nil> {
-};
+struct OmpSyncThreads : public internal::Statement<camp::nil>
+{};
 
 } // namespace statement
 
@@ -45,27 +44,23 @@ namespace internal
 {
 
 
-
-//Statement executor to synchronize omp threads inside a kernel region
-template<typename Types>
-struct StatementExecutor<statement::OmpSyncThreads, Types> {
-
-template<typename Data>
-static RAJA_INLINE void exec(Data &&)
+// Statement executor to synchronize omp threads inside a kernel region
+template <typename Types>
+struct StatementExecutor<statement::OmpSyncThreads, Types>
 {
-  #pragma omp barrier
-}
 
+  template <typename Data>
+  static RAJA_INLINE void exec(Data&&)
+  {
+#pragma omp barrier
+  }
 };
 
 
+} // namespace internal
+} // namespace RAJA
 
 
+#endif // closing endif for RAJA_ENABLE_OPENMP guard
 
-}  // namespace internal
-}  // namespace RAJA
-
-
-#endif  // closing endif for RAJA_ENABLE_OPENMP guard
-
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

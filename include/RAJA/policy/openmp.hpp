@@ -30,7 +30,7 @@
 #include <thread>
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/openmp/atomic.hpp"
+#include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
 #include "RAJA/policy/openmp/forall.hpp"
@@ -46,6 +46,6 @@
 #include "RAJA/policy/openmp/WorkGroup.hpp"
 
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+#endif // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
-#endif  // closing endif for header file include guard
+#endif // closing endif for header file include guard

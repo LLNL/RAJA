@@ -11,7 +11,7 @@
 
 #include "RAJA_test-base.hpp"
 
-#include "RAJA/index/IndexSetBuilders.hpp" 
+#include "RAJA/index/IndexSetBuilders.hpp"
 
 #include "camp/resource.hpp"
 
@@ -36,7 +36,8 @@ TEST(IndexSetBuild, Aligned)
   indices.push_back(17);
   indices.push_back(18);
 
-  for (RAJA::Index_type i = 20; i < 28; ++i) {
+  for (RAJA::Index_type i = 20; i < 28; ++i)
+  {
     indices.push_back(i);
   }
 
@@ -45,10 +46,10 @@ TEST(IndexSetBuild, Aligned)
   indices.push_back(31);
 
   camp::resources::Resource res{camp::resources::Host()};
- 
+
   RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
 
-  RAJA::buildIndexSetAligned(iset, 
+  RAJA::buildIndexSetAligned(iset,
                              res,
                              &indices[0],
                              static_cast<RAJA::Index_type>(indices.size()),

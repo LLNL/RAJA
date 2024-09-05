@@ -8,7 +8,7 @@
 #ifndef __TEST_TENSOR_VECTOR_SumDot_HPP__
 #define __TEST_TENSOR_VECTOR_SumDot_HPP__
 
-#include<RAJA/RAJA.hpp>
+#include <RAJA/RAJA.hpp>
 
 template <typename VECTOR_TYPE>
 void SumDotImpl()
@@ -25,11 +25,12 @@ void SumDotImpl()
   element_t host_sum = 0;
   element_t host_dot = 0;
 
-  element_t * A_ptr = tensor_malloc<policy_t>(A);
-  element_t * ex_sum_ptr = tensor_malloc<policy_t>(ex_sum);
-  element_t * ex_dot_ptr = tensor_malloc<policy_t>(ex_dot);
+  element_t* A_ptr = tensor_malloc<policy_t>(A);
+  element_t* ex_sum_ptr = tensor_malloc<policy_t>(ex_sum);
+  element_t* ex_dot_ptr = tensor_malloc<policy_t>(ex_dot);
 
-  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
+  for (camp::idx_t i = 0; i < vector_t::s_num_elem; ++i)
+  {
     A[i] = (element_t)i;
   }
 
@@ -37,9 +38,10 @@ void SumDotImpl()
   ex_dot[0] = (element_t)0;
 
   // compute expected values on host
-  for(camp::idx_t i = 0; i < vector_t::s_num_elem; ++i){
+  for (camp::idx_t i = 0; i < vector_t::s_num_elem; ++i)
+  {
     host_sum += A[i];
-    host_dot += A[i]*A[i];
+    host_dot += A[i] * A[i];
   }
 
   tensor_copy_to_device<policy_t>(A_ptr, A);
@@ -48,7 +50,7 @@ void SumDotImpl()
 
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
     // load array A as vector
     vector_t vec;
     vec.load_packed_n(A_ptr, vector_t::s_num_elem);
@@ -72,11 +74,7 @@ void SumDotImpl()
 }
 
 
-
-TYPED_TEST_P(TestTensorVector, SumDot)
-{
-  SumDotImpl<TypeParam>();
-}
+TYPED_TEST_P(TestTensorVector, SumDot) { SumDotImpl<TypeParam>(); }
 
 
 #endif

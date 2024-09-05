@@ -8,7 +8,7 @@
 #ifndef __TEST_TENSOR_VECTOR_MinMax_HPP__
 #define __TEST_TENSOR_VECTOR_MinMax_HPP__
 
-#include<RAJA/RAJA.hpp>
+#include <RAJA/RAJA.hpp>
 
 template <typename VECTOR_TYPE>
 void MinMaxImpl()
@@ -22,11 +22,12 @@ void MinMaxImpl()
   std::vector<element_t> ex_min(1);
   std::vector<element_t> ex_max(1);
 
-  element_t * A_ptr = tensor_malloc<policy_t>(A);
-  element_t * ex_min_ptr = tensor_malloc<policy_t>(ex_min);
-  element_t * ex_max_ptr = tensor_malloc<policy_t>(ex_max);
+  element_t* A_ptr = tensor_malloc<policy_t>(A);
+  element_t* ex_min_ptr = tensor_malloc<policy_t>(ex_min);
+  element_t* ex_max_ptr = tensor_malloc<policy_t>(ex_max);
 
-  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
+  for (camp::idx_t i = 0; i < vector_t::s_num_elem; ++i)
+  {
     A[i] = (element_t)i;
   }
   ex_min[0] = (element_t)99999999;
@@ -39,8 +40,9 @@ void MinMaxImpl()
 
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-    for(camp::idx_t N = 1; N <= vector_t::s_num_elem; ++ N){
+  tensor_do<policy_t>([=] RAJA_HOST_DEVICE() {
+    for (camp::idx_t N = 1; N <= vector_t::s_num_elem; ++N)
+    {
 
       // load array A as vector
       vector_t vec;
@@ -58,7 +60,7 @@ void MinMaxImpl()
   ASSERT_SCALAR_EQ(ex_min[0], (element_t)0);
 
   // check max
-  ASSERT_SCALAR_EQ(ex_max[0], (element_t)(vector_t::s_num_elem-1));
+  ASSERT_SCALAR_EQ(ex_max[0], (element_t)(vector_t::s_num_elem - 1));
 
   tensor_free<policy_t>(A_ptr);
   tensor_free<policy_t>(ex_min_ptr);
@@ -66,11 +68,7 @@ void MinMaxImpl()
 }
 
 
-
-TYPED_TEST_P(TestTensorVector, MinMax)
-{
-  MinMaxImpl<TypeParam>();
-}
+TYPED_TEST_P(TestTensorVector, MinMax) { MinMaxImpl<TypeParam>(); }
 
 
 #endif

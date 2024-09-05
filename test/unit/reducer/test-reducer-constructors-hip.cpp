@@ -6,22 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA reducer constructors and initialization.
+/// Source file containing tests for RAJA reducer constructors and
+/// initialization.
 ///
 
 #include "tests/test-reducer-constructors.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
-using HipBasicReducerConstructorTypes = 
-  Test< camp::cartesian_product< HipReducerPolicyList,
+using HipBasicReducerConstructorTypes =
+    Test<camp::cartesian_product<HipReducerPolicyList,
                                  DataTypeList,
-                                 HipResourceList > >::Types;
+                                 HipResourceList>>::Types;
 
-using HipInitReducerConstructorTypes = 
-  Test< camp::cartesian_product< HipReducerPolicyList,
+using HipInitReducerConstructorTypes =
+    Test<camp::cartesian_product<HipReducerPolicyList,
                                  DataTypeList,
                                  HipResourceList,
-                                 HipUnitTestPolicyList > >::Types;
+                                 HipUnitTestPolicyList>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HipBasicTest,
                                ReducerBasicConstructorUnitTest,
@@ -31,4 +32,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(HipInitTest,
                                ReducerInitConstructorUnitTest,
                                HipInitReducerConstructorTypes);
 #endif
-
