@@ -209,7 +209,8 @@ void launch_global_fcn_fixed(BODY body_in)
 }
 
 template <typename BODY, int num_threads, size_t BLOCKS_PER_SM, typename ReduceParams>
-__global__ void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams reduce_params)
+__launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
+void launch_new_reduce_global_fcn_fixed(BODY body_in, ReduceParams reduce_params)
 {
   LaunchContext ctx;
 
@@ -298,7 +299,7 @@ struct LaunchExecute<RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
     using BODY = camp::decay<BODY_IN>;
 
     auto func = reinterpret_cast<const void*>(
-        &launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams>>);
+        &launch_new_reduce_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM, camp::decay<ReduceParams>>);
 
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
 

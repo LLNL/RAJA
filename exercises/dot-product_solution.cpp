@@ -40,11 +40,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nExercise: vector dot product...\n";
 
-#if defined(RAJA_ENABLE_SYCL)
-  memoryManager::sycl_res = new camp::resources::Resource{camp::resources::Sycl()};
-  ::RAJA::sycl::detail::setQueue(memoryManager::sycl_res);
-#endif
-
 //
 // Define vector length
 //
@@ -113,7 +108,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
     ompdot += a[i] * b[i]; 
-  });    
+  }); 
 
   dot = ompdot.get();
   // _rajaomp_dotprod_end
