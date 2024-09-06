@@ -33,12 +33,12 @@ debug_mode=${DEBUG_MODE:-false}
 # registry. Be sure to set the token with at least read access to the registry.
 # Priority is given to REGISTRY_<SOMETHING>, otherwise defaulting to GitLab CI
 # registry and in last resort (typically personal use) to sensible defaults.
-ci_registry_token=${CI_REGISTRY_TOKEN:-""}
+ci_registry_token=${CI_JOB_TOKEN:-""}
 ci_registry_user=${CI_REGISTRY_USER:-"${USER}"}
 ci_registry_image=${CI_REGISTRY_IMAGE:-"czregistry.llnl.gov:5050/radiuss/raja"}
 registry_user=${REGISTRY_USER:-"${ci_registry_user}"}
 registry_image=${REGISTRY_IMAGE:-"${ci_registry_image}"}
-registry_token=${JOB_TOKEN:-"${ci_registry_token}"}
+registry_token=${REGISTRY_TOKEN:-"${ci_registry_token}"}
 
 timed_message ()
 {
