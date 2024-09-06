@@ -258,35 +258,33 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL3   = RAJA::omp_target_parallel_for_exec_nt;
   // _reductions_raja_omppolicy_end
 
-  int omp_t_sum = 0;
-  int omp_t_min = std::numeric_limits<int>::max();
-  int omp_t_max = std::numeric_limits<int>::min();
-  VALLOC_INT omp_t_minloc(std::numeric_limits<int>::max(), -1);
-  VALLOC_INT omp_t_maxloc(std::numeric_limits<int>::min(), -1);
+  REF_INT_SUM omp_t_sum(0);
+  REF_INT_MIN omp_t_min(std::numeric_limits<int>::max());
+  REF_INT_MAX omp_t_max(std::numeric_limits<int>::min());
+  REFLOC_INT_MIN omp_t_minloc(std::numeric_limits<int>::max(), -1);
+  REFLOC_INT_MAX omp_t_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL3>(omp_res, arange,
-    RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_min),
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_max),
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_minloc),
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_maxloc),
+    RAJA::expt::Reduce<>(&omp_t_sum),
+    RAJA::expt::Reduce<>(&omp_t_min),
+    RAJA::expt::Reduce<>(&omp_t_max),
+    RAJA::expt::Reduce<>(&omp_t_minloc),
+    RAJA::expt::Reduce<>(&omp_t_maxloc),
     RAJA::expt::KernelName("RAJA Reduce Target OpenMP Kernel"),
-    [=](int i, int &_omp_t_sum, int &_omp_t_min, int &_omp_t_max, VALLOC_INT &_omp_t_minloc, VALLOC_INT &_omp_t_maxloc) {
+    [=](int i, REF_INT_SUM &_omp_t_sum, REF_INT_MIN &_omp_t_min, REF_INT_MAX &_omp_t_max, REFLOC_INT_MIN &_omp_t_minloc, REFLOC_INT_MAX &_omp_t_maxloc) {
       _omp_t_sum += a[i];
 
-      _omp_t_min = RAJA_MIN(a[i], _omp_t_min);
-      _omp_t_max = RAJA_MAX(a[i], _omp_t_max);
+      _omp_t_min.min(a[i]);
+      _omp_t_max.max(a[i]);
 
-      _omp_t_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _omp_t_minloc);
-      _omp_t_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _omp_t_maxloc);
-      //_omp_t_minloc.min(a[i], i);
-      //_omp_t_maxloc.max(a[i], i);
+      _omp_t_minloc.minloc(a[i], i);
+      _omp_t_maxloc.maxloc(a[i], i);
     }
   );
 
-  std::cout << "\tsum = " << omp_t_sum << std::endl;
-  std::cout << "\tmin = " << omp_t_min << std::endl;
-  std::cout << "\tmax = " << omp_t_max << std::endl;
+  std::cout << "\tsum = " << omp_t_sum.get() << std::endl;
+  std::cout << "\tmin = " << omp_t_min.get() << std::endl;
+  std::cout << "\tmax = " << omp_t_max.get() << std::endl;
   std::cout << "\tmin, loc = " << omp_t_minloc.getVal() << " , "
                                << omp_t_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << omp_t_maxloc.getVal() << " , "
