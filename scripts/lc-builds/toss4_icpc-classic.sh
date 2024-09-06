@@ -55,6 +55,6 @@ echo
 echo "  Please note that you may need to add some intel openmp libraries to your"
 echo "  LD_LIBRARY_PATH to run with openmp."
 echo
-echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel/intel-${COMP_VER}/compiler/lib/intel64_lin"
+echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/compiler/lib/intel64_lin"
 echo
 echo "***********************************************************************"

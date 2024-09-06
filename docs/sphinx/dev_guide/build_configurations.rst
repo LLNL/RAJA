@@ -154,9 +154,9 @@ Generating a host-config file
 To generate a host-config file for a desired configuration, run the 
 ``uberenv.py`` python script from the top-level RAJA directory. 
 
-.. important:: **Do not** run the ``uberenv.py`` script, which invokes Spack
-               in your LC home directory. Running Spack in your home directory 
-               may cause you to exceed your LC disk space quota.
+.. important:: **DO NOT** run the ``uberenv.py`` script, which invokes Spack,
+               in your LC home directory. **Running Spack in your home
+               directory may cause you to exceed your LC disk space quota.**
 
 For example,
 
@@ -241,17 +241,15 @@ Reproducing Docker Builds Locally
 ==================================
 
 RAJA uses Docker container images that it shares with other LLNL GitHub projects
-for Azure CI testing (see :ref:`azure_ci-label` for more information). 
-We use Azure Pipelines for Linux, Windows, and MacOS builds. Typically, we
-do RAJA testing for Linux on Azure with compilers, or compiler versions, that
+for Azure and GitHub Actions CI testing (see :ref:`azure_ci-label` for more 
+information). We use Azure Pipelines and GitHub Actions for Linux, Windows,
+and MacOS builds for build environments and compiler versions that
 are not available on LLNL LC machines. 
 
-You can reproduce Azure builds locally for testing with the following steps if
-you have Docker installed.
+You can reproduce Azure and GitHub Actions builds locally for testing using
+the following steps if you have access to Docker.
 
-  #. Run the command to build a local Docker image:
-
-     .. code-block:: bash
+  #. Run the command to build a local Docker image::
 
        $ DOCKER_BUILDKIT=1 docker build --target <compiler>  --no-cache
 
@@ -259,21 +257,17 @@ you have Docker installed.
      `RAJA Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_. 
 
 
-  #. To get dropped into a terminal in the Docker image, run the following:
-
-     .. code-block:: bash
+  #. To get dropped into a terminal in the Docker image, run the following::
      
-       $ docker run -it ghcr.io/rse-ops/<os image>:<compiler> /bin/bash
+       $ docker run -it ghcr.io/llnl/radiuss:<os-image-compiler> /bin/bash
 
-     Here, ``<os image>:<compiler>`` is the OS image and compiler image you 
-     want (see the aforementioned Dockerfile).
+     Here, ``<os-image-compiler>`` is the OS image and compiler image you 
+     want (see the aforementioned Dockerfile description).
  
 Then, you can build, run tests, edit files, etc. in the Docker image. Note that
-the docker command has a ``-v`` argument that you can use to mount a local 
-directory in the image. For example
+the Docker command has a ``-v`` argument that you can use to mount a local 
+directory in the image. For example::
 
-  .. code-block:: bash 
-
-    & docker -v pwd:/opt/RAJA 
+    docker -v pwd:/opt/RAJA 
 
 will mount your current local directory as ``/opt/RAJA`` in the image.
