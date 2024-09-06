@@ -65,6 +65,7 @@ namespace expt
     RAJA_HOST_DEVICE constexpr bool operator>(const ValOp& rhs) const { val > rhs.val; return *this; }
 
     RAJA_HOST_DEVICE constexpr value_type get() const {return val;}
+    RAJA_HOST_DEVICE void set(value_type inval) {val = inval;}
 
   //private:
     value_type val = op_type::identity();
