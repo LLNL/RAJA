@@ -46,16 +46,16 @@ intel_2023_2_1:
 
 clang_14_0_6_openmp_off:
   variables:
-    SPEC: " ~shared ~openmp +tests %clang@=14.0.6 ^blt@develop"
+    SPEC: " ~shared ~openmp +tests %clang@=14.0.6"
   extends: .job_on_poodle
 
 gcc_10_3_1_openmp_default:
   variables:
-    SPEC: " ~shared +tests %gcc@=10.3.1 ^blt@develop"
+    SPEC: " ~shared +tests %gcc@=10.3.1"
   extends: .job_on_poodle
 
 # OTHERS
 clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +desul %clang@=14.0.6.gcc.10.3.1 ^blt@develop"
+    SPEC: " ~shared +openmp +tests +desul %clang@=14.0.6.gcc.10.3.1"
   extends: .job_on_poodle

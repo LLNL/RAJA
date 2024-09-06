@@ -28,13 +28,13 @@
 
 gcc_8_3_1_omptask:
   variables:
-    SPEC: " ~shared +openmp +omptask +tests %gcc@=8.3.1 ^blt@develop"
+    SPEC: " ~shared +openmp +omptask +tests %gcc@=8.3.1 ${PROJECT_LASSEN_DEPS}"
   extends: .job_on_lassen
 
 gcc_8_3_1_cuda_11_7_0_ats_disabled:
   extends: .job_on_lassen
   variables:
-    SPEC: " ~shared +openmp +tests +cuda %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers ^blt@develop"
+    SPEC: " ~shared +openmp +tests +cuda %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
     MODULE_LIST: "cuda/11.7.0"
     LASSEN_JOB_ALLOC: "1 --atsdisable -W 30 -q pci"
 
@@ -44,7 +44,7 @@ gcc_8_3_1_cuda_11_7_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " ~shared +openmp +tests %clang@=13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\" ^blt@develop"
+    SPEC: " ~shared +openmp +tests %clang@=13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\""
   extends: .job_on_lassen
 
 #clang_14_0_5_asan:
@@ -56,7 +56,7 @@ clang_13_0_1_libcpp:
 
 gcc_8_3_1_cuda_11_7_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers ^blt@develop"
+    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers"
     MODULE_LIST: "cuda/11.7.0"
   extends: .job_on_lassen
 
@@ -64,7 +64,7 @@ gcc_8_3_1_cuda_11_7_desul_atomics:
 # Deactivated due to issues with OpenMP Target and various tests and compilers.
 clang_16_0_6_ibm_omptarget:
   variables:
-    SPEC: " ~shared +openmp +omptarget +tests %clang@=16.0.6.ibm.gcc.8.3.1 ^blt@develop"
+    SPEC: " ~shared +openmp +omptarget +tests %clang@=16.0.6.ibm.gcc.8.3.1"
     ON_LASSEN: "OFF"
   extends: .job_on_lassen
   allow_failure: true
