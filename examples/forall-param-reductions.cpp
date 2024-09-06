@@ -406,35 +406,33 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL3   = RAJA::sycl_exec<SYCL_BLOCK_SIZE>;
   // _reductions_raja_syclpolicy_end
 
-  int sycl_sum = 0;
-  int sycl_min = std::numeric_limits<int>::max();
-  int sycl_max = std::numeric_limits<int>::min();
-  VALLOC_INT sycl_minloc(std::numeric_limits<int>::max(), -1);
-  VALLOC_INT sycl_maxloc(std::numeric_limits<int>::min(), -1);
+  REF_INT_SUM sycl_sum(0);
+  REF_INT_MIN sycl_min(std::numeric_limits<int>::max());
+  REF_INT_MAX sycl_max(std::numeric_limits<int>::min());
+  REFLOC_INT_MIN sycl_minloc(std::numeric_limits<int>::max(), -1);
+  REFLOC_INT_MAX sycl_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::forall<EXEC_POL3>(sycl_res, arange,
-    RAJA::expt::Reduce<RAJA::operators::plus>(&sycl_sum),
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_max),
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_minloc),
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
+    RAJA::expt::Reduce<>(&sycl_sum),
+    RAJA::expt::Reduce<>(&sycl_min),
+    RAJA::expt::Reduce<>(&sycl_max),
+    RAJA::expt::Reduce<>(&sycl_minloc),
+    RAJA::expt::Reduce<>(&sycl_maxloc),
     RAJA::expt::KernelName("RAJA Reduce SYCL Kernel"),
-    [=] RAJA_DEVICE (int i, int &_sycl_sum, int &_sycl_min, int &_sycl_max, VALLOC_INT &_sycl_minloc, VALLOC_INT &_sycl_maxloc) {
+    [=] RAJA_DEVICE (int i, REF_INT_SUM &_sycl_sum, REF_INT_MIN &_sycl_min, REF_INT_MAX &_sycl_max, REFLOC_INT_MIN &_sycl_minloc, REFLOC_INT_MAX &_sycl_maxloc) {
       _sycl_sum += d_a[i];
 
-      _sycl_min = RAJA_MIN(d_a[i], _sycl_min);
-      _sycl_max = RAJA_MAX(d_a[i], _sycl_max);
+      _sycl_min.min(d_a[i]);
+      _sycl_max.max(d_a[i]);
 
-      _sycl_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _sycl_minloc);
-      _sycl_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _sycl_maxloc);
-      //_sycl_minloc.min(d_a[i], i);
-      //_sycl_maxloc.max(d_a[i], i);
+      _sycl_minloc.minloc(d_a[i], i);
+      _sycl_maxloc.maxloc(d_a[i], i);
     }
   );
 
-  std::cout << "\tsum = " << sycl_sum << std::endl;
-  std::cout << "\tmin = " << sycl_min << std::endl;
-  std::cout << "\tmax = " << sycl_max << std::endl;
+  std::cout << "\tsum = " << sycl_sum.get() << std::endl;
+  std::cout << "\tmin = " << sycl_min.get() << std::endl;
+  std::cout << "\tmax = " << sycl_max.get() << std::endl;
   std::cout << "\tmin, loc = " << sycl_minloc.getVal() << " , "
                                << sycl_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << sycl_maxloc.getVal() << " , "
