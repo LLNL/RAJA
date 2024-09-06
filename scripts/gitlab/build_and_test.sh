@@ -125,16 +125,16 @@ then
     timed_message "Spack setup and environment"
     ${uberenv_cmd} --setup-and-env-only --spec="${spec}" ${prefix_opt}
 
-    if [[ -n ${ci_registry_token} ]]
+    if [[ -n ${registry_token} ]]
     then
         timed_message "GitLab registry as Spack Buildcache"
-        ${spack_cmd} -D ${spack_env_path} mirror add --unsigned --oci-username ${ci_registry_user} --oci-password ${ci_registry_token} gitlab_ci oci://${ci_registry_image}
+        ${spack_cmd} -D ${spack_env_path} mirror add --unsigned --oci-username ${registry_user} --oci-password ${registry_token} gitlab_ci oci://${registry_image}
     fi
 
     timed_message "Spack build of dependencies"
     ${uberenv_cmd} --skip-setup-and-env --spec="${spec}" ${prefix_opt}
 
-    if [[ -n ${ci_registry_token} && ${debug_mode} == false ]]
+    if [[ -n ${registry_token} && ${debug_mode} == false ]]
     then
         timed_message "Push dependencies to buildcache"
         ${spack_cmd} -D ${spack_env_path} buildcache push --only dependencies gitlab_ci
