@@ -21,6 +21,8 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
                                            const std::vector<IDX_TYPE>& seg_idx,
                                            camp::resources::Resource working_res)
 {
+  using REF_MIN = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::minimum>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -52,60 +54,60 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  DATA_TYPE mininit(small_min);
-  DATA_TYPE min(min_init);
+  REF_MIN mininit(small_min);
+  REF_MIN min(min_init);
   
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      "LaunchMinBasicTest",
-     RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
-     RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_mininit, DATA_TYPE &_min) {
+     RAJA::expt::Reduce<>(&mininit),
+     RAJA::expt::Reduce<>(&min),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_mininit, REF_MIN &_min) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
-          _mininit = RAJA_MIN(working_array[idx], _mininit);
-          _min     = RAJA_MIN(working_array[idx], _min);
+          _mininit.min(working_array[idx]);
+          _min.min(working_array[idx]);
 
     });
 
   });
 
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(mininit), small_min);
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min);
+  ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
 
-  min = min_init;
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), min_init);
+  min.set(min_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
 
   DATA_TYPE factor = 3;
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_min) {
+     RAJA::expt::Reduce<>(&min),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_min) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
-          _min = RAJA_MIN(working_array[idx] * factor, _min);
+          _min.min(working_array[idx] * factor);
     });
 
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min * factor);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
 
 
   factor = 2;
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_min) {
+     RAJA::expt::Reduce<>(&min),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_min) {
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
-          _min = RAJA_MIN(working_array[idx] * factor, _min);
+          _min.min(working_array[idx] * factor);
       });
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min * factor);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
 
 
   deallocateForallTestData<DATA_TYPE>(working_res,

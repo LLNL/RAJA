@@ -22,6 +22,8 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
                                      const std::vector<IDX_TYPE>& seg_idx,
                                      camp::resources::Resource working_res)
 {
+  using REF_BITAND = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::bit_and>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -46,12 +48,12 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   }
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  DATA_TYPE simpand(21);
+  REF_BITAND simpand(21);
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_simpand) {
+     RAJA::expt::Reduce<>(&simpand),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_BITAND &_simpand) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
@@ -60,7 +62,7 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
 
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(simpand), 5);
+  ASSERT_EQ(static_cast<DATA_TYPE>(simpand.get()), 5);
 
 
   //
@@ -79,38 +81,38 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
     ref_and &= test_array[ seg_idx[i] ];
   }
 
-  DATA_TYPE redand(0);
-  DATA_TYPE redand2(2);
+  REF_BITAND redand(0);
+  REF_BITAND redand2(2);
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
-     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_redand, DATA_TYPE &_redand2) {
+     RAJA::expt::Reduce<>(&redand),
+     RAJA::expt::Reduce<>(&redand2),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_BITAND &_redand, REF_BITAND &_redand2) {
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
         _redand  &= working_array[idx];
         _redand2 &= working_array[idx];
     });
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(redand), ref_and);
-  ASSERT_EQ(static_cast<DATA_TYPE>(redand2), ref_and);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redand.get()), ref_and);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redand2.get()), ref_and);
 
-  redand = 0;
+  redand.set(0);
 
   const int nloops = 3;
   for (int j = 0; j < nloops; ++j) {
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-       RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE _redand) {
+       RAJA::expt::Reduce<>(&redand),
+       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_BITAND _redand) {
         RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
           _redand &= working_array[idx];
       });
     });
   }
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(redand), ref_and);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redand.get()), ref_and);
 
 
   deallocateForallTestData<DATA_TYPE>(working_res,
