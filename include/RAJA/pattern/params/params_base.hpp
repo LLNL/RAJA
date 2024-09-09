@@ -102,6 +102,9 @@ namespace expt
     RAJA_HOST_DEVICE constexpr valloc_value_type getVal() const {return val.getVal();}
     RAJA_HOST_DEVICE constexpr valloc_index_type getLoc() const {return val.getLoc();}
 
+    RAJA_HOST_DEVICE void setVal(T inval) {val.val = inval;}
+    RAJA_HOST_DEVICE void setLoc(index_type inindex) {val.loc = inindex;}
+
   //private:
     value_type val = op_type::identity();
   };
