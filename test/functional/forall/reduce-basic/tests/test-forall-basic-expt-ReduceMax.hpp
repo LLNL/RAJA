@@ -20,6 +20,8 @@ void ForallReduceMaxBasicTestImpl(const SEG_TYPE& seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
                                   camp::resources::Resource working_res)
 {
+  using REF_MAX = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::maximum>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
  
@@ -48,39 +50,39 @@ void ForallReduceMaxBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  DATA_TYPE maxinit = big_max;
-  DATA_TYPE max(max_init);
+  REF_MAX maxinit(big_max);
+  REF_MAX max(max_init);
 
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&maxinit),
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
+    RAJA::expt::Reduce<>(&maxinit),
+    RAJA::expt::Reduce<>(&max),
     RAJA::expt::KernelName("RAJA Reduce Max"),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &mi, DATA_TYPE &m) {
-      mi = RAJA_MAX(working_array[idx], mi);
-      m  = RAJA_MAX(working_array[idx], m);
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MAX &mi, REF_MAX &m) {
+      mi.max(working_array[idx]);
+      m.max(working_array[idx]);
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(maxinit), big_max);
-  ASSERT_EQ(static_cast<DATA_TYPE>(max), ref_max);
+  ASSERT_EQ(static_cast<DATA_TYPE>(maxinit.get()), big_max);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max);
 
-  max = max_init;
-  ASSERT_EQ(static_cast<DATA_TYPE>(max), max_init);
+  max.set(max_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), max_init);
 
   DATA_TYPE factor = 2;
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &m) {
-      m = RAJA_MAX(working_array[idx] * factor, m);
+    RAJA::expt::Reduce<>(&max),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MAX &m) {
+      m.max(working_array[idx] * factor);
   });
-  ASSERT_EQ(static_cast<DATA_TYPE>(max), ref_max * factor);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
    
   factor = 3;
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &m) {
-      m = RAJA_MAX(working_array[idx] * factor, m);
+    RAJA::expt::Reduce<>(&max),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MAX &m) {
+      m.max(working_array[idx] * factor);
   });
-  ASSERT_EQ(static_cast<DATA_TYPE>(max), ref_max * factor);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max.get()), ref_max * factor);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,

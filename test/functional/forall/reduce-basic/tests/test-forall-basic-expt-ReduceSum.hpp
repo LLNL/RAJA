@@ -20,7 +20,7 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
                                   camp::resources::Resource working_res)
 {
-  using REF_INT_SUM = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>;
+  using REF_SUM = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>;
 
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
@@ -48,14 +48,14 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  REF_INT_SUM sum(0);
-  REF_INT_SUM sum2(2);
+  REF_SUM sum(0);
+  REF_SUM sum2(2);
 
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<>(&sum),
     RAJA::expt::Reduce<>(&sum2),
     RAJA::expt::KernelName("RAJA Reduce Sum"),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_INT_SUM &s1, REF_INT_SUM &s2) {
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_SUM &s1, REF_SUM &s2) {
       s1 += working_array[idx];
       s2 += working_array[idx];
   });
@@ -70,7 +70,7 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
   for (int j = 0; j < nloops; ++j) {
     RAJA::forall<EXEC_POLICY>(seg, 
       RAJA::expt::Reduce<>(&sum),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_INT_SUM &s) {
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_SUM &s) {
         s += working_array[idx];
     });
   }

@@ -20,6 +20,8 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
                                   camp::resources::Resource working_res)
 {
+  using REF_MIN = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::minimum>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -48,39 +50,39 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  DATA_TYPE mininit = small_min;
-  DATA_TYPE min(min_init);
+  REF_MIN mininit(small_min);
+  REF_MIN min(min_init);
 
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
+    RAJA::expt::Reduce<>(&mininit),
+    RAJA::expt::Reduce<>(&min),
     RAJA::expt::KernelName("RAJA Reduce Min"),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &mi, DATA_TYPE &m) {
-      mi = RAJA_MIN(working_array[idx], mi);
-      m  = RAJA_MIN(working_array[idx], m);
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MIN &mi, REF_MIN &m) {
+      mi.min(working_array[idx]);
+      m.min(working_array[idx]);
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(mininit), small_min);
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min);
+  ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
 
-  min = min_init;
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), min_init);
+  min.set(min_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
 
   DATA_TYPE factor = 3; 
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &m) {
-      m = RAJA_MIN(working_array[idx] * factor, m);
+    RAJA::expt::Reduce<>(&min),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MIN &m) {
+      m.min(working_array[idx] * factor);
   });
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min * factor);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
 
   factor = 2;
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &m) {
-      m = RAJA_MIN(working_array[idx] * factor, m);
+    RAJA::expt::Reduce<>(&min),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MIN &m) {
+      m.min(working_array[idx] * factor);
   });
-  ASSERT_EQ(static_cast<DATA_TYPE>(min), ref_min * factor);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
 
   deallocateForallTestData<DATA_TYPE>(working_res,
                                       working_array,
