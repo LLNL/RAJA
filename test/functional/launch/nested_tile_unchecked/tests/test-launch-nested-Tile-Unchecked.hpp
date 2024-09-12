@@ -28,9 +28,10 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
   const int blocks_y = 5*M;
   const int blocks_z = 6*M;
 
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, tile_size_x*blocks_x);
-  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, tile_size_y*blocks_y);
-  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, tile_size_z*blocks_z);
+  // Use exactly the number of teams and threads
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, threads_x*blocks_x);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, threads_y*blocks_y);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, threads_z*blocks_z);
 
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N2 = static_cast<INDEX_TYPE>(r2.end() - r2.begin());
@@ -53,7 +54,8 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
                                      &check_array,
                                      &test_array);
 
-  std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
+  std::iota(test_array, test_array + data_len, 0);
+  working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
 
   constexpr int DIM = 3;
   using layout_t = RAJA::Layout<DIM, INDEX_TYPE,DIM-1>;
@@ -73,7 +75,7 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
 
                               auto idx = tx + N1 * (ty + N2 * tz);
 
-                              Aview(tz, ty, tx) = static_cast<INDEX_TYPE>(idx);
+                              Aview(tz, ty, tx) += static_cast<INDEX_TYPE>(idx);
 
                             });
                         });
@@ -89,6 +91,7 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
     working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   }
+  working_res.wait();
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
@@ -115,13 +118,13 @@ TYPED_TEST_P(LaunchNestedTileUncheckedTest, RangeSegmentTeams)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<0>>::type;
 
-  using THREAD_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
-  using THREAD_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
-  using THREAD_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<3>>::type;
+  using TEAM_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
+  using TEAM_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
+  using TEAM_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<3>>::type;
 
-  using TEAM_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<4>>::type;
-  using TEAM_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<5>>::type;
-  using TEAM_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<6>>::type;
+  using THREAD_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<4>>::type;
+  using THREAD_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<5>>::type;
+  using THREAD_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<6>>::type;
 
 
   // test zero-length range segment
