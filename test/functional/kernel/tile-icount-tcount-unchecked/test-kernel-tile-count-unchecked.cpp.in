@@ -1,0 +1,119 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+#include "RAJA_test-forall-data.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+#include "test-kernel-tile-@TESTTYPE@-unchecked.hpp"
+
+//
+// Note that a separate test file/executable is generated for each tile size
+// defined via CMake variable 'TILESIZE' defined in CMakeLists.txt file. 
+// The reason for doing it this way is that the tests require the tile size
+// in the exec policy must match the tile size value defined here. Defining
+// multiple tile sizes in a list here and using that to define a cartesian
+// product of test cases would break that assumpiton.
+//
+// Tile size value must match that used in exec policy.
+//
+using TileSizes = camp::list< Value<@TILESIZE@> >;
+
+#if defined(RAJA_ENABLE_CUDA)
+//
+// Num reduction policies must match num exec policies.
+//
+using CudaReducePols = camp::list< RAJA::cuda_reduce >; 
+
+using CudaKernelForICountExecPols = camp::list< 
+
+  RAJA::KernelPolicy< 
+    RAJA::statement::CudaKernel<
+      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_unchecked,
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_unchecked,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >
+
+>;
+
+using CudaKernelTileTCountExecPols = camp::list< 
+
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_unchecked,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_unchecked,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >
+
+>;
+#endif  // if defined(RAJA_ENABLE_CUDA)
+
+#if defined(RAJA_ENABLE_HIP)
+//
+// Num reduction policies must match num exec policies.
+//
+using HipReducePols = camp::list< RAJA::hip_reduce >; 
+
+using HipKernelForICountExecPols = camp::list<
+
+  RAJA::KernelPolicy< 
+    RAJA::statement::HipKernel<
+      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_unchecked,
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_unchecked,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >
+
+>;
+
+using HipKernelTileTCountExecPols = camp::list< 
+
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_unchecked,
+        RAJA::statement::For<0, RAJA::hip_thread_x_unchecked,
+          RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  > 
+
+>;
+#endif  // if defined(RAJA_ENABLE_HIP)
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@KernelTile@TESTTYPE@Types =
+  Test< camp::cartesian_product<IdxTypeList,
+                                @BACKEND@Kernel@TESTTYPE@ExecPols,
+                                @BACKEND@ReducePols,
+                                TileSizes> >::Types;
+
+//
+// Instantiate parameterized tests
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               KernelTile@TESTTYPE@UncheckedTest,
+                               @BACKEND@KernelTile@TESTTYPE@Types);

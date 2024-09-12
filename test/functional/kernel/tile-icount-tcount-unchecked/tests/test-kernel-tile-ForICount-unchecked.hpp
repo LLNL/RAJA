@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_SINGLE_LOOP_FORICOUNT_HPP__
-#define __TEST_KERNEL_SINGLE_LOOP_FORICOUNT_HPP__
+#ifndef __TEST_KERNEL_TILE_FORICOUNT_UNCHECKED_HPP__
+#define __TEST_KERNEL_TILE_FORICOUNT_UNCHECKED_HPP__
 
 //
 // Value struct for manipulating tile sizes in parameterized tests.
@@ -18,7 +18,7 @@ struct Value {
 
 
 template <typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY>
-void KernelSingleLoopForICountTestImpl(IDX_TYPE N, IDX_TYPE tsize)
+void KernelTileForICountUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 {
 
   RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE> trip_count(0);
@@ -55,14 +55,14 @@ void KernelSingleLoopForICountTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 }
 
 
-TYPED_TEST_SUITE_P(KernelSingleLoopForICountTest);
+TYPED_TEST_SUITE_P(KernelTileForICountUncheckedTest);
 template <typename T>
-class KernelSingleLoopForICountTest : public ::testing::Test
+class KernelTileForICountUncheckedTest : public ::testing::Test
 {
 };
 
 
-TYPED_TEST_P(KernelSingleLoopForICountTest, ForICountSingleLoopKernel)
+TYPED_TEST_P(KernelTileForICountUncheckedTest, ForICountTileKernel)
 {
   using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -70,14 +70,16 @@ TYPED_TEST_P(KernelSingleLoopForICountTest, ForICountSingleLoopKernel)
 
   IDX_TYPE tsize = camp::at_v<TypeParam, 3>::value;
 
-  KernelSingleLoopForICountTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
-    IDX_TYPE(57), tsize);
-  KernelSingleLoopForICountTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
-    IDX_TYPE(1035), tsize);
+  KernelTileForICountUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+    IDX_TYPE(0), tsize);
+  KernelTileForICountUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+    IDX_TYPE(tsize), tsize);
+  KernelTileForICountUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+    IDX_TYPE(13*tsize), tsize);
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelSingleLoopForICountTest,
-                            ForICountSingleLoopKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelTileForICountUncheckedTest,
+                            ForICountTileKernel);
 
-#endif  // __TEST_KERNEL_SINGLE_LOOP_FORICOUNT_HPP__
+#endif  // __TEST_KERNEL_TILE_FORICOUNT_UNCHECKED_HPP__

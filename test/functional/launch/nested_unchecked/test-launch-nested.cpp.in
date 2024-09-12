@@ -13,14 +13,14 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-launch-direct-teams-threads-1D-execpol.hpp"
+#include "RAJA_test-launch-unchecked-teams-threads-3D-execpol.hpp"
 
 //
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-launch-nested-Tile-iCount-Direct.hpp"
+#include "test-launch-nested-@NESTEDTYPES@.hpp"
 
 
 //
@@ -35,5 +35,5 @@ using @BACKEND@LaunchNestedTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               LaunchNestedTileDirectTest,
+                               LaunchNested@NESTEDTYPES@Test,
                                @BACKEND@LaunchNestedTypes);
