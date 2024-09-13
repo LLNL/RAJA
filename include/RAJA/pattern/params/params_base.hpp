@@ -28,6 +28,8 @@ namespace expt
     RAJA_HOST_DEVICE constexpr value_type getVal() const {return val;}
     RAJA_HOST_DEVICE constexpr index_type getLoc() const {return loc;}
 
+    RAJA_HOST_DEVICE void set(T inval, IndexType inindex) {val = inval; loc = inindex;}
+
   //private:
     value_type val;
     index_type loc = -1;
@@ -98,12 +100,12 @@ namespace expt
     RAJA_HOST_DEVICE constexpr bool operator<(const ValOp& rhs) const { return val < rhs.val; }
     RAJA_HOST_DEVICE constexpr bool operator>(const ValOp& rhs) const { return val > rhs.val; }
 
-    RAJA_HOST_DEVICE constexpr value_type get() const {return val;}
-    RAJA_HOST_DEVICE constexpr valloc_value_type getVal() const {return val.getVal();}
-    RAJA_HOST_DEVICE constexpr valloc_index_type getLoc() const {return val.getLoc();}
+    //RAJA_HOST_DEVICE constexpr value_type get() const {return val;}
+    //RAJA_HOST_DEVICE constexpr valloc_value_type getVal() const {return val.getVal();}
+    //RAJA_HOST_DEVICE constexpr valloc_index_type getLoc() const {return val.getLoc();}
 
-    RAJA_HOST_DEVICE void setVal(T inval) {val.val = inval;}
-    RAJA_HOST_DEVICE void setLoc(index_type inindex) {val.loc = inindex;}
+    //RAJA_HOST_DEVICE void setVal(T inval) {val.val = inval;}
+    //RAJA_HOST_DEVICE void setLoc(index_type inindex) {val.loc = inindex;}
 
   //private:
     value_type val = op_type::identity();

@@ -61,15 +61,10 @@ namespace detail
     using value_type = T;
 
     RAJA_HOST_DEVICE Reducer() {}
-    RAJA_HOST_DEVICE Reducer(VType *target_in) : target(target_in), val(VType{}){}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : target(target_in), val(VType{}){}
 
-    VType *target = nullptr;
+    value_type *target = nullptr;
     VType val = VType{};
-
-    //template <typename U = VType, std::enable_if_t<std::is_same<U,value_type>::value>* = nullptr>
-    //RAJA_HOST_DEVICE
-    //value_type &
-    //getVal() { return val; }
 
     template <typename U = VType, std::enable_if_t<std::is_same<U,ValOp<T,Op>>::value>* = nullptr>
     RAJA_HOST_DEVICE
@@ -97,25 +92,11 @@ namespace detail
 
 } // namespace detail
 
-template <template <typename, typename, typename> class Op, typename T>
-auto constexpr Reduce(ValOp<T,Op> *target)
+template <template <typename, typename, typename> class Op, typename T, typename VType = ValOp<T, Op>>
+auto constexpr Reduce(T *target)
 {
-  return detail::Reducer<Op, T, ValOp<T,Op>>(target);
+  return detail::Reducer<Op, T, VType>(target);
 }
-
-//template <template <typename, typename, typename> class Op, typename T, typename IndexType,
-//           std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value>* = nullptr >
-//auto constexpr Reduce(ValLoc<T, IndexType> *target)
-//{
-//  return detail::Reducer<Op, T, ValLoc<T, IndexType>>(target);
-//}
-
-//template <template <typename, typename, typename> class Op, typename T,
-//           std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value>* = nullptr >
-//auto constexpr Reduce(T *target)
-//{
-//  return detail::Reducer<Op, T, T>(target);
-//}
 
 } // namespace expt
 
