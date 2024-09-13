@@ -13,9 +13,9 @@ namespace expt {
 namespace detail {
 
   // Init
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T>
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename VType>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  init(Reducer<OP, T, ValOp<T,OP>>& red, RAJA::hip::detail::hipInfo& hi)
+  init(Reducer<OP, T, VType>& red, RAJA::hip::detail::hipInfo& hi)
   {
     red.devicetarget = RAJA::hip::pinned_mempool_type::getInstance().template malloc<T>(1);
     red.device_mem.allocate(hi.gridDim.x * hi.gridDim.y * hi.gridDim.z);
@@ -23,10 +23,10 @@ namespace detail {
   }
 
   // Combine
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T>
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename VType>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  combine(Reducer<OP, T, ValOp<T,OP>>& red)
+  combine(Reducer<OP, T, VType>& red)
   {
     RAJA::hip::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter,OP,T>( red.devicetarget,
                                                                             red.getVal(),
@@ -35,13 +35,13 @@ namespace detail {
   }
 
   // Resolve
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T>
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename VType>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  resolve(Reducer<OP, T, ValOp<T,OP>>& red, RAJA::hip::detail::hipInfo& hi)
+  resolve(Reducer<OP, T, VType>& red, RAJA::hip::detail::hipInfo& hi)
   {
     // complete reduction
     hi.res.wait();
-    red.target->val = OP<T,T,T>{}(red.target->val, *red.devicetarget);
+    *red.target = OP<T,T,T>{}(*red.target, *red.devicetarget);
 
     // free memory
     RAJA::hip::device_zeroed_mempool_type::getInstance().free(red.device_count);
