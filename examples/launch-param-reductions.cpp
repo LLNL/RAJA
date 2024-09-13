@@ -100,7 +100,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Note: with this data initialization scheme, the following results will
 //       be observed for all reduction kernels below:
 //
-//  - the sum will be zero
+//  - the sum will be two
 //  - the min will be -100
 //  - the max will be 100
 //  - the min loc will be N/2
@@ -119,7 +119,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Define ValLoc Type
 //
 
-  //using VALLOC_INT = RAJA::expt::ValLoc<int>;
+  using VALLOC_INT = RAJA::expt::ValLoc<int>;
+
   using REF_INT_SUM = RAJA::expt::ValOp<int, RAJA::operators::plus>;
   using REF_INT_MIN = RAJA::expt::ValOp<int, RAJA::operators::minimum>;
   using REF_INT_MAX = RAJA::expt::ValOp<int, RAJA::operators::maximum>;
@@ -133,19 +134,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using LAUNCH_POL1   = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
   using LOOP_POL1     = RAJA::LoopPolicy<RAJA::seq_exec>;
 
-  REF_INT_SUM seq_sum(0);
-  REF_INT_MIN seq_min(std::numeric_limits<int>::max());
-  REF_INT_MAX seq_max(std::numeric_limits<int>::min());
-  REFLOC_INT_MIN seq_minloc(std::numeric_limits<int>::max(), -1);
-  REFLOC_INT_MAX seq_maxloc(std::numeric_limits<int>::min(), -1);
+  int seq_sum = 0;
+  int seq_min = std::numeric_limits<int>::max();
+  int seq_max = std::numeric_limits<int>::min();
+  VALLOC_INT seq_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT seq_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL1>
     (host_res, RAJA::LaunchParams(), "SeqReductionKernel",
-    RAJA::expt::Reduce<>(&seq_sum),
-    RAJA::expt::Reduce<>(&seq_min),
-    RAJA::expt::Reduce<>(&seq_max),
-    RAJA::expt::Reduce<>(&seq_minloc),
-    RAJA::expt::Reduce<>(&seq_maxloc),
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&seq_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            REF_INT_SUM &_seq_sum,
                            REF_INT_MIN &_seq_min,
@@ -171,9 +172,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  std::cout << "\tsum = " << seq_sum.get() << std::endl;
-  std::cout << "\tmin = " << seq_min.get() << std::endl;
-  std::cout << "\tmax = " << seq_max.get() << std::endl;
+  std::cout << "\tsum = " << seq_sum << std::endl;
+  std::cout << "\tmin = " << seq_min << std::endl;
+  std::cout << "\tmax = " << seq_max << std::endl;
   std::cout << "\tmin, loc = " << seq_minloc.getVal() << " , "
                                << seq_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << seq_maxloc.getVal() << " , "
@@ -191,19 +192,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using LOOP_POL2     = RAJA::LoopPolicy<RAJA::omp_for_exec>;
   // _reductions_raja_omppolicy_end
 
-  REF_INT_SUM omp_sum(0);
-  REF_INT_MIN omp_min(std::numeric_limits<int>::max());
-  REF_INT_MAX omp_max(std::numeric_limits<int>::min());
-  REFLOC_INT_MIN omp_minloc(std::numeric_limits<int>::max(), -1);
-  REFLOC_INT_MAX omp_maxloc(std::numeric_limits<int>::min(), -1);
+  int omp_sum = 0;
+  int omp_min = std::numeric_limits<int>::max();
+  int omp_max = std::numeric_limits<int>::min();
+  VALLOC_INT omp_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT omp_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL2>
     (host_res, RAJA::LaunchParams(), "OmpReductionKernel",
-    RAJA::expt::Reduce<>(&omp_sum),
-    RAJA::expt::Reduce<>(&omp_min),
-    RAJA::expt::Reduce<>(&omp_max),
-    RAJA::expt::Reduce<>(&omp_minloc),
-    RAJA::expt::Reduce<>(&omp_maxloc),
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&omp_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_maxloc),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            REF_INT_SUM &_omp_sum,
                            REF_INT_MIN &_omp_min,
@@ -226,9 +227,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  std::cout << "\tsum = " << omp_sum.get() << std::endl;
-  std::cout << "\tmin = " << omp_min.get() << std::endl;
-  std::cout << "\tmax = " << omp_max.get() << std::endl;
+  std::cout << "\tsum = " << omp_sum << std::endl;
+  std::cout << "\tmin = " << omp_min << std::endl;
+  std::cout << "\tmax = " << omp_max << std::endl;
   std::cout << "\tmin, loc = " << omp_minloc.getVal() << " , "
                                << omp_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << omp_maxloc.getVal() << " , "
@@ -251,20 +252,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   const int NUMBER_OF_TEAMS = (N-1)/CUDA_BLOCK_SIZE + 1;
 
-  REF_INT_SUM cuda_sum(0);
-  REF_INT_MIN cuda_min(std::numeric_limits<int>::max());
-  REF_INT_MAX cuda_max(std::numeric_limits<int>::min());
-  REFLOC_INT_MIN cuda_minloc(std::numeric_limits<int>::max(), -1);
-  REFLOC_INT_MAX cuda_maxloc(std::numeric_limits<int>::min(), -1);
+  int cuda_sum = 0;
+  int cuda_min = std::numeric_limits<int>::max();
+  int cuda_max = std::numeric_limits<int>::min();
+  VALLOC_INT cuda_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT cuda_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL3>
     (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(CUDA_BLOCK_SIZE)),
      "CUDAReductionKernel",
-    RAJA::expt::Reduce<>(&cuda_sum),
-    RAJA::expt::Reduce<>(&cuda_min),
-    RAJA::expt::Reduce<>(&cuda_max),
-    RAJA::expt::Reduce<>(&cuda_minloc),
-    RAJA::expt::Reduce<>(&cuda_maxloc),
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&cuda_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            REF_INT_SUM &_cuda_sum,
                            REF_INT_MIN &_cuda_min,
@@ -290,9 +291,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  std::cout << "\tsum = " << cuda_sum.get() << std::endl;
-  std::cout << "\tmin = " << cuda_min.get() << std::endl;
-  std::cout << "\tmax = " << cuda_max.get() << std::endl;
+  std::cout << "\tsum = " << cuda_sum << std::endl;
+  std::cout << "\tmin = " << cuda_min << std::endl;
+  std::cout << "\tmax = " << cuda_max << std::endl;
   std::cout << "\tmin, loc = " << cuda_minloc.getVal() << " , "
                                << cuda_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << cuda_maxloc.getVal() << " , "
@@ -316,20 +317,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   const int NUMBER_OF_TEAMS = (N-1)/HIP_BLOCK_SIZE + 1;
 
-  REF_INT_SUM hip_sum(0);
-  REF_INT_MIN hip_min(std::numeric_limits<int>::max());
-  REF_INT_MAX hip_max(std::numeric_limits<int>::min());
-  REFLOC_INT_MIN hip_minloc(std::numeric_limits<int>::max(), -1);
-  REFLOC_INT_MAX hip_maxloc(std::numeric_limits<int>::min(), -1);
+  int hip_sum = 0;
+  int hip_min = std::numeric_limits<int>::max();
+  int hip_max = std::numeric_limits<int>::min();
+  VALLOC_INT hip_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT hip_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL3>
     (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(HIP_BLOCK_SIZE)),
      "HipReductionKernel",
-    RAJA::expt::Reduce<>(&hip_sum),
-    RAJA::expt::Reduce<>(&hip_min),
-    RAJA::expt::Reduce<>(&hip_max),
-    RAJA::expt::Reduce<>(&hip_minloc),
-    RAJA::expt::Reduce<>(&hip_maxloc),
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&hip_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_maxloc),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            REF_INT_SUM &_hip_sum,
                            REF_INT_MIN &_hip_min,
@@ -353,9 +354,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  std::cout << "\tsum = " << hip_sum.get() << std::endl;
-  std::cout << "\tmin = " << hip_min.get() << std::endl;
-  std::cout << "\tmax = " << hip_max.get() << std::endl;
+  std::cout << "\tsum = " << hip_sum << std::endl;
+  std::cout << "\tmin = " << hip_min << std::endl;
+  std::cout << "\tmax = " << hip_max << std::endl;
   std::cout << "\tmin, loc = " << hip_minloc.getVal() << " , "
                                << hip_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << hip_maxloc.getVal() << " , "
@@ -379,20 +380,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   const int NUMBER_OF_TEAMS = (N-1)/SYCL_BLOCK_SIZE + 1;
 
-  REF_INT_SUM sycl_sum(0);
-  REF_INT_MIN sycl_min(std::numeric_limits<int>::max());
-  REF_INT_MAX sycl_max(std::numeric_limits<int>::min());
-  REFLOC_INT_MIN sycl_minloc(std::numeric_limits<int>::max(), -1);
-  REFLOC_INT_MAX sycl_maxloc(std::numeric_limits<int>::min(), -1);
+  int sycl_sum = 0;
+  int sycl_min = std::numeric_limits<int>::max();
+  int sycl_max = std::numeric_limits<int>::min();
+  VALLOC_INT sycl_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT sycl_maxloc(std::numeric_limits<int>::min(), -1);
 
   RAJA::launch<LAUNCH_POL4>
     (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(SYCL_BLOCK_SIZE)),
      "SyclReductionKernel",
-    RAJA::expt::Reduce<>(&sycl_sum),
-    RAJA::expt::Reduce<>(&sycl_min),
-    RAJA::expt::Reduce<>(&sycl_max),
-    RAJA::expt::Reduce<>(&sycl_minloc),
-    RAJA::expt::Reduce<>(&sycl_maxloc),
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&sycl_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            REF_INT_SUM &_sycl_sum,
                            REF_INT_MIN &_sycl_min,
@@ -416,9 +417,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  std::cout << "\tsum = " << sycl_sum.get() << std::endl;
-  std::cout << "\tmin = " << sycl_min.get() << std::endl;
-  std::cout << "\tmax = " << sycl_max.get() << std::endl;
+  std::cout << "\tsum = " << sycl_sum << std::endl;
+  std::cout << "\tmin = " << sycl_min << std::endl;
+  std::cout << "\tmax = " << sycl_max << std::endl;
   std::cout << "\tmin, loc = " << sycl_minloc.getVal() << " , "
                                << sycl_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << sycl_maxloc.getVal() << " , "
