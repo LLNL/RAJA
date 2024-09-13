@@ -43,15 +43,15 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
   }
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  REF_BITOR simpor(5);
+  DATA_TYPE simpor(5);
 
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<>(&simpor),
+    RAJA::expt::Reduce<RAJA::operators::bit_or>(&simpor),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR & _simpor) {
       _simpor |= working_array[idx];
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(simpor.get()), 13);
+  ASSERT_EQ(static_cast<DATA_TYPE>(simpor), 13);
 
  
   //
@@ -70,33 +70,33 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
     ref_or |= test_array[ seg_idx[i] ];
   }
 
-  REF_BITOR redor(0);
-  REF_BITOR redor2(2);
+  DATA_TYPE redor(0);
+  DATA_TYPE redor2(2);
 
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<>(&redor),
-    RAJA::expt::Reduce<>(&redor2),
+    RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
+    RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor2),
     RAJA::expt::KernelName("RAJA Reduce BitOr"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR &r1, REF_BITOR &r2) {
       r1 |= working_array[idx];
       r2 |= working_array[idx];
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(redor.get()), ref_or);
-  ASSERT_EQ(static_cast<DATA_TYPE>(redor2.get()), ref_or);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redor), ref_or);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redor2), ref_or);
 
-  redor.set(0);
+  redor = 0;
 
   const int nloops = 3;
   for (int j = 0; j < nloops; ++j) {
     RAJA::forall<EXEC_POLICY>(seg,
-      RAJA::expt::Reduce<>(&redor),
+      RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
       [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR &r1) {
         r1 |= working_array[idx];
     });
   }
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(redor.get()), ref_or);
+  ASSERT_EQ(static_cast<DATA_TYPE>(redor), ref_or);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,

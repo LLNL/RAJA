@@ -57,15 +57,16 @@ void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
 
-  using VL_TYPE = RAJA::expt::ValLocOp<DATA_TYPE, IDX_TYPE, RAJA::operators::maximum>;
+  using VL_TYPE = RAJA::expt::ValLoc<DATA_TYPE, IDX_TYPE>;
+  using VL_LAMBDA_TYPE = RAJA::expt::ValLocOp<DATA_TYPE, IDX_TYPE, RAJA::operators::maximum>;
   VL_TYPE maxinit(big_max, maxloc_init);
   VL_TYPE max(max_init, maxloc_init);
 
   RAJA::forall<EXEC_POLICY>(seg, 
-    RAJA::expt::Reduce<>(&maxinit),
-    RAJA::expt::Reduce<>(&max),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&maxinit),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
     RAJA::expt::KernelName("RAJA Reduce MaxLoc"),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_TYPE &mi, VL_TYPE &m) {
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &mi, VL_LAMBDA_TYPE &m) {
       mi.maxloc( working_array[idx], idx );
       m.maxloc( working_array[idx], idx );
   });
@@ -75,15 +76,14 @@ void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
   ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max);
   ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
 
-  max.setVal(max_init);
-  max.setLoc(maxloc_init);
+  max.set(max_init, maxloc_init);
   ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), max_init);
   ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), maxloc_init);
 
   DATA_TYPE factor = 2;
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<>(&max),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_TYPE &m) {
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
       m.maxloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max * factor);
@@ -91,8 +91,8 @@ void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
   
   factor = 3;
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<>(&max),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_TYPE &m) {
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
       m.maxloc( working_array[idx] * factor, idx);
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max * factor);

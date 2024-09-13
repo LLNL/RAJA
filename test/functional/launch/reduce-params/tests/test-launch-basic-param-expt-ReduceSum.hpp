@@ -53,13 +53,13 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
 
-  REF_SUM sum(0), sum2(2);
+  DATA_TYPE sum(0), sum2(2);
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      "LaunchSumBasicTest",
-     RAJA::expt::Reduce<>(&sum),
-     RAJA::expt::Reduce<>(&sum2),
+     RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
+     RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_SUM &_sum, REF_SUM &_sum2) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
@@ -69,17 +69,17 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), ref_sum);
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum2.get()), ref_sum + 2);
+  ASSERT_EQ(static_cast<DATA_TYPE>(sum), ref_sum);
+  ASSERT_EQ(static_cast<DATA_TYPE>(sum2), ref_sum + 2);
 
-  sum.set(0);
+  sum = 0;
 
   const int nloops = 2;
 
   for (int j = 0; j < nloops; ++j) {
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-       RAJA::expt::Reduce<>(&sum),
+       RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_SUM &_sum) {
 
         RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
@@ -88,7 +88,7 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
       });
   }
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(sum.get()), nloops * ref_sum);
+  ASSERT_EQ(static_cast<DATA_TYPE>(sum), nloops * ref_sum);
 
 
   deallocateForallTestData<DATA_TYPE>(working_res,
