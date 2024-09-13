@@ -55,7 +55,9 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
                                      &test_array);
 
   std::iota(test_array, test_array + data_len, 0);
-  working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
+  if ( data_len > 0 ) {
+    working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
+  }
 
   constexpr int DIM = 3;
   using layout_t = RAJA::Layout<DIM, INDEX_TYPE,DIM-1>;
@@ -86,10 +88,8 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
         });
   });
 
-  if ( RAJA::stripIndexType(N) > 0 ) {
-
+  if ( data_len > 0 ) {
     working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
-
   }
   working_res.wait();
 

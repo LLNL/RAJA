@@ -48,6 +48,12 @@ void LaunchNestedUncheckedTestImpl(INDEX_TYPE M)
                                      &working_array,
                                      &check_array,
                                      &test_array);
+
+  std::iota(test_array, test_array + data_len, 0);
+  if ( data_len > 0 ) {
+    working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
+  }
+
   //6 threads total
   const int threads_x = 2*M;
   const int threads_y = 3*M;
@@ -56,8 +62,6 @@ void LaunchNestedUncheckedTestImpl(INDEX_TYPE M)
   const int blocks_x = 4*M;
   const int blocks_y = 5*M;
   const int blocks_z = 6*M;
-
-  std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
 
   const int DIM = 6;
   using layout_t = RAJA::Layout<DIM, INDEX_TYPE,DIM-1>;
@@ -78,7 +82,7 @@ void LaunchNestedUncheckedTestImpl(INDEX_TYPE M)
                               auto idx = tx + N1 * (ty + N2 * (tz + N3 * (bx + N4 * (by + N5 * bz))));
 
 
-                              Aview(bz, by, bx, tz, ty, tx) = static_cast<INDEX_TYPE>(idx);
+                              Aview(bz, by, bx, tz, ty, tx) += static_cast<INDEX_TYPE>(idx);
                             });
                         });
                     });
@@ -88,11 +92,10 @@ void LaunchNestedUncheckedTestImpl(INDEX_TYPE M)
         });
   });
 
-  if ( RAJA::stripIndexType(N) > 0 ) {
-
+  if ( data_len > 0 ) {
     working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
-
   }
+  working_res.wait();
     
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);

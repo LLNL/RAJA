@@ -56,6 +56,9 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
                                      &check_array,
                                      &test_array);
 
+  std::iota(test_array, test_array + data_len, 0);
+  working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
+
   //6 threads total
   constexpr int threads_x = 1;
   constexpr int threads_y = 2;
@@ -66,8 +69,6 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
   constexpr int blocks_z = 1;
 
   if ( RAJA::stripIndexType(N) > 0 ) {
-
-    std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
 
     constexpr int DIM = 6;
     using layout_t = RAJA::Layout<DIM, INDEX_TYPE,DIM-1>;
@@ -88,7 +89,7 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
                                 auto idx = tx + N1 * (ty + N2 * (tz + N3 * (bx + N4 * (by + N5 * bz))));
 
 
-                                Aview(bz, by, bx, tz, ty, tx) = static_cast<INDEX_TYPE>(idx);
+                                Aview(bz, by, bx, tz, ty, tx) += static_cast<INDEX_TYPE>(idx);
                                 
                               });
                           });
@@ -99,10 +100,6 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
           });
     });
   } else { // zero-length segment
-
-    memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
-
-    working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z), RAJA::Threads(blocks_x, blocks_y ,blocks_z)),
@@ -129,6 +126,7 @@ void LaunchNestedLoopTestImpl(INDEX_TYPE M)
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
+  working_res.wait();
 
   if (RAJA::stripIndexType(N) > 0) {
 

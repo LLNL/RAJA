@@ -45,9 +45,12 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
                                      &check_iloop_array,
                                      &test_iloop_array);
 
-
-  std::iota(test_ttile_array, test_ttile_array + RAJA::stripIndexType(N), 0);
-  std::iota(test_iloop_array, test_iloop_array + RAJA::stripIndexType(N), 0);
+  if ( data_len > 0 ) {
+    std::iota(test_ttile_array, test_ttile_array + data_len, 0);
+    std::iota(test_iloop_array, test_iloop_array + data_len, 0);
+    working_res.memset(working_ttile_array, 0, sizeof(INDEX_TYPE) * data_len);
+    working_res.memset(working_iloop_array, 0, sizeof(INDEX_TYPE) * data_len);
+  }
 
   RAJA::launch<LAUNCH_POLICY>(
     RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
@@ -67,12 +70,11 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
     }
   );
 
-  if ( RAJA::stripIndexType(N) > 0 ) {
-
+  if ( data_len > 0 ) {
     working_res.memcpy(check_ttile_array, working_ttile_array, sizeof(INDEX_TYPE) * data_len);
     working_res.memcpy(check_iloop_array, working_iloop_array, sizeof(INDEX_TYPE) * data_len);
-
   }
+  working_res.wait();
 
   INDEX_TYPE idx = 0;
   for (INDEX_TYPE bx = INDEX_TYPE(0); bx < blocks_x; ++bx) {
