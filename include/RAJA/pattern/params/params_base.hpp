@@ -23,8 +23,6 @@ namespace expt
     RAJA_HOST_DEVICE constexpr bool operator<(const ValLoc& rhs) const { return val < rhs.val; }
     RAJA_HOST_DEVICE constexpr bool operator>(const ValLoc& rhs) const { return val > rhs.val; }
 
-    RAJA_HOST_DEVICE constexpr explicit operator T() const { return val; }
-
     RAJA_HOST_DEVICE constexpr value_type getVal() const {return val;}
     RAJA_HOST_DEVICE constexpr index_type getLoc() const {return loc;}
 

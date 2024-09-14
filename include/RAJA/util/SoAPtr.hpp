@@ -230,7 +230,7 @@ public:
   }
   RAJA_HOST_DEVICE void set(size_t i, value_type val)
   {
-    accessor::set(mem, i, first_type(val));
+    accessor::set(mem, i, val.getVal());
     accessor::set(mem_idx, i, val.getLoc());
   }
 
