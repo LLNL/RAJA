@@ -256,7 +256,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Resource object used to construct list segment objects with indices
   // living in host (CPU) memory.
   //
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res {camp::resources::Host()};
 
   //
   // Create a RAJA IndexSet with four ListSegments, one for the indices of
@@ -285,15 +285,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL1 =
       RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
 
-  RAJA::forall<EXEC_POL1>(colorset,
-                          [=](int ie)
-                          {
-                            int* iv = &(e2v_map[4 * ie]);
-                            areav[iv[0]] += areae[ie] / 4.0;
-                            areav[iv[1]] += areae[ie] / 4.0;
-                            areav[iv[2]] += areae[ie] / 4.0;
-                            areav[iv[3]] += areae[ie] / 4.0;
-                          });
+  RAJA::forall<EXEC_POL1>(
+      colorset,
+      [=](int ie)
+      {
+        int* iv = &(e2v_map[4 * ie]);
+        areav[iv[0]] += areae[ie] / 4.0;
+        areav[iv[1]] += areae[ie] / 4.0;
+        areav[iv[2]] += areae[ie] / 4.0;
+        areav[iv[3]] += areae[ie] / 4.0;
+      });
   // _raja_vertexarea_omp_end
 
   checkResult(areav, areav_ref, Nvert);
@@ -314,7 +315,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Resource object used to construct list segment objects with indices
   // living in device (GPU) memory.
   //
-  camp::resources::Resource cuda_res{camp::resources::Cuda()};
+  camp::resources::Resource cuda_res {camp::resources::Cuda()};
 
   //
   // Create a RAJA IndexSet with four ListSegments, one for the indices of
@@ -336,15 +337,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL2 =
       RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL2>(cuda_colorset,
-                          [=] RAJA_DEVICE(int ie)
-                          {
-                            int* iv = &(e2v_map[4 * ie]);
-                            areav[iv[0]] += areae[ie] / 4.0;
-                            areav[iv[1]] += areae[ie] / 4.0;
-                            areav[iv[2]] += areae[ie] / 4.0;
-                            areav[iv[3]] += areae[ie] / 4.0;
-                          });
+  RAJA::forall<EXEC_POL2>(
+      cuda_colorset,
+      [=] RAJA_DEVICE(int ie)
+      {
+        int* iv = &(e2v_map[4 * ie]);
+        areav[iv[0]] += areae[ie] / 4.0;
+        areav[iv[1]] += areae[ie] / 4.0;
+        areav[iv[2]] += areae[ie] / 4.0;
+        areav[iv[3]] += areae[ie] / 4.0;
+      });
   // _raja_vertexarea_cuda_end
 
   checkResult(areav, areav_ref, Nvert);
@@ -368,8 +370,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int*    d_e2v_map = memoryManager::allocate_gpu<int>(4 * Nelem_tot);
 
   hipMemcpy(d_areae, areae, Nelem_tot * sizeof(double), hipMemcpyHostToDevice);
-  hipMemcpy(d_e2v_map, e2v_map, 4 * Nelem_tot * sizeof(int),
-            hipMemcpyHostToDevice);
+  hipMemcpy(
+      d_e2v_map, e2v_map, 4 * Nelem_tot * sizeof(int), hipMemcpyHostToDevice);
 
   std::memset(areav, 0, Nvert_tot * sizeof(double));
   hipMemcpy(d_areav, areav, Nvert_tot * sizeof(double), hipMemcpyHostToDevice);
@@ -378,7 +380,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Resource object used to construct list segment objects with indices
   // living in device (GPU) memory.
   //
-  camp::resources::Resource hip_res{camp::resources::Hip()};
+  camp::resources::Resource hip_res {camp::resources::Hip()};
 
   //
   // Create a RAJA IndexSet with four ListSegments, one for the indices of
@@ -398,15 +400,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL3 =
       RAJA::ExecPolicy<RAJA::seq_segit, RAJA::hip_exec<HIP_BLOCK_SIZE>>;
 
-  RAJA::forall<EXEC_POL3>(hip_colorset,
-                          [=] RAJA_DEVICE(int ie)
-                          {
-                            int* iv = &(d_e2v_map[4 * ie]);
-                            d_areav[iv[0]] += d_areae[ie] / 4.0;
-                            d_areav[iv[1]] += d_areae[ie] / 4.0;
-                            d_areav[iv[2]] += d_areae[ie] / 4.0;
-                            d_areav[iv[3]] += d_areae[ie] / 4.0;
-                          });
+  RAJA::forall<EXEC_POL3>(
+      hip_colorset,
+      [=] RAJA_DEVICE(int ie)
+      {
+        int* iv = &(d_e2v_map[4 * ie]);
+        d_areav[iv[0]] += d_areae[ie] / 4.0;
+        d_areav[iv[1]] += d_areae[ie] / 4.0;
+        d_areav[iv[2]] += d_areae[ie] / 4.0;
+        d_areav[iv[3]] += d_areae[ie] / 4.0;
+      });
   // _raja_vertexarea_hip_end
 
   hipMemcpy(areav, d_areav, Nvert_tot * sizeof(double), hipMemcpyDeviceToHost);

@@ -99,7 +99,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   gridx.h = 1.0 / (N + 1.0);
   gridx.n = N + 2;
 
-  camp::resources::Resource resource{camp::resources::Host()};
+  camp::resources::Resource resource {camp::resources::Host()};
 
   double* I = resource.allocate<double>(NN);
 
@@ -244,15 +244,16 @@ void computeErr(double* I, grid_s grid)
       1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<errPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                          [=](RAJA::Index_type tx, RAJA::Index_type ty)
-                          {
-                            int    id    = tx + grid.n * ty;
-                            double x     = grid.o + tx * grid.h;
-                            double y     = grid.o + ty * grid.h;
-                            double myErr = std::abs(I[id] - solution(x, y));
-                            tMax.max(myErr);
-                          });
+  RAJA::kernel<errPolicy>(
+      RAJA::make_tuple(fdBounds, fdBounds),
+      [=](RAJA::Index_type tx, RAJA::Index_type ty)
+      {
+        int    id    = tx + grid.n * ty;
+        double x     = grid.o + tx * grid.h;
+        double y     = grid.o + ty * grid.h;
+        double myErr = std::abs(I[id] - solution(x, y));
+        tMax.max(myErr);
+      });
 
   double l2err = tMax;
   printf("Max error = %lg, h = %f \n", l2err, grid.h);

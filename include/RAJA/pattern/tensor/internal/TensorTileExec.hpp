@@ -117,8 +117,8 @@ struct TensorTileExec<STORAGE, camp::idx_seq<DIM0, DIM_REST...>>
     using IterCount =
         camp::integral_constant<typename TTYPE::index_type, iter_count>;
     using DimSeq = camp::idx_seq<DIM0, DIM_REST...>;
-    using IdxSeq = typename camp::detail::gen_seq<typename TTYPE::index_type,
-                                                  IterCount>::type;
+    using IdxSeq = typename camp::detail::gen_seq<
+        typename TTYPE::index_type, IterCount>::type;
 
     StaticTensorTileExec<STORAGE, DimSeq, IdxSeq>::exec(otile, tile, body);
   }
@@ -152,21 +152,22 @@ struct TensorTileExec<STORAGE, camp::idx_seq<>>
 };
 
 
-template <typename STORAGE,
-          typename TILE_TYPE,
-          typename BODY,
-          camp::idx_t... IDX_SEQ,
-          camp::idx_t... DIM_SEQ>
-RAJA_INLINE RAJA_HOST_DEVICE void
-tensorTileExec_expanded(TILE_TYPE const& orig_tile,
-                        BODY&&           body,
-                        camp::idx_seq<IDX_SEQ...> const&,
-                        camp::idx_seq<DIM_SEQ...> const&)
+template <
+    typename STORAGE,
+    typename TILE_TYPE,
+    typename BODY,
+    camp::idx_t... IDX_SEQ,
+    camp::idx_t... DIM_SEQ>
+RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
+    TILE_TYPE const& orig_tile,
+    BODY&&           body,
+    camp::idx_seq<IDX_SEQ...> const&,
+    camp::idx_seq<DIM_SEQ...> const&)
 {
 
   // tile over full rows and columns
   // tile_type tile{{0,0},{row_tile_size, col_tile_size}};
-  TILE_TYPE tile{
+  TILE_TYPE tile {
       {orig_tile.m_begin[IDX_SEQ]...},
       {STORAGE::s_dim_elem(IDX_SEQ)...},
   };
@@ -195,14 +196,16 @@ struct StaticTensorTileExec;
  * Implement a dimension tiling loop
  */
 
-template <typename STORAGE,
-          camp::idx_t DIM0,
-          camp::idx_t... DIM_REST,
-          camp::idx_t IDX,
-          camp::idx_t... IDX_REST>
-struct StaticTensorTileExec<STORAGE,
-                            camp::idx_seq<DIM0, DIM_REST...>,
-                            camp::idx_seq<IDX, IDX_REST...>>
+template <
+    typename STORAGE,
+    camp::idx_t DIM0,
+    camp::idx_t... DIM_REST,
+    camp::idx_t IDX,
+    camp::idx_t... IDX_REST>
+struct StaticTensorTileExec<
+    STORAGE,
+    camp::idx_seq<DIM0, DIM_REST...>,
+    camp::idx_seq<IDX, IDX_REST...>>
 {
 
   using DimList = camp::idx_seq<DIM0, DIM_REST...>;
@@ -211,9 +214,10 @@ struct StaticTensorTileExec<STORAGE,
   using IdxTail = camp::idx_seq<IDX_REST...>;
 
   using DownExec = TensorTileExec<STORAGE, camp::idx_seq<DIM_REST...>>;
-  using NextExec = StaticTensorTileExec<STORAGE,
-                                        camp::idx_seq<DIM0, DIM_REST...>,
-                                        camp::idx_seq<IDX_REST...>>;
+  using NextExec = StaticTensorTileExec<
+      STORAGE,
+      camp::idx_seq<DIM0, DIM_REST...>,
+      camp::idx_seq<IDX_REST...>>;
 
   static auto const step_size = STORAGE::s_dim_elem(DIM0);
 
@@ -227,25 +231,23 @@ struct StaticTensorTileExec<STORAGE,
 
     auto constexpr tile_begin = TTYPE::begin_type::value_at(DIM0);
 
-    using NextBegin =
-        camp::integral_constant<typename TTYPE::index_type,
-                                tile_begin + STORAGE::s_dim_elem(DIM0)>;
-    using TailSize =
-        camp::integral_constant<typename TTYPE::index_type,
-                                (orig_begin + orig_size) - tile_begin>;
+    using NextBegin = camp::integral_constant<
+        typename TTYPE::index_type, tile_begin + STORAGE::s_dim_elem(DIM0)>;
+    using TailSize = camp::integral_constant<
+        typename TTYPE::index_type, (orig_begin + orig_size) - tile_begin>;
 
-    using NextTile =
-        typename expt::SetStaticTensorTileBegin<TTYPE, NextBegin,
-                                                (size_t)DIM0>::Type;
+    using NextTile = typename expt::SetStaticTensorTileBegin<
+        TTYPE, NextBegin, (size_t)DIM0>::Type;
 
-    using TailTile = typename expt::SetStaticTensorTileSize<TTYPE, TailSize,
-                                                            (size_t)DIM0>::Type;
+    using TailTile = typename expt::SetStaticTensorTileSize<
+        TTYPE, TailSize, (size_t)DIM0>::Type;
     using PartTile = typename TailTile::Partial;
 
 
-    static_assert((tile_begin + STORAGE::s_dim_elem(DIM0)) <=
-                      (orig_begin + orig_size + STORAGE::s_dim_elem(DIM0)),
-                  "OOB StaticTensorTileExec DOWN");
+    static_assert(
+        (tile_begin + STORAGE::s_dim_elem(DIM0)) <=
+            (orig_begin + orig_size + STORAGE::s_dim_elem(DIM0)),
+        "OOB StaticTensorTileExec DOWN");
 
     if ((tile_begin + STORAGE::s_dim_elem(DIM0)) <= (orig_begin + orig_size))
     {
@@ -262,17 +264,20 @@ struct StaticTensorTileExec<STORAGE,
 };
 
 
-template <typename STORAGE,
-          camp::idx_t DIM0,
-          camp::idx_t IDX,
-          camp::idx_t... IDX_REST>
-struct StaticTensorTileExec<STORAGE,
-                            camp::idx_seq<DIM0>,
-                            camp::idx_seq<IDX, IDX_REST...>>
+template <
+    typename STORAGE,
+    camp::idx_t DIM0,
+    camp::idx_t IDX,
+    camp::idx_t... IDX_REST>
+struct StaticTensorTileExec<
+    STORAGE,
+    camp::idx_seq<DIM0>,
+    camp::idx_seq<IDX, IDX_REST...>>
 {
-  using NextExec = StaticTensorTileExec<STORAGE,
-                                        camp::idx_seq<DIM0>,
-                                        camp::idx_seq<IDX_REST...>>;
+  using NextExec = StaticTensorTileExec<
+      STORAGE,
+      camp::idx_seq<DIM0>,
+      camp::idx_seq<IDX_REST...>>;
 
 
   template <typename OTILE, typename TTYPE, typename BODY>
@@ -284,25 +289,23 @@ struct StaticTensorTileExec<STORAGE,
 
     auto constexpr tile_begin = TTYPE::begin_type::value_at(DIM0);
 
-    using NextBegin =
-        camp::integral_constant<typename TTYPE::index_type,
-                                tile_begin + STORAGE::s_dim_elem(DIM0)>;
-    using TailSize =
-        camp::integral_constant<typename TTYPE::index_type,
-                                (orig_begin + orig_size) - tile_begin>;
+    using NextBegin = camp::integral_constant<
+        typename TTYPE::index_type, tile_begin + STORAGE::s_dim_elem(DIM0)>;
+    using TailSize = camp::integral_constant<
+        typename TTYPE::index_type, (orig_begin + orig_size) - tile_begin>;
 
-    using NextTile =
-        typename expt::SetStaticTensorTileBegin<TTYPE, NextBegin,
-                                                (size_t)DIM0>::Type;
+    using NextTile = typename expt::SetStaticTensorTileBegin<
+        TTYPE, NextBegin, (size_t)DIM0>::Type;
 
-    using TailTile = typename expt::SetStaticTensorTileSize<TTYPE, TailSize,
-                                                            (size_t)DIM0>::Type;
+    using TailTile = typename expt::SetStaticTensorTileSize<
+        TTYPE, TailSize, (size_t)DIM0>::Type;
     using PartTile = typename TailTile::Partial;
 
 
-    static_assert((tile_begin + STORAGE::s_dim_elem(DIM0)) <=
-                      (orig_begin + orig_size + STORAGE::s_dim_elem(DIM0)),
-                  "OOB StaticTensorTileExec ACROSS");
+    static_assert(
+        (tile_begin + STORAGE::s_dim_elem(DIM0)) <=
+            (orig_begin + orig_size + STORAGE::s_dim_elem(DIM0)),
+        "OOB StaticTensorTileExec ACROSS");
 
     if ((tile_begin + STORAGE::s_dim_elem(DIM0)) <= (orig_begin + orig_size))
     {
@@ -319,9 +322,10 @@ struct StaticTensorTileExec<STORAGE,
 };
 
 template <typename STORAGE, camp::idx_t... DIM_REST>
-struct StaticTensorTileExec<STORAGE,
-                            camp::idx_seq<DIM_REST...>,
-                            camp::idx_seq<>>
+struct StaticTensorTileExec<
+    STORAGE,
+    camp::idx_seq<DIM_REST...>,
+    camp::idx_seq<>>
 {
 
   template <typename OTILE, typename TTYPE, typename BODY>
@@ -331,14 +335,15 @@ struct StaticTensorTileExec<STORAGE,
 };
 
 
-template <typename STORAGE,
-          typename INDEX_TYPE,
-          TensorTileSize TENSOR_SIZE,
-          typename TBEGIN,
-          typename TSIZE,
-          typename BODY,
-          camp::idx_t... IDX_SEQ,
-          camp::idx_t... DIM_SEQ>
+template <
+    typename STORAGE,
+    typename INDEX_TYPE,
+    TensorTileSize TENSOR_SIZE,
+    typename TBEGIN,
+    typename TSIZE,
+    typename BODY,
+    camp::idx_t... IDX_SEQ,
+    camp::idx_t... DIM_SEQ>
 RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
     StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, TBEGIN, TSIZE> const& orig_tile,
     BODY&&                                                          body,
@@ -368,18 +373,18 @@ RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec_expanded(
 
 
 template <typename STORAGE, typename TILE_TYPE, typename BODY>
-RAJA_INLINE RAJA_HOST_DEVICE void tensorTileExec(TILE_TYPE const& tile,
-                                                 BODY&&           body)
+RAJA_INLINE RAJA_HOST_DEVICE void
+tensorTileExec(TILE_TYPE const& tile, BODY&& body)
 {
   using layout_type = typename STORAGE::layout_type;
   tensorTileExec_expanded<STORAGE>(
-      tile, body, camp::make_idx_seq_t<STORAGE::s_num_dims>{}, layout_type{});
+      tile, body, camp::make_idx_seq_t<STORAGE::s_num_dims> {}, layout_type {});
 }
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

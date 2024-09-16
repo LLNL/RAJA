@@ -80,7 +80,7 @@ private:
 };
 
 using TimerBase = BGQTimer;
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #elif defined(RAJA_USE_CHRONO)
@@ -132,7 +132,7 @@ private:
 };
 
 using TimerBase = ChronoTimer;
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #elif defined(RAJA_USE_GETTIME)
@@ -194,7 +194,7 @@ private:
 };
 
 using TimerBase = GettimeTimer;
-} // namespace RAJA
+}  // namespace RAJA
 
 #elif defined(RAJA_USE_CLOCK)
 
@@ -246,7 +246,7 @@ private:
 };
 
 using TimerBase = ClockTimer;
-} // namespace RAJA
+}  // namespace RAJA
 
 #else
 
@@ -272,6 +272,6 @@ public:
 #endif
 };
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

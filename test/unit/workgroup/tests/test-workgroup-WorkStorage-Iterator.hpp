@@ -29,17 +29,18 @@ void testWorkGroupWorkStorageIterator()
 
   static constexpr auto platform = RAJA::Platform::host;
   using DispatchPolicy  = typename DispatchTyper::template type<callable>;
-  using Dispatcher_type = RAJA::detail::Dispatcher<platform, DispatchPolicy,
-                                                   void, void*, bool*, bool*>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      platform, DispatchPolicy, void, void*, bool*, bool*>;
   using WorkStorage_type =
       RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
 
 
   const Dispatcher_type* dispatcher =
-      RAJA::detail::get_Dispatcher<callable, Dispatcher_type>(RAJA::seq_work{});
+      RAJA::detail::get_Dispatcher<callable, Dispatcher_type>(
+          RAJA::seq_work {});
 
   {
-    WorkStorage_type container(Allocator{});
+    WorkStorage_type container(Allocator {});
 
     ASSERT_EQ(container.end() - container.begin(), (std::ptrdiff_t)0);
     ASSERT_FALSE(container.begin() < container.end());
@@ -49,7 +50,7 @@ void testWorkGroupWorkStorageIterator()
     ASSERT_TRUE(container.begin() <= container.end());
     ASSERT_TRUE(container.begin() >= container.end());
 
-    container.template emplace<callable>(dispatcher, callable{-1});
+    container.template emplace<callable>(dispatcher, callable {-1});
 
     ASSERT_EQ(container.end() - container.begin(), (std::ptrdiff_t)1);
     ASSERT_TRUE(container.begin() < container.end());
@@ -89,8 +90,9 @@ class WorkGroupBasicWorkStorageIteratorUnitTest : public ::testing::Test
 TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageIteratorUnitTest);
 
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest,
-             BasicWorkGroupWorkStorageIterator)
+TYPED_TEST_P(
+    WorkGroupBasicWorkStorageIteratorUnitTest,
+    BasicWorkGroupWorkStorageIterator)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -99,4 +101,4 @@ TYPED_TEST_P(WorkGroupBasicWorkStorageIteratorUnitTest,
   testWorkGroupWorkStorageIterator<StoragePolicy, DispatchTyper, Allocator>();
 }
 
-#endif //__TEST_WORKGROUP_WORKSTORAGEITERATOR__
+#endif  //__TEST_WORKGROUP_WORKSTORAGEITERATOR__

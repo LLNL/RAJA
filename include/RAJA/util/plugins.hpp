@@ -99,7 +99,7 @@ void finalize_plugins()
   }
 }
 
-} // namespace util
-} // namespace RAJA
+}  // namespace util
+}  // namespace RAJA
 
 #endif

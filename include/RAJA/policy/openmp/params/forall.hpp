@@ -23,15 +23,17 @@ namespace internal
 //
 // omp for (Auto)
 //
-template <typename ExecPol,
-          typename Iterable,
-          typename Func,
-          typename ForallParam>
+template <
+    typename ExecPol,
+    typename Iterable,
+    typename Func,
+    typename ForallParam>
 RAJA_INLINE concepts::enable_if<std::is_same<ExecPol, RAJA::policy::omp::Auto>>
-            forall_impl(const ExecPol& p,
-                        Iterable&&     iter,
-                        Func&&         loop_body,
-                        ForallParam&&  f_params)
+            forall_impl(
+                const ExecPol& p,
+                Iterable&&     iter,
+                Func&&         loop_body,
+                ForallParam&&  f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -50,18 +52,21 @@ RAJA_INLINE concepts::enable_if<std::is_same<ExecPol, RAJA::policy::omp::Auto>>
 //
 // omp for schedule(static)
 //
-template <template <int> class ExecPol,
-          typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam>
+template <
+    template <int>
+    class ExecPol,
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam>
 RAJA_INLINE concepts::enable_if<
     std::is_same<ExecPol<ChunkSize>, RAJA::policy::omp::Static<ChunkSize>>,
     std::integral_constant<bool, (ChunkSize <= 0)>>
-forall_impl(const ExecPol<ChunkSize>& p,
-            Iterable&&                iter,
-            Func&&                    loop_body,
-            ForallParam&&             f_params)
+forall_impl(
+    const ExecPol<ChunkSize>& p,
+    Iterable&&                iter,
+    Func&&                    loop_body,
+    ForallParam&&             f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -80,18 +85,21 @@ forall_impl(const ExecPol<ChunkSize>& p,
 //
 // omp for schedule(static, ChunkSize)
 //
-template <template <int> class ExecPol,
-          typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam>
+template <
+    template <int>
+    class ExecPol,
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam>
 RAJA_INLINE concepts::enable_if<
     std::is_same<ExecPol<ChunkSize>, RAJA::policy::omp::Static<ChunkSize>>,
     std::integral_constant<bool, (ChunkSize > 0)>>
-forall_impl(const ExecPol<ChunkSize>& p,
-            Iterable&&                iter,
-            Func&&                    loop_body,
-            ForallParam&&             f_params)
+forall_impl(
+    const ExecPol<ChunkSize>& p,
+    Iterable&&                iter,
+    Func&&                    loop_body,
+    ForallParam&&             f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -112,10 +120,11 @@ forall_impl(const ExecPol<ChunkSize>& p,
 // omp for schedule(runtime)
 //
 template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
-                             Iterable&&                          iter,
-                             Func&&                              loop_body,
-                             ForallParam&&                       f_params)
+RAJA_INLINE void forall_impl(
+    const ::RAJA::policy::omp::Runtime& p,
+    Iterable&&                          iter,
+    Func&&                              loop_body,
+    ForallParam&&                       f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -135,10 +144,11 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
 // omp for nowait (Auto)
 //
 template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
-                                    Iterable&&                       iter,
-                                    Func&&                           loop_body,
-                                    ForallParam&&                    f_params)
+RAJA_INLINE void forall_impl_nowait(
+    const ::RAJA::policy::omp::Auto& p,
+    Iterable&&                       iter,
+    Func&&                           loop_body,
+    ForallParam&&                    f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -160,15 +170,17 @@ RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
 //
 // omp for schedule(dynamic)
 //
-template <typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam,
-          typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
-RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
-                             Iterable&&    iter,
-                             Func&&        loop_body,
-                             ForallParam&& f_params)
+template <
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+RAJA_INLINE void forall_impl(
+    const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
+    Iterable&&                                     iter,
+    Func&&                                         loop_body,
+    ForallParam&&                                  f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -187,15 +199,17 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
 //
 // omp for schedule(dynamic, ChunkSize)
 //
-template <typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam,
-          typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
-RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
-                             Iterable&&    iter,
-                             Func&&        loop_body,
-                             ForallParam&& f_params)
+template <
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+RAJA_INLINE void forall_impl(
+    const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
+    Iterable&&                                     iter,
+    Func&&                                         loop_body,
+    ForallParam&&                                  f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -215,15 +229,17 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
 //
 // omp for schedule(guided)
 //
-template <typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam,
-          typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
-RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
-                             Iterable&&                                    iter,
-                             Func&&        loop_body,
-                             ForallParam&& f_params)
+template <
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+RAJA_INLINE void forall_impl(
+    const ::RAJA::policy::omp::Guided<ChunkSize>& p,
+    Iterable&&                                    iter,
+    Func&&                                        loop_body,
+    ForallParam&&                                 f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -242,15 +258,17 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
 //
 // omp for schedule(guided, ChunkSize)
 //
-template <typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam,
-          typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
-RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
-                             Iterable&&                                    iter,
-                             Func&&        loop_body,
-                             ForallParam&& f_params)
+template <
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+RAJA_INLINE void forall_impl(
+    const ::RAJA::policy::omp::Guided<ChunkSize>& p,
+    Iterable&&                                    iter,
+    Func&&                                        loop_body,
+    ForallParam&&                                 f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -270,16 +288,17 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
 //
 // omp for schedule(static) nowait
 //
-template <typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam,
-          typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
-RAJA_INLINE void
-forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
-                   Iterable&&                                    iter,
-                   Func&&                                        loop_body,
-                   ForallParam&&                                 f_params)
+template <
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam,
+    typename std::enable_if<(ChunkSize <= 0)>::type* = nullptr>
+RAJA_INLINE void forall_impl_nowait(
+    const ::RAJA::policy::omp::Static<ChunkSize>& p,
+    Iterable&&                                    iter,
+    Func&&                                        loop_body,
+    ForallParam&&                                 f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -301,16 +320,17 @@ forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
 //
 // omp for schedule(static, ChunkSize) nowait
 //
-template <typename Iterable,
-          typename Func,
-          int ChunkSize,
-          typename ForallParam,
-          typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
-RAJA_INLINE void
-forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
-                   Iterable&&                                    iter,
-                   Func&&                                        loop_body,
-                   ForallParam&&                                 f_params)
+template <
+    typename Iterable,
+    typename Func,
+    int ChunkSize,
+    typename ForallParam,
+    typename std::enable_if<(ChunkSize > 0)>::type* = nullptr>
+RAJA_INLINE void forall_impl_nowait(
+    const ::RAJA::policy::omp::Static<ChunkSize>& p,
+    Iterable&&                                    iter,
+    Func&&                                        loop_body,
+    ForallParam&&                                 f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -329,52 +349,55 @@ forall_impl_nowait(const ::RAJA::policy::omp::Static<ChunkSize>& p,
   RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
 }
 
-} //  namespace internal
+}  //  namespace internal
 
-template <typename Schedule,
-          typename Iterable,
-          typename Func,
-          typename ForallParam>
-RAJA_INLINE resources::EventProxy<resources::Host>
-            forall_impl(resources::Host host_res,
-                        const omp_for_schedule_exec<Schedule>&,
-                        Iterable&&  iter,
-                        Func&&      loop_body,
-                        ForallParam f_params)
+template <
+    typename Schedule,
+    typename Iterable,
+    typename Func,
+    typename ForallParam>
+RAJA_INLINE resources::EventProxy<resources::Host> forall_impl(
+    resources::Host host_res,
+    const omp_for_schedule_exec<Schedule>&,
+    Iterable&&  iter,
+    Func&&      loop_body,
+    ForallParam f_params)
 {
-  expt::internal::forall_impl(Schedule{}, std::forward<Iterable>(iter),
-                              std::forward<Func>(loop_body),
-                              std::forward<ForallParam>(f_params));
+  expt::internal::forall_impl(
+      Schedule {}, std::forward<Iterable>(iter), std::forward<Func>(loop_body),
+      std::forward<ForallParam>(f_params));
   return resources::EventProxy<resources::Host>(host_res);
 }
-} //  namespace expt
+}  //  namespace expt
 
 ///
 /// OpenMP parallel policy implementation
 ///
-template <typename Iterable,
-          typename Func,
-          typename InnerPolicy,
-          typename ForallParam>
+template <
+    typename Iterable,
+    typename Func,
+    typename InnerPolicy,
+    typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(resources::Host host_res,
-            const omp_parallel_exec<InnerPolicy>&,
-            Iterable&&  iter,
-            Func&&      loop_body,
-            ForallParam f_params)
+forall_impl(
+    resources::Host host_res,
+    const omp_parallel_exec<InnerPolicy>&,
+    Iterable&&  iter,
+    Func&&      loop_body,
+    ForallParam f_params)
 {
-  expt::forall_impl(host_res, InnerPolicy{}, iter, loop_body, f_params);
+  expt::forall_impl(host_res, InnerPolicy {}, iter, loop_body, f_params);
   return resources::EventProxy<resources::Host>(host_res);
 }
 
-} // namespace omp
+}  // namespace omp
 
-} // namespace policy
+}  // namespace policy
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

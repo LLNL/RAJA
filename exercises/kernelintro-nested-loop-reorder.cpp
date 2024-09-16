@@ -97,12 +97,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _raja_kji_loops_start
   using KJI_EXECPOL = RAJA::KernelPolicy<RAJA::statement::For<
       2,
-      RAJA::seq_exec, // k
-      RAJA::statement::For<1,
-                           RAJA::seq_exec, // j
-                           RAJA::statement::For<0,
-                                                RAJA::seq_exec, // i
-                                                RAJA::statement::Lambda<0>>>>>;
+      RAJA::seq_exec,  // k
+      RAJA::statement::For<
+          1,
+          RAJA::seq_exec,  // j
+          RAJA::statement::For<
+              0,
+              RAJA::seq_exec,  // i
+              RAJA::statement::Lambda<0>>>>>;
 
   RAJA::kernel<KJI_EXECPOL>(
       RAJA::make_tuple(IRange, JRange, KRange), [=](IIDX i, JIDX j, KIDX k)
@@ -184,7 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //----------------------------------------------------------------------------//
   //----------------------------------------------------------------------------//
 
-#if 0 // Enable this code block to generate compiler error.
+#if 0  // Enable this code block to generate compiler error.
 //----------------------------------------------------------------------------//
 // The following demonstrates that code will not compile if lambda argument
 // types/order do not match the types/order For statements in the execution

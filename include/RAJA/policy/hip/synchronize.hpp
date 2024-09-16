@@ -43,10 +43,10 @@ void synchronize_impl(const hip_synchronize&)
 }
 
 
-} // end of namespace hip
-} // namespace policy
-} // end of namespace RAJA
+}  // end of namespace hip
+}  // namespace policy
+}  // end of namespace RAJA
 
-#endif // defined(RAJA_ENABLE_HIP)
+#endif  // defined(RAJA_ENABLE_HIP)
 
-#endif // RAJA_synchronize_hip_HPP
+#endif  // RAJA_synchronize_hip_HPP

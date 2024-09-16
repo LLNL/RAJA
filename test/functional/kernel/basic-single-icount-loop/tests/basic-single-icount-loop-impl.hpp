@@ -16,10 +16,11 @@
 #include <numeric>
 #include <vector>
 
-template <typename IDX_TYPE,
-          typename EXEC_POLICY,
-          typename WORKING_RES,
-          typename SEG_TYPE>
+template <
+    typename IDX_TYPE,
+    typename EXEC_POLICY,
+    typename WORKING_RES,
+    typename SEG_TYPE>
 void KernelBasicSingleICountLoopTestImpl(
     const SEG_TYPE&              seg,
     const std::vector<IDX_TYPE>& seg_idx,
@@ -45,21 +46,24 @@ void KernelBasicSingleICountLoopTestImpl(
     data_len++;
   }
 
-  allocateForallTestData<IDX_TYPE>(data_len, erased_working_res, &working_array,
-                                   &check_array, &test_array);
+  allocateForallTestData<IDX_TYPE>(
+      data_len, erased_working_res, &working_array, &check_array, &test_array);
 
-  allocateForallTestData<IDX_TYPE>(data_len, erased_working_res,
-                                   &working_array_i, &check_array_i,
-                                   &test_array_i);
+  allocateForallTestData<IDX_TYPE>(
+      data_len, erased_working_res, &working_array_i, &check_array_i,
+      &test_array_i);
 
-  memset(static_cast<void*>(test_array), 0,
-         sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+  memset(
+      static_cast<void*>(test_array), 0,
+      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array, test_array,
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(
+      working_array, test_array,
+      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(working_array_i, test_array_i,
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(
+      working_array_i, test_array_i,
+      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   if (RAJA::stripIndexType(idx_len) > 0)
   {
@@ -81,7 +85,7 @@ void KernelBasicSingleICountLoopTestImpl(
         });
   }
   else
-  { // zero-length segment
+  {  // zero-length segment
 
     RAJA::kernel_param<EXEC_POLICY>(
         RAJA::make_tuple(seg), RAJA::make_tuple(IDX_TYPE(0)),
@@ -95,24 +99,28 @@ void KernelBasicSingleICountLoopTestImpl(
         });
   }
 
-  working_res.memcpy(check_array, working_array,
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
-  working_res.memcpy(check_array_i, working_array_i,
-                     sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(
+      check_array, working_array,
+      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(
+      check_array_i, working_array_i,
+      sizeof(IDX_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = IDX_TYPE(0); i < data_len; ++i)
   {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
-    ASSERT_EQ(test_array_i[RAJA::stripIndexType(i)],
-              check_array_i[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(
+        test_array[RAJA::stripIndexType(i)],
+        check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(
+        test_array_i[RAJA::stripIndexType(i)],
+        check_array_i[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(erased_working_res, working_array,
-                                     check_array, test_array);
+  deallocateForallTestData<IDX_TYPE>(
+      erased_working_res, working_array, check_array, test_array);
 
-  deallocateForallTestData<IDX_TYPE>(erased_working_res, working_array_i,
-                                     check_array_i, test_array_i);
+  deallocateForallTestData<IDX_TYPE>(
+      erased_working_res, working_array_i, check_array_i, test_array_i);
 }
 
-#endif // __BASIC_SINGLE_ICOUNT_LOOP_SEGMENTS_IMPL_HPP__
+#endif  // __BASIC_SINGLE_ICOUNT_LOOP_SEGMENTS_IMPL_HPP__

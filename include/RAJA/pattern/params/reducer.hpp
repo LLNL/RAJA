@@ -56,7 +56,7 @@ private:
   index_type loc = -1;
 };
 
-} //  namespace expt
+}  //  namespace expt
 
 namespace operators
 {
@@ -74,9 +74,9 @@ struct limits<RAJA::expt::ValLoc<T>>
   }
 };
 
-} //  namespace operators
+}  //  namespace operators
 
-} //  namespace RAJA
+}  //  namespace RAJA
 
 namespace RAJA
 {
@@ -129,7 +129,7 @@ struct Reducer : public ForallParamBase
   static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value;
 };
 
-} // namespace detail
+}  // namespace detail
 
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T* target)
@@ -158,16 +158,16 @@ struct ReducerLoc : public Reducer<Op, T>
   }
 };
 
-} // namespace detail
+}  // namespace detail
 
 template <template <typename, typename, typename> class Op, typename T>
 auto constexpr ReduceLoc(T* target)
 {
   return detail::ReducerLoc<Op<T, T, T>, T>(target);
 }
-} // namespace expt
+}  // namespace expt
 
 
-} //  namespace RAJA
+}  //  namespace RAJA
 
-#endif //  NEW_REDUCE_HPP
+#endif  //  NEW_REDUCE_HPP

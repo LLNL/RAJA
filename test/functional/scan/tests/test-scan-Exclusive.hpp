@@ -11,10 +11,11 @@
 #include <numeric>
 
 template <typename OP, typename T>
-::testing::AssertionResult check_exclusive(const T* actual,
-                                           const T* original,
-                                           int      N,
-                                           T        init = OP::identity())
+::testing::AssertionResult check_exclusive(
+    const T* actual,
+    const T* original,
+    int      N,
+    T        init = OP::identity())
 {
   for (int i = 0; i < N; ++i)
   {
@@ -37,8 +38,8 @@ void ScanExclusiveTestImpl(
 {
   using T = typename OP_TYPE::result_type;
 
-  WORKING_RES               res{WORKING_RES::get_default()};
-  camp::resources::Resource working_res{res};
+  WORKING_RES               res {WORKING_RES::get_default()};
+  camp::resources::Resource working_res {res};
 
   T* work_in;
   T* work_out;
@@ -55,7 +56,7 @@ void ScanExclusiveTestImpl(
 
   RAJA::exclusive_scan<EXEC_POLICY>(
       RAJA::make_span(static_cast<const T*>(work_in), N),
-      RAJA::make_span(work_out, N), OP_TYPE{}, offset);
+      RAJA::make_span(work_out, N), OP_TYPE {}, offset);
 
   res.memcpy(host_out, work_out, sizeof(T) * N);
   res.wait();
@@ -67,7 +68,7 @@ void ScanExclusiveTestImpl(
 
   RAJA::exclusive_scan<EXEC_POLICY>(
       res, RAJA::make_span(static_cast<const T*>(work_in), N),
-      RAJA::make_span(work_out, N), OP_TYPE{}, offset);
+      RAJA::make_span(work_out, N), OP_TYPE {}, offset);
 
   res.memcpy(host_out, work_out, sizeof(T) * N);
   res.wait();
@@ -105,4 +106,4 @@ TYPED_TEST_P(ScanExclusiveTest, ScanExclusive)
 
 REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveTest, ScanExclusive);
 
-#endif // __TEST_SCAN_EXCLUSIVE_HPP__
+#endif  // __TEST_SCAN_EXCLUSIVE_HPP__

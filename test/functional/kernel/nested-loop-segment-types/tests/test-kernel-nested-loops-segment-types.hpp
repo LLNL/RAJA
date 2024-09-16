@@ -55,19 +55,21 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
-  allocateForallTestData<DATA_TYPE>(data_len, working_res, &work_array,
-                                    &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(
+      data_len, working_res, &work_array, &check_array, &test_array);
 
-  RAJA::View<DATA_TYPE, RAJA::Layout<3>> work_view(work_array, dim1, dim2,
-                                                   dim3);
-  RAJA::View<DATA_TYPE, RAJA::Layout<3>> test_view(test_array, dim1, dim2,
-                                                   dim3);
+  RAJA::View<DATA_TYPE, RAJA::Layout<3>> work_view(
+      work_array, dim1, dim2, dim3);
+  RAJA::View<DATA_TYPE, RAJA::Layout<3>> test_view(
+      test_array, dim1, dim2, dim3);
 
-  memset(static_cast<void*>(test_array), 0,
-         sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  memset(
+      static_cast<void*>(test_array), 0,
+      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(work_array, test_array,
-                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(
+      work_array, test_array,
+      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   if (!zero_legth_segment)
   {
@@ -121,8 +123,9 @@ void KernelNestedLoopsSegmentTypesTestImpl(
         });
   }
 
-  working_res.memcpy(check_array, work_array,
-                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(
+      check_array, work_array,
+      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = 0; i < data_len; ++i)
   {
@@ -130,8 +133,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<DATA_TYPE>(working_res, work_array, check_array,
-                                      test_array);
+  deallocateForallTestData<DATA_TYPE>(
+      working_res, work_array, check_array, test_array);
 }
 
 
@@ -146,7 +149,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
 
   std::vector<IDX_TYPE> s1_idx;
   std::vector<IDX_TYPE> s2_idx;
@@ -238,7 +241,8 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
       s1, s1_idx, s2, s2_idx, s6, s6_idx, working_res, perm);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopsSegmentTypesTest,
-                            NestedLoopsSegmentTypesKernel);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelNestedLoopsSegmentTypesTest,
+    NestedLoopsSegmentTypesKernel);
 
-#endif // __TEST_KERNEL_NESTED_LOOPS_SEGMENT_TYPES_HPP__
+#endif  // __TEST_KERNEL_NESTED_LOOPS_SEGMENT_TYPES_HPP__

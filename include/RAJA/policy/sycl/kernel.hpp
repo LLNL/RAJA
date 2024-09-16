@@ -32,4 +32,4 @@
 #include "RAJA/policy/sycl/kernel/TileTCount.hpp"
 #include "RAJA/policy/sycl/kernel/internal.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

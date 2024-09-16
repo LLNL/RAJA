@@ -41,7 +41,8 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaTest, NestedLoopMultiLambdaKernel)
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaTest,
-                            NestedLoopMultiLambdaKernel);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelNestedLoopMultiLambdaTest,
+    NestedLoopMultiLambdaKernel);
 
-#endif // __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__
+#endif  // __TEST_KERNEL_RESOURCE_NESTED_LOOP_MULTI_LAMBDA_HPP__

@@ -37,32 +37,36 @@ namespace internal
  * Assigns the loop iterate to offset ArgumentId
  * Assigns the loop count to param ParamId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int ThreadDim,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    int ThreadDim,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId,
-                         ParamId,
-                         RAJA::sycl_local_012_direct<ThreadDim>,
-                         EnclosedStmts...>,
+    statement::ForICount<
+        ArgumentId,
+        ParamId,
+        RAJA::sycl_local_012_direct<ThreadDim>,
+        EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId,
-                         RAJA::sycl_local_012_direct<ThreadDim>,
-                         EnclosedStmts...>,
+          statement::For<
+              ArgumentId,
+              RAJA::sycl_local_012_direct<ThreadDim>,
+              EnclosedStmts...>,
           Types>
 {
 
   using Base = SyclStatementExecutor<
       Data,
-      statement::For<ArgumentId,
-                     RAJA::sycl_local_012_direct<ThreadDim>,
-                     EnclosedStmts...>,
+      statement::For<
+          ArgumentId,
+          RAJA::sycl_local_012_direct<ThreadDim>,
+          EnclosedStmts...>,
       Types>;
 
   using typename Base::diff_t;
@@ -88,33 +92,37 @@ struct SyclStatementExecutor<
  * Executor for local work sharing loop inside SyclKernel.
  * Assigns the loop index to offset ArgumentId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          typename Mask,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    typename Mask,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId,
-                         ParamId,
-                         RAJA::sycl_local_masked_direct<Mask>,
-                         EnclosedStmts...>,
+    statement::ForICount<
+        ArgumentId,
+        ParamId,
+        RAJA::sycl_local_masked_direct<Mask>,
+        EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId,
-                         RAJA::sycl_local_masked_direct<Mask>,
-                         EnclosedStmts...>,
+          statement::For<
+              ArgumentId,
+              RAJA::sycl_local_masked_direct<Mask>,
+              EnclosedStmts...>,
           Types>
 {
 
-  using Base =
-      SyclStatementExecutor<Data,
-                            statement::For<ArgumentId,
-                                           RAJA::sycl_local_masked_direct<Mask>,
-                                           EnclosedStmts...>,
-                            Types>;
+  using Base = SyclStatementExecutor<
+      Data,
+      statement::For<
+          ArgumentId,
+          RAJA::sycl_local_masked_direct<Mask>,
+          EnclosedStmts...>,
+      Types>;
 
   using typename Base::diff_t;
 
@@ -149,33 +157,35 @@ struct SyclStatementExecutor<
  * Executor for local work sharing loop inside SyclKernel.
  * Assigns the loop index to offset ArgumentId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          typename Mask,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    typename Mask,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId,
-                         ParamId,
-                         RAJA::sycl_local_masked_loop<Mask>,
-                         EnclosedStmts...>,
+    statement::ForICount<
+        ArgumentId,
+        ParamId,
+        RAJA::sycl_local_masked_loop<Mask>,
+        EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId,
-                         RAJA::sycl_local_masked_loop<Mask>,
-                         EnclosedStmts...>,
+          statement::For<
+              ArgumentId,
+              RAJA::sycl_local_masked_loop<Mask>,
+              EnclosedStmts...>,
           Types>
 {
 
-  using Base =
-      SyclStatementExecutor<Data,
-                            statement::For<ArgumentId,
-                                           RAJA::sycl_local_masked_loop<Mask>,
-                                           EnclosedStmts...>,
-                            Types>;
+  using Base = SyclStatementExecutor<
+      Data,
+      statement::
+          For<ArgumentId, RAJA::sycl_local_masked_loop<Mask>, EnclosedStmts...>,
+      Types>;
 
   using typename Base::diff_t;
 
@@ -225,33 +235,37 @@ struct SyclStatementExecutor<
  * Assigns the loop iterate to offset ArgumentId
  * Assigns the loop offset to param ParamId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int ThreadDim,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    int ThreadDim,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId,
-                         ParamId,
-                         RAJA::sycl_local_012_loop<ThreadDim>,
-                         EnclosedStmts...>,
+    statement::ForICount<
+        ArgumentId,
+        ParamId,
+        RAJA::sycl_local_012_loop<ThreadDim>,
+        EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId,
-                         RAJA::sycl_local_012_loop<ThreadDim>,
-                         EnclosedStmts...>,
+          statement::For<
+              ArgumentId,
+              RAJA::sycl_local_012_loop<ThreadDim>,
+              EnclosedStmts...>,
           Types>
 {
 
-  using Base =
-      SyclStatementExecutor<Data,
-                            statement::For<ArgumentId,
-                                           RAJA::sycl_local_012_loop<ThreadDim>,
-                                           EnclosedStmts...>,
-                            Types>;
+  using Base = SyclStatementExecutor<
+      Data,
+      statement::For<
+          ArgumentId,
+          RAJA::sycl_local_012_loop<ThreadDim>,
+          EnclosedStmts...>,
+      Types>;
 
   using typename Base::diff_t;
   using typename Base::enclosed_stmts_t;
@@ -290,32 +304,36 @@ struct SyclStatementExecutor<
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    int BlockDim,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId,
-                         ParamId,
-                         RAJA::sycl_group_012_direct<BlockDim>,
-                         EnclosedStmts...>,
+    statement::ForICount<
+        ArgumentId,
+        ParamId,
+        RAJA::sycl_group_012_direct<BlockDim>,
+        EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId,
-                         RAJA::sycl_group_012_direct<BlockDim>,
-                         EnclosedStmts...>,
+          statement::For<
+              ArgumentId,
+              RAJA::sycl_group_012_direct<BlockDim>,
+              EnclosedStmts...>,
           Types>
 {
 
   using Base = SyclStatementExecutor<
       Data,
-      statement::For<ArgumentId,
-                     RAJA::sycl_group_012_direct<BlockDim>,
-                     EnclosedStmts...>,
+      statement::For<
+          ArgumentId,
+          RAJA::sycl_group_012_direct<BlockDim>,
+          EnclosedStmts...>,
       Types>;
 
   using typename Base::diff_t;
@@ -348,33 +366,37 @@ struct SyclStatementExecutor<
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          int BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    int BlockDim,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId,
-                         ParamId,
-                         RAJA::sycl_group_012_loop<BlockDim>,
-                         EnclosedStmts...>,
+    statement::ForICount<
+        ArgumentId,
+        ParamId,
+        RAJA::sycl_group_012_loop<BlockDim>,
+        EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId,
-                         RAJA::sycl_group_012_loop<BlockDim>,
-                         EnclosedStmts...>,
+          statement::For<
+              ArgumentId,
+              RAJA::sycl_group_012_loop<BlockDim>,
+              EnclosedStmts...>,
           Types>
 {
 
-  using Base =
-      SyclStatementExecutor<Data,
-                            statement::For<ArgumentId,
-                                           RAJA::sycl_group_012_loop<BlockDim>,
-                                           EnclosedStmts...>,
-                            Types>;
+  using Base = SyclStatementExecutor<
+      Data,
+      statement::For<
+          ArgumentId,
+          RAJA::sycl_group_012_loop<BlockDim>,
+          EnclosedStmts...>,
+      Types>;
 
   using typename Base::diff_t;
   using typename Base::enclosed_stmts_t;
@@ -409,11 +431,12 @@ struct SyclStatementExecutor<
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>,
@@ -450,8 +473,8 @@ struct SyclStatementExecutor<
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_policy_sycl_kernel_ForICount_HPP */

@@ -12,21 +12,23 @@
 
 #include "tests/test-reducer-constructors.hpp"
 
-using SequentialBasicReducerConstructorTypes =
-    Test<camp::cartesian_product<SequentialReducerPolicyList,
-                                 DataTypeList,
-                                 HostResourceList>>::Types;
+using SequentialBasicReducerConstructorTypes = Test<camp::cartesian_product<
+    SequentialReducerPolicyList,
+    DataTypeList,
+    HostResourceList>>::Types;
 
-using SequentialInitReducerConstructorTypes =
-    Test<camp::cartesian_product<SequentialReducerPolicyList,
-                                 DataTypeList,
-                                 HostResourceList,
-                                 SequentialUnitTestPolicyList>>::Types;
+using SequentialInitReducerConstructorTypes = Test<camp::cartesian_product<
+    SequentialReducerPolicyList,
+    DataTypeList,
+    HostResourceList,
+    SequentialUnitTestPolicyList>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
-                               ReducerBasicConstructorUnitTest,
-                               SequentialBasicReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    SequentialBasicTest,
+    ReducerBasicConstructorUnitTest,
+    SequentialBasicReducerConstructorTypes);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(SequentialInitTest,
-                               ReducerInitConstructorUnitTest,
-                               SequentialInitReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    SequentialInitTest,
+    ReducerInitConstructorUnitTest,
+    SequentialInitReducerConstructorTypes);

@@ -27,7 +27,7 @@ TYPED_TEST_SUITE(ListSegmentUnitTest, UnitIndexTypes);
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests in this file.
 //
-camp::resources::Resource host_res{camp::resources::Host()};
+camp::resources::Resource host_res {camp::resources::Host()};
 
 
 TYPED_TEST(ListSegmentUnitTest, Constructors)
@@ -83,10 +83,10 @@ TYPED_TEST(ListSegmentUnitTest, Swaps)
 
 TYPED_TEST(ListSegmentUnitTest, Equality)
 {
-  std::vector<TypeParam>            idx1{5, 3, 1, 2};
+  std::vector<TypeParam>            idx1 {5, 3, 1, 2};
   RAJA::TypedListSegment<TypeParam> list(idx1, host_res);
 
-  std::vector<TypeParam> idx2{2, 1, 3, 5};
+  std::vector<TypeParam> idx2 {2, 1, 3, 5};
 
   ASSERT_EQ(list.indicesEqual(&idx2.begin()[0], idx2.size()), false);
 
@@ -97,7 +97,7 @@ TYPED_TEST(ListSegmentUnitTest, Equality)
 
 TYPED_TEST(ListSegmentUnitTest, Iterators)
 {
-  std::vector<TypeParam>            idx1{5, 3, 1, 2};
+  std::vector<TypeParam>            idx1 {5, 3, 1, 2};
   RAJA::TypedListSegment<TypeParam> list(idx1, host_res);
 
   ASSERT_EQ(TypeParam(5), *list.begin());

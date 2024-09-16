@@ -15,25 +15,26 @@
 
 #include <cmath>
 
-template <typename ExecPolicy,
-          typename AtomicPolicy,
-          typename WORKINGRES,
-          typename IdxType,
-          typename T>
+template <
+    typename ExecPolicy,
+    typename AtomicPolicy,
+    typename WORKINGRES,
+    typename IdxType,
+    typename T>
 void ForallAtomicOutOfBoundsMultiViewTestImpl(IdxType N)
 {
   // Functionally similar to ForallAtomicViewTestImpl
 
   int dst_side = static_cast<int>(
-      std::sqrt(static_cast<double>(N / 2))); // dest[] dimension
-  int src_side = dst_side * 2;                // source[] dimension
+      std::sqrt(static_cast<double>(N / 2)));  // dest[] dimension
+  int src_side = dst_side * 2;                 // source[] dimension
 
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
   RAJA::TypedRangeSegment<IdxType> seg_dstside(0, dst_side);
   RAJA::TypedRangeSegment<IdxType> seg_srcside(0, src_side);
 
-  camp::resources::Resource work_res{WORKINGRES()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource work_res {WORKINGRES()};
+  camp::resources::Resource host_res {camp::resources::Host()};
 
   T*  actualsource = work_res.allocate<T>(N);
   T** source       = work_res.allocate<T*>(src_side);
@@ -87,8 +88,9 @@ template <typename T>
 class ForallAtomicOutOfBoundsMultiViewTest : public ::testing::Test
 {};
 
-TYPED_TEST_P(ForallAtomicOutOfBoundsMultiViewTest,
-             AtomicOutOfBoundsMultiViewForall)
+TYPED_TEST_P(
+    ForallAtomicOutOfBoundsMultiViewTest,
+    AtomicOutOfBoundsMultiViewForall)
 {
   using AExec   = typename camp::at<TypeParam, camp::num<0>>::type;
   using APol    = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -96,11 +98,12 @@ TYPED_TEST_P(ForallAtomicOutOfBoundsMultiViewTest,
   using IdxType = typename camp::at<TypeParam, camp::num<3>>::type;
   using DType   = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallAtomicOutOfBoundsMultiViewTestImpl<AExec, APol, ResType, IdxType,
-                                           DType>(20000);
+  ForallAtomicOutOfBoundsMultiViewTestImpl<
+      AExec, APol, ResType, IdxType, DType>(20000);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicOutOfBoundsMultiViewTest,
-                            AtomicOutOfBoundsMultiViewForall);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallAtomicOutOfBoundsMultiViewTest,
+    AtomicOutOfBoundsMultiViewForall);
 
-#endif //__TEST_FORALL_ATOMICOUTOFBOUNDS_MULTIVIEW_HPP__
+#endif  //__TEST_FORALL_ATOMICOUTOFBOUNDS_MULTIVIEW_HPP__

@@ -143,7 +143,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept
 #define RAJA_OMP_DECLARE_REDUCTION_COMBINE                                     \
   _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ") // initializer(omp_priv = omp_in) ")
+        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")  // initializer(omp_priv = omp_in) ")
 #endif
 
 
@@ -152,12 +152,12 @@ inline void RAJA_ABORT_OR_THROW(const char* str)
 {
 #if defined(__SYCL_DEVICE_ONLY__)
   // segfault here ran into linking problems
-  *((volatile char*)0) = 0; // write to address 0
+  *((volatile char*)0) = 0;  // write to address 0
 #else
   printf("%s\n", str);
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   // seg faulting here instead of calling std::abort for omp target
-  *((volatile char*)0) = 0; // write to address 0
+  *((volatile char*)0) = 0;  // write to address 0
 #elif defined(__CUDA_ARCH__)
   asm("trap;");
 

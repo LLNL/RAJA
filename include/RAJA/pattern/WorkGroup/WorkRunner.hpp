@@ -45,9 +45,10 @@ struct HoldBodyArgs_base
 {
   // NOTE: This constructor is disabled when body_in is not LoopBody
   // to avoid it conflicting with the copy and move constructors
-  template <typename body_in,
-            typename = typename std::enable_if<
-                std::is_same<LoopBody, camp::decay<body_in>>::value>::type>
+  template <
+      typename body_in,
+      typename = typename std::enable_if<
+          std::is_same<LoopBody, camp::decay<body_in>>::value>::type>
   HoldBodyArgs_base(body_in&& body, Args... args)
       : m_body(std::forward<body_in>(body)),
         m_arg_tuple(std::forward<Args>(args)...)
@@ -70,7 +71,7 @@ struct HoldBodyArgs_host : HoldBodyArgs_base<LoopBody, Args...>
 
   RAJA_INLINE void operator()(index_type i) const
   {
-    invoke(i, camp::make_idx_seq_t<sizeof...(Args)>{});
+    invoke(i, camp::make_idx_seq_t<sizeof...(Args)> {});
   }
 
   template <camp::idx_t... Is>
@@ -92,7 +93,7 @@ struct HoldBodyArgs_device : HoldBodyArgs_base<LoopBody, Args...>
 
   RAJA_DEVICE RAJA_INLINE void operator()(index_type i) const
   {
-    invoke(i, camp::make_idx_seq_t<sizeof...(Args)>{});
+    invoke(i, camp::make_idx_seq_t<sizeof...(Args)> {});
   }
 
   template <camp::idx_t... Is>
@@ -105,11 +106,12 @@ struct HoldBodyArgs_device : HoldBodyArgs_base<LoopBody, Args...>
 /*!
  * A body and segment holder for storing loops that will be executed as foralls
  */
-template <typename ExecutionPolicy,
-          typename Segment_type,
-          typename LoopBody,
-          typename index_type,
-          typename... Args>
+template <
+    typename ExecutionPolicy,
+    typename Segment_type,
+    typename LoopBody,
+    typename index_type,
+    typename... Args>
 struct HoldForall
 {
   using resource_type = typename resources::get_resource<ExecutionPolicy>::type;
@@ -126,8 +128,9 @@ struct HoldForall
 
   RAJA_INLINE void operator()(resource_type r, Args... args) const
   {
-    wrap::forall(r, ExecutionPolicy(), m_segment,
-                 HoldBodyArgs{m_body, std::forward<Args>(args)...});
+    wrap::forall(
+        r, ExecutionPolicy(), m_segment,
+        HoldBodyArgs {m_body, std::forward<Args>(args)...});
   }
 
 private:
@@ -139,25 +142,27 @@ private:
 /*!
  * A class that handles running work in a work container
  */
-template <typename EXEC_POLICY_T,
-          typename ORDER_POLICY_T,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
+template <
+    typename EXEC_POLICY_T,
+    typename ORDER_POLICY_T,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
 struct WorkRunner;
 
 
 /*!
  * Base class describing storage for ordered runners using forall
  */
-template <typename FORALL_EXEC_POLICY,
-          typename EXEC_POLICY_T,
-          typename ORDER_POLICY_T,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
+template <
+    typename FORALL_EXEC_POLICY,
+    typename EXEC_POLICY_T,
+    typename ORDER_POLICY_T,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
 struct WorkRunnerForallOrdered_base
 {
   using exec_policy     = EXEC_POLICY_T;
@@ -174,12 +179,12 @@ struct WorkRunnerForallOrdered_base
   struct holder_type
   {
     template <typename T>
-    using type =
-        HoldForall<forall_exec_policy,
-                   typename camp::at<T, camp::num<0>>::type, // segment_type
-                   typename camp::at<T, camp::num<1>>::type, // loop_type
-                   index_type,
-                   Args...>;
+    using type = HoldForall<
+        forall_exec_policy,
+        typename camp::at<T, camp::num<0>>::type,  // segment_type
+        typename camp::at<T, camp::num<1>>::type,  // loop_type
+        index_type,
+        Args...>;
   };
   ///
   template <typename T>
@@ -194,11 +199,12 @@ struct WorkRunnerForallOrdered_base
   using dispatcher_holder_policy =
       dispatcher_transform_types_t<dispatch_policy, holder_type>;
 
-  using dispatcher_type = Dispatcher<Platform::host,
-                                     dispatcher_holder_policy,
-                                     void,
-                                     resource_type,
-                                     Args...>;
+  using dispatcher_type = Dispatcher<
+      Platform::host,
+      dispatcher_holder_policy,
+      void,
+      resource_type,
+      Args...>;
 
   WorkRunnerForallOrdered_base() = default;
 
@@ -219,7 +225,7 @@ struct WorkRunnerForallOrdered_base
         holder_type_t<camp::list<camp::decay<segment_T>, camp::decay<loop_T>>>;
 
     storage.template emplace<holder>(
-        get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
+        get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy {}),
         std::forward<segment_T>(seg), std::forward<loop_T>(loop));
   }
 
@@ -233,40 +239,43 @@ struct WorkRunnerForallOrdered_base
 /*!
  * Runs work in a storage container in order using forall
  */
-template <typename FORALL_EXEC_POLICY,
-          typename EXEC_POLICY_T,
-          typename ORDER_POLICY_T,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
-struct WorkRunnerForallOrdered
-    : WorkRunnerForallOrdered_base<FORALL_EXEC_POLICY,
-                                   EXEC_POLICY_T,
-                                   ORDER_POLICY_T,
-                                   DISPATCH_POLICY_T,
-                                   ALLOCATOR_T,
-                                   INDEX_T,
-                                   Args...>
+template <
+    typename FORALL_EXEC_POLICY,
+    typename EXEC_POLICY_T,
+    typename ORDER_POLICY_T,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
+struct WorkRunnerForallOrdered : WorkRunnerForallOrdered_base<
+                                     FORALL_EXEC_POLICY,
+                                     EXEC_POLICY_T,
+                                     ORDER_POLICY_T,
+                                     DISPATCH_POLICY_T,
+                                     ALLOCATOR_T,
+                                     INDEX_T,
+                                     Args...>
 {
-  using base = WorkRunnerForallOrdered_base<FORALL_EXEC_POLICY,
-                                            EXEC_POLICY_T,
-                                            ORDER_POLICY_T,
-                                            DISPATCH_POLICY_T,
-                                            ALLOCATOR_T,
-                                            INDEX_T,
-                                            Args...>;
+  using base = WorkRunnerForallOrdered_base<
+      FORALL_EXEC_POLICY,
+      EXEC_POLICY_T,
+      ORDER_POLICY_T,
+      DISPATCH_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>;
   using base::base;
 
   // run the loops using forall in the order that they were enqueued
   template <typename WorkContainer>
-  typename base::per_run_storage run(WorkContainer const&         storage,
-                                     typename base::resource_type r,
-                                     Args... args) const
+  typename base::per_run_storage
+  run(WorkContainer const&         storage,
+      typename base::resource_type r,
+      Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
 
-    typename base::per_run_storage run_storage{};
+    typename base::per_run_storage run_storage {};
 
     auto end = storage.end();
     for (auto iter = storage.begin(); iter != end; ++iter)
@@ -281,41 +290,44 @@ struct WorkRunnerForallOrdered
 /*!
  * Runs work in a storage container in reverse order using forall
  */
-template <typename FORALL_EXEC_POLICY,
-          typename EXEC_POLICY_T,
-          typename ORDER_POLICY_T,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
-struct WorkRunnerForallReverse
-    : WorkRunnerForallOrdered_base<FORALL_EXEC_POLICY,
-                                   EXEC_POLICY_T,
-                                   ORDER_POLICY_T,
-                                   DISPATCH_POLICY_T,
-                                   ALLOCATOR_T,
-                                   INDEX_T,
-                                   Args...>
+template <
+    typename FORALL_EXEC_POLICY,
+    typename EXEC_POLICY_T,
+    typename ORDER_POLICY_T,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
+struct WorkRunnerForallReverse : WorkRunnerForallOrdered_base<
+                                     FORALL_EXEC_POLICY,
+                                     EXEC_POLICY_T,
+                                     ORDER_POLICY_T,
+                                     DISPATCH_POLICY_T,
+                                     ALLOCATOR_T,
+                                     INDEX_T,
+                                     Args...>
 {
-  using base = WorkRunnerForallOrdered_base<FORALL_EXEC_POLICY,
-                                            EXEC_POLICY_T,
-                                            ORDER_POLICY_T,
-                                            DISPATCH_POLICY_T,
-                                            ALLOCATOR_T,
-                                            INDEX_T,
-                                            Args...>;
+  using base = WorkRunnerForallOrdered_base<
+      FORALL_EXEC_POLICY,
+      EXEC_POLICY_T,
+      ORDER_POLICY_T,
+      DISPATCH_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>;
   using base::base;
 
   // run the loops using forall in the reverse order to the order they were
   // enqueued
   template <typename WorkContainer>
-  typename base::per_run_storage run(WorkContainer const&         storage,
-                                     typename base::resource_type r,
-                                     Args... args) const
+  typename base::per_run_storage
+  run(WorkContainer const&         storage,
+      typename base::resource_type r,
+      Args... args) const
   {
     using value_type = typename WorkContainer::value_type;
 
-    typename base::per_run_storage run_storage{};
+    typename base::per_run_storage run_storage {};
 
     auto begin = storage.begin();
     for (auto iter = storage.end(); iter != begin; --iter)
@@ -327,8 +339,8 @@ struct WorkRunnerForallReverse
   }
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -93,8 +93,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running sequential inclusive_scan (default)...\n";
 
   // _scan_inclusive_seq_start
-  RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
-                                       RAJA::make_span(out, N));
+  RAJA::inclusive_scan<RAJA::seq_exec>(
+      RAJA::make_span(in, N), RAJA::make_span(out, N));
   // _scan_inclusive_seq_end
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
@@ -108,9 +108,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_inclusive_seq_plus_start
-  RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
-                                       RAJA::make_span(out, N),
-                                       RAJA::operators::plus<int>{});
+  RAJA::inclusive_scan<RAJA::seq_exec>(
+      RAJA::make_span(in, N), RAJA::make_span(out, N),
+      RAJA::operators::plus<int> {});
   // _scan_inclusive_seq_plus_end
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
@@ -124,9 +124,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_seq_plus_start
-  RAJA::exclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
-                                       RAJA::make_span(out, N),
-                                       RAJA::operators::plus<int>{});
+  RAJA::exclusive_scan<RAJA::seq_exec>(
+      RAJA::make_span(in, N), RAJA::make_span(out, N),
+      RAJA::operators::plus<int> {});
   // _scan_exclusive_seq_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -140,8 +140,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _scan_inclusive_inplace_seq_min_start
   std::copy_n(in, N, out);
 
-  RAJA::inclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                               RAJA::operators::minimum<int>{});
+  RAJA::inclusive_scan_inplace<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::operators::minimum<int> {});
   // _scan_inclusive_inplace_seq_min_end
 
   CHECK_INC_SCAN_RESULTS(OP_MIN_INT)
@@ -155,8 +155,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_seq_max_start
-  RAJA::exclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                               RAJA::operators::maximum<int>{});
+  RAJA::exclusive_scan_inplace<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::operators::maximum<int> {});
   // _scan_exclusive_inplace_seq_max_end
 
   CHECK_EXC_SCAN_RESULTS(OP_MAX_INT)
@@ -175,7 +175,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _scan_inclusive_omp_plus_start
   RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(
       RAJA::make_span(in, N), RAJA::make_span(out, N),
-      RAJA::operators::plus<int>{});
+      RAJA::operators::plus<int> {});
   // _scan_inclusive_omp_plus_end
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
@@ -190,7 +190,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_exclusive_inplace_omp_plus_start
   RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(
-      RAJA::make_span(out, N), RAJA::operators::plus<int>{});
+      RAJA::make_span(out, N), RAJA::operators::plus<int> {});
   // _scan_exclusive_inplace_omp_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -213,7 +213,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_inclusive_inplace_cuda_plus_start
   RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::make_span(out, N), RAJA::operators::plus<int>{});
+      RAJA::make_span(out, N), RAJA::operators::plus<int> {});
   // _scan_inclusive_inplace_cuda_plus_end
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
@@ -228,7 +228,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_exclusive_inplace_cuda_plus_start
   RAJA::exclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::make_span(out, N), RAJA::operators::plus<int>{});
+      RAJA::make_span(out, N), RAJA::operators::plus<int> {});
   // _scan_exclusive_inplace_cuda_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -244,7 +244,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _scan_exclusive_cuda_plus_start
   RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       RAJA::make_span(in, N), RAJA::make_span(out, N),
-      RAJA::operators::plus<int>{});
+      RAJA::operators::plus<int> {});
   // _scan_exclusive_cuda_plus_end
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
@@ -272,7 +272,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _scan_inclusive_inplace_hip_plus_start
   RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      RAJA::make_span(d_out, N), RAJA::operators::plus<int>{});
+      RAJA::make_span(d_out, N), RAJA::operators::plus<int> {});
   // _scan_inclusive_inplace_hip_plus_end
 
   hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
@@ -290,7 +290,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
       RAJA::make_span(d_in, N), RAJA::make_span(d_out, N),
-      RAJA::operators::plus<int>{});
+      RAJA::operators::plus<int> {});
 
   hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
 

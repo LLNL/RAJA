@@ -34,9 +34,8 @@ struct TensorOperatorAdd
 {
 
   template <typename LEFT, typename RIGHT>
-  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const&  left,
-                                                RIGHT const& right)
-      -> decltype(left + right)
+  RAJA_INLINE RAJA_HOST_DEVICE static auto
+  eval(LEFT const& left, RIGHT const& right) -> decltype(left + right)
   {
     return left + right;
   }
@@ -50,9 +49,8 @@ struct TensorOperatorSubtract
 {
 
   template <typename LEFT, typename RIGHT>
-  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const&  left,
-                                                RIGHT const& right)
-      -> decltype(left - right)
+  RAJA_INLINE RAJA_HOST_DEVICE static auto
+  eval(LEFT const& left, RIGHT const& right) -> decltype(left - right)
   {
     return left - right;
   }
@@ -105,9 +103,10 @@ struct OperatorTraits
  * Specialization when the left operand is a scalar
  */
 template <typename LHS_TYPE, typename RHS_TYPE>
-struct OperatorTraits<LHS_TYPE,
-                      RHS_TYPE,
-                      typename std::enable_if<LHS_TYPE::s_num_dims == 0>::type>
+struct OperatorTraits<
+    LHS_TYPE,
+    RHS_TYPE,
+    typename std::enable_if<LHS_TYPE::s_num_dims == 0>::type>
 {
 
   using result_type                       = typename RHS_TYPE::result_type;
@@ -129,9 +128,10 @@ struct OperatorTraits<LHS_TYPE,
  * Specialization when the right operand is a scalar
  */
 template <typename LHS_TYPE, typename RHS_TYPE>
-struct OperatorTraits<LHS_TYPE,
-                      RHS_TYPE,
-                      typename std::enable_if<RHS_TYPE::s_num_dims == 0>::type>
+struct OperatorTraits<
+    LHS_TYPE,
+    RHS_TYPE,
+    typename std::enable_if<RHS_TYPE::s_num_dims == 0>::type>
 {
 
   using result_type                       = typename LHS_TYPE::result_type;
@@ -150,12 +150,12 @@ struct OperatorTraits<LHS_TYPE,
 };
 
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

@@ -106,7 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   for (int i = 0; i < N; ++i)
   {
-    ang[i] = atan2(alt[i], dist[i]); // set angle in radians
+    ang[i] = atan2(alt[i], dist[i]);  // set angle in radians
   }
 
 
@@ -155,23 +155,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL1 = RAJA::seq_exec;
 
-  RAJA::inclusive_scan<EXEC_POL1>(RAJA::make_span(ang, N),
-                                  RAJA::make_span(ang_max, N),
-                                  RAJA::operators::maximum<double>{});
+  RAJA::inclusive_scan<EXEC_POL1>(
+      RAJA::make_span(ang, N), RAJA::make_span(ang_max, N),
+      RAJA::operators::maximum<double> {});
 
 
-  RAJA::forall<EXEC_POL1>(RAJA::RangeSegment(0, N),
-                          [=](int i)
-                          {
-                            if (ang[i] >= ang_max[i])
-                            {
-                              visible[i] = 1;
-                            }
-                            else
-                            {
-                              visible[i] = 0;
-                            }
-                          });
+  RAJA::forall<EXEC_POL1>(
+      RAJA::RangeSegment(0, N),
+      [=](int i)
+      {
+        if (ang[i] >= ang_max[i])
+        {
+          visible[i] = 1;
+        }
+        else
+        {
+          visible[i] = 0;
+        }
+      });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
@@ -192,22 +193,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL2 = RAJA::omp_parallel_for_exec;
 
-  RAJA::inclusive_scan<EXEC_POL2>(RAJA::make_span(ang, N),
-                                  RAJA::make_span(ang_max, N),
-                                  RAJA::operators::maximum<double>{});
+  RAJA::inclusive_scan<EXEC_POL2>(
+      RAJA::make_span(ang, N), RAJA::make_span(ang_max, N),
+      RAJA::operators::maximum<double> {});
 
-  RAJA::forall<EXEC_POL2>(RAJA::RangeSegment(0, N),
-                          [=](int i)
-                          {
-                            if (ang[i] >= ang_max[i])
-                            {
-                              visible[i] = 1;
-                            }
-                            else
-                            {
-                              visible[i] = 0;
-                            }
-                          });
+  RAJA::forall<EXEC_POL2>(
+      RAJA::RangeSegment(0, N),
+      [=](int i)
+      {
+        if (ang[i] >= ang_max[i])
+        {
+          visible[i] = 1;
+        }
+        else
+        {
+          visible[i] = 0;
+        }
+      });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";
@@ -230,22 +232,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using EXEC_POL3 = RAJA::cuda_exec<CUDA_BLOCK_SIZE>;
 
-  RAJA::inclusive_scan<EXEC_POL3>(RAJA::make_span(ang, N),
-                                  RAJA::make_span(ang_max, N),
-                                  RAJA::operators::maximum<double>{});
+  RAJA::inclusive_scan<EXEC_POL3>(
+      RAJA::make_span(ang, N), RAJA::make_span(ang_max, N),
+      RAJA::operators::maximum<double> {});
 
-  RAJA::forall<EXEC_POL3>(RAJA::RangeSegment(0, N),
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            if (ang[i] >= ang_max[i])
-                            {
-                              visible[i] = 1;
-                            }
-                            else
-                            {
-                              visible[i] = 0;
-                            }
-                          });
+  RAJA::forall<EXEC_POL3>(
+      RAJA::RangeSegment(0, N),
+      [=] RAJA_DEVICE(int i)
+      {
+        if (ang[i] >= ang_max[i])
+        {
+          visible[i] = 1;
+        }
+        else
+        {
+          visible[i] = 0;
+        }
+      });
 
   num_visible = checkResult(visible, visible_ref, N);
   std::cout << "\n\t num visible points = " << num_visible << "\n\n";

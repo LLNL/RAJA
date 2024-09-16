@@ -37,12 +37,12 @@ namespace detail
 template <typename T, typename Dispatcher_T>
 inline const Dispatcher_T* get_Dispatcher(seq_work const&)
 {
-  static Dispatcher_T dispatcher{Dispatcher_T::template makeDispatcher<T>()};
+  static Dispatcher_T dispatcher {Dispatcher_T::template makeDispatcher<T>()};
   return &dispatcher;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

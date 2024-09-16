@@ -43,10 +43,11 @@ struct LoopTypes<camp::list<SegmentTypes...>, camp::list<OffsetTypes...>>
 
   // This ensures that you don't double-loop over a segment within the same
   // loop nesting
-  static_assert(s_num_segments == sizeof...(OffsetTypes),
-                "Number of segments "
-                "and offsets must "
-                "match");
+  static_assert(
+      s_num_segments == sizeof...(OffsetTypes),
+      "Number of segments "
+      "and offsets must "
+      "match");
 
   using segment_types_t = camp::list<SegmentTypes...>;
   using offset_types_t  = camp::list<OffsetTypes...>;
@@ -68,19 +69,20 @@ struct SetSegmentTypeHelper<Types, Segment, T, camp::idx_seq<SEQ...>>
   using segment_list = typename Types::segment_types_t;
   using offset_list  = typename Types::offset_types_t;
 
-  static_assert(std::is_same<camp::at_v<segment_list, Segment>, void>::value,
-                "Segment was already assigned: Probably looping over same "
-                "segment in loop nest");
+  static_assert(
+      std::is_same<camp::at_v<segment_list, Segment>, void>::value,
+      "Segment was already assigned: Probably looping over same "
+      "segment in loop nest");
 
   using type = LoopTypes<
-      camp::list<
-          typename std::conditional<SEQ == Segment,
-                                    T,
-                                    camp::at_v<segment_list, SEQ>>::type...>,
-      camp::list<
-          typename std::conditional<SEQ == Segment,
-                                    T,
-                                    camp::at_v<segment_list, SEQ>>::type...>>;
+      camp::list<typename std::conditional<
+          SEQ == Segment,
+          T,
+          camp::at_v<segment_list, SEQ>>::type...>,
+      camp::list<typename std::conditional<
+          SEQ == Segment,
+          T,
+          camp::at_v<segment_list, SEQ>>::type...>>;
 };
 
 
@@ -98,8 +100,8 @@ using setSegmentTypeFromData = setSegmentType<
     camp::at_v<typename camp::decay<Data>::index_types_t, Segment>>;
 
 
-} // end namespace internal
-} // end namespace RAJA
+}  // end namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_LoopTypes_HPP */

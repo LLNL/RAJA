@@ -43,10 +43,10 @@ resolve(KernelName&, const RAJA::cuda::detail::cudaInfo&)
 #endif
 }
 
-} //  namespace detail
-} //  namespace expt
-} //  namespace RAJA
+}  //  namespace detail
+}  //  namespace expt
+}  //  namespace RAJA
 
 #endif
 
-#endif //  NEW_REDUCE_CUDA_REDUCE_HPP
+#endif  //  NEW_REDUCE_CUDA_REDUCE_HPP

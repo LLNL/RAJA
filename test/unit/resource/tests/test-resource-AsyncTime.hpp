@@ -56,14 +56,14 @@ void ResourceAsyncTimeTestImpl(EXEC_POL&&)
 template <typename WORKING_RES, size_t BLOCK_SIZE, bool Async>
 void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
 {
-  constexpr std::size_t ARRAY_SIZE{10000};
+  constexpr std::size_t ARRAY_SIZE {10000};
   using namespace RAJA;
 
-  constexpr std::size_t NUM_STREAMS{8};
+  constexpr std::size_t NUM_STREAMS {8};
   WORKING_RES           dev[NUM_STREAMS];
   resources::Host       host;
 
-  int clockrate{get_clockrate()};
+  int clockrate {get_clockrate()};
   ASSERT_TRUE(clockrate != -1);
 
   using AsyncExecPol = RAJA::cuda_exec<BLOCK_SIZE, true>;
@@ -73,9 +73,9 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   sync_timer.start();
   for (std::size_t stream = 0; stream < NUM_STREAMS; ++stream)
   {
-    forall<SyncExecPol>(dev[stream], RangeSegment(0, ARRAY_SIZE),
-                        [=] RAJA_HOST_DEVICE(int i)
-                        { gpu_time_wait_for(100, clockrate); });
+    forall<SyncExecPol>(
+        dev[stream], RangeSegment(0, ARRAY_SIZE),
+        [=] RAJA_HOST_DEVICE(int i) { gpu_time_wait_for(100, clockrate); });
   }
   sync_timer.stop();
   RAJA::Timer::ElapsedType t_sync = sync_timer.elapsed();
@@ -84,9 +84,9 @@ void ResourceAsyncTimeTestImpl(RAJA::cuda_exec<BLOCK_SIZE, Async>&&)
   async_timer.start();
   for (std::size_t stream = 0; stream < NUM_STREAMS; ++stream)
   {
-    forall<AsyncExecPol>(dev[stream], RangeSegment(0, ARRAY_SIZE),
-                         [=] RAJA_HOST_DEVICE(int i)
-                         { gpu_time_wait_for(100, clockrate); });
+    forall<AsyncExecPol>(
+        dev[stream], RangeSegment(0, ARRAY_SIZE),
+        [=] RAJA_HOST_DEVICE(int i) { gpu_time_wait_for(100, clockrate); });
   }
   async_timer.stop();
   RAJA::Timer::ElapsedType t_async = async_timer.elapsed();
@@ -126,4 +126,4 @@ TYPED_TEST_P(ResourceAsyncTimeTest, ResourceAsyncTime)
 
 REGISTER_TYPED_TEST_SUITE_P(ResourceAsyncTimeTest, ResourceAsyncTime);
 
-#endif // __TEST_RESOURCE_ASYNC_HPP__
+#endif  // __TEST_RESOURCE_ASYNC_HPP__

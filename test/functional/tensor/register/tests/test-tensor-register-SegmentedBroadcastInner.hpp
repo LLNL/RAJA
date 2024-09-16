@@ -33,7 +33,7 @@ void SegmentedBroadcastInnerImpl()
   //  printf("input: ");
   for (camp::idx_t i = 0; i < num_elem; ++i)
   {
-    input0_hptr[i] = (element_t)(i + 1); //+NO_OPT_RAND);
+    input0_hptr[i] = (element_t)(i + 1);  //+NO_OPT_RAND);
     //    printf("%lf ", (double)input0_hptr[i]);
   }
   //  printf("\n");
@@ -104,9 +104,9 @@ void SegmentedBroadcastInnerImpl()
         ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
-    } // segment
+    }  // segment
 
-  } // segbits
+  }  // segbits
 
 
   // Cleanup

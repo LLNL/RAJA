@@ -17,10 +17,11 @@
 // not aligned with warp boundaries, for example, to check that reduction
 // mechanics don't depend on any sort of special indexing.
 //
-template <typename IDX_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename REDUCE_POLICY>
+template <
+    typename IDX_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename REDUCE_POLICY>
 void ForallIndexSetReduceSumMultipleTestImpl()
 {
   using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
@@ -39,21 +40,21 @@ void ForallIndexSetReduceSumMultipleTestImpl()
 
   const IDX_TYPE alen = 15286;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
 
   double* dworking_array;
   double* dcheck_array;
   double* dtest_array;
 
-  allocateForallTestData<double>(alen, working_res, &dworking_array,
-                                 &dcheck_array, &dtest_array);
+  allocateForallTestData<double>(
+      alen, working_res, &dworking_array, &dcheck_array, &dtest_array);
 
   int* iworking_array;
   int* icheck_array;
   int* itest_array;
 
-  allocateForallTestData<int>(alen, working_res, &iworking_array, &icheck_array,
-                              &itest_array);
+  allocateForallTestData<int>(
+      alen, working_res, &iworking_array, &icheck_array, &itest_array);
 
   const double dinit_val = 0.1;
   const int    iinit_val = 1;
@@ -79,33 +80,36 @@ void ForallIndexSetReduceSumMultipleTestImpl()
   for (int tcount = 1; tcount <= test_repeat; ++tcount)
   {
 
-    RAJA::forall<EXEC_POLICY>(iset,
-                              [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
-                              {
-                                dsum0 += 1.0 * dworking_array[idx];
-                                isum1 += 2 * iworking_array[idx];
-                                dsum2 += 3.0 * dworking_array[idx];
-                                isum3 += 4 * iworking_array[idx];
-                              });
+    RAJA::forall<EXEC_POLICY>(
+        iset,
+        [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+        {
+          dsum0 += 1.0 * dworking_array[idx];
+          isum1 += 2 * iworking_array[idx];
+          dsum2 += 3.0 * dworking_array[idx];
+          isum3 += 4 * iworking_array[idx];
+        });
 
     double dchk_val = dinit_val * static_cast<double>(iset.getLength());
     int    ichk_val = iinit_val * static_cast<int>(iset.getLength());
 
-    ASSERT_FLOAT_EQ(static_cast<double>(dsum0.get()),
-                    tcount * (1 * dchk_val) + (drinit * 1.0));
-    ASSERT_EQ(static_cast<int>(isum1.get()),
-              tcount * (2 * ichk_val) + (irinit * 2));
-    ASSERT_FLOAT_EQ(static_cast<double>(dsum2.get()),
-                    tcount * (3 * dchk_val) + (drinit * 3.0));
-    ASSERT_EQ(static_cast<int>(isum3.get()),
-              tcount * (4 * ichk_val) + (irinit * 4));
+    ASSERT_FLOAT_EQ(
+        static_cast<double>(dsum0.get()),
+        tcount * (1 * dchk_val) + (drinit * 1.0));
+    ASSERT_EQ(
+        static_cast<int>(isum1.get()), tcount * (2 * ichk_val) + (irinit * 2));
+    ASSERT_FLOAT_EQ(
+        static_cast<double>(dsum2.get()),
+        tcount * (3 * dchk_val) + (drinit * 3.0));
+    ASSERT_EQ(
+        static_cast<int>(isum3.get()), tcount * (4 * ichk_val) + (irinit * 4));
   }
 
-  deallocateForallTestData<double>(working_res, dworking_array, dcheck_array,
-                                   dtest_array);
+  deallocateForallTestData<double>(
+      working_res, dworking_array, dcheck_array, dtest_array);
 
-  deallocateForallTestData<int>(working_res, iworking_array, icheck_array,
-                                itest_array);
+  deallocateForallTestData<int>(
+      working_res, iworking_array, icheck_array, itest_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceSumMultipleTest);
@@ -113,19 +117,21 @@ template <typename T>
 class ForallIndexSetReduceSumMultipleTest : public ::testing::Test
 {};
 
-TYPED_TEST_P(ForallIndexSetReduceSumMultipleTest,
-             ReduceSumMultipleForallIndexSet)
+TYPED_TEST_P(
+    ForallIndexSetReduceSumMultipleTest,
+    ReduceSumMultipleForallIndexSet)
 {
   using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceSumMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
-                                          REDUCE_POLICY>();
+  ForallIndexSetReduceSumMultipleTestImpl<
+      IDX_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallIndexSetReduceSumMultipleTest,
-                            ReduceSumMultipleForallIndexSet);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallIndexSetReduceSumMultipleTest,
+    ReduceSumMultipleForallIndexSet);
 
-#endif // __TEST_FORALL_INDEXSET_MULTIPLE_REDUCESUM_HPP__
+#endif  // __TEST_FORALL_INDEXSET_MULTIPLE_REDUCESUM_HPP__

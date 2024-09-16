@@ -69,11 +69,11 @@ struct RegisterTraits<RAJA::expt::avx512_register, double>
   using int_element_type                  = int64_t;
 };
 
-} // namespace expt
-} // namespace internal
-} // namespace RAJA
+}  // namespace expt
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // guard
+#endif  // guard
 
 
-#endif // __AVX512F__
+#endif  // __AVX512F__

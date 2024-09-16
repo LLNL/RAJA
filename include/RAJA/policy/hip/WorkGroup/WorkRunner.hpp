@@ -36,33 +36,37 @@ namespace detail
  * Runs work in a storage container in order
  * and returns any per run resources
  */
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
-struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
-                  RAJA::ordered,
-                  DISPATCH_POLICY_T,
-                  ALLOCATOR_T,
-                  INDEX_T,
-                  Args...>
-    : WorkRunnerForallOrdered<RAJA::hip_exec_async<BLOCK_SIZE>,
-                              RAJA::hip_work<BLOCK_SIZE, Async>,
-                              RAJA::ordered,
-                              DISPATCH_POLICY_T,
-                              ALLOCATOR_T,
-                              INDEX_T,
-                              Args...>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
+struct WorkRunner<
+    RAJA::hip_work<BLOCK_SIZE, Async>,
+    RAJA::ordered,
+    DISPATCH_POLICY_T,
+    ALLOCATOR_T,
+    INDEX_T,
+    Args...>
+    : WorkRunnerForallOrdered<
+          RAJA::hip_exec_async<BLOCK_SIZE>,
+          RAJA::hip_work<BLOCK_SIZE, Async>,
+          RAJA::ordered,
+          DISPATCH_POLICY_T,
+          ALLOCATOR_T,
+          INDEX_T,
+          Args...>
 {
-  using base = WorkRunnerForallOrdered<RAJA::hip_exec_async<BLOCK_SIZE>,
-                                       RAJA::hip_work<BLOCK_SIZE, Async>,
-                                       RAJA::ordered,
-                                       DISPATCH_POLICY_T,
-                                       ALLOCATOR_T,
-                                       INDEX_T,
-                                       Args...>;
+  using base = WorkRunnerForallOrdered<
+      RAJA::hip_exec_async<BLOCK_SIZE>,
+      RAJA::hip_work<BLOCK_SIZE, Async>,
+      RAJA::ordered,
+      DISPATCH_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>;
   using base::base;
   using IndexType       = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
@@ -72,9 +76,10 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage run(WorkContainer const&         storage,
-                      typename base::resource_type r,
-                      Args... args) const
+  per_run_storage
+  run(WorkContainer const&         storage,
+      typename base::resource_type r,
+      Args... args) const
   {
     per_run_storage run_storage =
         base::run(storage, r, std::forward<Args>(args)...);
@@ -98,33 +103,37 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
  * Runs work in a storage container in reverse order
  * and returns any per run resources
  */
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
-struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
-                  RAJA::reverse_ordered,
-                  DISPATCH_POLICY_T,
-                  ALLOCATOR_T,
-                  INDEX_T,
-                  Args...>
-    : WorkRunnerForallReverse<RAJA::hip_exec_async<BLOCK_SIZE>,
-                              RAJA::hip_work<BLOCK_SIZE, Async>,
-                              RAJA::reverse_ordered,
-                              DISPATCH_POLICY_T,
-                              ALLOCATOR_T,
-                              INDEX_T,
-                              Args...>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
+struct WorkRunner<
+    RAJA::hip_work<BLOCK_SIZE, Async>,
+    RAJA::reverse_ordered,
+    DISPATCH_POLICY_T,
+    ALLOCATOR_T,
+    INDEX_T,
+    Args...>
+    : WorkRunnerForallReverse<
+          RAJA::hip_exec_async<BLOCK_SIZE>,
+          RAJA::hip_work<BLOCK_SIZE, Async>,
+          RAJA::reverse_ordered,
+          DISPATCH_POLICY_T,
+          ALLOCATOR_T,
+          INDEX_T,
+          Args...>
 {
-  using base = WorkRunnerForallReverse<RAJA::hip_exec_async<BLOCK_SIZE>,
-                                       RAJA::hip_work<BLOCK_SIZE, Async>,
-                                       RAJA::reverse_ordered,
-                                       DISPATCH_POLICY_T,
-                                       ALLOCATOR_T,
-                                       INDEX_T,
-                                       Args...>;
+  using base = WorkRunnerForallReverse<
+      RAJA::hip_exec_async<BLOCK_SIZE>,
+      RAJA::hip_work<BLOCK_SIZE, Async>,
+      RAJA::reverse_ordered,
+      DISPATCH_POLICY_T,
+      ALLOCATOR_T,
+      INDEX_T,
+      Args...>;
   using base::base;
   using IndexType       = INDEX_T;
   using per_run_storage = typename base::per_run_storage;
@@ -134,9 +143,10 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage run(WorkContainer const&         storage,
-                      typename base::resource_type r,
-                      Args... args) const
+  per_run_storage
+  run(WorkContainer const&         storage,
+      typename base::resource_type r,
+      Args... args) const
   {
     per_run_storage run_storage =
         base::run(storage, r, std::forward<Args>(args)...);
@@ -161,10 +171,11 @@ struct WorkRunner<RAJA::hip_work<BLOCK_SIZE, Async>,
  * A body and segment holder for storing loops that will be executed
  * on the device
  */
-template <typename Segment_type,
-          typename LoopBody,
-          typename index_type,
-          typename... Args>
+template <
+    typename Segment_type,
+    typename LoopBody,
+    typename index_type,
+    typename... Args>
 struct HoldHipDeviceXThreadblockLoop
 {
   template <typename segment_in, typename body_in>
@@ -193,11 +204,12 @@ private:
   LoopBody     m_body;
 };
 
-template <size_t BLOCK_SIZE,
-          typename StorageIter,
-          typename value_type,
-          typename index_type,
-          typename... Args>
+template <
+    size_t BLOCK_SIZE,
+    typename StorageIter,
+    typename value_type,
+    typename index_type,
+    typename... Args>
 __launch_bounds__(BLOCK_SIZE, 1) __global__
     void hip_unordered_y_block_global(StorageIter iter, Args... args)
 {
@@ -214,12 +226,13 @@ __launch_bounds__(BLOCK_SIZE, 1) __global__
  * the x direction, with the number of threads in the x dimension determined
  * by the average number of iterates per loop
  */
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
 struct WorkRunner<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -241,8 +254,8 @@ struct WorkRunner<
   {
     template <typename T>
     using type = HoldHipDeviceXThreadblockLoop<
-        typename camp::at<T, camp::num<0>>::type, // ITERABLE
-        typename camp::at<T, camp::num<1>>::type, // LOOP_BODY
+        typename camp::at<T, camp::num<0>>::type,  // ITERABLE
+        typename camp::at<T, camp::num<1>>::type,  // LOOP_BODY
         index_type,
         Args...>;
   };
@@ -259,10 +272,11 @@ struct WorkRunner<
   using dispatcher_holder_policy =
       dispatcher_transform_types_t<dispatch_policy, holder_type>;
 
-  using dispatcher_type = Dispatcher<Platform::hip,
-                                     dispatcher_holder_policy,
-                                     RAJA::hip_work<BLOCK_SIZE, true>,
-                                     Args...>;
+  using dispatcher_type = Dispatcher<
+      Platform::hip,
+      dispatcher_holder_policy,
+      RAJA::hip_work<BLOCK_SIZE, true>,
+      Args...>;
 
   WorkRunner() = default;
 
@@ -317,7 +331,7 @@ struct WorkRunner<
       //     std::forward<LoopBody>(loop_body));
 
       storage.template emplace<holder>(
-          get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy{}),
+          get_Dispatcher<holder, dispatcher_type>(dispatcher_exec_policy {}),
           std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
     }
   }
@@ -330,14 +344,14 @@ struct WorkRunner<
   run(WorkContainer const& storage, resource_type r, Args... args) const
   {
     using Iterator   = camp::decay<decltype(std::begin(storage))>;
-    using IndexType  = camp::decay<decltype(std::distance(std::begin(storage),
-                                                          std::end(storage)))>;
+    using IndexType  = camp::decay<decltype(std::distance(
+         std::begin(storage), std::end(storage)))>;
     using value_type = typename WorkContainer::value_type;
 
-    per_run_storage run_storage{};
+    per_run_storage run_storage {};
 
-    auto func = hip_unordered_y_block_global<BLOCK_SIZE, Iterator, value_type,
-                                             index_type, Args...>;
+    auto func = hip_unordered_y_block_global<
+        BLOCK_SIZE, Iterator, value_type, index_type, Args...>;
 
     //
     // Compute the requested iteration space size
@@ -357,10 +371,10 @@ struct WorkRunner<
       // Compute the number of blocks
       //
       constexpr index_type block_size = static_cast<index_type>(BLOCK_SIZE);
-      hip_dim_t blockSize{static_cast<hip_dim_member_t>(block_size), 1, 1};
-      hip_dim_t gridSize{
-          static_cast<hip_dim_member_t>((average_iterations + block_size - 1) /
-                                        block_size),
+      hip_dim_t blockSize {static_cast<hip_dim_member_t>(block_size), 1, 1};
+      hip_dim_t gridSize {
+          static_cast<hip_dim_member_t>(
+              (average_iterations + block_size - 1) / block_size),
           static_cast<hip_dim_member_t>(num_loops), 1};
 
       RAJA_FT_BEGIN;
@@ -375,8 +389,8 @@ struct WorkRunner<
         // Launch the kernel
         //
         void* func_args[] = {(void*)&begin, (void*)&args...};
-        RAJA::hip::launch((const void*)func, gridSize, blockSize, func_args,
-                          shmem, r, Async);
+        RAJA::hip::launch(
+            (const void*)func, gridSize, blockSize, func_args, shmem, r, Async);
       }
 
       RAJA_FT_END;
@@ -395,11 +409,12 @@ private:
 #if !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported runner types incomplete
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
 struct WorkRunner<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -408,11 +423,12 @@ struct WorkRunner<
     INDEX_T,
     Args...>;
 ///
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
 struct WorkRunner<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::policy::hip::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -423,8 +439,8 @@ struct WorkRunner<
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

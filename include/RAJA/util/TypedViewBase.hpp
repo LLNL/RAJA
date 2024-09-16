@@ -98,7 +98,7 @@ struct GetTensorArgIdxExpanded<DIM, camp::list<ARGS...>, camp::idx_seq<IDX...>>
 };
 
 
-} // namespace detail
+}  // namespace detail
 #endif
 
 
@@ -113,7 +113,7 @@ struct count_num_tensor_args
       RAJA::sum<camp::idx_t>(
           (internal::expt::isTensorIndex<ARGS>() ? 1 : 0)...);
 #else
-      0; // There should be 0 Tensor indices if not vectorizing.
+      0;  // There should be 0 Tensor indices if not vectorizing.
 #endif
 };
 
@@ -182,37 +182,41 @@ namespace detail
  * In the future development, this may return SIMD vectors or matrices using
  * class specializations.
  */
-template <typename VecSeq,
-          typename Args,
-          typename ElementType,
-          typename PointerType,
-          typename LinIdx,
-          typename LayoutType>
+template <
+    typename VecSeq,
+    typename Args,
+    typename ElementType,
+    typename PointerType,
+    typename LinIdx,
+    typename LayoutType>
 struct ViewReturnHelper;
 
 
 /*
  * Specialization for Scalar return types
  */
-template <typename... Args,
-          typename ElementType,
-          typename PointerType,
-          typename LinIdx,
-          typename LayoutType>
-struct ViewReturnHelper<camp::idx_seq<>,
-                        camp::list<Args...>,
-                        ElementType,
-                        PointerType,
-                        LinIdx,
-                        LayoutType>
+template <
+    typename... Args,
+    typename ElementType,
+    typename PointerType,
+    typename LinIdx,
+    typename LayoutType>
+struct ViewReturnHelper<
+    camp::idx_seq<>,
+    camp::list<Args...>,
+    ElementType,
+    PointerType,
+    LinIdx,
+    LayoutType>
 {
   using return_type = ElementType&;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr return_type make_return(LayoutType const&  layout,
-                                           PointerType const& data,
-                                           Args const&... args)
+  static constexpr return_type make_return(
+      LayoutType const&  layout,
+      PointerType const& data,
+      Args const&... args)
   {
     return data[stripIndexType(layout(args...))];
   }
@@ -223,19 +227,21 @@ struct ViewReturnHelper<camp::idx_seq<>,
 /*
  * Specialization for Tensor return types
  */
-template <camp::idx_t VecHead,
-          camp::idx_t... VecSeq,
-          typename... Args,
-          typename ElementType,
-          typename PointerType,
-          typename LinIdx,
-          typename LayoutType>
-struct ViewReturnHelper<camp::idx_seq<VecHead, VecSeq...>,
-                        camp::list<Args...>,
-                        ElementType,
-                        PointerType,
-                        LinIdx,
-                        LayoutType>
+template <
+    camp::idx_t VecHead,
+    camp::idx_t... VecSeq,
+    typename... Args,
+    typename ElementType,
+    typename PointerType,
+    typename LinIdx,
+    typename LayoutType>
+struct ViewReturnHelper<
+    camp::idx_seq<VecHead, VecSeq...>,
+    camp::list<Args...>,
+    ElementType,
+    PointerType,
+    LinIdx,
+    LayoutType>
 {
 
   static constexpr camp::idx_t s_num_dims = sizeof...(VecSeq) + 1;
@@ -256,31 +262,34 @@ struct ViewReturnHelper<camp::idx_seq<VecHead, VecSeq...>,
            : -1)...);
 
 
-  using tensor_reg_type =
-      typename camp::at_v<camp::list<Args...>,
-                          GetTensorArgIdx<0, Args...>::value>::tensor_type;
-  using ref_type = internal::expt::TensorRef<ElementType*,
-                                             LinIdx,
-                                             internal::expt::TENSOR_MULTIPLE,
-                                             s_num_dims,
-                                             s_stride_one_dim>;
+  using tensor_reg_type = typename camp::at_v<
+      camp::list<Args...>,
+      GetTensorArgIdx<0, Args...>::value>::tensor_type;
+  using ref_type = internal::expt::TensorRef<
+      ElementType*,
+      LinIdx,
+      internal::expt::TENSOR_MULTIPLE,
+      s_num_dims,
+      s_stride_one_dim>;
   using return_type =
       internal::expt::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr return_type make_return(LayoutType const&  layout,
-                                           PointerType const& data,
-                                           Args const&... args)
+  static constexpr return_type make_return(
+      LayoutType const&  layout,
+      PointerType const& data,
+      Args const&... args)
   {
 
-    return return_type(ref_type{
+    return return_type(ref_type {
         // data pointer
         &data[0] +
-            layout(internal::expt::isTensorIndex<Args>()
-                       ? LinIdx{0}
-                       : (LinIdx)stripIndexType(
-                             internal::expt::stripTensorIndexByValue(args))...),
+            layout(
+                internal::expt::isTensorIndex<Args>()
+                    ? LinIdx {0}
+                    : (LinIdx)stripIndexType(
+                          internal::expt::stripTensorIndexByValue(args))...),
         // strides
         {(LinIdx)layout.template get_dim_stride<
              GetTensorArgIdx<VecHead, Args...>::value>(),
@@ -301,27 +310,29 @@ struct ViewReturnHelper<camp::idx_seq<VecHead, VecSeq...>,
 /*
  * Specialization for Tensor return types and static layout types
  */
-template <camp::idx_t VecHead,
-          camp::idx_t... VecSeq,
-          typename... INDEX_TYPES,
-          typename ElementType,
-          typename PointerType,
-          typename LinIdx,
-          LinIdx... RangeInts,
-          LinIdx... SizeInts,
-          LinIdx... StrideInts,
-          typename DIM_LIST>
+template <
+    camp::idx_t VecHead,
+    camp::idx_t... VecSeq,
+    typename... INDEX_TYPES,
+    typename ElementType,
+    typename PointerType,
+    typename LinIdx,
+    LinIdx... RangeInts,
+    LinIdx... SizeInts,
+    LinIdx... StrideInts,
+    typename DIM_LIST>
 struct ViewReturnHelper<
     camp::idx_seq<VecHead, VecSeq...>,
     camp::list<RAJA::expt::StaticTensorIndex<INDEX_TYPES>...>,
     ElementType,
     PointerType,
     LinIdx,
-    RAJA::detail::StaticLayoutBase_impl<LinIdx,
-                                        camp::int_seq<LinIdx, RangeInts...>,
-                                        camp::int_seq<LinIdx, SizeInts...>,
-                                        camp::int_seq<LinIdx, StrideInts...>,
-                                        DIM_LIST>>
+    RAJA::detail::StaticLayoutBase_impl<
+        LinIdx,
+        camp::int_seq<LinIdx, RangeInts...>,
+        camp::int_seq<LinIdx, SizeInts...>,
+        camp::int_seq<LinIdx, StrideInts...>,
+        DIM_LIST>>
 {
   static constexpr camp::idx_t s_num_dims = sizeof...(VecSeq) + 1;
 
@@ -349,59 +360,59 @@ struct ViewReturnHelper<
            : -1)...);
 
 
-  using new_begin_seq =
-      camp::int_seq<LinIdx,
-                    (LinIdx)get_tensor_args_begin<VecHead>(
-                        LayoutType(),
-                        RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...),
-                    (LinIdx)get_tensor_args_begin<VecSeq>(
-                        LayoutType(),
-                        RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...)...>;
-  using new_size_seq =
-      camp::int_seq<LinIdx,
-                    (LinIdx)get_tensor_args_size<VecHead>(
-                        LayoutType(),
-                        RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...),
-                    (LinIdx)get_tensor_args_size<VecSeq>(
-                        LayoutType(),
-                        RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...)...>;
+  using new_begin_seq = camp::int_seq<
+      LinIdx,
+      (LinIdx)get_tensor_args_begin<VecHead>(
+          LayoutType(),
+          RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...),
+      (LinIdx)get_tensor_args_begin<VecSeq>(
+          LayoutType(),
+          RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...)...>;
+  using new_size_seq = camp::int_seq<
+      LinIdx,
+      (LinIdx)get_tensor_args_size<VecHead>(
+          LayoutType(),
+          RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...),
+      (LinIdx)get_tensor_args_size<VecSeq>(
+          LayoutType(),
+          RAJA::expt::StaticTensorIndex<INDEX_TYPES>()...)...>;
 
   using new_begin_type = internal::expt::StaticIndexArray<new_begin_seq>;
   using new_size_type  = internal::expt::StaticIndexArray<new_size_seq>;
 
 
-  using tensor_reg_type =
-      typename camp::at_v<index_list,
-                          GetTensorArgIdx<0, index_list>::value>::tensor_type;
-  using ref_type =
-      internal::expt::StaticTensorRef<ElementType*,
-                                      LinIdx,
-                                      internal::expt::TENSOR_MULTIPLE,
-                                      stride_seq,
-                                      new_begin_seq,
-                                      new_size_seq,
-                                      s_stride_one_dim>;
+  using tensor_reg_type = typename camp::
+      at_v<index_list, GetTensorArgIdx<0, index_list>::value>::tensor_type;
+  using ref_type = internal::expt::StaticTensorRef<
+      ElementType*,
+      LinIdx,
+      internal::expt::TENSOR_MULTIPLE,
+      stride_seq,
+      new_begin_seq,
+      new_size_seq,
+      s_stride_one_dim>;
   using return_type =
       internal::expt::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr return_type
-  make_return(LayoutType const&  layout,
-              PointerType const& data,
-              RAJA::expt::StaticTensorIndex<INDEX_TYPES> const&... args)
+  static constexpr return_type make_return(
+      LayoutType const&  layout,
+      PointerType const& data,
+      RAJA::expt::StaticTensorIndex<INDEX_TYPES> const&... args)
   {
 
-    return return_type(ref_type{
+    return return_type(ref_type {
         // data pointer
         &data[0] +
-            layout(internal::expt::isTensorIndex<
-                       typename RAJA::expt::StaticTensorIndex<
-                           INDEX_TYPES>::base_type>()
-                       ? LinIdx{0}
-                       : (LinIdx)stripIndexType(
-                             internal::expt::stripTensorIndexByValue(args))...),
+            layout(
+                internal::expt::isTensorIndex<
+                    typename RAJA::expt::StaticTensorIndex<
+                        INDEX_TYPES>::base_type>()
+                    ? LinIdx {0}
+                    : (LinIdx)stripIndexType(
+                          internal::expt::stripTensorIndexByValue(args))...),
         // strides
         typename ref_type::stride_type(),
         // tile
@@ -411,7 +422,7 @@ struct ViewReturnHelper<
 #endif
 
 
-} // namespace detail
+}  // namespace detail
 
 
 /*
@@ -422,11 +433,12 @@ struct ViewReturnHelper<
  *
  * Otherwise it produces the usual scalar reference return type
  */
-template <typename ElementType,
-          typename PointerType,
-          typename LinIdx,
-          typename LayoutType,
-          typename... Args>
+template <
+    typename ElementType,
+    typename PointerType,
+    typename LinIdx,
+    typename LayoutType,
+    typename... Args>
 using view_return_type_t = typename detail::ViewReturnHelper<
     camp::make_idx_seq_t<count_num_tensor_args<Args...>::value>,
     camp::list<Args...>,
@@ -443,19 +455,22 @@ using view_return_type_t = typename detail::ViewReturnHelper<
  *
  * Otherwise it produces the usual scalar reference return value
  */
-template <typename ElementType,
-          typename LinIdx,
-          typename LayoutType,
-          typename PointerType,
-          typename... Args>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr view_return_type_t<ElementType,
-                                                          PointerType,
-                                                          LinIdx,
-                                                          LayoutType,
-                                                          Args...>
-            view_make_return_value(LayoutType const&  layout,
-                                   PointerType const& data,
-                                   Args const&... args)
+template <
+    typename ElementType,
+    typename LinIdx,
+    typename LayoutType,
+    typename PointerType,
+    typename... Args>
+RAJA_INLINE RAJA_HOST_DEVICE constexpr view_return_type_t<
+    ElementType,
+    PointerType,
+    LinIdx,
+    LayoutType,
+    Args...>
+view_make_return_value(
+    LayoutType const&  layout,
+    PointerType const& data,
+    Args const&... args)
 {
   return detail::ViewReturnHelper<
       camp::make_idx_seq_t<count_num_tensor_args<Args...>::value>,
@@ -479,9 +494,11 @@ namespace detail
 template <typename Expected, typename Arg>
 struct MatchTypedViewArgHelper
 {
-  static_assert(std::is_convertible<strip_index_type_t<Arg>,
-                                    strip_index_type_t<Expected>>::value,
-                "Argument isn't compatible");
+  static_assert(
+      std::is_convertible<
+          strip_index_type_t<Arg>,
+          strip_index_type_t<Expected>>::value,
+      "Argument isn't compatible");
 
   using type = strip_index_type_t<Arg>;
 
@@ -500,13 +517,16 @@ struct MatchTypedViewArgHelper
  * typed indices.
  */
 template <typename Expected, typename Arg, typename VectorType, camp::idx_t DIM>
-struct MatchTypedViewArgHelper<Expected,
-                               RAJA::expt::TensorIndex<Arg, VectorType, DIM>>
+struct MatchTypedViewArgHelper<
+    Expected,
+    RAJA::expt::TensorIndex<Arg, VectorType, DIM>>
 {
 
-  static_assert(std::is_convertible<strip_index_type_t<Arg>,
-                                    strip_index_type_t<Expected>>::value,
-                "Argument isn't compatible");
+  static_assert(
+      std::is_convertible<
+          strip_index_type_t<Arg>,
+          strip_index_type_t<Expected>>::value,
+      "Argument isn't compatible");
 
   using arg_type = strip_index_type_t<Arg>;
 
@@ -525,12 +545,13 @@ struct MatchTypedViewArgHelper<Expected,
  * In this case, there is no StaticTensorIndex to unpack, just strip any
  * strongly typed indices.
  */
-template <typename Expected,
-          typename Arg,
-          typename VectorType,
-          camp::idx_t             DIM,
-          Arg                     BEGIN,
-          strip_index_type_t<Arg> LENGTH>
+template <
+    typename Expected,
+    typename Arg,
+    typename VectorType,
+    camp::idx_t             DIM,
+    Arg                     BEGIN,
+    strip_index_type_t<Arg> LENGTH>
 struct MatchTypedViewArgHelper<
     Expected,
     RAJA::expt::StaticTensorIndex<
@@ -538,9 +559,11 @@ struct MatchTypedViewArgHelper<
             StaticTensorIndexInner<Arg, VectorType, DIM, BEGIN, LENGTH>>>
 {
 
-  static_assert(std::is_convertible<strip_index_type_t<Arg>,
-                                    strip_index_type_t<Expected>>::value,
-                "Argument isn't compatible");
+  static_assert(
+      std::is_convertible<
+          strip_index_type_t<Arg>,
+          strip_index_type_t<Expected>>::value,
+      "Argument isn't compatible");
 
   using arg_type = strip_index_type_t<Arg>;
 
@@ -559,7 +582,7 @@ struct MatchTypedViewArgHelper<
 };
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 
 template <typename Expected, typename Arg>
@@ -609,7 +632,7 @@ public:
 #if (defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_CLANG_CUDA))
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  constexpr ViewBase(){};
+  constexpr ViewBase() {};
 
   RAJA_HOST_DEVICE
   RAJA_INLINE ViewBase(ViewBase const& c)
@@ -639,8 +662,8 @@ public:
   {}
 
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr ViewBase(pointer_type data,
-                                                  Args... dim_sizes)
+  RAJA_HOST_DEVICE
+      RAJA_INLINE constexpr ViewBase(pointer_type data, Args... dim_sizes)
       : m_data(data), m_layout(dim_sizes...)
   {}
 
@@ -676,12 +699,13 @@ public:
 
 
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<value_type,
-                                                            pointer_type,
-                                                            linear_index_type,
-                                                            layout_type,
-                                                            Args...>
-                   operator()(Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<
+      value_type,
+      pointer_type,
+      linear_index_type,
+      layout_type,
+      Args...>
+  operator()(Args... args) const
   {
     return view_make_return_value<value_type, linear_index_type>(
         m_layout, m_data, args...);
@@ -695,24 +719,26 @@ public:
    * which seems to have been fixed in CUDA 9.2+
    */
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<value_type,
-                                                            pointer_type,
-                                                            linear_index_type,
-                                                            layout_type,
-                                                            Args...>
-                   operator[](Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<
+      value_type,
+      pointer_type,
+      linear_index_type,
+      layout_type,
+      Args...>
+  operator[](Args... args) const
   {
     return view_make_return_value<value_type, linear_index_type>(
         m_layout, m_data, args...);
   }
 
 
-  template <size_t n_dims   = layout_type::n_dims,
-            typename IdxLin = linear_index_type>
+  template <
+      size_t n_dims   = layout_type::n_dims,
+      typename IdxLin = linear_index_type>
   RAJA_INLINE ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
   {
-    static_assert(n_dims == layout_type::n_dims,
-                  "Dimension mismatch in view shift");
+    static_assert(
+        n_dims == layout_type::n_dims, "Dimension mismatch in view shift");
 
     shifted_layout_type shift_layout(m_layout);
     shift_layout.shift(shift);
@@ -722,20 +748,23 @@ public:
 };
 
 
-template <typename ValueType,
-          typename PointerType,
-          typename LayoutType,
-          typename IndexTypes>
+template <
+    typename ValueType,
+    typename PointerType,
+    typename LayoutType,
+    typename IndexTypes>
 class TypedViewBase;
 
-template <typename ValueType,
-          typename PointerType,
-          typename LayoutType,
-          typename... IndexTypes>
-class TypedViewBase<ValueType,
-                    PointerType,
-                    LayoutType,
-                    camp::list<IndexTypes...>>
+template <
+    typename ValueType,
+    typename PointerType,
+    typename LayoutType,
+    typename... IndexTypes>
+class TypedViewBase<
+    ValueType,
+    PointerType,
+    LayoutType,
+    camp::list<IndexTypes...>>
     : public ViewBase<ValueType, PointerType, LayoutType>
 {
 
@@ -748,33 +777,37 @@ public:
   using nc_pointer_type = typename std::add_pointer<typename std::remove_const<
       typename std::remove_pointer<pointer_type>::type>::type>::type;
 
-  using Base         = ViewBase<ValueType, PointerType, LayoutType>;
-  using Self         = TypedViewBase<value_type,
-                             pointer_type,
-                             layout_type,
-                             camp::list<IndexTypes...>>;
-  using NonConstView = TypedViewBase<nc_value_type,
-                                     nc_pointer_type,
-                                     layout_type,
-                                     camp::list<IndexTypes...>>;
+  using Base = ViewBase<ValueType, PointerType, LayoutType>;
+  using Self = TypedViewBase<
+      value_type,
+      pointer_type,
+      layout_type,
+      camp::list<IndexTypes...>>;
+  using NonConstView = TypedViewBase<
+      nc_value_type,
+      nc_pointer_type,
+      layout_type,
+      camp::list<IndexTypes...>>;
 
   using shifted_layout_type = typename add_offset<layout_type>::type;
-  using ShiftedView         = TypedViewBase<value_type,
-                                    pointer_type,
-                                    shifted_layout_type,
-                                    camp::list<IndexTypes...>>;
+  using ShiftedView         = TypedViewBase<
+      value_type,
+      pointer_type,
+      shifted_layout_type,
+      camp::list<IndexTypes...>>;
 
   static constexpr size_t n_dims = sizeof...(IndexTypes);
 
   using Base::Base;
 
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<value_type,
-                                                            pointer_type,
-                                                            linear_index_type,
-                                                            layout_type,
-                                                            Args...>
-                   operator()(Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<
+      value_type,
+      pointer_type,
+      linear_index_type,
+      layout_type,
+      Args...>
+  operator()(Args... args) const
   {
     return view_make_return_value<value_type, linear_index_type>(
         Base::m_layout, Base::m_data,
@@ -789,12 +822,13 @@ public:
    * which seems to have been fixed in CUDA 9.2+
    */
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<value_type,
-                                                            pointer_type,
-                                                            linear_index_type,
-                                                            layout_type,
-                                                            Args...>
-                   operator[](Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr view_return_type_t<
+      value_type,
+      pointer_type,
+      linear_index_type,
+      layout_type,
+      Args...>
+  operator[](Args... args) const
   {
     return view_make_return_value<value_type, linear_index_type>(
         Base::m_layout, Base::m_data,
@@ -802,12 +836,13 @@ public:
   }
 
 
-  template <size_t n_dims   = sizeof...(IndexTypes),
-            typename IdxLin = linear_index_type>
+  template <
+      size_t n_dims   = sizeof...(IndexTypes),
+      typename IdxLin = linear_index_type>
   RAJA_INLINE ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
   {
-    static_assert(n_dims == layout_type::n_dims,
-                  "Dimension mismatch in view shift");
+    static_assert(
+        n_dims == layout_type::n_dims, "Dimension mismatch in view shift");
 
     shifted_layout_type shift_layout(Base::get_layout());
     shift_layout.shift(shift);
@@ -817,8 +852,8 @@ public:
 };
 
 
-} // namespace internal
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif

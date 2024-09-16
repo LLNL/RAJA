@@ -58,7 +58,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  explicit TensorLiteral(tensor_type const& value) : m_value{value} {}
+  explicit TensorLiteral(tensor_type const& value) : m_value {value} {}
 
 
   template <typename TILE_TYPE>
@@ -95,12 +95,12 @@ struct NormalizeOperandHelper<
   }
 };
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

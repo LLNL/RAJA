@@ -13,15 +13,17 @@
 #include <numeric>
 #include <vector>
 
-template <typename IDX_TYPE,
-          typename DATA_TYPE,
-          typename SEG_TYPE,
-          typename LAUNCH_POLICY,
-          typename GLOBAL_THREAD_POLICY,
-          typename REDUCE_POLICY>
-void LaunchReduceBitAndBasicTestImpl(const SEG_TYPE&              seg,
-                                     const std::vector<IDX_TYPE>& seg_idx,
-                                     camp::resources::Resource    working_res)
+template <
+    typename IDX_TYPE,
+    typename DATA_TYPE,
+    typename SEG_TYPE,
+    typename LAUNCH_POLICY,
+    typename GLOBAL_THREAD_POLICY,
+    typename REDUCE_POLICY>
+void LaunchReduceBitAndBasicTestImpl(
+    const SEG_TYPE&              seg,
+    const std::vector<IDX_TYPE>& seg_idx,
+    camp::resources::Resource    working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
@@ -33,8 +35,8 @@ void LaunchReduceBitAndBasicTestImpl(const SEG_TYPE&              seg,
   constexpr int threads = 256;
   int           blocks  = (seg.size() - 1) / threads + 1;
 
-  allocateForallTestData<DATA_TYPE>(data_len, working_res, &working_array,
-                                    &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
   //
   // First a simple non-trivial test that is mildly interesting
@@ -83,12 +85,13 @@ void LaunchReduceBitAndBasicTestImpl(const SEG_TYPE&              seg,
       RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg,
-                                         [&](IDX_TYPE idx)
-                                         {
-                                           redand &= working_array[idx];
-                                           redand2 &= working_array[idx];
-                                         });
+        RAJA::loop<GLOBAL_THREAD_POLICY>(
+            ctx, seg,
+            [&](IDX_TYPE idx)
+            {
+              redand &= working_array[idx];
+              redand2 &= working_array[idx];
+            });
       });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(redand.get()), ref_and);
@@ -111,8 +114,8 @@ void LaunchReduceBitAndBasicTestImpl(const SEG_TYPE&              seg,
   ASSERT_EQ(static_cast<DATA_TYPE>(redand.get()), ref_and);
 
 
-  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
-                                      test_array);
+  deallocateForallTestData<DATA_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -123,18 +126,16 @@ class LaunchReduceBitAndBasicTest : public ::testing::Test
 
 TYPED_TEST_P(LaunchReduceBitAndBasicTest, ReduceBitAndBasicForall)
 {
-  using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE   = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using LAUNCH_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<3>>::type,
-                        camp::num<0>>::type;
-  using GLOBAL_THREAD_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<3>>::type,
-                        camp::num<1>>::type;
+  using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
+  using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<2>>::type;
+  using LAUNCH_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<3>>::type, camp::num<0>>::type;
+  using GLOBAL_THREAD_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<3>>::type, camp::num<1>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
 
   std::vector<IDX_TYPE> seg_idx;
 
@@ -165,16 +166,16 @@ TYPED_TEST_P(LaunchReduceBitAndBasicTest, ReduceBitAndBasicForall)
   RAJA::getIndices(seg_idx, r4);
   LaunchReduceBitAndBasicTestImpl<
       IDX_TYPE, DATA_TYPE, RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(r4, seg_idx,
-                                                          working_res);
+      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+      r4, seg_idx, working_res);
 
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r5(3, 1029, 3);
   RAJA::getIndices(seg_idx, r5);
   LaunchReduceBitAndBasicTestImpl<
       IDX_TYPE, DATA_TYPE, RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(r5, seg_idx,
-                                                          working_res);
+      LAUNCH_POLICY, GLOBAL_THREAD_POLICY, REDUCE_POLICY>(
+      r5, seg_idx, working_res);
 
   // List segment tests
   seg_idx.clear();
@@ -194,7 +195,8 @@ TYPED_TEST_P(LaunchReduceBitAndBasicTest, ReduceBitAndBasicForall)
       GLOBAL_THREAD_POLICY, REDUCE_POLICY>(l1, seg_idx, working_res);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(LaunchReduceBitAndBasicTest,
-                            ReduceBitAndBasicForall);
+REGISTER_TYPED_TEST_SUITE_P(
+    LaunchReduceBitAndBasicTest,
+    ReduceBitAndBasicForall);
 
-#endif // __TEST_LAUNCH_BASIC_REDUCEBITOR_HPP__
+#endif  // __TEST_LAUNCH_BASIC_REDUCEBITOR_HPP__

@@ -35,8 +35,8 @@ struct PolicyStableSort : PolicySynchronize<policy>
   PolicyStableSort() : m_name("RAJA::stable_sort<unknown>") {}
 
   PolicyStableSort(std::string const& policy_name)
-      : m_name(std::string("RAJA::stable_sort<") + policy_name +
-               std::string(">"))
+      : m_name(
+            std::string("RAJA::stable_sort<") + policy_name + std::string(">"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -60,8 +60,9 @@ struct PolicyStableSortPairs : PolicySynchronize<policy>
   PolicyStableSortPairs() : m_name("RAJA::stable_sort<unknown>[pairs]") {}
 
   PolicyStableSortPairs(std::string const& policy_name)
-      : m_name(std::string("RAJA::stable_sort<") + policy_name +
-               std::string(">[pairs]"))
+      : m_name(
+            std::string("RAJA::stable_sort<") + policy_name +
+            std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -73,33 +74,33 @@ struct PolicyStableSortPairs : PolicySynchronize<policy>
   }
 };
 
-using SequentialStableSortSorters =
-    camp::list<PolicyStableSort<RAJA::seq_exec>,
-               PolicyStableSortPairs<RAJA::seq_exec>>;
+using SequentialStableSortSorters = camp::list<
+    PolicyStableSort<RAJA::seq_exec>,
+    PolicyStableSortPairs<RAJA::seq_exec>>;
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenMPStableSortSorters =
-    camp::list<PolicyStableSort<RAJA::omp_parallel_for_exec>,
-               PolicyStableSortPairs<RAJA::omp_parallel_for_exec>>;
+using OpenMPStableSortSorters = camp::list<
+    PolicyStableSort<RAJA::omp_parallel_for_exec>,
+    PolicyStableSortPairs<RAJA::omp_parallel_for_exec>>;
 
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 
-using CudaStableSortSorters =
-    camp::list<PolicyStableSort<RAJA::cuda_exec<128>>,
-               PolicyStableSortPairs<RAJA::cuda_exec<128>>,
-               PolicyStableSort<RAJA::cuda_exec_explicit<128, 2>>>;
+using CudaStableSortSorters = camp::list<
+    PolicyStableSort<RAJA::cuda_exec<128>>,
+    PolicyStableSortPairs<RAJA::cuda_exec<128>>,
+    PolicyStableSort<RAJA::cuda_exec_explicit<128, 2>>>;
 
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
 
-using HipStableSortSorters =
-    camp::list<PolicyStableSort<RAJA::hip_exec<128>>,
-               PolicyStableSortPairs<RAJA::hip_exec<128>>>;
+using HipStableSortSorters = camp::list<
+    PolicyStableSort<RAJA::hip_exec<128>>,
+    PolicyStableSortPairs<RAJA::hip_exec<128>>>;
 
 #endif
 
-#endif // __TEST_UNIT_ALGORITHM_STABLE_SORT_HPP__
+#endif  // __TEST_UNIT_ALGORITHM_STABLE_SORT_HPP__

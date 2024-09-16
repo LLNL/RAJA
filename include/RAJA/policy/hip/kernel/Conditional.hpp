@@ -36,13 +36,15 @@ namespace internal
 {
 
 
-template <typename Data,
-          typename Conditional,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<Data,
-                            statement::If<Conditional, EnclosedStmts...>,
-                            Types>
+template <
+    typename Data,
+    typename Conditional,
+    typename... EnclosedStmts,
+    typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::If<Conditional, EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t      = StatementList<EnclosedStmts...>;
@@ -67,8 +69,8 @@ struct HipStatementExecutor<Data,
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif

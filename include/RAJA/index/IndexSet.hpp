@@ -61,16 +61,16 @@ namespace indexset
 /// each segment.
 ///
 template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T = void>
-struct ExecPolicy
-    : public RAJA::make_policy_pattern_t<SEG_EXEC_POLICY_T::policy,
-                                         RAJA::Pattern::forall>
+struct ExecPolicy : public RAJA::make_policy_pattern_t<
+                        SEG_EXEC_POLICY_T::policy,
+                        RAJA::Pattern::forall>
 {
   using seg_it   = SEG_ITER_POLICY_T;
   using seg_exec = SEG_EXEC_POLICY_T;
 };
 
-} // end namespace indexset
-} // end namespace policy
+}  // end namespace indexset
+}  // end namespace policy
 
 using policy::indexset::ExecPolicy;
 
@@ -94,9 +94,10 @@ public:
   using value_type = typename T0::value_type;
 
   // Ensure that all value types in all segments are the same
-  static_assert(std::is_same<value_type, typename PARENT::value_type>::value ||
-                    T0_TypeId == 0,
-                "All segments must have the same value_type");
+  static_assert(
+      std::is_same<value_type, typename PARENT::value_type>::value ||
+          T0_TypeId == 0,
+      "All segments must have the same value_type");
 
   //! Construct empty index set
 #if _MSC_VER < 1910
@@ -162,9 +163,9 @@ public:
   /// This is used to implement the == and != operators
   ///
   template <typename P0, typename... PREST>
-  RAJA_INLINE bool
-  compareSegmentById(size_t                             segid,
-                     const TypedIndexSet<P0, PREST...>& other) const
+  RAJA_INLINE bool compareSegmentById(
+      size_t                             segid,
+      const TypedIndexSet<P0, PREST...>& other) const
   {
     // drill down our types until we have the right type
     if (getSegmentTypes()[segid] != T0_TypeId)
@@ -248,9 +249,10 @@ public:
 
 private:
   template <typename... CALL>
-  RAJA_INLINE void push_into(TypedIndexSet<CALL...>& c,
-                             PushEnd                 pend  = PUSH_BACK,
-                             PushCopy                pcopy = PUSH_COPY)
+  RAJA_INLINE void push_into(
+      TypedIndexSet<CALL...>& c,
+      PushEnd                 pend  = PUSH_BACK,
+      PushCopy                pcopy = PUSH_COPY)
   {
     Index_type num = getNumSegments();
 
@@ -278,10 +280,11 @@ private:
 
 public:
   template <typename... CALL>
-  RAJA_INLINE void segment_push_into(size_t                  segid,
-                                     TypedIndexSet<CALL...>& c,
-                                     PushEnd                 pend  = PUSH_BACK,
-                                     PushCopy                pcopy = PUSH_COPY)
+  RAJA_INLINE void segment_push_into(
+      size_t                  segid,
+      TypedIndexSet<CALL...>& c,
+      PushEnd                 pend  = PUSH_BACK,
+      PushCopy                pcopy = PUSH_COPY)
   {
     if (getSegmentTypes()[segid] != T0_TypeId)
     {
@@ -325,16 +328,18 @@ public:
   template <typename Tnew>
   RAJA_INLINE void push_back(Tnew&& val)
   {
-    push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
-                  PUSH_BACK, PUSH_COPY);
+    push_internal(
+        new typename std::decay<Tnew>::type(std::forward<Tnew>(val)), PUSH_BACK,
+        PUSH_COPY);
   }
 
   //! Add copy of segment to front end of index set.
   template <typename Tnew>
   RAJA_INLINE void push_front(Tnew&& val)
   {
-    push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
-                  PUSH_FRONT, PUSH_COPY);
+    push_internal(
+        new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
+        PUSH_FRONT, PUSH_COPY);
   }
 
   //! Return total length -- sum of lengths of all segments
@@ -371,8 +376,8 @@ public:
   {
     if (getSegmentTypes()[segid] != T0_TypeId)
     {
-      PARENT::segmentCall(segid, std::forward<BODY>(body),
-                          std::forward<ARGS>(args)...);
+      PARENT::segmentCall(
+          segid, std::forward<BODY>(body), std::forward<ARGS>(args)...);
       return;
     }
     Index_type offset = getSegmentOffsets()[segid];
@@ -465,8 +470,8 @@ public:
   {
     TypedIndexSet<T0, TREST...> retVal;
 
-    int minSeg = RAJA::operators::maximum<int>{}(0, begin);
-    int maxSeg = RAJA::operators::minimum<int>{}(end, getNumSegments());
+    int minSeg = RAJA::operators::maximum<int> {}(0, begin);
+    int maxSeg = RAJA::operators::minimum<int> {}(end, getNumSegments());
     for (int i = minSeg; i < maxSeg; ++i)
     {
       segment_push_into(i, retVal, PUSH_BACK, PUSH_NOCOPY);
@@ -711,8 +716,8 @@ protected:
   RAJA_INLINE void increaseTotalLength(int n) { m_len += n; }
 
   template <typename P0, typename... PREST>
-  RAJA_INLINE bool compareSegmentById(size_t,
-                                      const TypedIndexSet<P0, PREST...>&) const
+  RAJA_INLINE bool
+  compareSegmentById(size_t, const TypedIndexSet<P0, PREST...>&) const
   {
     return false;
   }
@@ -791,17 +796,17 @@ namespace type_traits
 
 template <typename T>
 struct is_index_set
-    : ::RAJA::type_traits::SpecializationOf<RAJA::TypedIndexSet,
-                                            typename std::decay<T>::type>
+    : ::RAJA::type_traits::
+          SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type>
 {};
 
 template <typename T>
 struct is_indexset_policy
-    : ::RAJA::type_traits::SpecializationOf<RAJA::ExecPolicy,
-                                            typename std::decay<T>::type>
+    : ::RAJA::type_traits::
+          SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type>
 {};
-} // namespace type_traits
+}  // namespace type_traits
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

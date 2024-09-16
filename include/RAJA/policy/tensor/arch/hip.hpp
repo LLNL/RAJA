@@ -28,4 +28,4 @@
 #endif
 
 
-#endif // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA

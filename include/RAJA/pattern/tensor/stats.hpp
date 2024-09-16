@@ -79,7 +79,7 @@ struct tensor_stats
   static void printVectorStats();
 };
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 #endif

@@ -189,7 +189,7 @@ struct MultiReduceBitOr;
 template <typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceBitAnd;
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -133,19 +133,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _raja_tensorinit_seq_start
   using EXEC_POL1 = RAJA::KernelPolicy<RAJA::statement::For<
       2,
-      RAJA::seq_exec, // k
-      RAJA::statement::For<1,
-                           RAJA::seq_exec, // j
-                           RAJA::statement::For<0,
-                                                RAJA::seq_exec, // i
-                                                RAJA::statement::Lambda<0>>>>>;
+      RAJA::seq_exec,  // k
+      RAJA::statement::For<
+          1,
+          RAJA::seq_exec,  // j
+          RAJA::statement::For<
+              0,
+              RAJA::seq_exec,  // i
+              RAJA::statement::Lambda<0>>>>>;
 
-  RAJA::kernel<EXEC_POL1>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL1>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=](int i, int j, int k)
-                          { aView(i, j, k) = c * i * j * k; });
+      [=](int i, int j, int k) { aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_seq_end
 
   checkResult(a, a_ref, N_tot);
@@ -187,19 +190,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _raja_tensorinit_omp_outer_start
   using EXEC_POL2 = RAJA::KernelPolicy<RAJA::statement::For<
       2,
-      RAJA::omp_parallel_for_exec, // k
-      RAJA::statement::For<1,
-                           RAJA::seq_exec, // j
-                           RAJA::statement::For<0,
-                                                RAJA::seq_exec, // i
-                                                RAJA::statement::Lambda<0>>>>>;
+      RAJA::omp_parallel_for_exec,  // k
+      RAJA::statement::For<
+          1,
+          RAJA::seq_exec,  // j
+          RAJA::statement::For<
+              0,
+              RAJA::seq_exec,  // i
+              RAJA::statement::Lambda<0>>>>>;
 
-  RAJA::kernel<EXEC_POL2>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL2>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=](int i, int j, int k)
-                          { aView(i, j, k) = c * i * j * k; });
+      [=](int i, int j, int k) { aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_omp_outer_end
 
   checkResult(a, a_ref, N_tot);
@@ -236,15 +242,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _raja_tensorinit_omp_collapse_start
   using EXEC_POL3 = RAJA::KernelPolicy<RAJA::statement::Collapse<
-      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<2, 1, 0>, // k, j, i
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<2, 1, 0>,  // k, j, i
       RAJA::statement::Lambda<0>>>;
 
-  RAJA::kernel<EXEC_POL3>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL3>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=](int i, int j, int k)
-                          { aView(i, j, k) = c * i * j * k; });
+      [=](int i, int j, int k) { aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_omp_collapse_end
 
   checkResult(a, a_ref, N_tot);
@@ -258,22 +265,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _raja_tensorinit_omp_collapse_start
   using EXEC_POL4 = RAJA::KernelPolicy<RAJA::statement::Collapse<
-      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<2, 1>, // k, j
-      RAJA::statement::For<0,
-                           RAJA::seq_exec, // i
-                           RAJA::statement::Lambda<0>>>>;
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<2, 1>,  // k, j
+      RAJA::statement::For<
+          0,
+          RAJA::seq_exec,  // i
+          RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL4>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=](int i, int j, int k)
-                          { aView(i, j, k) = c * i * j * k; });
+      [=](int i, int j, int k) { aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_omp_collapse_end
 
   checkResult(a, a_ref, N_tot);
 
-#endif // if defined(RAJA_ENABLE_OPENMP)
+#endif  // if defined(RAJA_ENABLE_OPENMP)
 
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -291,20 +300,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL5 =
       RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::For<
           2,
-          RAJA::cuda_thread_z_loop, // k
+          RAJA::cuda_thread_z_loop,  // k
           RAJA::statement::For<
               1,
-              RAJA::cuda_thread_y_loop, // j
-              RAJA::statement::For<0,
-                                   RAJA::cuda_thread_x_loop, // i
-                                   RAJA::statement::Lambda<0>>>>>>;
+              RAJA::cuda_thread_y_loop,  // j
+              RAJA::statement::For<
+                  0,
+                  RAJA::cuda_thread_x_loop,  // i
+                  RAJA::statement::Lambda<0>>>>>>;
 
-  RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL5>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=] __device__(int i, int j, int k)
-                          { aView(i, j, k) = c * i * j * k; });
+      [=] __device__(int i, int j, int k) { aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_cuda_end
 
   checkResult(a, a_ref, N_tot);
@@ -335,20 +346,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0, RAJA::tile_fixed<i_block_sz>, RAJA::cuda_block_x_direct,
               RAJA::statement::For<
                   2,
-                  RAJA::cuda_block_z_direct, // k
+                  RAJA::cuda_block_z_direct,  // k
                   RAJA::statement::For<
                       1,
-                      RAJA::cuda_thread_y_direct, // j
-                      RAJA::statement::For<0,
-                                           RAJA::cuda_thread_x_direct, // i
-                                           RAJA::statement::Lambda<0>>>>>>>>;
+                      RAJA::cuda_thread_y_direct,  // j
+                      RAJA::statement::For<
+                          0,
+                          RAJA::cuda_thread_x_direct,  // i
+                          RAJA::statement::Lambda<0>>>>>>>>;
 
-  RAJA::kernel<EXEC_POL6>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL6>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=] __device__(int i, int j, int k)
-                          { aView(i, j, k) = c * i * j * k; });
+      [=] __device__(int i, int j, int k) { aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_cuda_tiled_direct_end
 
   checkResult(a, a_ref, N_tot);
@@ -362,12 +375,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _cuda_tensorinit_tiled_direct_start
   dim3 nthreads_per_block(i_block_sz, j_block_sz, k_block_sz);
-  static_assert(i_block_sz * j_block_sz * k_block_sz == block_size,
-                "Invalid block_size");
+  static_assert(
+      i_block_sz * j_block_sz * k_block_sz == block_size, "Invalid block_size");
 
-  dim3 nblocks(static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, i_block_sz)),
-               static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, j_block_sz)),
-               static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, k_block_sz)));
+  dim3 nblocks(
+      static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, i_block_sz)),
+      static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, j_block_sz)),
+      static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, k_block_sz)));
 
   nested_init<i_block_sz, j_block_sz, k_block_sz>
       <<<nblocks, nthreads_per_block>>>(a, c, N);
@@ -377,7 +391,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   checkResult(a, a_ref, N_tot);
 
-#endif // if defined(RAJA_ENABLE_CUDA)
+#endif  // if defined(RAJA_ENABLE_CUDA)
 
 
 #if defined(RAJA_ENABLE_HIP)
@@ -402,20 +416,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL7 =
       RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::For<
           2,
-          RAJA::hip_thread_z_loop, // k
+          RAJA::hip_thread_z_loop,  // k
           RAJA::statement::For<
               1,
-              RAJA::hip_thread_y_loop, // j
-              RAJA::statement::For<0,
-                                   RAJA::hip_thread_x_loop, // i
-                                   RAJA::statement::Lambda<0>>>>>>;
+              RAJA::hip_thread_y_loop,  // j
+              RAJA::statement::For<
+                  0,
+                  RAJA::hip_thread_x_loop,  // i
+                  RAJA::statement::Lambda<0>>>>>>;
 
-  RAJA::kernel<EXEC_POL7>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL7>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=] __device__(int i, int j, int k)
-                          { d_aView(i, j, k) = c * i * j * k; });
+      [=] __device__(int i, int j, int k)
+      { d_aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_hip_end
 
   hipErrchk(hipMemcpy(a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost));
@@ -446,20 +463,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0, RAJA::tile_fixed<i_block_sz>, RAJA::hip_block_x_direct,
               RAJA::statement::For<
                   2,
-                  RAJA::hip_block_z_direct, // k
+                  RAJA::hip_block_z_direct,  // k
                   RAJA::statement::For<
                       1,
-                      RAJA::hip_thread_y_direct, // j
-                      RAJA::statement::For<0,
-                                           RAJA::hip_thread_x_direct, // i
-                                           RAJA::statement::Lambda<0>>>>>>>>;
+                      RAJA::hip_thread_y_direct,  // j
+                      RAJA::statement::For<
+                          0,
+                          RAJA::hip_thread_x_direct,  // i
+                          RAJA::statement::Lambda<0>>>>>>>>;
 
-  RAJA::kernel<EXEC_POL8>(RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N),
-                                           RAJA::TypedRangeSegment<int>(0, N)),
+  RAJA::kernel<EXEC_POL8>(
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N),
+          RAJA::TypedRangeSegment<int>(0, N)),
 
-                          [=] __device__(int i, int j, int k)
-                          { d_aView(i, j, k) = c * i * j * k; });
+      [=] __device__(int i, int j, int k)
+      { d_aView(i, j, k) = c * i * j * k; });
   // _raja_tensorinit_hip_tiled_direct_end
 
   hipErrchk(hipMemcpy(a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost));
@@ -467,7 +487,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   memoryManager::deallocate_gpu(d_a);
 
-#endif // if defined(RAJA_ENABLE_HIP)
+#endif  // if defined(RAJA_ENABLE_HIP)
 
   //----------------------------------------------------------------------------//
 

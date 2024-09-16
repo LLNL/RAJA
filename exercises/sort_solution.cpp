@@ -62,20 +62,22 @@ constexpr int HIP_BLOCK_SIZE = 16;
 template <typename Function, typename T>
 void checkUnstableSortResult(const T* in, const T* out, int N);
 template <typename Function, typename T, typename U>
-void checkUnstableSortResult(const T* in,
-                             const T* out,
-                             const U* in_vals,
-                             const U* out_vals,
-                             int      N);
+void checkUnstableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N);
 //
 template <typename Function, typename T>
 void checkStableSortResult(const T* in, const T* out, int N);
 template <typename Function, typename T, typename U>
-void checkStableSortResult(const T* in,
-                           const T* out,
-                           const U* in_vals,
-                           const U* out_vals,
-                           int      N);
+void checkStableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N);
 //
 template <typename T>
 void printArray(const T* k, int N);
@@ -105,8 +107,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::iota(in, in + N / 2, 0);
   std::iota(in + N / 2, in + N, 0);
-  std::shuffle(in, in + N / 2, std::mt19937{12345u});
-  std::shuffle(in + N / 2, in + N, std::mt19937{67890u});
+  std::shuffle(in, in + N / 2, std::mt19937 {12345u});
+  std::shuffle(in + N / 2, in + N, std::mt19937 {67890u});
 
   std::fill(in_vals, in_vals + N / 2, 0);
   std::fill(in_vals + N / 2, in_vals + N, 1);
@@ -145,8 +147,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_seq_less_start
-  RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N),
-                             RAJA::operators::less<int>{});
+  RAJA::sort<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::operators::less<int> {});
   // _sort_seq_less_end
 
   // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -161,8 +163,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_seq_less_start
-  RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                    RAJA::operators::less<int>{});
+  RAJA::stable_sort<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::operators::less<int> {});
   // _sort_stable_seq_less_end
 
   // checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -177,8 +179,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_seq_greater_start
-  RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                    RAJA::operators::greater<int>{});
+  RAJA::stable_sort<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::operators::greater<int> {});
   // _sort_stable_seq_greater_end
 
   // checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
@@ -194,9 +196,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_pairs_seq_less_start
-  RAJA::sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                   RAJA::make_span(out_vals, N),
-                                   RAJA::operators::less<int>{});
+  RAJA::sort_pairs<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::make_span(out_vals, N),
+      RAJA::operators::less<int> {});
   // _sort_pairs_seq_less_end
 
   // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals,
@@ -213,9 +215,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_stable_pairs_seq_greater_start
-  RAJA::stable_sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
-                                          RAJA::make_span(out_vals, N),
-                                          RAJA::operators::greater<int>{});
+  RAJA::stable_sort_pairs<RAJA::seq_exec>(
+      RAJA::make_span(out, N), RAJA::make_span(out_vals, N),
+      RAJA::operators::greater<int> {});
   // _sort_stable_pairs_seq_greater_end
 
   // checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals,
@@ -236,8 +238,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_omp_less_start
-  RAJA::sort<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
-                                          RAJA::operators::less<int>{});
+  RAJA::sort<RAJA::omp_parallel_for_exec>(
+      RAJA::make_span(out, N), RAJA::operators::less<int> {});
   // _sort_omp_less_end
 
   // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -255,7 +257,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _sort_stable_pairs_omp_greater_start
   RAJA::stable_sort_pairs<RAJA::omp_parallel_for_exec>(
       RAJA::make_span(out, N), RAJA::make_span(out_vals, N),
-      RAJA::operators::greater<int>{});
+      RAJA::operators::greater<int> {});
   // _sort_stable_pairs_omp_greater_end
 
   // checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals,
@@ -282,7 +284,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _sort_pairs_cuda_greater_start
   RAJA::sort_pairs<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       RAJA::make_span(out, N), RAJA::make_span(out_vals, N),
-      RAJA::operators::greater<int>{});
+      RAJA::operators::greater<int> {});
   // _sort_pairs_cuda_greater_end
 
   // checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals,
@@ -299,7 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _sort_stable_cuda_less_start
   RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::make_span(out, N), RAJA::operators::less<int>{});
+      RAJA::make_span(out, N), RAJA::operators::less<int> {});
   // _sort_stable_cuda_less_end
 
   // checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
@@ -331,7 +333,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
       RAJA::make_span(d_out, N), RAJA::make_span(d_out_vals, N),
-      RAJA::operators::less<int>{});
+      RAJA::operators::less<int> {});
 
   hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
   hipErrchk(
@@ -353,7 +355,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _sort_stable_hip_greater_start
   RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      RAJA::make_span(d_out, N), RAJA::operators::greater<int>{});
+      RAJA::make_span(d_out, N), RAJA::operators::greater<int> {});
   // _sort_stable_hip_greater_end
 
   hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
@@ -408,7 +410,7 @@ void checkUnstableSortResult(const T* in, const T* out, int N)
     auto key_iter = keys.find(in[i]);
     if (key_iter == keys.end())
     {
-      auto ret = keys.emplace(in[i], val_map{});
+      auto ret = keys.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }
@@ -464,11 +466,12 @@ void checkUnstableSortResult(const T* in, const T* out, int N)
 }
 
 template <typename Comparator, typename T, typename U>
-void checkUnstableSortResult(const T* in,
-                             const T* out,
-                             const U* in_vals,
-                             const U* out_vals,
-                             int      N)
+void checkUnstableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N)
 {
   Comparator comp;
   bool       correct = true;
@@ -481,7 +484,7 @@ void checkUnstableSortResult(const T* in,
     auto key_iter = keys_to_vals.find(in[i]);
     if (key_iter == keys_to_vals.end())
     {
-      auto ret = keys_to_vals.emplace(in[i], val_map{});
+      auto ret = keys_to_vals.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }
@@ -560,7 +563,7 @@ void checkStableSortResult(const T* in, const T* out, int N)
     auto key_iter = keys.find(in[i]);
     if (key_iter == keys.end())
     {
-      auto ret = keys.emplace(in[i], val_map{});
+      auto ret = keys.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }
@@ -615,11 +618,12 @@ void checkStableSortResult(const T* in, const T* out, int N)
 }
 
 template <typename Comparator, typename T, typename U>
-void checkStableSortResult(const T* in,
-                           const T* out,
-                           const U* in_vals,
-                           const U* out_vals,
-                           int      N)
+void checkStableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N)
 {
   Comparator comp;
   bool       correct = true;
@@ -632,7 +636,7 @@ void checkStableSortResult(const T* in,
     auto key_iter = keys_to_vals.find(in[i]);
     if (key_iter == keys_to_vals.end())
     {
-      auto ret = keys_to_vals.emplace(in[i], val_map{});
+      auto ret = keys_to_vals.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }

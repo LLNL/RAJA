@@ -38,12 +38,12 @@ struct RegisterTraits<RAJA::expt::hip_wave_register, T>
   using int_element_type                  = int32_t;
 };
 
-} // namespace expt
-} // namespace internal
-} // namespace RAJA
+}  // namespace expt
+}  // namespace internal
+}  // namespace RAJA
 
 
 #endif
 
 
-#endif // RAJA_ENABLE_HIP
+#endif  // RAJA_ENABLE_HIP

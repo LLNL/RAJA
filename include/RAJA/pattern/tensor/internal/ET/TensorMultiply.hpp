@@ -37,9 +37,10 @@ namespace ET
 {
 
 // forward decl for FMA contraction
-template <typename LEFT_OPERAND_TYPE,
-          typename RIGHT_OPERAND_TYPE,
-          typename ADD_TYPE>
+template <
+    typename LEFT_OPERAND_TYPE,
+    typename RIGHT_OPERAND_TYPE,
+    typename ADD_TYPE>
 class TensorMultiplyAdd;
 
 
@@ -67,9 +68,10 @@ private:
 public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorMultiply(left_operand_type const&  left_operand,
-                 right_operand_type const& right_operand)
-      : m_left_operand{left_operand}, m_right_operand{right_operand}
+  TensorMultiply(
+      left_operand_type const&  left_operand,
+      right_operand_type const& right_operand)
+      : m_left_operand {left_operand}, m_right_operand {right_operand}
   {}
 
 
@@ -114,13 +116,14 @@ public:
    */
   RAJA_SUPPRESS_HD_WARN
   template <typename ADD>
-  RAJA_INLINE RAJA_HOST_DEVICE TensorMultiplyAdd<left_operand_type,
-                                                 right_operand_type,
-                                                 normalize_operand_t<ADD>>
-                               operator+(ADD const& add) const
+  RAJA_INLINE RAJA_HOST_DEVICE TensorMultiplyAdd<
+      left_operand_type,
+      right_operand_type,
+      normalize_operand_t<ADD>>
+  operator+(ADD const& add) const
   {
-    return TensorMultiplyAdd<left_operand_type, right_operand_type,
-                             normalize_operand_t<ADD>>(
+    return TensorMultiplyAdd<
+        left_operand_type, right_operand_type, normalize_operand_t<ADD>>(
         m_left_operand, m_right_operand, normalizeOperand(add));
   }
 
@@ -151,20 +154,20 @@ template <
     typename std::enable_if<
         std::is_base_of<TensorExpressionConcreteBase, RHS>::value,
         bool>::type = true>
-RAJA_INLINE RAJA_HOST_DEVICE auto operator*(LHS const& left_operand,
-                                            RHS const& right_operand)
+RAJA_INLINE RAJA_HOST_DEVICE auto
+operator*(LHS const& left_operand, RHS const& right_operand)
     -> TensorMultiply<typename NormalizeOperandHelper<LHS>::return_type, RHS>
 {
   return TensorMultiply<typename NormalizeOperandHelper<LHS>::return_type, RHS>(
       NormalizeOperandHelper<LHS>::normalize(left_operand), right_operand);
 }
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

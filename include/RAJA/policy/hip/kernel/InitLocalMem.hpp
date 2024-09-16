@@ -40,15 +40,18 @@ namespace internal
 {
 
 // Intialize thread shared array
-template <typename Data,
-          camp::idx_t... Indices,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<Data,
-                            statement::InitLocalMem<RAJA::hip_shared_mem,
-                                                    camp::idx_seq<Indices...>,
-                                                    EnclosedStmts...>,
-                            Types>
+template <
+    typename Data,
+    camp::idx_t... Indices,
+    typename... EnclosedStmts,
+    typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::InitLocalMem<
+        RAJA::hip_shared_mem,
+        camp::idx_seq<Indices...>,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t      = StatementList<EnclosedStmts...>;
@@ -122,15 +125,18 @@ struct HipStatementExecutor<Data,
 };
 
 // Intialize thread private array
-template <typename Data,
-          camp::idx_t... Indices,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<Data,
-                            statement::InitLocalMem<RAJA::hip_thread_mem,
-                                                    camp::idx_seq<Indices...>,
-                                                    EnclosedStmts...>,
-                            Types>
+template <
+    typename Data,
+    camp::idx_t... Indices,
+    typename... EnclosedStmts,
+    typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::InitLocalMem<
+        RAJA::hip_thread_mem,
+        camp::idx_seq<Indices...>,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t      = StatementList<EnclosedStmts...>;
@@ -204,8 +210,8 @@ struct HipStatementExecutor<Data,
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif

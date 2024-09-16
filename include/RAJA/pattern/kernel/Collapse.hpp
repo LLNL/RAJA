@@ -33,8 +33,8 @@ struct Collapse : public internal::ForList,
 {};
 
 
-} // namespace statement
-} // end namespace RAJA
+}  // namespace statement
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

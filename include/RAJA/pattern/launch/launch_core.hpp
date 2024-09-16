@@ -53,12 +53,13 @@ struct null_launch_t
 {};
 
 // Support for host, and device
-template <typename HOST_POLICY
+template <
+    typename HOST_POLICY
 #if defined(RAJA_GPU_ACTIVE)
-          ,
-          typename DEVICE_POLICY = HOST_POLICY
+    ,
+    typename DEVICE_POLICY = HOST_POLICY
 #endif
-          >
+    >
 
 struct LoopPolicy
 {
@@ -68,12 +69,13 @@ struct LoopPolicy
 #endif
 };
 
-template <typename HOST_POLICY
+template <
+    typename HOST_POLICY
 #if defined(RAJA_GPU_ACTIVE)
-          ,
-          typename DEVICE_POLICY = HOST_POLICY
+    ,
+    typename DEVICE_POLICY = HOST_POLICY
 #endif
-          >
+    >
 struct LaunchPolicy
 {
   using host_policy_t = HOST_POLICY;
@@ -89,19 +91,19 @@ struct Teams
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Teams() : value{1, 1, 1} {}
+  constexpr Teams() : value {1, 1, 1} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Teams(int i) : value{i, 1, 1} {}
+  constexpr Teams(int i) : value {i, 1, 1} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Teams(int i, int j) : value{i, j, 1} {}
+  constexpr Teams(int i, int j) : value {i, j, 1} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Teams(int i, int j, int k) : value{i, j, k} {}
+  constexpr Teams(int i, int j, int k) : value {i, j, k} {}
 };
 
 struct Threads
@@ -110,20 +112,20 @@ struct Threads
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Threads() : value{1, 1, 1} {}
+  constexpr Threads() : value {1, 1, 1} {}
 
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Threads(int i) : value{i, 1, 1} {}
+  constexpr Threads(int i) : value {i, 1, 1} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Threads(int i, int j) : value{i, j, 1} {}
+  constexpr Threads(int i, int j) : value {i, j, 1} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr Threads(int i, int j, int k) : value{i, j, k} {}
+  constexpr Threads(int i, int j, int k) : value {i, j, k} {}
 };
 
 struct Lanes
@@ -149,12 +151,13 @@ public:
   RAJA_INLINE
   LaunchParams() = default;
 
-  LaunchParams(Teams   in_teams,
-               Threads in_threads,
-               size_t  in_shared_mem_size = 0)
+  LaunchParams(
+      Teams   in_teams,
+      Threads in_threads,
+      size_t  in_shared_mem_size = 0)
       : teams(in_teams),
         threads(in_threads),
-        shared_mem_size(in_shared_mem_size){};
+        shared_mem_size(in_shared_mem_size) {};
 
 private:
   RAJA_HOST_DEVICE
@@ -235,9 +238,10 @@ struct LaunchExecute;
 
 // Policy based launch with support to new reducers...
 template <typename LAUNCH_POLICY, typename... ReduceParams>
-void launch(LaunchParams const& launch_params,
-            const char*         kernel_name,
-            ReduceParams&&... rest_of_launch_args)
+void launch(
+    LaunchParams const& launch_params,
+    const char*         kernel_name,
+    ReduceParams&&... rest_of_launch_args)
 {
 
   // Get reducers
@@ -249,7 +253,7 @@ void launch(LaunchParams const& launch_params,
 
   // Take the first policy as we assume the second policy is not user defined.
   // We rely on the user to pair launch and loop policies correctly.
-  util::PluginContext context{
+  util::PluginContext context {
       util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
   util::callPreCapturePlugins(context);
 
@@ -265,8 +269,8 @@ void launch(LaunchParams const& launch_params,
   using Res = typename resources::get_resource<
       typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body,
-                 reducers);
+  launch_t::exec(
+      Res::get_default(), launch_params, kernel_name, p_body, reducers);
 
   util::callPostLaunchPlugins(context);
 }
@@ -275,8 +279,9 @@ void launch(LaunchParams const& launch_params,
 // Duplicate of code above on account that we need to support the case in which
 // a kernel_name is not given
 template <typename LAUNCH_POLICY, typename... ReduceParams>
-void launch(LaunchParams const& launch_params,
-            ReduceParams&&... rest_of_launch_args)
+void launch(
+    LaunchParams const& launch_params,
+    ReduceParams&&... rest_of_launch_args)
 {
 
   const char* kernel_name = nullptr;
@@ -290,7 +295,7 @@ void launch(LaunchParams const& launch_params,
 
   // Take the first policy as we assume the second policy is not user defined.
   // We rely on the user to pair launch and loop policies correctly.
-  util::PluginContext context{
+  util::PluginContext context {
       util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
   util::callPreCapturePlugins(context);
 
@@ -306,8 +311,8 @@ void launch(LaunchParams const& launch_params,
   using Res = typename resources::get_resource<
       typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body,
-                 reducers);
+  launch_t::exec(
+      Res::get_default(), launch_params, kernel_name, p_body, reducers);
 
   util::callPostLaunchPlugins(context);
 }
@@ -322,10 +327,11 @@ void launch(ExecPlace place, LaunchParams const& params, BODY const& body)
 }
 
 template <typename POLICY_LIST, typename BODY>
-void launch(ExecPlace           place,
-            const LaunchParams& params,
-            const char*         kernel_name,
-            BODY const&         body)
+void launch(
+    ExecPlace           place,
+    const LaunchParams& params,
+    const char*         kernel_name,
+    BODY const&         body)
 {
 
   // Forward to single policy launch API - simplifies testing of plugins
@@ -356,10 +362,11 @@ void launch(ExecPlace           place,
 
 // Run-time API for new reducer interface
 template <typename POLICY_LIST, typename... ReduceParams>
-void launch(ExecPlace           place,
-            const LaunchParams& launch_params,
-            const char*         kernel_name,
-            ReduceParams&&... rest_of_launch_args)
+void launch(
+    ExecPlace           place,
+    const LaunchParams& launch_params,
+    const char*         kernel_name,
+    ReduceParams&&... rest_of_launch_args)
 {
 
   // Forward to single policy launch API - simplifies testing of plugins
@@ -393,9 +400,10 @@ void launch(ExecPlace           place,
 // Run-time API for new reducer interface with support of the case without a new
 // kernel name
 template <typename POLICY_LIST, typename... ReduceParams>
-void launch(ExecPlace           place,
-            const LaunchParams& launch_params,
-            ReduceParams&&... rest_of_launch_args)
+void launch(
+    ExecPlace           place,
+    const LaunchParams& launch_params,
+    ReduceParams&&... rest_of_launch_args)
 // BODY const &body)
 {
 
@@ -462,11 +470,11 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device)
 
 // Launch API which takes team resource struct and supports new reducers
 template <typename POLICY_LIST, typename... ReduceParams>
-resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res,
-       LaunchParams const&       launch_params,
-       const char*               kernel_name,
-       ReduceParams&&... rest_of_launch_args)
+resources::EventProxy<resources::Resource> launch(
+    RAJA::resources::Resource res,
+    LaunchParams const&       launch_params,
+    const char*               kernel_name,
+    ReduceParams&&... rest_of_launch_args)
 {
 
   // Get reducers
@@ -490,12 +498,12 @@ launch(RAJA::resources::Resource res,
   // Configure plugins
   //
 #if defined(RAJA_GPU_ACTIVE)
-  util::PluginContext context{
+  util::PluginContext context {
       place == ExecPlace::HOST
           ? util::make_context<typename POLICY_LIST::host_policy_t>()
           : util::make_context<typename POLICY_LIST::device_policy_t>()};
 #else
-  util::PluginContext context{
+  util::PluginContext context {
       util::make_context<typename POLICY_LIST::host_policy_t>()};
 #endif
 
@@ -544,10 +552,10 @@ launch(RAJA::resources::Resource res,
 // Duplicate of API above on account that we need to handle the case that a
 // kernel name is not provided
 template <typename POLICY_LIST, typename... ReduceParams>
-resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res,
-       LaunchParams const&       launch_params,
-       ReduceParams&&... rest_of_launch_args)
+resources::EventProxy<resources::Resource> launch(
+    RAJA::resources::Resource res,
+    LaunchParams const&       launch_params,
+    ReduceParams&&... rest_of_launch_args)
 {
 
   const char* kernel_name = nullptr;
@@ -573,12 +581,12 @@ launch(RAJA::resources::Resource res,
   // Configure plugins
   //
 #if defined(RAJA_GPU_ACTIVE)
-  util::PluginContext context{
+  util::PluginContext context {
       place == ExecPlace::HOST
           ? util::make_context<typename POLICY_LIST::host_policy_t>()
           : util::make_context<typename POLICY_LIST::device_policy_t>()};
 #else
-  util::PluginContext context{
+  util::PluginContext context {
       util::make_context<typename POLICY_LIST::host_policy_t>()};
 #endif
 
@@ -637,10 +645,11 @@ template <typename POLICY, typename SEGMENT>
 struct LoopICountExecute;
 
 RAJA_SUPPRESS_HD_WARN
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename SEGMENT,
-          typename BODY>
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename SEGMENT,
+    typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void
 loop(CONTEXT const& ctx, SEGMENT const& segment, BODY const& body)
 {
@@ -648,53 +657,58 @@ loop(CONTEXT const& ctx, SEGMENT const& segment, BODY const& body)
   LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, segment, body);
 }
 
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename SEGMENT,
-          typename BODY>
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename SEGMENT,
+    typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void
 loop_icount(CONTEXT const& ctx, SEGMENT const& segment, BODY const& body)
 {
 
-  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, segment,
-                                                             body);
+  LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
+      ctx, segment, body);
 }
 
 namespace expt
 {
 
 RAJA_SUPPRESS_HD_WARN
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const& ctx,
-                                       SEGMENT const& segment0,
-                                       SEGMENT const& segment1,
-                                       BODY const&    body)
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename SEGMENT,
+    typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop(
+    CONTEXT const& ctx,
+    SEGMENT const& segment0,
+    SEGMENT const& segment1,
+    BODY const&    body)
 {
 
-  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, segment0, segment1,
-                                                       body);
+  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
+      ctx, segment0, segment1, body);
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const& ctx,
-                                              SEGMENT const& segment0,
-                                              SEGMENT const& segment1,
-                                              SEGMENT const& segment2,
-                                              BODY const&    body)
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename SEGMENT,
+    typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(
+    CONTEXT const& ctx,
+    SEGMENT const& segment0,
+    SEGMENT const& segment1,
+    SEGMENT const& segment2,
+    BODY const&    body)
 {
 
   LoopICountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
       ctx, segment0, segment1, segment2, body);
 }
 
-} // namespace expt
+}  // namespace expt
 
 template <typename POLICY, typename SEGMENT>
 struct TileExecute;
@@ -702,73 +716,81 @@ struct TileExecute;
 template <typename POLICY, typename SEGMENT>
 struct TileTCountExecute;
 
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename TILE_T,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
-                                       TILE_T         tile_size,
-                                       SEGMENT const& segment,
-                                       BODY const&    body)
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename TILE_T,
+    typename SEGMENT,
+    typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(
+    CONTEXT const& ctx,
+    TILE_T         tile_size,
+    SEGMENT const& segment,
+    BODY const&    body)
 {
 
-  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, tile_size, segment,
-                                                       body);
+  TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
+      ctx, tile_size, segment, body);
 }
 
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename TILE_T,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
-                                              TILE_T         tile_size,
-                                              SEGMENT const& segment,
-                                              BODY const&    body)
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename TILE_T,
+    typename SEGMENT,
+    typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(
+    CONTEXT const& ctx,
+    TILE_T         tile_size,
+    SEGMENT const& segment,
+    BODY const&    body)
 {
-  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx, tile_size,
-                                                             segment, body);
+  TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
+      ctx, tile_size, segment, body);
 }
 
 namespace expt
 {
 
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename TILE_T,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
-                                       TILE_T         tile_size0,
-                                       TILE_T         tile_size1,
-                                       SEGMENT const& segment0,
-                                       SEGMENT const& segment1,
-                                       BODY const&    body)
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename TILE_T,
+    typename SEGMENT,
+    typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile(
+    CONTEXT const& ctx,
+    TILE_T         tile_size0,
+    TILE_T         tile_size1,
+    SEGMENT const& segment0,
+    SEGMENT const& segment1,
+    BODY const&    body)
 {
 
   TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
       ctx, tile_size0, tile_size1, segment0, segment1, body);
 }
 
-template <typename POLICY_LIST,
-          typename CONTEXT,
-          typename TILE_T,
-          typename SEGMENT,
-          typename BODY>
-RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
-                                              TILE_T         tile_size0,
-                                              TILE_T         tile_size1,
-                                              SEGMENT const& segment0,
-                                              SEGMENT const& segment1,
-                                              BODY const&    body)
+template <
+    typename POLICY_LIST,
+    typename CONTEXT,
+    typename TILE_T,
+    typename SEGMENT,
+    typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(
+    CONTEXT const& ctx,
+    TILE_T         tile_size0,
+    TILE_T         tile_size1,
+    SEGMENT const& segment0,
+    SEGMENT const& segment1,
+    BODY const&    body)
 {
 
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
       ctx, tile_size0, tile_size1, segment0, segment1, body);
 }
 
-} // namespace expt
+}  // namespace expt
 
-} // namespace RAJA
+}  // namespace RAJA
 #endif

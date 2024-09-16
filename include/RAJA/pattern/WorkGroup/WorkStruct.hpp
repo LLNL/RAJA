@@ -47,11 +47,12 @@ struct WorkStruct;
 template <typename Dispatcher_T>
 using GenericWorkStruct = WorkStruct<RAJA_MAX_ALIGN, Dispatcher_T>;
 
-template <size_t   size,
-          Platform platform,
-          typename dispatch_policy,
-          typename DispatcherID,
-          typename... CallArgs>
+template <
+    size_t   size,
+    Platform platform,
+    typename dispatch_policy,
+    typename DispatcherID,
+    typename... CallArgs>
 struct WorkStruct<
     size,
     Dispatcher<platform, dispatch_policy, DispatcherID, CallArgs...>>
@@ -62,24 +63,30 @@ struct WorkStruct<
   // construct a WorkStruct with a value of type holder from the args and
   // check a variety of constraints at compile time
   template <typename holder, typename... holder_ctor_args>
-  static RAJA_INLINE void construct(void*                  ptr,
-                                    const dispatcher_type* dispatcher,
-                                    holder_ctor_args&&... ctor_args)
+  static RAJA_INLINE void construct(
+      void*                  ptr,
+      const dispatcher_type* dispatcher,
+      holder_ctor_args&&... ctor_args)
   {
     using true_value_type = WorkStruct<sizeof(holder), dispatcher_type>;
     using value_type      = GenericWorkStruct<dispatcher_type>;
 
-    static_assert(sizeof(holder) <= sizeof(true_value_type::obj),
-                  "holder must fit in WorkStruct::obj");
-    static_assert(std::is_standard_layout<true_value_type>::value,
-                  "WorkStruct must be a standard layout type");
-    static_assert(std::is_standard_layout<value_type>::value,
-                  "GenericWorkStruct must be a standard layout type");
-    static_assert(offsetof(value_type, obj) == offsetof(true_value_type, obj),
-                  "WorkStruct and GenericWorkStruct must have obj at the same "
-                  "offset");
-    static_assert(sizeof(value_type) <= sizeof(true_value_type),
-                  "WorkStruct must not be smaller than GenericWorkStruct");
+    static_assert(
+        sizeof(holder) <= sizeof(true_value_type::obj),
+        "holder must fit in WorkStruct::obj");
+    static_assert(
+        std::is_standard_layout<true_value_type>::value,
+        "WorkStruct must be a standard layout type");
+    static_assert(
+        std::is_standard_layout<value_type>::value,
+        "GenericWorkStruct must be a standard layout type");
+    static_assert(
+        offsetof(value_type, obj) == offsetof(true_value_type, obj),
+        "WorkStruct and GenericWorkStruct must have obj at the same "
+        "offset");
+    static_assert(
+        sizeof(value_type) <= sizeof(true_value_type),
+        "WorkStruct must not be smaller than GenericWorkStruct");
     true_value_type* value_ptr = static_cast<true_value_type*>(ptr);
 
     value_ptr->dispatcher = dispatcher;
@@ -88,13 +95,13 @@ struct WorkStruct<
   }
 
   // move construct in dst from the value in src and destroy the value in src
-  static RAJA_INLINE void move_destroy(WorkStruct* value_dst,
-                                       WorkStruct* value_src)
+  static RAJA_INLINE void
+  move_destroy(WorkStruct* value_dst, WorkStruct* value_src)
   {
     value_dst->dispatcher = value_src->dispatcher;
     value_dst->invoke     = value_src->invoke;
-    value_dst->dispatcher->move_construct_destroy(&value_dst->obj,
-                                                  &value_src->obj);
+    value_dst->dispatcher->move_construct_destroy(
+        &value_dst->obj, &value_src->obj);
   }
 
   // destroy the value ptr
@@ -104,15 +111,15 @@ struct WorkStruct<
   }
 
   // invoke the call operator of the value ptr with args
-  static RAJA_INLINE void host_call(const WorkStruct* value_ptr,
-                                    CallArgs... args)
+  static RAJA_INLINE void
+  host_call(const WorkStruct* value_ptr, CallArgs... args)
   {
     value_ptr->invoke(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }
   ///
   // invoke the call operator of the value ptr with args
-  static RAJA_DEVICE RAJA_INLINE void device_call(const WorkStruct* value_ptr,
-                                                  CallArgs... args)
+  static RAJA_DEVICE RAJA_INLINE void
+  device_call(const WorkStruct* value_ptr, CallArgs... args)
   {
     value_ptr->invoke(&value_ptr->obj, std::forward<CallArgs>(args)...);
   }
@@ -122,8 +129,8 @@ struct WorkStruct<
   typename std::aligned_storage<size, RAJA_MAX_ALIGN>::type obj;
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

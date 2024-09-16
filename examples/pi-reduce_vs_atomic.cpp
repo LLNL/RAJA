@@ -86,12 +86,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL1, double> seq_pi(0.0);
 
-  RAJA::forall<EXEC_POL1>(bins,
-                          [=](int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            seq_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL1>(
+      bins,
+      [=](int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        seq_pi += dx / (1.0 + x * x);
+      });
   double seq_pi_val = seq_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << seq_pi_val << std::endl;
@@ -103,13 +104,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0.0;
 
-  RAJA::forall<EXEC_POL1>(bins,
-                          [=](int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            RAJA::atomicAdd<ATOMIC_POL1>(atomic_pi,
-                                                         dx / (1.0 + x * x));
-                          });
+  RAJA::forall<EXEC_POL1>(
+      bins,
+      [=](int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        RAJA::atomicAdd<ATOMIC_POL1>(atomic_pi, dx / (1.0 + x * x));
+      });
   *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << *atomic_pi << std::endl;
@@ -126,12 +127,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL2, double> omp_pi(0.0);
 
-  RAJA::forall<EXEC_POL2>(bins,
-                          [=](int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            omp_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL2>(
+      bins,
+      [=](int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        omp_pi += dx / (1.0 + x * x);
+      });
   double omp_pi_val = omp_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << omp_pi_val << std::endl;
@@ -143,13 +145,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0.0;
 
-  RAJA::forall<EXEC_POL2>(bins,
-                          [=](int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            RAJA::atomicAdd<ATOMIC_POL2>(atomic_pi,
-                                                         dx / (1.0 + x * x));
-                          });
+  RAJA::forall<EXEC_POL2>(
+      bins,
+      [=](int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        RAJA::atomicAdd<ATOMIC_POL2>(atomic_pi, dx / (1.0 + x * x));
+      });
   *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << *atomic_pi << std::endl;
@@ -168,12 +170,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL3, double> cuda_pi(0.0);
 
-  RAJA::forall<EXEC_POL3>(bins,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            cuda_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL3>(
+      bins,
+      [=] RAJA_DEVICE(int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        cuda_pi += dx / (1.0 + x * x);
+      });
   double cuda_pi_val = cuda_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << cuda_pi_val << std::endl;
@@ -185,13 +188,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0.0;
 
-  RAJA::forall<EXEC_POL3>(bins,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi,
-                                                         dx / (1.0 + x * x));
-                          });
+  RAJA::forall<EXEC_POL3>(
+      bins,
+      [=] RAJA_DEVICE(int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, dx / (1.0 + x * x));
+      });
   *atomic_pi *= 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << *atomic_pi << std::endl;
@@ -209,12 +212,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL4, double> hip_pi(0.0);
 
-  RAJA::forall<EXEC_POL4>(bins,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            hip_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL4>(
+      bins,
+      [=] RAJA_DEVICE(int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        hip_pi += dx / (1.0 + x * x);
+      });
   double hip_pi_val = hip_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << hip_pi_val << std::endl;
@@ -223,21 +227,21 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi          = 0;
   double* d_atomic_pi = memoryManager::allocate_gpu<double>(1);
-  hipErrchk(hipMemcpy(d_atomic_pi, atomic_pi, 1 * sizeof(double),
-                      hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(
+      d_atomic_pi, atomic_pi, 1 * sizeof(double), hipMemcpyHostToDevice));
 
   using ATOMIC_POL4 = RAJA::hip_atomic;
 
-  RAJA::forall<EXEC_POL4>(bins,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            RAJA::atomicAdd<ATOMIC_POL4>(d_atomic_pi,
-                                                         dx / (1.0 + x * x));
-                          });
+  RAJA::forall<EXEC_POL4>(
+      bins,
+      [=] RAJA_DEVICE(int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        RAJA::atomicAdd<ATOMIC_POL4>(d_atomic_pi, dx / (1.0 + x * x));
+      });
 
-  hipErrchk(hipMemcpy(atomic_pi, d_atomic_pi, 1 * sizeof(double),
-                      hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(
+      atomic_pi, d_atomic_pi, 1 * sizeof(double), hipMemcpyDeviceToHost));
   *atomic_pi *= 4.0;
   std::cout << "\tpi = " << std::setprecision(prec) << *atomic_pi << std::endl;
 

@@ -109,8 +109,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
   // _rajaseq_vector_add_start
-  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N),
-                               [=](int i) { c[i] = a[i] + b[i]; });
+  RAJA::forall<RAJA::seq_exec>(
+      RAJA::TypedRangeSegment<int>(0, N), [=](int i) { c[i] = a[i] + b[i]; });
   // _rajaseq_vector_add_end
 
   checkResult(c, c_ref, N);
@@ -126,8 +126,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
-  RAJA::forall<RAJA::simd_exec>(RAJA::TypedRangeSegment<int>(0, N),
-                                [=](int i) { c[i] = a[i] + b[i]; });
+  RAJA::forall<RAJA::simd_exec>(
+      RAJA::TypedRangeSegment<int>(0, N), [=](int i) { c[i] = a[i] + b[i]; });
 
   checkResult(c, c_ref, N);
   // printArray(c, N);
@@ -167,8 +167,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP multithreaded vector addition...\n";
 
   // _rajaomp_vector_add_start
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::TypedRangeSegment<int>(0, N),
-                                            [=](int i) { c[i] = a[i] + b[i]; });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(
+      RAJA::TypedRangeSegment<int>(0, N), [=](int i) { c[i] = a[i] + b[i]; });
   // _rajaomp_vector_add_end
 
   checkResult(c, c_ref, N);

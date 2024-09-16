@@ -56,7 +56,7 @@ public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
   explicit constexpr TensorScalarLiteral(element_type const& value) noexcept
-      : m_value{value}
+      : m_value {value}
   {}
 
 
@@ -94,12 +94,12 @@ struct NormalizeOperandHelper<
 };
 
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

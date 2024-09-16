@@ -56,8 +56,8 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi64x(N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0,
-                             N >= 1 ? -1 : 0);
+    return _mm256_set_epi64x(
+        N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
   }
 
   RAJA_INLINE
@@ -162,8 +162,8 @@ public:
 #ifdef RAJA_ENABLE_VECTOR_STATS
     RAJA::tensor_stats::num_vector_load_strided++;
 #endif
-    m_value = _mm256_i64gather_pd(ptr, createStridedOffsets(stride),
-                                  sizeof(element_type));
+    m_value = _mm256_i64gather_pd(
+        ptr, createStridedOffsets(stride), sizeof(element_type));
     return *this;
   }
 
@@ -569,11 +569,11 @@ public:
 };
 
 
-} // namespace expt
+}  // namespace expt
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif
 
-#endif //__AVX2__
+#endif  //__AVX2__

@@ -26,4 +26,4 @@
 #include <sycl/sycl.hpp>
 #endif
 
-#endif // RAJA_util_sycl_compat_HPP
+#endif  // RAJA_util_sycl_compat_HPP

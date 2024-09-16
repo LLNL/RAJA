@@ -83,20 +83,21 @@ using launch_policy = RAJA::LaunchPolicy<
  * Define team policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using outer0 = RAJA::LoopPolicy<RAJA::seq_exec
+using outer0 = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                ,
-                                RAJA::cuda_block_x_direct
+    ,
+    RAJA::cuda_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                ,
-                                RAJA::hip_block_x_direct
+    ,
+    RAJA::hip_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-                                ,
-                                RAJA::sycl_group_2_direct
+    ,
+    RAJA::sycl_group_2_direct
 #endif
-                                >;
+    >;
 
 using outer1 = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
@@ -121,35 +122,37 @@ using outer1 = RAJA::LoopPolicy<
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using inner0 = RAJA::LoopPolicy<RAJA::seq_exec
+using inner0 = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                ,
-                                RAJA::cuda_thread_x_direct
+    ,
+    RAJA::cuda_thread_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                ,
-                                RAJA::hip_thread_x_direct
+    ,
+    RAJA::hip_thread_x_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-                                ,
-                                RAJA::sycl_local_2_direct
+    ,
+    RAJA::sycl_local_2_direct
 #endif
-                                >;
+    >;
 
-using inner1 = RAJA::LoopPolicy<RAJA::seq_exec
+using inner1 = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                ,
-                                RAJA::cuda_thread_y_direct
+    ,
+    RAJA::cuda_thread_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                ,
-                                RAJA::hip_thread_y_direct
+    ,
+    RAJA::hip_thread_y_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-                                ,
-                                RAJA::sycl_local_1_direct
+    ,
+    RAJA::sycl_local_1_direct
 #endif
-                                >;
+    >;
 
 int main(int argc, char* argv[])
 {
@@ -275,8 +278,8 @@ int main(int argc, char* argv[])
         for (int tx = 0; tx < TILE_DIM; ++tx)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -297,8 +300,8 @@ int main(int argc, char* argv[])
         for (int ty = 0; ty < TILE_DIM; ++ty)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -348,9 +351,9 @@ int main(int argc, char* argv[])
   // _dynamic_mattranspose_kernel_start
   RAJA::launch<launch_policy>(
       res,
-      RAJA::LaunchParams(RAJA::Teams(outer_Dimc, outer_Dimr),
-                         RAJA::Threads(TILE_DIM, TILE_DIM),
-                         dynamic_shared_mem_size),
+      RAJA::LaunchParams(
+          RAJA::Teams(outer_Dimc, outer_Dimr),
+          RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
       "Matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
@@ -367,8 +370,8 @@ int main(int argc, char* argv[])
                         ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
 
                     // Use RAJA View for simplified indexing
-                    RAJA::View<int, RAJA::Layout<2>> Tile(tile_ptr, TILE_DIM,
-                                                          TILE_DIM);
+                    RAJA::View<int, RAJA::Layout<2>> Tile(
+                        tile_ptr, TILE_DIM, TILE_DIM);
 
                     RAJA::loop<inner1>(
                         ctx, RAJA::RangeSegment(0, TILE_DIM),
@@ -379,9 +382,9 @@ int main(int argc, char* argv[])
                               [&](int tx)
                               {
                                 int col =
-                                    bx * TILE_DIM + tx; // Matrix column index
+                                    bx * TILE_DIM + tx;  // Matrix column index
                                 int row =
-                                    by * TILE_DIM + ty; // Matrix row index
+                                    by * TILE_DIM + ty;  // Matrix row index
 
                                 // Bounds check
                                 if (row < N_r && col < N_c)
@@ -404,9 +407,9 @@ int main(int argc, char* argv[])
                               [&](int tx)
                               {
                                 int col =
-                                    bx * TILE_DIM + tx; // Matrix column index
+                                    bx * TILE_DIM + tx;  // Matrix column index
                                 int row =
-                                    by * TILE_DIM + ty; // Matrix row index
+                                    by * TILE_DIM + ty;  // Matrix row index
 
                                 // Bounds check
                                 if (row < N_r && col < N_c)

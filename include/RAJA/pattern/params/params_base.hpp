@@ -21,10 +21,10 @@ struct ForallParamBase
   static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value;
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace expt
+}  // namespace expt
 
-} //  namespace RAJA
+}  //  namespace RAJA
 
-#endif //  RAJA_PARAMS_BASE
+#endif  //  RAJA_PARAMS_BASE

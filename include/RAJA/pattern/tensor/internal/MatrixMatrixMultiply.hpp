@@ -40,41 +40,48 @@ struct MatrixMatrixMultiplyHelper;
  * Row-Major * Row-Major ==> Row-Major
  *
  */
-template <typename T,
-          typename REGISTER_POLICY,
-          camp::idx_t N_SIZE,
-          camp::idx_t M_SIZE,
-          camp::idx_t M2_SIZE,
-          camp::idx_t O_SIZE>
+template <
+    typename T,
+    typename REGISTER_POLICY,
+    camp::idx_t N_SIZE,
+    camp::idx_t M_SIZE,
+    camp::idx_t M2_SIZE,
+    camp::idx_t O_SIZE>
 struct MatrixMatrixMultiplyHelper<
-    RAJA::expt::TensorRegister<REGISTER_POLICY,
-                               T,
-                               RAJA::expt::RowMajorLayout,
-                               camp::idx_seq<N_SIZE, M_SIZE>>,
-    RAJA::expt::TensorRegister<REGISTER_POLICY,
-                               T,
-                               RAJA::expt::RowMajorLayout,
-                               camp::idx_seq<M2_SIZE, O_SIZE>>>
+    RAJA::expt::TensorRegister<
+        REGISTER_POLICY,
+        T,
+        RAJA::expt::RowMajorLayout,
+        camp::idx_seq<N_SIZE, M_SIZE>>,
+    RAJA::expt::TensorRegister<
+        REGISTER_POLICY,
+        T,
+        RAJA::expt::RowMajorLayout,
+        camp::idx_seq<M2_SIZE, O_SIZE>>>
 {
 
-  static_assert(M_SIZE == M2_SIZE,
-                "Matrices are not compatible for "
-                "multiplication");
+  static_assert(
+      M_SIZE == M2_SIZE,
+      "Matrices are not compatible for "
+      "multiplication");
 
-  using left_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                               T,
-                                               RAJA::expt::RowMajorLayout,
-                                               camp::idx_seq<N_SIZE, M_SIZE>>;
+  using left_type = RAJA::expt::TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::RowMajorLayout,
+      camp::idx_seq<N_SIZE, M_SIZE>>;
 
-  using right_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                                T,
-                                                RAJA::expt::RowMajorLayout,
-                                                camp::idx_seq<M_SIZE, O_SIZE>>;
+  using right_type = RAJA::expt::TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::RowMajorLayout,
+      camp::idx_seq<M_SIZE, O_SIZE>>;
 
-  using result_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                                 T,
-                                                 RAJA::expt::RowMajorLayout,
-                                                 camp::idx_seq<N_SIZE, O_SIZE>>;
+  using result_type = RAJA::expt::TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::RowMajorLayout,
+      camp::idx_seq<N_SIZE, O_SIZE>>;
 
   using register_type = typename result_type::register_type;
 
@@ -94,9 +101,10 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE static RAJA_INLINE
       typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
-      multiply_accumulate(left_type const&  A,
-                          right_type const& B,
-                          result_type&      C)
+      multiply_accumulate(
+          left_type const&  A,
+          right_type const& B,
+          result_type&      C)
   {
 #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
     RAJA::tensor_stats::num_matrix_mm_multacc_row_row++;
@@ -129,9 +137,10 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE RAJA_INLINE static
       typename std::enable_if<(s_C_minor_dim_registers == 0), dummy>::type
-      multiply_accumulate(left_type const&  A,
-                          right_type const& B,
-                          result_type&      C)
+      multiply_accumulate(
+          left_type const&  A,
+          right_type const& B,
+          result_type&      C)
   {
     constexpr camp::idx_t bc_segbits              = result_type::s_segbits;
     constexpr camp::idx_t a_segments_per_register = 1 << bc_segbits;
@@ -184,51 +193,60 @@ struct MatrixMatrixMultiplyHelper<
  * Column-Major * Column-Major ==> Column-Major
  *
  */
-template <typename T,
-          typename REGISTER_POLICY,
-          camp::idx_t N_SIZE,
-          camp::idx_t M_SIZE,
-          camp::idx_t M2_SIZE,
-          camp::idx_t O_SIZE>
+template <
+    typename T,
+    typename REGISTER_POLICY,
+    camp::idx_t N_SIZE,
+    camp::idx_t M_SIZE,
+    camp::idx_t M2_SIZE,
+    camp::idx_t O_SIZE>
 struct MatrixMatrixMultiplyHelper<
-    RAJA::expt::TensorRegister<REGISTER_POLICY,
-                               T,
-                               RAJA::expt::ColMajorLayout,
-                               camp::idx_seq<N_SIZE, M_SIZE>>,
-    RAJA::expt::TensorRegister<REGISTER_POLICY,
-                               T,
-                               RAJA::expt::ColMajorLayout,
-                               camp::idx_seq<M2_SIZE, O_SIZE>>>
+    RAJA::expt::TensorRegister<
+        REGISTER_POLICY,
+        T,
+        RAJA::expt::ColMajorLayout,
+        camp::idx_seq<N_SIZE, M_SIZE>>,
+    RAJA::expt::TensorRegister<
+        REGISTER_POLICY,
+        T,
+        RAJA::expt::ColMajorLayout,
+        camp::idx_seq<M2_SIZE, O_SIZE>>>
 {
 
   using self_type = MatrixMatrixMultiplyHelper<
-      RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                 T,
-                                 RAJA::expt::ColMajorLayout,
-                                 camp::idx_seq<N_SIZE, M_SIZE>>,
-      RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                 T,
-                                 RAJA::expt::ColMajorLayout,
-                                 camp::idx_seq<M2_SIZE, O_SIZE>>>;
+      RAJA::expt::TensorRegister<
+          REGISTER_POLICY,
+          T,
+          RAJA::expt::ColMajorLayout,
+          camp::idx_seq<N_SIZE, M_SIZE>>,
+      RAJA::expt::TensorRegister<
+          REGISTER_POLICY,
+          T,
+          RAJA::expt::ColMajorLayout,
+          camp::idx_seq<M2_SIZE, O_SIZE>>>;
 
-  static_assert(M_SIZE == M2_SIZE,
-                "Matrices are not compatible for "
-                "multiplication");
+  static_assert(
+      M_SIZE == M2_SIZE,
+      "Matrices are not compatible for "
+      "multiplication");
 
-  using left_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                               T,
-                                               RAJA::expt::ColMajorLayout,
-                                               camp::idx_seq<N_SIZE, M_SIZE>>;
+  using left_type = RAJA::expt::TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::ColMajorLayout,
+      camp::idx_seq<N_SIZE, M_SIZE>>;
 
-  using right_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                                T,
-                                                RAJA::expt::ColMajorLayout,
-                                                camp::idx_seq<M_SIZE, O_SIZE>>;
+  using right_type = RAJA::expt::TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::ColMajorLayout,
+      camp::idx_seq<M_SIZE, O_SIZE>>;
 
-  using result_type = RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                                 T,
-                                                 RAJA::expt::ColMajorLayout,
-                                                 camp::idx_seq<N_SIZE, O_SIZE>>;
+  using result_type = RAJA::expt::TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::ColMajorLayout,
+      camp::idx_seq<N_SIZE, O_SIZE>>;
 
   using register_type = typename result_type::register_type;
 
@@ -249,9 +267,10 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE static RAJA_INLINE
       typename std::enable_if<(s_C_minor_dim_registers != 0), dummy>::type
-      multiply_accumulate(left_type const&  A,
-                          right_type const& B,
-                          result_type&      C)
+      multiply_accumulate(
+          left_type const&  A,
+          right_type const& B,
+          result_type&      C)
   {
 
 #if defined(RAJA_ENABLE_VECTOR_STATS) && !defined(__CUDA_ARCH__)
@@ -286,9 +305,10 @@ struct MatrixMatrixMultiplyHelper<
   template <typename dummy = void>
   RAJA_HOST_DEVICE RAJA_INLINE static
       typename std::enable_if<(s_C_minor_dim_registers == 0), dummy>::type
-      multiply_accumulate(left_type const&  A,
-                          right_type const& B,
-                          result_type&      C)
+      multiply_accumulate(
+          left_type const&  A,
+          right_type const& B,
+          result_type&      C)
   {
     constexpr camp::idx_t ac_segbits              = result_type::s_segbits;
     constexpr camp::idx_t b_segments_per_register = 1 << ac_segbits;
@@ -334,8 +354,8 @@ struct MatrixMatrixMultiplyHelper<
             c_tmp.segmented_sum_outer(ac_segbits, c_segment);
 
         ++bc_col;
-      } // c_segment
-    }   // c_reg
+      }  // c_segment
+    }    // c_reg
   }
 
 
@@ -349,9 +369,9 @@ struct MatrixMatrixMultiplyHelper<
 };
 
 
-} // namespace expt
-} // namespace internal
-} // namespace RAJA
+}  // namespace expt
+}  // namespace internal
+}  // namespace RAJA
 
 
 #endif

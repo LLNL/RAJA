@@ -23,4 +23,4 @@
 #include "RAJA/policy/tensor/arch_impl.hpp"
 #include "RAJA/policy/tensor/policy.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

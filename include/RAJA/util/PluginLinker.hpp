@@ -23,6 +23,6 @@ struct pluginLinker
     (void)RAJA::util::linkKokkosPluginLoader();
   }
 } pluginLinker;
-} // namespace anonymous_RAJA
-} // namespace
+}  // namespace anonymous_RAJA
+}  // namespace
 #endif

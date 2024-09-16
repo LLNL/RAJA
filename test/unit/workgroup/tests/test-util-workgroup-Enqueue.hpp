@@ -39,4 +39,4 @@ private:
   IndexType  val;
 };
 
-#endif //__TEST_UTIL_WORKGROUP_ENQUEUE__
+#endif  //__TEST_UTIL_WORKGROUP_ENQUEUE__

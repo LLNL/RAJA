@@ -52,7 +52,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorNegate(rhs_type const& tensor) : m_tensor{tensor} {}
+  TensorNegate(rhs_type const& tensor) : m_tensor {tensor} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -81,12 +81,12 @@ private:
 };
 
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

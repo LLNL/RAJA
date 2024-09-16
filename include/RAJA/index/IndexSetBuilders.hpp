@@ -92,10 +92,11 @@ void RAJASHAREDDLL_API buildIndexSetAligned(
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
-                                int fastDim,
-                                int midDim,
-                                int slowDim);
+void buildLockFreeBlockIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+    int                                      fastDim,
+    int                                      midDim,
+    int                                      slowDim);
 
 /*!
  ******************************************************************************
@@ -125,6 +126,6 @@ void buildLockFreeColorIndexset(
     RAJA::Index_type* elemPermutation  = nullptr,
     RAJA::Index_type* ielemPermutation = nullptr);
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -52,7 +52,7 @@ struct HipSyncThreads : public internal::Statement<camp::nil>
 struct HipSyncWarp : public internal::Statement<camp::nil>
 {};
 
-} // namespace statement
+}  // namespace statement
 
 namespace internal
 {
@@ -89,9 +89,9 @@ struct HipStatementExecutor<Data, statement::HipSyncWarp, Types>
 };
 
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_HIP guard
+#endif  // closing endif for RAJA_ENABLE_HIP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

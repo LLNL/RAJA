@@ -88,8 +88,8 @@ void MinImpl()
   // check element-wise operation
   for (camp::idx_t i = 0; i < num_elem; ++i)
   {
-    ASSERT_SCALAR_EQ(std::min<element_t>(input0_vec[i], input1_vec[i]),
-                     output1_vec[i]);
+    ASSERT_SCALAR_EQ(
+        std::min<element_t>(input0_vec[i], input1_vec[i]), output1_vec[i]);
   }
 
 

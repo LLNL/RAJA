@@ -71,8 +71,9 @@ __global__ void forone_hip_global(L run)
 template <typename L>
 inline void forone(test_hip, L&& run)
 {
-  hipLaunchKernelGGL(forone_hip_global<camp::decay<L>>, dim3(1), dim3(1), 0, 0,
-                     std::forward<L>(run));
+  hipLaunchKernelGGL(
+      forone_hip_global<camp::decay<L>>, dim3(1), dim3(1), 0, 0,
+      std::forward<L>(run));
   hipErrchk(hipGetLastError());
   hipErrchk(hipDeviceSynchronize());
 }
@@ -82,7 +83,7 @@ inline void forone(test_hip, L&& run)
 template <typename test_policy, typename L>
 void forone(L&& run)
 {
-  forone(test_policy{}, std::forward<L>(run));
+  forone(test_policy {}, std::forward<L>(run));
 }
 
-#endif // RAJA_test_forone_HPP__
+#endif  // RAJA_test_forone_HPP__

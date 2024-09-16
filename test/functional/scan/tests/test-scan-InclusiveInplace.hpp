@@ -11,10 +11,10 @@
 #include <numeric>
 
 template <typename OP>
-::testing::AssertionResult
-check_inclusive(const typename OP::result_type* actual,
-                const typename OP::result_type* original,
-                int                             N)
+::testing::AssertionResult check_inclusive(
+    const typename OP::result_type* actual,
+    const typename OP::result_type* original,
+    int                             N)
 {
   typename OP::result_type init = OP::identity();
   for (int i = 0; i < N; ++i)
@@ -36,8 +36,8 @@ void ScanInclusiveInplaceTestImpl(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  WORKING_RES               res{WORKING_RES::get_default()};
-  camp::resources::Resource working_res{res};
+  WORKING_RES               res {WORKING_RES::get_default()};
+  camp::resources::Resource working_res {res};
 
   T* work_in;
   T* work_out;
@@ -52,8 +52,8 @@ void ScanInclusiveInplaceTestImpl(int N)
   res.memcpy(work_in, host_in, sizeof(T) * N);
   res.wait();
 
-  RAJA::inclusive_scan_inplace<EXEC_POLICY>(RAJA::make_span(work_in, N),
-                                            OP_TYPE{});
+  RAJA::inclusive_scan_inplace<EXEC_POLICY>(
+      RAJA::make_span(work_in, N), OP_TYPE {});
 
   res.memcpy(host_out, work_in, sizeof(T) * N);
   res.wait();
@@ -63,8 +63,8 @@ void ScanInclusiveInplaceTestImpl(int N)
   // test interface with resource
   res.memcpy(work_in, host_in, sizeof(T) * N);
 
-  RAJA::inclusive_scan_inplace<EXEC_POLICY>(res, RAJA::make_span(work_in, N),
-                                            OP_TYPE{});
+  RAJA::inclusive_scan_inplace<EXEC_POLICY>(
+      res, RAJA::make_span(work_in, N), OP_TYPE {});
 
   res.memcpy(host_out, work_in, sizeof(T) * N);
   res.wait();
@@ -93,4 +93,4 @@ TYPED_TEST_P(ScanInclusiveInplaceTest, ScanInclusiveInplace)
 
 REGISTER_TYPED_TEST_SUITE_P(ScanInclusiveInplaceTest, ScanInclusiveInplace);
 
-#endif // __TEST_SCAN_INCLUSIVE_INPLACE_HPP__
+#endif  // __TEST_SCAN_INCLUSIVE_INPLACE_HPP__

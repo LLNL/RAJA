@@ -49,11 +49,12 @@ private:
 };
 
 // Statically loading plugin.
-static RAJA::util::PluginRegistry::add<CounterPlugin> P("Counter",
-                                                        "Counts "
-                                                        "number of "
-                                                        "kernel "
-                                                        "launches.");
+static RAJA::util::PluginRegistry::add<CounterPlugin>
+    P("Counter",
+      "Counts "
+      "number of "
+      "kernel "
+      "launches.");
 
 // Dynamically loading plugin.
 extern "C" RAJA::util::PluginStrategy* getPlugin() { return new CounterPlugin; }

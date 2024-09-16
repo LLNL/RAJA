@@ -49,23 +49,26 @@ struct InitLocalMem : public internal::Statement<camp::nil>
 
 // Policy Specialization
 template <camp::idx_t... Indices, typename... EnclosedStmts>
-struct InitLocalMem<RAJA::cpu_tile_mem,
-                    camp::idx_seq<Indices...>,
-                    EnclosedStmts...> : public internal::Statement<camp::nil>
+struct InitLocalMem<
+    RAJA::cpu_tile_mem,
+    camp::idx_seq<Indices...>,
+    EnclosedStmts...> : public internal::Statement<camp::nil>
 {};
 
 
-} // end namespace statement
+}  // end namespace statement
 
 namespace internal
 {
 
 // Statement executor to initalize RAJA local array
 template <camp::idx_t... Indices, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,
-                                                 camp::idx_seq<Indices...>,
-                                                 EnclosedStmts...>,
-                         Types>
+struct StatementExecutor<
+    statement::InitLocalMem<
+        RAJA::cpu_tile_mem,
+        camp::idx_seq<Indices...>,
+        EnclosedStmts...>,
+    Types>
 {
 
   // Execute statement list
@@ -113,8 +116,8 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

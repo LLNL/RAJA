@@ -19,10 +19,11 @@
 // not aligned with warp boundaries, for example, to check that reduction
 // mechanics don't depend on any sort of special indexing.
 //
-template <typename IDX_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename REDUCE_POLICY>
+template <
+    typename IDX_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename REDUCE_POLICY>
 void ForallIndexSetReduceMaxMultipleTestImpl()
 {
   using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
@@ -41,14 +42,14 @@ void ForallIndexSetReduceMaxMultipleTestImpl()
 
   const IDX_TYPE alen = 15286;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
 
   double* working_array;
   double* check_array;
   double* test_array;
 
-  allocateForallTestData<double>(alen, working_res, &working_array,
-                                 &check_array, &test_array);
+  allocateForallTestData<double>(
+      alen, working_res, &working_array, &check_array, &test_array);
 
   const double default_val = -DBL_MAX;
 
@@ -72,10 +73,10 @@ void ForallIndexSetReduceMaxMultipleTestImpl()
   {
 
     // pick an index in one of the segments
-    int index = 5127;               // seg 3
-    if (tcount == 2) index = 1938;  // seg2
-    if (tcount == 3) index = 13333; // seg4
-    if (tcount == 4) index = 52;    // seg1
+    int index = 5127;                // seg 3
+    if (tcount == 2) index = 1938;   // seg2
+    if (tcount == 3) index = 13333;  // seg4
+    if (tcount == 4) index = 52;     // seg1
 
     double droll = dist(mt);
     if (test_array[index] > droll)
@@ -86,19 +87,20 @@ void ForallIndexSetReduceMaxMultipleTestImpl()
 
     working_res.memcpy(working_array, test_array, sizeof(double) * alen);
 
-    RAJA::forall<EXEC_POLICY>(iset,
-                              [=] RAJA_HOST_DEVICE(IDX_TYPE i)
-                              {
-                                dmax0.max(working_array[i]);
-                                dmax1.max(2 * working_array[i]);
-                              });
+    RAJA::forall<EXEC_POLICY>(
+        iset,
+        [=] RAJA_HOST_DEVICE(IDX_TYPE i)
+        {
+          dmax0.max(working_array[i]);
+          dmax1.max(2 * working_array[i]);
+        });
 
     ASSERT_FLOAT_EQ(static_cast<double>(dmax0.get()), current_max);
     ASSERT_FLOAT_EQ(static_cast<double>(dmax1.get()), 2 * current_max);
   }
 
-  deallocateForallTestData<double>(working_res, working_array, check_array,
-                                   test_array);
+  deallocateForallTestData<double>(
+      working_res, working_array, check_array, test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceMaxMultipleTest);
@@ -106,19 +108,21 @@ template <typename T>
 class ForallIndexSetReduceMaxMultipleTest : public ::testing::Test
 {};
 
-TYPED_TEST_P(ForallIndexSetReduceMaxMultipleTest,
-             ReduceMaxMultipleForallIndexSet)
+TYPED_TEST_P(
+    ForallIndexSetReduceMaxMultipleTest,
+    ReduceMaxMultipleForallIndexSet)
 {
   using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMaxMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
-                                          REDUCE_POLICY>();
+  ForallIndexSetReduceMaxMultipleTestImpl<
+      IDX_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallIndexSetReduceMaxMultipleTest,
-                            ReduceMaxMultipleForallIndexSet);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallIndexSetReduceMaxMultipleTest,
+    ReduceMaxMultipleForallIndexSet);
 
-#endif // __TEST_FORALL_INDEXSET_MULTIPLE_REDUCEMAX_HPP__
+#endif  // __TEST_FORALL_INDEXSET_MULTIPLE_REDUCEMAX_HPP__

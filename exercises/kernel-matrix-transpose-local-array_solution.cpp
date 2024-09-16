@@ -141,8 +141,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tx = 0; tx < TILE_DIM; ++tx)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -163,8 +163,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int ty = 0; ty < TILE_DIM; ++ty)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -195,8 +195,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
 
   // _mattranspose_localarray_start
-  using TILE_MEM = RAJA::LocalArray<int, RAJA::Perm<0, 1>,
-                                    RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+  using TILE_MEM = RAJA::LocalArray<
+      int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
   TILE_MEM Tile_Array;
   // _mattranspose_localarray_end
 
@@ -219,21 +219,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
               RAJA::statement::ForICount<
                   1, RAJA::statement::Param<0>, RAJA::seq_exec,
-                  RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
-                                             RAJA::seq_exec,
-                                             RAJA::statement::Lambda<0>>>,
+                  RAJA::statement::ForICount<
+                      0, RAJA::statement::Param<1>, RAJA::seq_exec,
+                      RAJA::statement::Lambda<0>>>,
 
               RAJA::statement::ForICount<
                   0, RAJA::statement::Param<1>, RAJA::seq_exec,
-                  RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
-                                             RAJA::seq_exec,
-                                             RAJA::statement::Lambda<1>>>
+                  RAJA::statement::ForICount<
+                      1, RAJA::statement::Param<0>, RAJA::seq_exec,
+                      RAJA::statement::Lambda<1>>>
 
               >>>>;
 
   RAJA::kernel_param<SEQ_EXEC_POL_I>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
-                       RAJA::TypedRangeSegment<int>(0, N_r)),
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N_c),
+          RAJA::TypedRangeSegment<int>(0, N_r)),
 
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
@@ -280,9 +281,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //
                   RAJA::statement::ForICount<
                       1, RAJA::statement::Param<0>, RAJA::seq_exec,
-                      RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
-                                                 RAJA::seq_exec,
-                                                 RAJA::statement::Lambda<0>>>,
+                      RAJA::statement::ForICount<
+                          0, RAJA::statement::Param<1>, RAJA::seq_exec,
+                          RAJA::statement::Lambda<0>>>,
                   //
                   // (2) Execution policies for the second set of inner
                   // loops. These loops copy data from the local tile to
@@ -298,8 +299,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                           RAJA::statement::Lambda<1>>>>>>>;
 
   RAJA::kernel_param<OPENMP_EXEC_1_POL>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
-                       RAJA::TypedRangeSegment<int>(0, N_r)),
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N_c),
+          RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
       [=](int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
@@ -340,9 +342,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //
                   RAJA::statement::ForICount<
                       1, RAJA::statement::Param<1>, RAJA::omp_parallel_for_exec,
-                      RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
-                                                 RAJA::seq_exec,
-                                                 RAJA::statement::Lambda<0>>>,
+                      RAJA::statement::ForICount<
+                          0, RAJA::statement::Param<0>, RAJA::seq_exec,
+                          RAJA::statement::Lambda<0>>>,
                   //
                   // (2) Execution policies for the second set of inner
                   // loops. These loops copy data from the local tile to
@@ -358,8 +360,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                           RAJA::statement::Lambda<1>>>>>>>;
 
   RAJA::kernel_param<OPENMP_EXEC_2_POL>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
-                       RAJA::TypedRangeSegment<int>(0, N_r)),
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N_c),
+          RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
       [=](int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
@@ -401,9 +404,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //
                   RAJA::statement::ForICount<
                       1, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
-                                                 RAJA::cuda_thread_x_direct,
-                                                 RAJA::statement::Lambda<0>>>,
+                      RAJA::statement::ForICount<
+                          0, RAJA::statement::Param<1>,
+                          RAJA::cuda_thread_x_direct,
+                          RAJA::statement::Lambda<0>>>,
                   // Synchronize threads to ensure all loads
                   // to the local array are complete
                   RAJA::statement::CudaSyncThreads,
@@ -417,17 +421,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //
                   RAJA::statement::ForICount<
                       0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
-                                                 RAJA::cuda_thread_x_direct,
-                                                 RAJA::statement::Lambda<1>>>,
+                      RAJA::statement::ForICount<
+                          1, RAJA::statement::Param<0>,
+                          RAJA::cuda_thread_x_direct,
+                          RAJA::statement::Lambda<1>>>,
                   // Synchronize threads to ensure all reads
                   // from the local array are complete
                   RAJA::statement::CudaSyncThreads>>>>>;
 
 
   RAJA::kernel_param<CUDA_EXEC_POL>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
-                       RAJA::TypedRangeSegment<int>(0, N_r)),
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N_c),
+          RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
       [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
@@ -486,9 +492,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //
                   RAJA::statement::ForICount<
                       1, RAJA::statement::Param<0>, RAJA::hip_thread_y_direct,
-                      RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
-                                                 RAJA::hip_thread_x_direct,
-                                                 RAJA::statement::Lambda<0>>>,
+                      RAJA::statement::ForICount<
+                          0, RAJA::statement::Param<1>,
+                          RAJA::hip_thread_x_direct,
+                          RAJA::statement::Lambda<0>>>,
                   // Synchronize threads to ensure all loads
                   // to the local array are complete
                   RAJA::statement::HipSyncThreads,
@@ -502,17 +509,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   //
                   RAJA::statement::ForICount<
                       0, RAJA::statement::Param<1>, RAJA::hip_thread_y_direct,
-                      RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
-                                                 RAJA::hip_thread_x_direct,
-                                                 RAJA::statement::Lambda<1>>>,
+                      RAJA::statement::ForICount<
+                          1, RAJA::statement::Param<0>,
+                          RAJA::hip_thread_x_direct,
+                          RAJA::statement::Lambda<1>>>,
                   // Synchronize threads to ensure all reads
                   // from the local array are complete
                   RAJA::statement::HipSyncThreads>>>>>;
 
 
   RAJA::kernel_param<HIP_EXEC_POL>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
-                       RAJA::TypedRangeSegment<int>(0, N_r)),
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N_c),
+          RAJA::TypedRangeSegment<int>(0, N_r)),
       RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
       [=] RAJA_DEVICE(int col, int row, int tx, int ty, TILE_MEM& Tile_Array)
@@ -552,21 +561,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   1, RAJA::seq_exec,
                   RAJA::statement::For<
                       0, RAJA::seq_exec,
-                      RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>,
-                                              Offsets<1>, Params<0>>>>,
+                      RAJA::statement::Lambda<
+                          0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>,
+                          Params<0>>>>,
 
               RAJA::statement::For<
                   0, RAJA::seq_exec,
                   RAJA::statement::For<
                       1, RAJA::seq_exec,
-                      RAJA::statement::Lambda<1, Segs<0, 1>, Offsets<0, 1>,
-                                              Params<0>>>>
+                      RAJA::statement::Lambda<
+                          1, Segs<0, 1>, Offsets<0, 1>, Params<0>>>>
 
               >>>>;
 
   RAJA::kernel_param<SEQ_EXEC_POL_II>(
-      RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
-                       RAJA::TypedRangeSegment<int>(0, N_r)),
+      RAJA::make_tuple(
+          RAJA::TypedRangeSegment<int>(0, N_c),
+          RAJA::TypedRangeSegment<int>(0, N_r)),
 
       RAJA::make_tuple(Tile_Array),
 

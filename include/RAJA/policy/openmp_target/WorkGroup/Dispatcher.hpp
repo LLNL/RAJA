@@ -58,7 +58,7 @@ inline auto get_cached_value(Factory&& factory)
   return value;
 }
 
-} // namespace omp_target
+}  // namespace omp_target
 
 /*!
  * Populate and return a Dispatcher object that can be used in omp target
@@ -67,7 +67,7 @@ inline auto get_cached_value(Factory&& factory)
 template <typename T, typename Dispatcher_T>
 inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
 {
-  static Dispatcher_T dispatcher{Dispatcher_T::template makeDispatcher<T>(
+  static Dispatcher_T dispatcher {Dispatcher_T::template makeDispatcher<T>(
       [](auto&& factory)
       {
         return omp_target::get_cached_value(
@@ -76,8 +76,8 @@ inline const Dispatcher_T* get_Dispatcher(omp_target_work const&)
   return &dispatcher;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

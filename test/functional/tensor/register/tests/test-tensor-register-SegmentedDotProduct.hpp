@@ -91,9 +91,9 @@ void SegmentedDotProductImpl()
         ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
-    } // output_segment
+    }  // output_segment
 
-  } // segbits
+  }  // segbits
 
 
   // Cleanup

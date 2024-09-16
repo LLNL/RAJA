@@ -80,7 +80,7 @@ using SyclKernel = SyclKernelExt<sycl_launch<false>, EnclosedStmts...>;
 template <typename... EnclosedStmts>
 using SyclKernelAsync = SyclKernelExt<sycl_launch<true>, EnclosedStmts...>;
 
-} // namespace statement
+}  // namespace statement
 
 namespace internal
 {
@@ -103,11 +103,12 @@ void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)
  * Helper class that handles SYCL kernel launching, and computing
  * maximum number of threads/blocks
  */
-template <bool IsTriviallyCopyable,
-          typename LaunchPolicy,
-          typename StmtList,
-          typename Data,
-          typename Types>
+template <
+    bool IsTriviallyCopyable,
+    typename LaunchPolicy,
+    typename StmtList,
+    typename Data,
+    typename Types>
 struct SyclLaunchHelper;
 
 /*!
@@ -126,10 +127,11 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
       internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
   using data_t = camp::decay<Data>;
 
-  static void launch(Data&&               data,
-                     internal::LaunchDims launch_dims,
-                     size_t               shmem,
-                     cl::sycl::queue*     qu)
+  static void launch(
+      Data&&               data,
+      internal::LaunchDims launch_dims,
+      size_t               shmem,
+      cl::sycl::queue*     qu)
   {
 
     //
@@ -147,7 +149,7 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
                 launch_dims.fit_nd_range(qu), [=](cl::sycl::nd_item<3> item)
                 { SyclKernelLauncher<Data, executor_t>(*m_data, item); });
           })
-        .wait(); // Need to wait to free memory
+        .wait();  // Need to wait to free memory
 
     cl::sycl::free(m_data, *qu);
   }
@@ -169,18 +171,19 @@ struct SyclLaunchHelper<true, sycl_launch<async0>, StmtList, Data, Types>
       internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
   using data_t = camp::decay<Data>;
 
-  static void launch(Data&&               data,
-                     internal::LaunchDims launch_dims,
-                     size_t               shmem,
-                     cl::sycl::queue*     qu)
+  static void launch(
+      Data&&               data,
+      internal::LaunchDims launch_dims,
+      size_t               shmem,
+      cl::sycl::queue*     qu)
   {
 
     qu->submit(
         [&](cl::sycl::handler& h)
         {
-          h.parallel_for(launch_dims.fit_nd_range(qu),
-                         [=](cl::sycl::nd_item<3> item)
-                         { SyclKernelLauncher<Data, executor_t>(data, item); });
+          h.parallel_for(
+              launch_dims.fit_nd_range(qu), [=](cl::sycl::nd_item<3> item)
+              { SyclKernelLauncher<Data, executor_t>(data, item); });
         });
 
     if (!async)
@@ -210,8 +213,9 @@ struct StatementExecutor<
     using data_t = camp::decay<Data>;
     using executor_t =
         sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
-    using launch_t = SyclLaunchHelper<std::is_trivially_copyable<data_t>::value,
-                                      LaunchConfig, stmt_list_t, data_t, Types>;
+    using launch_t = SyclLaunchHelper<
+        std::is_trivially_copyable<data_t>::value, LaunchConfig, stmt_list_t,
+        data_t, Types>;
 
     camp::resources::Sycl res = data.get_resource();
     ::sycl::queue*        q   = res.get_queue();
@@ -232,9 +236,9 @@ struct StatementExecutor<
 };
 
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_SYCL guard
+#endif  // closing endif for RAJA_ENABLE_SYCL guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

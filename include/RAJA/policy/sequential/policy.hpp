@@ -38,7 +38,7 @@ struct MultiReduceTuning
       (algorithm == multi_reduce_algorithm::left_fold);
 };
 
-} // namespace sequential
+}  // namespace sequential
 
 namespace policy
 {
@@ -57,22 +57,25 @@ namespace sequential
 /// Segment execution policies
 ///
 
-struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                          Pattern::region,
-                                                          Launch::sync,
-                                                          Platform::host>
+struct seq_region : make_policy_pattern_launch_platform_t<
+                        Policy::sequential,
+                        Pattern::region,
+                        Launch::sync,
+                        Platform::host>
 {};
 
-struct seq_launch_t : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                            Pattern::region,
-                                                            Launch::sync,
-                                                            Platform::host>
+struct seq_launch_t : make_policy_pattern_launch_platform_t<
+                          Policy::sequential,
+                          Pattern::region,
+                          Launch::sync,
+                          Platform::host>
 {};
 
-struct seq_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                        Pattern::forall,
-                                                        Launch::undefined,
-                                                        Platform::host>
+struct seq_exec : make_policy_pattern_launch_platform_t<
+                      Policy::sequential,
+                      Pattern::forall,
+                      Launch::undefined,
+                      Platform::host>
 {};
 
 ///
@@ -83,10 +86,11 @@ using seq_segit = seq_exec;
 ///
 /// WorkGroup execution policies
 ///
-struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                        Pattern::workgroup_exec,
-                                                        Launch::sync,
-                                                        Platform::host>
+struct seq_work : make_policy_pattern_launch_platform_t<
+                      Policy::sequential,
+                      Pattern::workgroup_exec,
+                      Launch::sync,
+                      Platform::host>
 {};
 
 ///
@@ -96,10 +100,11 @@ struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                          Pattern::reduce,
-                                                          Launch::undefined,
-                                                          Platform::host>
+struct seq_reduce : make_policy_pattern_launch_platform_t<
+                        Policy::sequential,
+                        Pattern::reduce,
+                        Launch::undefined,
+                        Platform::host>
 {};
 
 ///
@@ -109,9 +114,10 @@ struct seq_multi_reduce_policy : make_policy_pattern_launch_platform_t<
                                      Pattern::multi_reduce,
                                      Launch::undefined,
                                      Platform::host,
-                                     std::conditional_t<tuning::consistent,
-                                                        reduce::ordered,
-                                                        reduce::unordered>>
+                                     std::conditional_t<
+                                         tuning::consistent,
+                                         reduce::ordered,
+                                         reduce::unordered>>
 {};
 
 ///
@@ -138,8 +144,8 @@ using seq_multi_reduce_left_fold = seq_multi_reduce_tuning<
 // same answer every time when used in the same way
 using seq_multi_reduce = seq_multi_reduce_left_fold;
 
-} // namespace sequential
-} // namespace policy
+}  // namespace sequential
+}  // namespace policy
 
 using policy::sequential::seq_atomic;
 using policy::sequential::seq_exec;
@@ -151,6 +157,6 @@ using policy::sequential::seq_segit;
 using policy::sequential::seq_work;
 
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif

@@ -137,8 +137,8 @@ struct StatementExecutor<
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_nested_HPP */

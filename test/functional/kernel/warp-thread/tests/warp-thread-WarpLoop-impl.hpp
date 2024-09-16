@@ -10,49 +10,53 @@
 
 #include <numeric>
 
-template <typename EXEC_POL,
-          bool USE_RESOURCE,
-          typename SEGMENTS,
-          typename WORKING_RES,
-          typename... Args>
+template <
+    typename EXEC_POL,
+    bool USE_RESOURCE,
+    typename SEGMENTS,
+    typename WORKING_RES,
+    typename... Args>
 typename std::enable_if<USE_RESOURCE>::type
 call_kernel(SEGMENTS&& segs, WORKING_RES work_res, Args&&... args)
 {
   RAJA::kernel_resource<EXEC_POL>(segs, work_res, args...);
 }
 
-template <typename EXEC_POL,
-          bool USE_RESOURCE,
-          typename SEGMENTS,
-          typename WORKING_RES,
-          typename... Args>
+template <
+    typename EXEC_POL,
+    bool USE_RESOURCE,
+    typename SEGMENTS,
+    typename WORKING_RES,
+    typename... Args>
 typename std::enable_if<!USE_RESOURCE>::type
 call_kernel(SEGMENTS&& segs, WORKING_RES, Args&&... args)
 {
   RAJA::kernel<EXEC_POL>(segs, args...);
 }
 
-template <typename EXEC_POL,
-          bool USE_RESOURCE,
-          typename SEGMENTS,
-          typename PARAMS,
-          typename WORKING_RES,
-          typename... Args>
-typename std::enable_if<USE_RESOURCE>::type
-call_kernel_param(SEGMENTS&&  segs,
-                  PARAMS&&    params,
-                  WORKING_RES work_res,
-                  Args&&... args)
+template <
+    typename EXEC_POL,
+    bool USE_RESOURCE,
+    typename SEGMENTS,
+    typename PARAMS,
+    typename WORKING_RES,
+    typename... Args>
+typename std::enable_if<USE_RESOURCE>::type call_kernel_param(
+    SEGMENTS&&  segs,
+    PARAMS&&    params,
+    WORKING_RES work_res,
+    Args&&... args)
 {
   RAJA::kernel_param_resource<EXEC_POL>(segs, params, work_res, args...);
 }
 
-template <typename EXEC_POL,
-          bool USE_RESOURCE,
-          typename SEGMENTS,
-          typename PARAMS,
-          typename WORKING_RES,
-          typename... Args>
+template <
+    typename EXEC_POL,
+    bool USE_RESOURCE,
+    typename SEGMENTS,
+    typename PARAMS,
+    typename WORKING_RES,
+    typename... Args>
 typename std::enable_if<!USE_RESOURCE>::type
 call_kernel_param(SEGMENTS&& segs, PARAMS&& params, WORKING_RES, Args&&... args)
 {
@@ -64,32 +68,34 @@ call_kernel_param(SEGMENTS&& segs, PARAMS&& params, WORKING_RES, Args&&... args)
 // Define list of nested loop types the WarpLoop test supports.
 //
 //
-using WarpLoopSupportedLoopTypeList =
-    camp::list<DEVICE_DEPTH_1_REDUCESUM_WARP,
-               DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE,
-               DEVICE_DEPTH_2_REDUCESUM_WARP>;
+using WarpLoopSupportedLoopTypeList = camp::list<
+    DEVICE_DEPTH_1_REDUCESUM_WARP,
+    DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE,
+    DEVICE_DEPTH_2_REDUCESUM_WARP>;
 
 //
 //
 // Sum of array of elements with GPU-specific policies.
 //
 //
-template <typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename REDUCE_POL,
-          bool USE_RESOURCE>
-void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARP&,
-                          const RAJA::Index_type len)
+template <
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename REDUCE_POL,
+    bool USE_RESOURCE>
+void KernelWarpThreadTest(
+    const DEVICE_DEPTH_1_REDUCESUM_WARP&,
+    const RAJA::Index_type len)
 {
-  WORKING_RES               work_res{WORKING_RES::get_default()};
-  camp::resources::Resource erased_work_res{work_res};
+  WORKING_RES               work_res {WORKING_RES::get_default()};
+  camp::resources::Resource erased_work_res {work_res};
 
   RAJA::Index_type* work_array;
   RAJA::Index_type* check_array;
   RAJA::Index_type* test_array;
 
-  allocateForallTestData<RAJA::Index_type>(len, erased_work_res, &work_array,
-                                           &check_array, &test_array);
+  allocateForallTestData<RAJA::Index_type>(
+      len, erased_work_res, &work_array, &check_array, &test_array);
 
   RAJA::TypedRangeSegment<RAJA::Index_type> rangelen(0, len);
 
@@ -101,19 +107,21 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARP&,
 
   ASSERT_EQ(worksum.get(), len * (len - 1) / 2);
 
-  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
-                                             check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(
+      erased_work_res, work_array, check_array, test_array);
 }
 
-template <typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename REDUCE_POL,
-          bool USE_RESOURCE>
-void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
-                          const RAJA::Index_type numtiles)
+template <
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename REDUCE_POL,
+    bool USE_RESOURCE>
+void KernelWarpThreadTest(
+    const DEVICE_DEPTH_2_REDUCESUM_WARP&,
+    const RAJA::Index_type numtiles)
 {
-  WORKING_RES               work_res{WORKING_RES::get_default()};
-  camp::resources::Resource erased_work_res{work_res};
+  WORKING_RES               work_res {WORKING_RES::get_default()};
+  camp::resources::Resource erased_work_res {work_res};
 
   RAJA::Index_type  flatSize = 32 * numtiles;
   RAJA::Index_type* work_array;
@@ -130,27 +138,29 @@ void KernelWarpThreadTest(const DEVICE_DEPTH_2_REDUCESUM_WARP&,
   call_kernel_param<EXEC_POLICY, USE_RESOURCE>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<RAJA::Index_type>(0, flatSize)),
       RAJA::make_tuple((RAJA::Index_type)0), work_res,
-      [=] RAJA_HOST_DEVICE(RAJA::Index_type RAJA_UNUSED_ARG(i),
-                           RAJA::Index_type j)
+      [=] RAJA_HOST_DEVICE(
+          RAJA::Index_type RAJA_UNUSED_ARG(i), RAJA::Index_type j)
       {
-        worksum += j; // j should only be 0..31
+        worksum += j;  // j should only be 0..31
       });
 
   ASSERT_EQ(worksum.get(), numtiles * 32 * (32 - 1) / 2);
 
-  deallocateForallTestData<RAJA::Index_type>(erased_work_res, work_array,
-                                             check_array, test_array);
+  deallocateForallTestData<RAJA::Index_type>(
+      erased_work_res, work_array, check_array, test_array);
 }
 
 // More specific execution policies that use the above
 // DEVICE_DEPTH_1_REDUCESUM_WARP test.
-template <typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename REDUCE_POL,
-          bool USE_RESOURCE,
-          typename... Args>
-void KernelWarpThreadTest(const DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE&,
-                          Args... args)
+template <
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename REDUCE_POL,
+    bool USE_RESOURCE,
+    typename... Args>
+void KernelWarpThreadTest(
+    const DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE&,
+    Args... args)
 {
   KernelWarpThreadTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(
       DEVICE_DEPTH_1_REDUCESUM_WARP(), args...);
@@ -169,17 +179,19 @@ struct WarpThreadExec;
 template <typename REDUCE_POL, typename POLICY_DATA>
 struct WarpThreadExec<DEVICE_DEPTH_1_REDUCESUM_WARP, REDUCE_POL, POLICY_DATA>
 {
-  using type = RAJA::KernelPolicy<RAJA::statement::DEVICE_KERNEL<
-      RAJA::statement::For<0,
-                           typename camp::at<POLICY_DATA, camp::num<0>>::type,
-                           RAJA::statement::Lambda<0>>> // end DEVICE_KERNEL
-                                  >;
+  using type =
+      RAJA::KernelPolicy<RAJA::statement::DEVICE_KERNEL<RAJA::statement::For<
+          0,
+          typename camp::at<POLICY_DATA, camp::num<0>>::type,
+          RAJA::statement::Lambda<0>>>  // end DEVICE_KERNEL
+                         >;
 };
 
 template <typename REDUCE_POL, typename POLICY_DATA>
-struct WarpThreadExec<DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE,
-                      REDUCE_POL,
-                      POLICY_DATA>
+struct WarpThreadExec<
+    DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE,
+    REDUCE_POL,
+    POLICY_DATA>
 {
   using type =
       RAJA::KernelPolicy<RAJA::statement::DEVICE_KERNEL<RAJA::statement::Tile<
@@ -189,7 +201,7 @@ struct WarpThreadExec<DEVICE_DEPTH_1_REDUCESUM_WARPDIRECT_TILE,
           RAJA::statement::For<
               0,
               typename camp::at<POLICY_DATA, camp::num<0>>::type,
-              RAJA::statement::Lambda<0>>>> // end DEVICE_KERNEL
+              RAJA::statement::Lambda<0>>>>  // end DEVICE_KERNEL
                          >;
 };
 
@@ -205,10 +217,10 @@ struct WarpThreadExec<DEVICE_DEPTH_2_REDUCESUM_WARP, REDUCE_POL, POLICY_DATA>
               0,
               RAJA::statement::Param<0>,
               typename camp::at<POLICY_DATA, camp::num<0>>::type,
-              RAJA::statement::Lambda<0>>>> // end DEVICE_KERNEL
+              RAJA::statement::Lambda<0>>>>  // end DEVICE_KERNEL
                          >;
 };
 
-#endif // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP
+#endif  // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP
 
-#endif // __WARP_THREAD_WARPLOOP_IMPL_HPP__
+#endif  // __WARP_THREAD_WARPLOOP_IMPL_HPP__

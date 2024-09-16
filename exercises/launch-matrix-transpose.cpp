@@ -129,24 +129,25 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_seq>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
-                            // host
+      RAJA::LaunchParams(),  // LaunchParams may be empty when running on the
+                             // host
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<loop_policy_seq>(ctx, row_Range,
-                                    [&](int /*row*/)
-                                    {
-                                      RAJA::loop<loop_policy_seq>(
-                                          ctx, col_Range,
-                                          [&](int /*col*/)
-                                          {
-                                            /// TODO...
-                                            ///
-                                            /// EXERCISE: Implement the kernel
-                                            /// body for the transpose operation
-                                            ///
-                                          });
-                                    });
+        RAJA::loop<loop_policy_seq>(
+            ctx, row_Range,
+            [&](int /*row*/)
+            {
+              RAJA::loop<loop_policy_seq>(
+                  ctx, col_Range,
+                  [&](int /*col*/)
+                  {
+                    /// TODO...
+                    ///
+                    /// EXERCISE: Implement the kernel
+                    /// body for the transpose operation
+                    ///
+                  });
+            });
       });
   // _raja_mattranspose_end
 
@@ -168,8 +169,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_omp>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
-                            // host
+      RAJA::LaunchParams(),  // LaunchParams may be empty when running on the
+                             // host
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/)
       {
         /// TODO...
@@ -195,7 +196,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using cuda_thread_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>;
   using cuda_thread_y = RAJA::LoopPolicy<RAJA::cuda_thread_y_loop>;
 
-  const bool async         = false; // execute asynchronously
+  const bool async         = false;  // execute asynchronously
   using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
   RAJA::launch<launch_policy_cuda>(

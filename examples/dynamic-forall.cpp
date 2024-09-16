@@ -28,18 +28,19 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
-using policy_list = camp::list<RAJA::seq_exec,
-                               RAJA::simd_exec
+using policy_list = camp::list<
+    RAJA::seq_exec,
+    RAJA::simd_exec
 #if defined(RAJA_ENABLE_OPENMP)
-                               ,
-                               RAJA::omp_parallel_for_exec
+    ,
+    RAJA::omp_parallel_for_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                               ,
-                               RAJA::cuda_exec<256>,
-                               RAJA::cuda_exec<512>
+    ,
+    RAJA::cuda_exec<256>,
+    RAJA::cuda_exec<512>
 #endif
-                               >;
+    >;
 
 int main(int argc, char* argv[])
 {
@@ -100,9 +101,9 @@ int main(int argc, char* argv[])
   //----------------------------------------------------------------------------//
 
   // policy is chosen from the list
-  RAJA::expt::dynamic_forall<policy_list>(pol, RAJA::RangeSegment(0, N),
-                                          [=] RAJA_HOST_DEVICE(int i)
-                                          { c[i] = a[i] + b[i]; });
+  RAJA::expt::dynamic_forall<policy_list>(
+      pol, RAJA::RangeSegment(0, N),
+      [=] RAJA_HOST_DEVICE(int i) { c[i] = a[i] + b[i]; });
   // _rajaseq_vector_add_end
 
   checkResult(c, N);

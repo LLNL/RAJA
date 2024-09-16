@@ -13,7 +13,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   for (int i = 0; i < 10; i++)
   {
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10),
-                                 [=](int i) { a[i] = 0; });
+    RAJA::forall<RAJA::seq_exec>(
+        RAJA::RangeSegment(0, 10), [=](int i) { a[i] = 0; });
   }
 }

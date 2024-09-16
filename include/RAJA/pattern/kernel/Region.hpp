@@ -35,7 +35,7 @@ struct Region : public internal::Statement<camp::nil>
 {};
 
 
-} // end namespace statement
+}  // end namespace statement
 
 namespace internal
 {
@@ -45,8 +45,9 @@ namespace internal
 // Note: RAJA region's lambda must capture by reference otherwise
 // internal function calls are undefined.
 template <typename RegionPolicy, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::Region<RegionPolicy, EnclosedStmts...>,
-                         Types>
+struct StatementExecutor<
+    statement::Region<RegionPolicy, EnclosedStmts...>,
+    Types>
 {
 
   template <typename Data>
@@ -64,7 +65,7 @@ struct StatementExecutor<statement::Region<RegionPolicy, EnclosedStmts...>,
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 #endif /* RAJA_pattern_kernel_HPP */

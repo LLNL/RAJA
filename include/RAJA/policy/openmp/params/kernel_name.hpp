@@ -36,9 +36,9 @@ resolve(KernelName&)
 
 #endif
 
-} //  namespace detail
-} //  namespace expt
-} //  namespace RAJA
+}  //  namespace detail
+}  //  namespace expt
+}  //  namespace RAJA
 
 
-#endif //  NEW_REDUCE_SEQ_REDUCE_HPP
+#endif  //  NEW_REDUCE_SEQ_REDUCE_HPP

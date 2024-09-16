@@ -155,7 +155,7 @@ atomicCAS(auto_atomic, T* acc, T compare, T value)
 }
 
 
-} // namespace RAJA
+}  // namespace RAJA
 
 // make sure this define doesn't bleed out of this header
 #undef RAJA_AUTO_ATOMIC

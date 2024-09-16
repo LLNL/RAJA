@@ -33,4 +33,4 @@
 #include "RAJA/policy/hip/kernel/TileTCount.hpp"
 #include "RAJA/policy/hip/kernel/internal.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

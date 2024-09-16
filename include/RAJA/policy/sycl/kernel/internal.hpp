@@ -54,11 +54,11 @@ struct LaunchDims
   RAJA_INLINE
   RAJA_HOST_DEVICE
   LaunchDims()
-      : group{0, 0, 0},
-        local{1, 1, 1},
-        global{1, 1, 1},
-        min_groups{0, 0, 0},
-        min_locals{0, 0, 0}
+      : group {0, 0, 0},
+        local {1, 1, 1},
+        global {1, 1, 1},
+        min_groups {0, 0, 0},
+        min_locals {0, 0, 0}
   {}
 
   RAJA_INLINE
@@ -92,7 +92,7 @@ struct LaunchDims
 
     sycl_dim_3_t launch_global;
 
-    sycl_dim_3_t launch_local{1, 1, 1};
+    sycl_dim_3_t launch_local {1, 1, 1};
     launch_local.x = std::max(launch_local.x, local.x);
     launch_local.y = std::max(launch_local.y, local.y);
     launch_local.z = std::max(launch_local.z, local.z);
@@ -148,7 +148,7 @@ struct LaunchDims
     // User gave group policy, use to calculate global space
     if (group.x != 0 || group.y != 0 || group.z != 0)
     {
-      sycl_dim_3_t launch_group{1, 1, 1};
+      sycl_dim_3_t launch_group {1, 1, 1};
       launch_group.x = std::max(launch_group.x, group.x);
       launch_group.y = std::max(launch_group.y, group.y);
       launch_group.z = std::max(launch_group.z, group.z);
@@ -184,10 +184,10 @@ struct LaunchDims
           ((launch_global.z / launch_local.z) + 1) * launch_local.z;
     }
 
-    cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y,
-                                 launch_local.z};
-    cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y,
-                                 launch_global.z};
+    cl::sycl::range<3> ret_th = {
+        launch_local.x, launch_local.y, launch_local.z};
+    cl::sycl::range<3> ret_gl = {
+        launch_global.x, launch_global.y, launch_global.z};
 
     return cl::sycl::nd_range<3>(ret_gl, ret_th);
   }
@@ -280,9 +280,9 @@ template <typename StmtList, typename Data, typename Types>
 using sycl_statement_list_executor_t =
     SyclStatementListExecutor<Data, StmtList, Types>;
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_SYCL guard
+#endif  // closing endif for RAJA_ENABLE_SYCL guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

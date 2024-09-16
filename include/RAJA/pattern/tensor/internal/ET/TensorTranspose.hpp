@@ -52,7 +52,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorTranspose(rhs_type const& tensor) : m_tensor{tensor} {}
+  TensorTranspose(rhs_type const& tensor) : m_tensor {tensor} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -65,8 +65,8 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE result_type eval(TILE_TYPE const& tile) const
   {
     // transpose which tile we are returning
-    TILE_TYPE trans_tile{{tile.m_begin[1], tile.m_begin[0]},
-                         {tile.m_size[1], tile.m_size[0]}};
+    TILE_TYPE trans_tile {
+        {tile.m_begin[1], tile.m_begin[0]}, {tile.m_size[1], tile.m_size[0]}};
 
     // evaluate and return the transposed tile
     return m_tensor.eval(trans_tile).transpose();
@@ -86,12 +86,12 @@ private:
 };
 
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

@@ -22,4 +22,4 @@
 #include "RAJA/policy/sequential/kernel/Collapse.hpp"
 #include "RAJA/policy/sequential/kernel/Reduce.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

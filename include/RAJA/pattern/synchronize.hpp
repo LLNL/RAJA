@@ -41,8 +41,8 @@ namespace RAJA
 template <typename Policy>
 void synchronize()
 {
-  synchronize_impl(Policy{});
+  synchronize_impl(Policy {});
 }
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // RAJA_synchronize_HPP
+#endif  // RAJA_synchronize_HPP

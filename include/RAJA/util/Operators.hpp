@@ -52,10 +52,10 @@ struct fp_associative_tag : associative_tag
 
 // get associativity tag appropriate for the type
 template <typename T>
-using associative_or_fp_associative_tag =
-    std::conditional_t<std::is_floating_point<std::decay_t<T>>::value,
-                       fp_associative_tag,
-                       associative_tag>;
+using associative_or_fp_associative_tag = std::conditional_t<
+    std::is_floating_point<std::decay_t<T>>::value,
+    fp_associative_tag,
+    associative_tag>;
 
 template <typename Arg1, typename Arg2, typename Result>
 struct binary_function
@@ -76,7 +76,7 @@ template <typename Arg1, typename Arg2>
 struct comparison_function : public binary_function<Arg1, Arg2, bool>
 {};
 
-} // namespace detail
+}  // namespace detail
 
 namespace types
 {
@@ -188,7 +188,7 @@ struct largest<T, false, false, true, true>
 {
   using type = double;
 };
-} // namespace detail
+}  // namespace detail
 
 /*!
         \brief type lookup to return largest similar type. If running on GPU,
@@ -197,11 +197,12 @@ struct largest<T, false, false, true, true>
 template <typename T, bool gpu = false>
 struct largest
 {
-  using type = typename detail::largest<T,
-                                        std::is_integral<T>::value,
-                                        std::is_signed<T>::value,
-                                        std::is_floating_point<T>::value,
-                                        gpu>::type;
+  using type = typename detail::largest<
+      T,
+      std::is_integral<T>::value,
+      std::is_signed<T>::value,
+      std::is_floating_point<T>::value,
+      gpu>::type;
 };
 
 
@@ -232,7 +233,7 @@ struct larger_of<T, U, false>
 {
   using type = U;
 };
-} // namespace detail
+}  // namespace detail
 
 template <typename T, typename U>
 struct larger_of
@@ -241,7 +242,7 @@ struct larger_of
       larger_of<T, U, (size_of<T>::value > size_of<U>::value)>::type;
 };
 
-} // namespace types
+}  // namespace types
 
 
 template <typename T, typename Enable = void>
@@ -250,9 +251,10 @@ struct limits;
 
 // limits for signed integer types
 template <typename T>
-struct limits<T,
-              typename std::enable_if<std::is_integral<T>::value &&
-                                      !std::is_unsigned<T>::value>::type>
+struct limits<
+    T,
+    typename std::enable_if<
+        std::is_integral<T>::value && !std::is_unsigned<T>::value>::type>
 {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
@@ -278,9 +280,10 @@ struct limits<T,
 
 // limits for signed integer types
 template <typename T>
-struct limits<T,
-              typename std::enable_if<std::is_integral<T>::value &&
-                                      std::is_unsigned<T>::value>::type>
+struct limits<
+    T,
+    typename std::enable_if<
+        std::is_integral<T>::value && std::is_unsigned<T>::value>::type>
 {
   RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
   {
@@ -346,13 +349,15 @@ static_assert(check<unsigned int>(), "limits for unsigned int is broken");
 static_assert(check<long>(), "limits for long is broken");
 static_assert(check<unsigned long>(), "limits for unsigned long is broken");
 static_assert(check<long int>(), "limits for long int is broken");
-static_assert(check<unsigned long int>(),
-              "limits for unsigned long int is "
-              "broken");
+static_assert(
+    check<unsigned long int>(),
+    "limits for unsigned long int is "
+    "broken");
 static_assert(check<long long>(), "limits for long long is broken");
-static_assert(check<unsigned long long>(),
-              "limits for unsigned long long is "
-              "broken");
+static_assert(
+    check<unsigned long long>(),
+    "limits for unsigned long long is "
+    "broken");
 #endif
 
 // Arithmetic
@@ -361,21 +366,21 @@ template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct plus : public detail::binary_function<Arg1, Arg2, Ret>,
               detail::associative_or_fp_associative_tag<Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
-    return Ret{lhs} + rhs;
+    return Ret {lhs} + rhs;
   }
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
+  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret {0}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct minus : public detail::binary_function<Arg1, Arg2, Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
-    return Ret{lhs} - rhs;
+    return Ret {lhs} - rhs;
   }
 };
 
@@ -384,31 +389,31 @@ struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
                     detail::associative_or_fp_associative_tag<Ret>
 {
 
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
-    return Ret{lhs} * rhs;
+    return Ret {lhs} * rhs;
   }
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{1}; }
+  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret {1}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct divides : public detail::binary_function<Arg1, Arg2, Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
-    return Ret{lhs} / rhs;
+    return Ret {lhs} / rhs;
   }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct modulus : public detail::binary_function<Arg1, Arg2, Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
-    return Ret{lhs} % rhs;
+    return Ret {lhs} % rhs;
   }
 };
 
@@ -418,8 +423,8 @@ template <typename Arg1, typename Arg2 = Arg1>
 struct logical_and : public detail::comparison_function<Arg1, Arg2>,
                      detail::associative_tag
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs && rhs;
   }
@@ -430,8 +435,8 @@ template <typename Arg1, typename Arg2 = Arg1>
 struct logical_or : public detail::comparison_function<Arg1, Arg2>,
                     detail::associative_tag
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs || rhs;
   }
@@ -452,33 +457,33 @@ struct logical_not : public detail::unary_function<T, bool>
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_or : public detail::binary_function<Arg1, Arg2, Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs | rhs;
   }
 
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
+  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret {0}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_and : public detail::binary_function<Arg1, Arg2, Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs & rhs;
   }
 
-  RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret{0}; }
+  RAJA_HOST_DEVICE static constexpr Ret identity() { return ~Ret {0}; }
 };
 
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct bit_xor : public detail::binary_function<Arg1, Arg2, Ret>
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs ^ rhs;
   }
@@ -495,8 +500,8 @@ template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
                  detail::associative_tag
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return (rhs < lhs) ? rhs : lhs;
   }
@@ -510,8 +515,8 @@ template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
 struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
                  detail::associative_tag
 {
-  RAJA_HOST_DEVICE constexpr Ret operator()(const Arg1& lhs,
-                                            const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr Ret
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return (lhs < rhs) ? rhs : lhs;
   }
@@ -526,8 +531,8 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
 template <typename Arg1, typename Arg2 = Arg1>
 struct equal_to : public detail::comparison_function<Arg1, Arg2>
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs == rhs;
   }
@@ -536,8 +541,8 @@ struct equal_to : public detail::comparison_function<Arg1, Arg2>
 template <typename Arg1, typename Arg2 = Arg1>
 struct not_equal_to : public detail::comparison_function<Arg1, Arg2>
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs != rhs;
   }
@@ -546,8 +551,8 @@ struct not_equal_to : public detail::comparison_function<Arg1, Arg2>
 template <typename Arg1, typename Arg2 = Arg1>
 struct greater : public detail::comparison_function<Arg1, Arg2>
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs > rhs;
   }
@@ -556,8 +561,8 @@ struct greater : public detail::comparison_function<Arg1, Arg2>
 template <typename Arg1, typename Arg2 = Arg1>
 struct less : public detail::comparison_function<Arg1, Arg2>
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs < rhs;
   }
@@ -567,8 +572,8 @@ struct less : public detail::comparison_function<Arg1, Arg2>
 template <typename Arg1, typename Arg2 = Arg1>
 struct greater_equal : public detail::comparison_function<Arg1, Arg2>
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs >= rhs;
   }
@@ -577,8 +582,8 @@ struct greater_equal : public detail::comparison_function<Arg1, Arg2>
 template <typename Arg1, typename Arg2 = Arg1>
 struct less_equal : public detail::comparison_function<Arg1, Arg2>
 {
-  RAJA_HOST_DEVICE constexpr bool operator()(const Arg1& lhs,
-                                             const Arg2& rhs) const
+  RAJA_HOST_DEVICE constexpr bool
+  operator()(const Arg1& lhs, const Arg2& rhs) const
   {
     return lhs <= rhs;
   }
@@ -598,8 +603,8 @@ struct identity : public detail::unary_function<Orig, Ret>
 template <typename T, typename U>
 struct project1st : public detail::binary_function<T, U, T>
 {
-  RAJA_HOST_DEVICE constexpr T operator()(const T& lhs,
-                                          const U& RAJA_UNUSED_ARG(rhs)) const
+  RAJA_HOST_DEVICE constexpr T
+  operator()(const T& lhs, const U& RAJA_UNUSED_ARG(rhs)) const
   {
     return lhs;
   }
@@ -608,8 +613,8 @@ struct project1st : public detail::binary_function<T, U, T>
 template <typename T, typename U = T>
 struct project2nd : public detail::binary_function<T, U, U>
 {
-  RAJA_HOST_DEVICE constexpr U operator()(const T& RAJA_UNUSED_ARG(lhs),
-                                          const U& rhs) const
+  RAJA_HOST_DEVICE constexpr U
+  operator()(const T& RAJA_UNUSED_ARG(lhs), const U& rhs) const
   {
     return rhs;
   }
@@ -632,22 +637,23 @@ struct is_fp_associative
 };
 
 template <typename Arg1, typename Arg2 = Arg1>
-struct safe_plus
-    : public plus<Arg1,
-                  Arg2,
-                  typename types::larger<
-                      typename types::larger_of<Arg1, Arg2>::type>::type>
+struct safe_plus : public plus<
+                       Arg1,
+                       Arg2,
+                       typename types::larger<
+                           typename types::larger_of<Arg1, Arg2>::type>::type>
 {};
 
-} // namespace operators
+}  // namespace operators
 
 namespace concepts
 {
 
-template <typename Function,
-          typename Return,
-          typename Arg1 = Return,
-          typename Arg2 = Arg1>
+template <
+    typename Function,
+    typename Return,
+    typename Arg1 = Return,
+    typename Arg2 = Arg1>
 struct BinaryFunction
     : DefineConcept(::RAJA::concepts::convertible_to<Return>(
           camp::val<Function>()(camp::val<Arg1>(), camp::val<Arg2>())))
@@ -667,17 +673,17 @@ using is_binary_function =
 
 template <typename Fun, typename Ret, typename T>
 using is_unary_function = ::RAJA::concepts::requires_<UnaryFunction, Ret, T>;
-} // namespace detail
+}  // namespace detail
 
-} // namespace concepts
+}  // namespace concepts
 
 namespace type_traits
 {
 DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
 DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
-} // namespace type_traits
+}  // namespace type_traits
 
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

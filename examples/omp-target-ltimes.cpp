@@ -26,18 +26,19 @@ RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
 
-void runLTimesRajaKernel(bool       debug,
-                         Index_type num_moments,
-                         Index_type num_directions,
-                         Index_type num_groups,
-                         Index_type num_zones)
+void runLTimesRajaKernel(
+    bool       debug,
+    Index_type num_moments,
+    Index_type num_directions,
+    Index_type num_groups,
+    Index_type num_zones)
 {
 
   using namespace RAJA::statement;
 
   // psi[direction, group, zone]
-  using PsiView = RAJA::TypedView<double, Layout<3, Index_type, 2>, IDirection,
-                                  IGroup, IZone>;
+  using PsiView = RAJA::TypedView<
+      double, Layout<3, Index_type, 2>, IDirection, IGroup, IZone>;
 
   // phi[moment, group, zone]
   using PhiView =
@@ -58,17 +59,17 @@ void runLTimesRajaKernel(bool       debug,
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i)
   {
-    ell_data[i] = i; // drand48();
+    ell_data[i] = i;  // drand48();
   }
 
   for (size_t i = 0; i < psi_data.size(); ++i)
   {
-    psi_data[i] = 2 * i; // drand48();
+    psi_data[i] = 2 * i;  // drand48();
   }
 
   for (size_t i = 0; i < phi_data.size(); ++i)
   {
-    phi_data[i] = 0; // drand48();
+    phi_data[i] = 0;  // drand48();
   }
 
   int hid = omp_get_initial_device();
@@ -84,40 +85,42 @@ void runLTimesRajaKernel(bool       debug,
       omp_target_alloc(sizeof(double) * psi_data.size(), did));
 
   // Copy to device
-  omp_target_memcpy(&ell_data[0], d_ell, sizeof(double) * ell_data.size(), 0, 0,
-                    hid, did);
-  omp_target_memcpy(&phi_data[0], d_phi, sizeof(double) * phi_data.size(), 0, 0,
-                    hid, did);
-  omp_target_memcpy(&psi_data[0], d_psi, sizeof(double) * psi_data.size(), 0, 0,
-                    hid, did);
+  omp_target_memcpy(
+      &ell_data[0], d_ell, sizeof(double) * ell_data.size(), 0, 0, hid, did);
+  omp_target_memcpy(
+      &phi_data[0], d_phi, sizeof(double) * phi_data.size(), 0, 0, hid, did);
+  omp_target_memcpy(
+      &psi_data[0], d_psi, sizeof(double) * psi_data.size(), 0, 0, hid, did);
 
 
   // create views on data
-  std::array<RAJA::idx_t, 2> ell_perm{{0, 1}};
-  EllView                    ell(d_ell,
-                                 make_permuted_layout({{num_moments, num_directions}}, ell_perm));
+  std::array<RAJA::idx_t, 2> ell_perm {{0, 1}};
+  EllView                    ell(
+                         d_ell, make_permuted_layout({{num_moments, num_directions}}, ell_perm));
 
-  std::array<RAJA::idx_t, 3> psi_perm{{0, 1, 2}};
-  PsiView                    psi(d_psi, make_permuted_layout(
-                                            {{num_directions, num_groups, num_zones}}, psi_perm));
+  std::array<RAJA::idx_t, 3> psi_perm {{0, 1, 2}};
+  PsiView                    psi(
+                         d_psi, make_permuted_layout(
+                                    {{num_directions, num_groups, num_zones}}, psi_perm));
 
-  std::array<RAJA::idx_t, 3> phi_perm{{0, 1, 2}};
-  PhiView                    phi(d_phi, make_permuted_layout(
-                                            {{num_moments, num_groups, num_zones}}, phi_perm));
+  std::array<RAJA::idx_t, 3> phi_perm {{0, 1, 2}};
+  PhiView                    phi(
+                         d_phi,
+                         make_permuted_layout({{num_moments, num_groups, num_zones}}, phi_perm));
 
 
-  using Pol = RAJA::KernelPolicy<
-      Collapse<omp_target_parallel_collapse_exec, ArgList<0, 1, 2>,
-               For<3, RAJA::seq_exec, Lambda<0>>>>;
+  using Pol = RAJA::KernelPolicy<Collapse<
+      omp_target_parallel_collapse_exec, ArgList<0, 1, 2>,
+      For<3, RAJA::seq_exec, Lambda<0>>>>;
 
   RAJA::Timer timer;
   timer.start();
 
-  auto segments =
-      RAJA::make_tuple(TypedRangeSegment<IMoment>(0, num_moments),
-                       TypedRangeSegment<IDirection>(0, num_directions),
-                       TypedRangeSegment<IGroup>(0, num_groups),
-                       TypedRangeSegment<IZone>(0, num_zones));
+  auto segments = RAJA::make_tuple(
+      TypedRangeSegment<IMoment>(0, num_moments),
+      TypedRangeSegment<IDirection>(0, num_directions),
+      TypedRangeSegment<IGroup>(0, num_groups),
+      TypedRangeSegment<IZone>(0, num_zones));
 
 
   kernel<Pol>(

@@ -40,13 +40,15 @@ namespace RAJA
 namespace internal
 {
 
-template <typename Data,
-          camp::idx_t LambdaIndex,
-          typename... Args,
-          typename Types>
-struct HipStatementExecutor<Data,
-                            statement::Lambda<LambdaIndex, Args...>,
-                            Types>
+template <
+    typename Data,
+    camp::idx_t LambdaIndex,
+    typename... Args,
+    typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::Lambda<LambdaIndex, Args...>,
+    Types>
 {
 
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
@@ -68,9 +70,9 @@ struct HipStatementExecutor<Data,
 };
 
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_HIP guard
+#endif  // closing endif for RAJA_ENABLE_HIP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

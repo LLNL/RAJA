@@ -20,7 +20,7 @@ using SequentialReducePols = camp::list<RAJA::seq_reduce>;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPReducePols =
-#if 0 // is ordered reduction broken???
+#if 0  // is ordered reduction broken???
   camp::list< RAJA::omp_reduce,
               RAJA::omp_reduce_ordered >;
 #else
@@ -33,27 +33,27 @@ using OpenMPReducePols =
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaReducePols =
-    camp::list<RAJA::cuda_reduce_device_fence,
-               RAJA::cuda_reduce_block_fence,
-               RAJA::cuda_reduce_atomic_device_init_device_fence,
-               RAJA::cuda_reduce_atomic_device_init_block_fence,
-               RAJA::cuda_reduce_atomic_host_init_device_fence,
-               RAJA::cuda_reduce_atomic_host_init_block_fence>;
+using CudaReducePols = camp::list<
+    RAJA::cuda_reduce_device_fence,
+    RAJA::cuda_reduce_block_fence,
+    RAJA::cuda_reduce_atomic_device_init_device_fence,
+    RAJA::cuda_reduce_atomic_device_init_block_fence,
+    RAJA::cuda_reduce_atomic_host_init_device_fence,
+    RAJA::cuda_reduce_atomic_host_init_block_fence>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipReducePols =
-    camp::list<RAJA::hip_reduce_device_fence,
-               RAJA::hip_reduce_block_fence,
-               RAJA::hip_reduce_atomic_device_init_device_fence,
-               RAJA::hip_reduce_atomic_device_init_block_fence,
-               RAJA::hip_reduce_atomic_host_init_device_fence,
-               RAJA::hip_reduce_atomic_host_init_block_fence>;
+using HipReducePols = camp::list<
+    RAJA::hip_reduce_device_fence,
+    RAJA::hip_reduce_block_fence,
+    RAJA::hip_reduce_atomic_device_init_device_fence,
+    RAJA::hip_reduce_atomic_device_init_block_fence,
+    RAJA::hip_reduce_atomic_host_init_device_fence,
+    RAJA::hip_reduce_atomic_host_init_block_fence>;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)
 using SyclReducePols = camp::list<RAJA::sycl_reduce>;
 #endif
 
-#endif // __RAJA_test_reducepol_HPP__
+#endif  // __RAJA_test_reducepol_HPP__

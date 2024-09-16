@@ -124,8 +124,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tx = 0; tx < TILE_DIM; ++tx)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -170,12 +170,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
           0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
           RAJA::statement::For<
               1, RAJA::seq_exec,
-              RAJA::statement::For<0, RAJA::seq_exec,
-                                   RAJA::statement::Lambda<0>>>>>>;
+              RAJA::statement::For<
+                  0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>>>;
 
-  RAJA::kernel<TILED_KERNEL_EXEC_POL>(RAJA::make_tuple(col_Range, row_Range),
-                                      [=](int col, int row)
-                                      { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<TILED_KERNEL_EXEC_POL>(
+      RAJA::make_tuple(col_Range, row_Range),
+      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
   // _raja_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -198,8 +198,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
           0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
           RAJA::statement::For<
               1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<0, RAJA::seq_exec,
-                                   RAJA::statement::Lambda<0>>>>>>;
+              RAJA::statement::For<
+                  0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>>>;
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP>(
       RAJA::make_tuple(col_Range, row_Range),
@@ -219,16 +219,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // into a single OpenMP parallel for loop enabling parallel loads/reads
   // to/from the tile.
   //
-  using TILED_KERNEL_EXEC_POL_OMP2 = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-      RAJA::statement::Tile<
-          0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
-          RAJA::statement::Collapse<
-              RAJA::omp_parallel_collapse_exec, RAJA::ArgList<0, 1>,
-              RAJA::statement::Lambda<0>>                  // closes collapse
-          >                                                // closes Tile 0
-      >                                                    // closes Tile 1
-                                                        >; // closes policy list
+  using TILED_KERNEL_EXEC_POL_OMP2 =
+      RAJA::KernelPolicy<RAJA::statement::Tile<
+          1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+          RAJA::statement::Tile<
+              0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+              RAJA::statement::Collapse<
+                  RAJA::omp_parallel_collapse_exec, RAJA::ArgList<0, 1>,
+                  RAJA::statement::Lambda<0>>  // closes collapse
+              >                                // closes Tile 0
+          >                                    // closes Tile 1
+                         >;                    // closes policy list
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_OMP2>(
       RAJA::make_tuple(col_Range, row_Range),
@@ -254,8 +255,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
               RAJA::statement::For<
                   1, RAJA::cuda_thread_x_direct,
-                  RAJA::statement::For<0, RAJA::cuda_thread_y_direct,
-                                       RAJA::statement::Lambda<0>>>>>>>;
+                  RAJA::statement::For<
+                      0, RAJA::cuda_thread_y_direct,
+                      RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_CUDA>(
       RAJA::make_tuple(col_Range, row_Range), [=] RAJA_DEVICE(int col, int row)
@@ -289,8 +291,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
               RAJA::statement::For<
                   1, RAJA::hip_thread_x_direct,
-                  RAJA::statement::For<0, RAJA::hip_thread_y_direct,
-                                       RAJA::statement::Lambda<0>>>>>>>;
+                  RAJA::statement::For<
+                      0, RAJA::hip_thread_y_direct,
+                      RAJA::statement::Lambda<0>>>>>>>;
 
   RAJA::kernel<TILED_KERNEL_EXEC_POL_HIP>(
       RAJA::make_tuple(col_Range, row_Range), [=] RAJA_DEVICE(int col, int row)

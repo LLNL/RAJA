@@ -160,7 +160,7 @@ public:
 #if defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 9))
     m_value = _mm512_loadu_si512(ptr);
 #else
-    m_value = _mm512_loadu_epi32(ptr); // GNU 7-9 are missing this instruction.
+    m_value = _mm512_loadu_epi32(ptr);  // GNU 7-9 are missing this instruction.
 #endif
     return *this;
   }
@@ -187,8 +187,8 @@ public:
   self_type& load_strided(element_type const* ptr, camp::idx_t stride)
   {
     // AVX512F
-    m_value = _mm512_i32gather_epi32(createStridedOffsets(stride), ptr,
-                                     sizeof(element_type));
+    m_value = _mm512_i32gather_epi32(
+        createStridedOffsets(stride), ptr, sizeof(element_type));
     return *this;
   }
 
@@ -203,9 +203,9 @@ public:
   load_strided_n(element_type const* ptr, camp::idx_t stride, camp::idx_t N)
   {
     // AVX512F
-    m_value = _mm512_mask_i32gather_epi32(_mm512_setzero_epi32(), createMask(N),
-                                          createStridedOffsets(stride), ptr,
-                                          sizeof(element_type));
+    m_value = _mm512_mask_i32gather_epi32(
+        _mm512_setzero_epi32(), createMask(N), createStridedOffsets(stride),
+        ptr, sizeof(element_type));
     return *this;
   }
 
@@ -221,7 +221,7 @@ public:
 #if defined(__GNUC__) && ((__GNUC__ >= 7) && (__GNUC__ <= 9))
     _mm512_storeu_si512(ptr, m_value);
 #else
-    _mm512_storeu_epi32(ptr, m_value); // GNU 7-9 are missing this instruction.
+    _mm512_storeu_epi32(ptr, m_value);  // GNU 7-9 are missing this instruction.
 #endif
     return *this;
   }
@@ -246,8 +246,8 @@ public:
   self_type const& store_strided(element_type* ptr, camp::idx_t stride) const
   {
     // AVX512F
-    _mm512_i32scatter_epi32(ptr, createStridedOffsets(stride), m_value,
-                            sizeof(element_type));
+    _mm512_i32scatter_epi32(
+        ptr, createStridedOffsets(stride), m_value, sizeof(element_type));
     return *this;
   }
 
@@ -261,9 +261,9 @@ public:
   store_strided_n(element_type* ptr, camp::idx_t stride, camp::idx_t N) const
   {
     // AVX512F
-    _mm512_mask_i32scatter_epi32(ptr, createMask(N),
-                                 createStridedOffsets(stride), m_value,
-                                 sizeof(element_type));
+    _mm512_mask_i32scatter_epi32(
+        ptr, createMask(N), createStridedOffsets(stride), m_value,
+        sizeof(element_type));
     return *this;
   }
 
@@ -462,11 +462,11 @@ public:
   }
 };
 
-} // namespace expt
+}  // namespace expt
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif
 
-#endif //__AVX512F__
+#endif  //__AVX512F__

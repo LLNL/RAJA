@@ -93,8 +93,8 @@ struct AccessorDeviceScopeUseBlockFence
   template <typename T>
   static RAJA_DEVICE RAJA_INLINE T get(T* in_ptr, size_t idx)
   {
-    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
-                                                   max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<
+        T, min_atomic_int_type_size, max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
@@ -105,8 +105,8 @@ struct AccessorDeviceScopeUseBlockFence
     {
 #if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
     RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_load)
-      u.array[i] = __hip_atomic_load(&ptr[i], __ATOMIC_RELAXED,
-                                     __HIP_MEMORY_SCOPE_AGENT);
+      u.array[i] = __hip_atomic_load(
+          &ptr[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 #else
       u.array[i] = atomicAdd(&ptr[i], integer_type(0));
 #endif
@@ -118,8 +118,8 @@ struct AccessorDeviceScopeUseBlockFence
   template <typename T>
   static RAJA_DEVICE RAJA_INLINE void set(T* in_ptr, size_t idx, T val)
   {
-    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
-                                                   max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<
+        T, min_atomic_int_type_size, max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
@@ -130,8 +130,8 @@ struct AccessorDeviceScopeUseBlockFence
     {
 #if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
     RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_store)
-      __hip_atomic_store(&ptr[i], u.array[i], __ATOMIC_RELAXED,
-                         __HIP_MEMORY_SCOPE_AGENT);
+      __hip_atomic_store(
+          &ptr[i], u.array[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
 #else
       atomicExch(&ptr[i], u.array[i]);
 #endif
@@ -155,8 +155,8 @@ struct AccessorDeviceScopeUseBlockFence
     RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_s_waitcnt)
     __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
     // Wait until all vmem operations complete (s_waitcnt vmcnt(0))
-    __builtin_amdgcn_s_waitcnt(/*vmcnt*/ 0 | (/*exp_cnt*/ 0x7 << 4) |
-                               (/*lgkmcnt*/ 0xf << 8));
+    __builtin_amdgcn_s_waitcnt(
+        /*vmcnt*/ 0 | (/*exp_cnt*/ 0x7 << 4) | (/*lgkmcnt*/ 0xf << 8));
 #else
     __threadfence();
 #endif
@@ -181,8 +181,8 @@ constexpr size_t max_shfl_int_type_size = sizeof(unsigned int);
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
-  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
-                               max_shfl_int_type_size>
+  RAJA::detail::AsIntegerArray<
+      T, min_shfl_int_type_size, max_shfl_int_type_size>
       u;
   u.set_value(var);
 
@@ -196,8 +196,8 @@ RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 template <typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
-  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
-                               max_shfl_int_type_size>
+  RAJA::detail::AsIntegerArray<
+      T, min_shfl_int_type_size, max_shfl_int_type_size>
       u;
   u.set_value(var);
 
@@ -252,7 +252,7 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
     for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
     {
       T rhs = shfl_xor_sync(temp, i);
-      Combiner{}(temp, rhs);
+      Combiner {}(temp, rhs);
     }
   }
   else
@@ -266,7 +266,7 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads)
       {
-        Combiner{}(temp, rhs);
+        Combiner {}(temp, rhs);
       }
     }
   }
@@ -289,7 +289,7 @@ RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
   for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
   {
     T rhs = shfl_xor_sync(temp, i);
-    Combiner{}(temp, rhs);
+    Combiner {}(temp, rhs);
   }
 
   return temp;
@@ -317,7 +317,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
     {
       T rhs = shfl_xor_sync(temp, i);
-      Combiner{}(temp, rhs);
+      Combiner {}(temp, rhs);
     }
   }
   else
@@ -331,7 +331,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads)
       {
-        Combiner{}(temp, rhs);
+        Combiner {}(temp, rhs);
       }
     }
   }
@@ -340,10 +340,11 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   if (numThreads > policy::hip::device_constants.WARP_SIZE)
   {
 
-    static_assert(policy::hip::device_constants.MAX_WARPS <=
-                      policy::hip::device_constants.WARP_SIZE,
-                  "This algorithms assumes a warp of WARP_SIZE threads can "
-                  "reduce MAX_WARPS values");
+    static_assert(
+        policy::hip::device_constants.MAX_WARPS <=
+            policy::hip::device_constants.WARP_SIZE,
+        "This algorithms assumes a warp of WARP_SIZE threads can "
+        "reduce MAX_WARPS values");
 
     __shared__ unsigned char tmpsd[sizeof(
         RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>)];
@@ -375,7 +376,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
       for (int i = 1; i < policy::hip::device_constants.MAX_WARPS; i *= 2)
       {
         T rhs = shfl_xor_sync(temp, i);
-        Combiner{}(temp, rhs);
+        Combiner {}(temp, rhs);
       }
     }
 
@@ -385,12 +386,12 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   return temp;
 }
 
-} // end namespace impl
+}  // end namespace impl
 
-} // end namespace hip
+}  // end namespace hip
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_HIP guard
+#endif  // closing endif for RAJA_ENABLE_HIP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

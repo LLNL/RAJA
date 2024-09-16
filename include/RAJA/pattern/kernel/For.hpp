@@ -37,9 +37,10 @@ namespace statement
  * Assigns the loop iterate to argument ArgumentId
  *
  */
-template <camp::idx_t ArgumentId,
-          typename ExecPolicy = camp::nil,
-          typename... EnclosedStmts>
+template <
+    camp::idx_t ArgumentId,
+    typename ExecPolicy = camp::nil,
+    typename... EnclosedStmts>
 struct For : public internal::ForList,
              public internal::ForTraitBase<ArgumentId, ExecPolicy>,
              public internal::Statement<ExecPolicy, EnclosedStmts...>
@@ -50,7 +51,7 @@ struct For : public internal::ForList,
 };
 
 
-} // end namespace statement
+}  // end namespace statement
 
 namespace internal
 {
@@ -60,10 +61,11 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  *
  */
-template <camp::idx_t ArgumentId,
-          typename Data,
-          typename Types,
-          typename... EnclosedStmts>
+template <
+    camp::idx_t ArgumentId,
+    typename Data,
+    typename Types,
+    typename... EnclosedStmts>
 struct ForWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
 {
 
@@ -85,10 +87,11 @@ struct ForWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
  *
  *
  */
-template <camp::idx_t ArgumentId,
-          typename ExecPolicy,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    camp::idx_t ArgumentId,
+    typename ExecPolicy,
+    typename... EnclosedStmts,
+    typename Types>
 struct StatementExecutor<
     statement::For<ArgumentId, ExecPolicy, EnclosedStmts...>,
     Types>
@@ -110,8 +113,9 @@ struct StatementExecutor<
 
     auto r = data.res;
 
-    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper,
-                RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(
+        r, ExecPolicy {}, TypedRangeSegment<len_t>(0, len), for_wrapper,
+        RAJA::expt::get_empty_forall_param_pack());
   }
 };
 
@@ -121,8 +125,9 @@ struct StatementExecutor<
  *
  */
 template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
-                         Types>
+struct StatementExecutor<
+    statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+    Types>
 {
 
 
@@ -149,8 +154,8 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_For_HPP */

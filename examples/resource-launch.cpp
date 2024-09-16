@@ -19,8 +19,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 10;
   constexpr int M = 1000000;
 
-  RAJA::resources::Cuda def_cuda_res{RAJA::resources::Cuda::get_default()};
-  RAJA::resources::Host def_host_res{RAJA::resources::Host::get_default()};
+  RAJA::resources::Cuda def_cuda_res {RAJA::resources::Cuda::get_default()};
+  RAJA::resources::Host def_host_res {RAJA::resources::Host::get_default()};
   int*                  d_array = def_cuda_res.allocate<int>(N * M);
   int*                  h_array = def_host_res.allocate<int>(N * M);
 
@@ -44,15 +44,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
             res_cuda, RAJA::LaunchParams(RAJA::Teams(64), RAJA::Threads(1)),
             [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
             {
-              RAJA::loop<teams_x>(ctx, m_range,
-                                  [&](int j)
-                                  {
-                                    RAJA::loop<threads_x>(ctx, one_range,
-                                                          [&](int k) {
-                                                            d_array[i * M + j] =
-                                                                i * M + j;
-                                                          });
-                                  });
+              RAJA::loop<teams_x>(
+                  ctx, m_range,
+                  [&](int j)
+                  {
+                    RAJA::loop<threads_x>(
+                        ctx, one_range,
+                        [&](int k) { d_array[i * M + j] = i * M + j; });
+                  });
             });
 
         def_cuda_res.wait_for(&e);
@@ -61,11 +60,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   def_cuda_res.memcpy(h_array, d_array, sizeof(int) * N * M);
 
   int ec_count = 0;
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N * M),
-                               [=, &ec_count](int i)
-                               {
-                                 if (h_array[i] != i) ec_count++;
-                               });
+  RAJA::forall<RAJA::seq_exec>(
+      RAJA::RangeSegment(0, N * M),
+      [=, &ec_count](int i)
+      {
+        if (h_array[i] != i) ec_count++;
+      });
 
   std::cout << "    Result -- ";
   if (ec_count > 0)

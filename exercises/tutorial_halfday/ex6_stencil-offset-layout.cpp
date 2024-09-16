@@ -186,9 +186,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       int idx_out = j + Nr_int * i;
       int idx_in  = (j + 1) + Nr_tot * (i + 1);
 
-      A_ref[idx_out] = B[idx_in] +                               // C
-                       B[idx_in - Nr_tot] + B[idx_in + Nr_tot] + // W, E
-                       B[idx_in - 1] + B[idx_in + 1];            // S, N
+      A_ref[idx_out] = B[idx_in] +                                // C
+                       B[idx_in - Nr_tot] + B[idx_in + Nr_tot] +  // W, E
+                       B[idx_in - 1] + B[idx_in + 1];             // S, N
     }
   }
 
@@ -270,9 +270,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       int idx_out = i + Nc_int * j;
       int idx_in  = (i + 1) + Nc_tot * (j + 1);
 
-      A_ref[idx_out] = B[idx_in] +                               // C
-                       B[idx_in - Nc_tot] + B[idx_in + Nc_tot] + // S, N
-                       B[idx_in - 1] + B[idx_in + 1];            // W, E
+      A_ref[idx_out] = B[idx_in] +                                // C
+                       B[idx_in - Nc_tot] + B[idx_in + Nc_tot] +  // S, N
+                       B[idx_in - 1] + B[idx_in + 1];             // W, E
     }
   }
 

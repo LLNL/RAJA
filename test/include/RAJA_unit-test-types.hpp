@@ -17,18 +17,19 @@
 //
 // List of integral types used in RAJA index unit tests
 //
-using UnitIntegralTypes = ::testing::Types<char,
-                                           unsigned char,
-                                           short,
-                                           unsigned short,
-                                           int,
-                                           unsigned int,
-                                           long,
-                                           unsigned long,
-                                           long int,
-                                           unsigned long int,
-                                           long long,
-                                           unsigned long long>;
+using UnitIntegralTypes = ::testing::Types<
+    char,
+    unsigned char,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long int,
+    unsigned long int,
+    long long,
+    unsigned long long>;
 
 //
 // Expanded integral types used in RAJA index unit tests
@@ -38,15 +39,15 @@ using UnitIntegralTypes = ::testing::Types<char,
   RAJA::Index_type, char, unsigned char, short, unsigned short, int,           \
       unsigned int, long, unsigned long, long int, unsigned long int,          \
       long long, unsigned long long
-#endif // RAJA_UNIT_EXPANDED_INTEGRAL_TYPES
+#endif  // RAJA_UNIT_EXPANDED_INTEGRAL_TYPES
 
 #ifndef RAJA_UNIT_FLOAT_TYPES
 #ifndef __clang__
 #define RAJA_UNIT_FLOAT_TYPES float, double, long double
 #else
 #define RAJA_UNIT_FLOAT_TYPES float, double
-#endif // __clang__
-#endif // FLOATING_TYPES
+#endif  // __clang__
+#endif  // FLOATING_TYPES
 
 using UnitExpandedIntegralTypes =
     ::testing::Types<RAJA_UNIT_EXPANDED_INTEGRAL_TYPES>;
@@ -59,20 +60,21 @@ using UnitIntFloatTypes =
 //
 // Standard list of index types used in RAJA index unit tests
 //
-using UnitIndexTypes = ::testing::Types<RAJA::Index_type,
-                                        int,
+using UnitIndexTypes = ::testing::Types<
+    RAJA::Index_type,
+    int,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-                                        unsigned int,
-                                        char,
-                                        unsigned char,
-                                        short,
-                                        unsigned short,
-                                        long,
-                                        unsigned long,
-                                        long int,
-                                        unsigned long int,
-                                        long long,
+    unsigned int,
+    char,
+    unsigned char,
+    short,
+    unsigned short,
+    long,
+    unsigned long,
+    long int,
+    unsigned long int,
+    long long,
 #endif
-                                        unsigned long long>;
+    unsigned long long>;
 
-#endif // __RAJA_unit_test_types_HPP__
+#endif  // __RAJA_unit_test_types_HPP__

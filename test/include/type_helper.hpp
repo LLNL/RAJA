@@ -75,7 +75,7 @@ struct product<std::tuple<>, std::tuple<Ts...>>
 {
   using type = std::tuple<>;
 };
-} // namespace types
+}  // namespace types
 
 
 namespace tt
@@ -95,10 +95,12 @@ struct concat<T>
   using type = T;
 };
 
-template <template <class...> class T,
-          class... Front,
-          class... Next,
-          class... Rest>
+template <
+    template <class...>
+    class T,
+    class... Front,
+    class... Next,
+    class... Rest>
 struct concat<T<Front...>, T<Next...>, Rest...>
 {
   using type = typename concat<T<Front..., Next...>, Rest...>::type;
@@ -134,7 +136,7 @@ struct apply<Fn, L<Ts...>>
 template <template <class> class Outer, class T>
 using apply_t = typename apply<Outer, T>::type;
 
-} // namespace tt
+}  // namespace tt
 
 
 namespace detail
@@ -147,7 +149,7 @@ struct ForTesting<T<Ts...>>
 {
   using type = ::testing::Types<Ts...>;
 };
-} // namespace detail
+}  // namespace detail
 
 template <typename T>
 using ForTesting = typename ::detail::ForTesting<T>::type;

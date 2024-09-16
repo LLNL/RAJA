@@ -102,8 +102,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
 
   // _scan_inclusive_seq_start
-  RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
-                                       RAJA::make_span(out, N));
+  RAJA::inclusive_scan<RAJA::seq_exec>(
+      RAJA::make_span(in, N), RAJA::make_span(out, N));
   // _scan_inclusive_seq_end
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)

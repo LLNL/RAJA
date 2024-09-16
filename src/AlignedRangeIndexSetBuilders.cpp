@@ -115,7 +115,7 @@ void buildIndexSetAligned(
       }
 
       scanVal = lookAhead;
-    } // end loop to gather statistics
+    }  // end loop to gather statistics
 
     if (inrange != -1)
     {
@@ -211,7 +211,7 @@ void buildIndexSetAligned(
         }
 
         scanVal = lookAhead;
-      } // for (RAJA::Index_type ii ...
+      }  // for (RAJA::Index_type ii ...
 
       if (inrange != -1)
       {
@@ -233,14 +233,14 @@ void buildIndexSetAligned(
       }
     }
     else
-    { // !(docount < (length*range_align-1))/range_align)
+    {  // !(docount < (length*range_align-1))/range_align)
       iset.push_back(ListSegment(indices_in, length, work_res));
     }
   }
   else
-  { // else !(length > range_min_length)
+  {  // else !(length > range_min_length)
     iset.push_back(ListSegment(indices_in, length, work_res));
   }
 }
 
-} // namespace RAJA
+}  // namespace RAJA

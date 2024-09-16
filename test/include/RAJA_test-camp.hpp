@@ -42,4 +42,4 @@ using HipResourceList = camp::list<camp::resources::Hip>;
 using SyclResourceList = camp::list<camp::resources::Sycl>;
 #endif
 
-#endif // __RAJA_test_camp_HPP__
+#endif  // __RAJA_test_camp_HPP__

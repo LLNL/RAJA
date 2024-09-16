@@ -42,6 +42,6 @@
 #include "RAJA/policy/cuda/launch.hpp"
 #include "RAJA/policy/cuda/WorkGroup.hpp"
 
-#endif // closing endif for if defined(RAJA_ENABLE_CUDA)
+#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

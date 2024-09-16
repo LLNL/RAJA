@@ -167,4 +167,4 @@ private:
   }
 };
 
-#endif //__TEST_PLUGIN_HPP__
+#endif  //__TEST_PLUGIN_HPP__

@@ -36,4 +36,4 @@ using HipPluginLaunchExecPols =
 
 #endif
 
-#endif // __RAJA_test_plugin_kernelpol_HPP__
+#endif  // __RAJA_test_plugin_kernelpol_HPP__

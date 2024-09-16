@@ -45,12 +45,13 @@ using device_launch = RAJA::cuda_launch_t<false>;
 using device_launch = RAJA::hip_launch_t<false>;
 #endif
 
-using launch_policy = RAJA::LaunchPolicy<host_launch
+using launch_policy = RAJA::LaunchPolicy<
+    host_launch
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-                                         ,
-                                         device_launch
+    ,
+    device_launch
 #endif
-                                         >;
+    >;
 
 /*
  * RAJA launch exposes a thread/block programming model
@@ -64,49 +65,53 @@ using launch_policy = RAJA::LaunchPolicy<host_launch
  * On the host the loops expands to standard C style for loops.
  */
 
-using teams_x = RAJA::LoopPolicy<RAJA::seq_exec
+using teams_x = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                 ,
-                                 RAJA::cuda_block_x_direct
+    ,
+    RAJA::cuda_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                 ,
-                                 RAJA::hip_block_x_direct
+    ,
+    RAJA::hip_block_x_direct
 #endif
-                                 >;
+    >;
 
-using teams_y = RAJA::LoopPolicy<RAJA::seq_exec
+using teams_y = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                 ,
-                                 RAJA::cuda_block_y_direct
+    ,
+    RAJA::cuda_block_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                 ,
-                                 RAJA::hip_block_y_direct
+    ,
+    RAJA::hip_block_y_direct
 #endif
-                                 >;
+    >;
 
-using threads_x = RAJA::LoopPolicy<RAJA::seq_exec
+using threads_x = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                   ,
-                                   RAJA::cuda_thread_x_direct
+    ,
+    RAJA::cuda_thread_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                   ,
-                                   RAJA::hip_thread_x_direct
+    ,
+    RAJA::hip_thread_x_direct
 #endif
-                                   >;
+    >;
 
-using threads_y = RAJA::LoopPolicy<RAJA::seq_exec
+using threads_y = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                   ,
-                                   RAJA::cuda_thread_y_direct
+    ,
+    RAJA::cuda_thread_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                   ,
-                                   RAJA::hip_thread_y_direct
+    ,
+    RAJA::hip_thread_y_direct
 #endif
-                                   >;
+    >;
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__ void gpuKernel()
@@ -123,9 +128,10 @@ __global__ void gpuKernel()
         {
           int tx = blockIdx.x;
 
-          printf("device-iter: threadIdx_tx %d threadIdx_ty %d block_bx %d "
-                 "block_by %d \n",
-                 tx, ty, bx, by);
+          printf(
+              "device-iter: threadIdx_tx %d threadIdx_ty %d block_bx %d "
+              "block_by %d \n",
+              tx, ty, bx, by);
         }
       }
     }
@@ -188,8 +194,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   RAJA::launch<launch_policy>(
       select_cpu_or_gpu,
-      RAJA::LaunchParams(RAJA::Teams(Nteams, Nteams),
-                         RAJA::Threads(Nthreads, Nthreads)),
+      RAJA::LaunchParams(
+          RAJA::Teams(Nteams, Nteams), RAJA::Threads(Nthreads, Nthreads)),
 
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
@@ -210,9 +216,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
                               ctx, RAJA::TypedRangeSegment<int>(0, Nthreads),
                               [&](int tx)
                               {
-                                printf("RAJA Teams: threadId_x %d threadId_y "
-                                       "%d teamId_x %d teamId_y %d \n",
-                                       tx, ty, bx, by);
+                                printf(
+                                    "RAJA Teams: threadId_x %d threadId_y "
+                                    "%d teamId_x %d teamId_y %d \n",
+                                    tx, ty, bx, by);
                               });
                         });
                   });
@@ -234,8 +241,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
           for (int tx = 0; tx < Nthreads; ++tx)
           {
 
-            printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n", tx,
-                   ty, bx, by);
+            printf(
+                "c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n", tx,
+                ty, bx, by);
           }
         }
       }

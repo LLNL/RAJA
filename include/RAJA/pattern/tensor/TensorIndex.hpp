@@ -29,11 +29,12 @@ namespace expt
 {
 
 
-template <typename IDX,
-          typename TENSOR_TYPE,
-          camp::idx_t             DIM,
-          IDX                     INDEX_VALUE,
-          strip_index_type_t<IDX> LENGTH_VALUE>
+template <
+    typename IDX,
+    typename TENSOR_TYPE,
+    camp::idx_t             DIM,
+    IDX                     INDEX_VALUE,
+    strip_index_type_t<IDX> LENGTH_VALUE>
 struct StaticTensorIndexInner;
 
 template <typename INNER_TYPE>
@@ -58,11 +59,12 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr StaticTensorIndex<StaticTensorIndexInner<IDX,
-                                                            TENSOR_TYPE,
-                                                            DIM,
-                                                            index_type(-1),
-                                                            value_type(-1)>>
+  static constexpr StaticTensorIndex<StaticTensorIndexInner<
+      IDX,
+      TENSOR_TYPE,
+      DIM,
+      index_type(-1),
+      value_type(-1)>>
   static_all()
   {
     return StaticTensorIndex<StaticTensorIndexInner<
@@ -150,11 +152,12 @@ private:
 };
 
 
-template <typename IDX,
-          typename TENSOR_TYPE,
-          camp::idx_t             DIM,
-          IDX                     INDEX_VALUE,
-          strip_index_type_t<IDX> LENGTH_VALUE>
+template <
+    typename IDX,
+    typename TENSOR_TYPE,
+    camp::idx_t             DIM,
+    IDX                     INDEX_VALUE,
+    strip_index_type_t<IDX> LENGTH_VALUE>
 struct StaticTensorIndex<
     StaticTensorIndexInner<IDX, TENSOR_TYPE, DIM, INDEX_VALUE, LENGTH_VALUE>>
 {
@@ -212,8 +215,8 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr RowIndex<IDX, MATRIX_TYPE>
   return RowIndex<IDX, MATRIX_TYPE>(*c, c.size());
 }
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 #include "RAJA/pattern/tensor/internal/TensorIndexTraits.hpp"
 

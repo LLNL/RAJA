@@ -16,10 +16,11 @@
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct LoadOtherOp : all_op
 {
-  LoadOtherOp(T*                               dcount,
-              T*                               hcount,
-              camp::resources::Resource        work_res,
-              RAJA::TypedRangeSegment<IdxType> seg)
+  LoadOtherOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min((T)seg.size()),
         max(min),
@@ -38,10 +39,11 @@ struct LoadOtherOp : all_op
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct OperatorTOtherOp : all_op
 {
-  OperatorTOtherOp(T*                               dcount,
-                   T*                               hcount,
-                   camp::resources::Resource        work_res,
-                   RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg))
+  OperatorTOtherOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg))
       : other(dcount), min(T(0)), max(min), final_min(min), final_max(min)
   {
     hcount[0] = min;
@@ -56,10 +58,11 @@ struct OperatorTOtherOp : all_op
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct StoreOtherOp : all_op
 {
-  StoreOtherOp(T*                               dcount,
-               T*                               hcount,
-               camp::resources::Resource        work_res,
-               RAJA::TypedRangeSegment<IdxType> seg)
+  StoreOtherOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -82,10 +85,11 @@ struct StoreOtherOp : all_op
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct AssignOtherOp : all_op
 {
-  AssignOtherOp(T*                               dcount,
-                T*                               hcount,
-                camp::resources::Resource        work_res,
-                RAJA::TypedRangeSegment<IdxType> seg)
+  AssignOtherOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max((T)seg.size() - (T)1),
@@ -101,29 +105,32 @@ struct AssignOtherOp : all_op
   T                                min, max, final_min, final_max;
 };
 
-template <typename ExecPolicy,
-          typename AtomicPolicy,
-          typename IdxType,
-          typename T,
-          template <typename, typename, typename>
-          class OtherOp>
-void testAtomicRefLoadStoreOp(RAJA::TypedRangeSegment<IdxType> seg,
-                              T*                               count,
-                              T*                               list,
-                              T*                               hcount,
-                              T*                               hlist,
-                              camp::resources::Resource        work_res,
-                              IdxType                          N)
+template <
+    typename ExecPolicy,
+    typename AtomicPolicy,
+    typename IdxType,
+    typename T,
+    template <typename, typename, typename>
+    class OtherOp>
+void testAtomicRefLoadStoreOp(
+    RAJA::TypedRangeSegment<IdxType> seg,
+    T*                               count,
+    T*                               list,
+    T*                               hcount,
+    T*                               hlist,
+    camp::resources::Resource        work_res,
+    IdxType                          N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
-                           { list[i] = otherop.max + (T)1; });
-  RAJA::forall<ExecPolicy>(seg,
-                           [=] RAJA_HOST_DEVICE(IdxType i)
-                           {
-                             T val   = otherop(i);
-                             list[i] = val;
-                           });
+  RAJA::forall<ExecPolicy>(
+      seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
+  RAJA::forall<ExecPolicy>(
+      seg,
+      [=] RAJA_HOST_DEVICE(IdxType i)
+      {
+        T val   = otherop(i);
+        list[i] = val;
+      });
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -144,18 +151,19 @@ void testAtomicRefLoadStoreOp(RAJA::TypedRangeSegment<IdxType> seg,
 }
 
 
-template <typename ExecPolicy,
-          typename AtomicPolicy,
-          typename WORKINGRES,
-          typename IdxType,
-          typename T>
+template <
+    typename ExecPolicy,
+    typename AtomicPolicy,
+    typename WORKINGRES,
+    typename IdxType,
+    typename T>
 void ForallAtomicRefLoadStoreTestImpl(IdxType N)
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
-  camp::resources::Resource work_res{WORKINGRES()};
+  camp::resources::Resource work_res {WORKINGRES()};
 
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res {camp::resources::Host()};
 
   T* count = work_res.allocate<T>(1);
   T* list  = work_res.allocate<T>(N);
@@ -173,9 +181,9 @@ void ForallAtomicRefLoadStoreTestImpl(IdxType N)
 
   testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T, LoadOtherOp>(
       seg, count, list, hcount, hlist, work_res, N);
-  testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T,
-                           OperatorTOtherOp>(seg, count, list, hcount, hlist,
-                                             work_res, N);
+  testAtomicRefLoadStoreOp<
+      ExecPolicy, AtomicPolicy, IdxType, T, OperatorTOtherOp>(
+      seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T, StoreOtherOp>(
       seg, count, list, hcount, hlist, work_res, N);
   testAtomicRefLoadStoreOp<ExecPolicy, AtomicPolicy, IdxType, T, AssignOtherOp>(
@@ -204,7 +212,8 @@ TYPED_TEST_P(ForallAtomicRefLoadStoreTest, AtomicRefLoadStoreForall)
   ForallAtomicRefLoadStoreTestImpl<AExec, APol, ResType, IdxType, DType>(10000);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallAtomicRefLoadStoreTest,
-                            AtomicRefLoadStoreForall);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallAtomicRefLoadStoreTest,
+    AtomicRefLoadStoreForall);
 
-#endif //__TEST_FORALL_ATOMICREF_LOADSTORE_HPP__
+#endif  //__TEST_FORALL_ATOMICREF_LOADSTORE_HPP__

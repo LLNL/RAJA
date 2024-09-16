@@ -62,8 +62,9 @@ struct BitMask
   template <typename T>
   RAJA_HOST_DEVICE static constexpr T maskValue(T input)
   {
-    return ((input >> (static_cast<T>(Shift))) &
-            static_cast<T>((1 << (Width)) - 1));
+    return (
+        (input >> (static_cast<T>(Shift))) &
+        static_cast<T>((1 << (Width)) - 1));
   }
 
 
@@ -80,6 +81,6 @@ struct BitMask
   }
 };
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // RAJA_util_BitMask_HPP
+#endif  // RAJA_util_BitMask_HPP

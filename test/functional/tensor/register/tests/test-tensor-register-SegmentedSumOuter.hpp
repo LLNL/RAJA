@@ -32,7 +32,7 @@ void SegmentedSumOuterImpl()
   // Initialize input data
   for (camp::idx_t i = 0; i < num_elem; ++i)
   {
-    input0_hptr[i] = (element_t)(i + 1); //+NO_OPT_RAND);
+    input0_hptr[i] = (element_t)(i + 1);  //+NO_OPT_RAND);
   }
   tensor_copy_to_device<policy_t>(input0_dptr, input0_vec);
 
@@ -87,9 +87,9 @@ void SegmentedSumOuterImpl()
         ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
-    } // segment
+    }  // segment
 
-  } // segbits
+  }  // segbits
 
 
   // Cleanup

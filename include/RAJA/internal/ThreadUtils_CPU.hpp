@@ -47,6 +47,6 @@ int getMaxOMPThreadsCPU()
   return nthreads;
 }
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

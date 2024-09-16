@@ -38,7 +38,7 @@ namespace statement
 struct OmpSyncThreads : public internal::Statement<camp::nil>
 {};
 
-} // namespace statement
+}  // namespace statement
 
 namespace internal
 {
@@ -57,10 +57,10 @@ struct StatementExecutor<statement::OmpSyncThreads, Types>
 };
 
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
 
-#endif // closing endif for RAJA_ENABLE_OPENMP guard
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -69,10 +69,10 @@ TYPED_TEST(TypedViewUnitTest, Accessor)
   const int  N  = Nx * Ny * Nz;
   TypeParam* a  = new TypeParam[N];
 
-  int iter{0};
-  for (TypeParam i = 0; i < TypeParam{N}; ++i)
+  int iter {0};
+  for (TypeParam i = 0; i < TypeParam {N}; ++i)
   {
-    a[iter] = TypeParam{i};
+    a[iter] = TypeParam {i};
     ++iter;
   }
 
@@ -80,7 +80,7 @@ TYPED_TEST(TypedViewUnitTest, Accessor)
    * 1D Accessor
    */
   RAJA::View<TypeParam, RAJA::Layout<1>> view_1D(a, N);
-  TypeParam                              val{0};
+  TypeParam                              val {0};
   for (int i = 0; i < N; ++i)
   {
     ASSERT_EQ(val, view_1D(i));
@@ -91,7 +91,7 @@ TYPED_TEST(TypedViewUnitTest, Accessor)
    * 2D Accessor
    */
   RAJA::View<TypeParam, RAJA::Layout<2>> view_2D(a, Ny, Nx);
-  val = TypeParam{0};
+  val = TypeParam {0};
   for (int j = 0; j < Ny; ++j)
   {
     for (int i = 0; i < Nx; ++i)
@@ -105,7 +105,7 @@ TYPED_TEST(TypedViewUnitTest, Accessor)
    * 3D Accessor
    */
   RAJA::View<TypeParam, RAJA::Layout<3>> view_3D(a, Nz, Ny, Nx);
-  val = TypeParam{0};
+  val = TypeParam {0};
   for (int k = 0; k < Nz; ++k)
   {
     for (int j = 0; j < Ny; ++j)
@@ -129,10 +129,10 @@ TYPED_TEST(TypedIntegralViewUnitTest, TypedAccessor)
   const int  N  = Nx * Ny * Nz;
   TypeParam* a  = new TypeParam[N];
 
-  int iter{0};
-  for (TypeParam i = 0; i < TypeParam{N}; ++i)
+  int iter {0};
+  for (TypeParam i = 0; i < TypeParam {N}; ++i)
   {
-    a[iter] = TypeParam{i};
+    a[iter] = TypeParam {i};
     ++iter;
   }
 
@@ -140,7 +140,7 @@ TYPED_TEST(TypedIntegralViewUnitTest, TypedAccessor)
    * 1D Typed Accessor
    */
   RAJA::TypedView<TypeParam, RAJA::Layout<1>, TypeParam> view_1D(a, N);
-  TypeParam                                              val{0};
+  TypeParam                                              val {0};
   for (TypeParam i = 0; i < N; ++i)
   {
     ASSERT_EQ(val, view_1D(i));
@@ -151,7 +151,7 @@ TYPED_TEST(TypedIntegralViewUnitTest, TypedAccessor)
    * 2D Typed Accessor
    */
   RAJA::View<TypeParam, RAJA::Layout<2>> view_2D(a, Ny, Nx);
-  val = TypeParam{0};
+  val = TypeParam {0};
   for (TypeParam j = 0; j < Ny; ++j)
   {
     for (TypeParam i = 0; i < Nx; ++i)
@@ -165,7 +165,7 @@ TYPED_TEST(TypedIntegralViewUnitTest, TypedAccessor)
    * 3D Typed Accessor
    */
   RAJA::View<TypeParam, RAJA::Layout<3>> view_3D(a, Nz, Ny, Nx);
-  val = TypeParam{0};
+  val = TypeParam {0};
   for (TypeParam k = 0; k < Nz; ++k)
   {
     for (TypeParam j = 0; j < Ny; ++j)
@@ -190,10 +190,10 @@ TYPED_TEST(OffsetLayoutViewUnitTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  std::array<RAJA::Index_type, 1> lower{{1}};
-  std::array<RAJA::Index_type, 1> upper{{11}};
-  RAJA::View<TypeParam, layout>   view(data,
-                                       RAJA::make_offset_layout<1>(lower, upper));
+  std::array<RAJA::Index_type, 1> lower {{1}};
+  std::array<RAJA::Index_type, 1> upper {{11}};
+  RAJA::View<TypeParam, layout>   view(
+        data, RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++)
   {
@@ -242,7 +242,7 @@ TYPED_TEST(TypedViewUnitTest, Shift1D)
     ASSERT_EQ(Bshift(i), B(i - N));
   }
 
-  for (TX tx = TX{N}; tx < TX{2 * N}; tx++)
+  for (TX tx = TX {N}; tx < TX {2 * N}; tx++)
   {
     ASSERT_EQ(Cshift(tx), C(tx - N));
   }
@@ -258,7 +258,7 @@ TYPED_TEST(TypedViewUnitTest, Shift1D)
   RAJA::View<TypeParam, TLayout>       D(a, myLayout);
   RAJA::View<TypeParam, TOffsetLayout> Dshift = D.shift({{N}});
 
-  for (TIX i = TIX{N}; i < TIX{2 * N}; ++i)
+  for (TIX i = TIX {N}; i < TIX {2 * N}; ++i)
   {
     ASSERT_EQ(Dshift(i), D(i - N));
   };
@@ -307,7 +307,7 @@ TYPED_TEST(TypedViewUnitTest, Shift2D)
   /*
    * Create a view from a base view with permuted layout
    */
-  std::array<RAJA::idx_t, 2> perm{{1, 0}};
+  std::array<RAJA::idx_t, 2> perm {{1, 0}};
   RAJA::OffsetLayout<2>      playout =
       RAJA::make_permuted_offset_layout<2>({{0, 0}}, {{N, N}}, perm);
 

@@ -215,23 +215,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(output, 0, totCells * sizeof(int));
 
   // _offsetlayout_rajaseq_start
-  using NESTED_EXEC_POL1 = RAJA::KernelPolicy<
-      RAJA::statement::For<1,
-                           RAJA::seq_exec, // row
-                           RAJA::statement::For<0,
-                                                RAJA::seq_exec, // col
-                                                RAJA::statement::Lambda<0>>>>;
+  using NESTED_EXEC_POL1 = RAJA::KernelPolicy<RAJA::statement::For<
+      1,
+      RAJA::seq_exec,  // row
+      RAJA::statement::For<
+          0,
+          RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
-                                 [=](int col, int row)
-                                 {
-                                   outputView(row, col) =
-                                       inputView(row, col) +
-                                       inputView(row - 1, col) +
-                                       inputView(row + 1, col) +
-                                       inputView(row, col - 1) +
-                                       inputView(row, col + 1);
-                                 });
+  RAJA::kernel<NESTED_EXEC_POL1>(
+      RAJA::make_tuple(col_range, row_range),
+      [=](int col, int row)
+      {
+        outputView(row, col) = inputView(row, col) + inputView(row - 1, col) +
+                               inputView(row + 1, col) +
+                               inputView(row, col - 1) +
+                               inputView(row, col + 1);
+      });
   // _offsetlayout_rajaseq_end
 
   std::cout << "\noutput lattice:\n";
@@ -248,19 +248,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajaomp_start
   using NESTED_EXEC_POL2 = RAJA::KernelPolicy<RAJA::statement::Collapse<
-      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<1, 0>, // row, col
+      RAJA::omp_parallel_collapse_exec, RAJA::ArgList<1, 0>,  // row, col
       RAJA::statement::Lambda<0>>>;
 
-  RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
-                                 [=](int col, int row)
-                                 {
-                                   outputView(row, col) =
-                                       inputView(row, col) +
-                                       inputView(row - 1, col) +
-                                       inputView(row + 1, col) +
-                                       inputView(row, col - 1) +
-                                       inputView(row, col + 1);
-                                 });
+  RAJA::kernel<NESTED_EXEC_POL2>(
+      RAJA::make_tuple(col_range, row_range),
+      [=](int col, int row)
+      {
+        outputView(row, col) = inputView(row, col) + inputView(row - 1, col) +
+                               inputView(row + 1, col) +
+                               inputView(row, col - 1) +
+                               inputView(row, col + 1);
+      });
   // _offsetlayout_rajaomp_end
 
   std::cout << "\noutput lattice:\n";
@@ -277,23 +276,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(output, 0, totCells * sizeof(int));
 
   // _offsetlayout_rajacuda_start
-  using NESTED_EXEC_POL3 = RAJA::KernelPolicy<RAJA::statement::CudaKernel<
-      RAJA::statement::For<1,
-                           RAJA::cuda_block_x_loop, // row
-                           RAJA::statement::For<0,
-                                                RAJA::cuda_thread_x_loop, // col
-                                                RAJA::statement::Lambda<0>>>>>;
+  using NESTED_EXEC_POL3 =
+      RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::For<
+          1,
+          RAJA::cuda_block_x_loop,  // row
+          RAJA::statement::For<
+              0,
+              RAJA::cuda_thread_x_loop,  // col
+              RAJA::statement::Lambda<0>>>>>;
 
-  RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row)
-                                 {
-                                   outputView(row, col) =
-                                       inputView(row, col) +
-                                       inputView(row - 1, col) +
-                                       inputView(row + 1, col) +
-                                       inputView(row, col - 1) +
-                                       inputView(row, col + 1);
-                                 });
+  RAJA::kernel<NESTED_EXEC_POL3>(
+      RAJA::make_tuple(col_range, row_range),
+      [=] RAJA_DEVICE(int col, int row)
+      {
+        outputView(row, col) = inputView(row, col) + inputView(row - 1, col) +
+                               inputView(row + 1, col) +
+                               inputView(row, col - 1) +
+                               inputView(row, col + 1);
+      });
   // _offsetlayout_rajacuda_end
 
   std::cout << "\noutput lattice:\n";
@@ -315,34 +315,35 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   hipErrchk(
       hipMemcpy(d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(d_output, output, totCells * sizeof(int),
-                      hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(
+      d_output, output, totCells * sizeof(int), hipMemcpyHostToDevice));
 
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_inputView(d_input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_outputView(d_output, layout);
 
   // _offsetlayout_rajahip_start
-  using NESTED_EXEC_POL4 = RAJA::KernelPolicy<RAJA::statement::HipKernel<
-      RAJA::statement::For<1,
-                           RAJA::hip_block_x_loop, // row
-                           RAJA::statement::For<0,
-                                                RAJA::hip_thread_x_loop, // col
-                                                RAJA::statement::Lambda<0>>>>>;
+  using NESTED_EXEC_POL4 =
+      RAJA::KernelPolicy<RAJA::statement::HipKernel<RAJA::statement::For<
+          1,
+          RAJA::hip_block_x_loop,  // row
+          RAJA::statement::For<
+              0,
+              RAJA::hip_thread_x_loop,  // col
+              RAJA::statement::Lambda<0>>>>>;
 
-  RAJA::kernel<NESTED_EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row)
-                                 {
-                                   d_outputView(row, col) =
-                                       d_inputView(row, col) +
-                                       d_inputView(row - 1, col) +
-                                       d_inputView(row + 1, col) +
-                                       d_inputView(row, col - 1) +
-                                       d_inputView(row, col + 1);
-                                 });
+  RAJA::kernel<NESTED_EXEC_POL4>(
+      RAJA::make_tuple(col_range, row_range),
+      [=] RAJA_DEVICE(int col, int row)
+      {
+        d_outputView(row, col) =
+            d_inputView(row, col) + d_inputView(row - 1, col) +
+            d_inputView(row + 1, col) + d_inputView(row, col - 1) +
+            d_inputView(row, col + 1);
+      });
   // _offsetlayout_rajahip_end
 
-  hipErrchk(hipMemcpy(output, d_output, totCells * sizeof(int),
-                      hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(
+      output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost));
 
   std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);

@@ -15,10 +15,11 @@
 #include <algorithm>
 #include <numeric>
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename LAUNCH_POLICY,
-          typename GLOBAL_THREAD_POICY>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename LAUNCH_POLICY,
+    typename GLOBAL_THREAD_POICY>
 void LaunchListSegmentTestImpl(INDEX_TYPE N)
 {
 
@@ -38,7 +39,7 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
 
   size_t idxlen = idx_array.size();
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
 
   // Create list segment for tests
   INDEX_TYPE* idx_vals = nullptr;
@@ -58,8 +59,8 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
   constexpr int threads = 256;
   int           blocks  = (data_len - 1) / threads + 1;
@@ -72,8 +73,8 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
       test_array[RAJA::stripIndexType(idx_vals[i])] = idx_vals[i];
     }
 
-    working_res.memcpy(working_array, test_array,
-                       sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(
+        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
@@ -86,23 +87,24 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
         });
   }
   else
-  { // zero-length segment
+  {  // zero-length segment
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(working_array, test_array,
-                       sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(
+        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
-          RAJA::loop<GLOBAL_THREAD_POICY>(ctx, lseg,
-                                          [&](INDEX_TYPE idx)
-                                          {
-                                            (void)idx;
-                                            working_array[0]++;
-                                          });
+          RAJA::loop<GLOBAL_THREAD_POICY>(
+              ctx, lseg,
+              [&](INDEX_TYPE idx)
+              {
+                (void)idx;
+                working_array[0]++;
+              });
         });
   }
 
@@ -112,8 +114,9 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
   {
     for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
     {
-      ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-                check_array[RAJA::stripIndexType(i)]);
+      ASSERT_EQ(
+          test_array[RAJA::stripIndexType(i)],
+          check_array[RAJA::stripIndexType(i)]);
     }
   }
   else
@@ -122,8 +125,8 @@ void LaunchListSegmentTestImpl(INDEX_TYPE N)
   }
 
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
-                                       test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -136,27 +139,29 @@ TYPED_TEST_P(LaunchListSegmentTest, ListSegmentTeams)
 {
   using INDEX_TYPE       = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
-  using LAUNCH_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<0>>::type;
-  using GLOBAL_THREAD_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<1>>::type;
+  using LAUNCH_POLICY    = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<0>>::type;
+  using GLOBAL_THREAD_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<1>>::type;
 
   // test zero-length list segment
-  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
-                            GLOBAL_THREAD_POLICY>(INDEX_TYPE(0));
+  LaunchListSegmentTestImpl<
+      INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
+      INDEX_TYPE(0));
 
-  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
-                            GLOBAL_THREAD_POLICY>(INDEX_TYPE(13));
+  LaunchListSegmentTestImpl<
+      INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
+      INDEX_TYPE(13));
 
-  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
-                            GLOBAL_THREAD_POLICY>(INDEX_TYPE(2047));
+  LaunchListSegmentTestImpl<
+      INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
+      INDEX_TYPE(2047));
 
-  LaunchListSegmentTestImpl<INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY,
-                            GLOBAL_THREAD_POLICY>(INDEX_TYPE(32000));
+  LaunchListSegmentTestImpl<
+      INDEX_TYPE, WORKING_RESOURCE, LAUNCH_POLICY, GLOBAL_THREAD_POLICY>(
+      INDEX_TYPE(32000));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchListSegmentTest, ListSegmentTeams);
 
-#endif // __TEST_TEAMS_LISTSEGMENT_HPP__
+#endif  // __TEST_TEAMS_LISTSEGMENT_HPP__

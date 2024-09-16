@@ -165,4 +165,4 @@ using OpenMPTargetUnitTestPolicyList = camp::list<test_openmp_target>;
 using HipUnitTestPolicyList = camp::list<test_hip>;
 #endif
 
-#endif // RAJA_test_policy_HPP__
+#endif  // RAJA_test_policy_HPP__

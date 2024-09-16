@@ -18,19 +18,19 @@
 #include <random>
 
 
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename DispatchTyper,
-          typename IndexType,
-          typename Allocator>
+template <
+    typename ExecPolicy,
+    typename OrderPolicy,
+    typename StoragePolicy,
+    typename DispatchTyper,
+    typename IndexType,
+    typename Allocator>
 struct testWorkGroupEnqueueMultiple
 {
   template <typename... Args>
-  void operator()(RAJA::xargs<Args...>,
-                  bool   do_instantiate,
-                  size_t rep,
-                  size_t num) const
+  void
+  operator()(RAJA::xargs<Args...>, bool do_instantiate, size_t rep, size_t num)
+      const
   {
     IndexType success = (IndexType)1;
 
@@ -40,18 +40,18 @@ struct testWorkGroupEnqueueMultiple
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, callable>>;
 
-    using WorkPool_type =
-        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                             StoragePolicy, DispatchPolicy>,
-                       IndexType, RAJA::xargs<Args...>, Allocator>;
+    using WorkPool_type = RAJA::WorkPool<
+        RAJA::WorkGroupPolicy<
+            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+        IndexType, RAJA::xargs<Args...>, Allocator>;
 
-    using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                              StoragePolicy, DispatchPolicy>,
-                        IndexType, RAJA::xargs<Args...>, Allocator>;
+    using WorkGroup_type = RAJA::WorkGroup<
+        RAJA::WorkGroupPolicy<
+            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+        IndexType, RAJA::xargs<Args...>, Allocator>;
 
     {
-      WorkPool_type pool(Allocator{});
+      WorkPool_type pool(Allocator {});
 
       // test_empty(pool);
       ASSERT_EQ(pool.num_loops(), (size_t)0);
@@ -63,7 +63,8 @@ struct testWorkGroupEnqueueMultiple
         {
           for (size_t i = 0; i < num; ++i)
           {
-            pool.enqueue(range_segment{0, 1}, callable{&success, IndexType(0)});
+            pool.enqueue(
+                range_segment {0, 1}, callable {&success, IndexType(0)});
           }
 
           ASSERT_EQ(pool.num_loops(), (size_t)num);
@@ -92,11 +93,12 @@ struct testWorkGroupEnqueueMultiple
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported types untested
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename StoragePolicy,
+    typename IndexType,
+    typename Allocator>
 struct testWorkGroupEnqueueMultiple<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -110,11 +112,12 @@ struct testWorkGroupEnqueueMultiple<
   {}
 };
 ///
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename StoragePolicy,
+    typename IndexType,
+    typename Allocator>
 struct testWorkGroupEnqueueMultiple<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -138,8 +141,9 @@ class WorkGroupBasicEnqueueMultipleUnitTest : public ::testing::Test
 TYPED_TEST_SUITE_P(WorkGroupBasicEnqueueMultipleUnitTest);
 
 
-TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest,
-             BasicWorkGroupEnqueueMultiple)
+TYPED_TEST_P(
+    WorkGroupBasicEnqueueMultipleUnitTest,
+    BasicWorkGroupEnqueueMultiple)
 {
   using ExecPolicy    = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy   = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -149,16 +153,16 @@ TYPED_TEST_P(WorkGroupBasicEnqueueMultipleUnitTest,
   using Xargs         = typename camp::at<TypeParam, camp::num<5>>::type;
   using Allocator     = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  std::mt19937                          rng(std::random_device{}());
+  std::mt19937                          rng(std::random_device {}());
   std::uniform_int_distribution<size_t> dist_rep(0, 16);
   std::uniform_int_distribution<size_t> dist_num(0, 64);
 
-  testWorkGroupEnqueueMultiple<ExecPolicy, OrderPolicy, StoragePolicy,
-                               DispatchTyper, IndexType, Allocator>{}(
-      Xargs{}, false, dist_rep(rng), dist_num(rng));
-  testWorkGroupEnqueueMultiple<ExecPolicy, OrderPolicy, StoragePolicy,
-                               DispatchTyper, IndexType, Allocator>{}(
-      Xargs{}, true, dist_rep(rng), dist_num(rng));
+  testWorkGroupEnqueueMultiple<
+      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
+      Allocator> {}(Xargs {}, false, dist_rep(rng), dist_num(rng));
+  testWorkGroupEnqueueMultiple<
+      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
+      Allocator> {}(Xargs {}, true, dist_rep(rng), dist_num(rng));
 }
 
-#endif //__TEST_WORKGROUP_ENQUEUEMULTIPLE__
+#endif  //__TEST_WORKGROUP_ENQUEUEMULTIPLE__

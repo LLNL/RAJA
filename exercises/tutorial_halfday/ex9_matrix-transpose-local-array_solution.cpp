@@ -85,7 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Construct a permuted layout for At so that the column index has stride 1
   //
-  std::array<RAJA::idx_t, 2> perm{{1, 0}};
+  std::array<RAJA::idx_t, 2> perm {{1, 0}};
   RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, perm);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
@@ -137,8 +137,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tcol = 0; tcol < TILE_SZ; ++tcol)
         {
 
-          int col = bcol * TILE_SZ + tcol; // Matrix column index
-          int row = brow * TILE_SZ + trow; // Matrix row index
+          int col = bcol * TILE_SZ + tcol;  // Matrix column index
+          int row = brow * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -159,8 +159,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int trow = 0; trow < TILE_SZ; ++trow)
         {
 
-          int col = bcol * TILE_SZ + tcol; // Matrix column index
-          int row = brow * TILE_SZ + trow; // Matrix row index
+          int col = bcol * TILE_SZ + tcol;  // Matrix column index
+          int row = brow * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -219,15 +219,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
               RAJA::statement::ForICount<
                   1, RAJA::statement::Param<1>, RAJA::seq_exec,
-                  RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
-                                             RAJA::seq_exec,
-                                             RAJA::statement::Lambda<0>>>,
+                  RAJA::statement::ForICount<
+                      0, RAJA::statement::Param<0>, RAJA::seq_exec,
+                      RAJA::statement::Lambda<0>>>,
 
               RAJA::statement::ForICount<
                   0, RAJA::statement::Param<0>, RAJA::seq_exec,
-                  RAJA::statement::ForICount<1, RAJA::statement::Param<1>,
-                                             RAJA::seq_exec,
-                                             RAJA::statement::Lambda<1>>>
+                  RAJA::statement::ForICount<
+                      1, RAJA::statement::Param<1>, RAJA::seq_exec,
+                      RAJA::statement::Lambda<1>>>
 
               >>>>;
 
@@ -262,15 +262,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
               RAJA::statement::ForICount<
                   1, RAJA::statement::Param<1>, RAJA::seq_exec,
-                  RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
-                                             RAJA::seq_exec,
-                                             RAJA::statement::Lambda<0>>>,
+                  RAJA::statement::ForICount<
+                      0, RAJA::statement::Param<0>, RAJA::seq_exec,
+                      RAJA::statement::Lambda<0>>>,
 
               RAJA::statement::ForICount<
                   0, RAJA::statement::Param<0>, RAJA::seq_exec,
-                  RAJA::statement::ForICount<1, RAJA::statement::Param<1>,
-                                             RAJA::seq_exec,
-                                             RAJA::statement::Lambda<1>>>>>>>;
+                  RAJA::statement::ForICount<
+                      1, RAJA::statement::Param<1>, RAJA::seq_exec,
+                      RAJA::statement::Lambda<1>>>>>>>;
 
   RAJA::kernel_param<OPENMP_EXEC_POL>(
       RAJA::make_tuple(col_Range, row_Range),
@@ -306,17 +306,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
                   RAJA::statement::ForICount<
                       1, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<0, RAJA::statement::Param<0>,
-                                                 RAJA::cuda_thread_x_direct,
-                                                 RAJA::statement::Lambda<0>>>,
+                      RAJA::statement::ForICount<
+                          0, RAJA::statement::Param<0>,
+                          RAJA::cuda_thread_x_direct,
+                          RAJA::statement::Lambda<0>>>,
 
                   RAJA::statement::CudaSyncThreads,
 
                   RAJA::statement::ForICount<
                       0, RAJA::statement::Param<0>, RAJA::cuda_thread_y_direct,
-                      RAJA::statement::ForICount<1, RAJA::statement::Param<1>,
-                                                 RAJA::cuda_thread_x_direct,
-                                                 RAJA::statement::Lambda<1>>>,
+                      RAJA::statement::ForICount<
+                          1, RAJA::statement::Param<1>,
+                          RAJA::cuda_thread_x_direct,
+                          RAJA::statement::Lambda<1>>>,
 
                   RAJA::statement::CudaSyncThreads>>>>>;
 

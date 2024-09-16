@@ -47,11 +47,12 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename TPol,
+    typename... EnclosedStmts,
+    typename Types>
 struct SyclStatementExecutor<
     Data,
     statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
@@ -120,18 +121,21 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          int         BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct SyclStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             RAJA::tile_fixed<chunk_size>,
-                                             sycl_group_012_direct<BlockDim>,
-                                             EnclosedStmts...>,
-                             Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    int         BlockDim,
+    typename... EnclosedStmts,
+    typename Types>
+struct SyclStatementExecutor<
+    Data,
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        sycl_group_012_direct<BlockDim>,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -153,7 +157,7 @@ struct SyclStatementExecutor<Data,
     // diff_t i = get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
     diff_t i =
         item.get_group(BlockDim) *
-        chunk_size; // get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
+        chunk_size;  // get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
 
     // check have chunk
     if (i < len)
@@ -215,18 +219,21 @@ struct SyclStatementExecutor<Data,
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          int         BlockDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct SyclStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             RAJA::tile_fixed<chunk_size>,
-                                             sycl_group_012_loop<BlockDim>,
-                                             EnclosedStmts...>,
-                             Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    int         BlockDim,
+    typename... EnclosedStmts,
+    typename Types>
+struct SyclStatementExecutor<
+    Data,
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        sycl_group_012_loop<BlockDim>,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -247,8 +254,8 @@ struct SyclStatementExecutor<Data,
 
     // compute trip count
     diff_t len      = segment.end() - segment.begin();
-    diff_t i_init   = item.get_group(BlockDim) * chunk_size;       // TODO
-    diff_t i_stride = item.get_group_range(BlockDim) * chunk_size; // TODO
+    diff_t i_init   = item.get_group(BlockDim) * chunk_size;        // TODO
+    diff_t i_stride = item.get_group_range(BlockDim) * chunk_size;  // TODO
 
     // Iterate through grid stride of chunks
     for (diff_t i = i_init; i < len; i += i_stride)
@@ -305,18 +312,21 @@ struct SyclStatementExecutor<Data,
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          int         ThreadDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct SyclStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             RAJA::tile_fixed<chunk_size>,
-                                             sycl_local_012_direct<ThreadDim>,
-                                             EnclosedStmts...>,
-                             Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    int         ThreadDim,
+    typename... EnclosedStmts,
+    typename Types>
+struct SyclStatementExecutor<
+    Data,
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        sycl_local_012_direct<ThreadDim>,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -394,18 +404,21 @@ struct SyclStatementExecutor<Data,
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          int         ThreadDim,
-          typename... EnclosedStmts,
-          typename Types>
-struct SyclStatementExecutor<Data,
-                             statement::Tile<ArgumentId,
-                                             RAJA::tile_fixed<chunk_size>,
-                                             sycl_local_012_loop<ThreadDim>,
-                                             EnclosedStmts...>,
-                             Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    int         ThreadDim,
+    typename... EnclosedStmts,
+    typename Types>
+struct SyclStatementExecutor<
+    Data,
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        sycl_local_012_loop<ThreadDim>,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -486,8 +499,8 @@ struct SyclStatementExecutor<Data,
 };
 
 
-} // end namespace internal
-} // end namespace RAJA
+}  // end namespace internal
+}  // end namespace RAJA
 
-#endif // RAJA_ENABLE_SYCL
-#endif /* RAJA_policy_sycl_kernel_Tile_HPP */
+#endif  // RAJA_ENABLE_SYCL
+#endif  /* RAJA_policy_sycl_kernel_Tile_HPP */

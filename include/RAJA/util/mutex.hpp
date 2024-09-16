@@ -58,8 +58,8 @@ private:
   native_handle_type m_lock;
 };
 
-} // namespace omp
-#endif // closing endif for if defined(RAJA_ENABLE_OPENMP)
+}  // namespace omp
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 //! class providing functionality of std::lock_guard
 template <typename mutex_type>
@@ -79,6 +79,6 @@ private:
   mutex_type& m_mutex;
 };
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

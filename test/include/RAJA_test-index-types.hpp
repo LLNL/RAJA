@@ -30,20 +30,20 @@ RAJA_INDEX_VALUE_T(StrongULL, unsigned long long, "StrongULLType");
 //
 // Standard index types list
 //
-using IdxTypeList =
-    camp::list<RAJA::Index_type,
-               int,
+using IdxTypeList = camp::list<
+    RAJA::Index_type,
+    int,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-               unsigned int,
-               // short int types will break a bunch of tests due to assumpitons
-               // made in the test implementations.
-               //                             short,
-               //                             unsigned short,
-               long int,
-               unsigned long,
-               long long,
+    unsigned int,
+    // short int types will break a bunch of tests due to assumpitons
+    // made in the test implementations.
+    //                             short,
+    //                             unsigned short,
+    long int,
+    unsigned long,
+    long long,
 #endif
-               unsigned long long>;
+    unsigned long long>;
 
 //
 // Signed index types list
@@ -53,22 +53,22 @@ using SignedIdxTypeList = camp::list<RAJA::Index_type, int, long long>;
 //
 // Index types w/ Strong types list
 //
-using StrongIdxTypeList =
-    camp::list<RAJA::Index_type,
-               int,
-               StrongIndexType,
+using StrongIdxTypeList = camp::list<
+    RAJA::Index_type,
+    int,
+    StrongIndexType,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-               // StrongInt,
-               unsigned int,
-               // short int types will break a bunch of tests due to assumpitons
-               // made in the test implementations.
-               //                                   short,
-               //                                   unsigned short,
-               long int,
-               unsigned long,
-               long long,
+    // StrongInt,
+    unsigned int,
+    // short int types will break a bunch of tests due to assumpitons
+    // made in the test implementations.
+    //                                   short,
+    //                                   unsigned short,
+    long int,
+    unsigned long,
+    long long,
 #endif
-               // StrongULL,
-               unsigned long long>;
+    // StrongULL,
+    unsigned long long>;
 
-#endif // __RAJA_test_index_types_HPP__
+#endif  // __RAJA_test_index_types_HPP__

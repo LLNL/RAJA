@@ -116,10 +116,11 @@ public:
    * If 'Unowned' is passed as last argument, the segment will not own its
    * index data. In this case, caller must manage array lifetime properly.
    */
-  TypedListSegment(const value_type*         values,
-                   Index_type                length,
-                   camp::resources::Resource resource,
-                   IndexOwnership            owned = Owned)
+  TypedListSegment(
+      const value_type*         values,
+      Index_type                length,
+      camp::resources::Resource resource,
+      IndexOwnership            owned = Owned)
       : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     initIndexData(values, length, resource, owned);
@@ -138,8 +139,9 @@ public:
    * Constructor assumes container data lives in host memory space.
    */
   template <typename Container>
-  TypedListSegment(const Container&          container,
-                   camp::resources::Resource resource)
+  TypedListSegment(
+      const Container&          container,
+      camp::resources::Resource resource)
       : m_resource(nullptr),
         m_owned(Unowned),
         m_data(nullptr),
@@ -148,7 +150,7 @@ public:
     if (m_size > 0)
     {
 
-      camp::resources::Resource host_res{camp::resources::Host()};
+      camp::resources::Resource host_res {camp::resources::Host()};
 
       value_type* tmp = host_res.allocate<value_type>(m_size);
 
@@ -288,8 +290,8 @@ public:
    * Method assumes values in given array and segment indices both live in host
    * memory space.
    */
-  RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
-                                     Index_type        len) const
+  RAJA_HOST_DEVICE bool
+  indicesEqual(const value_type* container, Index_type len) const
   {
     if (container == m_data) return len == m_size;
     if (len != m_size || container == nullptr || m_data == nullptr)
@@ -342,10 +344,11 @@ private:
   //
   // Initialize segment data based on whether object owns the index data.
   //
-  void initIndexData(const value_type*         container,
-                     Index_type                len,
-                     camp::resources::Resource resource_,
-                     IndexOwnership            container_own)
+  void initIndexData(
+      const value_type*         container,
+      Index_type                len,
+      camp::resources::Resource resource_,
+      IndexOwnership            container_own)
   {
 
     // empty list segment
@@ -365,7 +368,7 @@ private:
 
       m_resource = new camp::resources::Resource(resource_);
 
-      camp::resources::Resource host_res{camp::resources::Host()};
+      camp::resources::Resource host_res {camp::resources::Host()};
 
       value_type* tmp = host_res.allocate<value_type>(m_size);
 
@@ -404,18 +407,18 @@ private:
 //! Alias for A TypedListSegment<Index_type>
 using ListSegment = TypedListSegment<Index_type>;
 
-} // namespace RAJA
+}  // namespace RAJA
 
 namespace std
 {
 
 //! Specialization of std::swap for TypedListSegment
 template <typename StorageT>
-RAJA_INLINE void swap(RAJA::TypedListSegment<StorageT>& a,
-                      RAJA::TypedListSegment<StorageT>& b)
+RAJA_INLINE void
+swap(RAJA::TypedListSegment<StorageT>& a, RAJA::TypedListSegment<StorageT>& b)
 {
   a.swap(b);
 }
-} // namespace std
+}  // namespace std
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

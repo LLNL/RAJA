@@ -73,16 +73,17 @@ using teams_x = RAJA::LoopPolicy<
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using threads_x = RAJA::LoopPolicy<RAJA::seq_exec
+using threads_x = RAJA::LoopPolicy<
+    RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                   ,
-                                   RAJA::cuda_thread_x_loop
+    ,
+    RAJA::cuda_thread_x_loop
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                   ,
-                                   RAJA::hip_thread_x_loop
+    ,
+    RAJA::hip_thread_x_loop
 #endif
-                                   >;
+    >;
 
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -163,28 +164,30 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
-          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri),
-                              [&](int r)
-                              {
-                                // Array shared within threads of the same team
-                                RAJA_TEAM_SHARED int s_A[1];
+          RAJA::loop<teams_x>(
+              ctx, RAJA::RangeSegment(0, N_tri),
+              [&](int r)
+              {
+                // Array shared within threads of the same team
+                RAJA_TEAM_SHARED int s_A[1];
 
-                                RAJA::loop<threads_x>(
-                                    ctx, RAJA::RangeSegment(0, 1),
-                                    [&](int c) { s_A[c] = r; }); // loop c
+                RAJA::loop<threads_x>(
+                    ctx, RAJA::RangeSegment(0, 1),
+                    [&](int c) { s_A[c] = r; });  // loop c
 
-                                ctx.teamSync();
+                ctx.teamSync();
 
-                                RAJA::loop<threads_x>(
-                                    ctx, RAJA::RangeSegment(r, N_tri),
-                                    [&](int c)
-                                    {
-                                      D(r, c) = r * N_tri + c;
-                                      printf("r=%d, c=%d : D=%d : s_A = %d \n",
-                                             r, c, D(r, c), s_A[0]);
-                                    }); // loop c
-                              });       // loop r
-        });                             // outer lambda
+                RAJA::loop<threads_x>(
+                    ctx, RAJA::RangeSegment(r, N_tri),
+                    [&](int c)
+                    {
+                      D(r, c) = r * N_tri + c;
+                      printf(
+                          "r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c),
+                          s_A[0]);
+                    });  // loop c
+              });        // loop r
+        });              // outer lambda
 
     if (select_cpu_or_gpu == RAJA::ExecPlace::HOST)
     {
@@ -198,7 +201,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
 #endif
 
-  } // Execution places loop
+  }  // Execution places loop
 
 
-} // Main
+}  // Main

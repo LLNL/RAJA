@@ -104,7 +104,7 @@
     fault_type = 0; /* ignore for the simulation */                            \
   }
 
-#endif // RAJA_REPORT_FT
+#endif  // RAJA_REPORT_FT
 
 #else
 
@@ -112,6 +112,6 @@
 
 #define RAJA_FT_END
 
-#endif // RAJA_ENABLE_FT
+#endif  // RAJA_ENABLE_FT
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

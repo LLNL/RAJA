@@ -37,7 +37,7 @@ namespace expt
 namespace ET
 {
 class TensorExpressionConcreteBase;
-} // namespace ET
+}  // namespace ET
 
 
 template <typename TENSOR, camp::idx_t DIM>
@@ -104,10 +104,11 @@ class TensorRegisterConcreteBase
 template <typename Derived>
 class TensorRegisterBase;
 
-template <typename REGISTER_POLICY,
-          typename T,
-          typename LAYOUT,
-          typename camp::idx_t... SIZES>
+template <
+    typename REGISTER_POLICY,
+    typename T,
+    typename LAYOUT,
+    typename camp::idx_t... SIZES>
 class TensorRegisterBase<
     RAJA::expt::
         TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<SIZES...>>>
@@ -120,9 +121,9 @@ public:
 
   static constexpr camp::idx_t s_num_dims = sizeof...(SIZES);
 
-  static constexpr camp::idx_t s_num_registers =
-      DivideRoundUp<RAJA::product<camp::idx_t>(SIZES...),
-                    RegisterTraits<REGISTER_POLICY, T>::s_num_elem>::value;
+  static constexpr camp::idx_t s_num_registers = DivideRoundUp<
+      RAJA::product<camp::idx_t>(SIZES...),
+      RegisterTraits<REGISTER_POLICY, T>::s_num_elem>::value;
 
   using index_type = camp::idx_t;
 
@@ -168,10 +169,11 @@ public:
   /*
    * Overload for:    assignment of ET to a TensorRegister
    */
-  template <typename RHS,
-            typename std::enable_if<
-                std::is_base_of<ET::TensorExpressionConcreteBase, RHS>::value,
-                bool>::type = true>
+  template <
+      typename RHS,
+      typename std::enable_if<
+          std::is_base_of<ET::TensorExpressionConcreteBase, RHS>::value,
+          bool>::type = true>
   RAJA_INLINE RAJA_HOST_DEVICE TensorRegisterBase(RHS const& rhs)
   {
     // evaluate a single tile of the ET, storing in this TensorRegister
@@ -180,12 +182,13 @@ public:
 
 
   template <typename... REGS>
-  explicit RAJA_HOST_DEVICE RAJA_INLINE TensorRegisterBase(register_type reg0,
-                                                           REGS const&... regs)
-      : m_registers{reg0, regs...}
+  explicit RAJA_HOST_DEVICE RAJA_INLINE
+  TensorRegisterBase(register_type reg0, REGS const&... regs)
+      : m_registers {reg0, regs...}
   {
-    static_assert(1 + sizeof...(REGS) == s_num_registers,
-                  "Incompatible number of registers");
+    static_assert(
+        1 + sizeof...(REGS) == s_num_registers,
+        "Incompatible number of registers");
   }
 
   RAJA_HOST_DEVICE
@@ -197,7 +200,7 @@ public:
   RAJA_HOST_DEVICE RAJA_INLINE static constexpr TensorRegisterStoreRef<REF_TYPE>
                    create_et_store_ref(REF_TYPE const& ref)
   {
-    return TensorRegisterStoreRef<REF_TYPE>{ref};
+    return TensorRegisterStoreRef<REF_TYPE> {ref};
   }
 
   RAJA_SUPPRESS_HD_WARN
@@ -230,15 +233,16 @@ public:
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  static constexpr StaticTensorTile<int,
-                                    TENSOR_FULL,
-                                    camp::int_seq<int, int(SIZES * 0)...>,
-                                    camp::int_seq<int, int(SIZES)...>>
+  static constexpr StaticTensorTile<
+      int,
+      TENSOR_FULL,
+      camp::int_seq<int, int(SIZES * 0)...>,
+      camp::int_seq<int, int(SIZES)...>>
   s_get_default_tile()
   {
-    return StaticTensorTile<int, TENSOR_FULL,
-                            camp::int_seq<int, int(SIZES * 0)...>,
-                            camp::int_seq<int, int(SIZES)...>>();
+    return StaticTensorTile<
+        int, TENSOR_FULL, camp::int_seq<int, int(SIZES * 0)...>,
+        camp::int_seq<int, int(SIZES)...>>();
   }
 
   /*!
@@ -435,10 +439,11 @@ public:
   RAJA_SUPPRESS_HD_WARN
   template <typename T2>
   RAJA_HOST_DEVICE RAJA_INLINE self_type const&
-  operator=(RAJA::expt::TensorRegister<RAJA::expt::scalar_register,
-                                       T2,
-                                       RAJA::expt::ScalarLayout,
-                                       camp::idx_seq<>> const& value)
+  operator=(RAJA::expt::TensorRegister<
+            RAJA::expt::scalar_register,
+            T2,
+            RAJA::expt::ScalarLayout,
+            camp::idx_seq<>> const& value)
   {
     getThis()->broadcast(value.get(0));
     return *getThis();
@@ -818,11 +823,11 @@ public:
   }
 };
 
-} // namespace expt
+}  // namespace expt
 
-} // namespace internal
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

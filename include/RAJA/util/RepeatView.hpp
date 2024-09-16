@@ -122,8 +122,8 @@ struct RepeatView
       lhs -= rhs;
       return lhs;
     }
-    friend constexpr difference_type operator-(iterator const& lhs,
-                                               iterator const& rhs)
+    friend constexpr difference_type
+    operator-(iterator const& lhs, iterator const& rhs)
     {
       return static_cast<difference_type>(lhs.m_index) -
              static_cast<difference_type>(rhs.m_index);
@@ -193,6 +193,6 @@ private:
   T      m_value;
 };
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 #endif /* RAJA_REPEATVIEW_HPP */

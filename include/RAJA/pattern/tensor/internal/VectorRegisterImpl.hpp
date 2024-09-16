@@ -38,26 +38,29 @@ namespace expt
  * This provides a Tensor specialization for vectors
  */
 template <typename REGISTER_POLICY, typename T, camp::idx_t SIZE>
-class TensorRegister<REGISTER_POLICY,
-                     T,
-                     RAJA::expt::VectorLayout,
-                     camp::idx_seq<SIZE>>
-    : public internal::expt::TensorRegisterBase<
-          RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                     T,
-                                     RAJA::expt::VectorLayout,
-                                     camp::idx_seq<SIZE>>>
+class TensorRegister<
+    REGISTER_POLICY,
+    T,
+    RAJA::expt::VectorLayout,
+    camp::idx_seq<SIZE>>
+    : public internal::expt::TensorRegisterBase<RAJA::expt::TensorRegister<
+          REGISTER_POLICY,
+          T,
+          RAJA::expt::VectorLayout,
+          camp::idx_seq<SIZE>>>
 {
 public:
-  using self_type = TensorRegister<REGISTER_POLICY,
-                                   T,
-                                   RAJA::expt::VectorLayout,
-                                   camp::idx_seq<SIZE>>;
-  using base_type = internal::expt::TensorRegisterBase<
-      RAJA::expt::TensorRegister<REGISTER_POLICY,
-                                 T,
-                                 RAJA::expt::VectorLayout,
-                                 camp::idx_seq<SIZE>>>;
+  using self_type = TensorRegister<
+      REGISTER_POLICY,
+      T,
+      RAJA::expt::VectorLayout,
+      camp::idx_seq<SIZE>>;
+  using base_type =
+      internal::expt::TensorRegisterBase<RAJA::expt::TensorRegister<
+          REGISTER_POLICY,
+          T,
+          RAJA::expt::VectorLayout,
+          camp::idx_seq<SIZE>>>;
   using element_type  = camp::decay<T>;
   using layout_type   = TensorLayout<0>;
   using register_type = Register<T, REGISTER_POLICY>;
@@ -66,10 +69,11 @@ public:
 
   using int_element_type =
       typename register_type::int_vector_type::element_type;
-  using int_vector_type = TensorRegister<REGISTER_POLICY,
-                                         int_element_type,
-                                         RAJA::expt::VectorLayout,
-                                         camp::idx_seq<SIZE>>;
+  using int_vector_type = TensorRegister<
+      REGISTER_POLICY,
+      int_element_type,
+      RAJA::expt::VectorLayout,
+      camp::idx_seq<SIZE>>;
 
 private:
   static constexpr camp::idx_t s_register_num_elem = register_type::s_num_elem;
@@ -129,12 +133,13 @@ public:
   /*
    * Overload for:    assignment of ET to a RAJA::expt::TensorRegister
    */
-  template <typename RHS,
-            typename std::enable_if<
-                std::is_base_of<
-                    RAJA::internal::expt::ET::TensorExpressionConcreteBase,
-                    RHS>::value,
-                bool>::type = true>
+  template <
+      typename RHS,
+      typename std::enable_if<
+          std::is_base_of<
+              RAJA::internal::expt::ET::TensorExpressionConcreteBase,
+              RHS>::value,
+          bool>::type = true>
   RAJA_INLINE RAJA_HOST_DEVICE TensorRegister(RHS const& rhs)
   {
     // evaluate a single tile of the ET, storing in this
@@ -144,8 +149,8 @@ public:
 
 
   template <typename... REGS>
-  explicit RAJA_HOST_DEVICE RAJA_INLINE TensorRegister(register_type reg0,
-                                                       REGS const&... regs)
+  explicit RAJA_HOST_DEVICE RAJA_INLINE
+  TensorRegister(register_type reg0, REGS const&... regs)
       : base_type(reg0, regs...)
   {}
 
@@ -225,10 +230,11 @@ public:
   }
 
 
-  template <typename POINTER_TYPE,
-            typename INDEX_TYPE,
-            RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-            camp::idx_t                          STRIDE_ONE_DIM>
+  template <
+      typename POINTER_TYPE,
+      typename INDEX_TYPE,
+      RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
+      camp::idx_t                          STRIDE_ONE_DIM>
   struct RefBridge<
       RAJA::internal::expt::
           TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 1, STRIDE_ONE_DIM>>
@@ -344,13 +350,14 @@ public:
   };
 
 
-  template <typename POINTER_TYPE,
-            typename INDEX_TYPE,
-            RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-            INDEX_TYPE                           STRIDE_VALUE,
-            INDEX_TYPE                           BEGIN_VALUE,
-            INDEX_TYPE                           SIZE_VALUE,
-            camp::idx_t                          STRIDE_ONE_DIM>
+  template <
+      typename POINTER_TYPE,
+      typename INDEX_TYPE,
+      RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
+      INDEX_TYPE                           STRIDE_VALUE,
+      INDEX_TYPE                           BEGIN_VALUE,
+      INDEX_TYPE                           SIZE_VALUE,
+      camp::idx_t                          STRIDE_ONE_DIM>
   struct RefBridge<RAJA::internal::expt::StaticTensorRef<
       POINTER_TYPE,
       INDEX_TYPE,
@@ -505,8 +512,8 @@ public:
   {
     for (camp::idx_t reg = 0; reg < s_num_full_registers; ++reg)
     {
-      m_registers[reg].load_strided(ptr + reg * s_register_num_elem * stride,
-                                    stride);
+      m_registers[reg].load_strided(
+          ptr + reg * s_register_num_elem * stride, stride);
     }
     if (s_num_partial_lanes)
     {
@@ -532,8 +539,8 @@ public:
       }
       else
       {
-        m_registers[reg].load_packed_n(ptr + reg * s_register_num_elem,
-                                       N - reg * s_register_num_elem);
+        m_registers[reg].load_packed_n(
+            ptr + reg * s_register_num_elem, N - reg * s_register_num_elem);
 
         for (camp::idx_t r = reg + 1; r < s_num_full_registers; ++r)
         {
@@ -562,14 +569,14 @@ public:
     {
       if (N >= reg * s_register_num_elem + s_register_num_elem)
       {
-        m_registers[reg].load_strided(ptr + reg * s_register_num_elem * stride,
-                                      stride);
+        m_registers[reg].load_strided(
+            ptr + reg * s_register_num_elem * stride, stride);
       }
       else
       {
-        m_registers[reg].load_strided_n(ptr +
-                                            reg * s_register_num_elem * stride,
-                                        stride, N - reg * s_register_num_elem);
+        m_registers[reg].load_strided_n(
+            ptr + reg * s_register_num_elem * stride, stride,
+            N - reg * s_register_num_elem);
         for (camp::idx_t r = reg + 1; r < s_num_full_registers; ++r)
         {
           m_registers[r].broadcast(0);
@@ -606,8 +613,8 @@ public:
     }
     if (s_num_partial_lanes)
     {
-      m_registers[s_final_register].gather_n(ptr, offsets.vec(s_final_register),
-                                             s_num_partial_lanes);
+      m_registers[s_final_register].gather_n(
+          ptr, offsets.vec(s_final_register), s_num_partial_lanes);
     }
     return *this;
   }
@@ -633,8 +640,8 @@ public:
       }
       else
       {
-        m_registers[reg].gather_n(ptr, offsets.vec(reg),
-                                  N - reg * s_register_num_elem);
+        m_registers[reg].gather_n(
+            ptr, offsets.vec(reg), N - reg * s_register_num_elem);
         for (camp::idx_t r = reg + 1; r < s_num_full_registers; ++r)
         {
           m_registers[r].broadcast(0);
@@ -644,9 +651,9 @@ public:
     }
     if (s_num_partial_lanes)
     {
-      m_registers[s_final_register].gather_n(ptr, offsets.vec(s_final_register),
-                                             N - s_final_register *
-                                                     s_register_num_elem);
+      m_registers[s_final_register].gather_n(
+          ptr, offsets.vec(s_final_register),
+          N - s_final_register * s_register_num_elem);
     }
     return *this;
   }
@@ -680,8 +687,8 @@ public:
   {
     for (camp::idx_t reg = 0; reg < s_num_full_registers; ++reg)
     {
-      m_registers[reg].store_strided(ptr + reg * s_register_num_elem * stride,
-                                     stride);
+      m_registers[reg].store_strided(
+          ptr + reg * s_register_num_elem * stride, stride);
     }
     if (s_num_partial_lanes)
     {
@@ -707,8 +714,8 @@ public:
       }
       else
       {
-        m_registers[reg].store_packed_n(ptr + reg * s_register_num_elem,
-                                        N - reg * s_register_num_elem);
+        m_registers[reg].store_packed_n(
+            ptr + reg * s_register_num_elem, N - reg * s_register_num_elem);
         return *this;
       }
     }
@@ -732,14 +739,14 @@ public:
     {
       if (N >= reg * s_register_num_elem + s_register_num_elem)
       {
-        m_registers[reg].store_strided(ptr + reg * s_register_num_elem * stride,
-                                       stride);
+        m_registers[reg].store_strided(
+            ptr + reg * s_register_num_elem * stride, stride);
       }
       else
       {
-        m_registers[reg].store_strided_n(ptr +
-                                             reg * s_register_num_elem * stride,
-                                         stride, N - reg * s_register_num_elem);
+        m_registers[reg].store_strided_n(
+            ptr + reg * s_register_num_elem * stride, stride,
+            N - reg * s_register_num_elem);
         return *this;
       }
     }
@@ -764,8 +771,8 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type const& scatter(element_type*          ptr,
-                           int_vector_type const& offsets) const
+  self_type const&
+  scatter(element_type* ptr, int_vector_type const& offsets) const
   {
     for (camp::idx_t reg = 0; reg < s_num_full_registers; ++reg)
     {
@@ -790,9 +797,10 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type const& scatter_n(element_type*          ptr,
-                             int_vector_type const& offsets,
-                             camp::idx_t            N) const
+  self_type const& scatter_n(
+      element_type*          ptr,
+      int_vector_type const& offsets,
+      camp::idx_t            N) const
   {
     for (camp::idx_t reg = 0; reg < s_num_full_registers; ++reg)
     {
@@ -802,8 +810,8 @@ public:
       }
       else
       {
-        m_registers[reg].scatter_n(ptr, offsets.vec(reg),
-                                   N - reg * s_register_num_elem);
+        m_registers[reg].scatter_n(
+            ptr, offsets.vec(reg), N - reg * s_register_num_elem);
 
         return *this;
       }
@@ -1091,8 +1099,8 @@ public:
 };
 
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 // Bring in the register policy file so we get the default register type

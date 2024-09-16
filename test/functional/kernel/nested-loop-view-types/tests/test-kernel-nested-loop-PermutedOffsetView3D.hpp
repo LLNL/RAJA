@@ -9,10 +9,11 @@
 #define __TEST_KERNEL_NESTEDLOOP_PERMUTEDOFFSETVIEW3D_HPP__
 
 template <typename IDX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
-                                        std::array<RAJA::idx_t, 3> perm)
+void KernelPermutedOffsetView3DTestImpl(
+    std::array<RAJA::idx_t, 3> dim,
+    std::array<RAJA::idx_t, 3> perm)
 {
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   IDX_TYPE*                 A_work_array;
   IDX_TYPE*                 A_check_array;
   IDX_TYPE*                 A_test_array;
@@ -25,8 +26,8 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   //
   // Note that we assume a finite difference stencil width of one.
   //
-  std::array<RAJA::idx_t, 3> Nint_len{{dim.at(0), dim.at(1), dim.at(2)}};
-  std::array<RAJA::idx_t, 3> Ntot_len{
+  std::array<RAJA::idx_t, 3> Nint_len {{dim.at(0), dim.at(1), dim.at(2)}};
+  std::array<RAJA::idx_t, 3> Ntot_len {
       {dim.at(0) + 2 * 1, dim.at(1) + 2 * 1, dim.at(2) + 2 * 1}};
 
   //
@@ -48,8 +49,8 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   RAJA::idx_t Ntot = Ntot_outer * Ntot_middle * Ntot_inner;
 
 
-  allocateForallTestData<IDX_TYPE>(Ntot, working_res, &B_work_array,
-                                   &B_check_array, &B_test_array);
+  allocateForallTestData<IDX_TYPE>(
+      Ntot, working_res, &B_work_array, &B_check_array, &B_test_array);
 
   memset(static_cast<void*>(B_test_array), 0, sizeof(IDX_TYPE) * Ntot);
 
@@ -69,8 +70,8 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   working_res.memcpy(B_work_array, B_test_array, sizeof(IDX_TYPE) * Ntot);
 
 
-  allocateForallTestData<IDX_TYPE>(Nint, working_res, &A_work_array,
-                                   &A_check_array, &A_test_array);
+  allocateForallTestData<IDX_TYPE>(
+      Nint, working_res, &A_work_array, &A_check_array, &A_test_array);
 
   memset(static_cast<void*>(A_test_array), 0, sizeof(IDX_TYPE) * Nint);
 
@@ -88,13 +89,13 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
             (k + 1) + (j + 1) * Ntot_inner + (i + 1) * Ntot_inner * Ntot_middle;
 
         A_test_array[A_idx] =
-            B_test_array[B_idx] +                              // C
-            B_test_array[B_idx - 1] +                          // W
-            B_test_array[B_idx + 1] +                          // E
-            B_test_array[B_idx - Ntot_inner] +                 // S
-            B_test_array[B_idx + Ntot_inner] +                 // N
-            B_test_array[B_idx - (Ntot_inner * Ntot_middle)] + // B
-            B_test_array[B_idx + (Ntot_inner * Ntot_middle)];  // T
+            B_test_array[B_idx] +                               // C
+            B_test_array[B_idx - 1] +                           // W
+            B_test_array[B_idx + 1] +                           // E
+            B_test_array[B_idx - Ntot_inner] +                  // S
+            B_test_array[B_idx + Ntot_inner] +                  // N
+            B_test_array[B_idx - (Ntot_inner * Ntot_middle)] +  // B
+            B_test_array[B_idx + (Ntot_inner * Ntot_middle)];   // T
       }
     }
   }
@@ -130,11 +131,11 @@ void KernelPermutedOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
     ASSERT_EQ(A_test_array[ii], A_check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(working_res, A_work_array, A_check_array,
-                                     A_test_array);
+  deallocateForallTestData<IDX_TYPE>(
+      working_res, A_work_array, A_check_array, A_test_array);
 
-  deallocateForallTestData<IDX_TYPE>(working_res, B_work_array, B_check_array,
-                                     B_test_array);
+  deallocateForallTestData<IDX_TYPE>(
+      working_res, B_work_array, B_check_array, B_test_array);
 }
 
 
@@ -144,8 +145,9 @@ class KernelNestedLoopPermutedOffsetView3DTest : public ::testing::Test
 {};
 
 
-TYPED_TEST_P(KernelNestedLoopPermutedOffsetView3DTest,
-             PermutedOffsetView3DKernelTest)
+TYPED_TEST_P(
+    KernelNestedLoopPermutedOffsetView3DTest,
+    PermutedOffsetView3DKernelTest)
 {
   using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -161,21 +163,22 @@ TYPED_TEST_P(KernelNestedLoopPermutedOffsetView3DTest,
   RAJA::idx_t dim1 = 4;
   RAJA::idx_t dim2 = 5;
 #endif
-  std::array<RAJA::idx_t, 3> dim{{dim0, dim1, dim2}};
+  std::array<RAJA::idx_t, 3> dim {{dim0, dim1, dim2}};
 
-  std::array<RAJA::idx_t, 3> perm{{0, 1, 2}};
-  KernelPermutedOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim,
-                                                                         perm);
-  perm = std::array<RAJA::idx_t, 3>{{1, 2, 0}};
-  KernelPermutedOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim,
-                                                                         perm);
+  std::array<RAJA::idx_t, 3> perm {{0, 1, 2}};
+  KernelPermutedOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, perm);
+  perm = std::array<RAJA::idx_t, 3> {{1, 2, 0}};
+  KernelPermutedOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, perm);
 
-  perm = std::array<RAJA::idx_t, 3>{{2, 0, 1}};
-  KernelPermutedOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim,
-                                                                         perm);
+  perm = std::array<RAJA::idx_t, 3> {{2, 0, 1}};
+  KernelPermutedOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, perm);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopPermutedOffsetView3DTest,
-                            PermutedOffsetView3DKernelTest);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelNestedLoopPermutedOffsetView3DTest,
+    PermutedOffsetView3DKernelTest);
 
-#endif // __TEST_KERNEL_NESTEDLOOP_PERMUTEDOFFSETVIEW3D_HPP__
+#endif  // __TEST_KERNEL_NESTEDLOOP_PERMUTEDOFFSETVIEW3D_HPP__

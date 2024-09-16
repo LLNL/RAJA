@@ -66,14 +66,15 @@ cudaAssert(cudaError_t code, const char* file, int line, bool abort = true)
     }
     else
     {
-      fprintf(stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file,
-              line);
+      fprintf(
+          stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file,
+          line);
     }
   }
 }
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for if defined(RAJA_ENABLE_CUDA)
+#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

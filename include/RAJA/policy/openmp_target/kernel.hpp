@@ -11,4 +11,4 @@
 #include "RAJA/policy/openmp_target/kernel/Collapse.hpp"
 #include "RAJA/policy/openmp_target/kernel/For.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

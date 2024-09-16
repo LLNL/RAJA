@@ -142,8 +142,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
-                            // host
+      RAJA::LaunchParams(),  // LaunchParams may be empty when running on the
+                             // host
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/)
       {
         /*
@@ -208,8 +208,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
-                            // host
+      RAJA::LaunchParams(),  // LaunchParams may be empty when running on the
+                             // host
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/)
       {
         // TODO: Use the omp_policy_2 to distribute loop iterations
@@ -264,8 +264,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_3 = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async_3>>;
 
   RAJA::launch<launch_policy_3>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
-                         RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+          RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<cuda_teams_z_3>(
@@ -306,8 +307,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_4 = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async_4>>;
 
   RAJA::launch<launch_policy_4>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
-                         RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+          RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<cuda_teams_z_4>(
@@ -348,12 +350,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _cuda_tensorinit_tiled_direct_start
   dim3 nthreads_per_block(i_block_sz, j_block_sz, k_block_sz);
-  static_assert(i_block_sz * j_block_sz * k_block_sz == block_size,
-                "Invalid block_size");
+  static_assert(
+      i_block_sz * j_block_sz * k_block_sz == block_size, "Invalid block_size");
 
-  dim3 nblocks(static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, i_block_sz)),
-               static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, j_block_sz)),
-               static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, k_block_sz)));
+  dim3 nblocks(
+      static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, i_block_sz)),
+      static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, j_block_sz)),
+      static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, k_block_sz)));
 
   nested_init<i_block_sz, j_block_sz, k_block_sz>
       <<<nblocks, nthreads_per_block>>>(a, c, N);
@@ -363,7 +366,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   checkResult(a, a_ref, N_tot);
 
-#endif // if defined(RAJA_ENABLE_CUDA)
+#endif  // if defined(RAJA_ENABLE_CUDA)
 
 
 #if defined(RAJA_ENABLE_HIP)
@@ -405,8 +408,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_5 = RAJA::LaunchPolicy<RAJA::hip_launch_t<async_5>>;
 
   RAJA::launch<launch_policy_5>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
-                         RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+          RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<hip_teams_z_5>(
@@ -448,8 +452,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_6 = RAJA::LaunchPolicy<RAJA::hip_launch_t<async_6>>;
 
   RAJA::launch<launch_policy_6>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
-                         RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_i, n_blocks_j, n_blocks_k),
+          RAJA::Threads(i_block_sz, j_block_sz, k_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<hip_teams_z_6>(
@@ -468,11 +473,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                               ctx, j_tile,
                               [&](int j)
                               {
-                                RAJA::loop<hip_threads_x_6>(ctx, i_tile,
-                                                            [&](int i) {
-                                                              d_aView(i, j, k) =
-                                                                  c * i * j * k;
-                                                            });
+                                RAJA::loop<hip_threads_x_6>(
+                                    ctx, i_tile,
+                                    [&](int i)
+                                    { d_aView(i, j, k) = c * i * j * k; });
                               });
                         });
                   });
@@ -485,7 +489,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   memoryManager::deallocate_gpu(d_a);
 
-#endif // if defined(RAJA_ENABLE_HIP)
+#endif  // if defined(RAJA_ENABLE_HIP)
 
   //----------------------------------------------------------------------------//
 

@@ -58,8 +58,8 @@ struct PolicySortPairs : PolicySynchronize<policy>
   PolicySortPairs() : m_name("RAJA::sort<unknown>[pairs]") {}
 
   PolicySortPairs(std::string const& policy_name)
-      : m_name(std::string("RAJA::sort<") + policy_name +
-               std::string(">[pairs]"))
+      : m_name(
+            std::string("RAJA::sort<") + policy_name + std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -77,26 +77,26 @@ using SequentialSortSorters =
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenMPSortSorters =
-    camp::list<PolicySort<RAJA::omp_parallel_for_exec>,
-               PolicySortPairs<RAJA::omp_parallel_for_exec>>;
+using OpenMPSortSorters = camp::list<
+    PolicySort<RAJA::omp_parallel_for_exec>,
+    PolicySortPairs<RAJA::omp_parallel_for_exec>>;
 
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
 
-using CudaSortSorters =
-    camp::list<PolicySort<RAJA::cuda_exec<128>>,
-               PolicySortPairs<RAJA::cuda_exec<128>>,
-               PolicySort<RAJA::cuda_exec_explicit<128, 2>>>;
+using CudaSortSorters = camp::list<
+    PolicySort<RAJA::cuda_exec<128>>,
+    PolicySortPairs<RAJA::cuda_exec<128>>,
+    PolicySort<RAJA::cuda_exec_explicit<128, 2>>>;
 
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
 
-using HipSortSorters = camp::list<PolicySort<RAJA::hip_exec<128>>,
-                                  PolicySortPairs<RAJA::hip_exec<128>>>;
+using HipSortSorters = camp::
+    list<PolicySort<RAJA::hip_exec<128>>, PolicySortPairs<RAJA::hip_exec<128>>>;
 
 #endif
 
-#endif //__TEST_UNIT_ALGORITHM_SORT_HPP__
+#endif  //__TEST_UNIT_ALGORITHM_SORT_HPP__

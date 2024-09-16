@@ -60,9 +60,10 @@ TYPED_TEST_P(AtomicRefBasicAccessorUnitTest, BasicAccessors)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicAccessorUnitTest, BasicAccessors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(BasicAccessUnitTest,
-                               AtomicRefBasicAccessorUnitTest,
-                               basic_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    BasicAccessUnitTest,
+    AtomicRefBasicAccessorUnitTest,
+    basic_types);
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -133,7 +134,8 @@ GPU_TYPED_TEST_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(CUDAAccessUnitTest,
-                               AtomicRefCUDAAccessorUnitTest,
-                               CUDA_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    CUDAAccessUnitTest,
+    AtomicRefCUDAAccessorUnitTest,
+    CUDA_types);
 #endif

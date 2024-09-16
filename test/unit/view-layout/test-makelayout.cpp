@@ -140,8 +140,9 @@ TEST(LayoutUnitTest, 3D_KJI_ProjJ)
 
 TEST(LayoutUnitTest, 2D_StrideOne)
 {
-  using my_layout    = RAJA::Layout<2>;
-  using my_layout_s1 = RAJA::Layout<2, ptrdiff_t, 0>; // first index is stride-1
+  using my_layout = RAJA::Layout<2>;
+  using my_layout_s1 =
+      RAJA::Layout<2, ptrdiff_t, 0>;  // first index is stride-1
 
   /*
    * Construct a 2D layout:
@@ -240,8 +241,8 @@ TEST(StaticLayoutUnitTest, 4D_PermutedStaticLayout)
       {
         for (int l = 0; l < 5; ++l)
         {
-          ASSERT_EQ(dynamic_layout(i, j, k, l),
-                    static_layout::s_oper(i, j, k, l));
+          ASSERT_EQ(
+              dynamic_layout(i, j, k, l), static_layout::s_oper(i, j, k, l));
         }
       }
     }

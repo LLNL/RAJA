@@ -24,4 +24,4 @@
 #include <RAJA/policy/tensor/arch/avx/avx_double.hpp>
 
 
-#endif // __AVX__
+#endif  // __AVX__

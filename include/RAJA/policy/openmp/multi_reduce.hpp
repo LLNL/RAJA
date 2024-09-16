@@ -80,9 +80,10 @@ struct MultiReduceDataOMP<
 
   MultiReduceDataOMP() = delete;
 
-  template <typename Container,
-            std::enable_if_t<
-                !std::is_same<Container, MultiReduceDataOMP>::value>* = nullptr>
+  template <
+      typename Container,
+      std::enable_if_t<!std::is_same<Container, MultiReduceDataOMP>::value>* =
+          nullptr>
   MultiReduceDataOMP(Container const& container, T identity)
       : m_parent(nullptr),
         m_num_bins(container.size()),
@@ -98,9 +99,9 @@ struct MultiReduceDataOMP<
         m_identity(other.m_identity),
         m_data(nullptr)
   {
-    m_data =
-        create_data(RepeatView<value_type>(other.m_identity, other.m_num_bins),
-                    other.m_num_bins);
+    m_data = create_data(
+        RepeatView<value_type>(other.m_identity, other.m_num_bins),
+        other.m_num_bins);
   }
 
   MultiReduceDataOMP(MultiReduceDataOMP&&)                 = delete;
@@ -117,7 +118,7 @@ struct MultiReduceDataOMP<
         {
           for (size_t bin = 0; bin < m_num_bins; ++bin)
           {
-            MultiReduceOp{}(m_parent->m_data[bin], m_data[bin]);
+            MultiReduceOp {}(m_parent->m_data[bin], m_data[bin]);
           }
         }
       }
@@ -151,7 +152,7 @@ struct MultiReduceDataOMP<
 
   T identity() const { return m_identity; }
 
-  void combine(size_t bin, T const& val) { MultiReduceOp{}(m_data[bin], val); }
+  void combine(size_t bin, T const& val) { MultiReduceOp {}(m_data[bin], val); }
 
   T get(size_t bin) const { return m_data[bin]; }
 
@@ -215,9 +216,10 @@ struct MultiReduceDataOMP<
 
   MultiReduceDataOMP() = delete;
 
-  template <typename Container,
-            std::enable_if_t<
-                !std::is_same<Container, MultiReduceDataOMP>::value>* = nullptr>
+  template <
+      typename Container,
+      std::enable_if_t<!std::is_same<Container, MultiReduceDataOMP>::value>* =
+          nullptr>
   MultiReduceDataOMP(Container const& container, T identity)
       : m_parent(nullptr),
         m_max_threads(omp_get_max_threads()),
@@ -227,8 +229,9 @@ struct MultiReduceDataOMP<
         m_identity(identity),
         m_data(nullptr)
   {
-    m_data = create_data(container, identity, m_num_bins, m_max_threads,
-                         m_padded_bins, m_padded_threads);
+    m_data = create_data(
+        container, identity, m_num_bins, m_max_threads, m_padded_bins,
+        m_padded_threads);
   }
 
   MultiReduceDataOMP(MultiReduceDataOMP const& other)
@@ -250,8 +253,8 @@ struct MultiReduceDataOMP<
     {
       if (!m_parent)
       {
-        destroy_data(m_data, m_num_bins, m_max_threads, m_padded_bins,
-                     m_padded_threads);
+        destroy_data(
+            m_data, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads);
       }
     }
   }
@@ -263,12 +266,13 @@ struct MultiReduceDataOMP<
     size_t new_num_bins = container.size();
     if (new_num_bins != m_num_bins)
     {
-      destroy_data(m_data, m_num_bins, m_max_threads, m_padded_bins,
-                   m_padded_threads);
+      destroy_data(
+          m_data, m_num_bins, m_max_threads, m_padded_bins, m_padded_threads);
       m_num_bins    = new_num_bins;
       m_padded_bins = pad_bins(m_num_bins);
-      m_data = create_data(container, identity, m_num_bins, m_max_threads,
-                           m_padded_bins, m_padded_threads);
+      m_data        = create_data(
+                 container, identity, m_num_bins, m_max_threads, m_padded_bins,
+                 m_padded_threads);
     }
     else
     {
@@ -279,8 +283,8 @@ struct MultiReduceDataOMP<
           size_t bin        = 0;
           for (auto const& value : container)
           {
-            m_data[index_data(bin, thread_idx, m_padded_bins,
-                              m_padded_threads)] = value;
+            m_data[index_data(
+                bin, thread_idx, m_padded_bins, m_padded_threads)] = value;
             ++bin;
           }
         }
@@ -288,8 +292,8 @@ struct MultiReduceDataOMP<
         {
           for (size_t bin = 0; bin < m_num_bins; ++bin)
           {
-            m_data[index_data(bin, thread_idx, m_padded_bins,
-                              m_padded_threads)] = identity;
+            m_data[index_data(
+                bin, thread_idx, m_padded_bins, m_padded_threads)] = identity;
           }
         }
       }
@@ -303,7 +307,7 @@ struct MultiReduceDataOMP<
   void combine(size_t bin, T const& val)
   {
     size_t thread_idx = omp_get_thread_num();
-    MultiReduceOp{}(
+    MultiReduceOp {}(
         m_data[index_data(bin, thread_idx, m_padded_bins, m_padded_threads)],
         val);
   }
@@ -333,8 +337,8 @@ private:
   {
     size_t num_cache_lines =
         RAJA_DIVIDE_CEILING_INT(num_bins * sizeof(T), RAJA::DATA_ALIGN);
-    return RAJA_DIVIDE_CEILING_INT(num_cache_lines * RAJA::DATA_ALIGN,
-                                   sizeof(T));
+    return RAJA_DIVIDE_CEILING_INT(
+        num_cache_lines * RAJA::DATA_ALIGN, sizeof(T));
   }
 
   static constexpr size_t pad_threads(size_t max_threads)
@@ -342,21 +346,23 @@ private:
     return max_threads;
   }
 
-  static constexpr size_t index_data(size_t bin,
-                                     size_t thread_idx,
-                                     size_t padded_bins,
-                                     size_t RAJA_UNUSED_ARG(padded_threads))
+  static constexpr size_t index_data(
+      size_t bin,
+      size_t thread_idx,
+      size_t padded_bins,
+      size_t RAJA_UNUSED_ARG(padded_threads))
   {
     return bin + thread_idx * padded_bins;
   }
 
   template <typename Container>
-  static T* create_data(Container const& container,
-                        T                identity,
-                        size_t           num_bins,
-                        size_t           max_threads,
-                        size_t           padded_bins,
-                        size_t           padded_threads)
+  static T* create_data(
+      Container const& container,
+      T                identity,
+      size_t           num_bins,
+      size_t           max_threads,
+      size_t           padded_bins,
+      size_t           padded_threads)
   {
     if (num_bins == size_t(0))
     {
@@ -388,11 +394,12 @@ private:
     return data;
   }
 
-  static void destroy_data(T*&    data,
-                           size_t num_bins,
-                           size_t max_threads,
-                           size_t padded_bins,
-                           size_t padded_threads)
+  static void destroy_data(
+      T*&    data,
+      size_t num_bins,
+      size_t max_threads,
+      size_t padded_bins,
+      size_t padded_threads)
   {
     if (num_bins == size_t(0))
     {
@@ -411,13 +418,14 @@ private:
   }
 };
 
-} // namespace detail
+}  // namespace detail
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::omp::omp_multi_reduce_policy,
-                                detail::MultiReduceDataOMP)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(
+    policy::omp::omp_multi_reduce_policy,
+    detail::MultiReduceDataOMP)
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_OPENMP guard
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

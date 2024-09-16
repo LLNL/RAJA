@@ -21,8 +21,8 @@
 #ifdef RAJA_COMPILER_MSVC
 // disable some warnings for MSVC that we can't control, because they're emitted
 // by googletest headers
-#pragma warning(disable : 4244) // Force msvc to not emit conversion warning
-#pragma warning(disable : 4389) // Force msvc to not emit conversion warning
+#pragma warning(disable : 4244)  // Force msvc to not emit conversion warning
+#pragma warning(disable : 4389)  // Force msvc to not emit conversion warning
 #endif
 
 #include "gtest/gtest.h"
@@ -34,8 +34,9 @@
 
 #define GPU_TEST_F(test_fixture, test_name)                                    \
   static void gpu_test_f_##test_fixture##_##test_name();                       \
-  GTEST_TEST_(test_fixture, test_name, test_fixture,                           \
-              ::testing::internal::GetTypeId<test_fixture>())                  \
+  GTEST_TEST_(                                                                 \
+      test_fixture, test_name, test_fixture,                                   \
+      ::testing::internal::GetTypeId<test_fixture>())                          \
   {                                                                            \
     gpu_test_f_##test_fixture##_##test_name();                                 \
   }                                                                            \
@@ -69,11 +70,11 @@
       return 0;                                                                \
     }                                                                          \
     static int gtest_registering_dummy_ GTEST_ATTRIBUTE_UNUSED_;               \
-    GTEST_DISALLOW_COPY_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_case_name,     \
-                                                           test_name));        \
+    GTEST_DISALLOW_COPY_AND_ASSIGN_(                                           \
+        GTEST_TEST_CLASS_NAME_(test_case_name, test_name));                    \
   };                                                                           \
-  int GTEST_TEST_CLASS_NAME_(test_case_name,                                   \
-                             test_name)::gtest_registering_dummy_ =            \
+  int GTEST_TEST_CLASS_NAME_(                                                  \
+      test_case_name, test_name)::gtest_registering_dummy_ =                   \
       GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::AddToRegistry();      \
   template <typename Invocable>                                                \
   static void gtest_gpu_##test_case_name##_##test_name(Invocable&& GetParam)
@@ -102,8 +103,8 @@
 
 
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(default : 4244) // reenable warning
-#pragma warning(default : 4389) // reenable warning
+#pragma warning(default : 4244)  // reenable warning
+#pragma warning(default : 4389)  // reenable warning
 #endif
 
 
@@ -207,8 +208,8 @@ inline constexpr int getScalarType(T const&)
 }
 
 
-} // namespace gtest
-} // namespace RAJA
+}  // namespace gtest
+}  // namespace RAJA
 
 // This always returns a 0, but forces compiler not to compile-out
 // constant values
@@ -219,4 +220,4 @@ inline constexpr int getScalarType(T const&)
 #define NO_OPT_RAND (1.0 + (double)rand() / RAND_MAX)
 
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

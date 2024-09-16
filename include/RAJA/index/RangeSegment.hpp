@@ -92,8 +92,9 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT,
-          typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
+template <
+    typename StorageT,
+    typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeSegment
 {
 
@@ -101,13 +102,15 @@ struct TypedRangeSegment
   // Static asserts to provide some useful error messages during compilation
   // for incorrect usage.
   //
-  static_assert(std::is_signed<DiffT>::value,
-                "TypedRangeSegment DiffT "
-                "requires signed type.");
-  static_assert(!std::is_floating_point<StorageT>::value,
-                "TypedRangeSegment "
-                "Type must be non "
-                "floating point.");
+  static_assert(
+      std::is_signed<DiffT>::value,
+      "TypedRangeSegment DiffT "
+      "requires signed type.");
+  static_assert(
+      !std::is_floating_point<StorageT>::value,
+      "TypedRangeSegment "
+      "Type must be non "
+      "floating point.");
 
   //@{
   //!   @name Types used in implementation based on template parameters.
@@ -133,8 +136,9 @@ struct TypedRangeSegment
    * \param end end value (exclusive) for the range
    */
   using StripStorageT = strip_index_type_t<StorageT>;
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin,
-                                               StripStorageT end)
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(
+      StripStorageT begin,
+      StripStorageT end)
       : m_begin(iterator(begin)), m_end(begin > end ? m_begin : iterator(end))
   {}
 
@@ -223,13 +227,13 @@ struct TypedRangeSegment
    *
    *   \endverbatim
    */
-  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment slice(StorageT begin,
-                                                       DiffT    length) const
+  RAJA_HOST_DEVICE RAJA_INLINE TypedRangeSegment
+  slice(StorageT begin, DiffT length) const
   {
     StorageT start = m_begin[0] + begin;
     StorageT end   = start + length > m_end[0] ? m_end[0] : start + length;
 
-    return TypedRangeSegment{stripIndexType(start), stripIndexType(end)};
+    return TypedRangeSegment {stripIndexType(start), stripIndexType(end)};
   }
 
   /*!
@@ -327,8 +331,9 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT,
-          typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
+template <
+    typename StorageT,
+    typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeStrideSegment
 {
 
@@ -336,14 +341,16 @@ struct TypedRangeStrideSegment
   // Static asserts to provide some useful error messages during compilation
   // for incorrect usage.
   //
-  static_assert(std::is_signed<DiffT>::value,
-                "TypedRangeStrideSegment DiffT "
-                "requires signed type.");
-  static_assert(!std::is_floating_point<StorageT>::value,
-                "TypedRangeStrideSegm"
-                "ent Type must be "
-                "non floating "
-                "point.");
+  static_assert(
+      std::is_signed<DiffT>::value,
+      "TypedRangeStrideSegment DiffT "
+      "requires signed type.");
+  static_assert(
+      !std::is_floating_point<StorageT>::value,
+      "TypedRangeStrideSegm"
+      "ent Type must be "
+      "non floating "
+      "point.");
 
   //@{
   //!   @name Types used in implementation based on template parameters.
@@ -389,7 +396,7 @@ struct TypedRangeStrideSegment
       m_end = m_begin;
     }
     // m_size initialized as negative indicates a zero iteration space
-    m_size = m_size < DiffT{0} ? DiffT{0} : m_size;
+    m_size = m_size < DiffT {0} ? DiffT {0} : m_size;
   }
 
   //! Disable compiler generated constructor
@@ -485,8 +492,8 @@ struct TypedRangeStrideSegment
    *
    *   \endverbatim
    */
-  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
-                                                 DiffT    length) const
+  RAJA_HOST_DEVICE TypedRangeStrideSegment
+  slice(StorageT begin, DiffT length) const
   {
     StorageT stride = m_begin.get_stride();
     StorageT start  = m_begin[0] + begin * stride;
@@ -501,8 +508,8 @@ struct TypedRangeStrideSegment
       end = end < m_end[0] ? m_end[0] : end;
     }
 
-    return TypedRangeStrideSegment{stripIndexType(start), stripIndexType(end),
-                                   m_begin.get_stride()};
+    return TypedRangeStrideSegment {
+        stripIndexType(start), stripIndexType(end), m_begin.get_stride()};
   }
 
   /*!
@@ -549,7 +556,7 @@ struct common_type<T>
 template <typename... Ts>
 using common_type_t = typename common_type<Ts...>::type;
 
-} // namespace detail
+}  // namespace detail
 
 /*!
  * \brief Function to make a TypedRangeSegment for the interval [begin, end)
@@ -559,11 +566,12 @@ using common_type_t = typename common_type<Ts...>::type;
  *          @begin and @end. If there is no common type, then
  *          a compiler error will be produced.
  */
-template <typename BeginT,
-          typename EndT,
-          typename Common = detail::common_type_t<BeginT, EndT>>
-RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
-                                                      EndT&&   end)
+template <
+    typename BeginT,
+    typename EndT,
+    typename Common = detail::common_type_t<BeginT, EndT>>
+RAJA_HOST_DEVICE TypedRangeSegment<Common>
+                 make_range(BeginT&& begin, EndT&& end)
 {
   return {begin, end};
 }
@@ -577,18 +585,21 @@ RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
  *          @begin, @end, and @stride. If there is no common
  *          type, then a compiler error will be produced.
  */
-template <typename BeginT,
-          typename EndT,
-          typename StrideT,
-          typename Common = detail::common_type_t<BeginT, EndT>>
+template <
+    typename BeginT,
+    typename EndT,
+    typename StrideT,
+    typename Common = detail::common_type_t<BeginT, EndT>>
 RAJA_HOST_DEVICE TypedRangeStrideSegment<Common>
 make_strided_range(BeginT&& begin, EndT&& end, StrideT&& stride)
 {
-  static_assert(std::is_signed<StrideT>::value,
-                "make_strided_segment : stride must be signed.");
-  static_assert(std::is_same<make_signed_t<EndT>, StrideT>::value,
-                "make_stride_segment : stride and end must be of similar "
-                "types.");
+  static_assert(
+      std::is_signed<StrideT>::value,
+      "make_strided_segment : stride must be signed.");
+  static_assert(
+      std::is_same<make_signed_t<EndT>, StrideT>::value,
+      "make_stride_segment : stride and end must be of similar "
+      "types.");
   return {begin, end, stride};
 }
 
@@ -605,40 +616,42 @@ struct RangeStrideConstructible
     : DefineConcept(camp::val<RAJA::detail::common_type_t<T, U, V>>())
 {};
 
-} // namespace concepts
+}  // namespace concepts
 
 namespace type_traits
 {
 
-DefineTypeTraitFromConcept(is_range_constructible,
-                           RAJA::concepts::RangeConstructible);
+DefineTypeTraitFromConcept(
+    is_range_constructible,
+    RAJA::concepts::RangeConstructible);
 
-DefineTypeTraitFromConcept(is_range_stride_constructible,
-                           RAJA::concepts::RangeStrideConstructible);
+DefineTypeTraitFromConcept(
+    is_range_stride_constructible,
+    RAJA::concepts::RangeStrideConstructible);
 
-} // namespace type_traits
+}  // namespace type_traits
 
-} // namespace RAJA
+}  // namespace RAJA
 
 namespace std
 {
 
 //! Specialization of std::swap for TypedRangeSegment
 template <typename T>
-RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
-                                       RAJA::TypedRangeSegment<T>& b)
+RAJA_HOST_DEVICE RAJA_INLINE void
+swap(RAJA::TypedRangeSegment<T>& a, RAJA::TypedRangeSegment<T>& b)
 {
   a.swap(b);
 }
 
 //! Specialization of std::swap for TypedRangeStrideSegment
 template <typename T>
-RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
-                                       RAJA::TypedRangeStrideSegment<T>& b)
+RAJA_HOST_DEVICE RAJA_INLINE void
+swap(RAJA::TypedRangeStrideSegment<T>& a, RAJA::TypedRangeStrideSegment<T>& b)
 {
   a.swap(b);
 }
 
-} // namespace std
+}  // namespace std
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -24,4 +24,4 @@ struct Index2D
   {}
 };
 
-#endif // __RAJA_test_reduceloc_types_HPP__
+#endif  // __RAJA_test_reduceloc_types_HPP__

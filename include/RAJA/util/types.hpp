@@ -138,11 +138,11 @@ struct Direct : DirectBase
 ///   // 2 -> {6, 7}
 ///
 template <size_t max_iterations>
-struct Contiguousloop
-    : ContiguousLoopBase,
-      std::conditional_t<(max_iterations != named_usage::unspecified),
-                         SizedLoopSpecifyingBase<max_iterations>,
-                         UnsizedLoopBase>
+struct Contiguousloop : ContiguousLoopBase,
+                        std::conditional_t<
+                            (max_iterations != named_usage::unspecified),
+                            SizedLoopSpecifyingBase<max_iterations>,
+                            UnsizedLoopBase>
 {};
 
 ///
@@ -171,14 +171,14 @@ struct Contiguousloop
 ///   // 2 -> {2, 5}
 ///
 template <size_t max_iterations>
-struct StridedLoop
-    : StridedLoopBase,
-      std::conditional_t<(max_iterations != named_usage::unspecified),
+struct StridedLoop : StridedLoopBase,
+                     std::conditional_t<
+                         (max_iterations != named_usage::unspecified),
                          SizedLoopSpecifyingBase<max_iterations>,
                          UnsizedLoopBase>
 {};
 
-} // namespace iteration_mapping
+}  // namespace iteration_mapping
 
 ///
 /// Enumeration used to indicate whether ListSegment object owns data
@@ -478,10 +478,10 @@ public:
   ///
   const Real_type& operator[](Index_type i) const
   {
-#if __ICC < 1300 // use alignment intrinsic
+#if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
     return ((const Real_type* RAJA_RESTRICT)dptr)[i];
-#else // use alignment attribute
+#else  // use alignment attribute
     return ((const_TDRAReal_ptr)dptr)[i];
 #endif
   }
@@ -490,7 +490,7 @@ public:
   ///
   const Real_type& operator[](Index_type i) const
   {
-#if 1 // NOTE: alignment instrinsic not available for older GNU compilers
+#if 1  // NOTE: alignment instrinsic not available for older GNU compilers
     return ((const Real_type* RAJA_RESTRICT)RAJA_ALIGN_DATA(dptr))[i];
 #else
     return ((const Real_type* RAJA_RESTRICT)dptr)[i];
@@ -592,10 +592,10 @@ public:
   ///
   Real_type& operator[](Index_type i)
   {
-#if __ICC < 1300 // use alignment intrinsic
+#if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
     return ((Real_type * RAJA_RESTRICT) dptr)[i];
-#else // use alignment attribute
+#else  // use alignment attribute
     return ((TDRAReal_ptr)dptr)[i];
 #endif
   }
@@ -603,10 +603,10 @@ public:
   ///
   const Real_type& operator[](Index_type i) const
   {
-#if __ICC < 1300 // use alignment intrinsic
+#if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
     return ((Real_type * RAJA_RESTRICT) dptr)[i];
-#else // use alignment attribute
+#else  // use alignment attribute
     return ((TDRAReal_ptr)dptr)[i];
 #endif
   }
@@ -615,7 +615,7 @@ public:
   ///
   Real_type& operator[](Index_type i)
   {
-#if 1 // NOTE: alignment instrinsic not available for older GNU compilers
+#if 1  // NOTE: alignment instrinsic not available for older GNU compilers
     return ((Real_type * RAJA_RESTRICT) RAJA_ALIGN_DATA(dptr))[i];
 #else
     return ((Real_type * RAJA_RESTRICT) dptr)[i];
@@ -625,7 +625,7 @@ public:
   ///
   const Real_type& operator[](Index_type i) const
   {
-#if 1 // NOTE: alignment instrinsic not available for older GNU compilers
+#if 1  // NOTE: alignment instrinsic not available for older GNU compilers
     return ((Real_type * RAJA_RESTRICT) RAJA_ALIGN_DATA(dptr))[i];
 #else
     return ((Real_type * RAJA_RESTRICT) dptr)[i];
@@ -820,9 +820,9 @@ public:
 private:
   Complex_type* dptr;
 };
-#endif // defined(RAJA_USE_COMPLEX)
+#endif  // defined(RAJA_USE_COMPLEX)
 
-#endif // defined(RAJA_USE_PTR_CLASS)
+#endif  // defined(RAJA_USE_PTR_CLASS)
 
 /*
  ******************************************************************************
@@ -912,16 +912,18 @@ struct DefaultAccessor
  * \brief Abstracts T into an equal or greater size array of integers whose
  * size is between min_integer_type_size and max_interger_type_size inclusive.
  */
-template <typename T,
-          size_t min_integer_type_size = 1,
-          size_t max_integer_type_size = sizeof(unsigned long long)>
+template <
+    typename T,
+    size_t min_integer_type_size = 1,
+    size_t max_integer_type_size = sizeof(unsigned long long)>
 struct AsIntegerArray
 {
-  static_assert(min_integer_type_size <= max_integer_type_size,
-                "incompatible "
-                "min and max "
-                "integer type "
-                "size");
+  static_assert(
+      min_integer_type_size <= max_integer_type_size,
+      "incompatible "
+      "min and max "
+      "integer type "
+      "size");
   using integer_type = std::conditional_t<
       ((alignof(T) >= alignof(unsigned long long) &&
         sizeof(unsigned long long) <= max_integer_type_size) ||
@@ -942,25 +944,28 @@ struct AsIntegerArray
                     sizeof(unsigned short) <= max_integer_type_size) ||
                    sizeof(unsigned char) < min_integer_type_size),
                   unsigned short,
-                  std::conditional_t<((alignof(T) >= alignof(unsigned char) &&
-                                       sizeof(unsigned char) <=
-                                           max_integer_type_size)),
-                                     unsigned char,
-                                     void>>>>>;
-  static_assert(!std::is_same<integer_type, void>::value,
-                "could not find a "
-                "compatible integer "
-                "type");
-  static_assert(sizeof(integer_type) >= min_integer_type_size,
-                "integer_type "
-                "smaller than "
-                "min integer "
-                "type size");
-  static_assert(sizeof(integer_type) <= max_integer_type_size,
-                "integer_type "
-                "greater than "
-                "max integer "
-                "type size");
+                  std::conditional_t<
+                      ((alignof(T) >= alignof(unsigned char) &&
+                        sizeof(unsigned char) <= max_integer_type_size)),
+                      unsigned char,
+                      void>>>>>;
+  static_assert(
+      !std::is_same<integer_type, void>::value,
+      "could not find a "
+      "compatible integer "
+      "type");
+  static_assert(
+      sizeof(integer_type) >= min_integer_type_size,
+      "integer_type "
+      "smaller than "
+      "min integer "
+      "type size");
+  static_assert(
+      sizeof(integer_type) <= max_integer_type_size,
+      "integer_type "
+      "greater than "
+      "max integer "
+      "type size");
 
   static constexpr size_t num_integer_type =
       (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
@@ -1019,8 +1024,8 @@ private:
   T  m_prev_val;
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

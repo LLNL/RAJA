@@ -34,8 +34,8 @@ using ScalarRegister =
     TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>>;
 
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #endif

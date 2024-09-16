@@ -55,7 +55,7 @@ struct TupleOfNHelper<T, camp::idx_seq<SEQ...>>
   using type = camp::tuple<typename SeqToType<T, SEQ>::type...>;
 };
 
-} // namespace detail
+}  // namespace detail
 
 /*
  *  This creates a camp::list with N types, each one being T.
@@ -79,8 +79,8 @@ using tuple_of_n =
     typename detail::TupleOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
 
-} // end namespace internal
-} // end namespace RAJA
+}  // end namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_Template_HPP */

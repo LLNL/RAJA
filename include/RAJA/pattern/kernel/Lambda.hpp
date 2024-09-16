@@ -58,7 +58,7 @@ struct LambdaArg
   static constexpr camp::idx_t value = V;
 };
 
-} // namespace internal
+}  // namespace internal
 
 
 /*!
@@ -128,7 +128,7 @@ struct Lambda : internal::Statement<camp::nil>
   static const camp::idx_t loop_body_index = BodyIdx;
 };
 
-} // end namespace statement
+}  // end namespace statement
 
 namespace internal
 {
@@ -147,11 +147,12 @@ template <typename SegmentType, camp::idx_t id>
 struct LambdaSegExtractor
 {
 
-  static_assert(!std::is_same<SegmentType, void>::value,
-                "Segment not "
-                "assigned, but used "
-                "in Lambda with "
-                "Segs<> argument");
+  static_assert(
+      !std::is_same<SegmentType, void>::value,
+      "Segment not "
+      "assigned, but used "
+      "in Lambda with "
+      "Segs<> argument");
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr static SegmentType extract(Data&& data)
@@ -175,11 +176,12 @@ template <typename OffsetType, camp::idx_t id>
 struct LambdaOffsetExtractor
 {
 
-  static_assert(!std::is_same<OffsetType, void>::value,
-                "Segment not assigned, "
-                "but used in Lambda "
-                "with Offsets<> "
-                "argument");
+  static_assert(
+      !std::is_same<OffsetType, void>::value,
+      "Segment not assigned, "
+      "but used in Lambda "
+      "with Offsets<> "
+      "argument");
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr static OffsetType extract(Data&& data)
@@ -206,11 +208,12 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_offset_t, id>>
 
   using OffsetType = camp::at_v<typename Types::offset_types_t, id>;
 
-  static_assert(!std::is_same<OffsetType, void>::value,
-                "Offset not assigned, "
-                "but used in Lambda "
-                "with Offsets<> "
-                "argument");
+  static_assert(
+      !std::is_same<OffsetType, void>::value,
+      "Offset not assigned, "
+      "but used in Lambda "
+      "with Offsets<> "
+      "argument");
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr static OffsetType extract(Data&& data)
@@ -226,11 +229,12 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_seg_t, id>>
 
   using SegmentType = camp::at_v<typename Types::segment_types_t, id>;
 
-  static_assert(!std::is_same<SegmentType, void>::value,
-                "Segment not "
-                "assigned, but used "
-                "in Lambda with "
-                "Segs<> argument");
+  static_assert(
+      !std::is_same<SegmentType, void>::value,
+      "Segment not "
+      "assigned, but used "
+      "in Lambda with "
+      "Segs<> argument");
 
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr static SegmentType extract(Data&& data)
@@ -246,8 +250,8 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_param_t, id>>
   template <typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr static auto
   extract(Data&& data) -> typename std::add_lvalue_reference<
-      camp::tuple_element_t<id,
-                            typename camp::decay<Data>::param_tuple_t>>::type
+      camp::tuple_element_t<id, typename camp::decay<Data>::param_tuple_t>>::
+      type
   {
     return camp::get<id>(data.param_tuple);
   }
@@ -266,10 +270,11 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_value_t<T>, value>>
 
 
 RAJA_SUPPRESS_HD_WARN
-template <camp::idx_t LoopIndex,
-          typename Types,
-          typename Data,
-          typename... targLists>
+template <
+    camp::idx_t LoopIndex,
+    typename Types,
+    typename Data,
+    typename... targLists>
 RAJA_INLINE RAJA_HOST_DEVICE void
 invoke_lambda_with_args(Data&& data, camp::list<targLists...> const&)
 {
@@ -293,28 +298,30 @@ struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>
     // Convert SegList, ParamList into Seg, Param types, and store in a list
     using targList = typename camp::flatten<camp::list<Args...>>::type;
 
-    invoke_lambda_with_args<LambdaIndex, Types>(std::forward<Data>(data),
-                                                targList{});
+    invoke_lambda_with_args<LambdaIndex, Types>(
+        std::forward<Data>(data), targList {});
   }
 };
 
 
-template <camp::idx_t LambdaIndex,
-          typename Types,
-          typename Data,
-          camp::idx_t... SEGS,
-          camp::idx_t... PARAMS>
-RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data&& data,
-                                                camp::idx_seq<SEGS...> const&,
-                                                camp::idx_seq<PARAMS...> const&)
+template <
+    camp::idx_t LambdaIndex,
+    typename Types,
+    typename Data,
+    camp::idx_t... SEGS,
+    camp::idx_t... PARAMS>
+RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(
+    Data&& data,
+    camp::idx_seq<SEGS...> const&,
+    camp::idx_seq<PARAMS...> const&)
 {
 
   using AllSegs   = Segs<SEGS...>;
   using AllParams = Params<PARAMS...>;
 
   // invoke the expanded Lambda executor, passing in all segments and params
-  StatementExecutor<statement::Lambda<LambdaIndex, AllSegs, AllParams>,
-                    Types>::exec(std::forward<Data>(data));
+  StatementExecutor<statement::Lambda<LambdaIndex, AllSegs, AllParams>, Types>::
+      exec(std::forward<Data>(data));
 }
 
 
@@ -332,15 +339,15 @@ struct StatementExecutor<statement::Lambda<LambdaIndex>, Types>
 
     invoke_lambda<LambdaIndex, Types>(
         std::forward<Data>(data),
-        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value>{},
-        camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value>{});
+        camp::make_idx_seq_t<camp::tuple_size<offset_tuple_t>::value> {},
+        camp::make_idx_seq_t<camp::tuple_size<param_tuple_t>::value> {});
   }
 };
 
 
-} // namespace internal
+}  // namespace internal
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

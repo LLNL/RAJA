@@ -44,7 +44,8 @@ TYPED_TEST_P(KernelWarpThreadReduceWarpTest, WarpThreadReduceWarpKernel)
       LOOP_TYPE(), 4000);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelWarpThreadReduceWarpTest,
-                            WarpThreadReduceWarpKernel);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelWarpThreadReduceWarpTest,
+    WarpThreadReduceWarpKernel);
 
-#endif // __TEST_WARP_THREAD_REDUCEWARP_HPP__
+#endif  // __TEST_WARP_THREAD_REDUCEWARP_HPP__

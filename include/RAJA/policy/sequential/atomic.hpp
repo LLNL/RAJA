@@ -160,7 +160,7 @@ RAJA_HOST_DEVICE RAJA_INLINE T atomicCAS(seq_atomic, T* acc, T compare, T value)
 }
 
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
-#endif // guard
+#endif  // guard

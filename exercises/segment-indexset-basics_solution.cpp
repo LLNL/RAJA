@@ -54,7 +54,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // Resource object used to construct list segment objects with indices
   // living in host (CPU) memory.
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res {camp::resources::Host()};
 
 
   //----------------------------------------------------------------------------//
@@ -77,8 +77,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA range kernel...\n";
 
   // _raja_range1_start
-  RAJA::forall<RAJA::seq_exec>(RangeSegType(0, 20),
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      RangeSegType(0, 20), [=](IdxType i) { std::cout << i << "  "; });
   // _raja_range1_end
 
   std::cout << std::endl;
@@ -88,8 +88,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA stride-1 range kernel...\n";
 
   // _raja_striderange1_start
-  RAJA::forall<RAJA::seq_exec>(RangeStrideSegType(0, 20, 1),
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      RangeStrideSegType(0, 20, 1), [=](IdxType i) { std::cout << i << "  "; });
   // _raja_striderange1_end
 
   std::cout << std::endl;
@@ -110,8 +110,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   ListSegType idx_list1(idx, host_res);
 
-  RAJA::forall<RAJA::seq_exec>(idx_list1,
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      idx_list1, [=](IdxType i) { std::cout << i << "  "; });
   // _raja_list1_end
 
   std::cout << std::endl;
@@ -121,7 +121,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-style stride-1 list kernel...\n";
 
   // _cstyle_list1_start
-  IdxType iis = static_cast<IdxType>(idx.size()); // to avoid compiler warning
+  IdxType iis = static_cast<IdxType>(idx.size());  // to avoid compiler warning
   for (IdxType ii = 0; ii < iis; ++ii)
   {
     std::cout << idx[ii] << "  ";
@@ -150,8 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA negative stride kernel...\n";
 
   // _raja_negstriderange1_start
-  RAJA::forall<RAJA::seq_exec>(RangeStrideSegType(19, -1, -1),
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      RangeStrideSegType(19, -1, -1),
+      [=](IdxType i) { std::cout << i << "  "; });
   // _raja_negstriderange1_end
 
   std::cout << std::endl;
@@ -169,8 +170,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::reverse(idx.begin(), idx.end());
   ListSegType idx_list1_reverse(&idx[0], idx.size(), host_res);
 
-  RAJA::forall<RAJA::seq_exec>(idx_list1_reverse,
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      idx_list1_reverse, [=](IdxType i) { std::cout << i << "  "; });
   // _raja_negstridelist1_end
 
   std::cout << std::endl;
@@ -195,8 +196,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA stride-2 range kernel...\n";
 
   // _raja_range2_start
-  RAJA::forall<RAJA::seq_exec>(RangeStrideSegType(0, 20, 2),
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      RangeStrideSegType(0, 20, 2), [=](IdxType i) { std::cout << i << "  "; });
   // _raja_range2_end
 
   std::cout << std::endl;
@@ -206,8 +207,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA stride-3 range kernel...\n";
 
   // _raja_range3_start
-  RAJA::forall<RAJA::seq_exec>(RangeStrideSegType(0, 20, 3),
-                               [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<RAJA::seq_exec>(
+      RangeStrideSegType(0, 20, 3), [=](IdxType i) { std::cout << i << "  "; });
   // _raja_range3_end
 
   std::cout << std::endl;
@@ -230,8 +231,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   is2.push_back(RangeSegType(0, 10));
   is2.push_back(RangeSegType(15, 20));
 
-  RAJA::forall<SEQ_ISET_EXECPOL>(is2,
-                                 [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<SEQ_ISET_EXECPOL>(
+      is2, [=](IdxType i) { std::cout << i << "  "; });
   // _raja_indexset_2ranges_end
 
   std::cout << std::endl;
@@ -268,8 +269,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   is3.push_back(RangeSegType(24, 28));
 
-  RAJA::forall<SEQ_ISET_EXECPOL>(is3,
-                                 [=](IdxType i) { std::cout << i << "  "; });
+  RAJA::forall<SEQ_ISET_EXECPOL>(
+      is3, [=](IdxType i) { std::cout << i << "  "; });
   // _raja_indexset_3segs_end
 
   std::cout << std::endl;

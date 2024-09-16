@@ -37,4 +37,4 @@ using CudaReducerPolicyList = camp::list<RAJA::cuda_reduce>;
 using HipReducerPolicyList = camp::list<RAJA::hip_reduce>;
 #endif
 
-#endif // __TEST_REDUCER_UTILS_HPP__
+#endif  // __TEST_REDUCER_UTILS_HPP__

@@ -35,10 +35,11 @@ int main(int /*argc*/, char** /*argv[]*/)
         // array[0] = i*j;
       });
 #else
-  RAJA::forall<RAJA::omp_target_parallel_for_exec<1>>(RAJA::RangeSegment(0, 25),
-                                                      [=](int i)
-                                                      {
-                                                        //
-                                                      });
+  RAJA::forall<RAJA::omp_target_parallel_for_exec<1>>(
+      RAJA::RangeSegment(0, 25),
+      [=](int i)
+      {
+        //
+      });
 #endif
 }

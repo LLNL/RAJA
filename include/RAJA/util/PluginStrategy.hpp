@@ -39,8 +39,8 @@ public:
 
 using PluginRegistry = Registry<PluginStrategy>;
 
-} // namespace util
-} // namespace RAJA
+}  // namespace util
+}  // namespace RAJA
 
 
 #endif

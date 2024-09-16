@@ -54,14 +54,14 @@ struct TensorLayout<S2, S1> : public camp::idx_seq<S2, S1>
   RAJA_HOST_DEVICE
   static constexpr bool is_column_major()
   {
-    return S1 == 0; // Rows are stride-1
+    return S1 == 0;  // Rows are stride-1
   }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   static constexpr bool is_row_major()
   {
-    return S1 == 1; // Columns are stride-1
+    return S1 == 1;  // Columns are stride-1
   }
 };
 
@@ -77,8 +77,8 @@ using RowMajorLayout = TensorLayout<0, 1>;
 using ColMajorLayout = TensorLayout<1, 0>;
 
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #endif

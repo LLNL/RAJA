@@ -50,7 +50,7 @@
 // Define dimensionality of matrices and tile size
 //
 const int DIM = 2;
-#define TILE_DIM (16) // #define to appease msvc
+#define TILE_DIM (16)  // #define to appease msvc
 
 //
 // Function for checking results
@@ -138,8 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tx = 0; tx < TILE_DIM; ++tx)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -160,8 +160,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int ty = 0; ty < TILE_DIM; ++ty)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -188,8 +188,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when only running on
-                            // the cpu
+      RAJA::LaunchParams(),  // LaunchParams may be empty when only running on
+                             // the cpu
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<loop_pol_1>(
@@ -249,8 +249,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when only running on
-                            // the cpu
+      RAJA::LaunchParams(),  // LaunchParams may be empty when only running on
+                             // the cpu
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/)
       {
         /*
@@ -309,8 +309,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::LaunchPolicy<RAJA::cuda_launch_t<cuda_async>>;
 
   RAJA::launch<cuda_launch_policy>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
-                         RAJA::Threads(c_block_sz, r_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_c, n_blocks_r),
+          RAJA::Threads(c_block_sz, r_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext /*ctx*/)
       {
         /*
@@ -388,8 +389,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<hip_async>>;
 
   RAJA::launch<hip_launch_policy>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
-                         RAJA::Threads(c_block_sz, r_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_c, n_blocks_r),
+          RAJA::Threads(c_block_sz, r_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<hip_teams_y>(

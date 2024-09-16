@@ -42,13 +42,15 @@ namespace internal
 
 // SyclStatementExecutor for actually invoking the lambda
 
-template <typename Data,
-          camp::idx_t LambdaIndex,
-          typename... Args,
-          typename Types>
-struct SyclStatementExecutor<Data,
-                             statement::Lambda<LambdaIndex, Args...>,
-                             Types>
+template <
+    typename Data,
+    camp::idx_t LambdaIndex,
+    typename... Args,
+    typename Types>
+struct SyclStatementExecutor<
+    Data,
+    statement::Lambda<LambdaIndex, Args...>,
+    Types>
 {
 
   static inline RAJA_DEVICE void
@@ -69,9 +71,9 @@ struct SyclStatementExecutor<Data,
   }
 };
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_SYCL guard
+#endif  // closing endif for RAJA_ENABLE_SYCL guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

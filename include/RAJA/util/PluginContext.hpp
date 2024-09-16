@@ -34,10 +34,10 @@ private:
 template <typename Policy>
 PluginContext make_context()
 {
-  return PluginContext{detail::get_platform<Policy>::value};
+  return PluginContext {detail::get_platform<Policy>::value};
 }
 
-} // namespace util
-} // namespace RAJA
+}  // namespace util
+}  // namespace RAJA
 
 #endif

@@ -13,18 +13,18 @@
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void ForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first),
-                                         RAJA::stripIndexType(last));
-  INDEX_TYPE                          N = INDEX_TYPE(r1.end() - r1.begin());
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(
+      RAJA::stripIndexType(first), RAJA::stripIndexType(last));
+  INDEX_TYPE N = INDEX_TYPE(r1.end() - r1.begin());
 
   WORKING_RES               working_res;
-  camp::resources::Resource erased_working_res{working_res};
+  camp::resources::Resource erased_working_res {working_res};
   INDEX_TYPE*               working_array;
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
-  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      N, erased_working_res, &working_array, &check_array, &test_array);
 
   const INDEX_TYPE rbegin = *r1.begin();
 
@@ -35,17 +35,18 @@ void ForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
       [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
       { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
 
-  working_res.memcpy(check_array, working_array,
-                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(
+      check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(
+        test_array[RAJA::stripIndexType(i)],
+        check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
-                                       check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      erased_working_res, working_array, check_array, test_array);
 }
 
 
@@ -54,19 +55,21 @@ template <typename T>
 class ForallResourceRangeSegmentTest : public ::testing::Test
 {};
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename std::enable_if<std::is_unsigned<
-              RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename std::enable_if<std::is_unsigned<
+        RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {}
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename std::enable_if<std::is_signed<
-              RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename std::enable_if<std::is_signed<
+        RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {
   ForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES, EXEC_POLICY>(
@@ -92,7 +95,8 @@ TYPED_TEST_P(ForallResourceRangeSegmentTest, ResourceRangeSegmentForall)
   runNegativeTests<INDEX_TYPE, WORKING_RES, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallResourceRangeSegmentTest,
-                            ResourceRangeSegmentForall);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallResourceRangeSegmentTest,
+    ResourceRangeSegmentForall);
 
-#endif // __TEST_FORALL_RESOURCE_RANGESEGMENT_HPP__
+#endif  // __TEST_FORALL_RESOURCE_RANGESEGMENT_HPP__

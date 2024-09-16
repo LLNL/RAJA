@@ -25,7 +25,7 @@ template <typename EXEC_POL, typename OP, typename T>
 camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>>
     SYCL_EXTERNAL combine(Reducer<OP, T>& out, const Reducer<OP, T>& in)
 {
-  out.val = OP{}(out.val, in.val);
+  out.val = OP {}(out.val, in.val);
 }
 
 // Resolve
@@ -33,13 +33,13 @@ template <typename EXEC_POL, typename OP, typename T>
 camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>>
 resolve(Reducer<OP, T>& red)
 {
-  *red.target = OP{}(*red.target, red.val);
+  *red.target = OP {}(*red.target, red.val);
 }
 
 #endif
 
-} //  namespace detail
-} //  namespace expt
-} //  namespace RAJA
+}  //  namespace detail
+}  //  namespace expt
+}  //  namespace RAJA
 
-#endif //  NEW_REDUCE_SYCL_REDUCE_HPP
+#endif  //  NEW_REDUCE_SYCL_REDUCE_HPP

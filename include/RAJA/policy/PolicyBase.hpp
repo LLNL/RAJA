@@ -64,11 +64,12 @@ enum class Launch
 struct PolicyBase
 {};
 
-template <Policy   Policy_,
-          Pattern  Pattern_,
-          Launch   Launch_,
-          Platform Platform_,
-          typename... Traits>
+template <
+    Policy   Policy_,
+    Pattern  Pattern_,
+    Launch   Launch_,
+    Platform Platform_,
+    typename... Traits>
 struct PolicyBaseT : PolicyBase
 {
   static constexpr Policy   policy   = Policy_;
@@ -127,12 +128,13 @@ template <typename PolicyType, typename Trait>
 struct policy_has_trait_impl : camp::num<false>
 {};
 ///
-template <typename Trait,
-          Policy   Policy_,
-          Pattern  Pattern_,
-          Launch   Launch_,
-          Platform Platform_,
-          typename... Traits>
+template <
+    typename Trait,
+    Policy   Policy_,
+    Pattern  Pattern_,
+    Launch   Launch_,
+    Platform Platform_,
+    typename... Traits>
 struct policy_has_trait_impl<
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Traits...>,
     Trait>
@@ -158,18 +160,19 @@ struct ordered
 struct unordered
 {};
 
-} // namespace reduce
+}  // namespace reduce
 
 
 template <Policy Pol, Pattern Pat, typename... Args>
 using make_policy_pattern_t =
     PolicyBaseT<Pol, Pat, Launch::undefined, Platform::undefined, Args...>;
 
-template <Policy   Policy_,
-          Pattern  Pattern_,
-          Launch   Launch_,
-          Platform Platform_,
-          typename... Args>
+template <
+    Policy   Policy_,
+    Pattern  Pattern_,
+    Launch   Launch_,
+    Platform Platform_,
+    typename... Args>
 using make_policy_pattern_launch_platform_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Args...>;
 
@@ -177,10 +180,11 @@ template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
 
-template <Policy   Policy_,
-          Pattern  Pattern_,
-          Platform Platform_,
-          typename... Args>
+template <
+    Policy   Policy_,
+    Pattern  Pattern_,
+    Platform Platform_,
+    typename... Args>
 using make_policy_pattern_platform_t =
     PolicyBaseT<Policy_, Pattern_, Launch::undefined, Platform_, Args...>;
 
@@ -188,18 +192,18 @@ namespace concepts
 {
 
 template <typename Pol>
-struct ExecutionPolicy
-    : DefineConcept(::RAJA::concepts::has_type<::RAJA::Policy>(
-                        camp::decay<decltype(Pol::policy)>()),
-                    ::RAJA::concepts::has_type<::RAJA::Pattern>(
-                        camp::decay<decltype(Pol::pattern)>()),
-                    ::RAJA::concepts::has_type<::RAJA::Launch>(
-                        camp::decay<decltype(Pol::launch)>()),
-                    ::RAJA::concepts::has_type<::RAJA::Platform>(
-                        camp::decay<decltype(Pol::platform)>()))
+struct ExecutionPolicy : DefineConcept(
+                             ::RAJA::concepts::has_type<::RAJA::Policy>(
+                                 camp::decay<decltype(Pol::policy)>()),
+                             ::RAJA::concepts::has_type<::RAJA::Pattern>(
+                                 camp::decay<decltype(Pol::pattern)>()),
+                             ::RAJA::concepts::has_type<::RAJA::Launch>(
+                                 camp::decay<decltype(Pol::launch)>()),
+                             ::RAJA::concepts::has_type<::RAJA::Platform>(
+                                 camp::decay<decltype(Pol::platform)>()))
 {};
 
-} // end namespace concepts
+}  // end namespace concepts
 
 namespace type_traits
 {
@@ -232,8 +236,9 @@ struct is_device_exec_policy
     : RAJA::policy_any_of<Pol, RAJA::Policy::cuda, RAJA::Policy::hip>
 {};
 
-DefineTypeTraitFromConcept(is_execution_policy,
-                           RAJA::concepts::ExecutionPolicy);
+DefineTypeTraitFromConcept(
+    is_execution_policy,
+    RAJA::concepts::ExecutionPolicy);
 
 
 template <typename Pol>
@@ -245,8 +250,8 @@ struct is_multi_reduce_policy
     : RAJA::pattern_is<Pol, RAJA::Pattern::multi_reduce>
 {};
 
-} // end namespace type_traits
+}  // end namespace type_traits
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 #endif /* RAJA_POLICYBASE_HPP */

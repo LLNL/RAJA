@@ -34,7 +34,7 @@ namespace expt
 {
 class TensorRegisterConcreteBase;
 }
-} // namespace internal
+}  // namespace internal
 
 namespace expt
 {
@@ -53,8 +53,9 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
-                        RIGHT>::value,
+        std::is_base_of<
+            RAJA::internal::expt::TensorRegisterConcreteBase,
+            RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator+(LEFT const& lhs, RIGHT const& rhs)
 {
@@ -70,8 +71,9 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
-                        RIGHT>::value,
+        std::is_base_of<
+            RAJA::internal::expt::TensorRegisterConcreteBase,
+            RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator-(LEFT const& lhs, RIGHT const& rhs)
 {
@@ -87,8 +89,9 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
-                        RIGHT>::value,
+        std::is_base_of<
+            RAJA::internal::expt::TensorRegisterConcreteBase,
+            RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator*(LEFT const& lhs, RIGHT const& rhs)
 {
@@ -104,16 +107,17 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
-                        RIGHT>::value,
+        std::is_base_of<
+            RAJA::internal::expt::TensorRegisterConcreteBase,
+            RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator/(LEFT const& lhs, RIGHT const& rhs)
 {
   return RIGHT(lhs).divide(rhs);
 }
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #include "RAJA/pattern/tensor/internal/TensorRegisterBase.hpp"

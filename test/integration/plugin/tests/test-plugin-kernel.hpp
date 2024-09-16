@@ -31,8 +31,9 @@ void PluginKernelTestImpl()
   for (int i = 0; i < 10; i++)
   {
 
-    RAJA::kernel<KernelPolicy>(RAJA::make_tuple(RAJA::RangeSegment(i, i + 1)),
-                               PluginTestCallable{data});
+    RAJA::kernel<KernelPolicy>(
+        RAJA::make_tuple(RAJA::RangeSegment(i, i + 1)),
+        PluginTestCallable {data});
 
     CounterData loop_data;
     plugin_test_resource->memcpy(&loop_data, &data[i], sizeof(CounterData));
@@ -45,8 +46,8 @@ void PluginKernelTestImpl()
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(&plugin_data, plugin_test_data,
-                               sizeof(CounterData));
+  plugin_test_resource->memcpy(
+      &plugin_data, plugin_test_data, sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
   ASSERT_EQ(plugin_data.capture_counter_pre, 10);
   ASSERT_EQ(plugin_data.capture_counter_post, 10);
@@ -74,4 +75,4 @@ TYPED_TEST_P(PluginKernelTest, PluginKernel)
 
 REGISTER_TYPED_TEST_SUITE_P(PluginKernelTest, PluginKernel);
 
-#endif //__TEST_PLUGIN_KERNEL_HPP__
+#endif  //__TEST_PLUGIN_KERNEL_HPP__

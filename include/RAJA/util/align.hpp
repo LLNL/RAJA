@@ -32,8 +32,8 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
 {
 
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(disable : 4146) // Force msvc to ignore subtracting from signed
-                                // number warning
+#pragma warning(disable : 4146)  // Force msvc to ignore subtracting from signed
+                                 // number warning
 #endif
   void* r = nullptr;
   if (size <= space)
@@ -53,11 +53,11 @@ void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
   return r;
 
 #ifdef RAJA_COMPILER_MSVC
-#pragma warning(default : 4146) // Force msvc to ignore subtracting from signed
-                                // number warning
+#pragma warning(default : 4146)  // Force msvc to ignore subtracting from signed
+                                 // number warning
 #endif
 }
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 #endif

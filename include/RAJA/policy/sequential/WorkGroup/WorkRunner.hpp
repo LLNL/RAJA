@@ -35,48 +35,56 @@ namespace detail
  * Runs work in a storage container in order
  * and returns any per run resources
  */
-template <typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
-struct WorkRunner<RAJA::seq_work,
-                  RAJA::ordered,
-                  DISPATCH_POLICY_T,
-                  ALLOCATOR_T,
-                  INDEX_T,
-                  Args...> : WorkRunnerForallOrdered<RAJA::seq_exec,
-                                                     RAJA::seq_work,
-                                                     RAJA::ordered,
-                                                     DISPATCH_POLICY_T,
-                                                     ALLOCATOR_T,
-                                                     INDEX_T,
-                                                     Args...>
+template <
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
+struct WorkRunner<
+    RAJA::seq_work,
+    RAJA::ordered,
+    DISPATCH_POLICY_T,
+    ALLOCATOR_T,
+    INDEX_T,
+    Args...>
+    : WorkRunnerForallOrdered<
+          RAJA::seq_exec,
+          RAJA::seq_work,
+          RAJA::ordered,
+          DISPATCH_POLICY_T,
+          ALLOCATOR_T,
+          INDEX_T,
+          Args...>
 {};
 
 /*!
  * Runs work in a storage container in reverse order
  * and returns any per run resources
  */
-template <typename DISPATCH_POLICY_T,
-          typename ALLOCATOR_T,
-          typename INDEX_T,
-          typename... Args>
-struct WorkRunner<RAJA::seq_work,
-                  RAJA::reverse_ordered,
-                  DISPATCH_POLICY_T,
-                  ALLOCATOR_T,
-                  INDEX_T,
-                  Args...> : WorkRunnerForallReverse<RAJA::seq_exec,
-                                                     RAJA::seq_work,
-                                                     RAJA::reverse_ordered,
-                                                     DISPATCH_POLICY_T,
-                                                     ALLOCATOR_T,
-                                                     INDEX_T,
-                                                     Args...>
+template <
+    typename DISPATCH_POLICY_T,
+    typename ALLOCATOR_T,
+    typename INDEX_T,
+    typename... Args>
+struct WorkRunner<
+    RAJA::seq_work,
+    RAJA::reverse_ordered,
+    DISPATCH_POLICY_T,
+    ALLOCATOR_T,
+    INDEX_T,
+    Args...>
+    : WorkRunnerForallReverse<
+          RAJA::seq_exec,
+          RAJA::seq_work,
+          RAJA::reverse_ordered,
+          DISPATCH_POLICY_T,
+          ALLOCATOR_T,
+          INDEX_T,
+          Args...>
 {};
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

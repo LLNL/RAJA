@@ -83,12 +83,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL1, double> seq_pi(0.0);
 
-  RAJA::forall<EXEC_POL1>(RAJA::RangeSegment(0, N),
-                          [=](int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            seq_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL1>(
+      RAJA::RangeSegment(0, N),
+      [=](int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        seq_pi += dx / (1.0 + x * x);
+      });
   double seq_pi_val = seq_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << seq_pi_val << std::endl;
@@ -130,12 +131,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL2, double> omp_pi(0.0);
 
-  RAJA::forall<EXEC_POL2>(RAJA::RangeSegment(0, N),
-                          [=](int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            omp_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL2>(
+      RAJA::RangeSegment(0, N),
+      [=](int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        omp_pi += dx / (1.0 + x * x);
+      });
   double omp_pi_val = omp_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << omp_pi_val << std::endl;
@@ -156,12 +158,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<REDUCE_POL3, double> cuda_pi(0.0);
 
-  RAJA::forall<EXEC_POL3>(RAJA::RangeSegment(0, N),
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            double x = (double(i) + 0.5) * dx;
-                            cuda_pi += dx / (1.0 + x * x);
-                          });
+  RAJA::forall<EXEC_POL3>(
+      RAJA::RangeSegment(0, N),
+      [=] RAJA_DEVICE(int i)
+      {
+        double x = (double(i) + 0.5) * dx;
+        cuda_pi += dx / (1.0 + x * x);
+      });
   double cuda_pi_val = cuda_pi.get() * 4.0;
 
   std::cout << "\tpi = " << std::setprecision(prec) << cuda_pi_val << std::endl;

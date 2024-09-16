@@ -49,7 +49,7 @@ using OpenMPAtomicPols = camp::list<
 #endif
 #endif
     RAJA::auto_atomic>;
-#endif // RAJA_ENABLE_OPENMP
+#endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_CUDA)
 using CudaAtomicPols = camp::list<
@@ -62,7 +62,7 @@ using CudaAtomicPols = camp::list<
 #endif
 #endif
     RAJA::cuda_atomic>;
-#endif // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA
 
 #if defined(RAJA_ENABLE_HIP)
 using HipAtomicPols = camp::list<
@@ -75,7 +75,7 @@ using HipAtomicPols = camp::list<
 #endif
 #endif
     RAJA::hip_atomic>;
-#endif // RAJA_ENABLE_HIP
+#endif  // RAJA_ENABLE_HIP
 
 #if defined(RAJA_ENABLE_SYCL)
 using SyclAtomicPols = camp::list<
@@ -88,10 +88,10 @@ using SyclAtomicPols = camp::list<
 #endif
 #endif
     RAJA::sycl_atomic>;
-#endif // RAJA_ENABLE_SYCL
+#endif  // RAJA_ENABLE_SYCL
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using OpenMPTargetAtomicPols = OpenMPAtomicPols;
 #endif
 
-#endif // __TEST_ATOMICPOL__
+#endif  // __TEST_ATOMICPOL__

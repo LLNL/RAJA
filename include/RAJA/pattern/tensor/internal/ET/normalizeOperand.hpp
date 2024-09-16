@@ -80,12 +80,12 @@ template <typename RHS>
 using normalize_operand_t = typename NormalizeOperandHelper<RHS>::return_type;
 
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

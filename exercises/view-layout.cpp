@@ -193,7 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _default_view2D_start
   RAJA::View<int, RAJA::Layout<2, int>> view_2D(a, Nx, Ny);
 
-  int iter{0};
+  int iter {0};
   for (int i = 0; i < Nx; ++i)
   {
     for (int j = 0; j < Ny; ++j)
@@ -239,7 +239,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, Ntot * sizeof(int));
 
   // _default_perm_view2D_start
-  std::array<RAJA::idx_t, 2> defperm2{{0, 1}};
+  std::array<RAJA::idx_t, 2> defperm2 {{0, 1}};
   RAJA::Layout<2, int>       defperm2_layout =
       RAJA::make_permuted_layout({{Nx, Ny}}, defperm2);
   RAJA::View<int, RAJA::Layout<2, int>> defperm_view_2D(a, defperm2_layout);
@@ -282,7 +282,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, Ntot * sizeof(int));
 
   // _perm_2D_start
-  std::array<RAJA::idx_t, 2> perm2{{1, 0}};
+  std::array<RAJA::idx_t, 2> perm2 {{1, 0}};
   RAJA::Layout<2, int>       perm2_layout =
       RAJA::make_permuted_layout({{Nx, Ny}}, perm2);
   RAJA::View<int, RAJA::Layout<2, int>> perm_view_2D(a, perm2_layout);
@@ -330,7 +330,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, Ntot * sizeof(int));
 
   // _permb_view3D_start
-  std::array<RAJA::idx_t, 3> perm3b{{1, 2, 0}};
+  std::array<RAJA::idx_t, 3> perm3b {{1, 2, 0}};
   RAJA::Layout<3, int>       perm3b_layout =
       RAJA::make_permuted_layout({{Nx, Ny, Nz}}, perm3b);
   RAJA::View<int, RAJA::Layout<3, int>> perm3b_view_3D(a, perm3b_layout);
@@ -588,7 +588,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(ao, 0, Ntot_ao * sizeof(int));
 
   // _raja_permofflayout2D_start
-  std::array<RAJA::idx_t, 2> perm1D{{1, 0}};
+  std::array<RAJA::idx_t, 2> perm1D {{1, 0}};
   RAJA::OffsetLayout<2> permofflayout_2D = RAJA::make_permuted_offset_layout<2>(
       {{imin, jmin}}, {{imax, jmax}}, perm1D);
 

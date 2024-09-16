@@ -17,19 +17,19 @@
 //
 // List of named_dims
 //
-using NamedDimensionTypeList =
-    camp::list<camp::integral_constant<RAJA::named_dim, RAJA::named_dim::x>,
-               camp::integral_constant<RAJA::named_dim, RAJA::named_dim::y>,
-               camp::integral_constant<RAJA::named_dim, RAJA::named_dim::z>>;
+using NamedDimensionTypeList = camp::list<
+    camp::integral_constant<RAJA::named_dim, RAJA::named_dim::x>,
+    camp::integral_constant<RAJA::named_dim, RAJA::named_dim::y>,
+    camp::integral_constant<RAJA::named_dim, RAJA::named_dim::z>>;
 
 //
 // List of sizes
 //
-using SizeTypeList =
-    camp::list<camp::integral_constant<int, RAJA::named_usage::ignored>,
-               camp::integral_constant<int, RAJA::named_usage::unspecified>,
-               camp::integral_constant<int, 1>,
-               camp::integral_constant<int, 7>>;
+using SizeTypeList = camp::list<
+    camp::integral_constant<int, RAJA::named_usage::ignored>,
+    camp::integral_constant<int, RAJA::named_usage::unspecified>,
+    camp::integral_constant<int, 1>,
+    camp::integral_constant<int, 7>>;
 
 //
 // Holder for indexing templates
@@ -54,4 +54,4 @@ using HipIndexingHolderList =
     camp::list<indexing_holder<RAJA::hip::IndexGlobal>>;
 #endif
 
-#endif // __TEST_INDEXING_UTILS_HPP__
+#endif  // __TEST_INDEXING_UTILS_HPP__

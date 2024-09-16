@@ -77,12 +77,15 @@ void testMultiReducerBasicResetRegular(bool use_reducer, size_t num_bins)
     ASSERT_EQ(multi_reduce_min.get(bin), get_op_identity(multi_reduce_min));
     ASSERT_EQ(multi_reduce_max.get(bin), get_op_identity(multi_reduce_max));
 
-    ASSERT_EQ((NumericType)multi_reduce_sum[bin].get(),
-              get_op_identity(multi_reduce_sum));
-    ASSERT_EQ((NumericType)multi_reduce_min[bin].get(),
-              get_op_identity(multi_reduce_min));
-    ASSERT_EQ((NumericType)multi_reduce_max[bin].get(),
-              get_op_identity(multi_reduce_max));
+    ASSERT_EQ(
+        (NumericType)multi_reduce_sum[bin].get(),
+        get_op_identity(multi_reduce_sum));
+    ASSERT_EQ(
+        (NumericType)multi_reduce_min[bin].get(),
+        get_op_identity(multi_reduce_min));
+    ASSERT_EQ(
+        (NumericType)multi_reduce_max[bin].get(),
+        get_op_identity(multi_reduce_max));
   }
 }
 
@@ -120,17 +123,20 @@ void testMultiReducerBasicResetBitwise(bool use_reducer, size_t num_bins)
     ASSERT_EQ(multi_reduce_and.get(bin), get_op_identity(multi_reduce_and));
     ASSERT_EQ(multi_reduce_or.get(bin), get_op_identity(multi_reduce_or));
 
-    ASSERT_EQ((NumericType)multi_reduce_and[bin].get(),
-              get_op_identity(multi_reduce_and));
-    ASSERT_EQ((NumericType)multi_reduce_or[bin].get(),
-              get_op_identity(multi_reduce_or));
+    ASSERT_EQ(
+        (NumericType)multi_reduce_and[bin].get(),
+        get_op_identity(multi_reduce_and));
+    ASSERT_EQ(
+        (NumericType)multi_reduce_or[bin].get(),
+        get_op_identity(multi_reduce_or));
   }
 }
 
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
 void testMultiReducerBasicReset(size_t num_bins)
 {
   testMultiReducerBasicResetRegular<MultiReducePolicy, NumericType, ForOnePol>(
@@ -144,10 +150,11 @@ void testMultiReducerBasicReset(size_t num_bins)
   // MultiReducePolicy, NumericType, ForOnePol >(true, num_bins);
 }
 ///
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
 void testMultiReducerBasicReset(size_t num_bins)
 {
   testMultiReducerBasicResetRegular<MultiReducePolicy, NumericType, ForOnePol>(
@@ -172,10 +179,11 @@ TYPED_TEST_P(MultiReducerBasicResetUnitTest, MultiReducerReset)
 
 
 template <typename MultiReducePolicy, typename NumericType, typename ForOnePol>
-void testMultiReducerSingleResetRegular(bool        use_reducer,
-                                        size_t      init_bins,
-                                        size_t      num_bins,
-                                        NumericType initVal)
+void testMultiReducerSingleResetRegular(
+    bool        use_reducer,
+    size_t      init_bins,
+    size_t      num_bins,
+    NumericType initVal)
 {
   RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(
       init_bins, initVal);
@@ -219,10 +227,11 @@ void testMultiReducerSingleResetRegular(bool        use_reducer,
 }
 
 template <typename MultiReducePolicy, typename NumericType, typename ForOnePol>
-void testMultiReducerSingleResetBitwise(bool        use_reducer,
-                                        size_t      init_bins,
-                                        size_t      num_bins,
-                                        NumericType initVal)
+void testMultiReducerSingleResetBitwise(
+    bool        use_reducer,
+    size_t      init_bins,
+    size_t      num_bins,
+    NumericType initVal)
 {
   RAJA::MultiReduceBitAnd<MultiReducePolicy, NumericType> multi_reduce_and(
       init_bins, initVal);
@@ -258,13 +267,15 @@ void testMultiReducerSingleResetBitwise(bool        use_reducer,
   }
 }
 
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
-void testMultiReducerSingleResetSize(size_t      init_bins,
-                                     size_t      num_bins,
-                                     NumericType initVal)
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
+void testMultiReducerSingleResetSize(
+    size_t      init_bins,
+    size_t      num_bins,
+    NumericType initVal)
 {
   testMultiReducerSingleResetRegular<MultiReducePolicy, NumericType, ForOnePol>(
       false, init_bins, num_bins, initVal);
@@ -278,13 +289,15 @@ void testMultiReducerSingleResetSize(size_t      init_bins,
   // ForOnePol >(true, init_bins, num_bins, initVal);
 }
 ///
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
-void testMultiReducerSingleResetSize(size_t      init_bins,
-                                     size_t      num_bins,
-                                     NumericType initVal)
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
+void testMultiReducerSingleResetSize(
+    size_t      init_bins,
+    size_t      num_bins,
+    NumericType initVal)
 {
   testMultiReducerSingleResetRegular<MultiReducePolicy, NumericType, ForOnePol>(
       false, init_bins, num_bins, initVal);
@@ -322,13 +335,15 @@ TYPED_TEST_P(MultiReducerSingleResetUnitTest, MultiReducerReset)
 }
 
 
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          typename Container>
-void testMultiReducerContainerResetRegular(bool             use_reducer,
-                                           size_t           init_bins,
-                                           Container const& container)
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    typename Container>
+void testMultiReducerContainerResetRegular(
+    bool             use_reducer,
+    size_t           init_bins,
+    Container const& container)
 {
   const size_t num_bins = container.size();
   NumericType  initVal  = NumericType(5);
@@ -376,13 +391,15 @@ void testMultiReducerContainerResetRegular(bool             use_reducer,
   }
 }
 
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          typename Container>
-void testMultiReducerContainerResetBitwise(bool             use_reducer,
-                                           size_t           init_bins,
-                                           Container const& container)
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    typename Container>
+void testMultiReducerContainerResetBitwise(
+    bool             use_reducer,
+    size_t           init_bins,
+    Container const& container)
 {
   const size_t num_bins = container.size();
   NumericType  initVal  = NumericType(5);
@@ -423,18 +440,20 @@ void testMultiReducerContainerResetBitwise(bool             use_reducer,
   }
 }
 
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          typename Container,
-          std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
-void testMultiReducerContainerResetSize(size_t           init_bins,
-                                        Container const& container)
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    typename Container,
+    std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
+void testMultiReducerContainerResetSize(
+    size_t           init_bins,
+    Container const& container)
 {
-  testMultiReducerContainerResetRegular<MultiReducePolicy, NumericType,
-                                        ForOnePol>(false, init_bins, container);
-  testMultiReducerContainerResetBitwise<MultiReducePolicy, NumericType,
-                                        ForOnePol>(false, init_bins, container);
+  testMultiReducerContainerResetRegular<
+      MultiReducePolicy, NumericType, ForOnePol>(false, init_bins, container);
+  testMultiReducerContainerResetBitwise<
+      MultiReducePolicy, NumericType, ForOnePol>(false, init_bins, container);
   // avoid using the reducer as forone does not handle reducers correctly
   // forone does not make_lambda_body or privatize the body
   // testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType,
@@ -443,26 +462,29 @@ void testMultiReducerContainerResetSize(size_t           init_bins,
   // ForOnePol >(true, init_bins, container);
 }
 ///
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          typename Container,
-          std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
-void testMultiReducerContainerResetSize(size_t           init_bins,
-                                        Container const& container)
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    typename Container,
+    std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
+void testMultiReducerContainerResetSize(
+    size_t           init_bins,
+    Container const& container)
 {
-  testMultiReducerContainerResetRegular<MultiReducePolicy, NumericType,
-                                        ForOnePol>(false, init_bins, container);
+  testMultiReducerContainerResetRegular<
+      MultiReducePolicy, NumericType, ForOnePol>(false, init_bins, container);
   // avoid using the reducer as forone does not handle reducers correctly
   // forone does not make_lambda_body or privatize the body
   // testMultiReducerContainerResetRegular< MultiReducePolicy, NumericType,
   // ForOnePol >(true, init_bins, container);
 }
 
-template <typename MultiReducePolicy,
-          typename NumericType,
-          typename ForOnePol,
-          typename Container>
+template <
+    typename MultiReducePolicy,
+    typename NumericType,
+    typename ForOnePol,
+    typename Container>
 void testMultiReducerContainerReset(Container const& container)
 {
   testMultiReducerContainerResetSize<MultiReducePolicy, NumericType, ForOnePol>(
@@ -501,7 +523,8 @@ REGISTER_TYPED_TEST_SUITE_P(MultiReducerBasicResetUnitTest, MultiReducerReset);
 
 REGISTER_TYPED_TEST_SUITE_P(MultiReducerSingleResetUnitTest, MultiReducerReset);
 
-REGISTER_TYPED_TEST_SUITE_P(MultiReducerContainerResetUnitTest,
-                            MultiReducerReset);
+REGISTER_TYPED_TEST_SUITE_P(
+    MultiReducerContainerResetUnitTest,
+    MultiReducerReset);
 
-#endif //__TEST_MULTI_REDUCER_RESET__
+#endif  //__TEST_MULTI_REDUCER_RESET__

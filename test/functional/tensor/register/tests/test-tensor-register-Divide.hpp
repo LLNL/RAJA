@@ -164,8 +164,8 @@ void DivideImpl()
     {
       if (lane < N)
       {
-        ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane],
-                         output0_vec[lane]);
+        ASSERT_SCALAR_EQ(
+            input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
       }
       else
       {

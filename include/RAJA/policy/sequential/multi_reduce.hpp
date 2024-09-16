@@ -71,9 +71,10 @@ struct MultiReduceDataSeq<
 
   MultiReduceDataSeq() = delete;
 
-  template <typename Container,
-            std::enable_if_t<
-                !std::is_same<Container, MultiReduceDataSeq>::value>* = nullptr>
+  template <
+      typename Container,
+      std::enable_if_t<!std::is_same<Container, MultiReduceDataSeq>::value>* =
+          nullptr>
   MultiReduceDataSeq(Container const& container, T identity)
       : m_parent(nullptr),
         m_num_bins(container.size()),
@@ -131,7 +132,7 @@ struct MultiReduceDataSeq<
 
   T identity() const { return m_identity; }
 
-  void combine(size_t bin, T const& val) { MultiReduceOp{}(m_data[bin], val); }
+  void combine(size_t bin, T const& val) { MultiReduceOp {}(m_data[bin], val); }
 
   T get(size_t bin) const { return m_data[bin]; }
 
@@ -175,11 +176,12 @@ private:
   }
 };
 
-} // namespace detail
+}  // namespace detail
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::sequential::seq_multi_reduce_policy,
-                                detail::MultiReduceDataSeq)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(
+    policy::sequential::seq_multi_reduce_policy,
+    detail::MultiReduceDataSeq)
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

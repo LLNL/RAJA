@@ -68,8 +68,8 @@ struct RegisterTraits<RAJA::expt::scalar_register, double>
 };
 
 
-} // namespace expt
-} // namespace internal
-} // namespace RAJA
+}  // namespace expt
+}  // namespace internal
+}  // namespace RAJA
 
 #endif

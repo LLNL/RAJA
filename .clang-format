@@ -41,7 +41,7 @@ PointerAlignment: Left
 AllowShortIfStatementsOnASingleLine : true
 AllowShortFunctionsOnASingleLine : true
 AllowShortLoopsOnASingleLine : false
-AllowAllArgumentsOnNextLine : false
+AllowAllArgumentsOnNextLine : true
 AllowAllParametersOfDeclarationOnNextLine : false
 AlignTrailingComments : true
 BinPackArguments : true
@@ -49,7 +49,20 @@ BinPackParameters : false
 ConstructorInitializerAllOnOneLineOrOnePerLine : true
 ColumnLimit : 80
 
-AlignAfterOpenBracket: true
+AlignAfterOpenBracket: AlwaysBreak
 AlignOperands : true
 AlwaysBreakTemplateDeclarations : true
 BreakBeforeBinaryOperators : None
+
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInConditionalStatement: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false

@@ -125,6 +125,6 @@ private:
   std::atomic<int> m_semaphore_value;
 };
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

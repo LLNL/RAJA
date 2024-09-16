@@ -40,10 +40,10 @@ RAJA_INLINE void region_impl(const seq_region&, Func&& body)
   body();
 }
 
-} // namespace sequential
+}  // namespace sequential
 
-} // namespace policy
+}  // namespace policy
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -13,18 +13,19 @@
 #ifndef __TEST_FORALL_ATOMIC_VIEW_HPP__
 #define __TEST_FORALL_ATOMIC_VIEW_HPP__
 
-template <typename ExecPolicy,
-          typename AtomicPolicy,
-          typename WORKINGRES,
-          typename IdxType,
-          typename T>
+template <
+    typename ExecPolicy,
+    typename AtomicPolicy,
+    typename WORKINGRES,
+    typename IdxType,
+    typename T>
 void ForallAtomicViewTestImpl(IdxType N)
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
   RAJA::TypedRangeSegment<IdxType> seg_half(0, N / 2);
 
-  camp::resources::Resource work_res{WORKINGRES()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource work_res {WORKINGRES()};
+  camp::resources::Resource host_res {camp::resources::Host()};
 
   T* hsource     = host_res.allocate<T>(N);
   T* source      = work_res.allocate<T>(N);
@@ -59,12 +60,13 @@ void ForallAtomicViewTestImpl(IdxType N)
 
 
   // Zero out dest using atomic view
-  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE(IdxType i)
-                           { sum_atomic_view(i) = (T)0; });
+  RAJA::forall<ExecPolicy>(
+      seg_half, [=] RAJA_HOST_DEVICE(IdxType i) { sum_atomic_view(i) = (T)0; });
 
   // Assign values to dest using atomic view
-  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
-                           { sum_atomic_view(i / 2) += vec_view(i); });
+  RAJA::forall<ExecPolicy>(
+      seg, [=] RAJA_HOST_DEVICE(IdxType i)
+      { sum_atomic_view(i / 2) += vec_view(i); });
 
   work_res.memcpy(check_array, dest, sizeof(T) * N / 2);
 
@@ -105,4 +107,4 @@ TYPED_TEST_P(ForallAtomicViewTest, AtomicViewForall)
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicViewTest, AtomicViewForall);
 
-#endif //__TEST_FORALL_ATOMIC_VIEW_HPP__
+#endif  //__TEST_FORALL_ATOMIC_VIEW_HPP__

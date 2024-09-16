@@ -55,12 +55,13 @@ constexpr int get_min_iterates_per_task() { return 128; }
                by spawning tasks
 */
 template <typename Sorter, typename Iter, typename Compare>
-inline void sort_task(Sorter                       sorter,
-                      Iter                         begin,
-                      RAJA::detail::IterDiff<Iter> i_begin,
-                      RAJA::detail::IterDiff<Iter> i_end,
-                      RAJA::detail::IterDiff<Iter> iterates_per_task,
-                      Compare                      comp)
+inline void sort_task(
+    Sorter                       sorter,
+    Iter                         begin,
+    RAJA::detail::IterDiff<Iter> i_begin,
+    RAJA::detail::IterDiff<Iter> i_end,
+    RAJA::detail::IterDiff<Iter> iterates_per_task,
+    Compare                      comp)
 {
   using diff_type   = RAJA::detail::IterDiff<Iter>;
   const diff_type n = i_end - i_begin;
@@ -85,8 +86,8 @@ inline void sort_task(Sorter                       sorter,
 
     // std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end,
     // comp);
-    RAJA::detail::inplace_merge(begin + i_begin, begin + i_middle,
-                                begin + i_end, comp);
+    RAJA::detail::inplace_merge(
+        begin + i_begin, begin + i_middle, begin + i_end, comp);
   }
 }
 
@@ -97,10 +98,11 @@ inline void sort_task(Sorter                       sorter,
                by manually assigning work to threads
 */
 template <typename Sorter, typename Iter, typename Compare>
-inline void sort_parallel_region(Sorter                       sorter,
-                                 Iter                         begin,
-                                 RAJA::detail::IterDiff<Iter> n,
-                                 Compare                      comp)
+inline void sort_parallel_region(
+    Sorter                       sorter,
+    Iter                         begin,
+    RAJA::detail::IterDiff<Iter> n,
+    Compare                      comp)
 {
   using RAJA::detail::firstIndex;
   using diff_type = RAJA::detail::IterDiff<Iter>;
@@ -137,8 +139,8 @@ inline void sort_parallel_region(Sorter                       sorter,
       // this thread merges ranges [i_begin, i_middle) and [i_middle, i_end)
       // std::inplace_merge(begin + i_begin, begin + i_middle, begin + i_end,
       // comp);
-      RAJA::detail::inplace_merge(begin + i_begin, begin + i_middle,
-                                  begin + i_end, comp);
+      RAJA::detail::inplace_merge(
+          begin + i_begin, begin + i_middle, begin + i_end, comp);
     }
   }
 }
@@ -175,7 +177,7 @@ inline void sort(Sorter sorter, Iter begin, Iter end, Compare comp)
 
     const diff_type requested_num_threads =
         std::min((n + iterates_per_task - 1) / iterates_per_task, max_threads);
-    RAJA_UNUSED_VAR(requested_num_threads); // avoid warning in hip device code
+    RAJA_UNUSED_VAR(requested_num_threads);  // avoid warning in hip device code
 
 #pragma omp parallel num_threads(static_cast <int>(requested_num_threads))
 #pragma omp          master
@@ -187,7 +189,7 @@ inline void sort(Sorter sorter, Iter begin, Iter end, Compare comp)
 
     const diff_type requested_num_threads = std::min(
         (n + min_iterates_per_task - 1) / min_iterates_per_task, max_threads);
-    RAJA_UNUSED_VAR(requested_num_threads); // avoid warning in hip device code
+    RAJA_UNUSED_VAR(requested_num_threads);  // avoid warning in hip device code
 
 #pragma omp parallel num_threads(static_cast <int>(requested_num_threads))
     {
@@ -198,23 +200,25 @@ inline void sort(Sorter sorter, Iter begin, Iter end, Compare comp)
   }
 }
 
-} // namespace openmp
+}  // namespace openmp
 
-} // namespace detail
+}  // namespace detail
 
 /*!
         \brief sort given range using comparison function
 */
 template <typename ExecPolicy, typename Iter, typename Compare>
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_openmp_policy<ExecPolicy>>
-unstable(resources::Host host_res,
-         const ExecPolicy&,
-         Iter    begin,
-         Iter    end,
-         Compare comp)
+concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    type_traits::is_openmp_policy<ExecPolicy>>
+unstable(
+    resources::Host host_res,
+    const ExecPolicy&,
+    Iter    begin,
+    Iter    end,
+    Compare comp)
 {
-  detail::openmp::sort(detail::UnstableSorter{}, begin, end, comp);
+  detail::openmp::sort(detail::UnstableSorter {}, begin, end, comp);
 
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -223,15 +227,17 @@ unstable(resources::Host host_res,
         \brief stable sort given range using comparison function
 */
 template <typename ExecPolicy, typename Iter, typename Compare>
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_openmp_policy<ExecPolicy>>
-stable(resources::Host host_res,
-       const ExecPolicy&,
-       Iter    begin,
-       Iter    end,
-       Compare comp)
+concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    type_traits::is_openmp_policy<ExecPolicy>>
+stable(
+    resources::Host host_res,
+    const ExecPolicy&,
+    Iter    begin,
+    Iter    end,
+    Compare comp)
 {
-  detail::openmp::sort(detail::StableSorter{}, begin, end, comp);
+  detail::openmp::sort(detail::StableSorter {}, begin, end, comp);
 
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -239,24 +245,28 @@ stable(resources::Host host_res,
 /*!
         \brief sort given range of pairs using comparison function on keys
 */
-template <typename ExecPolicy,
-          typename KeyIter,
-          typename ValIter,
-          typename Compare>
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_openmp_policy<ExecPolicy>>
-unstable_pairs(resources::Host host_res,
-               const ExecPolicy&,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
-               Compare comp)
+template <
+    typename ExecPolicy,
+    typename KeyIter,
+    typename ValIter,
+    typename Compare>
+concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    type_traits::is_openmp_policy<ExecPolicy>>
+unstable_pairs(
+    resources::Host host_res,
+    const ExecPolicy&,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    Compare comp)
 {
   auto begin    = RAJA::zip(keys_begin, vals_begin);
   auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::openmp::sort(detail::UnstableSorter{}, begin, end,
-                       RAJA::compare_first<zip_ref>(comp));
+  detail::openmp::sort(
+      detail::UnstableSorter {}, begin, end,
+      RAJA::compare_first<zip_ref>(comp));
 
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -265,32 +275,35 @@ unstable_pairs(resources::Host host_res,
         \brief stable sort given range of pairs using comparison function on
    keys
 */
-template <typename ExecPolicy,
-          typename KeyIter,
-          typename ValIter,
-          typename Compare>
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_openmp_policy<ExecPolicy>>
-stable_pairs(resources::Host host_res,
-             const ExecPolicy&,
-             KeyIter keys_begin,
-             KeyIter keys_end,
-             ValIter vals_begin,
-             Compare comp)
+template <
+    typename ExecPolicy,
+    typename KeyIter,
+    typename ValIter,
+    typename Compare>
+concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    type_traits::is_openmp_policy<ExecPolicy>>
+stable_pairs(
+    resources::Host host_res,
+    const ExecPolicy&,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    Compare comp)
 {
   auto begin    = RAJA::zip(keys_begin, vals_begin);
   auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::openmp::sort(detail::StableSorter{}, begin, end,
-                       RAJA::compare_first<zip_ref>(comp));
+  detail::openmp::sort(
+      detail::StableSorter {}, begin, end, RAJA::compare_first<zip_ref>(comp));
 
   return resources::EventProxy<resources::Host>(host_res);
 }
 
-} // namespace sort
+}  // namespace sort
 
-} // namespace impl
+}  // namespace impl
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif

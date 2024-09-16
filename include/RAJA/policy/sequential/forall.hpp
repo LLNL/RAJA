@@ -55,19 +55,21 @@ namespace sequential
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable,
-          typename Func,
-          typename Resource,
-          typename ForallParam>
+template <
+    typename Iterable,
+    typename Func,
+    typename Resource,
+    typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Resource>,
     expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(Resource res,
-            const seq_exec&,
-            Iterable&&  iter,
-            Func&&      body,
-            ForallParam f_params)
+forall_impl(
+    Resource res,
+    const seq_exec&,
+    Iterable&&  iter,
+    Func&&      body,
+    ForallParam f_params)
 {
   expt::ParamMultiplexer::init<seq_exec>(f_params);
 
@@ -82,19 +84,21 @@ forall_impl(Resource res,
   return resources::EventProxy<Resource>(res);
 }
 
-template <typename Iterable,
-          typename Func,
-          typename Resource,
-          typename ForallParam>
+template <
+    typename Iterable,
+    typename Func,
+    typename Resource,
+    typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Resource>,
     expt::type_traits::is_ForallParamPack<ForallParam>,
     expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(Resource res,
-            const seq_exec&,
-            Iterable&& iter,
-            Func&&     body,
-            ForallParam)
+forall_impl(
+    Resource res,
+    const seq_exec&,
+    Iterable&& iter,
+    Func&&     body,
+    ForallParam)
 {
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -105,10 +109,10 @@ forall_impl(Resource res,
   return resources::EventProxy<Resource>(res);
 }
 
-} // namespace sequential
+}  // namespace sequential
 
-} // namespace policy
+}  // namespace policy
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

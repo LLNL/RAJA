@@ -99,20 +99,20 @@ void docs_example()
   // _multiview_example_1Dinit_end
 
   // _multiview_example_1Daccess_start
-  t1 = MView(0, 3); // accesses the 4th index of the 0th internal array a1,
-                    // returns value of 8
-  t2 = MView(1, 2); // accesses 3rd index of the 1st internal array a2, returns
-                    // value of 11
+  t1 = MView(0, 3);  // accesses the 4th index of the 0th internal array a1,
+                     // returns value of 8
+  t2 = MView(1, 2);  // accesses 3rd index of the 1st internal array a2, returns
+                     // value of 11
   // _multiview_example_1Daccess_end
 
   // _multiview_example_1Daopindex_start
   // MultiView with array-of-pointers index in 1st position.
   RAJA::MultiView<int, RAJA::Layout<1>, 1> MView1(myarr, 4);
 
-  t3 = MView1(3, 0); // accesses the 4th index of the 0th internal array a1,
-                     // returns value of 8
-  t4 = MView1(2, 1); // accesses 3rd index of the 1st internal array a2,
-                     // returns value of 11
+  t3 = MView1(3, 0);  // accesses the 4th index of the 0th internal array a1,
+                      // returns value of 8
+  t4 = MView1(2, 1);  // accesses 3rd index of the 1st internal array a2,
+                      // returns value of 11
   // _multiview_example_1Daopindex_end
 
   printf("Comparison of default MultiView with another MultiView that has the "
@@ -123,15 +123,15 @@ void docs_example()
   // _multiview_example_2Daopindex_start
   RAJA::View<int, RAJA::Layout<2>> normalView(a1, 2, 2);
 
-  t1 = normalView(1, 1); // accesses 4th index of the a1 array, value = 8
+  t1 = normalView(1, 1);  // accesses 4th index of the a1 array, value = 8
 
   // MultiView with array-of-pointers index in 2nd position
   RAJA::MultiView<int, RAJA::Layout<2>, 2> MView2(myarr, 2, 2);
 
-  t2 = MView2(1, 1, 0); // accesses the 4th index of the 0th internal array a1,
-                        // returns value of 8 (same as normalView(1,1))
-  t3 = MView2(0, 0, 1); // accesses the 1st index of the 1st internal array a2,
-                        // returns value of 9
+  t2 = MView2(1, 1, 0);  // accesses the 4th index of the 0th internal array a1,
+                         // returns value of 8 (same as normalView(1,1))
+  t3 = MView2(0, 0, 1);  // accesses the 1st index of the 1st internal array a2,
+                         // returns value of 9
   // _multiview_example_2Daopindex_end
 
   printf("Comparison of 2D normal View with 2D MultiView that has the "
@@ -144,7 +144,7 @@ int main()
   docs_example();
 
   constexpr int N = 12;
-  int*          myarr[2]; // two 3x4 arrays
+  int*          myarr[2];  // two 3x4 arrays
   int           arr1[N];
   int           arr2[N];
 
@@ -158,14 +158,14 @@ int main()
   myarr[1] = arr2;
 
   // 4x3 layout
-  std::array<RAJA::idx_t, 2> perm{{0, 1}};
+  std::array<RAJA::idx_t, 2> perm {{0, 1}};
   RAJA::Layout<2> layout = RAJA::make_permuted_layout({{4, 3}}, perm);
 
   // Basic MultiView usage
   // Default usage: no specified array-of-pointers index moving
   // 0th position is used as the array-of-pointers index
-  RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type>> arrView(myarr,
-                                                                  layout);
+  RAJA::MultiView<int, RAJA::Layout<2, RAJA::Index_type>> arrView(
+      myarr, layout);
 
   // Moved array-of-pointers index MultiView usage
   // Add an array-of-pointers index specifier
@@ -181,8 +181,9 @@ int main()
     {
       for (int jj = 0; jj < 3; ++jj)
       {
-        printf("arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n", pp, kk, jj,
-               arrView(pp, kk, jj), kk, pp, jj, arrViewMov(kk, pp, jj));
+        printf(
+            "arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n", pp, kk, jj,
+            arrView(pp, kk, jj), kk, pp, jj, arrViewMov(kk, pp, jj));
       }
     }
   }
@@ -208,8 +209,9 @@ int main()
     {
       for (int jj = 0; jj < 3; ++jj)
       {
-        printf("arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n", pp, kk, jj,
-               arrView(pp, kk, jj), kk, pp, jj, arrViewMov(kk, pp, jj));
+        printf(
+            "arr(%i, %i, %i) %d == arrmov(%i, %i, %i) %d\n", pp, kk, jj,
+            arrView(pp, kk, jj), kk, pp, jj, arrViewMov(kk, pp, jj));
       }
     }
   }

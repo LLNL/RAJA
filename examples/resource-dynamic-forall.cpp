@@ -28,20 +28,21 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
-using policy_list = camp::list<RAJA::seq_exec,
-                               RAJA::simd_exec
+using policy_list = camp::list<
+    RAJA::seq_exec,
+    RAJA::simd_exec
 #if defined(RAJA_ENABLE_CUDA)
-                               ,
-                               RAJA::cuda_exec<256>,
-                               RAJA::cuda_exec<512>
+    ,
+    RAJA::cuda_exec<256>,
+    RAJA::cuda_exec<512>
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-                               ,
-                               RAJA::hip_exec<256>,
-                               RAJA::hip_exec<512>
+    ,
+    RAJA::hip_exec<256>,
+    RAJA::hip_exec<512>
 #endif
-                               >;
+    >;
 
 
 int main(int argc, char* argv[])
@@ -134,9 +135,9 @@ int main(int argc, char* argv[])
       RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
-  RAJA::expt::dynamic_forall<policy_list>(res, pol, RAJA::RangeSegment(0, N),
-                                          [=] RAJA_HOST_DEVICE(int i)
-                                          { c[i] = a[i] + b[i]; });
+  RAJA::expt::dynamic_forall<policy_list>(
+      res, pol, RAJA::RangeSegment(0, N),
+      [=] RAJA_HOST_DEVICE(int i) { c[i] = a[i] + b[i]; });
 
   checkResult(c, N);
   // printResult(c, N);

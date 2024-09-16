@@ -14,22 +14,23 @@
 #include <numeric>
 #include <random>
 
-template <typename IDX_TYPE,
-          typename DATA_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename REDUCE_POLICY>
+template <
+    typename IDX_TYPE,
+    typename DATA_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename REDUCE_POLICY>
 void ForallReduceMaxMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
 {
   RAJA::TypedRangeSegment<IDX_TYPE> r1(first, last);
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   DATA_TYPE*                working_array;
   DATA_TYPE*                check_array;
   DATA_TYPE*                test_array;
 
-  allocateForallTestData<DATA_TYPE>(last, working_res, &working_array,
-                                    &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(
+      last, working_res, &working_array, &check_array, &test_array);
 
   const DATA_TYPE default_val = static_cast<DATA_TYPE>(-SHRT_MAX);
   const DATA_TYPE big_val     = 500;
@@ -37,8 +38,8 @@ void ForallReduceMaxMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   static std::random_device                     rd;
   static std::mt19937                           mt(rd());
   static std::uniform_real_distribution<double> dist(-100, 100);
-  static std::uniform_int_distribution<int>     dist2(static_cast<int>(first),
-                                                      static_cast<int>(last) - 1);
+  static std::uniform_int_distribution<int>     dist2(
+          static_cast<int>(first), static_cast<int>(last) - 1);
 
   // Workaround for broken omp-target reduction interface.
   // This should be `max0;` not `max0(0);`
@@ -75,21 +76,23 @@ void ForallReduceMaxMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
         IDX_TYPE  max_index = static_cast<IDX_TYPE>(dist2(mt));
 
         test_array[max_index] = roll;
-        working_res.memcpy(&working_array[max_index], &test_array[max_index],
-                           sizeof(DATA_TYPE));
+        working_res.memcpy(
+            &working_array[max_index], &test_array[max_index],
+            sizeof(DATA_TYPE));
 
         if (current_max < roll)
         {
           current_max = roll;
         }
 
-        RAJA::forall<EXEC_POLICY>(r1,
-                                  [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
-                                  {
-                                    max0.max(working_array[idx]);
-                                    max1.max(2 * working_array[idx]);
-                                    max2.max(working_array[idx]);
-                                  });
+        RAJA::forall<EXEC_POLICY>(
+            r1,
+            [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
+            {
+              max0.max(working_array[idx]);
+              max1.max(2 * working_array[idx]);
+              max2.max(working_array[idx]);
+            });
 
         ASSERT_EQ(current_max, static_cast<DATA_TYPE>(max0.get()));
         ASSERT_EQ(current_max * 2, static_cast<DATA_TYPE>(max1.get()));
@@ -106,8 +109,8 @@ void ForallReduceMaxMultipleTestImpl(IDX_TYPE first, IDX_TYPE last)
   ASSERT_EQ(default_val, static_cast<DATA_TYPE>(max1.get()));
   ASSERT_EQ(big_val, static_cast<DATA_TYPE>(max2.get()));
 
-  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
-                                      test_array);
+  deallocateForallTestData<DATA_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallReduceMaxMultipleTest);
@@ -123,11 +126,12 @@ TYPED_TEST_P(ForallReduceMaxMultipleTest, ReduceMaxMultipleForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  ForallReduceMaxMultipleTestImpl<IDX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
-                                  REDUCE_POLICY>(0, 2115);
+  ForallReduceMaxMultipleTestImpl<
+      IDX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(0, 2115);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxMultipleTest,
-                            ReduceMaxMultipleForall);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallReduceMaxMultipleTest,
+    ReduceMaxMultipleForall);
 
-#endif // __TEST_FORALL_MULTIPLE_REDUCEMAX_HPP__
+#endif  // __TEST_FORALL_MULTIPLE_REDUCEMAX_HPP__

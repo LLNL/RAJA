@@ -46,4 +46,4 @@ using OpenMPTargetPlatformList =
 using HipPlatformList = camp::list<PlatformHolder<RAJA::Platform::hip>>;
 #endif
 
-#endif // __RAJA_test_platform_HPP__
+#endif  // __RAJA_test_platform_HPP__

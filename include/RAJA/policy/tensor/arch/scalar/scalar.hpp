@@ -42,10 +42,10 @@ public:
   using element_type    = T;
   using register_type   = T;
 
-  using int_vector_type =
-      Register<typename internal::expt::RegisterTraits<scalar_register,
-                                                       T>::int_element_type,
-               scalar_register>;
+  using int_vector_type = Register<
+      typename internal::expt::RegisterTraits<scalar_register, T>::
+          int_element_type,
+      scalar_register>;
 
 
 private:
@@ -479,8 +479,8 @@ public:
     return self_type(RAJA::min<element_type>(m_value, a.m_value));
   }
 };
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #endif

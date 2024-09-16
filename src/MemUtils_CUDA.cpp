@@ -54,11 +54,11 @@ cudaStatusInfo tl_status;
 std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace cuda
+}  // namespace cuda
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
-#endif // if defined(RAJA_ENABLE_CUDA)
+#endif  // if defined(RAJA_ENABLE_CUDA)

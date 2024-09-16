@@ -80,9 +80,9 @@ RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 16, T>::type
 
 // Assist return type conditional overloading of testAtomicRefLogicalOp
 struct int_op
-{}; // represents underlying op type = integral
+{};  // represents underlying op type = integral
 struct all_op
-{}; // these op types can accept integral or float
+{};  // these op types can accept integral or float
 
 
-#endif // __RAJA_test_atomic_ref_types_HPP__
+#endif  // __RAJA_test_atomic_ref_types_HPP__

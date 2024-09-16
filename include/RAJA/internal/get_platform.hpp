@@ -16,7 +16,7 @@ template <typename Selector, typename... Policies>
 class MultiPolicy;
 
 }
-} // namespace policy
+}  // namespace policy
 
 namespace detail
 {
@@ -25,8 +25,8 @@ struct max_platform
 {
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  constexpr RAJA::Platform operator()(const RAJA::Platform& l,
-                                      const RAJA::Platform& r) const
+  constexpr RAJA::Platform
+  operator()(const RAJA::Platform& l, const RAJA::Platform& r) const
   {
     return (l > r) ? l : r;
   }
@@ -72,10 +72,11 @@ struct get_platform_from_list<>
  * (not for MultiPolicy or nested::Policy)
  */
 template <typename T>
-struct get_platform<T,
-                    typename std::enable_if<
-                        std::is_base_of<RAJA::PolicyBase, T>::value &&
-                        !RAJA::type_traits::is_indexset_policy<T>::value>::type>
+struct get_platform<
+    T,
+    typename std::enable_if<
+        std::is_base_of<RAJA::PolicyBase, T>::value &&
+        !RAJA::type_traits::is_indexset_policy<T>::value>::type>
 {
 
   static constexpr Platform value = T::platform;
@@ -96,9 +97,9 @@ struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>
 template <typename T>
 struct get_statement_platform
 {
-  static constexpr Platform value =
-      get_platform_from_list<typename T::execution_policy_t,
-                             typename T::enclosed_statements_t>::value;
+  static constexpr Platform value = get_platform_from_list<
+      typename T::execution_policy_t,
+      typename T::enclosed_statements_t>::value;
 };
 
 /*!
@@ -134,7 +135,7 @@ struct get_platform<RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>>
   static constexpr Platform value = Platform::undefined;
 };
 
-} // namespace detail
-} // namespace RAJA
+}  // namespace detail
+}  // namespace RAJA
 
-#endif // RAJA_get_platform_HPP
+#endif  // RAJA_get_platform_HPP

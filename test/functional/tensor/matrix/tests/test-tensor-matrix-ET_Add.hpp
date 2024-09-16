@@ -125,8 +125,9 @@ void ET_AddImpl()
   {
     for (camp::idx_t j = 0; j < N; ++j)
     {
-      ASSERT_SCALAR_EQ(data5_h(j, i), data1_h(i, j) + data2_h(j, i) +
-                                          data3_h(i, j) + data4_h(j, i));
+      ASSERT_SCALAR_EQ(
+          data5_h(j, i),
+          data1_h(i, j) + data2_h(j, i) + data3_h(i, j) + data4_h(j, i));
       //      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j),
       //      data2(i,j));
     }

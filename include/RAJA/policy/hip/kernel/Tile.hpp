@@ -47,21 +47,22 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Meets all sync requirements
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          typename IndexMapper,
-          kernel_sync_requirement sync,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    typename IndexMapper,
+    kernel_sync_requirement sync,
+    typename... EnclosedStmts,
+    typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
-                                                   sync,
-                                                   IndexMapper>,
-                    EnclosedStmts...>,
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::
+            hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+        EnclosedStmts...>,
     Types>
 {
 
@@ -112,8 +113,8 @@ struct HipStatementExecutor<
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
-    DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims{my_dims, my_min_dims};
+    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims {my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -137,12 +138,13 @@ struct HipStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Meets all sync requirements
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          typename IndexMapper,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    typename IndexMapper,
+    typename... EnclosedStmts,
+    typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<
@@ -213,8 +215,8 @@ struct HipStatementExecutor<
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
-    DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims{my_dims, my_min_dims};
+    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims {my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -238,12 +240,13 @@ struct HipStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Meets no sync requirements
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          camp::idx_t chunk_size,
-          typename IndexMapper,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    camp::idx_t chunk_size,
+    typename IndexMapper,
+    typename... EnclosedStmts,
+    typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<
@@ -309,8 +312,8 @@ struct HipStatementExecutor<
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
-    DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims{my_dims, my_min_dims};
+    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
+    LaunchDims dims {my_dims, my_min_dims};
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -335,11 +338,12 @@ struct HipStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <typename Data,
-          camp::idx_t ArgumentId,
-          typename TPol,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    typename Data,
+    camp::idx_t ArgumentId,
+    typename TPol,
+    typename... EnclosedStmts,
+    typename Types>
 struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
@@ -352,15 +356,16 @@ struct HipStatementExecutor<
               RAJA::policy::hip::hip_indexer<
                   iteration_mapping::StridedLoop<named_usage::unspecified>,
                   kernel_sync_requirement::none,
-                  hip::IndexGlobal<named_dim::x,
-                                   named_usage::ignored,
-                                   named_usage::ignored>>,
+                  hip::IndexGlobal<
+                      named_dim::x,
+                      named_usage::ignored,
+                      named_usage::ignored>>,
               EnclosedStmts...>,
           Types>
 {};
 
-} // end namespace internal
-} // end namespace RAJA
+}  // end namespace internal
+}  // end namespace RAJA
 
-#endif // RAJA_ENABLE_HIP
-#endif /* RAJA_policy_hip_kernel_Tile_HPP */
+#endif  // RAJA_ENABLE_HIP
+#endif  /* RAJA_policy_hip_kernel_Tile_HPP */

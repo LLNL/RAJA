@@ -12,16 +12,17 @@
 #include <iostream>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename POLICY_LIST>
-void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
-                                       INDEX_TYPE last,
-                                       const int  pol)
+void DynamicForallRangeSegmentTestImpl(
+    INDEX_TYPE first,
+    INDEX_TYPE last,
+    const int  pol)
 {
 
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first),
-                                         RAJA::stripIndexType(last));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(
+      RAJA::stripIndexType(first), RAJA::stripIndexType(last));
   INDEX_TYPE N = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   INDEX_TYPE*               working_array;
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
@@ -32,8 +33,8 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -48,31 +49,33 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first,
         { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
   }
   else
-  { // zero-length segment
+  {  // zero-length segment
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(working_array, test_array,
-                       sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(
+        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::expt::dynamic_forall<POLICY_LIST>(pol, r1,
-                                            [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
-                                            {
-                                              (void)idx;
-                                              working_array[0]++;
-                                            });
+    RAJA::expt::dynamic_forall<POLICY_LIST>(
+        pol, r1,
+        [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+        {
+          (void)idx;
+          working_array[0]++;
+        });
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(
+        test_array[RAJA::stripIndexType(i)],
+        check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
-                                       test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -97,7 +100,7 @@ TYPED_TEST_P(DynamicForallRangeSegmentTest, RangeSegmentForall)
   // If N == 4 host, device is available
   // If N == 5 host, openmp, device are on
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   bool                      is_on_host =
       working_res.get_platform() == camp::resources::Platform::host ? true
                                                                                          : false;
@@ -133,4 +136,4 @@ TYPED_TEST_P(DynamicForallRangeSegmentTest, RangeSegmentForall)
 
 REGISTER_TYPED_TEST_SUITE_P(DynamicForallRangeSegmentTest, RangeSegmentForall);
 
-#endif // __TEST_BASIC_SHARED_HPP__
+#endif  // __TEST_BASIC_SHARED_HPP__

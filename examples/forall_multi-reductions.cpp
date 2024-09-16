@@ -38,21 +38,21 @@ struct Backend
 
 auto example_policies = camp::make_tuple(
 
-    Backend<RAJA::seq_exec, RAJA::seq_multi_reduce>{"Sequential"}
+    Backend<RAJA::seq_exec, RAJA::seq_multi_reduce> {"Sequential"}
 
 #if defined(RAJA_ENABLE_OPENMP)
     ,
-    Backend<RAJA::omp_parallel_for_exec, RAJA::omp_multi_reduce>{"OpenMP"}
+    Backend<RAJA::omp_parallel_for_exec, RAJA::omp_multi_reduce> {"OpenMP"}
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
     ,
-    Backend<RAJA::cuda_exec_async<256>, RAJA::cuda_multi_reduce_atomic>{"Cuda"}
+    Backend<RAJA::cuda_exec_async<256>, RAJA::cuda_multi_reduce_atomic> {"Cuda"}
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
     ,
-    Backend<RAJA::hip_exec_async<256>, RAJA::hip_multi_reduce_atomic>{"Hip"}
+    Backend<RAJA::hip_exec_async<256>, RAJA::hip_multi_reduce_atomic> {"Hip"}
 #endif
 
 );
@@ -66,17 +66,18 @@ void example_code(RAJA::RangeSegment arange, int num_bins, int* bins, int* a)
   RAJA::MultiReduceBitAnd<multi_reduce_policy, int> multi_reduce_and(num_bins);
   RAJA::MultiReduceBitOr<multi_reduce_policy, int>  multi_reduce_or(num_bins);
 
-  RAJA::forall<exec_policy>(arange,
-                            [=] RAJA_HOST_DEVICE(RAJA::Index_type i)
-                            {
-                              int bin = bins[i];
+  RAJA::forall<exec_policy>(
+      arange,
+      [=] RAJA_HOST_DEVICE(RAJA::Index_type i)
+      {
+        int bin = bins[i];
 
-                              multi_reduce_sum[bin] += a[i];
-                              multi_reduce_min[bin].min(a[i]);
-                              multi_reduce_max[bin].max(a[i]);
-                              multi_reduce_and[bin] &= a[i];
-                              multi_reduce_or[bin] |= a[i];
-                            });
+        multi_reduce_sum[bin] += a[i];
+        multi_reduce_min[bin].min(a[i]);
+        multi_reduce_max[bin].max(a[i]);
+        multi_reduce_and[bin] &= a[i];
+        multi_reduce_or[bin] |= a[i];
+      });
 
   for (int bin = 0; bin < num_bins; ++bin)
   {
@@ -154,8 +155,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
         res.memcpy(bins, host_bins, N * sizeof(int));
         res.memcpy(a, host_a, N * sizeof(int));
 
-        example_code<exec_policy, multi_reduce_policy>(arange, num_bins, bins,
-                                                       a);
+        example_code<exec_policy, multi_reduce_policy>(
+            arange, num_bins, bins, a);
 
         res.deallocate(bins);
         res.deallocate(a);

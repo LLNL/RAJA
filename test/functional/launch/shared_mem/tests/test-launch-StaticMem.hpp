@@ -10,12 +10,13 @@
 
 #include <numeric>
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename LAUNCH_POLICY,
-          typename TEAM_POLICY,
-          typename THREAD_POLICY,
-          int THREAD_RANGE>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename LAUNCH_POLICY,
+    typename TEAM_POLICY,
+    typename THREAD_POLICY,
+    int THREAD_RANGE>
 void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
 {
 
@@ -26,7 +27,7 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
   RAJA::TypedRangeSegment<INDEX_TYPE> inner_range(
       RAJA::stripIndexType(INDEX_TYPE(0)), RAJA::stripIndexType(thread_range));
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   INDEX_TYPE*               working_array;
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
@@ -34,8 +35,8 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
   size_t data_len =
       RAJA::stripIndexType(block_range) * RAJA::stripIndexType(thread_range);
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
   // determine the underlying type of block_range
   using s_type = decltype(RAJA::stripIndexType(block_range));
@@ -50,8 +51,9 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
   }
 
   RAJA::launch<LAUNCH_POLICY>(
-      RAJA::LaunchParams(RAJA::Teams(RAJA::stripIndexType(block_range)),
-                         RAJA::Threads(RAJA::stripIndexType(thread_range))),
+      RAJA::LaunchParams(
+          RAJA::Teams(RAJA::stripIndexType(block_range)),
+          RAJA::Threads(RAJA::stripIndexType(thread_range))),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::loop<TEAM_POLICY>(
@@ -73,9 +75,10 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
                   ctx, inner_range,
                   [&](INDEX_TYPE tid)
                   {
-                    Tile[RAJA::stripIndexType(thread_range) -
+                    Tile
+                        [RAJA::stripIndexType(thread_range) -
                          RAJA::stripIndexType(tid) - 1] =
-                        thread_range - tid - 1 + thread_range * bid;
+                            thread_range - tid - 1 + thread_range * bid;
                   });
 
               ctx.teamSync();
@@ -97,12 +100,13 @@ void LaunchStaticMemTestImpl(INDEX_TYPE block_range)
 
   for (size_t i = 0; i < data_len; i++)
   {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(
+        test_array[RAJA::stripIndexType(i)],
+        check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
-                                       test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -114,26 +118,25 @@ class LaunchStaticMemTest : public ::testing::Test
 TYPED_TEST_P(LaunchStaticMemTest, StaticMemLaunch)
 {
 
-  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using LAUNCH_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<0>>::type;
-  using TEAM_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<1>>::type;
-  using THREAD_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<2>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using LAUNCH_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<0>>::type;
+  using TEAM_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<1>>::type;
+  using THREAD_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<2>>::type;
 
 
-  LaunchStaticMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
-                          THREAD_POLICY, 2>(INDEX_TYPE(4));
+  LaunchStaticMemTestImpl<
+      INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY, 2>(
+      INDEX_TYPE(4));
 
-  LaunchStaticMemTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY,
-                          THREAD_POLICY, 32>(INDEX_TYPE(5));
+  LaunchStaticMemTestImpl<
+      INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, TEAM_POLICY, THREAD_POLICY, 32>(
+      INDEX_TYPE(5));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchStaticMemTest, StaticMemLaunch);
 
-#endif // __TEST_DYNAMIC_MEM_HPP__
+#endif  // __TEST_DYNAMIC_MEM_HPP__

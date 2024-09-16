@@ -76,8 +76,9 @@ void FMAImpl()
 
   for (camp::idx_t lane = 0; lane < num_elem; ++lane)
   {
-    ASSERT_SCALAR_EQ(input0_vec[lane] * input1_vec[lane] + input2_vec[lane],
-                     output0_vec[lane]);
+    ASSERT_SCALAR_EQ(
+        input0_vec[lane] * input1_vec[lane] + input2_vec[lane],
+        output0_vec[lane]);
   }
 
 

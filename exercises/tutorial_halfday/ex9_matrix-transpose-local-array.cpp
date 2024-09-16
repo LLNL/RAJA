@@ -85,7 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Construct a permuted layout for At so that the column index has stride 1
   //
-  std::array<RAJA::idx_t, 2> perm{{1, 0}};
+  std::array<RAJA::idx_t, 2> perm {{1, 0}};
   RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, perm);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
@@ -137,8 +137,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tcol = 0; tcol < TILE_SZ; ++tcol)
         {
 
-          int col = bcol * TILE_SZ + tcol; // Matrix column index
-          int row = brow * TILE_SZ + trow; // Matrix row index
+          int col = bcol * TILE_SZ + tcol;  // Matrix column index
+          int row = brow * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -159,8 +159,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int trow = 0; trow < TILE_SZ; ++trow)
         {
 
-          int col = bcol * TILE_SZ + tcol; // Matrix column index
-          int row = brow * TILE_SZ + trow; // Matrix row index
+          int col = bcol * TILE_SZ + tcol;  // Matrix column index
+          int row = brow * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -185,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // tile_fixed statements. Iterations inside a RAJA loop is given by their
   // global iteration number.
   //
-#if 0 // needed for exercises, but if-def'd out to quiet compiler warnings.
+#if 0  // needed for exercises, but if-def'd out to quiet compiler warnings.
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 #endif

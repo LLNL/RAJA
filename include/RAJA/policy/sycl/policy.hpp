@@ -57,7 +57,7 @@ struct get_launch<false>
 {
   static constexpr RAJA::Launch value = RAJA::Launch::sync;
 };
-} // end namespace detail
+}  // end namespace detail
 
 namespace policy
 {
@@ -113,8 +113,8 @@ template <typename Mask>
 struct sycl_local_masked_loop
 {};
 
-} // namespace sycl
-} // namespace policy
+}  // namespace sycl
+}  // namespace policy
 
 using policy::sycl::sycl_exec;
 using policy::sycl::sycl_reduce;
@@ -257,10 +257,10 @@ void set_sycl_dim(dim_t& d, int value)
 {
   return SyclDimHelper<dim>::set(d, value);
 }
-} // namespace internal
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // RAJA_ENABLE_SYCL
+#endif  // RAJA_ENABLE_SYCL
 
 #endif

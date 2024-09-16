@@ -35,10 +35,10 @@
 namespace RAJA
 {
 
-struct omp_parallel_collapse_exec
-    : make_policy_pattern_t<RAJA::Policy::openmp,
-                            RAJA::Pattern::forall,
-                            RAJA::policy::omp::For>
+struct omp_parallel_collapse_exec : make_policy_pattern_t<
+                                        RAJA::Policy::openmp,
+                                        RAJA::Pattern::forall,
+                                        RAJA::policy::omp::For>
 {};
 
 namespace internal
@@ -48,14 +48,17 @@ namespace internal
 // Collapsing two loops
 /////////
 
-template <camp::idx_t Arg0,
-          camp::idx_t Arg1,
-          typename... EnclosedStmts,
-          typename Types>
-struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
-                                             ArgList<Arg0, Arg1>,
-                                             EnclosedStmts...>,
-                         Types>
+template <
+    camp::idx_t Arg0,
+    camp::idx_t Arg1,
+    typename... EnclosedStmts,
+    typename Types>
+struct StatementExecutor<
+    statement::Collapse<
+        omp_parallel_collapse_exec,
+        ArgList<Arg0, Arg1>,
+        EnclosedStmts...>,
+    Types>
 {
 
 
@@ -93,15 +96,18 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 };
 
 
-template <camp::idx_t Arg0,
-          camp::idx_t Arg1,
-          camp::idx_t Arg2,
-          typename... EnclosedStmts,
-          typename Types>
-struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
-                                             ArgList<Arg0, Arg1, Arg2>,
-                                             EnclosedStmts...>,
-                         Types>
+template <
+    camp::idx_t Arg0,
+    camp::idx_t Arg1,
+    camp::idx_t Arg2,
+    typename... EnclosedStmts,
+    typename Types>
+struct StatementExecutor<
+    statement::Collapse<
+        omp_parallel_collapse_exec,
+        ArgList<Arg0, Arg1, Arg2>,
+        EnclosedStmts...>,
+    Types>
 {
 
 
@@ -143,11 +149,11 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 };
 
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
 #undef RAJA_COLLAPSE
 
-#endif // closing endif for RAJA_ENABLE_OPENMP guard
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

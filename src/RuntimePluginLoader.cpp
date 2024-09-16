@@ -15,8 +15,8 @@
 RAJA_INLINE
 bool isSharedObject(const std::string& filename)
 {
-  return (filename.size() > 3 &&
-          !filename.compare(filename.size() - 3, 3, ".so"));
+  return (
+      filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
 }
 
 namespace RAJA
@@ -146,8 +146,8 @@ void RuntimePluginLoader::initDirectory(const std::string& path)
 
 void linkRuntimePluginLoader() {}
 
-} // end namespace util
-} // end namespace RAJA
+}  // end namespace util
+}  // end namespace RAJA
 
 static RAJA::util::PluginRegistry::add<RAJA::util::RuntimePluginLoader>
     P("RuntimePluginLoader", "Dynamically load RAJA plugins.");

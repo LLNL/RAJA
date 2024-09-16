@@ -14,33 +14,34 @@
 #include "RAJA/util/CombiningAdapter.hpp"
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
-                                      INDEX_TYPE last0,
-                                      INDEX_TYPE first1,
-                                      INDEX_TYPE last1,
-                                      INDEX_TYPE first2,
-                                      INDEX_TYPE last2)
+void ForallCombiningAdapter3DTestImpl(
+    INDEX_TYPE first0,
+    INDEX_TYPE last0,
+    INDEX_TYPE first1,
+    INDEX_TYPE last1,
+    INDEX_TYPE first2,
+    INDEX_TYPE last2)
 {
-  RAJA::TypedRangeSegment<INDEX_TYPE> r0(RAJA::stripIndexType(first0),
-                                         RAJA::stripIndexType(last0));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first1),
-                                         RAJA::stripIndexType(last1));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r2(RAJA::stripIndexType(first2),
-                                         RAJA::stripIndexType(last2));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r0(
+      RAJA::stripIndexType(first0), RAJA::stripIndexType(last0));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(
+      RAJA::stripIndexType(first1), RAJA::stripIndexType(last1));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r2(
+      RAJA::stripIndexType(first2), RAJA::stripIndexType(last2));
   INDEX_TYPE N0 = static_cast<INDEX_TYPE>(r0.end() - r0.begin());
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N2 = static_cast<INDEX_TYPE>(r2.end() - r2.begin());
   INDEX_TYPE N  = N0 * N1 * N2;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   INDEX_TYPE*               working_array;
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
 
   size_t data_len = RAJA::stripIndexType(N) + 1;
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
   {
 
@@ -85,12 +86,13 @@ void ForallCombiningAdapter3DTestImpl(INDEX_TYPE first0,
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i <= N; i++)
   {
-    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-              check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(
+        test_array[RAJA::stripIndexType(i)],
+        check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
-                                       test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -99,19 +101,21 @@ template <typename T>
 class ForallCombiningAdapter3DTest : public ::testing::Test
 {};
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename std::enable_if<std::is_unsigned<
-              RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename std::enable_if<std::is_unsigned<
+        RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {}
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename EXEC_POLICY,
-          typename std::enable_if<std::is_signed<
-              RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename EXEC_POLICY,
+    typename std::enable_if<std::is_signed<
+        RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {
   // test zero-length range segment
@@ -163,4 +167,4 @@ TYPED_TEST_P(ForallCombiningAdapter3DTest, Forall3D)
 
 REGISTER_TYPED_TEST_SUITE_P(ForallCombiningAdapter3DTest, Forall3D);
 
-#endif // __TEST_FORALL_CombiningAdapter_3D_HPP__
+#endif  // __TEST_FORALL_CombiningAdapter_3D_HPP__

@@ -65,7 +65,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto
 makeTensorStoreFunctor(LHS_TYPE const& lhs, RHS_TYPE const& rhs)
     -> TensorStoreFunctor<STORAGE, LHS_TYPE, RHS_TYPE>
 {
-  return TensorStoreFunctor<STORAGE, LHS_TYPE, RHS_TYPE>{lhs, rhs};
+  return TensorStoreFunctor<STORAGE, LHS_TYPE, RHS_TYPE> {lhs, rhs};
 }
 
 
@@ -92,7 +92,7 @@ private:
 public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  explicit TensorLoadStore(ref_type const& ref) : m_ref{ref} {}
+  explicit TensorLoadStore(ref_type const& ref) : m_ref {ref} {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -170,8 +170,8 @@ public:
   RAJA_SUPPRESS_HD_WARN
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE auto eval_lhs(TILE_TYPE const& tile) const
-      -> decltype(TENSOR_TYPE::create_et_store_ref(merge_ref_tile(this->m_ref,
-                                                                  tile)))
+      -> decltype(TENSOR_TYPE::create_et_store_ref(
+          merge_ref_tile(this->m_ref, tile)))
   {
     return TENSOR_TYPE::create_et_store_ref(merge_ref_tile(m_ref, tile));
   }
@@ -209,12 +209,12 @@ private:
 };
 
 
-} // namespace ET
+}  // namespace ET
 
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
 #endif

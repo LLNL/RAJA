@@ -227,13 +227,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         });
 
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::seq_exec>(gridRange,
-                                 [=](RAJA::Index_type k)
-                                 {
-                                   RAJA_resI2 +=
-                                       (I[k] - Iold[k]) * (I[k] - Iold[k]);
-                                   Iold[k] = I[k];
-                                 });
+    RAJA::forall<RAJA::seq_exec>(
+        gridRange,
+        [=](RAJA::Index_type k)
+        {
+          RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);
+          Iold[k] = I[k];
+        });
 
     resI2 = RAJA_resI2;
     if (iteration > maxIter)
@@ -290,13 +290,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
 
-    RAJA::forall<RAJA::omp_parallel_for_exec>(gridRange,
-                                              [=](RAJA::Index_type k)
-                                              {
-                                                RAJA_resI2 += (I[k] - Iold[k]) *
-                                                              (I[k] - Iold[k]);
-                                                Iold[k] = I[k];
-                                              });
+    RAJA::forall<RAJA::omp_parallel_for_exec>(
+        gridRange,
+        [=](RAJA::Index_type k)
+        {
+          RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);
+          Iold[k] = I[k];
+        });
 
     resI2 = RAJA_resI2;
     if (iteration > maxIter)
@@ -332,8 +332,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0, RAJA::tile_fixed<32>, RAJA::cuda_block_x_loop,
               RAJA::statement::For<
                   1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
-                                       RAJA::statement::Lambda<0>>>>>>>;
+                  RAJA::statement::For<
+                      0, RAJA::cuda_thread_x_direct,
+                      RAJA::statement::Lambda<0>>>>>>>;
 
   resI2     = 1;
   iteration = 0;
@@ -408,8 +409,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
               0, RAJA::tile_fixed<32>, RAJA::hip_block_x_loop,
               RAJA::statement::For<
                   1, RAJA::hip_thread_y_direct,
-                  RAJA::statement::For<0, RAJA::hip_thread_x_direct,
-                                       RAJA::statement::Lambda<0>>>>>>>;
+                  RAJA::statement::For<
+                      0, RAJA::hip_thread_x_direct,
+                      RAJA::statement::Lambda<0>>>>>>>;
 
   resI2     = 1;
   iteration = 0;

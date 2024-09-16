@@ -221,15 +221,15 @@ template <camp::idx_t... Range, camp::idx_t... Perm>
 struct InversePermutationHelper<camp::idx_seq<Range...>, camp::idx_seq<Perm...>>
 {
   static_assert(sizeof...(Range) == sizeof...(Perm), "Fatal Error");
-  using type = camp::idx_seq<
-      CalcInversePermutationElem<Range,
-                                 0,
-                                 sizeof...(Range),
-                                 camp::idx_seq<Perm...>>::value...>;
+  using type = camp::idx_seq<CalcInversePermutationElem<
+      Range,
+      0,
+      sizeof...(Range),
+      camp::idx_seq<Perm...>>::value...>;
 };
 
 
-} // namespace internal
+}  // namespace internal
 
 
 /*!
@@ -240,6 +240,6 @@ using invert_permutation = typename internal::InversePermutationHelper<
     camp::make_idx_seq_t<camp::size<Perm>::value>,
     Perm>::type;
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

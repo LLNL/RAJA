@@ -64,7 +64,7 @@ struct atomic<sum<T>>
 {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicAdd(RAJA::hip_atomic{}, &val, v);
+    RAJA::atomicAdd(RAJA::hip_atomic {}, &val, v);
   }
 };
 
@@ -73,7 +73,7 @@ struct atomic<min<T>>
 {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMin(RAJA::hip_atomic{}, &val, v);
+    RAJA::atomicMin(RAJA::hip_atomic {}, &val, v);
   }
 };
 
@@ -82,7 +82,7 @@ struct atomic<max<T>>
 {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicMax(RAJA::hip_atomic{}, &val, v);
+    RAJA::atomicMax(RAJA::hip_atomic {}, &val, v);
   }
 };
 
@@ -91,7 +91,7 @@ struct atomic<and_bit<T>>
 {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicAnd(RAJA::hip_atomic{}, &val, v);
+    RAJA::atomicAnd(RAJA::hip_atomic {}, &val, v);
   }
 };
 
@@ -100,7 +100,7 @@ struct atomic<or_bit<T>>
 {
   RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
-    RAJA::atomicOr(RAJA::hip_atomic{}, &val, v);
+    RAJA::atomicOr(RAJA::hip_atomic {}, &val, v);
   }
 };
 
@@ -112,9 +112,9 @@ struct hip_atomic_available
       std::is_same<T, float>::value || std::is_same<T, double>::value;
 };
 
-} // namespace hip
+}  // namespace hip
 
-} // namespace reduce
+}  // namespace reduce
 
 namespace hip
 {
@@ -124,16 +124,18 @@ namespace impl
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename Combiner,
-          typename Accessor,
-          int replication,
-          int atomic_stride,
-          typename T,
-          typename TempIterator>
-RAJA_DEVICE RAJA_INLINE int grid_reduce_last_block(T&            val,
-                                                   T             identity,
-                                                   TempIterator  in_device_mem,
-                                                   unsigned int* device_count)
+template <
+    typename Combiner,
+    typename Accessor,
+    int replication,
+    int atomic_stride,
+    typename T,
+    typename TempIterator>
+RAJA_DEVICE RAJA_INLINE int grid_reduce_last_block(
+    T&            val,
+    T             identity,
+    TempIterator  in_device_mem,
+    unsigned int* device_count)
 {
   typename TempIterator::template rebind_accessor<Accessor> device_mem(
       in_device_mem);
@@ -192,7 +194,7 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce_last_block(T&            val,
 
     for (unsigned int i = threadId; i < numSlots; i += numThreads)
     {
-      Combiner{}(temp, device_mem.get(beginSlots + i));
+      Combiner {}(temp, device_mem.get(beginSlots + i));
     }
 
     temp = block_reduce<Combiner>(temp, identity);
@@ -228,7 +230,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     for (int i = 1; i < RAJA::policy::hip::device_constants.WARP_SIZE; i *= 2)
     {
       T rhs = RAJA::hip::impl::shfl_xor_sync(temp, i);
-      temp  = Combiner{}(temp, rhs);
+      temp  = Combiner {}(temp, rhs);
     }
   }
   else
@@ -242,24 +244,25 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads)
       {
-        temp = Combiner{}(temp, rhs);
+        temp = Combiner {}(temp, rhs);
       }
     }
   }
 
-  static_assert(RAJA::policy::hip::device_constants.MAX_WARPS <=
-                    RAJA::policy::hip::device_constants.WARP_SIZE,
-                "Max Warps must be less than or equal to Warp Size for this "
-                "algorithm to work");
+  static_assert(
+      RAJA::policy::hip::device_constants.MAX_WARPS <=
+          RAJA::policy::hip::device_constants.WARP_SIZE,
+      "Max Warps must be less than or equal to Warp Size for this "
+      "algorithm to work");
 
   // reduce per warp values
   if (numThreads > RAJA::policy::hip::device_constants.WARP_SIZE)
   {
 
     // Need to separate declaration and initialization for clang-hip
-    __shared__ unsigned char tmpsd[sizeof(
-        RAJA::detail::SoAArray<T,
-                               RAJA::policy::hip::device_constants.MAX_WARPS>)];
+    __shared__ unsigned char
+        tmpsd[sizeof(RAJA::detail::SoAArray<
+                     T, RAJA::policy::hip::device_constants.MAX_WARPS>)];
 
     // Partial placement new: Should call new(tmpsd) here but recasting memory
     // to avoid calling constructor/destructor in shared memory.
@@ -291,7 +294,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
       for (int i = 1; i < RAJA::policy::hip::device_constants.MAX_WARPS; i *= 2)
       {
         T rhs = RAJA::hip::impl::shfl_xor_sync(temp, i);
-        temp  = Combiner{}(temp, rhs);
+        temp  = Combiner {}(temp, rhs);
       }
     }
 
@@ -343,7 +346,7 @@ grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red)
 
     for (int i = threadId; i < numBlocks; i += numThreads)
     {
-      temp = OP{}(temp, red.device_mem.get(i));
+      temp = OP {}(temp, red.device_mem.get(i));
     }
 
     temp = block_reduce<ThreadIterationGetter, OP>(temp, OP::identity());
@@ -356,21 +359,22 @@ grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red)
   }
 }
 
-} //  namespace expt
+}  //  namespace expt
 
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename Combiner,
-          typename Accessor,
-          int replication,
-          int atomic_stride,
-          typename T>
-RAJA_DEVICE RAJA_INLINE int
-grid_reduce_atomic_device_init(T&            val,
-                               T             identity,
-                               T*            device_mem,
-                               unsigned int* device_count)
+template <
+    typename Combiner,
+    typename Accessor,
+    int replication,
+    int atomic_stride,
+    typename T>
+RAJA_DEVICE RAJA_INLINE int grid_reduce_atomic_device_init(
+    T&            val,
+    T             identity,
+    T*            device_mem,
+    unsigned int* device_count)
 {
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -417,7 +421,7 @@ grid_reduce_atomic_device_init(T&            val,
     while (::atomicAdd(&device_count[atomicOffset], 0u) < 2u)
       ;
     Accessor::fence_acquire();
-    RAJA::reduce::hip::atomic<Combiner>{}(device_mem[atomicOffset], temp);
+    RAJA::reduce::hip::atomic<Combiner> {}(device_mem[atomicOffset], temp);
     Accessor::fence_release();
     // increment counter, (wraps back to zero if old count == (numSlots+1))
     unsigned int old_count =
@@ -454,11 +458,11 @@ grid_reduce_atomic_host_init(T& val, T identity, T* device_mem)
   // one thread per block performs an atomic on device_mem
   if (threadId == 0 && temp != identity)
   {
-    RAJA::reduce::hip::atomic<Combiner>{}(device_mem[atomicOffset], temp);
+    RAJA::reduce::hip::atomic<Combiner> {}(device_mem[atomicOffset], temp);
   }
 }
 
-} // namespace impl
+}  // namespace impl
 
 //! Object that manages pinned memory buffers for reduction results
 //  use one per reducer object
@@ -660,11 +664,12 @@ private:
 
 //! Reduction data for Hip Offload -- stores value, host pointer, and device
 //! pointer
-template <typename Combiner,
-          typename Accessor,
-          typename T,
-          size_t replication,
-          size_t atomic_stride>
+template <
+    typename Combiner,
+    typename Accessor,
+    typename T,
+    size_t replication,
+    size_t atomic_stride>
 struct ReduceLastBlock_Data
 {
   using tally_mempool_type = pinned_mempool_type;
@@ -679,7 +684,7 @@ struct ReduceLastBlock_Data
   RAJA::detail::SoAPtr<T, data_mempool_type> device;
   bool                                       own_device_ptr;
 
-  ReduceLastBlock_Data() : ReduceLastBlock_Data(T(), T()){};
+  ReduceLastBlock_Data() : ReduceLastBlock_Data(T(), T()) {};
 
   /*! \brief create from a default value and offload information
    *
@@ -687,20 +692,20 @@ struct ReduceLastBlock_Data
    */
 
   ReduceLastBlock_Data(T initValue, T identity_)
-      : value{initValue},
-        identity{identity_},
-        device_count{nullptr},
-        device{},
-        own_device_ptr{false}
+      : value {initValue},
+        identity {identity_},
+        device_count {nullptr},
+        device {},
+        own_device_ptr {false}
   {}
 
   RAJA_HOST_DEVICE
   ReduceLastBlock_Data(const ReduceLastBlock_Data& other)
-      : value{other.identity},
-        identity{other.identity},
-        device_count{other.device_count},
-        device{other.device},
-        own_device_ptr{false}
+      : value {other.identity},
+        identity {other.identity},
+        device_count {other.device_count},
+        device {other.device},
+        own_device_ptr {false}
   {}
 
   ReduceLastBlock_Data& operator=(const ReduceLastBlock_Data&) = default;
@@ -720,11 +725,10 @@ struct ReduceLastBlock_Data
   RAJA_DEVICE
   void grid_reduce(T* output)
   {
-    T      temp = value;
-    size_t replicationId =
-        impl::grid_reduce_last_block<Combiner, Accessor, replication,
-                                     atomic_stride>(temp, identity, device,
-                                                    device_count);
+    T      temp          = value;
+    size_t replicationId = impl::grid_reduce_last_block<
+        Combiner, Accessor, replication, atomic_stride>(
+        temp, identity, device, device_count);
     if (replicationId != replication)
     {
       output[replicationId] = temp;
@@ -768,10 +772,11 @@ struct ReduceLastBlock_Data
 
 
 //! Reduction data for Hip Offload -- stores value, host pointer
-template <typename Combiner,
-          typename T,
-          size_t replication,
-          size_t atomic_stride>
+template <
+    typename Combiner,
+    typename T,
+    size_t replication,
+    size_t atomic_stride>
 struct ReduceAtomicHostInit_Data
 {
   using tally_mempool_type = device_pinned_mempool_type;
@@ -786,18 +791,18 @@ struct ReduceAtomicHostInit_Data
   ReduceAtomicHostInit_Data() : ReduceAtomicHostInit_Data(T(), T()) {}
 
   ReduceAtomicHostInit_Data(T initValue, T identity_)
-      : value{initValue},
-        identity{identity_},
-        is_setup{false},
-        own_device_ptr{false}
+      : value {initValue},
+        identity {identity_},
+        is_setup {false},
+        own_device_ptr {false}
   {}
 
   RAJA_HOST_DEVICE
   ReduceAtomicHostInit_Data(const ReduceAtomicHostInit_Data& other)
-      : value{other.identity},
-        identity{other.identity},
-        is_setup{other.is_setup},
-        own_device_ptr{false}
+      : value {other.identity},
+        identity {other.identity},
+        is_setup {other.is_setup},
+        own_device_ptr {false}
   {}
 
   ReduceAtomicHostInit_Data&
@@ -852,11 +857,12 @@ struct ReduceAtomicHostInit_Data
 };
 
 //! Reduction data for Hip Offload -- stores value, host pointer
-template <typename Combiner,
-          typename Accessor,
-          typename T,
-          size_t replication,
-          size_t atomic_stride>
+template <
+    typename Combiner,
+    typename Accessor,
+    typename T,
+    size_t replication,
+    size_t atomic_stride>
 struct ReduceAtomicDeviceInit_Data
 {
   using tally_mempool_type = pinned_mempool_type;
@@ -874,20 +880,20 @@ struct ReduceAtomicDeviceInit_Data
   ReduceAtomicDeviceInit_Data() : ReduceAtomicDeviceInit_Data(T(), T()) {}
 
   ReduceAtomicDeviceInit_Data(T initValue, T identity_)
-      : value{initValue},
-        identity{identity_},
-        device_count{nullptr},
-        device{nullptr},
-        own_device_ptr{false}
+      : value {initValue},
+        identity {identity_},
+        device_count {nullptr},
+        device {nullptr},
+        own_device_ptr {false}
   {}
 
   RAJA_HOST_DEVICE
   ReduceAtomicDeviceInit_Data(const ReduceAtomicDeviceInit_Data& other)
-      : value{other.identity},
-        identity{other.identity},
-        device_count{other.device_count},
-        device{other.device},
-        own_device_ptr{false}
+      : value {other.identity},
+        identity {other.identity},
+        device_count {other.device_count},
+        device {other.device},
+        own_device_ptr {false}
   {}
 
   ReduceAtomicDeviceInit_Data&
@@ -910,10 +916,9 @@ struct ReduceAtomicDeviceInit_Data
   {
     T temp = value;
 
-    size_t replicationId =
-        impl::grid_reduce_atomic_device_init<Combiner, Accessor, replication,
-                                             atomic_stride>(
-            temp, identity, device, device_count);
+    size_t replicationId = impl::grid_reduce_atomic_device_init<
+        Combiner, Accessor, replication, atomic_stride>(
+        temp, identity, device, device_count);
     if (replicationId != replication)
     {
       output[replicationId] = temp;
@@ -975,10 +980,10 @@ class Reduce
   using Accessor = std::conditional_t<
       (tuning::comm_mode == block_communication_mode::block_fence),
       impl::AccessorDeviceScopeUseBlockFence,
-      std::conditional_t<(tuning::comm_mode ==
-                          block_communication_mode::device_fence),
-                         impl::AccessorDeviceScopeUseDeviceFence,
-                         void>>;
+      std::conditional_t<
+          (tuning::comm_mode == block_communication_mode::device_fence),
+          impl::AccessorDeviceScopeUseDeviceFence,
+          void>>;
 
   static constexpr bool atomic_policy =
       (tuning::algorithm ==
@@ -991,36 +996,40 @@ class Reduce
   using reduce_data_type = std::conditional_t<
       (tuning::algorithm == reduce_algorithm::combine_last_block) ||
           (atomic_policy && !atomic_available),
-      hip::ReduceLastBlock_Data<Combiner,
-                                Accessor,
-                                T,
-                                replication,
-                                atomic_stride>,
+      hip::ReduceLastBlock_Data<
+          Combiner,
+          Accessor,
+          T,
+          replication,
+          atomic_stride>,
       std::conditional_t<
           atomic_available,
           std::conditional_t<
               (tuning::algorithm ==
                reduce_algorithm::init_device_combine_atomic_block),
-              hip::ReduceAtomicDeviceInit_Data<Combiner,
-                                               Accessor,
-                                               T,
-                                               replication,
-                                               atomic_stride>,
+              hip::ReduceAtomicDeviceInit_Data<
+                  Combiner,
+                  Accessor,
+                  T,
+                  replication,
+                  atomic_stride>,
               std::conditional_t<
                   (tuning::algorithm ==
                    reduce_algorithm::init_host_combine_atomic_block),
-                  hip::ReduceAtomicHostInit_Data<Combiner,
-                                                 T,
-                                                 replication,
-                                                 atomic_stride>,
+                  hip::ReduceAtomicHostInit_Data<
+                      Combiner,
+                      T,
+                      replication,
+                      atomic_stride>,
                   void>>,
           void>>;
 
   static constexpr size_t tally_slots = reduce_data_type::tally_slots;
 
-  using TallyType = PinnedTally<T,
-                                tally_slots,
-                                typename reduce_data_type::tally_mempool_type>;
+  using TallyType = PinnedTally<
+      T,
+      tally_slots,
+      typename reduce_data_type::tally_mempool_type>;
 
   //! union to hold either pointer to PinnedTally or pointer to value
   //  only use list before setup for device and only use val_ptr after
@@ -1028,8 +1037,8 @@ class Reduce
   {
     TallyType* list;
     T*         val_ptr;
-    constexpr tally_u(TallyType* l) : list(l){};
-    constexpr tally_u(T* v_ptr) : val_ptr(v_ptr){};
+    constexpr tally_u(TallyType* l) : list(l) {};
+    constexpr tally_u(T* v_ptr) : val_ptr(v_ptr) {};
   };
 
 public:
@@ -1038,12 +1047,14 @@ public:
   //! create a reduce object
   //  the original object's parent is itself
   explicit Reduce(T init_val, T identity_ = Combiner::identity())
-      : parent{this}, tally_or_val_ptr{new TallyType}, val(init_val, identity_)
+      : parent {this},
+        tally_or_val_ptr {new TallyType},
+        val(init_val, identity_)
   {}
 
   void reset(T in_val, T identity_ = Combiner::identity())
   {
-    operator T(); // syncs device
+    operator T();  // syncs device
     val = reduce_data_type(in_val, identity_);
   }
 
@@ -1053,11 +1064,11 @@ public:
   RAJA_HOST_DEVICE
   Reduce(const Reduce& other)
 #if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
-      : parent{other.parent},
+      : parent {other.parent},
 #else
-      : parent{&other},
+      : parent {&other},
 #endif
-        tally_or_val_ptr{other.tally_or_val_ptr},
+        tally_or_val_ptr {other.tally_or_val_ptr},
         val(other.val)
   {
 #if !defined(RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE)
@@ -1141,7 +1152,7 @@ public:
 
   //! apply reduction (const version) -- still combines internal values
   RAJA_HOST_DEVICE
-  void combine(T other) const { Combiner{}(val.value, other); }
+  void combine(T other) const { Combiner {}(val.value, other); }
 
   /*!
    *  \return reference to the local value
@@ -1156,7 +1167,7 @@ private:
   reduce_data_type val;
 };
 
-} // end namespace hip
+}  // end namespace hip
 
 //! specialization of ReduceSum for hip_reduce
 template <typename tuning, typename T>
@@ -1265,25 +1276,28 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  ReduceMinLoc(T         init_val,
-               IndexType init_idx,
-               T         identity_val = NonLocCombiner::identity(),
-               IndexType identity_idx =
-                   RAJA::reduce::detail::DefaultLoc<IndexType>().value())
-      : Base(value_type(init_val, init_idx),
-             value_type(identity_val, identity_idx))
+  ReduceMinLoc(
+      T         init_val,
+      IndexType init_idx,
+      T         identity_val = NonLocCombiner::identity(),
+      IndexType identity_idx =
+          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+      : Base(
+            value_type(init_val, init_idx),
+            value_type(identity_val, identity_idx))
   {}
 
   //! reset requires a default value for the reducer
   // this must be here to hide Base::reset
-  void reset(T         init_val,
-             IndexType init_idx,
-             T         identity_val = NonLocCombiner::identity(),
-             IndexType identity_idx =
-                 RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  void reset(
+      T         init_val,
+      IndexType init_idx,
+      T         identity_val = NonLocCombiner::identity(),
+      IndexType identity_idx =
+          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
-    Base::reset(value_type(init_val, init_idx),
-                value_type(identity_val, identity_idx));
+    Base::reset(
+        value_type(init_val, init_idx), value_type(identity_val, identity_idx));
   }
 
   //! reducer function; updates the current instance's state
@@ -1321,25 +1335,28 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  ReduceMaxLoc(T         init_val,
-               IndexType init_idx,
-               T         identity_val = NonLocCombiner::identity(),
-               IndexType identity_idx =
-                   RAJA::reduce::detail::DefaultLoc<IndexType>().value())
-      : Base(value_type(init_val, init_idx),
-             value_type(identity_val, identity_idx))
+  ReduceMaxLoc(
+      T         init_val,
+      IndexType init_idx,
+      T         identity_val = NonLocCombiner::identity(),
+      IndexType identity_idx =
+          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+      : Base(
+            value_type(init_val, init_idx),
+            value_type(identity_val, identity_idx))
   {}
 
   //! reset requires a default value for the reducer
   // this must be here to hide Base::reset
-  void reset(T         init_val,
-             IndexType init_idx,
-             T         identity_val = NonLocCombiner::identity(),
-             IndexType identity_idx =
-                 RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  void reset(
+      T         init_val,
+      IndexType init_idx,
+      T         identity_val = NonLocCombiner::identity(),
+      IndexType identity_idx =
+          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
-    Base::reset(value_type(init_val, init_idx),
-                value_type(identity_val, identity_idx));
+    Base::reset(
+        value_type(init_val, init_idx), value_type(identity_val, identity_idx));
   }
 
   //! reducer function; updates the current instance's state
@@ -1360,8 +1377,8 @@ public:
   T get() { return Base::get(); }
 };
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_HIP guard
+#endif  // closing endif for RAJA_ENABLE_HIP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

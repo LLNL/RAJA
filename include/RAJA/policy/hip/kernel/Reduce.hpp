@@ -34,18 +34,21 @@ namespace internal
 //
 // Executor that handles reductions across a single HIP thread block
 //
-template <typename Data,
-          template <typename...>
-          class ReduceOperator,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<Data,
-                            statement::Reduce<RAJA::hip_block_reduce,
-                                              ReduceOperator,
-                                              ParamId,
-                                              EnclosedStmts...>,
-                            Types>
+template <
+    typename Data,
+    template <typename...>
+    class ReduceOperator,
+    typename ParamId,
+    typename... EnclosedStmts,
+    typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::Reduce<
+        RAJA::hip_block_reduce,
+        ReduceOperator,
+        ParamId,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -96,18 +99,21 @@ struct HipStatementExecutor<Data,
 //
 // Executor that handles reductions across a single HIP thread warp
 //
-template <typename Data,
-          template <typename...>
-          class ReduceOperator,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<Data,
-                            statement::Reduce<RAJA::hip_warp_reduce,
-                                              ReduceOperator,
-                                              ParamId,
-                                              EnclosedStmts...>,
-                            Types>
+template <
+    typename Data,
+    template <typename...>
+    class ReduceOperator,
+    typename ParamId,
+    typename... EnclosedStmts,
+    typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::Reduce<
+        RAJA::hip_warp_reduce,
+        ReduceOperator,
+        ParamId,
+        EnclosedStmts...>,
+    Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -154,8 +160,8 @@ struct HipStatementExecutor<Data,
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_policy_hip_kernel_Reduce_HPP */

@@ -52,7 +52,7 @@ struct CudaSyncThreads : public internal::Statement<camp::nil>
 struct CudaSyncWarp : public internal::Statement<camp::nil>
 {};
 
-} // namespace statement
+}  // namespace statement
 
 namespace internal
 {
@@ -96,9 +96,9 @@ struct CudaStatementExecutor<Data, statement::CudaSyncWarp, Types>
 };
 
 
-} // namespace internal
-} // namespace RAJA
+}  // namespace internal
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

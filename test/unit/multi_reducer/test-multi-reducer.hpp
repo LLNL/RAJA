@@ -44,4 +44,4 @@ using HipMultiReducerPolicyList = camp::list<
     RAJA::hip_multi_reduce_atomic_global_no_replication_host_init>;
 #endif
 
-#endif // __TEST_MULTI_REDUCER_UTILS_HPP__
+#endif  // __TEST_MULTI_REDUCER_UTILS_HPP__

@@ -16,10 +16,11 @@
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct PreIncCountOp
 {
-  PreIncCountOp(T*                               dcount,
-                T*                               hcount,
-                camp::resources::Resource        work_res,
-                RAJA::TypedRangeSegment<IdxType> seg)
+  PreIncCountOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : counter(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -37,10 +38,11 @@ struct PreIncCountOp
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct PostIncCountOp
 {
-  PostIncCountOp(T*                               dcount,
-                 T*                               hcount,
-                 camp::resources::Resource        work_res,
-                 RAJA::TypedRangeSegment<IdxType> seg)
+  PostIncCountOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : counter(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -58,10 +60,11 @@ struct PostIncCountOp
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct AddEqCountOp
 {
-  AddEqCountOp(T*                               dcount,
-               T*                               hcount,
-               camp::resources::Resource        work_res,
-               RAJA::TypedRangeSegment<IdxType> seg)
+  AddEqCountOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : counter(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -82,10 +85,11 @@ struct AddEqCountOp
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchAddCountOp
 {
-  FetchAddCountOp(T*                               dcount,
-                  T*                               hcount,
-                  camp::resources::Resource        work_res,
-                  RAJA::TypedRangeSegment<IdxType> seg)
+  FetchAddCountOp(
+      T*                               dcount,
+      T*                               hcount,
+      camp::resources::Resource        work_res,
+      RAJA::TypedRangeSegment<IdxType> seg)
       : counter(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -103,38 +107,42 @@ struct FetchAddCountOp
   T                                min, max, final;
 };
 
-template <typename ExecPolicy,
-          typename AtomicPolicy,
-          typename IdxType,
-          typename T,
-          template <typename, typename, typename>
-          class CountOp>
-void testAtomicRefAdd(RAJA::TypedRangeSegment<IdxType> seg,
-                      T*                               count,
-                      T*                               list,
-                      bool*                            hit,
-                      T*                               hcount,
-                      T*                               hlist,
-                      bool*                            hhit,
-                      camp::resources::Resource        work_res,
-                      IdxType                          N)
+template <
+    typename ExecPolicy,
+    typename AtomicPolicy,
+    typename IdxType,
+    typename T,
+    template <typename, typename, typename>
+    class CountOp>
+void testAtomicRefAdd(
+    RAJA::TypedRangeSegment<IdxType> seg,
+    T*                               count,
+    T*                               list,
+    bool*                            hit,
+    T*                               hcount,
+    T*                               hlist,
+    bool*                            hhit,
+    camp::resources::Resource        work_res,
+    IdxType                          N)
 {
   CountOp<T, AtomicPolicy, IdxType> countop(count, hcount, work_res, seg);
 
-  RAJA::forall<ExecPolicy>(seg,
-                           [=] RAJA_HOST_DEVICE(IdxType i)
-                           {
-                             list[i] = countop.max + (T)1;
-                             hit[i]  = false;
-                           });
+  RAJA::forall<ExecPolicy>(
+      seg,
+      [=] RAJA_HOST_DEVICE(IdxType i)
+      {
+        list[i] = countop.max + (T)1;
+        hit[i]  = false;
+      });
 
-  RAJA::forall<ExecPolicy>(seg,
-                           [=] RAJA_HOST_DEVICE(IdxType i)
-                           {
-                             T val             = countop(i);
-                             list[i]           = val;
-                             hit[(IdxType)val] = true;
-                           });
+  RAJA::forall<ExecPolicy>(
+      seg,
+      [=] RAJA_HOST_DEVICE(IdxType i)
+      {
+        T val             = countop(i);
+        list[i]           = val;
+        hit[(IdxType)val] = true;
+      });
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -165,18 +173,19 @@ void testAtomicRefAdd(RAJA::TypedRangeSegment<IdxType> seg,
 }
 
 
-template <typename ExecPolicy,
-          typename AtomicPolicy,
-          typename WORKINGRES,
-          typename IdxType,
-          typename T>
+template <
+    typename ExecPolicy,
+    typename AtomicPolicy,
+    typename WORKINGRES,
+    typename IdxType,
+    typename T>
 void ForallAtomicRefAddTestImpl(IdxType N)
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
-  camp::resources::Resource work_res{WORKINGRES()};
+  camp::resources::Resource work_res {WORKINGRES()};
 
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res {camp::resources::Host()};
 
   T*    count = work_res.allocate<T>(1);
   T*    list  = work_res.allocate<T>(N);
@@ -230,4 +239,4 @@ TYPED_TEST_P(ForallAtomicRefAddTest, AtomicRefAddForall)
 
 REGISTER_TYPED_TEST_SUITE_P(ForallAtomicRefAddTest, AtomicRefAddForall);
 
-#endif //__TEST_FORALL_ATOMICREF_ADD_HPP__
+#endif  //__TEST_FORALL_ATOMICREF_ADD_HPP__

@@ -125,8 +125,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tx = 0; tx < TILE_DIM; ++tx)
         {
 
-          int col = bx * TILE_DIM + tx; // Matrix column index
-          int row = by * TILE_DIM + ty; // Matrix row index
+          int col = bx * TILE_DIM + tx;  // Matrix column index
+          int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -169,8 +169,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
   RAJA::launch<launch_policy_1>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
-                            // cpu
+      RAJA::LaunchParams(),  // LaunchParams may be empty when running on the
+                             // cpu
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<loop_pol_1>(
@@ -181,16 +181,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<loop_pol_1>(ctx, row_tile,
-                                           [&](int row)
-                                           {
-                                             RAJA::loop<loop_pol_1>(
-                                                 ctx, col_tile,
-                                                 [&](int col) {
-                                                   Atview(col, row) =
-                                                       Aview(row, col);
-                                                 });
-                                           });
+                    RAJA::loop<loop_pol_1>(
+                        ctx, row_tile,
+                        [&](int row)
+                        {
+                          RAJA::loop<loop_pol_1>(
+                              ctx, col_tile,
+                              [&](int col)
+                              { Atview(col, row) = Aview(row, col); });
+                        });
                   });
             });
       });
@@ -215,8 +214,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
   RAJA::launch<launch_policy_2>(
-      RAJA::LaunchParams(), // LaunchParams may be empty when running on the
-                            // cpu
+      RAJA::LaunchParams(),  // LaunchParams may be empty when running on the
+                             // cpu
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<omp_for_pol_2>(
@@ -227,16 +226,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<loop_pol_2>(ctx, row_tile,
-                                           [&](int row)
-                                           {
-                                             RAJA::loop<loop_pol_2>(
-                                                 ctx, col_tile,
-                                                 [&](int col) {
-                                                   Atview(col, row) =
-                                                       Aview(row, col);
-                                                 });
-                                           });
+                    RAJA::loop<loop_pol_2>(
+                        ctx, row_tile,
+                        [&](int row)
+                        {
+                          RAJA::loop<loop_pol_2>(
+                              ctx, col_tile,
+                              [&](int col)
+                              { Atview(col, row) = Aview(row, col); });
+                        });
                   });
             });
       });
@@ -270,8 +268,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       RAJA::LaunchPolicy<RAJA::cuda_launch_t<cuda_async>>;
 
   RAJA::launch<cuda_launch_policy>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
-                         RAJA::Threads(c_block_sz, r_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_c, n_blocks_r),
+          RAJA::Threads(c_block_sz, r_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<cuda_teams_y>(
@@ -282,16 +281,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<cuda_threads_y>(ctx, row_tile,
-                                               [&](int row)
-                                               {
-                                                 RAJA::loop<cuda_threads_x>(
-                                                     ctx, col_tile,
-                                                     [&](int col) {
-                                                       Atview(col, row) =
-                                                           Aview(row, col);
-                                                     });
-                                               });
+                    RAJA::loop<cuda_threads_y>(
+                        ctx, row_tile,
+                        [&](int row)
+                        {
+                          RAJA::loop<cuda_threads_x>(
+                              ctx, col_tile,
+                              [&](int col)
+                              { Atview(col, row) = Aview(row, col); });
+                        });
                   });
             });
       });
@@ -332,8 +330,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<hip_async>>;
 
   RAJA::launch<hip_launch_policy>(
-      RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
-                         RAJA::Threads(c_block_sz, r_block_sz)),
+      RAJA::LaunchParams(
+          RAJA::Teams(n_blocks_c, n_blocks_r),
+          RAJA::Threads(c_block_sz, r_block_sz)),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
         RAJA::tile<hip_teams_y>(
@@ -344,16 +343,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                   ctx, TILE_DIM, col_Range,
                   [&](RAJA::TypedRangeSegment<int> const& col_tile)
                   {
-                    RAJA::loop<hip_threads_y>(ctx, row_tile,
-                                              [&](int row)
-                                              {
-                                                RAJA::loop<hip_threads_x>(
-                                                    ctx, col_tile,
-                                                    [&](int col) {
-                                                      d_Atview(col, row) =
-                                                          d_Aview(row, col);
-                                                    });
-                                              });
+                    RAJA::loop<hip_threads_y>(
+                        ctx, row_tile,
+                        [&](int row)
+                        {
+                          RAJA::loop<hip_threads_x>(
+                              ctx, col_tile,
+                              [&](int col)
+                              { d_Atview(col, row) = d_Aview(row, col); });
+                        });
                   });
             });
       });

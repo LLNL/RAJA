@@ -21,10 +21,11 @@
 // Utility routine to construct index set with mix of Range, RangeStride,
 // and List segments to use in various tests.
 //
-template <typename INDEX_TYPE,
-          typename RANGE_TYPE,
-          typename RANGESTRIDE_TYPE,
-          typename LIST_TYPE>
+template <
+    typename INDEX_TYPE,
+    typename RANGE_TYPE,
+    typename RANGESTRIDE_TYPE,
+    typename LIST_TYPE>
 void buildIndexSet(
     RAJA::TypedIndexSet<RANGE_TYPE, RANGESTRIDE_TYPE, LIST_TYPE>& iset,
     std::vector<INDEX_TYPE>&                                      indices_out,
@@ -146,4 +147,4 @@ void buildIndexSet(
   last_idx = lseg_vec[lseg_len - 1];
 }
 
-#endif // __TEST_FORALL_INDEXSET_BUILD_HPP__
+#endif  // __TEST_FORALL_INDEXSET_BUILD_HPP__

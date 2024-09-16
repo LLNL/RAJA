@@ -61,9 +61,10 @@ RAJA_HOST_DEVICE bool is_addition_overflow(Type lhs, DifferenceType rhs)
 }
 
 template <typename Type, typename DifferenceType>
-RAJA_HOST_DEVICE bool is_subtraction_overflow(Type           lhs,
-                                              DifferenceType rhs,
-                                              bool iterator_on_left = true)
+RAJA_HOST_DEVICE bool is_subtraction_overflow(
+    Type           lhs,
+    DifferenceType rhs,
+    bool           iterator_on_left = true)
 {
   if (iterator_on_left)
   {
@@ -77,7 +78,7 @@ RAJA_HOST_DEVICE bool is_subtraction_overflow(Type           lhs,
     }
   }
   else
-  { // Special case where operation is : value(lhs) - iterator(rhs).
+  {  // Special case where operation is : value(lhs) - iterator(rhs).
 
     if (std::is_unsigned<DifferenceType>::value)
     {
@@ -97,17 +98,18 @@ RAJA_HOST_DEVICE void check_is_addition_overflow(Type lhs, DifferenceType rhs)
 }
 
 template <typename Type, typename DifferenceType>
-RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type           lhs,
-                                                    DifferenceType rhs)
+RAJA_HOST_DEVICE void
+check_is_subtraction_overflow(Type lhs, DifferenceType rhs)
 {
   if (is_subtraction_overflow(lhs, rhs))
     throw std::runtime_error(overflow_msg(lhs, rhs));
 }
 #endif
 
-template <typename Type           = Index_type,
-          typename DifferenceType = Type,
-          typename PointerType    = Type*>
+template <
+    typename Type           = Index_type,
+    typename DifferenceType = Type,
+    typename PointerType    = Type*>
 class numeric_iterator
 {
 public:
@@ -275,9 +277,10 @@ private:
   stripped_value_type val = 0;
 };
 
-template <typename Type           = Index_type,
-          typename DifferenceType = Type,
-          typename PointerType    = Type*>
+template <
+    typename Type           = Index_type,
+    typename DifferenceType = Type,
+    typename PointerType    = Type*>
 class strided_numeric_iterator
 {
 public:
@@ -346,11 +349,12 @@ public:
   RAJA_HOST_DEVICE inline difference_type
   operator-(const strided_numeric_iterator& rhs) const
   {
-    difference_type diff = (static_cast<difference_type>(val) -
-                            (static_cast<difference_type>(rhs.val)));
+    difference_type diff =
+        (static_cast<difference_type>(val) -
+         (static_cast<difference_type>(rhs.val)));
 
-    return (diff % stride != difference_type{0})
-               ? (difference_type{1} + diff / stride)
+    return (diff % stride != difference_type {0})
+               ? (difference_type {1} + diff / stride)
                : diff / stride;
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator
@@ -424,8 +428,8 @@ private:
 };
 
 
-} // namespace Iterators
+}  // namespace Iterators
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif /* RAJA_ITERATORS_HPP */

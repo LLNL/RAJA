@@ -45,11 +45,11 @@ private:
 
   std::vector<std::unique_ptr<Parent>> plugins;
 
-}; // end RuntimePluginLoader class
+};  // end RuntimePluginLoader class
 
 void linkRuntimePluginLoader();
 
-} // end namespace util
-} // end namespace RAJA
+}  // end namespace util
+}  // end namespace RAJA
 
 #endif

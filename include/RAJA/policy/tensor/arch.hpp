@@ -42,8 +42,8 @@ struct RegisterTraits;
  * static constexpr camp::idx s_num_elem = Y;
  *
  */
-} // namespace expt
-} // namespace internal
+}  // namespace expt
+}  // namespace internal
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -120,8 +120,8 @@ struct scalar_register
 using default_register = RAJA_TENSOR_REGISTER_TYPE;
 
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 //

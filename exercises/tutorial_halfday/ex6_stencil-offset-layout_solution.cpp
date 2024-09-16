@@ -186,9 +186,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       int idx_out = j + Nr_int * i;
       int idx_in  = (j + 1) + Nr_tot * (i + 1);
 
-      A_ref[idx_out] = B[idx_in] +                               // C
-                       B[idx_in - Nr_tot] + B[idx_in + Nr_tot] + // W, E
-                       B[idx_in - 1] + B[idx_in + 1];            // S, N
+      A_ref[idx_out] = B[idx_in] +                                // C
+                       B[idx_in - Nr_tot] + B[idx_in + Nr_tot] +  // W, E
+                       B[idx_in - 1] + B[idx_in + 1];             // S, N
     }
   }
 
@@ -222,9 +222,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int j = 0; j < Nr_int; ++j)
     {
 
-      Aview(i, j) = Bview(i, j) +                       // C
-                    Bview(i - 1, j) + Bview(i + 1, j) + // W, E
-                    Bview(i, j - 1) + Bview(i, j + 1);  // S, N
+      Aview(i, j) = Bview(i, j) +                        // C
+                    Bview(i - 1, j) + Bview(i + 1, j) +  // W, E
+                    Bview(i, j - 1) + Bview(i, j + 1);   // S, N
     }
   }
 
@@ -268,9 +268,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       int idx_out = i + Nc_int * j;
       int idx_in  = (i + 1) + Nc_tot * (j + 1);
 
-      A_ref[idx_out] = B[idx_in] +                               // C
-                       B[idx_in - Nc_tot] + B[idx_in + Nc_tot] + // S, N
-                       B[idx_in - 1] + B[idx_in + 1];            // W, E
+      A_ref[idx_out] = B[idx_in] +                                // C
+                       B[idx_in - Nc_tot] + B[idx_in + Nc_tot] +  // S, N
+                       B[idx_in - 1] + B[idx_in + 1];             // W, E
     }
   }
 
@@ -297,8 +297,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // application.
   //
 
-  std::array<RAJA::idx_t, DIM> perm{{1, 0}}; // 'i' index (position zero0)
-                                             // is stride-1
+  std::array<RAJA::idx_t, DIM> perm {{1, 0}};  // 'i' index (position zero0)
+                                               // is stride-1
 
   RAJA::OffsetLayout<DIM> pB_layout = RAJA::make_permuted_offset_layout(
       {{-1, -1}}, {{Nc_tot - 1, Nr_tot - 1}}, perm);
@@ -314,9 +314,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     for (int i = 0; i < Nc_int; ++i)
     {
 
-      pAview(i, j) = pBview(i, j) +                        // C
-                     pBview(i - 1, j) + pBview(i + 1, j) + // W, E
-                     pBview(i, j - 1) + pBview(i, j + 1);  // S, N
+      pAview(i, j) = pBview(i, j) +                         // C
+                     pBview(i - 1, j) + pBview(i + 1, j) +  // W, E
+                     pBview(i, j - 1) + pBview(i, j + 1);   // S, N
     }
   }
 

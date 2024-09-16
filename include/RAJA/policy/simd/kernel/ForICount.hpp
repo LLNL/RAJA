@@ -42,10 +42,11 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <camp::idx_t ArgumentId,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    camp::idx_t ArgumentId,
+    typename ParamId,
+    typename... EnclosedStmts,
+    typename Types>
 struct StatementExecutor<
     statement::
         ForICount<ArgumentId, ParamId, RAJA::simd_exec, EnclosedStmts...>,
@@ -83,8 +84,8 @@ struct StatementExecutor<
   }
 };
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif

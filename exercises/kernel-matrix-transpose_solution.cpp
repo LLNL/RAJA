@@ -129,9 +129,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<KERNEL_EXEC_POL>(RAJA::make_tuple(col_Range, row_Range),
-                                [=](int col, int row)
-                                { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL>(
+      RAJA::make_tuple(col_Range, row_Range),
+      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
   // _raja_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -151,9 +151,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       1, RAJA::omp_parallel_for_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<KERNEL_EXEC_POL_OMP>(RAJA::make_tuple(col_Range, row_Range),
-                                    [=](int col, int row)
-                                    { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>(
+      RAJA::make_tuple(col_Range, row_Range),
+      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -166,14 +166,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _raja_mattranspose_cuda_start
-  using KERNEL_EXEC_POL_CUDA = RAJA::KernelPolicy<RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
-                           RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
-                                                RAJA::statement::Lambda<0>>>>>;
+  using KERNEL_EXEC_POL_CUDA =
+      RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::For<
+          1, RAJA::cuda_thread_x_loop,
+          RAJA::statement::For<
+              0, RAJA::cuda_thread_y_loop, RAJA::statement::Lambda<0>>>>>;
 
-  RAJA::kernel<KERNEL_EXEC_POL_CUDA>(RAJA::make_tuple(col_Range, row_Range),
-                                     [=] RAJA_DEVICE(int col, int row)
-                                     { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL_CUDA>(
+      RAJA::make_tuple(col_Range, row_Range), [=] RAJA_DEVICE(int col, int row)
+      { Atview(col, row) = Aview(row, col); });
   // _raja_mattranspose_cuda_end
 
   checkResult<int>(Atview, N_c, N_r);

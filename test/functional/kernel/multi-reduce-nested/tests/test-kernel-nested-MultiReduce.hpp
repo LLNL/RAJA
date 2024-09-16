@@ -15,41 +15,45 @@
 #include <random>
 #include <type_traits>
 
-template <typename EXEC_POLICY,
-          typename REDUCE_POLICY,
-          typename ABSTRACTION,
-          typename DATA_TYPE,
-          typename IDX_TYPE,
-          typename SEGMENTS_TYPE,
-          typename Container,
-          typename WORKING_RES,
-          typename RandomGenerator>
+template <
+    typename EXEC_POLICY,
+    typename REDUCE_POLICY,
+    typename ABSTRACTION,
+    typename DATA_TYPE,
+    typename IDX_TYPE,
+    typename SEGMENTS_TYPE,
+    typename Container,
+    typename WORKING_RES,
+    typename RandomGenerator>
 // use enable_if in return type to appease nvcc 11.2
 // add bool return type to disambiguate signatures of these functions for MSVC
 std::enable_if_t<!ABSTRACTION::template supports<DATA_TYPE>(), bool>
-KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE&,
-                                const Container&,
-                                WORKING_RES,
-                                RandomGenerator&)
+KernelMultiReduceNestedTestImpl(
+    const SEGMENTS_TYPE&,
+    const Container&,
+    WORKING_RES,
+    RandomGenerator&)
 {
   return false;
 }
 ///
-template <typename EXEC_POLICY,
-          typename REDUCE_POLICY,
-          typename ABSTRACTION,
-          typename DATA_TYPE,
-          typename IDX_TYPE,
-          typename SEGMENTS_TYPE,
-          typename Container,
-          typename WORKING_RES,
-          typename RandomGenerator>
+template <
+    typename EXEC_POLICY,
+    typename REDUCE_POLICY,
+    typename ABSTRACTION,
+    typename DATA_TYPE,
+    typename IDX_TYPE,
+    typename SEGMENTS_TYPE,
+    typename Container,
+    typename WORKING_RES,
+    typename RandomGenerator>
 // use enable_if in return type to appease nvcc 11.2
 std::enable_if_t<ABSTRACTION::template supports<DATA_TYPE>()>
-KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
-                                const Container&     multi_init,
-                                WORKING_RES          working_res,
-                                RandomGenerator&     rngen)
+KernelMultiReduceNestedTestImpl(
+    const SEGMENTS_TYPE& segments,
+    const Container&     multi_init,
+    WORKING_RES          working_res,
+    RandomGenerator&     rngen)
 {
   using RAJA::get;
   using MULTIREDUCER =
@@ -86,8 +90,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
 
   IDX_TYPE data_len = 0;
 
-  allocateForallTestData(idx_range + 1, working_res, &working_range,
-                         &check_range, &test_range);
+  allocateForallTestData(
+      idx_range + 1, working_res, &working_range, &check_range, &test_range);
 
   for (IDX_TYPE i = 0; i < idx_range + 1; ++i)
   {
@@ -113,11 +117,11 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     }
   }
 
-  allocateForallTestData(data_len, working_res, &working_array, &check_array,
-                         &test_array);
+  allocateForallTestData(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
-  allocateForallTestData(data_len, working_res, &working_bins, &check_bins,
-                         &test_bins);
+  allocateForallTestData(
+      data_len, working_res, &working_bins, &check_bins, &test_bins);
 
   if (data_len > IDX_TYPE(0))
   {
@@ -137,8 +141,8 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     }
   }
 
-  working_res.memcpy(working_range, test_range,
-                     sizeof(IDX_TYPE) * (idx_range + 1));
+  working_res.memcpy(
+      working_range, test_range, sizeof(IDX_TYPE) * (idx_range + 1));
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
   working_res.memcpy(working_bins, test_bins, sizeof(IDX_TYPE) * data_len);
 
@@ -224,17 +228,18 @@ KernelMultiReduceNestedTestImpl(const SEGMENTS_TYPE& segments,
     {
 
       // use floating point values to accentuate floating point precision issues
-      std::conditional_t<!std::is_floating_point<DATA_TYPE>::value,
-                         std::uniform_int_distribution<DATA_TYPE>,
-                         std::uniform_real_distribution<DATA_TYPE>>
+      std::conditional_t<
+          !std::is_floating_point<DATA_TYPE>::value,
+          std::uniform_int_distribution<DATA_TYPE>,
+          std::uniform_real_distribution<DATA_TYPE>>
           array_flt_distribution(0, modval - 1);
 
       for (IDX_TYPE i = 0; i < data_len; ++i)
       {
         test_array[i] = DATA_TYPE(array_flt_distribution(rngen));
       }
-      working_res.memcpy(working_array, test_array,
-                         sizeof(DATA_TYPE) * data_len);
+      working_res.memcpy(
+          working_array, test_array, sizeof(DATA_TYPE) * data_len);
     }
 
 
@@ -334,11 +339,11 @@ struct MultiReduceNestedLoopExec<DEVICE_DEPTH_3, POLICY_DATA>
               RAJA::statement::For<
                   2,
                   typename camp::at<POLICY_DATA, camp::num<2>>::type,
-                  RAJA::statement::Lambda<0>>>>> // end DEVICE_KERNEL
+                  RAJA::statement::Lambda<0>>>>>  // end DEVICE_KERNEL
                          >;
 };
 
-#endif // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP or RAJA_ENABLE_SYCL
+#endif  // RAJA_ENABLE_CUDA or RAJA_ENABLE_HIP or RAJA_ENABLE_SYCL
 
 TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
 {
@@ -355,10 +360,10 @@ TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
       typename MultiReduceNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   // for setting random values in arrays
-  auto         random_seed = std::random_device{}();
+  auto         random_seed = std::random_device {}();
   std::mt19937 rngen(random_seed);
 
-  WORKING_RES working_res{WORKING_RES::get_default()};
+  WORKING_RES working_res {WORKING_RES::get_default()};
 
   std::vector<DATA_TYPE> container;
 
@@ -367,40 +372,43 @@ TYPED_TEST_P(KernelMultiReduceNestedTest, MultiReduceNestedKernel)
   for (size_t num_bins_max : num_bins_max_container)
   {
 
-    std::uniform_int_distribution<size_t> num_bins_dist(num_bins_min,
-                                                        num_bins_max);
+    std::uniform_int_distribution<size_t> num_bins_dist(
+        num_bins_min, num_bins_max);
     num_bins_min    = num_bins_max + 1;
     size_t num_bins = num_bins_dist(rngen);
 
     container.resize(num_bins, DATA_TYPE(2));
 
     // Range segment tests
-    auto s1 = RAJA::make_tuple(RAJA::TypedRangeSegment<IDX_TYPE>(0, 2),
-                               RAJA::TypedRangeSegment<IDX_TYPE>(0, 7),
-                               RAJA::TypedRangeSegment<IDX_TYPE>(0, 3));
-    KernelMultiReduceNestedTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
-                                    DATA_TYPE, IDX_TYPE>(s1, container,
-                                                         working_res, rngen);
+    auto s1 = RAJA::make_tuple(
+        RAJA::TypedRangeSegment<IDX_TYPE>(0, 2),
+        RAJA::TypedRangeSegment<IDX_TYPE>(0, 7),
+        RAJA::TypedRangeSegment<IDX_TYPE>(0, 3));
+    KernelMultiReduceNestedTestImpl<
+        EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE, IDX_TYPE>(
+        s1, container, working_res, rngen);
 
-    auto s2 = RAJA::make_tuple(RAJA::TypedRangeSegment<IDX_TYPE>(2, 35),
-                               RAJA::TypedRangeSegment<IDX_TYPE>(0, 19),
-                               RAJA::TypedRangeSegment<IDX_TYPE>(3, 13));
-    KernelMultiReduceNestedTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
-                                    DATA_TYPE, IDX_TYPE>(s2, container,
-                                                         working_res, rngen);
+    auto s2 = RAJA::make_tuple(
+        RAJA::TypedRangeSegment<IDX_TYPE>(2, 35),
+        RAJA::TypedRangeSegment<IDX_TYPE>(0, 19),
+        RAJA::TypedRangeSegment<IDX_TYPE>(3, 13));
+    KernelMultiReduceNestedTestImpl<
+        EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE, IDX_TYPE>(
+        s2, container, working_res, rngen);
 
     // Range-stride segment tests
-    auto s3 =
-        RAJA::make_tuple(RAJA::TypedRangeStrideSegment<IDX_TYPE>(0, 6, 2),
-                         RAJA::TypedRangeStrideSegment<IDX_TYPE>(1, 38, 3),
-                         RAJA::TypedRangeStrideSegment<IDX_TYPE>(5, 17, 1));
-    KernelMultiReduceNestedTestImpl<EXEC_POLICY, REDUCE_POLICY, ABSTRACTION,
-                                    DATA_TYPE, IDX_TYPE>(s3, container,
-                                                         working_res, rngen);
+    auto s3 = RAJA::make_tuple(
+        RAJA::TypedRangeStrideSegment<IDX_TYPE>(0, 6, 2),
+        RAJA::TypedRangeStrideSegment<IDX_TYPE>(1, 38, 3),
+        RAJA::TypedRangeStrideSegment<IDX_TYPE>(5, 17, 1));
+    KernelMultiReduceNestedTestImpl<
+        EXEC_POLICY, REDUCE_POLICY, ABSTRACTION, DATA_TYPE, IDX_TYPE>(
+        s3, container, working_res, rngen);
   }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelMultiReduceNestedTest,
-                            MultiReduceNestedKernel);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelMultiReduceNestedTest,
+    MultiReduceNestedKernel);
 
-#endif // __TEST_KERNEL_NESTED_MULTIREDUCE_HPP__
+#endif  // __TEST_KERNEL_NESTED_MULTIREDUCE_HPP__

@@ -112,17 +112,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMaxLoc<REDUCE_POL1, int> seq_maxloc(
       std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL1>(arange,
-                          [=](int i)
-                          {
-                            seq_sum += a[i];
+  RAJA::forall<EXEC_POL1>(
+      arange,
+      [=](int i)
+      {
+        seq_sum += a[i];
 
-                            seq_min.min(a[i]);
-                            seq_max.max(a[i]);
+        seq_min.min(a[i]);
+        seq_max.max(a[i]);
 
-                            seq_minloc.minloc(a[i], i);
-                            seq_maxloc.maxloc(a[i], i);
-                          });
+        seq_minloc.minloc(a[i], i);
+        seq_maxloc.maxloc(a[i], i);
+      });
 
   std::cout << "\tsum = " << seq_sum.get() << std::endl;
   std::cout << "\tmin = " << seq_min.get() << std::endl;
@@ -152,17 +153,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMaxLoc<REDUCE_POL2, int> omp_maxloc(
       std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL2>(arange,
-                          [=](int i)
-                          {
-                            omp_sum += a[i];
+  RAJA::forall<EXEC_POL2>(
+      arange,
+      [=](int i)
+      {
+        omp_sum += a[i];
 
-                            omp_min.min(a[i]);
-                            omp_max.max(a[i]);
+        omp_min.min(a[i]);
+        omp_max.max(a[i]);
 
-                            omp_minloc.minloc(a[i], i);
-                            omp_maxloc.maxloc(a[i], i);
-                          });
+        omp_minloc.minloc(a[i], i);
+        omp_maxloc.maxloc(a[i], i);
+      });
 
   std::cout << "\tsum = " << omp_sum.get() << std::endl;
   std::cout << "\tmin = " << omp_min.get() << std::endl;
@@ -192,17 +194,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMaxLoc<REDUCE_POL3, int> cuda_maxloc(
       std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            cuda_sum += a[i];
+  RAJA::forall<EXEC_POL3>(
+      arange,
+      [=] RAJA_DEVICE(int i)
+      {
+        cuda_sum += a[i];
 
-                            cuda_min.min(a[i]);
-                            cuda_max.max(a[i]);
+        cuda_min.min(a[i]);
+        cuda_max.max(a[i]);
 
-                            cuda_minloc.minloc(a[i], i);
-                            cuda_maxloc.maxloc(a[i], i);
-                          });
+        cuda_minloc.minloc(a[i], i);
+        cuda_maxloc.maxloc(a[i], i);
+      });
 
   std::cout << "\tsum = " << cuda_sum.get() << std::endl;
   std::cout << "\tmin = " << cuda_min.get() << std::endl;
@@ -234,17 +237,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMaxLoc<REDUCE_POL3, int> hip_maxloc(
       std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            hip_sum += d_a[i];
+  RAJA::forall<EXEC_POL3>(
+      arange,
+      [=] RAJA_DEVICE(int i)
+      {
+        hip_sum += d_a[i];
 
-                            hip_min.min(d_a[i]);
-                            hip_max.max(d_a[i]);
+        hip_min.min(d_a[i]);
+        hip_max.max(d_a[i]);
 
-                            hip_minloc.minloc(d_a[i], i);
-                            hip_maxloc.maxloc(d_a[i], i);
-                          });
+        hip_minloc.minloc(d_a[i], i);
+        hip_maxloc.maxloc(d_a[i], i);
+      });
 
   std::cout << "\tsum = " << hip_sum.get() << std::endl;
   std::cout << "\tmin = " << hip_min.get() << std::endl;

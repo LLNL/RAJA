@@ -127,7 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // 2).
   //
   // _permutedlayout_defviews_start
-  std::array<RAJA::idx_t, 3> perm1{{0, 1, 2}};
+  std::array<RAJA::idx_t, 3> perm1 {{0, 1, 2}};
   auto layout1 = RAJA::make_permuted_layout({{N, N_r, N_c}}, perm1);
 
   RAJA::View<double, RAJA::Layout<3, int, 2>> Aview(A, layout1);
@@ -148,7 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // In this case the element index has unit stride (argument 0).
   //
   // _permutedlayout_permviews_start
-  std::array<RAJA::idx_t, 3> perm2{{1, 2, 0}};
+  std::array<RAJA::idx_t, 3> perm2 {{1, 2, 0}};
   auto layout2 = RAJA::make_permuted_layout({{N, N_r, N_c}}, perm2);
 
   RAJA::View<double, RAJA::Layout<3, int, 0>> Aview2(A2, layout2);
@@ -168,23 +168,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using INIT_POL = RAJA::seq_exec;
 #endif
 
-  RAJA::forall<INIT_POL>(RAJA::TypedRangeSegment<int>(0, N),
-                         [=](int e)
-                         {
-                           for (int row = 0; row < N_r; ++row)
-                           {
-                             for (int col = 0; col < N_c; ++col)
-                             {
-                               Aview(e, row, col) = row;
-                               Bview(e, row, col) = col;
-                               Cview(e, row, col) = 0;
+  RAJA::forall<INIT_POL>(
+      RAJA::TypedRangeSegment<int>(0, N),
+      [=](int e)
+      {
+        for (int row = 0; row < N_r; ++row)
+        {
+          for (int col = 0; col < N_c; ++col)
+          {
+            Aview(e, row, col) = row;
+            Bview(e, row, col) = col;
+            Cview(e, row, col) = 0;
 
-                               Aview2(e, row, col) = row;
-                               Bview2(e, row, col) = col;
-                               Cview2(e, row, col) = 0;
-                             }
-                           }
-                         });
+            Aview2(e, row, col) = row;
+            Bview2(e, row, col) = col;
+            Cview2(e, row, col) = 0;
+          }
+        }
+      });
 
 
   //----------------------------------------------------------------------------//
@@ -557,10 +558,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       hipMemcpy(d_A, A, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
   hipErrchk(
       hipMemcpy(d_B, B, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(d_A2, A2, N_c * N_r * N * sizeof(double),
-                      hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(d_B2, B2, N_c * N_r * N * sizeof(double),
-                      hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(
+      d_A2, A2, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(
+      d_B2, B2, N_c * N_r * N * sizeof(double), hipMemcpyHostToDevice));
 
   minRun = std::numeric_limits<double>::max();
   for (int i = 0; i < NITER; ++i)
@@ -665,8 +666,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     timer.reset();
   }
 
-  hipErrchk(hipMemcpy(C2, d_C2, N_c * N_r * N * sizeof(double),
-                      hipMemcpyDeviceToHost));
+  hipErrchk(hipMemcpy(
+      C2, d_C2, N_c * N_r * N * sizeof(double), hipMemcpyDeviceToHost));
 
   std::cout << "\trun time : " << minRun << " seconds" << std::endl;
   checkResult(Cview2, N, N_r, N_c);

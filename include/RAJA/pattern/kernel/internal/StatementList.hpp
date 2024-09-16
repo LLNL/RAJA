@@ -43,10 +43,11 @@ template <camp::idx_t idx, camp::idx_t N, typename StmtList, typename Types>
 struct StatementListExecutor;
 
 
-template <camp::idx_t statement_index,
-          camp::idx_t num_statements,
-          typename StmtList,
-          typename Types>
+template <
+    camp::idx_t statement_index,
+    camp::idx_t num_statements,
+    typename StmtList,
+    typename Types>
 struct StatementListExecutor
 {
 
@@ -61,8 +62,9 @@ struct StatementListExecutor
     StatementExecutor<statement, Types>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<statement_index + 1, num_statements, StmtList,
-                          Types>::exec(std::forward<Data>(data));
+    StatementListExecutor<
+        statement_index + 1, num_statements, StmtList,
+        Types>::exec(std::forward<Data>(data));
   }
 };
 
@@ -89,8 +91,8 @@ RAJA_INLINE void execute_statement_list(Data&& data)
 }
 
 
-} // end namespace internal
-} // end namespace RAJA
+}  // end namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_HPP */

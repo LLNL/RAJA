@@ -18,10 +18,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       1, tile_dynamic<1>, seq_exec,
       statement::Tile<
           0, tile_dynamic<0>, seq_exec,
-          statement::For<1, seq_exec,
-                         statement::For<0, seq_exec, statement::Lambda<0>>>>>>>(
-      make_tuple(RangeSegment{0, 25}, RangeSegment{0, 25}),
-      make_tuple(TileSize{5}, TileSize{10}),
+          statement::For<
+              1, seq_exec,
+              statement::For<0, seq_exec, statement::Lambda<0>>>>>>>(
+      make_tuple(RangeSegment {0, 25}, RangeSegment {0, 25}),
+      make_tuple(TileSize {5}, TileSize {10}),
       // make_tuple(TileSize(10)), // not sure we need this, good for
       // static_assert
       [=](int i, int j, TileSize x, TileSize y)

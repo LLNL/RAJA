@@ -90,9 +90,9 @@ void SegmentedBroadcastOuterImpl()
         ASSERT_SCALAR_EQ(expected[i], output0_vec[i]);
       }
 
-    } // segment
+    }  // segment
 
-  } // segbits
+  }  // segbits
 
 
   // Cleanup

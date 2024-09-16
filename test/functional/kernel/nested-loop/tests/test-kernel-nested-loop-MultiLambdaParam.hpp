@@ -20,8 +20,9 @@ template <typename T>
 class KernelNestedLoopMultiLambdaParamTest : public ::testing::Test
 {};
 
-TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest,
-             NestedLoopMultiLambdaParamKernel)
+TYPED_TEST_P(
+    KernelNestedLoopMultiLambdaParamTest,
+    NestedLoopMultiLambdaParamKernel)
 {
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -42,7 +43,8 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest,
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaParamTest,
-                            NestedLoopMultiLambdaParamKernel);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelNestedLoopMultiLambdaParamTest,
+    NestedLoopMultiLambdaParamKernel);
 
-#endif // __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__
+#endif  // __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_HPP__

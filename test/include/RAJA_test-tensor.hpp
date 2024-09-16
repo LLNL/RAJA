@@ -79,8 +79,8 @@ struct TensorTestHelper<RAJA::expt::hip_wave_register>
   {
     hipDeviceSynchronize();
 
-    RAJA::forall<RAJA::hip_exec<64>>(RAJA::RangeSegment(0, 64),
-                                     [=] RAJA_HOST_DEVICE(int) { body(); });
+    RAJA::forall<RAJA::hip_exec<64>>(
+        RAJA::RangeSegment(0, 64), [=] RAJA_HOST_DEVICE(int) { body(); });
 
     hipDeviceSynchronize();
   }
@@ -134,8 +134,8 @@ void tensor_copy_to_device(T* d_ptr, std::vector<T> const& h_vec)
 {
   if (TensorTestHelper<POL>::is_device)
   {
-    cudaErrchk(cudaMemcpy(d_ptr, h_vec.data(), h_vec.size() * sizeof(T),
-                          cudaMemcpyHostToDevice));
+    cudaErrchk(cudaMemcpy(
+        d_ptr, h_vec.data(), h_vec.size() * sizeof(T), cudaMemcpyHostToDevice));
   }
   else
   {
@@ -148,8 +148,8 @@ void tensor_copy_to_host(std::vector<T>& h_vec, T const* d_ptr)
 {
   if (TensorTestHelper<POL>::is_device)
   {
-    cudaErrchk(cudaMemcpy(h_vec.data(), d_ptr, h_vec.size() * sizeof(T),
-                          cudaMemcpyDeviceToHost));
+    cudaErrchk(cudaMemcpy(
+        h_vec.data(), d_ptr, h_vec.size() * sizeof(T), cudaMemcpyDeviceToHost));
   }
   else
   {
@@ -196,8 +196,8 @@ void tensor_copy_to_device(T* d_ptr, std::vector<T> const& h_vec)
 {
   if (TensorTestHelper<POL>::is_device)
   {
-    hipErrchk(hipMemcpy(d_ptr, h_vec.data(), h_vec.size() * sizeof(T),
-                        hipMemcpyHostToDevice));
+    hipErrchk(hipMemcpy(
+        d_ptr, h_vec.data(), h_vec.size() * sizeof(T), hipMemcpyHostToDevice));
   }
   else
   {
@@ -210,8 +210,8 @@ void tensor_copy_to_host(std::vector<T>& h_vec, T const* d_ptr)
 {
   if (TensorTestHelper<POL>::is_device)
   {
-    hipErrchk(hipMemcpy(h_vec.data(), d_ptr, h_vec.size() * sizeof(T),
-                        hipMemcpyDeviceToHost));
+    hipErrchk(hipMemcpy(
+        h_vec.data(), d_ptr, h_vec.size() * sizeof(T), hipMemcpyDeviceToHost));
   }
   else
   {

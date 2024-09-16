@@ -263,17 +263,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMaxLoc<REDUCE_POL3, int> hip_maxloc(
       std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange1,
-                          [=] RAJA_DEVICE(int i)
-                          {
-                            hip_sum += d_a[i];
+  RAJA::forall<EXEC_POL3>(
+      arange1,
+      [=] RAJA_DEVICE(int i)
+      {
+        hip_sum += d_a[i];
 
-                            hip_min.min(d_a[i]);
-                            hip_max.max(d_a[i]);
+        hip_min.min(d_a[i]);
+        hip_max.max(d_a[i]);
 
-                            hip_minloc.minloc(d_a[i], i);
-                            hip_maxloc.maxloc(d_a[i], i);
-                          });
+        hip_minloc.minloc(d_a[i], i);
+        hip_maxloc.maxloc(d_a[i], i);
+      });
 
   std::cout << "\tsum = " << hip_sum.get() << std::endl;
   std::cout << "\tmin = " << hip_min.get() << std::endl;

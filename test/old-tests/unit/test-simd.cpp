@@ -38,8 +38,8 @@ TEST(SIMD, Align)
   double* y = RAJA::align_hint(a);
   double* x = RAJA::align_hint(b);
 
-  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N),
-                                [=](int i) { y[i] += x[i] * c; });
+  RAJA::forall<RAJA::simd_exec>(
+      RAJA::RangeSegment(0, N), [=](int i) { y[i] += x[i] * c; });
 
   for (int i = 0; i < N; ++i)
   {
@@ -61,12 +61,12 @@ TEST(SIMD, OMPAndSimd)
   const RAJA::Index_type N = 32;
   const RAJA::Index_type M = 32;
 
-  double* a = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                  N * M * sizeof(double));
-  double* b = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                  N * M * sizeof(double));
-  double* c = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                  N * M * sizeof(double));
+  double* a = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
+  double* b = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
+  double* c = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
 
   for (int i = 0; i < N * M; ++i)
   {
@@ -95,25 +95,26 @@ TEST(SIMD, OMPAndSimd_MultiLambda)
 
   using POL = RAJA::KernelPolicy<RAJA::statement::For<
       1, RAJA::omp_parallel_for_exec,
-      RAJA::statement::For<0, RAJA::simd_exec, RAJA::statement::Lambda<0>,
-                           RAJA::statement::Lambda<1>>>>;
+      RAJA::statement::For<
+          0, RAJA::simd_exec, RAJA::statement::Lambda<0>,
+          RAJA::statement::Lambda<1>>>>;
 
   const RAJA::Index_type N = 32;
   const RAJA::Index_type M = 32;
 
-  double* a = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                  N * M * sizeof(double));
-  double* b = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                  N * M * sizeof(double));
-  double* c = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                  N * M * sizeof(double));
+  double* a = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
+  double* b = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
+  double* c = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
 
-  double* a2 = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                   N * M * sizeof(double));
-  double* b2 = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                   N * M * sizeof(double));
-  double* c2 = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
-                                                   N * M * sizeof(double));
+  double* a2 = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
+  double* b2 = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
+  double* c2 = RAJA::allocate_aligned_type<double>(
+      RAJA::DATA_ALIGN, N * M * sizeof(double));
 
   for (int i = 0; i < N * M; ++i)
   {

@@ -15,12 +15,13 @@
 #include "RAJA_test-workgroup.hpp"
 
 
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename DispatchTyper,
-          typename IndexType,
-          typename Allocator>
+template <
+    typename ExecPolicy,
+    typename OrderPolicy,
+    typename StoragePolicy,
+    typename DispatchTyper,
+    typename IndexType,
+    typename Allocator>
 struct testWorkGroupConstructorSingle
 {
   template <typename... Xargs>
@@ -31,30 +32,33 @@ struct testWorkGroupConstructorSingle
     using DispatchPolicy = typename DispatchTyper::template type<>;
 
     {
-      RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                           StoragePolicy, DispatchPolicy>,
-                     IndexType, RAJA::xargs<Xargs...>, Allocator>
-          pool(Allocator{});
+      RAJA::WorkPool<
+          RAJA::WorkGroupPolicy<
+              ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+          IndexType, RAJA::xargs<Xargs...>, Allocator>
+          pool(Allocator {});
 
       ASSERT_EQ(pool.num_loops(), (size_t)0);
       ASSERT_EQ(pool.storage_bytes(), (size_t)0);
 
-      RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                            StoragePolicy, DispatchPolicy>,
-                      IndexType, RAJA::xargs<Xargs...>, Allocator>
+      RAJA::WorkGroup<
+          RAJA::WorkGroupPolicy<
+              ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+          IndexType, RAJA::xargs<Xargs...>, Allocator>
           group = pool.instantiate();
 
       ASSERT_EQ(pool.num_loops(), (size_t)0);
       ASSERT_EQ(pool.storage_bytes(), (size_t)0);
 
-      RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                           StoragePolicy, DispatchPolicy>,
-                     IndexType, RAJA::xargs<Xargs...>, Allocator>
-          site = group.run(Xargs{}...);
+      RAJA::WorkSite<
+          RAJA::WorkGroupPolicy<
+              ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+          IndexType, RAJA::xargs<Xargs...>, Allocator>
+          site = group.run(Xargs {}...);
 
       using resource_type = typename RAJA::WorkPool<
-          RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy, StoragePolicy,
-                                DispatchPolicy>,
+          RAJA::WorkGroupPolicy<
+              ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
           IndexType, RAJA::xargs<Xargs...>, Allocator>::resource_type;
       auto e = resource_type::get_default().get_event();
       e.wait();
@@ -75,11 +79,12 @@ struct testWorkGroupConstructorSingle
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported types untested
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename StoragePolicy,
+    typename IndexType,
+    typename Allocator>
 struct testWorkGroupConstructorSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -93,11 +98,12 @@ struct testWorkGroupConstructorSingle<
   {}
 };
 ///
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename StoragePolicy,
+    typename IndexType,
+    typename Allocator>
 struct testWorkGroupConstructorSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -121,8 +127,9 @@ class WorkGroupBasicConstructorSingleUnitTest : public ::testing::Test
 
 TYPED_TEST_SUITE_P(WorkGroupBasicConstructorSingleUnitTest);
 
-TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest,
-             BasicWorkGroupConstructorSingle)
+TYPED_TEST_P(
+    WorkGroupBasicConstructorSingleUnitTest,
+    BasicWorkGroupConstructorSingle)
 {
   using ExecPolicy    = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy   = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -132,9 +139,9 @@ TYPED_TEST_P(WorkGroupBasicConstructorSingleUnitTest,
   using Xargs         = typename camp::at<TypeParam, camp::num<5>>::type;
   using Allocator     = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  testWorkGroupConstructorSingle<ExecPolicy, OrderPolicy, StoragePolicy,
-                                 DispatchTyper, IndexType, Allocator>{}(
-      Xargs{});
+  testWorkGroupConstructorSingle<
+      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
+      Allocator> {}(Xargs {});
 }
 
-#endif //__TEST_WORKGROUP_CONSTRUCTOR__
+#endif  //__TEST_WORKGROUP_CONSTRUCTOR__

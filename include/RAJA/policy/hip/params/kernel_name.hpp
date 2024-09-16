@@ -46,10 +46,10 @@ resolve(KernelName&, const RAJA::hip::detail::hipInfo&)
 #endif
 }
 
-} //  namespace detail
-} //  namespace expt
-} //  namespace RAJA
+}  //  namespace detail
+}  //  namespace expt
+}  //  namespace RAJA
 
 #endif
 
-#endif //  NEW_REDUCE_HIP_REDUCE_HPP
+#endif  //  NEW_REDUCE_HIP_REDUCE_HPP

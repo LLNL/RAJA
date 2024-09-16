@@ -41,4 +41,4 @@ void DepGraphNode::print(std::ostream& os) const
   os << std::endl;
 }
 
-} // namespace RAJA
+}  // namespace RAJA

@@ -200,20 +200,20 @@ void computeErr(double* P, double tf, grid_s grid)
       1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                              [=](RAJA::Index_type tx, RAJA::Index_type ty)
-                              {
-                                int    id = tx + grid.nx * ty;
-                                double x  = grid.ox + tx * grid.dx;
-                                double y  = grid.ox + ty * grid.dx;
-                                double myErr =
-                                    std::abs(P[id] - waveSol(tf, x, y));
+  RAJA::kernel<initialPolicy>(
+      RAJA::make_tuple(fdBounds, fdBounds),
+      [=](RAJA::Index_type tx, RAJA::Index_type ty)
+      {
+        int    id    = tx + grid.nx * ty;
+        double x     = grid.ox + tx * grid.dx;
+        double y     = grid.ox + ty * grid.dx;
+        double myErr = std::abs(P[id] - waveSol(tf, x, y));
 
-                                //
-                                // tMax.max() is used to store the maximum value
-                                //
-                                tMax.max(myErr);
-                              });
+        //
+        // tMax.max() is used to store the maximum value
+        //
+        tMax.max(myErr);
+      });
 
   double lInfErr = tMax;
   printf("Max Error = %lg, dx = %f \n", lInfErr, grid.dx);
@@ -232,16 +232,17 @@ void setIC(double* P1, double* P2, double t0, double t1, grid_s grid)
       1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 
-  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
-                              [=](RAJA::Index_type tx, RAJA::Index_type ty)
-                              {
-                                int    id = tx + ty * grid.nx;
-                                double x  = grid.ox + tx * grid.dx;
-                                double y  = grid.ox + ty * grid.dx;
+  RAJA::kernel<initialPolicy>(
+      RAJA::make_tuple(fdBounds, fdBounds),
+      [=](RAJA::Index_type tx, RAJA::Index_type ty)
+      {
+        int    id = tx + ty * grid.nx;
+        double x  = grid.ox + tx * grid.dx;
+        double y  = grid.ox + ty * grid.dx;
 
-                                P1[id] = waveSol(t0, x, y);
-                                P2[id] = waveSol(t1, x, y);
-                              });
+        P1[id] = waveSol(t0, x, y);
+        P2[id] = waveSol(t1, x, y);
+      });
 }
 
 
@@ -256,8 +257,8 @@ void wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx)
         //
         // Coefficients for fourth order stencil
         //
-        double coeff[5] = {-1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0,
-                           -1.0 / 12.0};
+        double coeff[5] = {
+            -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
 
         const int id     = tx + ty * nx;
         double    P_old  = P1[id];

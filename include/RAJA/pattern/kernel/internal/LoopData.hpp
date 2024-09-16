@@ -52,9 +52,9 @@ struct ForTraitBase : public ForBase
 {
   constexpr static camp::idx_t index_val = ArgumentId;
   using index                            = camp::num<ArgumentId>;
-  using index_type                       = camp::nil; // default to invalid type
-  using policy_type                      = Policy;
-  using type = ForTraitBase; // make camp::value compatible
+  using index_type  = camp::nil;  // default to invalid type
+  using policy_type = Policy;
+  using type        = ForTraitBase;  // make camp::value compatible
 };
 
 
@@ -71,9 +71,9 @@ using difftype_list_from_segments =
 
 
 template <typename Segments>
-using difftype_tuple_from_segments =
-    typename camp::apply_l<camp::lambda<camp::tuple>,
-                           difftype_list_from_segments<Segments>>::type;
+using difftype_tuple_from_segments = typename camp::apply_l<
+    camp::lambda<camp::tuple>,
+    difftype_list_from_segments<Segments>>::type;
 
 
 template <typename Iterator>
@@ -89,20 +89,21 @@ using value_type_list_from_segments =
 
 
 template <typename Segments>
-using index_tuple_from_segments =
-    typename camp::apply_l<camp::lambda<camp::tuple>,
-                           value_type_list_from_segments<Segments>>::type;
+using index_tuple_from_segments = typename camp::apply_l<
+    camp::lambda<camp::tuple>,
+    value_type_list_from_segments<Segments>>::type;
 
 template <typename Segments>
-using index_types_from_segments =
-    typename camp::apply_l<camp::lambda<camp::list>,
-                           value_type_list_from_segments<Segments>>::type;
+using index_types_from_segments = typename camp::apply_l<
+    camp::lambda<camp::list>,
+    value_type_list_from_segments<Segments>>::type;
 
 
-template <typename SegmentTuple,
-          typename ParamTuple,
-          typename Resource,
-          typename... Bodies>
+template <
+    typename SegmentTuple,
+    typename ParamTuple,
+    typename Resource,
+    typename... Bodies>
 struct LoopData
 {
 
@@ -136,10 +137,12 @@ struct LoopData
   using vector_sizes_t = tuple_of_n<int, camp::tuple_size<SegmentTuple>::value>;
   vector_sizes_t vector_sizes;
 
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(SegmentTuple const& s,
-                                                  ParamTuple const&   p,
-                                                  Resource            r,
-                                                  Bodies const&... b)
+  RAJA_INLINE
+  RAJA_HOST_DEVICE constexpr LoopData(
+      SegmentTuple const& s,
+      ParamTuple const&   p,
+      Resource            r,
+      Bodies const&... b)
       : segment_tuple(s), param_tuple(p), res(r), bodies(b...)
   {}
   constexpr LoopData(LoopData const&) = default;
@@ -171,9 +174,9 @@ struct LoopData
 
 
 template <camp::idx_t ArgumentId, typename Data>
-using segment_diff_type = typename std::iterator_traits<
-    typename camp::at_v<typename Data::segment_tuple_t::TList,
-                        ArgumentId>::iterator>::difference_type;
+using segment_diff_type = typename std::iterator_traits<typename camp::at_v<
+    typename Data::segment_tuple_t::TList,
+    ArgumentId>::iterator>::difference_type;
 
 
 template <camp::idx_t ArgumentId, typename Data>
@@ -193,7 +196,7 @@ struct GenericWrapper : GenericWrapperBase
   data_t& data;
 
   RAJA_INLINE
-  constexpr explicit GenericWrapper(data_t& d) : data{d} {}
+  constexpr explicit GenericWrapper(data_t& d) : data {d} {}
 
   RAJA_INLINE
   void exec()
@@ -218,7 +221,7 @@ struct NestedPrivatizer
 
   RAJA_INLINE
   constexpr NestedPrivatizer(const T& o)
-      : privatized_data{o.data}, privatized_wrapper(privatized_data)
+      : privatized_data {o.data}, privatized_wrapper(privatized_data)
   {}
 
   RAJA_INLINE
@@ -226,8 +229,8 @@ struct NestedPrivatizer
 };
 
 
-} // end namespace internal
-} // end namespace RAJA
+}  // end namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_internal_LoopData_HPP */

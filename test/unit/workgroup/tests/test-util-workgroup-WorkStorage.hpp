@@ -39,9 +39,10 @@ struct TestCallable
     return *this;
   }
 
-  RAJA_HOST_DEVICE void operator()(void* val_ptr,
-                                   bool* move_constructed_ptr,
-                                   bool* moved_from_ptr) const
+  RAJA_HOST_DEVICE void operator()(
+      void* val_ptr,
+      bool* move_constructed_ptr,
+      bool* moved_from_ptr) const
   {
     *static_cast<T*>(val_ptr) = val;
     *move_constructed_ptr     = move_constructed;
@@ -61,7 +62,7 @@ public:
 template <typename T, size_t N>
 struct TestArray
 {
-  T                  a[N]{};
+  T                  a[N] {};
   T&                 operator[](size_t i) { return a[i]; }
   T const&           operator[](size_t i) const { return a[i]; }
   friend inline bool operator==(TestArray const& lhs, TestArray const& rhs)
@@ -81,4 +82,4 @@ struct TestArray
   }
 };
 
-#endif //__TEST_UTIL_WORKGROUP_WORKSTORAGE__
+#endif  //__TEST_UTIL_WORKGROUP_WORKSTORAGE__

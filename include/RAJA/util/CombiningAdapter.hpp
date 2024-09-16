@@ -96,8 +96,8 @@ private:
 
   RAJA_SUPPRESS_HD_WARN
   template <camp::idx_t... RangeInts>
-  RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index,
-                                           camp::idx_seq<RangeInts...>)
+  RAJA_HOST_DEVICE inline auto
+  call_helper(IndexLinear linear_index, camp::idx_seq<RangeInts...>)
       -> decltype(m_lambda(
           camp::val<camp::tuple_element_t<RangeInts, DimTuple>>()...))
   {
@@ -108,8 +108,8 @@ private:
   ///
   RAJA_SUPPRESS_HD_WARN
   template <camp::idx_t... RangeInts>
-  RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index,
-                                           camp::idx_seq<RangeInts...>) const
+  RAJA_HOST_DEVICE inline auto
+  call_helper(IndexLinear linear_index, camp::idx_seq<RangeInts...>) const
       -> decltype(m_lambda(
           camp::val<camp::tuple_element_t<RangeInts, DimTuple>>()...))
   {
@@ -217,9 +217,9 @@ make_CombiningAdapter_from_layout(Lambda&& lambda, Layout&& layout)
 ///
 RAJA_SUPPRESS_HD_WARN
 template <typename Lambda, typename... IdxTs>
-RAJA_INLINE auto
-make_CombiningAdapter(Lambda&& lambda,
-                      ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
+RAJA_INLINE auto make_CombiningAdapter(
+    Lambda&& lambda,
+    ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
 // -> decltype(make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
 //             camp::val<RAJA::TypedOffsetLayout<
 //                 typename std::common_type< strip_index_type_t<IdxTs>...
@@ -237,15 +237,15 @@ make_CombiningAdapter(Lambda&& lambda,
       {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs))
                                           : static_cast<IdxLin>(0))...}},
       std::move(layout));
-  return make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
-                                           std::move(offset_layout));
+  return make_CombiningAdapter_from_layout(
+      std::forward<Lambda>(lambda), std::move(offset_layout));
 }
 ///
 RAJA_SUPPRESS_HD_WARN
 template <typename Perm, typename Lambda, typename... IdxTs>
-RAJA_INLINE auto
-make_PermutedCombiningAdapter(Lambda&& lambda,
-                              ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
+RAJA_INLINE auto make_PermutedCombiningAdapter(
+    Lambda&& lambda,
+    ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
 // -> decltype(make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
 //             camp::val<RAJA::TypedOffsetLayout<
 //                 typename std::common_type< strip_index_type_t<IdxTs>...
@@ -265,10 +265,10 @@ make_PermutedCombiningAdapter(Lambda&& lambda,
                                           : static_cast<IdxLin>(0))...}},
 
       std::move(layout));
-  return make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
-                                           std::move(offset_layout));
+  return make_CombiningAdapter_from_layout(
+      std::forward<Lambda>(lambda), std::move(offset_layout));
 }
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 #endif /* RAJA_CombingAdapter_HPP */

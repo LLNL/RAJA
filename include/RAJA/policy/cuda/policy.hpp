@@ -71,7 +71,7 @@ struct get_launch<false>
 {
   static constexpr RAJA::Launch value = RAJA::Launch::sync;
 };
-} // end namespace detail
+}  // end namespace detail
 
 namespace cuda
 {
@@ -200,9 +200,10 @@ struct ConstantPreferredReplicationConcretizer
  * data.func_threads_per_block is less than t_cutoff or
  * preferred_replication_after_cutoff otherwise.
  */
-template <size_t t_cutoff,
-          size_t preferred_replication_before_cutoff,
-          size_t preferred_replication_after_cutoff>
+template <
+    size_t t_cutoff,
+    size_t preferred_replication_before_cutoff,
+    size_t preferred_replication_after_cutoff>
 struct ThreadsPerBlockCutoffPreferredReplicationConcretizer
 {
   template <typename IdxT, typename Data>
@@ -237,7 +238,7 @@ struct SharedAtomicReplicationMaxPow2Concretizer
         data.func_max_shared_replication_per_block;
 
     IdxT preferred_replication =
-        GetPreferredReplication{}.template get_preferred_replication<IdxT>(
+        GetPreferredReplication {}.template get_preferred_replication<IdxT>(
             data);
 
     return prev_pow2(
@@ -259,7 +260,7 @@ struct GlobalAtomicReplicationMinPow2Concretizer
     IdxT func_min_global_replication = data.func_min_global_replication;
 
     IdxT preferred_replication =
-        GetPreferredReplication{}.template get_preferred_replication<IdxT>(
+        GetPreferredReplication {}.template get_preferred_replication<IdxT>(
             data);
 
     return next_pow2(
@@ -281,10 +282,11 @@ enum struct block_communication_mode : int
   block_fence
 };
 
-template <reduce_algorithm         t_algorithm,
-          block_communication_mode t_comm_mode,
-          size_t                   t_replication,
-          size_t                   t_atomic_stride>
+template <
+    reduce_algorithm         t_algorithm,
+    block_communication_mode t_comm_mode,
+    size_t                   t_replication,
+    size_t                   t_atomic_stride>
 struct ReduceTuning
 {
   static constexpr reduce_algorithm         algorithm     = t_algorithm;
@@ -302,9 +304,10 @@ enum struct multi_reduce_algorithm : int
   init_host_combine_global_atomic
 };
 
-template <typename t_AtomicReplicationConcretizer,
-          typename t_ReplicationIndexer,
-          typename t_OffsetCalculator>
+template <
+    typename t_AtomicReplicationConcretizer,
+    typename t_ReplicationIndexer,
+    typename t_OffsetCalculator>
 struct AtomicReplicationTuning
 {
   using AtomicReplicationConcretizer = t_AtomicReplicationConcretizer;
@@ -312,9 +315,10 @@ struct AtomicReplicationTuning
   using OffsetCalculator             = t_OffsetCalculator;
 };
 
-template <multi_reduce_algorithm t_algorithm,
-          typename t_SharedAtomicReplicationTuning,
-          typename t_GlobalAtomicReplicationTuning>
+template <
+    multi_reduce_algorithm t_algorithm,
+    typename t_SharedAtomicReplicationTuning,
+    typename t_GlobalAtomicReplicationTuning>
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_algorithm;
@@ -323,7 +327,7 @@ struct MultiReduceTuning
   static constexpr bool consistent    = false;
 };
 
-} // namespace cuda
+}  // namespace cuda
 
 namespace policy
 {
@@ -336,13 +340,14 @@ struct DeviceConstants
   RAJA::Index_type MAX_BLOCK_SIZE;
   RAJA::Index_type MAX_WARPS;
   RAJA::Index_type
-      ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE; // basically the cache line size of
-                                            // the cache level that handles
-                                            // atomics
+      ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE;  // basically the cache line size of
+                                             // the cache level that handles
+                                             // atomics
 
-  constexpr DeviceConstants(RAJA::Index_type warp_size,
-                            RAJA::Index_type max_block_size,
-                            RAJA::Index_type atomic_cache_line_bytes) noexcept
+  constexpr DeviceConstants(
+      RAJA::Index_type warp_size,
+      RAJA::Index_type max_block_size,
+      RAJA::Index_type atomic_cache_line_bytes) noexcept
       : WARP_SIZE(warp_size),
         MAX_BLOCK_SIZE(max_block_size),
         MAX_WARPS(max_block_size / warp_size),
@@ -354,27 +359,31 @@ struct DeviceConstants
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
-constexpr DeviceConstants device_constants(32, 1024, 32); // V100
-static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
-              "RAJA Assumption Broken: device_constants.WARP_SIZE < "
-              "device_constants.MAX_WARPS");
-static_assert(device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
-              "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
-              "a multiple of device_constants.WARP_SIZE");
+constexpr DeviceConstants device_constants(32, 1024, 32);  // V100
+static_assert(
+    device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
+    "RAJA Assumption Broken: device_constants.WARP_SIZE < "
+    "device_constants.MAX_WARPS");
+static_assert(
+    device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
+    "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
+    "a multiple of device_constants.WARP_SIZE");
 
 constexpr const size_t MIN_BLOCKS_PER_SM = 1;
 constexpr const size_t MAX_BLOCKS_PER_SM = 32;
 
 
-template <typename _IterationMapping,
-          kernel_sync_requirement sync,
-          typename... _IterationGetters>
+template <
+    typename _IterationMapping,
+    kernel_sync_requirement sync,
+    typename... _IterationGetters>
 struct cuda_indexer
 {};
 
-template <typename _IterationMapping,
-          kernel_sync_requirement sync,
-          typename... _IterationGetters>
+template <
+    typename _IterationMapping,
+    kernel_sync_requirement sync,
+    typename... _IterationGetters>
 struct cuda_flatten_indexer
     : public RAJA::make_policy_pattern_launch_platform_t<
           RAJA::Policy::cuda,
@@ -385,11 +394,12 @@ struct cuda_flatten_indexer
   using IterationGetter = RAJA::cuda::IndexFlatten<_IterationGetters...>;
 };
 
-template <typename _IterationMapping,
-          typename _IterationGetter,
-          typename _LaunchConcretizer,
-          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
-          bool   Async         = false>
+template <
+    typename _IterationMapping,
+    typename _IterationGetter,
+    typename _LaunchConcretizer,
+    size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
+    bool   Async         = false>
 struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
                                 RAJA::Pattern::forall,
@@ -401,9 +411,10 @@ struct cuda_exec_explicit : public RAJA::make_policy_pattern_launch_platform_t<
   using LaunchConcretizer = _LaunchConcretizer;
 };
 
-template <bool   Async,
-          int    num_threads   = named_usage::unspecified,
-          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
+template <
+    bool   Async,
+    int    num_threads   = named_usage::unspecified,
+    size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 struct cuda_launch_explicit_t
     : public RAJA::make_policy_pattern_launch_platform_t<
           RAJA::Policy::cuda,
@@ -420,9 +431,10 @@ struct cuda_launch_explicit_t
 ///
 /// WorkGroup execution policies
 ///
-template <size_t BLOCK_SIZE,
-          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
-          bool   Async         = false>
+template <
+    size_t BLOCK_SIZE,
+    size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
+    bool   Async         = false>
 struct cuda_work_explicit : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Policy::cuda,
                                 RAJA::Pattern::workgroup_exec,
@@ -456,9 +468,10 @@ struct cuda_reduce_policy : public RAJA::make_policy_pattern_launch_platform_t<
                                 RAJA::Pattern::reduce,
                                 detail::get_launch<false>::value,
                                 RAJA::Platform::cuda,
-                                std::conditional_t<tuning::consistent,
-                                                   reduce::ordered,
-                                                   reduce::unordered>>
+                                std::conditional_t<
+                                    tuning::consistent,
+                                    reduce::ordered,
+                                    reduce::unordered>>
 {};
 
 template <typename tuning>
@@ -468,9 +481,10 @@ struct cuda_multi_reduce_policy
           RAJA::Pattern::multi_reduce,
           detail::get_launch<false>::value,
           RAJA::Platform::cuda,
-          std::conditional_t<tuning::consistent,
-                             reduce::ordered,
-                             reduce::unordered>>
+          std::conditional_t<
+              tuning::consistent,
+              reduce::ordered,
+              reduce::unordered>>
 {};
 
 /*!
@@ -542,13 +556,14 @@ struct cuda_thread_masked_loop
 {};
 
 
-struct cuda_synchronize : make_policy_pattern_launch_t<Policy::cuda,
-                                                       Pattern::synchronize,
-                                                       Launch::sync>
+struct cuda_synchronize : make_policy_pattern_launch_t<
+                              Policy::cuda,
+                              Pattern::synchronize,
+                              Launch::sync>
 {};
 
-} // end namespace cuda
-} // end namespace policy
+}  // end namespace cuda
+}  // end namespace policy
 
 
 namespace internal
@@ -567,8 +582,8 @@ int get_size(cuda_dim_t dims)
 struct CudaDims
 {
 
-  cuda_dim_t blocks{0, 0, 0};
-  cuda_dim_t threads{0, 0, 0};
+  cuda_dim_t blocks {0, 0, 0};
+  cuda_dim_t threads {0, 0, 0};
 
   CudaDims()                           = default;
   CudaDims(CudaDims const&)            = default;
@@ -576,8 +591,8 @@ struct CudaDims
 
   RAJA_INLINE
   CudaDims(cuda_dim_member_t default_val)
-      : blocks{default_val, default_val, default_val},
-        threads{default_val, default_val, default_val}
+      : blocks {default_val, default_val, default_val},
+        threads {default_val, default_val, default_val}
   {}
 
   RAJA_INLINE
@@ -591,8 +606,9 @@ struct CudaDims
   {
     if (num_blocks() != 0)
     {
-      return {(blocks.x ? blocks.x : 1), (blocks.y ? blocks.y : 1),
-              (blocks.z ? blocks.z : 1)};
+      return {
+          (blocks.x ? blocks.x : 1), (blocks.y ? blocks.y : 1),
+          (blocks.z ? blocks.z : 1)};
     }
     else
     {
@@ -605,8 +621,9 @@ struct CudaDims
   {
     if (num_threads() != 0)
     {
-      return {(threads.x ? threads.x : 1), (threads.y ? threads.y : 1),
-              (threads.z ? threads.z : 1)};
+      return {
+          (threads.x ? threads.x : 1), (threads.y ? threads.y : 1),
+          (threads.z ? threads.z : 1)};
     }
     else
     {
@@ -681,7 +698,7 @@ RAJA_HOST_DEVICE void set_cuda_dim(dim_t& d, cuda_dim_member_t value)
   return CudaDimHelper<dim>::set(d, value);
 }
 
-} // namespace internal
+}  // namespace internal
 
 namespace cuda
 {
@@ -1144,8 +1161,8 @@ struct IndexDivide
   template <typename IdxT = cuda_dim_member_t>
   RAJA_DEVICE static inline IdxT size()
   {
-    return RAJA_DIVIDE_CEILING_INT(indexer::template size<IdxT>(),
-                                   static_cast<IdxT>(divisor));
+    return RAJA_DIVIDE_CEILING_INT(
+        indexer::template size<IdxT>(), static_cast<IdxT>(divisor));
   }
 };
 
@@ -1179,9 +1196,10 @@ struct get_index_thread<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
 template <typename x_index, typename y_index, typename z_index>
 struct get_index_thread<IndexFlatten<x_index, y_index, z_index>>
 {
-  using type = IndexFlatten<typename get_index_thread<x_index>::type,
-                            typename get_index_thread<y_index>::type,
-                            typename get_index_thread<z_index>::type>;
+  using type = IndexFlatten<
+      typename get_index_thread<x_index>::type,
+      typename get_index_thread<y_index>::type,
+      typename get_index_thread<z_index>::type>;
 };
 
 // helper to get just the block indexing part of IndexGlobal
@@ -1197,9 +1215,10 @@ struct get_index_block<IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>
 template <typename x_index, typename y_index, typename z_index>
 struct get_index_block<IndexFlatten<x_index, y_index, z_index>>
 {
-  using type = IndexFlatten<typename get_index_block<x_index>::type,
-                            typename get_index_block<y_index>::type,
-                            typename get_index_block<z_index>::type>;
+  using type = IndexFlatten<
+      typename get_index_block<x_index>::type,
+      typename get_index_block<y_index>::type,
+      typename get_index_block<z_index>::type>;
 };
 
 
@@ -1210,12 +1229,14 @@ using thread_y = IndexGlobal<named_dim::y, BLOCK_SIZE, named_usage::ignored>;
 template <size_t BLOCK_SIZE = named_usage::unspecified>
 using thread_z = IndexGlobal<named_dim::z, BLOCK_SIZE, named_usage::ignored>;
 
-template <size_t BLOCK_SIZE_X = named_usage::unspecified,
-          size_t BLOCK_SIZE_Y = named_usage::unspecified,
-          size_t BLOCK_SIZE_Z = named_usage::unspecified>
-using thread_xyz = IndexFlatten<thread_x<BLOCK_SIZE_X>,
-                                thread_y<BLOCK_SIZE_Y>,
-                                thread_z<BLOCK_SIZE_Z>>;
+template <
+    size_t BLOCK_SIZE_X = named_usage::unspecified,
+    size_t BLOCK_SIZE_Y = named_usage::unspecified,
+    size_t BLOCK_SIZE_Z = named_usage::unspecified>
+using thread_xyz = IndexFlatten<
+    thread_x<BLOCK_SIZE_X>,
+    thread_y<BLOCK_SIZE_Y>,
+    thread_z<BLOCK_SIZE_Z>>;
 
 template <size_t GRID_SIZE = named_usage::unspecified>
 using block_x = IndexGlobal<named_dim::x, named_usage::ignored, GRID_SIZE>;
@@ -1224,12 +1245,14 @@ using block_y = IndexGlobal<named_dim::y, named_usage::ignored, GRID_SIZE>;
 template <size_t GRID_SIZE = named_usage::unspecified>
 using block_z = IndexGlobal<named_dim::z, named_usage::ignored, GRID_SIZE>;
 
-template <size_t GRID_SIZE_X = named_usage::unspecified,
-          size_t GRID_SIZE_Y = named_usage::unspecified,
-          size_t GRID_SIZE_Z = named_usage::unspecified>
-using block_xyz = IndexFlatten<block_x<GRID_SIZE_X>,
-                               block_y<GRID_SIZE_Y>,
-                               block_z<GRID_SIZE_Z>>;
+template <
+    size_t GRID_SIZE_X = named_usage::unspecified,
+    size_t GRID_SIZE_Y = named_usage::unspecified,
+    size_t GRID_SIZE_Z = named_usage::unspecified>
+using block_xyz = IndexFlatten<
+    block_x<GRID_SIZE_X>,
+    block_y<GRID_SIZE_Y>,
+    block_z<GRID_SIZE_Z>>;
 
 template <size_t BLOCK_SIZE, size_t GRID_SIZE = named_usage::unspecified>
 using global_x = IndexGlobal<named_dim::x, BLOCK_SIZE, GRID_SIZE>;
@@ -1239,37 +1262,41 @@ template <size_t BLOCK_SIZE, size_t GRID_SIZE = named_usage::unspecified>
 using global_z = IndexGlobal<named_dim::z, BLOCK_SIZE, GRID_SIZE>;
 
 
-template <size_t BLOCK_SIZE_X,
-          size_t BLOCK_SIZE_Y,
-          size_t BLOCK_SIZE_Z,
-          size_t GRID_SIZE_X = named_usage::unspecified,
-          size_t GRID_SIZE_Y = named_usage::unspecified,
-          size_t GRID_SIZE_Z = named_usage::unspecified>
-using global_xyz = IndexFlatten<global_x<BLOCK_SIZE_X, GRID_SIZE_X>,
-                                global_y<BLOCK_SIZE_Y, GRID_SIZE_Y>,
-                                global_z<BLOCK_SIZE_Z, GRID_SIZE_Z>>;
+template <
+    size_t BLOCK_SIZE_X,
+    size_t BLOCK_SIZE_Y,
+    size_t BLOCK_SIZE_Z,
+    size_t GRID_SIZE_X = named_usage::unspecified,
+    size_t GRID_SIZE_Y = named_usage::unspecified,
+    size_t GRID_SIZE_Z = named_usage::unspecified>
+using global_xyz = IndexFlatten<
+    global_x<BLOCK_SIZE_X, GRID_SIZE_X>,
+    global_y<BLOCK_SIZE_Y, GRID_SIZE_Y>,
+    global_z<BLOCK_SIZE_Z, GRID_SIZE_Z>>;
 
 
-template <size_t WARP_SIZE    = RAJA::policy::cuda::device_constants.WARP_SIZE,
-          size_t BLOCK_SIZE_X = named_usage::unspecified,
-          size_t BLOCK_SIZE_Y = named_usage::unspecified,
-          size_t BLOCK_SIZE_Z = named_usage::unspecified>
-using warp_xyz =
-    IndexDivide<WARP_SIZE,
-                thread_xyz<BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z>>;
+template <
+    size_t WARP_SIZE    = RAJA::policy::cuda::device_constants.WARP_SIZE,
+    size_t BLOCK_SIZE_X = named_usage::unspecified,
+    size_t BLOCK_SIZE_Y = named_usage::unspecified,
+    size_t BLOCK_SIZE_Z = named_usage::unspecified>
+using warp_xyz = IndexDivide<
+    WARP_SIZE,
+    thread_xyz<BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z>>;
 
-template <size_t WARP_SIZE    = RAJA::policy::cuda::device_constants.WARP_SIZE,
-          size_t BLOCK_SIZE_X = named_usage::unspecified,
-          size_t BLOCK_SIZE_Y = named_usage::unspecified,
-          size_t BLOCK_SIZE_Z = named_usage::unspecified,
-          size_t GRID_SIZE_X  = named_usage::unspecified,
-          size_t GRID_SIZE_Y  = named_usage::unspecified,
-          size_t GRID_SIZE_Z  = named_usage::unspecified>
-using warp_global_xyz =
-    IndexFlatten<warp_xyz<WARP_SIZE, BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z>,
-                 block_xyz<GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z>>;
+template <
+    size_t WARP_SIZE    = RAJA::policy::cuda::device_constants.WARP_SIZE,
+    size_t BLOCK_SIZE_X = named_usage::unspecified,
+    size_t BLOCK_SIZE_Y = named_usage::unspecified,
+    size_t BLOCK_SIZE_Z = named_usage::unspecified,
+    size_t GRID_SIZE_X  = named_usage::unspecified,
+    size_t GRID_SIZE_Y  = named_usage::unspecified,
+    size_t GRID_SIZE_Z  = named_usage::unspecified>
+using warp_global_xyz = IndexFlatten<
+    warp_xyz<WARP_SIZE, BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z>,
+    block_xyz<GRID_SIZE_X, GRID_SIZE_Y, GRID_SIZE_Z>>;
 
-} // namespace cuda
+}  // namespace cuda
 
 // contretizers used in forall, scan, and sort policies
 
@@ -1289,10 +1316,11 @@ using CudaDefaultConcretizer = CudaMaxOccupancyConcretizer;
 
 // policies usable with forall, scan, and sort
 
-template <size_t BLOCK_SIZE,
-          size_t GRID_SIZE,
-          size_t BLOCKS_PER_SM,
-          bool   Async = false>
+template <
+    size_t BLOCK_SIZE,
+    size_t GRID_SIZE,
+    size_t BLOCKS_PER_SM,
+    bool   Async = false>
 using cuda_exec_grid_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>,
     cuda::global_x<BLOCK_SIZE, GRID_SIZE>,
@@ -1325,36 +1353,36 @@ using cuda_exec_grid_async = policy::cuda::cuda_exec_explicit<
     true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
-using cuda_exec_explicit =
-    policy::cuda::cuda_exec_explicit<iteration_mapping::Direct,
-                                     cuda::global_x<BLOCK_SIZE>,
-                                     CudaDefaultConcretizer,
-                                     BLOCKS_PER_SM,
-                                     Async>;
+using cuda_exec_explicit = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::Direct,
+    cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer,
+    BLOCKS_PER_SM,
+    Async>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM>
-using cuda_exec_explicit_async =
-    policy::cuda::cuda_exec_explicit<iteration_mapping::Direct,
-                                     cuda::global_x<BLOCK_SIZE>,
-                                     CudaDefaultConcretizer,
-                                     BLOCKS_PER_SM,
-                                     true>;
+using cuda_exec_explicit_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::Direct,
+    cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer,
+    BLOCKS_PER_SM,
+    true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-using cuda_exec =
-    policy::cuda::cuda_exec_explicit<iteration_mapping::Direct,
-                                     cuda::global_x<BLOCK_SIZE>,
-                                     CudaDefaultConcretizer,
-                                     policy::cuda::MIN_BLOCKS_PER_SM,
-                                     Async>;
+using cuda_exec = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::Direct,
+    cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer,
+    policy::cuda::MIN_BLOCKS_PER_SM,
+    Async>;
 
 template <size_t BLOCK_SIZE>
-using cuda_exec_async =
-    policy::cuda::cuda_exec_explicit<iteration_mapping::Direct,
-                                     cuda::global_x<BLOCK_SIZE>,
-                                     CudaDefaultConcretizer,
-                                     policy::cuda::MIN_BLOCKS_PER_SM,
-                                     true>;
+using cuda_exec_async = policy::cuda::cuda_exec_explicit<
+    iteration_mapping::Direct,
+    cuda::global_x<BLOCK_SIZE>,
+    CudaDefaultConcretizer,
+    policy::cuda::MIN_BLOCKS_PER_SM,
+    true>;
 
 template <size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async = false>
 using cuda_exec_occ_calc_explicit = policy::cuda::cuda_exec_explicit<
@@ -1420,10 +1448,11 @@ using cuda_exec_occ_max_async = policy::cuda::cuda_exec_explicit<
     policy::cuda::MIN_BLOCKS_PER_SM,
     true>;
 
-template <size_t BLOCK_SIZE,
-          size_t BLOCKS_PER_SM,
-          typename Fraction,
-          bool Async = false>
+template <
+    size_t BLOCK_SIZE,
+    size_t BLOCKS_PER_SM,
+    typename Fraction,
+    bool Async = false>
 using cuda_exec_occ_fraction_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>,
     cuda::global_x<BLOCK_SIZE>,
@@ -1455,10 +1484,11 @@ using cuda_exec_occ_fraction_async = policy::cuda::cuda_exec_explicit<
     policy::cuda::MIN_BLOCKS_PER_SM,
     true>;
 
-template <size_t BLOCK_SIZE,
-          size_t BLOCKS_PER_SM,
-          typename Concretizer,
-          bool Async = false>
+template <
+    size_t BLOCK_SIZE,
+    size_t BLOCKS_PER_SM,
+    typename Concretizer,
+    bool Async = false>
 using cuda_exec_occ_custom_explicit = policy::cuda::cuda_exec_explicit<
     iteration_mapping::StridedLoop<named_usage::unspecified>,
     cuda::global_x<BLOCK_SIZE>,
@@ -1522,10 +1552,11 @@ using cuda_exec_with_reduce_async = policy::cuda::cuda_exec_explicit<
     policy::cuda::MIN_BLOCKS_PER_SM,
     true>;
 
-template <bool   with_reduce,
-          size_t BLOCK_SIZE,
-          size_t BLOCKS_PER_SM,
-          bool   Async = false>
+template <
+    bool   with_reduce,
+    size_t BLOCK_SIZE,
+    size_t BLOCKS_PER_SM,
+    bool   Async = false>
 using cuda_exec_base_explicit = std::conditional_t<
     with_reduce,
     cuda_exec_with_reduce_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
@@ -1538,27 +1569,29 @@ using cuda_exec_base_explicit_async = std::conditional_t<
     cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>>;
 
 template <bool with_reduce, size_t BLOCK_SIZE, bool Async = false>
-using cuda_exec_base =
-    std::conditional_t<with_reduce,
-                       cuda_exec_with_reduce<BLOCK_SIZE, Async>,
-                       cuda_exec<BLOCK_SIZE, Async>>;
+using cuda_exec_base = std::conditional_t<
+    with_reduce,
+    cuda_exec_with_reduce<BLOCK_SIZE, Async>,
+    cuda_exec<BLOCK_SIZE, Async>>;
 
 template <bool with_reduce, size_t BLOCK_SIZE>
-using cuda_exec_base_async =
-    std::conditional_t<with_reduce,
-                       cuda_exec_with_reduce_async<BLOCK_SIZE>,
-                       cuda_exec_async<BLOCK_SIZE>>;
+using cuda_exec_base_async = std::conditional_t<
+    with_reduce,
+    cuda_exec_with_reduce_async<BLOCK_SIZE>,
+    cuda_exec_async<BLOCK_SIZE>>;
 
 
 // policies usable with WorkGroup
-template <size_t BLOCK_SIZE,
-          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
-          bool   Async         = false>
+template <
+    size_t BLOCK_SIZE,
+    size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM,
+    bool   Async         = false>
 using cuda_work_explicit =
     policy::cuda::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>;
 
-template <size_t BLOCK_SIZE,
-          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
+template <
+    size_t BLOCK_SIZE,
+    size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 using cuda_work_explicit_async =
     policy::cuda::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>;
 
@@ -1578,10 +1611,11 @@ using policy::cuda::cuda_atomic_explicit;
 
 
 // policies usable with reducers
-template <cuda::reduce_algorithm         algorithm,
-          cuda::block_communication_mode comm_mode,
-          size_t                         replication = named_usage::unspecified,
-          size_t atomic_stride                       = named_usage::unspecified>
+template <
+    cuda::reduce_algorithm         algorithm,
+    cuda::block_communication_mode comm_mode,
+    size_t                         replication   = named_usage::unspecified,
+    size_t                         atomic_stride = named_usage::unspecified>
 using cuda_reduce_tuning = policy::cuda::cuda_reduce_policy<
     cuda::ReduceTuning<algorithm, comm_mode, replication, atomic_stride>>;
 
@@ -1604,41 +1638,41 @@ using cuda_reduce_tuning = policy::cuda::cuda_reduce_policy<
 //                 a cache shared by the whole device to avoid having to use
 //                 device scope fences. This improves performance on some HW but
 //                 is more difficult to code correctly.
-using cuda_reduce_device_fence =
-    cuda_reduce_tuning<cuda::reduce_algorithm::combine_last_block,
-                       cuda::block_communication_mode::device_fence,
-                       named_usage::unspecified,
-                       named_usage::unspecified>;
+using cuda_reduce_device_fence = cuda_reduce_tuning<
+    cuda::reduce_algorithm::combine_last_block,
+    cuda::block_communication_mode::device_fence,
+    named_usage::unspecified,
+    named_usage::unspecified>;
 ///
-using cuda_reduce_block_fence =
-    cuda_reduce_tuning<cuda::reduce_algorithm::combine_last_block,
-                       cuda::block_communication_mode::block_fence,
-                       named_usage::unspecified,
-                       named_usage::unspecified>;
+using cuda_reduce_block_fence = cuda_reduce_tuning<
+    cuda::reduce_algorithm::combine_last_block,
+    cuda::block_communication_mode::block_fence,
+    named_usage::unspecified,
+    named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_device_init_device_fence =
-    cuda_reduce_tuning<cuda::reduce_algorithm::init_device_combine_atomic_block,
-                       cuda::block_communication_mode::device_fence,
-                       named_usage::unspecified,
-                       named_usage::unspecified>;
+using cuda_reduce_atomic_device_init_device_fence = cuda_reduce_tuning<
+    cuda::reduce_algorithm::init_device_combine_atomic_block,
+    cuda::block_communication_mode::device_fence,
+    named_usage::unspecified,
+    named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_device_init_block_fence =
-    cuda_reduce_tuning<cuda::reduce_algorithm::init_device_combine_atomic_block,
-                       cuda::block_communication_mode::block_fence,
-                       named_usage::unspecified,
-                       named_usage::unspecified>;
+using cuda_reduce_atomic_device_init_block_fence = cuda_reduce_tuning<
+    cuda::reduce_algorithm::init_device_combine_atomic_block,
+    cuda::block_communication_mode::block_fence,
+    named_usage::unspecified,
+    named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_host_init_device_fence =
-    cuda_reduce_tuning<cuda::reduce_algorithm::init_host_combine_atomic_block,
-                       cuda::block_communication_mode::device_fence,
-                       named_usage::unspecified,
-                       named_usage::unspecified>;
+using cuda_reduce_atomic_host_init_device_fence = cuda_reduce_tuning<
+    cuda::reduce_algorithm::init_host_combine_atomic_block,
+    cuda::block_communication_mode::device_fence,
+    named_usage::unspecified,
+    named_usage::unspecified>;
 ///
-using cuda_reduce_atomic_host_init_block_fence =
-    cuda_reduce_tuning<cuda::reduce_algorithm::init_host_combine_atomic_block,
-                       cuda::block_communication_mode::block_fence,
-                       named_usage::unspecified,
-                       named_usage::unspecified>;
+using cuda_reduce_atomic_host_init_block_fence = cuda_reduce_tuning<
+    cuda::reduce_algorithm::init_host_combine_atomic_block,
+    cuda::block_communication_mode::block_fence,
+    named_usage::unspecified,
+    named_usage::unspecified>;
 
 // Policy for RAJA::Reduce* objects that gives the same answer every time when
 // used in the same way
@@ -1656,20 +1690,23 @@ using cuda_reduce_base =
 
 
 // policies usable with multi_reducers
-template <cuda::multi_reduce_algorithm algorithm,
-          typename SharedAtomicReplicationConcretizer,
-          typename SharedAtomicReplicationIndexer,
-          typename GlobalAtomicReplicationConcretizer,
-          typename GlobalAtomicReplicationIndexer>
+template <
+    cuda::multi_reduce_algorithm algorithm,
+    typename SharedAtomicReplicationConcretizer,
+    typename SharedAtomicReplicationIndexer,
+    typename GlobalAtomicReplicationConcretizer,
+    typename GlobalAtomicReplicationIndexer>
 using cuda_multi_reduce_tuning =
     policy::cuda::cuda_multi_reduce_policy<cuda::MultiReduceTuning<
         algorithm,
-        cuda::AtomicReplicationTuning<SharedAtomicReplicationConcretizer,
-                                      SharedAtomicReplicationIndexer,
-                                      GetOffsetRight<int>>,
-        cuda::AtomicReplicationTuning<GlobalAtomicReplicationConcretizer,
-                                      GlobalAtomicReplicationIndexer,
-                                      GetOffsetLeft<int>>>>;
+        cuda::AtomicReplicationTuning<
+            SharedAtomicReplicationConcretizer,
+            SharedAtomicReplicationIndexer,
+            GetOffsetRight<int>>,
+        cuda::AtomicReplicationTuning<
+            GlobalAtomicReplicationConcretizer,
+            GlobalAtomicReplicationIndexer,
+            GetOffsetLeft<int>>>>;
 
 // Policies for RAJA::MultiReduce* objects with specific behaviors.
 // - *atomic* policies may use atomics to combine partial results. The
@@ -1707,8 +1744,8 @@ using cuda_multi_reduce_atomic_block_then_atomic_grid_host_init_fallback_testing
 //
 using cuda_multi_reduce_atomic_global_host_init = cuda_multi_reduce_tuning<
     cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
-    void, // unused with this algorithm
-    void, // unused with this algorithm
+    void,  // unused with this algorithm
+    void,  // unused with this algorithm
     cuda::GlobalAtomicReplicationMinPow2Concretizer<
         cuda::ConstantPreferredReplicationConcretizer<2>>,
     cuda::warp_global_xyz<>>;
@@ -1716,8 +1753,8 @@ using cuda_multi_reduce_atomic_global_host_init = cuda_multi_reduce_tuning<
 using cuda_multi_reduce_atomic_global_no_replication_host_init =
     cuda_multi_reduce_tuning<
         cuda::multi_reduce_algorithm::init_host_combine_global_atomic,
-        void, // unused with this algorithm
-        void, // unused with this algorithm
+        void,  // unused with this algorithm
+        void,  // unused with this algorithm
         cuda::GlobalAtomicReplicationMinPow2Concretizer<
             cuda::ConstantPreferredReplicationConcretizer<1>>,
         cuda::block_xyz<>>;
@@ -1755,29 +1792,29 @@ using policy::cuda::cuda_thread_masked_loop;
 using policy::cuda::cuda_synchronize;
 
 // policies usable with launch
-template <bool   Async,
-          int    num_threads   = named_usage::unspecified,
-          size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
+template <
+    bool   Async,
+    int    num_threads   = named_usage::unspecified,
+    size_t BLOCKS_PER_SM = policy::cuda::MIN_BLOCKS_PER_SM>
 using cuda_launch_explicit_t =
     policy::cuda::cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>;
 
 // CUDA will emit warnings if we specify BLOCKS_PER_SM but not num of threads
 template <bool Async, int num_threads = named_usage::unspecified>
-using cuda_launch_t =
-    policy::cuda::cuda_launch_explicit_t<Async,
-                                         num_threads,
-                                         (num_threads ==
-                                          named_usage::unspecified)
-                                             ? named_usage::unspecified
-                                             : policy::cuda::MIN_BLOCKS_PER_SM>;
+using cuda_launch_t = policy::cuda::cuda_launch_explicit_t<
+    Async,
+    num_threads,
+    (num_threads == named_usage::unspecified)
+        ? named_usage::unspecified
+        : policy::cuda::MIN_BLOCKS_PER_SM>;
 
 
 // policies usable with kernel and launch
 template <typename... indexers>
-using cuda_indexer_direct =
-    policy::cuda::cuda_indexer<iteration_mapping::Direct,
-                               kernel_sync_requirement::none,
-                               indexers...>;
+using cuda_indexer_direct = policy::cuda::cuda_indexer<
+    iteration_mapping::Direct,
+    kernel_sync_requirement::none,
+    indexers...>;
 
 template <typename... indexers>
 using cuda_indexer_loop = policy::cuda::cuda_indexer<
@@ -1792,10 +1829,10 @@ using cuda_indexer_syncable_loop = policy::cuda::cuda_indexer<
     indexers...>;
 
 template <typename... indexers>
-using cuda_flatten_indexer_direct =
-    policy::cuda::cuda_flatten_indexer<iteration_mapping::Direct,
-                                       kernel_sync_requirement::none,
-                                       indexers...>;
+using cuda_flatten_indexer_direct = policy::cuda::cuda_flatten_indexer<
+    iteration_mapping::Direct,
+    kernel_sync_requirement::none,
+    indexers...>;
 
 template <typename... indexers>
 using cuda_flatten_indexer_loop = policy::cuda::cuda_flatten_indexer<
@@ -2109,10 +2146,10 @@ using cuda_flatten_block_zyx_loop =
  * physical threads to fit all of the direct map requests.
  */
 template <named_dim... dims>
-using cuda_global_direct =
-    cuda_indexer_direct<cuda::IndexGlobal<dims,
-                                          named_usage::unspecified,
-                                          named_usage::unspecified>...>;
+using cuda_global_direct = cuda_indexer_direct<cuda::IndexGlobal<
+    dims,
+    named_usage::unspecified,
+    named_usage::unspecified>...>;
 
 using cuda_global_x_direct = cuda_global_direct<named_dim::x>;
 using cuda_global_y_direct = cuda_global_direct<named_dim::y>;
@@ -2143,16 +2180,16 @@ using cuda_global_zyx_direct =
  * Uses grid-stride looping to exceed the maximum number of global threads
  */
 template <named_dim... dims>
-using cuda_global_loop =
-    cuda_indexer_loop<cuda::IndexGlobal<dims,
-                                        named_usage::unspecified,
-                                        named_usage::unspecified>...>;
+using cuda_global_loop = cuda_indexer_loop<cuda::IndexGlobal<
+    dims,
+    named_usage::unspecified,
+    named_usage::unspecified>...>;
 
 template <named_dim... dims>
-using cuda_global_syncable_loop =
-    cuda_indexer_syncable_loop<cuda::IndexGlobal<dims,
-                                                 named_usage::unspecified,
-                                                 named_usage::unspecified>...>;
+using cuda_global_syncable_loop = cuda_indexer_syncable_loop<cuda::IndexGlobal<
+    dims,
+    named_usage::unspecified,
+    named_usage::unspecified>...>;
 
 using cuda_global_x_loop = cuda_global_loop<named_dim::x>;
 using cuda_global_y_loop = cuda_global_loop<named_dim::y>;
@@ -2186,9 +2223,10 @@ using cuda_global_zyx_loop =
  */
 template <named_dim... dims>
 using cuda_flatten_global_direct =
-    cuda_flatten_indexer_direct<cuda::IndexGlobal<dims,
-                                                  named_usage::unspecified,
-                                                  named_usage::unspecified>...>;
+    cuda_flatten_indexer_direct<cuda::IndexGlobal<
+        dims,
+        named_usage::unspecified,
+        named_usage::unspecified>...>;
 
 using cuda_flatten_global_x_direct = cuda_flatten_global_direct<named_dim::x>;
 using cuda_flatten_global_y_direct = cuda_flatten_global_direct<named_dim::y>;
@@ -2227,10 +2265,10 @@ using cuda_flatten_global_zyx_direct =
  * global threads
  */
 template <named_dim... dims>
-using cuda_flatten_global_loop =
-    cuda_flatten_indexer_loop<cuda::IndexGlobal<dims,
-                                                named_usage::unspecified,
-                                                named_usage::unspecified>...>;
+using cuda_flatten_global_loop = cuda_flatten_indexer_loop<cuda::IndexGlobal<
+    dims,
+    named_usage::unspecified,
+    named_usage::unspecified>...>;
 
 using cuda_flatten_global_x_loop = cuda_flatten_global_loop<named_dim::x>;
 using cuda_flatten_global_y_loop = cuda_flatten_global_loop<named_dim::y>;
@@ -2279,60 +2317,60 @@ using cuda_thread_size_z_direct =
     cuda_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_xy_direct =
-    cuda_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                        cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_xy_direct = cuda_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_xz_direct =
-    cuda_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                        cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_xz_direct = cuda_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_yx_direct =
-    cuda_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                        cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_yx_direct = cuda_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_yz_direct =
-    cuda_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                        cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_yz_direct = cuda_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_zx_direct =
-    cuda_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                        cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_zx_direct = cuda_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_zy_direct =
-    cuda_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                        cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_zy_direct = cuda_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_xyz_direct =
-    cuda_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                        cuda::thread_y<Y_BLOCK_SIZE>,
-                        cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_xyz_direct = cuda_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_xzy_direct =
-    cuda_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                        cuda::thread_z<Z_BLOCK_SIZE>,
-                        cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_xzy_direct = cuda_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_yxz_direct =
-    cuda_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                        cuda::thread_x<X_BLOCK_SIZE>,
-                        cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_yxz_direct = cuda_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_yzx_direct =
-    cuda_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                        cuda::thread_z<Z_BLOCK_SIZE>,
-                        cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_yzx_direct = cuda_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_zxy_direct =
-    cuda_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                        cuda::thread_x<X_BLOCK_SIZE>,
-                        cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_zxy_direct = cuda_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_zyx_direct =
-    cuda_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                        cuda::thread_y<Y_BLOCK_SIZE>,
-                        cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_zyx_direct = cuda_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 
 
 template <int X_GRID_SIZE>
@@ -2365,35 +2403,35 @@ using cuda_block_size_zy_direct =
     cuda_indexer_direct<cuda::block_z<Z_GRID_SIZE>, cuda::block_y<Y_GRID_SIZE>>;
 
 template <int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_block_size_xyz_direct =
-    cuda_indexer_direct<cuda::block_x<X_GRID_SIZE>,
-                        cuda::block_y<Y_GRID_SIZE>,
-                        cuda::block_z<Z_GRID_SIZE>>;
+using cuda_block_size_xyz_direct = cuda_indexer_direct<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_block_size_xzy_direct =
-    cuda_indexer_direct<cuda::block_x<X_GRID_SIZE>,
-                        cuda::block_z<Z_GRID_SIZE>,
-                        cuda::block_y<Y_GRID_SIZE>>;
+using cuda_block_size_xzy_direct = cuda_indexer_direct<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_block_size_yxz_direct =
-    cuda_indexer_direct<cuda::block_y<Y_GRID_SIZE>,
-                        cuda::block_x<X_GRID_SIZE>,
-                        cuda::block_z<Z_GRID_SIZE>>;
+using cuda_block_size_yxz_direct = cuda_indexer_direct<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
-using cuda_block_size_yzx_direct =
-    cuda_indexer_direct<cuda::block_y<Y_GRID_SIZE>,
-                        cuda::block_z<Z_GRID_SIZE>,
-                        cuda::block_x<X_GRID_SIZE>>;
+using cuda_block_size_yzx_direct = cuda_indexer_direct<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_block_size_zxy_direct =
-    cuda_indexer_direct<cuda::block_z<Z_GRID_SIZE>,
-                        cuda::block_x<X_GRID_SIZE>,
-                        cuda::block_y<Y_GRID_SIZE>>;
+using cuda_block_size_zxy_direct = cuda_indexer_direct<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
-using cuda_block_size_zyx_direct =
-    cuda_indexer_direct<cuda::block_z<Z_GRID_SIZE>,
-                        cuda::block_y<Y_GRID_SIZE>,
-                        cuda::block_x<X_GRID_SIZE>>;
+using cuda_block_size_zyx_direct = cuda_indexer_direct<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 
 
 template <int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
@@ -2406,109 +2444,121 @@ template <int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using cuda_global_size_z_direct =
     cuda_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xy_direct =
-    cuda_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                        cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xz_direct =
-    cuda_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                        cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yx_direct =
-    cuda_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                        cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yz_direct =
-    cuda_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                        cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zx_direct =
-    cuda_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                        cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zy_direct =
-    cuda_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                        cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xy_direct = cuda_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xz_direct = cuda_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yx_direct = cuda_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yz_direct = cuda_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zx_direct = cuda_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zy_direct = cuda_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xyz_direct =
-    cuda_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                        cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                        cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xzy_direct =
-    cuda_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                        cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                        cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yxz_direct =
-    cuda_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                        cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                        cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yzx_direct =
-    cuda_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                        cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                        cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zxy_direct =
-    cuda_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                        cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                        cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zyx_direct =
-    cuda_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                        cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                        cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xyz_direct = cuda_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xzy_direct = cuda_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yxz_direct = cuda_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yzx_direct = cuda_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zxy_direct = cuda_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zyx_direct = cuda_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*!
  * Maps segment indices to CUDA global threads.
@@ -2522,60 +2572,60 @@ template <int Z_BLOCK_SIZE>
 using cuda_thread_size_z_loop = cuda_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_xy_loop =
-    cuda_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                      cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_xy_loop = cuda_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_xz_loop =
-    cuda_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                      cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_xz_loop = cuda_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_yx_loop =
-    cuda_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                      cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_yx_loop = cuda_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_yz_loop =
-    cuda_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                      cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_yz_loop = cuda_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_zx_loop =
-    cuda_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                      cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_zx_loop = cuda_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_zy_loop =
-    cuda_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                      cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_zy_loop = cuda_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_xyz_loop =
-    cuda_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                      cuda::thread_y<Y_BLOCK_SIZE>,
-                      cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_xyz_loop = cuda_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_xzy_loop =
-    cuda_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                      cuda::thread_z<Z_BLOCK_SIZE>,
-                      cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_xzy_loop = cuda_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_thread_size_yxz_loop =
-    cuda_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                      cuda::thread_x<X_BLOCK_SIZE>,
-                      cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_thread_size_yxz_loop = cuda_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_yzx_loop =
-    cuda_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                      cuda::thread_z<Z_BLOCK_SIZE>,
-                      cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_yzx_loop = cuda_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_thread_size_zxy_loop =
-    cuda_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                      cuda::thread_x<X_BLOCK_SIZE>,
-                      cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_thread_size_zxy_loop = cuda_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_thread_size_zyx_loop =
-    cuda_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                      cuda::thread_y<Y_BLOCK_SIZE>,
-                      cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_thread_size_zyx_loop = cuda_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 
 
 template <int X_GRID_SIZE>
@@ -2605,29 +2655,35 @@ using cuda_block_size_zy_loop =
     cuda_indexer_loop<cuda::block_z<Z_GRID_SIZE>, cuda::block_y<Y_GRID_SIZE>>;
 
 template <int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_block_size_xyz_loop = cuda_indexer_loop<cuda::block_x<X_GRID_SIZE>,
-                                                   cuda::block_y<Y_GRID_SIZE>,
-                                                   cuda::block_z<Z_GRID_SIZE>>;
+using cuda_block_size_xyz_loop = cuda_indexer_loop<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_block_size_xzy_loop = cuda_indexer_loop<cuda::block_x<X_GRID_SIZE>,
-                                                   cuda::block_z<Z_GRID_SIZE>,
-                                                   cuda::block_y<Y_GRID_SIZE>>;
+using cuda_block_size_xzy_loop = cuda_indexer_loop<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_block_size_yxz_loop = cuda_indexer_loop<cuda::block_y<Y_GRID_SIZE>,
-                                                   cuda::block_x<X_GRID_SIZE>,
-                                                   cuda::block_z<Z_GRID_SIZE>>;
+using cuda_block_size_yxz_loop = cuda_indexer_loop<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
-using cuda_block_size_yzx_loop = cuda_indexer_loop<cuda::block_y<Y_GRID_SIZE>,
-                                                   cuda::block_z<Z_GRID_SIZE>,
-                                                   cuda::block_x<X_GRID_SIZE>>;
+using cuda_block_size_yzx_loop = cuda_indexer_loop<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_block_size_zxy_loop = cuda_indexer_loop<cuda::block_z<Z_GRID_SIZE>,
-                                                   cuda::block_x<X_GRID_SIZE>,
-                                                   cuda::block_y<Y_GRID_SIZE>>;
+using cuda_block_size_zxy_loop = cuda_indexer_loop<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
-using cuda_block_size_zyx_loop = cuda_indexer_loop<cuda::block_z<Z_GRID_SIZE>,
-                                                   cuda::block_y<Y_GRID_SIZE>,
-                                                   cuda::block_x<X_GRID_SIZE>>;
+using cuda_block_size_zyx_loop = cuda_indexer_loop<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 
 
 template <int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
@@ -2640,109 +2696,121 @@ template <int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using cuda_global_size_z_loop =
     cuda_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xy_loop =
-    cuda_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                      cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xz_loop =
-    cuda_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                      cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yx_loop =
-    cuda_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                      cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yz_loop =
-    cuda_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                      cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zx_loop =
-    cuda_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                      cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zy_loop =
-    cuda_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                      cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xy_loop = cuda_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xz_loop = cuda_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yx_loop = cuda_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yz_loop = cuda_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zx_loop = cuda_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zy_loop = cuda_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xyz_loop =
-    cuda_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                      cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                      cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_xzy_loop =
-    cuda_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                      cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                      cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yxz_loop =
-    cuda_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                      cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                      cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_yzx_loop =
-    cuda_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                      cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                      cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zxy_loop =
-    cuda_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                      cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                      cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_global_size_zyx_loop =
-    cuda_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                      cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                      cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xyz_loop = cuda_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_xzy_loop = cuda_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yxz_loop = cuda_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_yzx_loop = cuda_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zxy_loop = cuda_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_global_size_zyx_loop = cuda_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*
  * Maps segment indices to flattened CUDA global threads.
@@ -2761,60 +2829,60 @@ using cuda_flatten_thread_size_z_direct =
     cuda_flatten_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_xy_direct =
-    cuda_flatten_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                                cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xy_direct = cuda_flatten_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_xz_direct =
-    cuda_flatten_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                                cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xz_direct = cuda_flatten_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_yx_direct =
-    cuda_flatten_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                                cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yx_direct = cuda_flatten_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_yz_direct =
-    cuda_flatten_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                                cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yz_direct = cuda_flatten_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_zx_direct =
-    cuda_flatten_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                                cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zx_direct = cuda_flatten_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_zy_direct =
-    cuda_flatten_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                                cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zy_direct = cuda_flatten_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_xyz_direct =
-    cuda_flatten_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                                cuda::thread_y<Y_BLOCK_SIZE>,
-                                cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xyz_direct = cuda_flatten_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_xzy_direct =
-    cuda_flatten_indexer_direct<cuda::thread_x<X_BLOCK_SIZE>,
-                                cuda::thread_z<Z_BLOCK_SIZE>,
-                                cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xzy_direct = cuda_flatten_indexer_direct<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_yxz_direct =
-    cuda_flatten_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                                cuda::thread_x<X_BLOCK_SIZE>,
-                                cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yxz_direct = cuda_flatten_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_yzx_direct =
-    cuda_flatten_indexer_direct<cuda::thread_y<Y_BLOCK_SIZE>,
-                                cuda::thread_z<Z_BLOCK_SIZE>,
-                                cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yzx_direct = cuda_flatten_indexer_direct<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_zxy_direct =
-    cuda_flatten_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                                cuda::thread_x<X_BLOCK_SIZE>,
-                                cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zxy_direct = cuda_flatten_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_zyx_direct =
-    cuda_flatten_indexer_direct<cuda::thread_z<Z_BLOCK_SIZE>,
-                                cuda::thread_y<Y_BLOCK_SIZE>,
-                                cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zyx_direct = cuda_flatten_indexer_direct<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 
 
 template <int X_GRID_SIZE>
@@ -2828,60 +2896,60 @@ using cuda_flatten_block_size_z_direct =
     cuda_flatten_indexer_direct<cuda::block_z<Z_GRID_SIZE>>;
 
 template <int X_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_xy_direct =
-    cuda_flatten_indexer_direct<cuda::block_x<X_GRID_SIZE>,
-                                cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_xy_direct = cuda_flatten_indexer_direct<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int X_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_xz_direct =
-    cuda_flatten_indexer_direct<cuda::block_x<X_GRID_SIZE>,
-                                cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_xz_direct = cuda_flatten_indexer_direct<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_yx_direct =
-    cuda_flatten_indexer_direct<cuda::block_y<Y_GRID_SIZE>,
-                                cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_yx_direct = cuda_flatten_indexer_direct<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_yz_direct =
-    cuda_flatten_indexer_direct<cuda::block_y<Y_GRID_SIZE>,
-                                cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_yz_direct = cuda_flatten_indexer_direct<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_zx_direct =
-    cuda_flatten_indexer_direct<cuda::block_z<Z_GRID_SIZE>,
-                                cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_zx_direct = cuda_flatten_indexer_direct<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_zy_direct =
-    cuda_flatten_indexer_direct<cuda::block_z<Z_GRID_SIZE>,
-                                cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_zy_direct = cuda_flatten_indexer_direct<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 
 template <int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_xyz_direct =
-    cuda_flatten_indexer_direct<cuda::block_x<X_GRID_SIZE>,
-                                cuda::block_y<Y_GRID_SIZE>,
-                                cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_xyz_direct = cuda_flatten_indexer_direct<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_xzy_direct =
-    cuda_flatten_indexer_direct<cuda::block_x<X_GRID_SIZE>,
-                                cuda::block_z<Z_GRID_SIZE>,
-                                cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_xzy_direct = cuda_flatten_indexer_direct<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_yxz_direct =
-    cuda_flatten_indexer_direct<cuda::block_y<Y_GRID_SIZE>,
-                                cuda::block_x<X_GRID_SIZE>,
-                                cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_yxz_direct = cuda_flatten_indexer_direct<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_yzx_direct =
-    cuda_flatten_indexer_direct<cuda::block_y<Y_GRID_SIZE>,
-                                cuda::block_z<Z_GRID_SIZE>,
-                                cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_yzx_direct = cuda_flatten_indexer_direct<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_zxy_direct =
-    cuda_flatten_indexer_direct<cuda::block_z<Z_GRID_SIZE>,
-                                cuda::block_x<X_GRID_SIZE>,
-                                cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_zxy_direct = cuda_flatten_indexer_direct<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_zyx_direct =
-    cuda_flatten_indexer_direct<cuda::block_z<Z_GRID_SIZE>,
-                                cuda::block_y<Y_GRID_SIZE>,
-                                cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_zyx_direct = cuda_flatten_indexer_direct<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 
 
 template <int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
@@ -2894,109 +2962,121 @@ template <int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using cuda_flatten_global_size_z_direct =
     cuda_flatten_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xy_direct =
-    cuda_flatten_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                                cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xz_direct =
-    cuda_flatten_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                                cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yx_direct =
-    cuda_flatten_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                                cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yz_direct =
-    cuda_flatten_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                                cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zx_direct =
-    cuda_flatten_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                                cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zy_direct =
-    cuda_flatten_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                                cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xy_direct = cuda_flatten_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xz_direct = cuda_flatten_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yx_direct = cuda_flatten_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yz_direct = cuda_flatten_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zx_direct = cuda_flatten_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zy_direct = cuda_flatten_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xyz_direct =
-    cuda_flatten_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                                cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                                cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xzy_direct =
-    cuda_flatten_indexer_direct<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                                cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                                cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yxz_direct =
-    cuda_flatten_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                                cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                                cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yzx_direct =
-    cuda_flatten_indexer_direct<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                                cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                                cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zxy_direct =
-    cuda_flatten_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                                cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                                cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zyx_direct =
-    cuda_flatten_indexer_direct<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                                cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                                cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xyz_direct = cuda_flatten_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xzy_direct = cuda_flatten_indexer_direct<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yxz_direct = cuda_flatten_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yzx_direct = cuda_flatten_indexer_direct<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zxy_direct = cuda_flatten_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zyx_direct = cuda_flatten_indexer_direct<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*
  * Maps segment indices to flattened CUDA global threads.
@@ -3015,60 +3095,60 @@ using cuda_flatten_thread_size_z_loop =
     cuda_flatten_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_xy_loop =
-    cuda_flatten_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                              cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xy_loop = cuda_flatten_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_xz_loop =
-    cuda_flatten_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                              cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xz_loop = cuda_flatten_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_yx_loop =
-    cuda_flatten_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                              cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yx_loop = cuda_flatten_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_yz_loop =
-    cuda_flatten_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                              cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yz_loop = cuda_flatten_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_zx_loop =
-    cuda_flatten_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                              cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zx_loop = cuda_flatten_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_zy_loop =
-    cuda_flatten_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                              cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zy_loop = cuda_flatten_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 
 template <int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_xyz_loop =
-    cuda_flatten_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                              cuda::thread_y<Y_BLOCK_SIZE>,
-                              cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xyz_loop = cuda_flatten_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_xzy_loop =
-    cuda_flatten_indexer_loop<cuda::thread_x<X_BLOCK_SIZE>,
-                              cuda::thread_z<Z_BLOCK_SIZE>,
-                              cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_xzy_loop = cuda_flatten_indexer_loop<
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using cuda_flatten_thread_size_yxz_loop =
-    cuda_flatten_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                              cuda::thread_x<X_BLOCK_SIZE>,
-                              cuda::thread_z<Z_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yxz_loop = cuda_flatten_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>>;
 template <int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_yzx_loop =
-    cuda_flatten_indexer_loop<cuda::thread_y<Y_BLOCK_SIZE>,
-                              cuda::thread_z<Z_BLOCK_SIZE>,
-                              cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_yzx_loop = cuda_flatten_indexer_loop<
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using cuda_flatten_thread_size_zxy_loop =
-    cuda_flatten_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                              cuda::thread_x<X_BLOCK_SIZE>,
-                              cuda::thread_y<Y_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zxy_loop = cuda_flatten_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>>;
 template <int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using cuda_flatten_thread_size_zyx_loop =
-    cuda_flatten_indexer_loop<cuda::thread_z<Z_BLOCK_SIZE>,
-                              cuda::thread_y<Y_BLOCK_SIZE>,
-                              cuda::thread_x<X_BLOCK_SIZE>>;
+using cuda_flatten_thread_size_zyx_loop = cuda_flatten_indexer_loop<
+    cuda::thread_z<Z_BLOCK_SIZE>,
+    cuda::thread_y<Y_BLOCK_SIZE>,
+    cuda::thread_x<X_BLOCK_SIZE>>;
 
 
 template <int X_GRID_SIZE>
@@ -3082,60 +3162,60 @@ using cuda_flatten_block_size_z_loop =
     cuda_flatten_indexer_loop<cuda::block_z<Z_GRID_SIZE>>;
 
 template <int X_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_xy_loop =
-    cuda_flatten_indexer_loop<cuda::block_x<X_GRID_SIZE>,
-                              cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_xy_loop = cuda_flatten_indexer_loop<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int X_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_xz_loop =
-    cuda_flatten_indexer_loop<cuda::block_x<X_GRID_SIZE>,
-                              cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_xz_loop = cuda_flatten_indexer_loop<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_yx_loop =
-    cuda_flatten_indexer_loop<cuda::block_y<Y_GRID_SIZE>,
-                              cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_yx_loop = cuda_flatten_indexer_loop<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_yz_loop =
-    cuda_flatten_indexer_loop<cuda::block_y<Y_GRID_SIZE>,
-                              cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_yz_loop = cuda_flatten_indexer_loop<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_zx_loop =
-    cuda_flatten_indexer_loop<cuda::block_z<Z_GRID_SIZE>,
-                              cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_zx_loop = cuda_flatten_indexer_loop<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_zy_loop =
-    cuda_flatten_indexer_loop<cuda::block_z<Z_GRID_SIZE>,
-                              cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_zy_loop = cuda_flatten_indexer_loop<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 
 template <int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_xyz_loop =
-    cuda_flatten_indexer_loop<cuda::block_x<X_GRID_SIZE>,
-                              cuda::block_y<Y_GRID_SIZE>,
-                              cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_xyz_loop = cuda_flatten_indexer_loop<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_xzy_loop =
-    cuda_flatten_indexer_loop<cuda::block_x<X_GRID_SIZE>,
-                              cuda::block_z<Z_GRID_SIZE>,
-                              cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_xzy_loop = cuda_flatten_indexer_loop<
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
-using cuda_flatten_block_size_yxz_loop =
-    cuda_flatten_indexer_loop<cuda::block_y<Y_GRID_SIZE>,
-                              cuda::block_x<X_GRID_SIZE>,
-                              cuda::block_z<Z_GRID_SIZE>>;
+using cuda_flatten_block_size_yxz_loop = cuda_flatten_indexer_loop<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>>;
 template <int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_yzx_loop =
-    cuda_flatten_indexer_loop<cuda::block_y<Y_GRID_SIZE>,
-                              cuda::block_z<Z_GRID_SIZE>,
-                              cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_yzx_loop = cuda_flatten_indexer_loop<
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
-using cuda_flatten_block_size_zxy_loop =
-    cuda_flatten_indexer_loop<cuda::block_z<Z_GRID_SIZE>,
-                              cuda::block_x<X_GRID_SIZE>,
-                              cuda::block_y<Y_GRID_SIZE>>;
+using cuda_flatten_block_size_zxy_loop = cuda_flatten_indexer_loop<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>>;
 template <int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
-using cuda_flatten_block_size_zyx_loop =
-    cuda_flatten_indexer_loop<cuda::block_z<Z_GRID_SIZE>,
-                              cuda::block_y<Y_GRID_SIZE>,
-                              cuda::block_x<X_GRID_SIZE>>;
+using cuda_flatten_block_size_zyx_loop = cuda_flatten_indexer_loop<
+    cuda::block_z<Z_GRID_SIZE>,
+    cuda::block_y<Y_GRID_SIZE>,
+    cuda::block_x<X_GRID_SIZE>>;
 
 
 template <int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
@@ -3148,109 +3228,121 @@ template <int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using cuda_flatten_global_size_z_loop =
     cuda_flatten_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xy_loop =
-    cuda_flatten_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                              cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xz_loop =
-    cuda_flatten_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                              cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yx_loop =
-    cuda_flatten_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                              cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yz_loop =
-    cuda_flatten_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                              cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zx_loop =
-    cuda_flatten_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                              cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zy_loop =
-    cuda_flatten_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                              cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xy_loop = cuda_flatten_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xz_loop = cuda_flatten_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yx_loop = cuda_flatten_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yz_loop = cuda_flatten_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zx_loop = cuda_flatten_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zy_loop = cuda_flatten_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
 
-template <int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xyz_loop =
-    cuda_flatten_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                              cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                              cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_xzy_loop =
-    cuda_flatten_indexer_loop<cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                              cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                              cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yxz_loop =
-    cuda_flatten_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                              cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                              cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-template <int Y_BLOCK_SIZE,
-          int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_yzx_loop =
-    cuda_flatten_indexer_loop<cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                              cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                              cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zxy_loop =
-    cuda_flatten_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                              cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
-                              cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-template <int Z_BLOCK_SIZE,
-          int Y_BLOCK_SIZE,
-          int X_BLOCK_SIZE,
-          int Z_GRID_SIZE = named_usage::unspecified,
-          int Y_GRID_SIZE = named_usage::unspecified,
-          int X_GRID_SIZE = named_usage::unspecified>
-using cuda_flatten_global_size_zyx_loop =
-    cuda_flatten_indexer_loop<cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
-                              cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
-                              cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xyz_loop = cuda_flatten_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_xzy_loop = cuda_flatten_indexer_loop<
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yxz_loop = cuda_flatten_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template <
+    int Y_BLOCK_SIZE,
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_yzx_loop = cuda_flatten_indexer_loop<
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zxy_loop = cuda_flatten_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template <
+    int Z_BLOCK_SIZE,
+    int Y_BLOCK_SIZE,
+    int X_BLOCK_SIZE,
+    int Z_GRID_SIZE = named_usage::unspecified,
+    int Y_GRID_SIZE = named_usage::unspecified,
+    int X_GRID_SIZE = named_usage::unspecified>
+using cuda_flatten_global_size_zyx_loop = cuda_flatten_indexer_loop<
+    cuda::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+    cuda::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+    cuda::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 
 /*
@@ -3330,7 +3422,7 @@ using cuda_block_yzx_nested_loop = cuda_block_yzx_loop;
 using cuda_block_zxy_nested_loop = cuda_block_zxy_loop;
 using cuda_block_zyx_nested_loop = cuda_block_zyx_loop;
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA
 #endif

@@ -81,23 +81,25 @@ struct callable32
 };
 
 
-template <typename ExecPolicy,
-          typename OrderPolicy,
-          typename StoragePolicy,
-          typename DispatchTyper,
-          typename IndexType,
-          typename Allocator,
-          typename WORKING_RES>
+template <
+    typename ExecPolicy,
+    typename OrderPolicy,
+    typename StoragePolicy,
+    typename DispatchTyper,
+    typename IndexType,
+    typename Allocator,
+    typename WORKING_RES>
 struct testWorkGroupOrderedMultiple
 {
-  void operator()(std::mt19937& rng,
-                  IndexType     max_begin,
-                  IndexType     min_end,
-                  IndexType     num1,
-                  IndexType     num2,
-                  IndexType     num3,
-                  IndexType     pool_reuse,
-                  IndexType     group_reuse) const
+  void operator()(
+      std::mt19937& rng,
+      IndexType     max_begin,
+      IndexType     min_end,
+      IndexType     num1,
+      IndexType     num2,
+      IndexType     num3,
+      IndexType     pool_reuse,
+      IndexType     group_reuse) const
   {
     ASSERT_GT(min_end, max_begin);
     IndexType N = min_end + max_begin;
@@ -129,7 +131,7 @@ struct testWorkGroupOrderedMultiple
     }
 
     WORKING_RES               res = WORKING_RES::get_default();
-    camp::resources::Resource working_res{res};
+    camp::resources::Resource working_res {res};
 
     using type1 = IndexType;
     using type2 = size_t;
@@ -147,14 +149,14 @@ struct testWorkGroupOrderedMultiple
     type3* check_array3   = nullptr;
     type3* test_array3    = nullptr;
 
-    allocateForallTestData<type1>(N * num1, working_res, &working_array1,
-                                  &check_array1, &test_array1);
+    allocateForallTestData<type1>(
+        N * num1, working_res, &working_array1, &check_array1, &test_array1);
 
-    allocateForallTestData<type2>(N * num2, working_res, &working_array2,
-                                  &check_array2, &test_array2);
+    allocateForallTestData<type2>(
+        N * num2, working_res, &working_array2, &check_array2, &test_array2);
 
-    allocateForallTestData<type3>(N * num3, working_res, &working_array3,
-                                  &check_array3, &test_array3);
+    allocateForallTestData<type3>(
+        N * num3, working_res, &working_array3, &check_array3, &test_array3);
 
     type1 const test_val1(5);
     type2 const test_val2(7);
@@ -171,24 +173,24 @@ struct testWorkGroupOrderedMultiple
         camp::list<range_segment, callable31<IndexType, type3>>,
         camp::list<range_segment, callable32<IndexType, type3>>>;
 
-    using WorkPool_type =
-        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                             StoragePolicy, DispatchPolicy>,
-                       IndexType, RAJA::xargs<>, Allocator>;
+    using WorkPool_type = RAJA::WorkPool<
+        RAJA::WorkGroupPolicy<
+            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+        IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkGroup_type =
-        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                              StoragePolicy, DispatchPolicy>,
-                        IndexType, RAJA::xargs<>, Allocator>;
+    using WorkGroup_type = RAJA::WorkGroup<
+        RAJA::WorkGroupPolicy<
+            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+        IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkSite_type =
-        RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
-                                             StoragePolicy, DispatchPolicy>,
-                       IndexType, RAJA::xargs<>, Allocator>;
+    using WorkSite_type = RAJA::WorkSite<
+        RAJA::WorkGroupPolicy<
+            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
+        IndexType, RAJA::xargs<>, Allocator>;
 
     using resource_type = typename WorkGroup_type::resource_type;
 
-    WorkPool_type  pool(Allocator{});
+    WorkPool_type  pool(Allocator {});
     WorkGroup_type group = pool.instantiate();
     WorkSite_type  site  = group.run();
 
@@ -201,28 +203,34 @@ struct testWorkGroupOrderedMultiple
         for (IndexType j = IndexType(0); j < num1; j++)
         {
           type1* working_ptr1 = working_array1 + N * j;
-          pool.enqueue(range_segment{begin1[j], end1[j]},
-                       callable11<IndexType, type1>{working_ptr1});
-          pool.enqueue(range_segment{begin1[j], end1[j]},
-                       callable12<IndexType, type1>{working_ptr1, test_val1});
+          pool.enqueue(
+              range_segment {begin1[j], end1[j]},
+              callable11<IndexType, type1> {working_ptr1});
+          pool.enqueue(
+              range_segment {begin1[j], end1[j]},
+              callable12<IndexType, type1> {working_ptr1, test_val1});
         }
 
         for (IndexType j = IndexType(0); j < num2; j++)
         {
           type2* working_ptr2 = working_array2 + N * j;
-          pool.enqueue(range_segment{begin2[j], end2[j]},
-                       callable21<IndexType, type2>{working_ptr2});
-          pool.enqueue(range_segment{begin2[j], end2[j]},
-                       callable22<IndexType, type2>{working_ptr2, test_val2});
+          pool.enqueue(
+              range_segment {begin2[j], end2[j]},
+              callable21<IndexType, type2> {working_ptr2});
+          pool.enqueue(
+              range_segment {begin2[j], end2[j]},
+              callable22<IndexType, type2> {working_ptr2, test_val2});
         }
 
         for (IndexType j = IndexType(0); j < num3; j++)
         {
           type3* working_ptr3 = working_array3 + N * j;
-          pool.enqueue(range_segment{begin3[j], end3[j]},
-                       callable31<IndexType, type3>{working_ptr3});
-          pool.enqueue(range_segment{begin3[j], end3[j]},
-                       callable32<IndexType, type3>{working_ptr3, test_val3});
+          pool.enqueue(
+              range_segment {begin3[j], end3[j]},
+              callable31<IndexType, type3> {working_ptr3});
+          pool.enqueue(
+              range_segment {begin3[j], end3[j]},
+              callable32<IndexType, type3> {working_ptr3, test_val3});
         }
       }
 
@@ -374,14 +382,14 @@ struct testWorkGroupOrderedMultiple
     }
 
 
-    deallocateForallTestData<type1>(working_res, working_array1, check_array1,
-                                    test_array1);
+    deallocateForallTestData<type1>(
+        working_res, working_array1, check_array1, test_array1);
 
-    deallocateForallTestData<type2>(working_res, working_array2, check_array2,
-                                    test_array2);
+    deallocateForallTestData<type2>(
+        working_res, working_array2, check_array2, test_array2);
 
-    deallocateForallTestData<type3>(working_res, working_array3, check_array3,
-                                    test_array3);
+    deallocateForallTestData<type3>(
+        working_res, working_array3, check_array3, test_array3);
   }
 };
 
@@ -389,12 +397,13 @@ struct testWorkGroupOrderedMultiple
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported types untested
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator,
-          typename WORKING_RES>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename StoragePolicy,
+    typename IndexType,
+    typename Allocator,
+    typename WORKING_RES>
 struct testWorkGroupOrderedMultiple<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -404,23 +413,25 @@ struct testWorkGroupOrderedMultiple<
     Allocator,
     WORKING_RES>
 {
-  void operator()(std::mt19937&,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType) const
+  void operator()(
+      std::mt19937&,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType) const
   {}
 };
 ///
-template <size_t BLOCK_SIZE,
-          bool   Async,
-          typename StoragePolicy,
-          typename IndexType,
-          typename Allocator,
-          typename WORKING_RES>
+template <
+    size_t BLOCK_SIZE,
+    bool   Async,
+    typename StoragePolicy,
+    typename IndexType,
+    typename Allocator,
+    typename WORKING_RES>
 struct testWorkGroupOrderedMultiple<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -430,14 +441,15 @@ struct testWorkGroupOrderedMultiple<
     Allocator,
     WORKING_RES>
 {
-  void operator()(std::mt19937&,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType,
-                  IndexType) const
+  void operator()(
+      std::mt19937&,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType,
+      IndexType) const
   {}
 };
 
@@ -451,8 +463,9 @@ class WorkGroupBasicOrderedMultipleReuseFunctionalTest : public ::testing::Test
 TYPED_TEST_SUITE_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest);
 
 
-TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest,
-             BasicWorkGroupOrderedMultipleReuse)
+TYPED_TEST_P(
+    WorkGroupBasicOrderedMultipleReuseFunctionalTest,
+    BasicWorkGroupOrderedMultipleReuse)
 {
   using ExecPolicy       = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy      = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -462,7 +475,7 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest,
   using Allocator        = typename camp::at<TypeParam, camp::num<5>>::type;
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  std::mt19937 rng(std::random_device{}());
+  std::mt19937 rng(std::random_device {}());
   using dist_type = std::uniform_int_distribution<IndexType>;
 
   IndexType num1 = dist_type(IndexType(0), IndexType(8))(rng);
@@ -472,11 +485,11 @@ TYPED_TEST_P(WorkGroupBasicOrderedMultipleReuseFunctionalTest,
   IndexType pool_reuse  = dist_type(IndexType(0), IndexType(8))(rng);
   IndexType group_reuse = dist_type(IndexType(0), IndexType(8))(rng);
 
-  testWorkGroupOrderedMultiple<ExecPolicy, OrderPolicy, StoragePolicy,
-                               DispatchTyper, IndexType, Allocator,
-                               WORKING_RESOURCE>{}(
+  testWorkGroupOrderedMultiple<
+      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
+      Allocator, WORKING_RESOURCE> {}(
       rng, IndexType(96), IndexType(4000), num1, num2, num3, pool_reuse,
       group_reuse);
 }
 
-#endif //__TEST_WORKGROUP_ORDERED_MULTIPLEREUSE__
+#endif  //__TEST_WORKGROUP_ORDERED_MULTIPLEREUSE__

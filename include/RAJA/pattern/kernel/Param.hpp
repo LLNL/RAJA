@@ -34,7 +34,7 @@ namespace internal
 struct ParamBase
 {};
 
-} // end namespace internal
+}  // end namespace internal
 
 namespace statement
 {
@@ -60,8 +60,8 @@ struct Param : public internal::ParamBase
   }
 };
 
-} // end namespace statement
-} // end namespace RAJA
+}  // end namespace statement
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

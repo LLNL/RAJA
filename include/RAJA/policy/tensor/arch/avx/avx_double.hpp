@@ -57,8 +57,8 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi64x(N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0,
-                             N >= 1 ? -1 : 0);
+    return _mm256_set_epi64x(
+        N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
   }
 
   RAJA_INLINE
@@ -486,10 +486,10 @@ public:
 };
 
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #endif
 
-#endif //__AVX__
+#endif  //__AVX__

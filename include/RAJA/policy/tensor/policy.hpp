@@ -40,10 +40,11 @@ namespace policy
 namespace tensor
 {
 
-template <typename EXEC_POLICY,
-          typename TENSOR_TYPE,
-          camp::idx_t DIM,
-          camp::idx_t TILE_SIZE>
+template <
+    typename EXEC_POLICY,
+    typename TENSOR_TYPE,
+    camp::idx_t DIM,
+    camp::idx_t TILE_SIZE>
 struct tensor_exec : public EXEC_POLICY
 {
   using exec_policy = EXEC_POLICY;
@@ -54,9 +55,9 @@ struct tensor_exec : public EXEC_POLICY
 };
 
 
-} // end of namespace tensor
+}  // end of namespace tensor
 
-} // end of namespace policy
+}  // end of namespace policy
 
 namespace expt
 {
@@ -75,9 +76,9 @@ using matrix_col_exec =
     policy::tensor::tensor_exec<seq_exec, TENSOR_TYPE, 1, TILE_SIZE>;
 
 
-} //  namespace expt
+}  //  namespace expt
 
 
-} // end of namespace RAJA
+}  // end of namespace RAJA
 
 #endif

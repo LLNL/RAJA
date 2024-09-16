@@ -80,7 +80,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Construct a permuted layout for At so that the column index has stride 1
   //
-  std::array<RAJA::idx_t, 2> perm{{1, 0}};
+  std::array<RAJA::idx_t, 2> perm {{1, 0}};
   RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, perm);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
@@ -129,8 +129,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         for (int tcol = 0; tcol < TILE_SZ; ++tcol)
         {
 
-          int col = bx * TILE_SZ + tcol; // Matrix column index
-          int row = by * TILE_SZ + trow; // Matrix row index
+          int col = bx * TILE_SZ + tcol;  // Matrix column index
+          int row = by * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
           if (row < N_r && col < N_c)
@@ -262,14 +262,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
           0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
           RAJA::statement::Collapse<
               RAJA::omp_parallel_collapse_exec, RAJA::ArgList<0, 1>,
-              RAJA::statement::Lambda<0>>            // closes collapse
-          >                                          // closes Tile 0
-      >                                              // closes Tile 1
-                                                  >; // closes policy list
+              RAJA::statement::Lambda<0>>             // closes collapse
+          >                                           // closes Tile 0
+      >                                               // closes Tile 1
+                                                  >;  // closes policy list
 
-  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(RAJA::make_tuple(col_Range, row_Range),
-                                     [=](int col, int row)
-                                     { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
+      RAJA::make_tuple(col_Range, row_Range),
+      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);

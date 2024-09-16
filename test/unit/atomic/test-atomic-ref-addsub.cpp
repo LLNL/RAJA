@@ -71,9 +71,10 @@ TYPED_TEST_P(AtomicRefBasicAddSubUnitTest, BasicAddSubs)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicAddSubUnitTest, BasicAddSubs);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(BasicAddSubUnitTest,
-                               AtomicRefBasicAddSubUnitTest,
-                               basic_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    BasicAddSubUnitTest,
+    AtomicRefBasicAddSubUnitTest,
+    basic_types);
 
 
 // Pure CUDA test.
@@ -149,7 +150,8 @@ GPU_TYPED_TEST_P(AtomicRefCUDAAddSubUnitTest, CUDAAddSubs)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAAddSubUnitTest, CUDAAddSubs);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(CUDAAddSubUnitTest,
-                               AtomicRefCUDAAddSubUnitTest,
-                               CUDA_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    CUDAAddSubUnitTest,
+    AtomicRefCUDAAddSubUnitTest,
+    CUDA_types);
 #endif

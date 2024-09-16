@@ -135,14 +135,14 @@ void ET_TransposeImpl()
 
         output1_d(rows_tr, cols_tr) =
             input1_d(SArows, SRcols)
-                .transpose(); // mixed static_all and static_range
+                .transpose();  // mixed static_all and static_range
         output2_d(rows_tr, cols_tr) =
-            input1_d(SArows, SAcols).transpose(); // static_all
+            input1_d(SArows, SAcols).transpose();  // static_all
         output3_d(rows_tr, cols_tr) =
-            input1_d(SRrows, SRcols).transpose(); // static_range
+            input1_d(SRrows, SRcols).transpose();  // static_range
         output4_d(rows_tr, cols_tr) =
             input1_d(rows, SRcols)
-                .transpose(); // mixed static_range and non-static
+                .transpose();  // mixed static_range and non-static
       });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_ptr);

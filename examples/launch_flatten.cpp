@@ -102,22 +102,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       launch_params,
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<device_inner_pol1>(ctx, RAJA::RangeSegment(0, N),
-                                      [&](int j)
-                                      {
-                                        RAJA::loop<device_inner_pol0>(
-                                            ctx, RAJA::RangeSegment(0, N),
-                                            [&](int i)
-                                            { d_A_2DView(j, i) = i + j; });
-                                      });
+        RAJA::loop<device_inner_pol1>(
+            ctx, RAJA::RangeSegment(0, N),
+            [&](int j)
+            {
+              RAJA::loop<device_inner_pol0>(
+                  ctx, RAJA::RangeSegment(0, N),
+                  [&](int i) { d_A_2DView(j, i) = i + j; });
+            });
 
         ctx.teamSync();
 
         // RAJA flatten policy will reshape a 2/3D thread team to 1D simplifying
         // accumulating memory contents
-        RAJA::loop<device_flatten_pol>(ctx, RAJA::RangeSegment(0, NN),
-                                       [&](int i)
-                                       { device_kernel_sum += d_A_1DView(i); });
+        RAJA::loop<device_flatten_pol>(
+            ctx, RAJA::RangeSegment(0, NN),
+            [&](int i) { device_kernel_sum += d_A_1DView(i); });
       });
 
   //----------------------------------------------------------------------------//
@@ -132,20 +132,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       launch_params,
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
       {
-        RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, N),
-                              [&](int j)
-                              {
-                                RAJA::loop<host_loop>(
-                                    ctx, RAJA::RangeSegment(0, N),
-                                    [&](int i) { h_A_2DView(j, i) = i + j; });
-                              });
+        RAJA::loop<host_loop>(
+            ctx, RAJA::RangeSegment(0, N),
+            [&](int j)
+            {
+              RAJA::loop<host_loop>(
+                  ctx, RAJA::RangeSegment(0, N),
+                  [&](int i) { h_A_2DView(j, i) = i + j; });
+            });
 
         ctx.teamSync();
 
         // As loops are dispatched as standard C loops we can revert to using
         // a regular seq_exec policy
-        RAJA::loop<host_loop>(ctx, RAJA::RangeSegment(0, NN),
-                              [&](int i) { host_kernel_sum += h_A_1DView(i); });
+        RAJA::loop<host_loop>(
+            ctx, RAJA::RangeSegment(0, NN),
+            [&](int i) { host_kernel_sum += h_A_1DView(i); });
       });
 
   if (device_kernel_sum.get() == host_kernel_sum.get())

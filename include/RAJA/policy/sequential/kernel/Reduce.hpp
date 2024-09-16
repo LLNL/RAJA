@@ -29,10 +29,12 @@ namespace internal
 //
 // Executor that handles reductions for
 //
-template <template <typename...> class ReduceOperator,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
+template <
+    template <typename...>
+    class ReduceOperator,
+    typename ParamId,
+    typename... EnclosedStmts,
+    typename Types>
 struct StatementExecutor<
     statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>,
     Types>
@@ -49,9 +51,9 @@ struct StatementExecutor<
 };
 
 
-} // namespace internal
+}  // namespace internal
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 
 #endif /* RAJA_policy_sequential_kernel_Reduce_HPP */

@@ -90,35 +90,35 @@ using OpenMPForallExecPols = camp::list<
 
 using OpenMPForallReduceExecPols = OpenMPForallExecPols;
 
-using OpenMPForallAtomicExecPols =
-    camp::list<RAJA::omp_parallel_for_exec
+using OpenMPForallAtomicExecPols = camp::list<
+    RAJA::omp_parallel_for_exec
 
 #if defined(RAJA_TEST_EXHAUSTIVE)
-               ,
-               RAJA::omp_parallel_for_static_exec<>,
-               RAJA::omp_parallel_for_static_exec<4>,
-               RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec<>>,
-               RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec<4>>
+    ,
+    RAJA::omp_parallel_for_static_exec<>,
+    RAJA::omp_parallel_for_static_exec<4>,
+    RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec<>>,
+    RAJA::omp_parallel_exec<RAJA::omp_for_nowait_static_exec<4>>
 
-               ,
-               RAJA::omp_parallel_for_dynamic_exec<>,
-               RAJA::omp_parallel_for_dynamic_exec<2>
+    ,
+    RAJA::omp_parallel_for_dynamic_exec<>,
+    RAJA::omp_parallel_for_dynamic_exec<2>
 
-               ,
-               RAJA::omp_parallel_for_guided_exec<>,
-               RAJA::omp_parallel_for_guided_exec<3>
+    ,
+    RAJA::omp_parallel_for_guided_exec<>,
+    RAJA::omp_parallel_for_guided_exec<3>
 
-               ,
-               RAJA::omp_parallel_for_runtime_exec
+    ,
+    RAJA::omp_parallel_for_runtime_exec
 #endif
-               >;
+    >;
 
-#endif // RAJA_ENABLE_OPENMP
+#endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetForallExecPols =
-    camp::list<RAJA::omp_target_parallel_for_exec<8>,
-               RAJA::omp_target_parallel_for_exec_nt>;
+using OpenMPTargetForallExecPols = camp::list<
+    RAJA::omp_target_parallel_for_exec<8>,
+    RAJA::omp_target_parallel_for_exec_nt>;
 
 using OpenMPTargetForallReduceExecPols = OpenMPTargetForallExecPols;
 
@@ -127,15 +127,15 @@ using OpenMPTargetForallAtomicExecPols = OpenMPTargetForallExecPols;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaForallExecPols =
-    camp::list<RAJA::cuda_exec<128>,
-               RAJA::cuda_exec_occ_calc<256>,
-               RAJA::cuda_exec_grid<256, 64>,
-               RAJA::cuda_exec_explicit<256, 2>,
-               RAJA::cuda_exec_occ_fraction<256, RAJA::Fraction<size_t, 1, 2>>,
-               RAJA::cuda_exec_occ_custom<
-                   256,
-                   RAJA::CudaAvoidDeviceMaxThreadOccupancyConcretizer>>;
+using CudaForallExecPols = camp::list<
+    RAJA::cuda_exec<128>,
+    RAJA::cuda_exec_occ_calc<256>,
+    RAJA::cuda_exec_grid<256, 64>,
+    RAJA::cuda_exec_explicit<256, 2>,
+    RAJA::cuda_exec_occ_fraction<256, RAJA::Fraction<size_t, 1, 2>>,
+    RAJA::cuda_exec_occ_custom<
+        256,
+        RAJA::CudaAvoidDeviceMaxThreadOccupancyConcretizer>>;
 
 using CudaForallReduceExecPols = CudaForallExecPols;
 
@@ -144,14 +144,14 @@ using CudaForallAtomicExecPols = CudaForallExecPols;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipForallExecPols =
-    camp::list<RAJA::hip_exec<128>,
-               RAJA::hip_exec_occ_calc<256>,
-               RAJA::hip_exec_grid<256, 64>,
-               RAJA::hip_exec_occ_fraction<256, RAJA::Fraction<size_t, 1, 2>>,
-               RAJA::hip_exec_occ_custom<
-                   256,
-                   RAJA::HipAvoidDeviceMaxThreadOccupancyConcretizer>>;
+using HipForallExecPols = camp::list<
+    RAJA::hip_exec<128>,
+    RAJA::hip_exec_occ_calc<256>,
+    RAJA::hip_exec_grid<256, 64>,
+    RAJA::hip_exec_occ_fraction<256, RAJA::Fraction<size_t, 1, 2>>,
+    RAJA::hip_exec_occ_custom<
+        256,
+        RAJA::HipAvoidDeviceMaxThreadOccupancyConcretizer>>;
 
 using HipForallReduceExecPols = HipForallExecPols;
 
@@ -169,4 +169,4 @@ using SyclForallAtomicExecPols = SyclForallExecPols;
 
 #endif
 
-#endif // __RAJA_test_forall_execpol_HPP__
+#endif  // __RAJA_test_forall_execpol_HPP__

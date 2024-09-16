@@ -10,11 +10,12 @@
 
 #include <numeric>
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename LAUNCH_POLICY,
-          typename THREAD_X_POLICY,
-          typename TEAM_X_POLICY>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename LAUNCH_POLICY,
+    typename THREAD_X_POLICY,
+    typename TEAM_X_POLICY>
 void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 {
 
@@ -29,7 +30,7 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 
   INDEX_TYPE N = static_cast<INDEX_TYPE>(RAJA::stripIndexType(N1));
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   INDEX_TYPE*               working_ttile_array;
   INDEX_TYPE*               check_ttile_array;
   INDEX_TYPE*               test_ttile_array;
@@ -44,13 +45,13 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res,
-                                     &working_ttile_array, &check_ttile_array,
-                                     &test_ttile_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_ttile_array, &check_ttile_array,
+      &test_ttile_array);
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res,
-                                     &working_iloop_array, &check_iloop_array,
-                                     &test_iloop_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_iloop_array, &check_iloop_array,
+      &test_iloop_array);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -78,13 +79,13 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
         });
   }
   else
-  { // zero-length segment
+  {  // zero-length segment
 
-    memset(static_cast<void*>(test_ttile_array), 0,
-           sizeof(INDEX_TYPE) * data_len);
+    memset(
+        static_cast<void*>(test_ttile_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(working_ttile_array, test_ttile_array,
-                       sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(
+        working_ttile_array, test_ttile_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
         RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)),
@@ -107,10 +108,10 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
         });
   }
 
-  working_res.memcpy(check_ttile_array, working_ttile_array,
-                     sizeof(INDEX_TYPE) * data_len);
-  working_res.memcpy(check_iloop_array, working_iloop_array,
-                     sizeof(INDEX_TYPE) * data_len);
+  working_res.memcpy(
+      check_ttile_array, working_ttile_array, sizeof(INDEX_TYPE) * data_len);
+  working_res.memcpy(
+      check_iloop_array, working_iloop_array, sizeof(INDEX_TYPE) * data_len);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -137,11 +138,11 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     ASSERT_EQ(check_iloop_array[0], check_iloop_array[0]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_ttile_array,
-                                       check_ttile_array, test_ttile_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_ttile_array, check_ttile_array, test_ttile_array);
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_iloop_array,
-                                       check_iloop_array, test_iloop_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_iloop_array, check_iloop_array, test_iloop_array);
 }
 
 
@@ -154,32 +155,32 @@ class LaunchNestedTileDirectTest : public ::testing::Test
 TYPED_TEST_P(LaunchNestedTileDirectTest, RangeSegmentTeams)
 {
 
-  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using LAUNCH_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<0>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using LAUNCH_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<0>>::type;
 
-  using TEAM_X_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<1>>::type;
-  using THREAD_X_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<2>>::type;
+  using TEAM_X_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<1>>::type;
+  using THREAD_X_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<2>>::type;
 
 
   // test zero-length range segment
-  LaunchNestedTileDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
-                                 THREAD_X_POLICY, TEAM_X_POLICY>(INDEX_TYPE(0));
+  LaunchNestedTileDirectTestImpl<
+      INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, THREAD_X_POLICY, TEAM_X_POLICY>(
+      INDEX_TYPE(0));
 
   // Keep at one since we are doing a direct thread test
-  LaunchNestedTileDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
-                                 THREAD_X_POLICY, TEAM_X_POLICY>(INDEX_TYPE(1));
+  LaunchNestedTileDirectTestImpl<
+      INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, THREAD_X_POLICY, TEAM_X_POLICY>(
+      INDEX_TYPE(1));
 
-  LaunchNestedTileDirectTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
-                                 THREAD_X_POLICY, TEAM_X_POLICY>(INDEX_TYPE(2));
+  LaunchNestedTileDirectTestImpl<
+      INDEX_TYPE, WORKING_RES, LAUNCH_POLICY, THREAD_X_POLICY, TEAM_X_POLICY>(
+      INDEX_TYPE(2));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileDirectTest, RangeSegmentTeams);
 
-#endif // __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
+#endif  // __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__

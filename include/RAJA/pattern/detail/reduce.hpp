@@ -77,7 +77,7 @@ struct op_adapter : private Op<T, T, T>
     val = operator_type::operator()(val, v);
   }
 };
-} // namespace detail
+}  // namespace detail
 
 template <typename T>
 struct sum : detail::op_adapter<T, RAJA::operators::plus>
@@ -112,7 +112,7 @@ struct DefaultLoc
 {};
 
 template <typename T>
-struct DefaultLoc<T, false> // any non-integral type
+struct DefaultLoc<T, false>  // any non-integral type
 {
   RAJA_HOST_DEVICE constexpr T value() const { return T(); }
 };
@@ -134,7 +134,7 @@ public:
     defined(__HIPCC__)
   RAJA_HOST_DEVICE constexpr ValueLoc() {}
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const& other)
-      : val{other.val}, loc{other.loc}
+      : val {other.val}, loc {other.loc}
   {}
   RAJA_HOST_DEVICE
   ValueLoc& operator=(ValueLoc const& other)
@@ -150,10 +150,10 @@ public:
 #endif
 
   RAJA_HOST_DEVICE constexpr ValueLoc(T const& val_)
-      : val{val_}, loc{DefaultLoc<IndexType>().value()}
+      : val {val_}, loc {DefaultLoc<IndexType>().value()}
   {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const& val_, IndexType const& loc_)
-      : val{val_}, loc{loc_}
+      : val {val_}, loc {loc_}
   {}
 
   RAJA_HOST_DEVICE           operator T() const { return val; }
@@ -168,9 +168,9 @@ public:
   }
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace reduce
+}  // namespace reduce
 
 namespace operators
 {
@@ -190,7 +190,7 @@ struct limits<::RAJA::reduce::detail::ValueLoc<T, IndexType, B>>
     return ::RAJA::reduce::detail::ValueLoc<T, IndexType, B>(limits<T>::max());
   }
 };
-} // namespace operators
+}  // namespace operators
 
 namespace reduce
 {
@@ -198,11 +198,12 @@ namespace reduce
 namespace detail
 {
 
-template <typename T,
-          template <typename>
-          class Reduce_,
-          template <typename, typename>
-          class Combiner_>
+template <
+    typename T,
+    template <typename>
+    class Reduce_,
+    template <typename, typename>
+    class Combiner_>
 class BaseReduce
 {
   using Reduce = Reduce_<T>;
@@ -216,19 +217,19 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  BaseReduce() : c{T(), Reduce::identity()} {}
+  BaseReduce() : c {T(), Reduce::identity()} {}
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   BaseReduce(T init_val, T identity_ = Reduce::identity())
-      : c{init_val, identity_}
+      : c {init_val, identity_}
   {}
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   void reset(T val, T identity_ = Reduce::identity())
   {
-    operator T(); // automatic get() before reset
+    operator T();  // automatic get() before reset
     c.reset(val, identity_);
   }
 
@@ -273,12 +274,12 @@ protected:
 public:
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  constexpr BaseCombinable() : identity{T()}, my_data{T()} {}
+  constexpr BaseCombinable() : identity {T()}, my_data {T()} {}
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   constexpr BaseCombinable(T init_val, T identity_ = T())
-      : identity{identity_}, my_data{init_val}
+      : identity {identity_}, my_data {init_val}
   {}
 
   RAJA_SUPPRESS_HD_WARN
@@ -292,9 +293,9 @@ public:
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   constexpr BaseCombinable(BaseCombinable const& other)
-      : parent{other.parent ? other.parent : &other},
-        identity{other.identity},
-        my_data{identity}
+      : parent {other.parent ? other.parent : &other},
+        identity {other.identity},
+        my_data {identity}
   {}
 
   RAJA_SUPPRESS_HD_WARN
@@ -309,7 +310,7 @@ public:
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
-  void combine(T const& other) { Reduce{}(my_data, other); }
+  void combine(T const& other) { Reduce {}(my_data, other); }
 
   /*!
    *  \return the calculated reduced value
@@ -362,10 +363,11 @@ public:
  *
  **************************************************************************
  */
-template <typename T,
-          typename IndexType,
-          template <typename, typename>
-          class Combiner>
+template <
+    typename T,
+    typename IndexType,
+    template <typename, typename>
+    class Combiner>
 class BaseReduceMinLoc
     : public BaseReduce<ValueLoc<T, IndexType>, RAJA::reduce::min, Combiner>
 {
@@ -382,18 +384,21 @@ public:
       IndexType init_idx,
       T         identity_val_ = reduce_type::identity(),
       IndexType identity_loc_ = DefaultLoc<IndexType>().value())
-      : Base(value_type(init_val, init_idx),
-             value_type(identity_val_, identity_loc_))
+      : Base(
+            value_type(init_val, init_idx),
+            value_type(identity_val_, identity_loc_))
   {}
 
-  void reset(T         init_val,
-             IndexType init_idx,
-             T         identity_val_ = reduce_type::identity(),
-             IndexType identity_loc_ = DefaultLoc<IndexType>().value())
+  void reset(
+      T         init_val,
+      IndexType init_idx,
+      T         identity_val_ = reduce_type::identity(),
+      IndexType identity_loc_ = DefaultLoc<IndexType>().value())
   {
-    operator T(); // automatic get() before reset
-    Base::reset(value_type(init_val, init_idx),
-                value_type(identity_val_, identity_loc_));
+    operator T();  // automatic get() before reset
+    Base::reset(
+        value_type(init_val, init_idx),
+        value_type(identity_val_, identity_loc_));
   }
 
   /// \brief reducer function; updates the current instance's state
@@ -514,13 +519,15 @@ public:
  *
  **************************************************************************
  */
-template <typename T,
-          typename IndexType,
-          template <typename, typename>
-          class Combiner>
-class BaseReduceMaxLoc : public BaseReduce<ValueLoc<T, IndexType, false>,
-                                           RAJA::reduce::max,
-                                           Combiner>
+template <
+    typename T,
+    typename IndexType,
+    template <typename, typename>
+    class Combiner>
+class BaseReduceMaxLoc : public BaseReduce<
+                             ValueLoc<T, IndexType, false>,
+                             RAJA::reduce::max,
+                             Combiner>
 {
 public:
   using Base =
@@ -536,18 +543,21 @@ public:
       IndexType init_idx,
       T         identity_val_ = reduce_type::identity(),
       IndexType identity_loc_ = DefaultLoc<IndexType>().value())
-      : Base(value_type(init_val, init_idx),
-             value_type(identity_val_, identity_loc_))
+      : Base(
+            value_type(init_val, init_idx),
+            value_type(identity_val_, identity_loc_))
   {}
 
-  void reset(T         init_val,
-             IndexType init_idx,
-             T         identity_val_ = reduce_type::identity(),
-             IndexType identity_loc_ = DefaultLoc<IndexType>().value())
+  void reset(
+      T         init_val,
+      IndexType init_idx,
+      T         identity_val_ = reduce_type::identity(),
+      IndexType identity_loc_ = DefaultLoc<IndexType>().value())
   {
-    operator T(); // automatic get() before reset
-    Base::reset(value_type(init_val, init_idx),
-                value_type(identity_val_, identity_loc_));
+    operator T();  // automatic get() before reset
+    Base::reset(
+        value_type(init_val, init_idx),
+        value_type(identity_val_, identity_loc_));
   }
 
   //! reducer function; updates the current instance's state
@@ -565,10 +575,10 @@ public:
   operator T() const { return Base::get(); }
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace reduce
+}  // namespace reduce
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif /* RAJA_PATTERN_DETAIL_REDUCE_HPP */

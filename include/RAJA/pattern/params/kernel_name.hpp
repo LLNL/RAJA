@@ -17,13 +17,13 @@ struct KernelName : public ForallParamBase
   const char* name;
 };
 
-} // namespace detail
+}  // namespace detail
 
 inline auto KernelName(const char* n) { return detail::KernelName(n); }
-} // namespace expt
+}  // namespace expt
 
 
-} //  namespace RAJA
+}  //  namespace RAJA
 
 
-#endif // KERNEL_NAME_HPP
+#endif  // KERNEL_NAME_HPP

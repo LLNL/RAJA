@@ -55,11 +55,11 @@ struct LaunchDims
   LaunchDims& operator=(LaunchDims const&) = default;
 
   RAJA_INLINE
-  LaunchDims(HipDims _dims) : dims{_dims}, min_dims{} {}
+  LaunchDims(HipDims _dims) : dims {_dims}, min_dims {} {}
 
   RAJA_INLINE
   LaunchDims(HipDims _dims, HipDims _min_dims)
-      : dims{_dims}, min_dims{_min_dims}
+      : dims {_dims}, min_dims {_min_dims}
   {}
 
   RAJA_INLINE
@@ -219,9 +219,10 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
 
   template <typename IdxT>
-  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
-                             HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT     len)
+  static void set_dimensions(
+      HipDims& RAJA_UNUSED_ARG(dims),
+      HipDims& RAJA_UNUSED_ARG(min_dims),
+      IdxT     len)
   {
     if (len > static_cast<IdxT>(1))
     {
@@ -257,10 +258,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
 {
-  static_assert(BLOCK_SIZE > 0,
-                "block size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      BLOCK_SIZE > 0,
+      "block size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
@@ -273,8 +275,8 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
                           "space");
     }
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
+    set_hip_dim<dim>(
+        min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
   }
 };
 
@@ -302,10 +304,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
-  static_assert(GRID_SIZE > 0,
-                "grid size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      GRID_SIZE > 0,
+      "grid size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
@@ -318,8 +321,8 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
                           "space");
     }
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    set_hip_dim<dim>(
+        min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
@@ -334,9 +337,10 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template <typename IdxT>
-  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
-                             HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT     len)
+  static void set_dimensions(
+      HipDims& RAJA_UNUSED_ARG(dims),
+      HipDims& RAJA_UNUSED_ARG(min_dims),
+      IdxT     len)
   {
     if (len > static_cast<IdxT>(0))
     {
@@ -351,10 +355,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
 {
-  static_assert(GRID_SIZE > 0,
-                "grid size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      GRID_SIZE > 0,
+      "grid size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper =
       hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
@@ -364,15 +369,15 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   {
     // BEWARE: if calculated block_size is too high then the kernel launch will
     // fail
-    set_hip_dim<dim>(dims.threads,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_hip_dim<dim>(
+        dims.threads, RAJA_DIVIDE_CEILING_INT(
+                          len, static_cast<IdxT>(IndexMapper::grid_size)));
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::grid_size)));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    set_hip_dim<dim>(
+        min_dims.threads, RAJA_DIVIDE_CEILING_INT(
+                              len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_hip_dim<dim>(
+        min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 ///
@@ -382,10 +387,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
 {
-  static_assert(BLOCK_SIZE > 0,
-                "block size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      BLOCK_SIZE > 0,
+      "block size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper =
       hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
@@ -394,34 +400,37 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
   {
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(dims.blocks,
-                     RAJA_DIVIDE_CEILING_INT(
+    set_hip_dim<dim>(
+        dims.blocks, RAJA_DIVIDE_CEILING_INT(
                          len, static_cast<IdxT>(IndexMapper::block_size)));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::block_size)));
+    set_hip_dim<dim>(
+        min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_hip_dim<dim>(
+        min_dims.blocks, RAJA_DIVIDE_CEILING_INT(
+                             len, static_cast<IdxT>(IndexMapper::block_size)));
   }
 };
 ///
-template <named_dim               dim,
-          int                     BLOCK_SIZE,
-          int                     GRID_SIZE,
-          kernel_sync_requirement sync>
+template <
+    named_dim               dim,
+    int                     BLOCK_SIZE,
+    int                     GRID_SIZE,
+    kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     iteration_mapping::Direct,
     sync,
     hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
 {
-  static_assert(BLOCK_SIZE > 0,
-                "block size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
-  static_assert(GRID_SIZE > 0,
-                "grid size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      BLOCK_SIZE > 0,
+      "block size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
+  static_assert(
+      GRID_SIZE > 0,
+      "grid size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
@@ -436,10 +445,10 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     }
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    set_hip_dim<dim>(
+        min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_hip_dim<dim>(
+        min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
@@ -455,9 +464,10 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
 
   template <typename IdxT>
-  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
-                             HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT     RAJA_UNUSED_ARG(len))
+  static void set_dimensions(
+      HipDims& RAJA_UNUSED_ARG(dims),
+      HipDims& RAJA_UNUSED_ARG(min_dims),
+      IdxT     RAJA_UNUSED_ARG(len))
   {}
 };
 
@@ -487,10 +497,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>>>
 {
-  static_assert(BLOCK_SIZE > 0,
-                "block size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      BLOCK_SIZE > 0,
+      "block size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
@@ -499,8 +510,8 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   set_dimensions(HipDims& dims, HipDims& min_dims, IdxT RAJA_UNUSED_ARG(len))
   {
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
+    set_hip_dim<dim>(
+        min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
   }
 };
 
@@ -528,10 +539,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>>>
 {
-  static_assert(GRID_SIZE > 0,
-                "grid size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      GRID_SIZE > 0,
+      "grid size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
@@ -540,8 +552,8 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   set_dimensions(HipDims& dims, HipDims& min_dims, IdxT RAJA_UNUSED_ARG(len))
   {
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    set_hip_dim<dim>(
+        min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
@@ -574,10 +586,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>>>
 {
-  static_assert(GRID_SIZE > 0,
-                "grid size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      GRID_SIZE > 0,
+      "grid size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper =
       hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
@@ -587,13 +600,13 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   {
     // BEWARE: if calculated block_size is too high then the kernel launch will
     // fail
-    set_hip_dim<dim>(dims.threads,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::grid_size)));
+    set_hip_dim<dim>(
+        dims.threads, RAJA_DIVIDE_CEILING_INT(
+                          len, static_cast<IdxT>(IndexMapper::grid_size)));
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
     set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    set_hip_dim<dim>(
+        min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 ///
@@ -603,10 +616,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     sync,
     hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>>>
 {
-  static_assert(BLOCK_SIZE > 0,
-                "block size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      BLOCK_SIZE > 0,
+      "block size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper =
       hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
@@ -615,32 +629,35 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
   {
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(dims.blocks,
-                     RAJA_DIVIDE_CEILING_INT(
+    set_hip_dim<dim>(
+        dims.blocks, RAJA_DIVIDE_CEILING_INT(
                          len, static_cast<IdxT>(IndexMapper::block_size)));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
+    set_hip_dim<dim>(
+        min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
     set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
   }
 };
 ///
-template <named_dim               dim,
-          int                     BLOCK_SIZE,
-          int                     GRID_SIZE,
-          kernel_sync_requirement sync>
+template <
+    named_dim               dim,
+    int                     BLOCK_SIZE,
+    int                     GRID_SIZE,
+    kernel_sync_requirement sync>
 struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
     iteration_mapping::StridedLoop<named_usage::unspecified>,
     sync,
     hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>>>
 {
-  static_assert(BLOCK_SIZE > 0,
-                "block size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
-  static_assert(GRID_SIZE > 0,
-                "grid size must be > 0, "
-                "named_usage::unspecified, or "
-                "named_usage::ignored with kernel");
+  static_assert(
+      BLOCK_SIZE > 0,
+      "block size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
+  static_assert(
+      GRID_SIZE > 0,
+      "grid size must be > 0, "
+      "named_usage::unspecified, or "
+      "named_usage::ignored with kernel");
 
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
@@ -650,17 +667,17 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   {
     set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
     set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    set_hip_dim<dim>(
+        min_dims.threads, static_cast<IdxT>(IndexMapper::block_size));
+    set_hip_dim<dim>(
+        min_dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
   }
 };
 
-} // namespace internal
+}  // namespace internal
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_HIP guard
+#endif  // closing endif for RAJA_ENABLE_HIP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -82,5 +82,5 @@ void deallocate_gpu(T*& ptr)
 }
 #endif
 
-}; // namespace memoryManager
+};  // namespace memoryManager
 #endif

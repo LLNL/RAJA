@@ -52,7 +52,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate and initialize vector data
   //
-  RAJA::resources::Host host{};
+  RAJA::resources::Host host {};
 
   int* a = host.allocate<int>(N);
   int* b = host.allocate<int>(N);
@@ -91,8 +91,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential vector addition...\n";
 
 
-  RAJA::forall<RAJA::seq_exec>(host, RAJA::RangeSegment(0, N),
-                               [=](int i) { c[i] = a[i] + b[i]; });
+  RAJA::forall<RAJA::seq_exec>(
+      host, RAJA::RangeSegment(0, N), [=](int i) { c[i] = a[i] + b[i]; });
 
   checkResult(c, N);
 
@@ -102,8 +102,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA simd_exec vector addition...\n";
 
-  RAJA::forall<RAJA::simd_exec>(host, RAJA::RangeSegment(0, N),
-                                [=](int i) { c[i] = a[i] + b[i]; });
+  RAJA::forall<RAJA::simd_exec>(
+      host, RAJA::RangeSegment(0, N), [=](int i) { c[i] = a[i] + b[i]; });
 
   checkResult(c, N);
 
@@ -114,8 +114,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA omp_parallel_for_exec vector addition...\n";
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(host, RAJA::RangeSegment(0, N),
-                                            [=](int i) { c[i] = a[i] + b[i]; });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(
+      host, RAJA::RangeSegment(0, N), [=](int i) { c[i] = a[i] + b[i]; });
 
   checkResult(c, N);
 
@@ -188,13 +188,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     res_gpu2.memcpy(d_b2, b, sizeof(int) * N);
 
 
-    RAJA::forall<EXEC_POLICY>(res_gpu1, RAJA::RangeSegment(0, N),
-                              [=] RAJA_DEVICE(int i)
-                              { d_c1[i] = d_a1[i] + d_b1[i]; });
+    RAJA::forall<EXEC_POLICY>(
+        res_gpu1, RAJA::RangeSegment(0, N),
+        [=] RAJA_DEVICE(int i) { d_c1[i] = d_a1[i] + d_b1[i]; });
 
-    RAJA::forall<EXEC_POLICY>(res_gpu2, RAJA::RangeSegment(0, N),
-                              [=] RAJA_DEVICE(int i)
-                              { d_c2[i] = d_a2[i] + d_b2[i]; });
+    RAJA::forall<EXEC_POLICY>(
+        res_gpu2, RAJA::RangeSegment(0, N),
+        [=] RAJA_DEVICE(int i) { d_c2[i] = d_a2[i] + d_b2[i]; });
 
     res_gpu1.memcpy(c, d_c1, sizeof(int) * N);
 
@@ -248,8 +248,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     // _raja_res_alloc_end
 
     // _raja_res_k1_start
-    RAJA::forall<EXEC_POLICY>(res_gpu1, RAJA::RangeSegment(0, N),
-                              [=] RAJA_HOST_DEVICE(int i) { d_array1[i] = i; });
+    RAJA::forall<EXEC_POLICY>(
+        res_gpu1, RAJA::RangeSegment(0, N),
+        [=] RAJA_HOST_DEVICE(int i) { d_array1[i] = i; });
     // _raja_res_k1_end
 
     // _raja_res_k2_start
@@ -263,9 +264,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     // _raja_res_wait_end
 
     // _raja_res_k3_start
-    RAJA::forall<EXEC_POLICY>(res_gpu1, RAJA::RangeSegment(0, N),
-                              [=] RAJA_HOST_DEVICE(int i)
-                              { d_array1[i] *= d_array2[i]; });
+    RAJA::forall<EXEC_POLICY>(
+        res_gpu1, RAJA::RangeSegment(0, N),
+        [=] RAJA_HOST_DEVICE(int i) { d_array1[i] *= d_array2[i]; });
     // _raja_res_k3_end
 
     // _raja_res_memcpy_start
@@ -274,14 +275,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     // _raja_res_k4_start
     bool check = true;
-    RAJA::forall<RAJA::seq_exec>(res_host, RAJA::RangeSegment(0, N),
-                                 [&check, h_array](int i)
-                                 {
-                                   if (h_array[i] != -i)
-                                   {
-                                     check = false;
-                                   }
-                                 });
+    RAJA::forall<RAJA::seq_exec>(
+        res_host, RAJA::RangeSegment(0, N),
+        [&check, h_array](int i)
+        {
+          if (h_array[i] != -i)
+          {
+            check = false;
+          }
+        });
     // _raja_res_k4_end
 
     std::cout << "\n         result -- ";

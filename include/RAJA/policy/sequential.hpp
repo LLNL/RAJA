@@ -34,4 +34,4 @@
 #include "RAJA/policy/sequential/launch.hpp"
 #include "RAJA/policy/sequential/WorkGroup.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

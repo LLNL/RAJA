@@ -51,18 +51,18 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
 
   static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
 
-  static constexpr size_t n_dims          = sizeof...(RangeInts);
-  IdxLin                  offsets[n_dims] = {0}; // If not specified set to zero
+  static constexpr size_t n_dims = sizeof...(RangeInts);
+  IdxLin offsets[n_dims]         = {0};  // If not specified set to zero
 
-  constexpr RAJA_INLINE
-  OffsetLayout_impl(std::array<IdxLin, sizeof...(RangeInts)> begin,
-                    std::array<IdxLin, sizeof...(RangeInts)> end)
-      : base_{(end[RangeInts] - begin[RangeInts])...},
-        offsets{begin[RangeInts]...}
+  constexpr RAJA_INLINE OffsetLayout_impl(
+      std::array<IdxLin, sizeof...(RangeInts)> begin,
+      std::array<IdxLin, sizeof...(RangeInts)> end)
+      : base_ {(end[RangeInts] - begin[RangeInts])...},
+        offsets {begin[RangeInts]...}
   {}
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(Self const& c)
-      : base_(c.base_), offsets{c.offsets[RangeInts]...}
+      : base_(c.base_), offsets {c.offsets[RangeInts]...}
   {}
 
   void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
@@ -74,10 +74,11 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   template <camp::idx_t N, typename Idx>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
   {
-    printf("Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
-           static_cast<int>(N), static_cast<long int>(idx),
-           static_cast<long int>(offsets[N]),
-           static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
+    printf(
+        "Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
+        static_cast<int>(N), static_cast<long int>(idx),
+        static_cast<long int>(offsets[N]),
+        static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
     RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }
 
@@ -86,8 +87,8 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   {}
 
   template <camp::idx_t N, typename Idx, typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx,
-                                                Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void
+  BoundsCheck(Idx idx, Indices... indices) const
   {
     if (!(offsets[N] <= idx && idx < offsets[N] + base_.sizes[N]))
     {
@@ -108,8 +109,8 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   }
 
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              Indices&&... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void
+  toIndices(IdxLin linear_index, Indices&&... indices) const
   {
     base_.toIndices(linear_index, std::forward<Indices>(indices)...);
     camp::sink((indices = (offsets[RangeInts] + indices))...);
@@ -120,14 +121,14 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
                          const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
                          const Layout<sizeof...(RangeInts), IdxLin>&     rhs)
   {
-    OffsetLayout_impl ret{rhs};
+    OffsetLayout_impl ret {rhs};
     camp::sink((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
     return ret;
   }
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE
   OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin>& rhs)
-      : base_{rhs}
+      : base_ {rhs}
   {}
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const
@@ -159,7 +160,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   }
 };
 
-} // namespace internal
+}  // namespace internal
 
 template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout
@@ -168,13 +169,13 @@ struct OffsetLayout
   using Base =
       internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>;
 
-  using internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>,
-                                    IdxLin>::OffsetLayout_impl;
+  using internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>::
+      OffsetLayout_impl;
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
       const internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>&
           rhs)
-      : Base{rhs}
+      : Base {rhs}
   {}
 };
 
@@ -207,39 +208,43 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
     return IdxLin(Base::operator()(stripIndexType(indices)...));
   }
 
-  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              DimTypes&... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void
+  toIndices(IdxLin linear_index, DimTypes&... indices) const
   {
-    toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)>{},
-                    std::forward<IdxLin>(linear_index),
-                    std::forward<DimTypes&>(indices)...);
+    toIndicesHelper(
+        camp::make_idx_seq_t<sizeof...(DimTypes)> {},
+        std::forward<IdxLin>(linear_index),
+        std::forward<DimTypes&>(indices)...);
   }
 
 private:
   template <typename... Indices, camp::idx_t... RangeInts>
-  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(camp::idx_seq<RangeInts...>,
-                                                    IdxLin linear_index,
-                                                    Indices&... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(
+      camp::idx_seq<RangeInts...>,
+      IdxLin linear_index,
+      Indices&... indices) const
   {
     StrippedIdxLin locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
-    camp::sink((indices = Indices{static_cast<Indices>(locals[RangeInts])})...);
+    camp::sink(
+        (indices = Indices {static_cast<Indices>(locals[RangeInts])})...);
   }
 };
 
 
 template <size_t n_dims, typename IdxLin = Index_type>
-auto make_offset_layout(const std::array<IdxLin, n_dims>& begin,
-                        const std::array<IdxLin, n_dims>& end)
-    -> OffsetLayout<n_dims, IdxLin>
+auto make_offset_layout(
+    const std::array<IdxLin, n_dims>& begin,
+    const std::array<IdxLin, n_dims>& end) -> OffsetLayout<n_dims, IdxLin>
 {
-  return OffsetLayout<n_dims, IdxLin>{begin, end};
+  return OffsetLayout<n_dims, IdxLin> {begin, end};
 }
 
 template <size_t Rank, typename IdxLin = Index_type>
-auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& begin,
-                                 const std::array<IdxLin, Rank>& end,
-                                 const std::array<IdxLin, Rank>& permutation)
+auto make_permuted_offset_layout(
+    const std::array<IdxLin, Rank>& begin,
+    const std::array<IdxLin, Rank>& end,
+    const std::array<IdxLin, Rank>& permutation)
     -> decltype(make_offset_layout<Rank, IdxLin>(begin, end))
 {
   std::array<IdxLin, Rank> sizes;
@@ -251,6 +256,6 @@ auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& begin,
       from_layout_and_offsets(begin, make_permuted_layout(sizes, permutation));
 }
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif

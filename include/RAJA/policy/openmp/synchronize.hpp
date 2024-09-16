@@ -37,8 +37,8 @@ void synchronize_impl(const omp_synchronize&)
 }
 
 
-} // end of namespace omp
-} // namespace policy
-} // end of namespace RAJA
+}  // end of namespace omp
+}  // namespace policy
+}  // end of namespace RAJA
 
-#endif // RAJA_synchronize_openmp_HPP
+#endif  // RAJA_synchronize_openmp_HPP

@@ -89,7 +89,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(T* acc)
 {
-  return RAJA::atomicLoad(Policy{}, acc);
+  return RAJA::atomicLoad(Policy {}, acc);
 }
 
 
@@ -102,7 +102,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE void atomicStore(T* acc, T value)
 {
-  RAJA::atomicStore(Policy{}, acc, value);
+  RAJA::atomicStore(Policy {}, acc, value);
 }
 
 
@@ -116,7 +116,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(T* acc, T value)
 {
-  return RAJA::atomicAdd(Policy{}, acc, value);
+  return RAJA::atomicAdd(Policy {}, acc, value);
 }
 
 
@@ -130,7 +130,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(T* acc, T value)
 {
-  return RAJA::atomicSub(Policy{}, acc, value);
+  return RAJA::atomicSub(Policy {}, acc, value);
 }
 
 
@@ -144,7 +144,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(T* acc, T value)
 {
-  return RAJA::atomicMin(Policy{}, acc, value);
+  return RAJA::atomicMin(Policy {}, acc, value);
 }
 
 
@@ -158,7 +158,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(T* acc, T value)
 {
-  return RAJA::atomicMax(Policy{}, acc, value);
+  return RAJA::atomicMax(Policy {}, acc, value);
 }
 
 
@@ -171,7 +171,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T* acc)
 {
-  return RAJA::atomicInc(Policy{}, acc);
+  return RAJA::atomicInc(Policy {}, acc);
 }
 
 
@@ -187,7 +187,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(T* acc, T compare)
 {
-  return RAJA::atomicInc(Policy{}, acc, compare);
+  return RAJA::atomicInc(Policy {}, acc, compare);
 }
 
 
@@ -200,7 +200,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T* acc)
 {
-  return RAJA::atomicDec(Policy{}, acc);
+  return RAJA::atomicDec(Policy {}, acc);
 }
 
 
@@ -216,7 +216,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(T* acc, T compare)
 {
-  return RAJA::atomicDec(Policy{}, acc, compare);
+  return RAJA::atomicDec(Policy {}, acc, compare);
 }
 
 
@@ -231,9 +231,10 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(T* acc, T value)
 {
-  static_assert(std::is_integral<T>::value,
-                "atomicAnd can only be used on integral types");
-  return RAJA::atomicAnd(Policy{}, acc, value);
+  static_assert(
+      std::is_integral<T>::value,
+      "atomicAnd can only be used on integral types");
+  return RAJA::atomicAnd(Policy {}, acc, value);
 }
 
 
@@ -248,9 +249,10 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(T* acc, T value)
 {
-  static_assert(std::is_integral<T>::value,
-                "atomicOr can only be used on integral types");
-  return RAJA::atomicOr(Policy{}, acc, value);
+  static_assert(
+      std::is_integral<T>::value,
+      "atomicOr can only be used on integral types");
+  return RAJA::atomicOr(Policy {}, acc, value);
 }
 
 
@@ -265,9 +267,10 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(T* acc, T value)
 {
-  static_assert(std::is_integral<T>::value,
-                "atomicXor can only be used on integral types");
-  return RAJA::atomicXor(Policy{}, acc, value);
+  static_assert(
+      std::is_integral<T>::value,
+      "atomicXor can only be used on integral types");
+  return RAJA::atomicXor(Policy {}, acc, value);
 }
 
 
@@ -281,7 +284,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(T* acc, T value)
 {
-  return RAJA::atomicExchange(Policy{}, acc, value);
+  return RAJA::atomicExchange(Policy {}, acc, value);
 }
 
 
@@ -297,7 +300,7 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicCAS(T* acc, T compare, T value)
 {
-  return RAJA::atomicCAS(Policy{}, acc, compare, value);
+  return RAJA::atomicCAS(Policy {}, acc, compare, value);
 }
 
 /*!
@@ -524,6 +527,6 @@ private:
 };
 
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif

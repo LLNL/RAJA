@@ -42,10 +42,11 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
-                                int fastDim,
-                                int midDim,
-                                int slowDim)
+void buildLockFreeBlockIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+    int                                      fastDim,
+    int                                      midDim,
+    int                                      slowDim)
 {
   constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100;
 
@@ -110,8 +111,8 @@ void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
           RAJA::Index_type len      = end - start;
           // printf("%d %d\n", start + (lane  )*len/3,
           //                   start + (lane+1)*len/3  ) ;
-          iset.push_back(RAJA::RangeSegment(start + (lane)*len / 3,
-                                            start + (lane + 1) * len / 3));
+          iset.push_back(RAJA::RangeSegment(
+              start + (lane)*len / 3, start + (lane + 1) * len / 3));
         }
       }
     }
@@ -368,4 +369,4 @@ void buildLockFreeColorIndexset(
   delete[] workset;
 }
 
-} // namespace RAJA
+}  // namespace RAJA

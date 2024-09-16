@@ -62,20 +62,22 @@
 template <typename Function, typename T>
 void checkUnstableSortResult(const T* in, const T* out, int N);
 template <typename Function, typename T, typename U>
-void checkUnstableSortResult(const T* in,
-                             const T* out,
-                             const U* in_vals,
-                             const U* out_vals,
-                             int      N);
+void checkUnstableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N);
 //
 template <typename Function, typename T>
 void checkStableSortResult(const T* in, const T* out, int N);
 template <typename Function, typename T, typename U>
-void checkStableSortResult(const T* in,
-                           const T* out,
-                           const U* in_vals,
-                           const U* out_vals,
-                           int      N);
+void checkStableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N);
 //
 template <typename T>
 void printArray(const T* k, int N);
@@ -105,8 +107,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::iota(in, in + N / 2, 0);
   std::iota(in + N / 2, in + N, 0);
-  std::shuffle(in, in + N / 2, std::mt19937{12345u});
-  std::shuffle(in + N / 2, in + N, std::mt19937{67890u});
+  std::shuffle(in, in + N / 2, std::mt19937 {12345u});
+  std::shuffle(in + N / 2, in + N, std::mt19937 {67890u});
 
   std::fill(in_vals, in_vals + N / 2, 0);
   std::fill(in_vals + N / 2, in_vals + N, 1);
@@ -449,7 +451,7 @@ void checkUnstableSortResult(const T* in, const T* out, int N)
     auto key_iter = keys.find(in[i]);
     if (key_iter == keys.end())
     {
-      auto ret = keys.emplace(in[i], val_map{});
+      auto ret = keys.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }
@@ -505,11 +507,12 @@ void checkUnstableSortResult(const T* in, const T* out, int N)
 }
 
 template <typename Comparator, typename T, typename U>
-void checkUnstableSortResult(const T* in,
-                             const T* out,
-                             const U* in_vals,
-                             const U* out_vals,
-                             int      N)
+void checkUnstableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N)
 {
   Comparator comp;
   bool       correct = true;
@@ -522,7 +525,7 @@ void checkUnstableSortResult(const T* in,
     auto key_iter = keys_to_vals.find(in[i]);
     if (key_iter == keys_to_vals.end())
     {
-      auto ret = keys_to_vals.emplace(in[i], val_map{});
+      auto ret = keys_to_vals.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }
@@ -601,7 +604,7 @@ void checkStableSortResult(const T* in, const T* out, int N)
     auto key_iter = keys.find(in[i]);
     if (key_iter == keys.end())
     {
-      auto ret = keys.emplace(in[i], val_map{});
+      auto ret = keys.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }
@@ -656,11 +659,12 @@ void checkStableSortResult(const T* in, const T* out, int N)
 }
 
 template <typename Comparator, typename T, typename U>
-void checkStableSortResult(const T* in,
-                           const T* out,
-                           const U* in_vals,
-                           const U* out_vals,
-                           int      N)
+void checkStableSortResult(
+    const T* in,
+    const T* out,
+    const U* in_vals,
+    const U* out_vals,
+    int      N)
 {
   Comparator comp;
   bool       correct = true;
@@ -673,7 +677,7 @@ void checkStableSortResult(const T* in,
     auto key_iter = keys_to_vals.find(in[i]);
     if (key_iter == keys_to_vals.end())
     {
-      auto ret = keys_to_vals.emplace(in[i], val_map{});
+      auto ret = keys_to_vals.emplace(in[i], val_map {});
       assert(ret.second);
       key_iter = ret.first;
     }

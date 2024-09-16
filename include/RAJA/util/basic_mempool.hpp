@@ -60,7 +60,7 @@ public:
   using used_value_type = typename used_type::value_type;
 
   MemoryArena(void* ptr, size_t size)
-      : m_allocation{ptr, static_cast<char*>(ptr) + size},
+      : m_allocation {ptr, static_cast<char*>(ptr) + size},
         m_free_space(),
         m_used_space()
   {
@@ -106,8 +106,8 @@ public:
 
           ptr_out = adj_ptr;
 
-          remove_free_chunk(iter, adj_ptr,
-                            static_cast<char*>(adj_ptr) + nbytes);
+          remove_free_chunk(
+              iter, adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 
           add_used_chunk(adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 
@@ -195,7 +195,7 @@ private:
       if (next->first == end)
       {
         // extend next to cover [begin, end)
-        m_free_space.insert(next, free_value_type{begin, next->second});
+        m_free_space.insert(next, free_value_type {begin, next->second});
         m_free_space.erase(next);
 
         return;
@@ -204,7 +204,7 @@ private:
 
     // no free space adjacent to this chunk, add seperate free chunk [begin,
     // end)
-    m_free_space.insert(next, free_value_type{begin, end});
+    m_free_space.insert(next, free_value_type {begin, end});
   }
 
   void remove_free_chunk(free_type::iterator iter, void* begin, void* end)
@@ -226,7 +226,7 @@ private:
         // insert free region [end, ptr_end) after current free region
         free_type::iterator next = iter;
         ++next;
-        m_free_space.insert(next, free_value_type{end, ptr_end});
+        m_free_space.insert(next, free_value_type {end, ptr_end});
       }
     }
     else if (end != ptr_end)
@@ -235,7 +235,7 @@ private:
       // shrink beginning of current free region to [end, ptr_end)
       free_type::iterator next = iter;
       ++next;
-      m_free_space.insert(next, free_value_type{end, ptr_end});
+      m_free_space.insert(next, free_value_type {end, ptr_end});
       m_free_space.erase(iter);
     }
     else
@@ -249,7 +249,7 @@ private:
   void add_used_chunk(void* begin, void* end)
   {
     // simply inserts a chunk of memory into used_space
-    m_used_space.insert(used_value_type{begin, end});
+    m_used_space.insert(used_value_type {begin, end});
   }
 
   memory_chunk m_allocation;
@@ -308,7 +308,7 @@ public:
 
   static inline MemPool<allocator_t>& getInstance()
   {
-    static MemPool<allocator_t> pool{};
+    static MemPool<allocator_t> pool {};
     return pool;
   }
 

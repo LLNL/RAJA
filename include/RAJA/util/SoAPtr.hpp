@@ -39,14 +39,15 @@ namespace detail
  * This is useful for creating a vectorizable data layout and getting
  * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
  */
-template <typename T,
-          typename mempool = RAJA::basic_mempool::MemPool<
-              RAJA::basic_mempool::generic_allocator>,
-          typename accessor = DefaultAccessor>
+template <
+    typename T,
+    typename mempool =
+        RAJA::basic_mempool::MemPool<RAJA::basic_mempool::generic_allocator>,
+    typename accessor = DefaultAccessor>
 class SoAPtr
 {
   template <typename, typename, typename>
-  friend class SoAPtr; // friend other instantiations of this class
+  friend class SoAPtr;  // friend other instantiations of this class
 
 public:
   using value_type = T;
@@ -103,20 +104,22 @@ private:
 /*!
  * @brief Specialization for RAJA::reduce::detail::ValueLoc.
  */
-template <typename T,
-          typename IndexType,
-          bool doing_min,
-          typename mempool,
-          typename accessor>
-class SoAPtr<RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>,
-             mempool,
-             accessor>
+template <
+    typename T,
+    typename IndexType,
+    bool doing_min,
+    typename mempool,
+    typename accessor>
+class SoAPtr<
+    RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>,
+    mempool,
+    accessor>
 {
   using first_type  = T;
   using second_type = IndexType;
 
   template <typename, typename, typename>
-  friend class SoAPtr; // fiend other instantiations of this class
+  friend class SoAPtr;  // fiend other instantiations of this class
 
 public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, IndexType, doing_min>;
@@ -176,8 +179,8 @@ private:
   second_type* mem_idx = nullptr;
 };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif /* RAJA_SOA_PTR_HPP */

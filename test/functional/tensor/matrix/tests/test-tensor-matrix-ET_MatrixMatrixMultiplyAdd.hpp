@@ -59,8 +59,8 @@ void ET_MatrixMatrixMultiplyAddImpl()
   // alloc data3 - The result matrix
 
   std::vector<element_t>                              data3_vec(N * N);
-  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_h(data3_vec.data(),
-                                                              N, N);
+  RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_h(
+      data3_vec.data(), N, N);
 
   element_t* data3_ptr = tensor_malloc<policy_t>(data3_vec);
   RAJA::TypedView<element_t, RAJA::Layout<2>, TX, TY> data3_d(data3_ptr, N, N);
@@ -108,13 +108,11 @@ void ET_MatrixMatrixMultiplyAddImpl()
       [=] RAJA_HOST_DEVICE()
       {
         auto A_rows = RAJA::expt::RowIndex<int, A_matrix_t>::all();
-        auto A_cols =
-            RAJA::expt::ColIndex<int, A_matrix_t>::template static_range<0,
-                                                                         N>();
+        auto A_cols = RAJA::expt::ColIndex<
+            int, A_matrix_t>::template static_range<0, N>();
 
-        auto B_rows =
-            RAJA::expt::RowIndex<int, B_matrix_t>::template static_range<0,
-                                                                         N>();
+        auto B_rows = RAJA::expt::RowIndex<
+            int, B_matrix_t>::template static_range<0, N>();
         auto B_cols = RAJA::expt::ColIndex<int, B_matrix_t>::static_all();
 
         auto C_rows = RAJA::expt::RowIndex<int, C_matrix_t>::all();

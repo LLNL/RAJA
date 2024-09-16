@@ -25,4 +25,4 @@
 #include <RAJA/policy/tensor/arch/avx512/avx512_double.hpp>
 
 
-#endif // __AVX512F__
+#endif  // __AVX512F__

@@ -68,7 +68,7 @@ void project2nd_test()
 
 #ifdef RAJA_COMPILER_MSVC
 #pragma warning(                                                               \
-    disable : 4245) // Force msvc to not emit signed conversion warning
+    disable : 4245)  // Force msvc to not emit signed conversion warning
 #endif
   if (std::is_signed<T>::value)
   {

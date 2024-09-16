@@ -199,7 +199,7 @@ struct Not
 };
 
 
-} // end namespace statement
+}  // end namespace statement
 
 namespace internal
 {
@@ -223,8 +223,8 @@ struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types>
 };
 
 
-} // namespace internal
-} // end namespace RAJA
+}  // namespace internal
+}  // end namespace RAJA
 
 
 #endif /* RAJA_pattern_kernel_HPP */

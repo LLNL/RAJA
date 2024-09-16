@@ -28,5 +28,5 @@ void PluginStrategy::postLaunch(const PluginContext&) {}
 
 void PluginStrategy::finalize() {}
 
-} // namespace util
-} // namespace RAJA
+}  // namespace util
+}  // namespace RAJA

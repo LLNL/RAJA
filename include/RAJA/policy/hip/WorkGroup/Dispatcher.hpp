@@ -42,8 +42,8 @@ namespace hip
 // global function that creates the value on the device using the
 // factory and writes it into a pinned ptr
 template <typename Factory>
-__global__ void get_value_global(typename Factory::value_type* ptr,
-                                 Factory                       factory)
+__global__ void
+get_value_global(typename Factory::value_type* ptr, Factory factory)
 {
   *ptr = factory();
 }
@@ -100,7 +100,7 @@ inline auto get_cached_value(Factory&& factory)
   return value;
 }
 
-} // namespace hip
+}  // namespace hip
 
 /*!
  * Populate and return a Dispatcher object that can be used in device code
@@ -108,15 +108,15 @@ inline auto get_cached_value(Factory&& factory)
 template <typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async>
 inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
 {
-  static Dispatcher_T dispatcher{Dispatcher_T::template makeDispatcher<T>(
+  static Dispatcher_T dispatcher {Dispatcher_T::template makeDispatcher<T>(
       [](auto&& factory) {
         return hip::get_cached_value(std::forward<decltype(factory)>(factory));
       })};
   return &dispatcher;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

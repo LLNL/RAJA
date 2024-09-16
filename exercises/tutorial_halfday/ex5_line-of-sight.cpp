@@ -109,7 +109,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   for (int i = 0; i < N; ++i)
   {
-    ang[i] = atan2(alt[i], dist[i]); // set angle in radians
+    ang[i] = atan2(alt[i], dist[i]);  // set angle in radians
   }
 
 

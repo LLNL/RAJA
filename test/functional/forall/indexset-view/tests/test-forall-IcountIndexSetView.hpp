@@ -26,7 +26,7 @@ void ForallIcountIndexSetViewTestImpl()
   using IndexSetType =
       RAJA::TypedIndexSet<RangeSegType, RangeStrideSegType, ListSegType>;
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
 
   IndexSetType            iset;
   std::vector<INDEX_TYPE> is_indices;
@@ -45,8 +45,8 @@ void ForallIcountIndexSetViewTestImpl()
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      N, working_res, &working_array, &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -74,8 +74,8 @@ void ForallIcountIndexSetViewTestImpl()
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
-                                       test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -93,7 +93,8 @@ TYPED_TEST_P(ForallIcountIndexSetViewTest, IndexSetForallIcountView)
   ForallIcountIndexSetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallIcountIndexSetViewTest,
-                            IndexSetForallIcountView);
+REGISTER_TYPED_TEST_SUITE_P(
+    ForallIcountIndexSetViewTest,
+    IndexSetForallIcountView);
 
-#endif // __TEST_FORALL_ICOUNT_INDEXSET_VIEW_HPP__
+#endif  // __TEST_FORALL_ICOUNT_INDEXSET_VIEW_HPP__

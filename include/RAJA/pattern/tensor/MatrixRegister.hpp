@@ -28,9 +28,10 @@ namespace RAJA
 {
 namespace expt
 {
-template <typename T,
-          typename LAYOUT,
-          typename REGISTER_POLICY = default_register>
+template <
+    typename T,
+    typename LAYOUT,
+    typename REGISTER_POLICY = default_register>
 using SquareMatrixRegister = TensorRegister<
     REGISTER_POLICY,
     T,
@@ -39,16 +40,17 @@ using SquareMatrixRegister = TensorRegister<
         RAJA::internal::expt::RegisterTraits<REGISTER_POLICY, T>::s_num_elem,
         RAJA::internal::expt::RegisterTraits<REGISTER_POLICY, T>::s_num_elem>>;
 
-template <typename T,
-          typename LAYOUT,
-          camp::idx_t ROWS,
-          camp::idx_t COLS,
-          typename REGISTER_POLICY = default_register>
+template <
+    typename T,
+    typename LAYOUT,
+    camp::idx_t ROWS,
+    camp::idx_t COLS,
+    typename REGISTER_POLICY = default_register>
 using RectMatrixRegister =
     TensorRegister<REGISTER_POLICY, T, LAYOUT, camp::idx_seq<ROWS, COLS>>;
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #endif

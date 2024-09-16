@@ -46,6 +46,6 @@
 #include "RAJA/policy/openmp/WorkGroup.hpp"
 
 
-#endif // closing endif for if defined(RAJA_ENABLE_OPENMP)
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

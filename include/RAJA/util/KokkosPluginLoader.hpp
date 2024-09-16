@@ -23,10 +23,8 @@ class KokkosPluginLoader : public ::RAJA::util::PluginStrategy
 {
 public:
   using Parent = ::RAJA::util::PluginStrategy;
-  typedef void (*init_function)(const int,
-                                const uint64_t,
-                                const uint32_t,
-                                void*);
+  typedef void (
+      *init_function)(const int, const uint64_t, const uint32_t, void*);
   typedef void (*pre_function)(const char*, const uint32_t, uint64_t*);
   typedef void (*post_function)(uint64_t);
   typedef void (*finalize_function)();
@@ -49,11 +47,11 @@ private:
   std::vector<post_function>     post_functions;
   std::vector<finalize_function> finalize_functions;
 
-}; // end KokkosPluginLoader class
+};  // end KokkosPluginLoader class
 
 void linkKokkosPluginLoader();
 
-} // end namespace util
-} // end namespace RAJA
+}  // end namespace util
+}  // end namespace RAJA
 
 #endif

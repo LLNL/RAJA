@@ -15,8 +15,8 @@
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
-  camp::resources::Resource work_res{WORKING_RES::get_default()};
+  camp::resources::Resource host_res {camp::resources::Host()};
+  camp::resources::Resource work_res {WORKING_RES::get_default()};
 
   const INDEX_TYPE N = last - first;
 
@@ -26,8 +26,9 @@ void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   INDEX_TYPE* check_array;
 
-  allocRegionTestData(N, work_res, &work_array1, &work_array2, &work_array3,
-                      host_res, &check_array);
+  allocRegionTestData(
+      N, work_res, &work_array1, &work_array2, &work_array3, host_res,
+      &check_array);
 
   work_res.memset(work_array1, 0, sizeof(INDEX_TYPE) * N);
   work_res.memset(work_array2, 0, sizeof(INDEX_TYPE) * N);
@@ -72,8 +73,8 @@ void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     ASSERT_EQ(check_array[i], 151);
   }
 
-  deallocRegionTestData(work_res, work_array1, work_array2, work_array3,
-                        host_res, check_array);
+  deallocRegionTestData(
+      work_res, work_array1, work_array2, work_array3, host_res, check_array);
 }
 
 
@@ -95,4 +96,4 @@ TYPED_TEST_P(KernelRegionSyncTest, RegionSyncKernel)
 
 REGISTER_TYPED_TEST_SUITE_P(KernelRegionSyncTest, RegionSyncKernel);
 
-#endif // __TEST_KERNEL_REGION_SYNC_HPP__
+#endif  // __TEST_KERNEL_REGION_SYNC_HPP__

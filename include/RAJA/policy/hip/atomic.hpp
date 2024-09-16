@@ -81,9 +81,10 @@ struct hip_useReinterpretCommon
                                 (sizeof(T) == sizeof(unsigned int) ||
                                  sizeof(T) == sizeof(unsigned long long));
 
-  using type = std::conditional_t<sizeof(T) == sizeof(unsigned int),
-                                  unsigned int,
-                                  unsigned long long>;
+  using type = std::conditional_t<
+      sizeof(T) == sizeof(unsigned int),
+      unsigned int,
+      unsigned long long>;
 };
 
 
@@ -101,8 +102,9 @@ using hip_useReinterpretCommon_t = typename hip_useReinterpretCommon<T>::type;
  * This overload using builtin functions is used to implement atomic loads
  * under some build configurations.
  */
-template <typename T,
-          std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicOr(T* acc, T value)
 {
   return ::atomicOr(acc, value);
@@ -133,9 +135,10 @@ struct hip_useReinterpretExchange
                                 (sizeof(T) == sizeof(unsigned int) ||
                                  sizeof(T) == sizeof(unsigned long long));
 
-  using type = std::conditional_t<sizeof(T) == sizeof(unsigned int),
-                                  unsigned int,
-                                  unsigned long long>;
+  using type = std::conditional_t<
+      sizeof(T) == sizeof(unsigned int),
+      unsigned int,
+      unsigned long long>;
 };
 
 /*!
@@ -149,8 +152,9 @@ using hip_useReinterpretExchange_t =
  * Performs an atomic exchange using a builtin function. Stores the new value
  * in the given address and returns the old value.
  */
-template <typename T,
-          std::enable_if_t<hip_useBuiltinExchange<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useBuiltinExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicExchange(T* acc, T value)
 {
   return ::atomicExch(acc, value);
@@ -160,8 +164,9 @@ RAJA_INLINE __device__ T hip_atomicExchange(T* acc, T value)
  * Performs an atomic exchange using a reinterpret cast. Stores the new value
  * in the given address and returns the old value.
  */
-template <typename T,
-          std::enable_if_t<hip_useReinterpretExchange<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useReinterpretExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicExchange(T* acc, T value)
 {
   using R = hip_useReinterpretExchange_t<T>;
@@ -220,29 +225,31 @@ struct hip_useReinterpretLoad
 #endif
                                   ));
 
-  using type =
-      std::conditional_t<sizeof(T) == 1,
+  using type = std::conditional_t<
+      sizeof(T) == 1,
 #if defined(UINT8_MAX)
-                         uint8_t,
+      uint8_t,
 #else
-                         unsigned char,
+      unsigned char,
 #endif
-                         std::conditional_t<sizeof(T) == 2,
+      std::conditional_t<
+          sizeof(T) == 2,
 #if defined(UINT16_MAX)
-                                            uint16_t,
+          uint16_t,
 #else
-                                            unsigned short,
+          unsigned short,
 #endif
-                                            std::conditional_t<sizeof(T) == 4,
+          std::conditional_t<
+              sizeof(T) == 4,
 #if defined(UINT32_MAX)
-                                                               uint32_t,
+              uint32_t,
 #else
-                                                               unsigned int,
+              unsigned int,
 #endif
 #if defined(UINT64_MAX)
-                                                               uint64_t>>>;
+              uint64_t>>>;
 #else
-                                                               unsigned long long>>>;
+              unsigned long long>>>;
 #endif
 };
 
@@ -281,8 +288,9 @@ using hip_useReinterpretStore_t = typename hip_useReinterpretStore<T>::type;
 /*!
  * Atomic load
  */
-template <typename T,
-          std::enable_if_t<hip_useBuiltinLoad<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useBuiltinLoad<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T* acc)
 {
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_load)
@@ -292,8 +300,9 @@ RAJA_INLINE __device__ T hip_atomicLoad(T* acc)
 #endif
 }
 
-template <typename T,
-          std::enable_if_t<hip_useReinterpretLoad<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useReinterpretLoad<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicLoad(T* acc)
 {
   using R = hip_useReinterpretLoad_t<T>;
@@ -306,8 +315,9 @@ RAJA_INLINE __device__ T hip_atomicLoad(T* acc)
 /*!
  * Atomic store
  */
-template <typename T,
-          std::enable_if_t<hip_useBuiltinStore<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useBuiltinStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T* acc, T value)
 {
 #if defined(__has_builtin) && __has_builtin(__hip_atomic_store)
@@ -317,14 +327,15 @@ RAJA_INLINE __device__ void hip_atomicStore(T* acc, T value)
 #endif
 }
 
-template <typename T,
-          std::enable_if_t<hip_useReinterpretStore<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useReinterpretStore<T>::value, bool> = true>
 RAJA_INLINE __device__ void hip_atomicStore(T* acc, T value)
 {
   using R = hip_useReinterpretStore_t<T>;
 
-  hip_atomicStore(reinterpret_cast<R*>(acc),
-                  RAJA::util::reinterp_A_as_B<T, R>(value));
+  hip_atomicStore(
+      reinterpret_cast<R*>(acc), RAJA::util::reinterp_A_as_B<T, R>(value));
 }
 
 
@@ -333,8 +344,9 @@ RAJA_INLINE __device__ void hip_atomicStore(T* acc, T value)
  *
  * Returns the old value in memory before this operation.
  */
-template <typename T,
-          std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicCAS(T* acc, T compare, T value)
 {
   return ::atomicCAS(acc, compare, value);
@@ -345,8 +357,9 @@ RAJA_INLINE __device__ T hip_atomicCAS(T* acc, T compare, T value)
  *
  * Returns the old value in memory before this operation.
  */
-template <typename T,
-          std::enable_if_t<hip_useReinterpretCommon<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useReinterpretCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T hip_atomicCAS(T* acc, T compare, T value)
 {
   using R = hip_useReinterpretCommon_t<T>;
@@ -362,21 +375,24 @@ RAJA_INLINE __device__ T hip_atomicCAS(T* acc, T compare, T value)
  * integral type to avoid cases where the values will never compare equal
  * (most notably, NaNs).
  */
-template <typename T,
-          std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
 {
   return a == b;
 }
 
-template <typename T,
-          std::enable_if_t<hip_useReinterpretCommon<T>::value, bool> = true>
+template <
+    typename T,
+    std::enable_if_t<hip_useReinterpretCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ bool hip_atomicCAS_equal(const T& a, const T& b)
 {
   using R = hip_useReinterpretCommon_t<T>;
 
-  return hip_atomicCAS_equal(RAJA::util::reinterp_A_as_B<T, R>(a),
-                             RAJA::util::reinterp_A_as_B<T, R>(b));
+  return hip_atomicCAS_equal(
+      RAJA::util::reinterp_A_as_B<T, R>(a),
+      RAJA::util::reinterp_A_as_B<T, R>(b));
 }
 
 
@@ -409,9 +425,8 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T* acc, Oper&& oper)
  * result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_INLINE __device__ T hip_atomicCAS_loop(T*             acc,
-                                            Oper&&         oper,
-                                            ShortCircuit&& sc)
+RAJA_INLINE __device__ T
+hip_atomicCAS_loop(T* acc, Oper&& oper, ShortCircuit&& sc)
 {
   T old = hip_atomicLoad(acc);
 
@@ -439,15 +454,16 @@ RAJA_INLINE __device__ T hip_atomicCAS_loop(T*             acc,
 /*!
  * List of types where HIP builtin atomics are used to implement atomicAdd.
  */
-using hip_atomicAdd_builtin_types = ::camp::list<int,
-                                                 unsigned int,
-                                                 unsigned long long,
-                                                 float
+using hip_atomicAdd_builtin_types = ::camp::list<
+    int,
+    unsigned int,
+    unsigned long long,
+    float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-                                                 ,
-                                                 double
+    ,
+    double
 #endif
-                                                 >;
+    >;
 
 template <
     typename T,
@@ -473,15 +489,16 @@ RAJA_INLINE __device__ T hip_atomicAdd(T* acc, T value)
 /*!
  * List of types where HIP builtin atomics are used to implement atomicSub.
  */
-using hip_atomicSub_builtin_types = ::camp::list<int,
-                                                 unsigned int,
-                                                 unsigned long long,
-                                                 float
+using hip_atomicSub_builtin_types = ::camp::list<
+    int,
+    unsigned int,
+    unsigned long long,
+    float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-                                                 ,
-                                                 double
+    ,
+    double
 #endif
-                                                 >;
+    >;
 
 /*!
  * List of types where HIP builtin atomicSub is used to implement atomicSub.
@@ -497,13 +514,14 @@ using hip_atomicSub_via_Sub_builtin_types = ::camp::list<int, unsigned int>;
  * Avoid multiple definition errors by including the previous list type here
  * to ensure these lists have different types.
  */
-using hip_atomicSub_via_Add_builtin_types = ::camp::list<unsigned long long,
-                                                         float
+using hip_atomicSub_via_Add_builtin_types = ::camp::list<
+    unsigned long long,
+    float
 #ifdef RAJA_ENABLE_HIP_DOUBLE_ATOMICADD
-                                                         ,
-                                                         double
+    ,
+    double
 #endif
-                                                         >;
+    >;
 
 /*!
  * HIP atomicSub compare and swap loop implementation.
@@ -617,13 +635,14 @@ RAJA_INLINE __device__ T hip_atomicInc(T* acc)
 template <typename T>
 RAJA_INLINE __device__ T hip_atomicDec(T* acc, T value)
 {
-  return hip_atomicCAS_loop(acc,
-                            [value](T old)
-                            {
-                              return old == static_cast<T>(0) || value < old
-                                         ? value
-                                         : old - static_cast<T>(1);
-                            });
+  return hip_atomicCAS_loop(
+      acc,
+      [value](T old)
+      {
+        return old == static_cast<T>(0) || value < old
+                   ? value
+                   : old - static_cast<T>(1);
+      });
 }
 
 
@@ -700,7 +719,7 @@ RAJA_INLINE __device__ T hip_atomicXor(T* acc, T value)
 }
 
 
-} // namespace detail
+}  // namespace detail
 
 
 /*!
@@ -714,13 +733,13 @@ RAJA_INLINE __device__ T hip_atomicXor(T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(hip_atomic_explicit<host_policy>,
-                                          T* acc)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicLoad(hip_atomic_explicit<host_policy>, T* acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicLoad(acc);
 #else
-  return RAJA::atomicLoad(host_policy{}, acc);
+  return RAJA::atomicLoad(host_policy {}, acc);
 #endif
 }
 
@@ -732,161 +751,151 @@ atomicStore(hip_atomic_explicit<host_policy>, T* acc, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   detail::hip_atomicStore(acc, value);
 #else
-  RAJA::atomicStore(host_policy{}, acc, value);
+  RAJA::atomicStore(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicAdd(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAdd(acc, value);
 #else
-  return RAJA::atomicAdd(host_policy{}, acc, value);
+  return RAJA::atomicAdd(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicSub(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicSub(acc, value);
 #else
-  return RAJA::atomicSub(host_policy{}, acc, value);
+  return RAJA::atomicSub(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicMin(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMin(acc, value);
 #else
-  return RAJA::atomicMin(host_policy{}, acc, value);
+  return RAJA::atomicMin(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicMax(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicMax(acc, value);
 #else
-  return RAJA::atomicMax(host_policy{}, acc, value);
+  return RAJA::atomicMax(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicInc(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc, value);
 #else
-  return RAJA::atomicInc(host_policy{}, acc, value);
+  return RAJA::atomicInc(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(hip_atomic_explicit<host_policy>,
-                                         T* acc)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicInc(hip_atomic_explicit<host_policy>, T* acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicInc(acc);
 #else
-  return RAJA::atomicInc(host_policy{}, acc);
+  return RAJA::atomicInc(host_policy {}, acc);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicDec(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc, value);
 #else
-  return RAJA::atomicDec(host_policy{}, acc, value);
+  return RAJA::atomicDec(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(hip_atomic_explicit<host_policy>,
-                                         T* acc)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicDec(hip_atomic_explicit<host_policy>, T* acc)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicDec(acc);
 #else
-  return RAJA::atomicDec(host_policy{}, acc);
+  return RAJA::atomicDec(host_policy {}, acc);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicAnd(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicAnd(acc, value);
 #else
-  return RAJA::atomicAnd(host_policy{}, acc, value);
+  return RAJA::atomicAnd(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(hip_atomic_explicit<host_policy>,
-                                        T* acc,
-                                        T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicOr(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicOr(acc, value);
 #else
-  return RAJA::atomicOr(host_policy{}, acc, value);
+  return RAJA::atomicOr(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(hip_atomic_explicit<host_policy>,
-                                         T* acc,
-                                         T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicXor(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicXor(acc, value);
 #else
-  return RAJA::atomicXor(host_policy{}, acc, value);
+  return RAJA::atomicXor(host_policy {}, acc, value);
 #endif
 }
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(hip_atomic_explicit<host_policy>,
-                                              T* acc,
-                                              T  value)
+RAJA_INLINE RAJA_HOST_DEVICE T
+atomicExchange(hip_atomic_explicit<host_policy>, T* acc, T value)
 {
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicExchange(acc, value);
 #else
-  return RAJA::atomicExchange(host_policy{}, acc, value);
+  return RAJA::atomicExchange(host_policy {}, acc, value);
 #endif
 }
 
@@ -898,12 +907,12 @@ atomicCAS(hip_atomic_explicit<host_policy>, T* acc, T compare, T value)
 #if defined(__HIP_DEVICE_COMPILE__)
   return detail::hip_atomicCAS(acc, compare, value);
 #else
-  return RAJA::atomicCAS(host_policy{}, acc, compare, value);
+  return RAJA::atomicCAS(host_policy {}, acc, compare, value);
 #endif
 }
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
-#endif // RAJA_ENABLE_HIP
-#endif // guard
+#endif  // RAJA_ENABLE_HIP
+#endif  // guard

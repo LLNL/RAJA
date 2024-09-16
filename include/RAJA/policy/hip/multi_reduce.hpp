@@ -73,19 +73,20 @@ namespace impl
 //
 
 //! combine value into global memory
-template <typename Combiner,
-          typename GetTallyIndex,
-          typename T,
-          typename GetTallyOffset>
-RAJA_DEVICE RAJA_INLINE void
-block_multi_reduce_combine_global_atomic(int RAJA_UNUSED_ARG(num_bins),
-                                         T   identity,
-                                         int bin,
-                                         T   value,
-                                         T*  tally_mem,
-                                         GetTallyOffset get_tally_offset,
-                                         int            tally_replication,
-                                         int            tally_bins)
+template <
+    typename Combiner,
+    typename GetTallyIndex,
+    typename T,
+    typename GetTallyOffset>
+RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_global_atomic(
+    int            RAJA_UNUSED_ARG(num_bins),
+    T              identity,
+    int            bin,
+    T              value,
+    T*             tally_mem,
+    GetTallyOffset get_tally_offset,
+    int            tally_replication,
+    int            tally_bins)
 {
   if (value == identity)
   {
@@ -93,21 +94,21 @@ block_multi_reduce_combine_global_atomic(int RAJA_UNUSED_ARG(num_bins),
   }
 
   int tally_index =
-      GetTallyIndex::template index<int>(); // globalWarpId by default
+      GetTallyIndex::template index<int>();  // globalWarpId by default
   int tally_rep = ::RAJA::power_of_2_mod(tally_index, tally_replication);
   int tally_offset =
       get_tally_offset(bin, tally_bins, tally_rep, tally_replication);
-  RAJA::reduce::hip::atomic<Combiner>{}(tally_mem[tally_offset], value);
+  RAJA::reduce::hip::atomic<Combiner> {}(tally_mem[tally_offset], value);
 }
 
 
 //! initialize shared memory
 template <typename T>
-RAJA_DEVICE RAJA_INLINE void
-block_multi_reduce_init_shmem(int num_bins,
-                              T   identity,
-                              T*  shared_mem,
-                              int shared_replication)
+RAJA_DEVICE RAJA_INLINE void block_multi_reduce_init_shmem(
+    int num_bins,
+    T   identity,
+    T*  shared_mem,
+    int shared_replication)
 {
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -122,18 +123,19 @@ block_multi_reduce_init_shmem(int num_bins,
 }
 
 //! combine value into shared memory
-template <typename Combiner,
-          typename GetSharedIndex,
-          typename T,
-          typename GetSharedOffset>
-RAJA_DEVICE RAJA_INLINE void
-block_multi_reduce_combine_shmem_atomic(int             num_bins,
-                                        T               identity,
-                                        int             bin,
-                                        T               value,
-                                        T*              shared_mem,
-                                        GetSharedOffset get_shared_offset,
-                                        int             shared_replication)
+template <
+    typename Combiner,
+    typename GetSharedIndex,
+    typename T,
+    typename GetSharedOffset>
+RAJA_DEVICE RAJA_INLINE void block_multi_reduce_combine_shmem_atomic(
+    int             num_bins,
+    T               identity,
+    int             bin,
+    T               value,
+    T*              shared_mem,
+    GetSharedOffset get_shared_offset,
+    int             shared_replication)
 {
   if (value == identity)
   {
@@ -141,29 +143,30 @@ block_multi_reduce_combine_shmem_atomic(int             num_bins,
   }
 
   int shared_index =
-      GetSharedIndex::template index<int>(); // threadId by default
+      GetSharedIndex::template index<int>();  // threadId by default
   int shared_rep = ::RAJA::power_of_2_mod(shared_index, shared_replication);
   int shmem_offset =
       get_shared_offset(bin, num_bins, shared_rep, shared_replication);
 
-  RAJA::reduce::hip::atomic<Combiner>{}(shared_mem[shmem_offset], value);
+  RAJA::reduce::hip::atomic<Combiner> {}(shared_mem[shmem_offset], value);
 }
 
 //! combine value into shared memory
-template <typename Combiner,
-          typename T,
-          typename GetSharedOffset,
-          typename GetTallyOffset>
-RAJA_DEVICE RAJA_INLINE void
-grid_multi_reduce_shmem_to_global_atomic(int             num_bins,
-                                         T               identity,
-                                         T*              shared_mem,
-                                         GetSharedOffset get_shared_offset,
-                                         int             shared_replication,
-                                         T*              tally_mem,
-                                         GetTallyOffset  get_tally_offset,
-                                         int             tally_replication,
-                                         int             tally_bins)
+template <
+    typename Combiner,
+    typename T,
+    typename GetSharedOffset,
+    typename GetTallyOffset>
+RAJA_DEVICE RAJA_INLINE void grid_multi_reduce_shmem_to_global_atomic(
+    int             num_bins,
+    T               identity,
+    T*              shared_mem,
+    GetSharedOffset get_shared_offset,
+    int             shared_replication,
+    T*              tally_mem,
+    GetTallyOffset  get_tally_offset,
+    int             tally_replication,
+    int             tally_bins)
 {
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -181,7 +184,7 @@ grid_multi_reduce_shmem_to_global_atomic(int             num_bins,
     {
       int shmem_offset =
           get_shared_offset(bin, num_bins, shared_rep, shared_replication);
-      Combiner{}(value, shared_mem[shmem_offset]);
+      Combiner {}(value, shared_mem[shmem_offset]);
     }
 
     if (value != identity)
@@ -189,12 +192,12 @@ grid_multi_reduce_shmem_to_global_atomic(int             num_bins,
       int tally_rep = ::RAJA::power_of_2_mod(blockId, tally_replication);
       int tally_offset =
           get_tally_offset(bin, tally_bins, tally_rep, tally_replication);
-      RAJA::reduce::hip::atomic<Combiner>{}(tally_mem[tally_offset], value);
+      RAJA::reduce::hip::atomic<Combiner> {}(tally_mem[tally_offset], value);
     }
   }
 }
 
-} // namespace impl
+}  // namespace impl
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -210,16 +213,17 @@ struct MultiReduceGridAtomicHostInit_TallyData
 {
   //! setup permanent settings, allocate and initialize tally memory
   template <typename Container>
-  MultiReduceGridAtomicHostInit_TallyData(Container const& container,
-                                          T const&         identity)
+  MultiReduceGridAtomicHostInit_TallyData(
+      Container const& container,
+      T const&         identity)
       : m_tally_mem(nullptr),
         m_identity(identity),
         m_num_bins(container.size()),
         m_tally_bins(get_tally_bins(m_num_bins)),
         m_tally_replication(get_tally_replication())
   {
-    m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins,
-                               m_tally_replication);
+    m_tally_mem = create_tally(
+        container, identity, m_num_bins, m_tally_bins, m_tally_replication);
   }
 
   MultiReduceGridAtomicHostInit_TallyData() = delete;
@@ -245,8 +249,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
       m_num_bins          = new_num_bins;
       m_tally_bins        = get_tally_bins(m_num_bins);
       m_tally_replication = get_tally_replication();
-      m_tally_mem = create_tally(container, identity, m_num_bins, m_tally_bins,
-                                 m_tally_replication);
+      m_tally_mem         = create_tally(
+                  container, identity, m_num_bins, m_tally_bins, m_tally_replication);
     }
     else
     {
@@ -255,8 +259,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
         int bin       = 0;
         for (auto const& value : container)
         {
-          m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep,
-                                       m_tally_replication)] = value;
+          m_tally_mem[GetTallyOffset {}(
+              bin, m_tally_bins, tally_rep, m_tally_replication)] = value;
           ++bin;
         }
       }
@@ -264,8 +268,8 @@ struct MultiReduceGridAtomicHostInit_TallyData
       {
         for (int bin = 0; bin < m_num_bins; ++bin)
         {
-          m_tally_mem[GetTallyOffset{}(bin, m_tally_bins, tally_rep,
-                                       m_tally_replication)] = identity;
+          m_tally_mem[GetTallyOffset {}(
+              bin, m_tally_bins, tally_rep, m_tally_replication)] = identity;
         }
       }
     }
@@ -287,7 +291,7 @@ struct MultiReduceGridAtomicHostInit_TallyData
     for (int tally_rep = 0; tally_rep < m_tally_replication; ++tally_rep)
     {
       int tally_offset =
-          GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication);
+          GetTallyOffset {}(bin, m_tally_bins, tally_rep, m_tally_replication);
       reducer.combine(m_tally_mem[tally_offset]);
     }
     return reducer.get_and_clear();
@@ -332,18 +336,19 @@ private:
     struct
     {
       int func_min_global_replication;
-    } func_data{min_tally_replication};
+    } func_data {min_tally_replication};
 
-    return TallyAtomicReplicationConcretizer{}
+    return TallyAtomicReplicationConcretizer {}
         .template get_global_replication<int>(func_data);
   }
 
   template <typename Container>
-  static T* create_tally(Container const& container,
-                         T const&         identity,
-                         int              num_bins,
-                         int              tally_bins,
-                         int              tally_replication)
+  static T* create_tally(
+      Container const& container,
+      T const&         identity,
+      int              num_bins,
+      int              tally_bins,
+      int              tally_replication)
   {
     if (num_bins == size_t(0))
     {
@@ -361,7 +366,7 @@ private:
         for (auto const& value : container)
         {
           int tally_offset =
-              GetTallyOffset{}(bin, tally_bins, tally_rep, tally_replication);
+              GetTallyOffset {}(bin, tally_bins, tally_rep, tally_replication);
           new (&tally_mem[tally_offset]) T(value);
           ++bin;
         }
@@ -371,7 +376,7 @@ private:
         for (int bin = 0; bin < num_bins; ++bin)
         {
           int tally_offset =
-              GetTallyOffset{}(bin, tally_bins, tally_rep, tally_replication);
+              GetTallyOffset {}(bin, tally_bins, tally_rep, tally_replication);
           new (&tally_mem[tally_offset]) T(identity);
         }
       }
@@ -379,10 +384,11 @@ private:
     return tally_mem;
   }
 
-  static void destroy_tally(T*& tally_mem,
-                            int num_bins,
-                            int tally_bins,
-                            int tally_replication)
+  static void destroy_tally(
+      T*& tally_mem,
+      int num_bins,
+      int tally_bins,
+      int tally_replication)
   {
     if (num_bins == size_t(0))
     {
@@ -393,8 +399,8 @@ private:
     {
       for (int bin = num_bins; bin > 0; --bin)
       {
-        int tally_offset = GetTallyOffset{}(bin - 1, tally_bins, tally_rep - 1,
-                                            tally_replication);
+        int tally_offset = GetTallyOffset {}(
+            bin - 1, tally_bins, tally_rep - 1, tally_replication);
         tally_mem[tally_offset].~T();
       }
     }
@@ -410,8 +416,8 @@ protected:
   T   m_identity;
   int m_num_bins;
   int m_tally_bins;
-  int m_tally_replication; // power of 2, at least the max number of omp
-                           // threads
+  int m_tally_replication;  // power of 2, at least the max number of omp
+                            // threads
 };
 
 
@@ -452,7 +458,7 @@ struct MultiReduceGridAtomicHostInit_Data
   void combine_device(int bin, T value)
   {
     impl::block_multi_reduce_combine_global_atomic<Combiner, GetTallyIndex>(
-        m_num_bins, m_identity, bin, value, m_tally_mem, GetTallyOffset{},
+        m_num_bins, m_identity, bin, value, m_tally_mem, GetTallyOffset {},
         m_tally_replication, m_tally_bins);
   }
 
@@ -464,8 +470,8 @@ struct MultiReduceGridAtomicHostInit_Data
     tally_rep = omp_get_thread_num();
 #endif
     int tally_offset =
-        GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication);
-    Combiner{}(m_tally_mem[tally_offset], value);
+        GetTallyOffset {}(bin, m_tally_bins, tally_rep, m_tally_replication);
+    Combiner {}(m_tally_mem[tally_offset], value);
   }
 
 private:
@@ -490,8 +496,9 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
 
   //! setup permanent settings, defer to tally data
   template <typename Container>
-  MultiReduceBlockThenGridAtomicHostInit_Data(Container const& container,
-                                              T const&         identity)
+  MultiReduceBlockThenGridAtomicHostInit_Data(
+      Container const& container,
+      T const&         identity)
       : TallyData(container, identity),
         m_shared_offset(s_shared_offset_unknown),
         m_shared_replication(0)
@@ -533,10 +540,10 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
           {
             size_t func_threads_per_block;
             size_t func_max_shared_replication_per_block;
-          } func_data{block_size, max_shmem_size / m_num_bins};
+          } func_data {block_size, max_shmem_size / m_num_bins};
 
           shared_replication =
-              SharedAtomicReplicationConcretizer{}
+              SharedAtomicReplicationConcretizer {}
                   .template get_shared_replication<size_t>(func_data);
           return m_num_bins * shared_replication;
         });
@@ -567,8 +574,8 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     T* shared_mem = get_shared_mem();
     if (shared_mem != nullptr)
     {
-      impl::block_multi_reduce_init_shmem(m_num_bins, m_identity, shared_mem,
-                                          m_shared_replication);
+      impl::block_multi_reduce_init_shmem(
+          m_num_bins, m_identity, shared_mem, m_shared_replication);
     }
   }
 
@@ -580,8 +587,8 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     if (shared_mem != nullptr)
     {
       impl::grid_multi_reduce_shmem_to_global_atomic<Combiner>(
-          m_num_bins, m_identity, shared_mem, GetSharedOffset{},
-          m_shared_replication, m_tally_mem, GetTallyOffset{},
+          m_num_bins, m_identity, shared_mem, GetSharedOffset {},
+          m_shared_replication, m_tally_mem, GetTallyOffset {},
           m_tally_replication, m_tally_bins);
     }
   }
@@ -595,13 +602,13 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     if (shared_mem != nullptr)
     {
       impl::block_multi_reduce_combine_shmem_atomic<Combiner, GetSharedIndex>(
-          m_num_bins, m_identity, bin, value, shared_mem, GetSharedOffset{},
+          m_num_bins, m_identity, bin, value, shared_mem, GetSharedOffset {},
           m_shared_replication);
     }
     else
     {
       impl::block_multi_reduce_combine_global_atomic<Combiner, GetTallyIndex>(
-          m_num_bins, m_identity, bin, value, m_tally_mem, GetTallyOffset{},
+          m_num_bins, m_identity, bin, value, m_tally_mem, GetTallyOffset {},
           m_tally_replication, m_tally_bins);
     }
   }
@@ -614,8 +621,8 @@ struct MultiReduceBlockThenGridAtomicHostInit_Data
     tally_rep = omp_get_thread_num();
 #endif
     int tally_offset =
-        GetTallyOffset{}(bin, m_tally_bins, tally_rep, m_tally_replication);
-    Combiner{}(m_tally_mem[tally_offset], value);
+        GetTallyOffset {}(bin, m_tally_bins, tally_rep, m_tally_replication);
+    Combiner {}(m_tally_mem[tally_offset], value);
   }
 
 private:
@@ -642,8 +649,8 @@ private:
   using TallyData::m_tally_mem;
   using TallyData::m_tally_replication;
 
-  int m_shared_offset;      // in bytes
-  int m_shared_replication; // power of 2
+  int m_shared_offset;       // in bytes
+  int m_shared_replication;  // power of 2
 
 
   RAJA_DEVICE
@@ -690,15 +697,17 @@ struct MultiReduceDataHip
           (tuning::algorithm ==
            multi_reduce_algorithm::
                init_host_combine_block_atomic_then_grid_atomic),
-          hip::MultiReduceBlockThenGridAtomicHostInit_Data<t_MultiReduceOp,
-                                                           T,
-                                                           tuning>,
+          hip::MultiReduceBlockThenGridAtomicHostInit_Data<
+              t_MultiReduceOp,
+              T,
+              tuning>,
           std::conditional_t<
               (tuning::algorithm ==
                multi_reduce_algorithm::init_host_combine_global_atomic),
-              hip::MultiReduceGridAtomicHostInit_Data<t_MultiReduceOp,
-                                                      T,
-                                                      tuning>,
+              hip::MultiReduceGridAtomicHostInit_Data<
+                  t_MultiReduceOp,
+                  T,
+                  tuning>,
               void>>,
       void>;
 
@@ -711,9 +720,10 @@ public:
 
   MultiReduceDataHip() = delete;
 
-  template <typename Container,
-            std::enable_if_t<
-                !std::is_same<Container, MultiReduceDataHip>::value>* = nullptr>
+  template <
+      typename Container,
+      std::enable_if_t<!std::is_same<Container, MultiReduceDataHip>::value>* =
+          nullptr>
   MultiReduceDataHip(Container const& container, T identity)
       : m_parent(this),
         m_sync_list(new SyncList),
@@ -859,13 +869,14 @@ private:
   }
 };
 
-} // end namespace hip
+}  // end namespace hip
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::hip::hip_multi_reduce_policy,
-                                hip::MultiReduceDataHip)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(
+    policy::hip::hip_multi_reduce_policy,
+    hip::MultiReduceDataHip)
 
-} // namespace RAJA
+}  // namespace RAJA
 
-#endif // closing endif for RAJA_ENABLE_HIP guard
+#endif  // closing endif for RAJA_ENABLE_HIP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

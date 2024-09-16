@@ -10,11 +10,12 @@
 
 
 template <typename IDX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
-                                std::array<RAJA::idx_t, 3> offset_lo,
-                                std::array<RAJA::idx_t, 3> offset_hi)
+void KernelOffsetView3DTestImpl(
+    std::array<RAJA::idx_t, 3> dim,
+    std::array<RAJA::idx_t, 3> offset_lo,
+    std::array<RAJA::idx_t, 3> offset_hi)
 {
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   IDX_TYPE*                 working_array;
   IDX_TYPE*                 check_array;
   IDX_TYPE*                 test_array;
@@ -28,8 +29,8 @@ void KernelOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
   EXPECT_LT(off_dim1, dim.at(1));
   EXPECT_LT(off_dim2, dim.at(2));
 
-  allocateForallTestData<IDX_TYPE>(N, working_res, &working_array, &check_array,
-                                   &test_array);
+  allocateForallTestData<IDX_TYPE>(
+      N, working_res, &working_array, &check_array, &test_array);
 
   memset(static_cast<void*>(test_array), 0, sizeof(IDX_TYPE) * N);
 
@@ -71,8 +72,8 @@ void KernelOffsetView3DTestImpl(std::array<RAJA::idx_t, 3> dim,
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(working_res, working_array, check_array,
-                                     test_array);
+  deallocateForallTestData<IDX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -92,36 +93,37 @@ TYPED_TEST_P(KernelNestedLoopOffsetView3DTest, OffsetView3DKernelTest)
   RAJA::idx_t                dim0 = 13;
   RAJA::idx_t                dim1 = 19;
   RAJA::idx_t                dim2 = 16;
-  std::array<RAJA::idx_t, 3> dim{{dim0, dim1, dim2}};
+  std::array<RAJA::idx_t, 3> dim {{dim0, dim1, dim2}};
 
   //
   // Square views
   //
-  std::array<RAJA::idx_t, 3> offset_lo{{0, 2, 1}};
-  std::array<RAJA::idx_t, 3> offset_hi{{dim0 - 2, dim1 - 6, dim2 - 4}};
-  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
-                                                                 offset_hi);
+  std::array<RAJA::idx_t, 3> offset_lo {{0, 2, 1}};
+  std::array<RAJA::idx_t, 3> offset_hi {{dim0 - 2, dim1 - 6, dim2 - 4}};
+  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, offset_lo, offset_hi);
 
-  offset_lo = std::array<RAJA::idx_t, 3>{{-1, -2, -3}};
-  offset_hi = std::array<RAJA::idx_t, 3>{{dim0 - 3, dim1 - 10, dim2 - 8}};
-  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
-                                                                 offset_hi);
+  offset_lo = std::array<RAJA::idx_t, 3> {{-1, -2, -3}};
+  offset_hi = std::array<RAJA::idx_t, 3> {{dim0 - 3, dim1 - 10, dim2 - 8}};
+  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, offset_lo, offset_hi);
 
   //
   // Non-square views
   //
-  offset_lo = std::array<RAJA::idx_t, 3>{{0, 1, 2}};
-  offset_hi = std::array<RAJA::idx_t, 3>{{dim0 - 3, dim1 - 2, dim2 - 2}};
-  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
-                                                                 offset_hi);
+  offset_lo = std::array<RAJA::idx_t, 3> {{0, 1, 2}};
+  offset_hi = std::array<RAJA::idx_t, 3> {{dim0 - 3, dim1 - 2, dim2 - 2}};
+  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, offset_lo, offset_hi);
 
-  offset_lo = std::array<RAJA::idx_t, 3>{{-1, -1, 0}};
-  offset_hi = std::array<RAJA::idx_t, 3>{{dim0 - 3, dim1 - 4, dim2 - 2}};
-  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim, offset_lo,
-                                                                 offset_hi);
+  offset_lo = std::array<RAJA::idx_t, 3> {{-1, -1, 0}};
+  offset_hi = std::array<RAJA::idx_t, 3> {{dim0 - 3, dim1 - 4, dim2 - 2}};
+  KernelOffsetView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
+      dim, offset_lo, offset_hi);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopOffsetView3DTest,
-                            OffsetView3DKernelTest);
+REGISTER_TYPED_TEST_SUITE_P(
+    KernelNestedLoopOffsetView3DTest,
+    OffsetView3DKernelTest);
 
-#endif // __TEST_KERNEL_NESTEDLOOP_OFFSETVIEW3D_HPP__
+#endif  // __TEST_KERNEL_NESTEDLOOP_OFFSETVIEW3D_HPP__

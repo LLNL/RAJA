@@ -18,31 +18,31 @@
 #include "RAJA_unit-test-forone.hpp"
 #endif
 
-using unsigned_types =
-    ::testing::Types<std::tuple<unsigned int, RAJA::builtin_atomic>,
-                     std::tuple<unsigned int, RAJA::seq_atomic>,
-                     std::tuple<unsigned long long int, RAJA::builtin_atomic>,
-                     std::tuple<unsigned long long int, RAJA::seq_atomic>
+using unsigned_types = ::testing::Types<
+    std::tuple<unsigned int, RAJA::builtin_atomic>,
+    std::tuple<unsigned int, RAJA::seq_atomic>,
+    std::tuple<unsigned long long int, RAJA::builtin_atomic>,
+    std::tuple<unsigned long long int, RAJA::seq_atomic>
 #if defined(RAJA_ENABLE_OPENMP)
-                     ,
-                     std::tuple<unsigned int, RAJA::omp_atomic>,
-                     std::tuple<unsigned long long int, RAJA::omp_atomic>
+    ,
+    std::tuple<unsigned int, RAJA::omp_atomic>,
+    std::tuple<unsigned long long int, RAJA::omp_atomic>
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-                     ,
-                     std::tuple<unsigned int, RAJA::auto_atomic>,
-                     std::tuple<unsigned int, RAJA::cuda_atomic>,
-                     std::tuple<unsigned long long int, RAJA::auto_atomic>,
-                     std::tuple<unsigned long long int, RAJA::cuda_atomic>
+    ,
+    std::tuple<unsigned int, RAJA::auto_atomic>,
+    std::tuple<unsigned int, RAJA::cuda_atomic>,
+    std::tuple<unsigned long long int, RAJA::auto_atomic>,
+    std::tuple<unsigned long long int, RAJA::cuda_atomic>
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                     ,
-                     std::tuple<unsigned int, RAJA::auto_atomic>,
-                     std::tuple<unsigned int, RAJA::hip_atomic>,
-                     std::tuple<unsigned long long int, RAJA::auto_atomic>,
-                     std::tuple<unsigned long long int, RAJA::hip_atomic>
+    ,
+    std::tuple<unsigned int, RAJA::auto_atomic>,
+    std::tuple<unsigned int, RAJA::hip_atomic>,
+    std::tuple<unsigned long long int, RAJA::auto_atomic>,
+    std::tuple<unsigned long long int, RAJA::hip_atomic>
 #endif
-                     >;
+    >;
 
 // Basic Inc Dec
 
@@ -100,19 +100,20 @@ TYPED_TEST_P(AtomicBasicIncDecUnitTest, BasicIncDecs)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicBasicIncDecUnitTest, BasicIncDecs);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(BasicIncDecUnitTest,
-                               AtomicBasicIncDecUnitTest,
-                               unsigned_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    BasicIncDecUnitTest,
+    AtomicBasicIncDecUnitTest,
+    unsigned_types);
 
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
 
-using CUDA_unsigned_types =
-    ::testing::Types<std::tuple<unsigned int, RAJA::auto_atomic>,
-                     std::tuple<unsigned int, RAJA::cuda_atomic>,
-                     std::tuple<unsigned long long int, RAJA::auto_atomic>,
-                     std::tuple<unsigned long long int, RAJA::cuda_atomic>>;
+using CUDA_unsigned_types = ::testing::Types<
+    std::tuple<unsigned int, RAJA::auto_atomic>,
+    std::tuple<unsigned int, RAJA::cuda_atomic>,
+    std::tuple<unsigned long long int, RAJA::auto_atomic>,
+    std::tuple<unsigned long long int, RAJA::cuda_atomic>>;
 
 
 template <typename T>
@@ -187,7 +188,8 @@ GPU_TYPED_TEST_P(AtomicCUDAIncDecUnitTest, CUDAIncDecs)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicCUDAIncDecUnitTest, CUDAIncDecs);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(CUDAIncDecUnitTest,
-                               AtomicCUDAIncDecUnitTest,
-                               CUDA_unsigned_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+    CUDAIncDecUnitTest,
+    AtomicCUDAIncDecUnitTest,
+    CUDA_unsigned_types);
 #endif

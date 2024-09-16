@@ -22,9 +22,10 @@ class RegistryEntry
   std::shared_ptr<T> object;
 
 public:
-  RegistryEntry(const std::string& N,
-                const std::string& D,
-                std::shared_ptr<T> (*C)())
+  RegistryEntry(
+      const std::string& N,
+      const std::string& D,
+      std::shared_ptr<T> (*C)())
       : Name(N), Desc(D), object(C())
   {}
 
@@ -119,8 +120,8 @@ public:
   };
 };
 
-} // namespace util
-} // namespace RAJA
+}  // namespace util
+}  // namespace RAJA
 
 #define RAJA_INSTANTIATE_REGISTRY(REGISTRY_CLASS)                              \
   namespace RAJA                                                               \

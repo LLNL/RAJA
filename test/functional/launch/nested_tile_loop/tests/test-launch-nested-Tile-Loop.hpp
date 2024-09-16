@@ -10,15 +10,16 @@
 
 #include <numeric>
 
-template <typename INDEX_TYPE,
-          typename WORKING_RES,
-          typename LAUNCH_POLICY,
-          typename THREAD_X_POLICY,
-          typename THREAD_Y_POLICY,
-          typename THREAD_Z_POLICY,
-          typename TEAM_X_POLICY,
-          typename TEAM_Y_POLICY,
-          typename TEAM_Z_POLICY>
+template <
+    typename INDEX_TYPE,
+    typename WORKING_RES,
+    typename LAUNCH_POLICY,
+    typename THREAD_X_POLICY,
+    typename THREAD_Y_POLICY,
+    typename THREAD_Z_POLICY,
+    typename TEAM_X_POLICY,
+    typename TEAM_Y_POLICY,
+    typename TEAM_Z_POLICY>
 void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 {
 
@@ -41,7 +42,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
   INDEX_TYPE N = static_cast<INDEX_TYPE>(N1 * N2 * N3);
 
-  camp::resources::Resource working_res{WORKING_RES::get_default()};
+  camp::resources::Resource working_res {WORKING_RES::get_default()};
   INDEX_TYPE*               working_array;
   INDEX_TYPE*               check_array;
   INDEX_TYPE*               test_array;
@@ -52,8 +53,8 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
-                                     &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(
+      data_len, working_res, &working_array, &check_array, &test_array);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -65,8 +66,9 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
     RAJA::View<INDEX_TYPE, layout_t> Aview(working_array, N3, N2, N1);
 
     RAJA::launch<LAUNCH_POLICY>(
-        RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
-                           RAJA::Threads(threads_x, threads_y, threads_z)),
+        RAJA::LaunchParams(
+            RAJA::Teams(blocks_x, blocks_y, blocks_z),
+            RAJA::Threads(threads_x, threads_y, threads_z)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::tile<TEAM_Z_POLICY>(
@@ -107,16 +109,17 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
         });
   }
   else
-  { // zero-length segment
+  {  // zero-length segment
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(working_array, test_array,
-                       sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(
+        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
-        RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z),
-                           RAJA::Threads(blocks_x, blocks_y, blocks_z)),
+        RAJA::LaunchParams(
+            RAJA::Teams(blocks_x, blocks_y, blocks_z),
+            RAJA::Threads(blocks_x, blocks_y, blocks_z)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
         {
           RAJA::tile<TEAM_Z_POLICY>(
@@ -164,8 +167,9 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
     for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
     {
-      ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
-                check_array[RAJA::stripIndexType(i)]);
+      ASSERT_EQ(
+          test_array[RAJA::stripIndexType(i)],
+          check_array[RAJA::stripIndexType(i)]);
     }
   }
   else
@@ -174,8 +178,8 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
     ASSERT_EQ(test_array[0], check_array[0]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
-                                       test_array);
+  deallocateForallTestData<INDEX_TYPE>(
+      working_res, working_array, check_array, test_array);
 }
 
 
@@ -188,31 +192,24 @@ class LaunchNestedTileLoopTest : public ::testing::Test
 TYPED_TEST_P(LaunchNestedTileLoopTest, RangeSegmentTeams)
 {
 
-  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
-  using LAUNCH_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<0>>::type;
+  using INDEX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
+  using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
+  using LAUNCH_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<0>>::type;
 
-  using THREAD_X_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<1>>::type;
-  using THREAD_Y_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<2>>::type;
-  using THREAD_Z_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<3>>::type;
+  using THREAD_X_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<1>>::type;
+  using THREAD_Y_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<2>>::type;
+  using THREAD_Z_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<3>>::type;
 
-  using TEAM_X_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<4>>::type;
-  using TEAM_Y_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<5>>::type;
-  using TEAM_Z_POLICY =
-      typename camp::at<typename camp::at<TypeParam, camp::num<2>>::type,
-                        camp::num<6>>::type;
+  using TEAM_X_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<4>>::type;
+  using TEAM_Y_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<5>>::type;
+  using TEAM_Z_POLICY = typename camp::at<
+      typename camp::at<TypeParam, camp::num<2>>::type, camp::num<6>>::type;
 
 
   // test zero-length range segment
@@ -230,4 +227,4 @@ TYPED_TEST_P(LaunchNestedTileLoopTest, RangeSegmentTeams)
 
 REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileLoopTest, RangeSegmentTeams);
 
-#endif // __TEST_LAUNCH_NESTED_TILE_LOOP_HPP__
+#endif  // __TEST_LAUNCH_NESTED_TILE_LOOP_HPP__

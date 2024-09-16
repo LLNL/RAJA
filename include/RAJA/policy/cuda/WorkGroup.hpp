@@ -21,4 +21,4 @@
 #include "RAJA/policy/cuda/WorkGroup/Dispatcher.hpp"
 #include "RAJA/policy/cuda/WorkGroup/WorkRunner.hpp"
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

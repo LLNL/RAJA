@@ -42,7 +42,7 @@ resolve(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
 {
   // complete reduction
   hi.res.wait();
-  *red.target = OP{}(*red.target, *red.devicetarget);
+  *red.target = OP {}(*red.target, *red.devicetarget);
 
   // free memory
   RAJA::hip::device_zeroed_mempool_type::getInstance().free(red.device_count);
@@ -52,10 +52,10 @@ resolve(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
   red.devicetarget = nullptr;
 }
 
-} //  namespace detail
-} //  namespace expt
-} //  namespace RAJA
+}  //  namespace detail
+}  //  namespace expt
+}  //  namespace RAJA
 
 #endif
 
-#endif //  NEW_REDUCE_HIP_REDUCE_HPP
+#endif  //  NEW_REDUCE_HIP_REDUCE_HPP

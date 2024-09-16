@@ -49,14 +49,14 @@ syclInfo tl_status;
 #endif
 
 //! State of raja sycl queue synchronization for sycl reducer objects
-std::unordered_map<cl::sycl::queue, bool> g_queue_info_map{
+std::unordered_map<cl::sycl::queue, bool> g_queue_info_map {
     {cl::sycl::queue(), true}};
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace sycl
+}  // namespace sycl
 
-} // namespace RAJA
+}  // namespace RAJA
 
 
-#endif // if defined(RAJA_ENABLE_SYCL)
+#endif  // if defined(RAJA_ENABLE_SYCL)

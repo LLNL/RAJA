@@ -295,7 +295,7 @@ convertIndex_helper(typename FROM::IndexValueType const val)
 }
 
 
-} // namespace internal
+}  // namespace internal
 
 /*!
  * \brief Function provides a way to take either an int or any Index<> type, and
@@ -315,10 +315,10 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
  */
 // This version is enabled if FROM is a strongly typed class
 template <typename FROM>
-constexpr RAJA_HOST_DEVICE RAJA_INLINE
-    typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
-                            typename FROM::value_type>::type
-    stripIndexType(FROM const val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE typename std::enable_if<
+    std::is_base_of<IndexValueBase, FROM>::value,
+    typename FROM::value_type>::type
+stripIndexType(FROM const val)
 {
   return *val;
 }
@@ -326,9 +326,8 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE
  * enabled if FROM is not a strongly typed class
  */
 template <typename FROM>
-constexpr RAJA_HOST_DEVICE RAJA_INLINE
-    typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value,
-                            FROM>::type
+constexpr RAJA_HOST_DEVICE RAJA_INLINE typename std::
+    enable_if<!std::is_base_of<IndexValueBase, FROM>::value, FROM>::type
     stripIndexType(FROM const val)
 {
   return val;
@@ -349,7 +348,7 @@ struct StripIndexTypeT<
 {
   using type = typename FROM::value_type;
 };
-} // namespace internal
+}  // namespace internal
 
 /*!
  * \brief Strips a strongly typed index to its underlying type
@@ -367,12 +366,12 @@ using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
  * \param FROM the original type
  */
 template <typename FROM>
-using make_signed_t =
-    typename std::conditional<std::is_floating_point<FROM>::value,
-                              std::common_type<FROM>,
-                              std::make_signed<FROM>>::type::type;
+using make_signed_t = typename std::conditional<
+    std::is_floating_point<FROM>::value,
+    std::common_type<FROM>,
+    std::make_signed<FROM>>::type::type;
 
-} // namespace RAJA
+}  // namespace RAJA
 
 /*!
  * \brief Helper Macro to create new Index types.

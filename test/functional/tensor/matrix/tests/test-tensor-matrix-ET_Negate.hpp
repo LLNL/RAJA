@@ -125,11 +125,11 @@ void ET_NegateImpl()
         output0_d(rows, cols) = -input0_d(rows, cols);
 
         output1_d(rows, cols) =
-            -input1_d(SArows, SRcols); // mixed static_all and static_range
-        output2_d(rows, cols) = -input1_d(SArows, SAcols); // static_all
-        output3_d(rows, cols) = -input1_d(SRrows, SRcols); // static_range
+            -input1_d(SArows, SRcols);  // mixed static_all and static_range
+        output2_d(rows, cols) = -input1_d(SArows, SAcols);  // static_all
+        output3_d(rows, cols) = -input1_d(SRrows, SRcols);  // static_range
         output4_d(rows, cols) =
-            -input1_d(rows, SRcols); // mixed static_range and non-static
+            -input1_d(rows, SRcols);  // mixed static_range and non-static
       });
 
   tensor_copy_to_host<policy_t>(output0_vec, output0_ptr);
