@@ -17,14 +17,17 @@ Continuous Integration (CI) Testing
                  viewed by clicking the appropriate link in the **checks** 
                  section of a GitHub pull request.
 
-The RAJA project uses two CI tools to run tests:
+The RAJA project uses three CI tools to run tests:
 
-  * **Azure Pipelines** runs builds and tests for Linux, Windows, and MacOS 
-    environments using compilers in container images maintained in the
-    `RSE Ops Project <https://github.com/rse-ops/docker-images>`_.
-    While we do some GPU builds on Azure, RAJA tests are only run for CPU-only 
-    builds. The current set of builds run on Azure can be seen by looking at
-    the ``RAJA/azure-pipelines.yml`` and ``RAJA/Dockerfile`` files.
+  * **Azure Pipelines** and **GitHub Actions** runs builds and tests for Linux,
+    Windows, and MacOS environments using compilers in container images 
+    maintained in the `RADIUSS Docker Project <https://github.com/LLNL/radiuss-docker>`_.
+    While we do some GPU builds on Azure and GitHub Actions for CUDA, HIP, and
+    SYCL, RAJA tests are only run for CPU-only builds. The current set of 
+    builds run on Azure and GitHub Actions can be seen by looking at the 
+    ``RAJA/azure-pipelines.yml`` and ``RAJA/.github/workflows/build.yml`` files,
+    respectively. The ``RAJA/Dockerfile`` file contains the CMake options used
+    to generate the build environment for each of the builds.
 
   * **GitLab** instance in the Collaboration Zone (CZ) of the Livermore 
     Computing (LC) Center runs builds and tests on LC platforms using
@@ -102,7 +105,7 @@ process. More details about these steps will appear in the in later sections:
 
   #. When test pipelines complete, results are reported to GitLab.
 
-  #. Lastly, GitLab reports to GitHub indicating the the status of checks there.
+  #. Lastly, GitLab reports to GitHub indicating the status of checks there.
 
 .. figure:: ./figures/RAJA-Gitlab-Workflow2.png
 
@@ -302,29 +305,33 @@ plus RAJA-specific specs defined in files in the `RAJA/.gitlab/jobs <https://git
 
 .. _azure_ci-label:
 
-==================
-Azure Pipelines CI
-==================
+======================================
+Azure Pipelines and GitHub Actions CI
+======================================
 
-We use Azure Pipelines to run builds and tests for Linux, Windows, and MacOS 
-environments.  While we do builds for CUDA, HIP, and SYCL RAJA GPU back-ends 
-in the Azure Linux environment, RAJA tests are only run for CPU-only pipelines.
+We use Azure Pipelines and GitHub Actions to run builds and tests for Linux, 
+Windows, and MacOS environments. We use these tools to run Linux builds and
+tests for various less-common configurations, such as compiler versions that are
+not available on LC systems. While we do builds for CUDA, HIP, and SYCL RAJA 
+GPU back-ends in the Azure and GitHub Actions Linux environments, RAJA tests 
+are only run for CPU-only pipelines.
+
+.. note:: Azure Pipelines and GitHub Actions CI test jobs are run on every
+   RAJA pull request, regardless of whether it was made from a branch in the
+   RAJA project repo or from a fork of the repo.
 
 Azure Pipelines Testing Workflow
 --------------------------------
 
-The Azure Pipelines testing workflow for RAJA is much simpler than the GitLab
-testing process described earlier.
-
-The test jobs we run for each OS environment are specified in the 
-`RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file. This file defines the job steps, commands,
+The jobs run in the Azure Pipelines testing workflow for RAJA are specified in
+the `RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file. This file defines the job steps, commands,
 compilers, etc. for each OS environment in the associated ``- job:`` section.
 A summary of the configurations we build are:
 
   * **Windows.** The ``- job: Windows`` Windows section contains information
     for the Windows test builds. For example, we build and test RAJA as
-    a static and shared library. This is indicated in the Windows ``strategy``
-    section::
+    a static and/or shared library. This is indicated in the Windows 
+    ``strategy`` section::
 
       strategy:
         matrix:
@@ -340,7 +347,7 @@ A summary of the configurations we build are:
         vmImage: 'windows-2019'
 
     **MacOS.** The ``- job: Mac`` section contains information for Mac test 
-    builds. For example, we build RAJA using the the MacOS/compiler 
+    builds. For example, we build RAJA using the MacOS/compiler 
     image provided by the Azure application indicated in the ``pool`` section; 
     for example::
 
@@ -351,28 +358,70 @@ A summary of the configurations we build are:
     test builds. We build and test RAJA using Docker container images generated 
     with recent versions of various compilers. The RAJA project shares these 
     images with other open-source LLNL RADIUSS projects and they are maintained
-    in the `RES-Ops Docker <https://github.com/rse-ops/docker-images>`_ 
+    in the `RADIUSS Docker <https://github.com/LLNL/radiuss-docker>`_ 
     project on GitHub. The builds we do at any point in time are located in 
     the ``strategy`` block::
 
       strategy:
         matrix: 
-          gccX:
+          gcc11:
             docker_target: ...
           ...
-          clangY:
+          clang14:
             docker_target: ...
-          ...
-          nvccZ:
-            docker_target: ...
-
           ...
 
-    The Linux OS the docker images are run on is indicated in the ``pool`` section; 
+    The Linux OS image used is indicated in the ``pool`` section; 
     for example::
 
       pool:
         vmImage: 'ubuntu-latest'
+
+GitHub Actions Testing Workflow
+--------------------------------
+
+The jobs run in the GitHub Actions testing workflow for RAJA are specified in
+the `RAJA/.github/workflows/build.yml <https://github.com/LLNL/RAJA/blob/develop/.github/workflows/build.yml>`_ file. This file defines the job steps, commands,
+compilers, etc. for each OS environment in the associated ``jobs:`` section.
+A summary of the configurations we build are:
+
+  * **Windows.** The ``build_windows:`` Windows section contains information
+    for the Windows test builds. For example, we build and test RAJA as
+    a static and shared library. This is indicated in the Windows ``strategy``
+    section::
+
+      strategy:
+        matrix:
+          shared:
+          - args: 
+            BUILD_SHARED_LIBS=On 
+            CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=On
+        - args: BUILD_SHARED_LIBS=Off
+
+    We use the Windows/compiler image provided by the GitHub Actions application
+    indicated by::
+
+      runs-on: windows-latest
+
+    **MacOS.** The ``build_mac:`` section contains information for Mac test
+    builds. We use the MacOS/compiler image provided by the GitHub Actions 
+    application indicated by::
+
+      runs-on: macos-latest
+
+    **Linux.** The ``build_docker:`` section contains information for Linux
+    test builds. We build and test RAJA using Docker container images
+    maintained in the `RADIUSS Docker <https://github.com/LLNL/radiuss-docker>`_
+    project on GitHub. The builds we do at any point in time are located in
+    the ``strategy`` block, for example::
+
+      strategy:
+      matrix:
+        target: [gcc12_debug, gcc13, clang13, clang15, rocm5.6, rocm5.6_desul, intel2024, intel2024_debug, intel2024_sycl]
+     
+    The Linux OS image used is indicated by::
+   
+      runs-on: ubuntu-latest 
 
 Docker Builds
 -------------
@@ -380,12 +429,10 @@ Docker Builds
 For each Linux/Docker pipeline, the base container images, CMake, build, and
 test commands are located in `RAJA/Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_.
 
-The base container images are built and maintained through the 
-`RSE-Ops Docker <https://rse-ops.github.io/>`_ project. A table of the most 
-up-to-date containers can be found 
-`here <https://rse-ops.github.io/docker-images/>`_. These images are rebuilt 
-regularly ensuring that we have the most up to date builds of each 
-container and compiler.
+The base container images are built and maintained in the 
+`RADIUSS Docker <https://github.com/LLNL/radiuss-docker>`_ project.
+These images are rebuilt regularly ensuring that we have the most up to date
+builds of each container and compiler.
 
 .. note:: Please see :ref:`docker_local-label` for more information about
           reproducing Docker builds locally for debugging purposes.
