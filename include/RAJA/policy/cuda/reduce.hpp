@@ -201,7 +201,6 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce_last_block(T& val,
 namespace expt {
 
 template <typename ThreadIterationGetter, template <typename, typename, typename> class Combiner, typename T>
-//template <typename ThreadIterationGetter, typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   const int numThreads = ThreadIterationGetter::size();
