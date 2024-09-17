@@ -18,3 +18,7 @@ raja_add_benchmark(
 raja_add_benchmark(
   NAME ltimes
   SOURCES ltimes.cpp)
+
+raja_add_bench_mark(
+  NAME raja_view_blur
+  SOURCES raja_view_blur.cpp)

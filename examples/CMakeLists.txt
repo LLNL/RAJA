@@ -4,10 +4,6 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME raja_view_slowdown
-  SOURCES raja_view_slowdown.cpp)
-
-raja_add_executable(
   NAME tut_launch_basic
   SOURCES tut_launch_basic.cpp)
 
