@@ -96,6 +96,19 @@ void ForallReduceMinLocBasicTestImpl(const SEG_TYPE& seg,
   });
   ASSERT_EQ(static_cast<DATA_TYPE>(min.getVal()), ref_min * factor);
   ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
+
+  min.set(min_init, minloc_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.getVal()), min_init);
+  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), minloc_init);
+
+  factor = 4;
+  RAJA::forall<EXEC_POLICY>(seg,
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
+      m.min( working_array[idx] * factor);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(min.getVal()), ref_min * factor);
+  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), minloc_init);
    
 
   deallocateForallTestData<DATA_TYPE>(working_res,

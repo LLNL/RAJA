@@ -61,20 +61,20 @@ namespace detail
     using value_type = T;
 
     RAJA_HOST_DEVICE Reducer() {}
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : target(target_in), val(VType{}){}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : target(target_in), valop_m(VType{}){}
 
     value_type *target = nullptr;
-    VType val = VType{};
+    VType valop_m = VType{};
 
     template <typename U = VType, std::enable_if_t<std::is_same<U,ValOp<T,Op>>::value>* = nullptr>
     RAJA_HOST_DEVICE
     value_type &
-    getVal() { return val.val; }
+    getVal() { return valop_m.val; }
 
     template <typename U = VType, std::enable_if_t<std::is_same<U,ValOp<ValLoc<T,IndexType>,Op>>::value>* = nullptr>
     RAJA_HOST_DEVICE
     value_type &
-    getVal() { return val.val.val; }
+    getVal() { return valop_m.val.val; }
 
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
     // Device related attributes.
@@ -84,7 +84,7 @@ namespace detail
 #endif
 
     using ARG_TUP_T = camp::tuple<VType*>;
-    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&val); }
+    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&valop_m); }
 
     using ARG_LIST_T = typename ARG_TUP_T::TList;
     static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value ;
