@@ -240,7 +240,7 @@ Feel free to experiment with them.
 One important item to note is that, by default, there is no bounds checking
 on indices passed to a ``RAJA::View`` data access method or ``RAJA::Layout``
 index computation methods. Therefore, it is the responsibility of a user
-to ensure that indices passed to ``RAJA::View`` and ``RAJA::Layoout``
+to ensure that indices passed to ``RAJA::View`` and ``RAJA::Layout``
 methods are in bounds to avoid accessing data outside
 of the View or computing invalid indices.
 
