@@ -98,18 +98,16 @@ void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
   ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max * factor);
   ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
 
-  max.set(max_init, maxloc_init);
-  ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), max_init);
-  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), maxloc_init);
- 
-  factor = 4;
+  VL_TYPE max2(max_init, maxloc_init);
+
   RAJA::forall<EXEC_POLICY>(seg,
     RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
-      m.max( working_array[idx] * factor);
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&max2),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE RAJA_UNUSED_ARG(idx), VL_LAMBDA_TYPE RAJA_UNUSED_ARG(&m), VL_LAMBDA_TYPE &m2) {
+      m2.max( max );
   });
-  ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max * factor);
-  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), maxloc_init);
+  ASSERT_EQ(static_cast<DATA_TYPE>(max2.getVal()), static_cast<DATA_TYPE>(max.getVal()));
+  ASSERT_EQ(static_cast<IDX_TYPE>(max2.getLoc()), static_cast<IDX_TYPE>(max.getLoc()));
 
 
   deallocateForallTestData<DATA_TYPE>(working_res,

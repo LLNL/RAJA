@@ -78,12 +78,11 @@ namespace expt
     RAJA_HOST_DEVICE constexpr explicit ValOp(valloc_value_type v) : val(v) {}
     RAJA_HOST_DEVICE constexpr ValOp(valloc_value_type v, valloc_index_type l) : val(v, l) {}
 
-    // Normal min and max for loc reducers.
     template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::minimum<value_type,value_type,value_type>>::value> * = nullptr>
-    RAJA_HOST_DEVICE constexpr T min(T v) { if (v < val.val) { val.val = v; return val.val; } return v; }
+    RAJA_HOST_DEVICE constexpr ValOp & min(value_type v) { if (v < val) { val = v; } return *this; }
 
     template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::maximum<value_type,value_type,value_type>>::value> * = nullptr>
-    RAJA_HOST_DEVICE constexpr T max(T v) { if (v > val.val) { val.val = v; return val.val; } return v; }
+    RAJA_HOST_DEVICE constexpr ValOp & max(value_type v) { if (v > val) { val = v; } return *this; }
 
     template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::minimum<value_type,value_type,value_type>>::value> * = nullptr>
     RAJA_HOST_DEVICE constexpr ValOp & minloc(valloc_value_type v, valloc_index_type l) { return min(value_type(v,l)); }
@@ -95,14 +94,6 @@ namespace expt
     RAJA_HOST_DEVICE constexpr bool operator>(const ValOp& rhs) const { return val > rhs.val; }
 
     value_type val = op_type::identity();
-
-    private:
-    // These are called by maxloc and minloc, and should not be available to the user.
-    template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::minimum<value_type,value_type,value_type>>::value> * = nullptr>
-    RAJA_HOST_DEVICE constexpr ValOp & min(value_type v) { if (v < val) { val = v; } return *this; }
-
-    template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::maximum<value_type,value_type,value_type>>::value> * = nullptr>
-    RAJA_HOST_DEVICE constexpr ValOp & max(value_type v) { if (v > val) { val = v; } return *this; }
   };
 
   template<typename T, typename IndexType, template <typename, typename, typename> class Op>
