@@ -8,23 +8,47 @@ namespace expt {
 namespace detail {
 
   // Init
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename VType>
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename D, typename I, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  init(Reducer<OP, T, VType>& red) {
+  init(Reducer<OP, T, VType, D, I, true>& red) {
     red.valop_m.val = OP<T,T,T>::identity();
   }
 
   // Combine
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename VType>
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename D, typename I, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  combine(Reducer<OP, T, VType>& out, const Reducer<OP, T, VType>& in) {
+  combine(Reducer<OP, T, VType, D, I, true>& out, const Reducer<OP, T, VType, D, I, true>& in) {
     out.valop_m.val = OP<T,T,T>{}(out.valop_m.val, in.valop_m.val);
   }
 
   // Resolve
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename VType>
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename D, typename I, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  resolve(Reducer<OP, T, VType>& red) {
+  resolve(Reducer<OP, T, VType, D, I, true>& red) {
+    *red.target = OP<T,T,T>{}(*red.target, red.valop_m.val);
+    *red.passthruval = red.valop_m.val.val;
+    *red.passthruindex = red.valop_m.val.loc;
+  }
+
+
+  // Init
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename D, typename I, typename VType>
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
+  init(Reducer<OP, T, VType, D, I, false>& red) {
+    red.valop_m.val = OP<T,T,T>::identity();
+  }
+
+  // Combine
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename D, typename I, typename VType>
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
+  combine(Reducer<OP, T, VType, D, I, false>& out, const Reducer<OP, T, VType, D, I, false>& in) {
+    out.valop_m.val = OP<T,T,T>{}(out.valop_m.val, in.valop_m.val);
+  }
+
+  // Resolve
+  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename D, typename I, typename VType>
+  camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
+  resolve(Reducer<OP, T, VType, D, I, false>& red) {
     *red.target = OP<T,T,T>{}(*red.target, red.valop_m.val);
   }
 

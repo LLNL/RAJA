@@ -55,16 +55,19 @@ namespace detail
   // Basic Reducer
   //
   //
-  template <template <typename, typename, typename> class Op, typename T, typename VType, typename IndexType = RAJA::Index_type>
+  template <template <typename, typename, typename> class Op, typename T, typename VType, typename DataType = T, typename IndexType = RAJA::Index_type, bool passthru = false>
   struct Reducer : public ForallParamBase {
     using op = Op<T,T,T>;
     using value_type = T;
 
     RAJA_HOST_DEVICE Reducer() {}
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : target(target_in), valop_m(VType{}){}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : valop_m(VType{}), target(target_in){}
+    RAJA_HOST_DEVICE Reducer(DataType *data_in, IndexType *index_in) : valop_m(VType(*data_in, *index_in)), target(&valop_m.val), passthruval(data_in), passthruindex(index_in) {}
 
-    value_type *target = nullptr;
     VType valop_m = VType{};
+    value_type *target = nullptr;
+    DataType *passthruval = nullptr;
+    IndexType *passthruindex = nullptr; 
 
     template <typename U = VType, std::enable_if_t<std::is_same<U,ValOp<T,Op>>::value>* = nullptr>
     RAJA_HOST_DEVICE
@@ -96,6 +99,13 @@ template <template <typename, typename, typename> class Op, typename T, typename
 auto constexpr Reduce(T *target)
 {
   return detail::Reducer<Op, T, VType>(target);
+}
+
+template <template <typename, typename, typename> class Op, typename T, typename IndexType = RAJA::Index_type, bool passingthru = true,
+          std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value> * = nullptr>
+auto constexpr ReduceLoc(T *target, IndexType *index)
+{
+  return detail::Reducer<Op, ValLoc<T, IndexType>, ValLocOp<T, IndexType, Op>, T, IndexType, passingthru>(target, index);
 }
 
 } // namespace expt
