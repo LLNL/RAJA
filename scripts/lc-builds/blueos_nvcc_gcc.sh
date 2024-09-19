@@ -44,6 +44,7 @@ cmake \
   -C ../host-configs/lc-builds/blueos/nvcc_gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
+  -DENABLE_BENCHMARKS=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER} \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER}/bin/nvcc \
   -DCMAKE_CUDA_ARCHITECTURES=${COMP_ARCH} \
