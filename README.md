@@ -71,8 +71,8 @@ More details about RAJA configuration options are located in the RAJA User Guide
 We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
 submodule or as an installed library.
 
-User Documentation
--------------------
+User Documentation and Tutorials
+--------------------------------
 
 The RAJA User Guide is the best place to start learning about RAJA and how to
 use it.
@@ -80,6 +80,8 @@ use it.
 The most recent version of the User Guide (RAJA develop branch): https://raja.readthedocs.io
 
 To access docs for other RAJA released versions: https://readthedocs.org/projects/raja/
+
+We maintain a repository for the RAJA portaility suite tutorial material: https://github.com/LLNL/raja-suite-tutorial
 
 To cite RAJA, please use the following references:
 
