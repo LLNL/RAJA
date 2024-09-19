@@ -60,9 +60,14 @@ namespace detail
     using op = Op<T,T,T>;
     using value_type = T;
 
-    RAJA_HOST_DEVICE Reducer() {}
+    RAJA_HOST_DEVICE Reducer() = default;
     RAJA_HOST_DEVICE Reducer(value_type *target_in) : valop_m(VType{}), target(target_in){}
     RAJA_HOST_DEVICE Reducer(DataType *data_in, IndexType *index_in) : valop_m(VType(*data_in, *index_in)), target(&valop_m.val), passthruval(data_in), passthruindex(index_in) {}
+
+    RAJA_HOST_DEVICE constexpr Reducer(Reducer const &) = default;
+    RAJA_HOST_DEVICE constexpr Reducer(Reducer &&) = default;
+    RAJA_HOST_DEVICE Reducer& operator=(Reducer const &) = default;
+    RAJA_HOST_DEVICE Reducer& operator=(Reducer &&) = default;
 
     VType valop_m = VType{};
     value_type *target = nullptr;
