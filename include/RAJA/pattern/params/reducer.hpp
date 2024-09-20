@@ -55,13 +55,19 @@ namespace detail
   // Basic Reducer
   //
   //
+
+  // For the standard use case, T can be a basic data type or a ValLoc, and DataType is the same as T.
+  // For the pass through use case, T is a ValLoc, and DataType is the underlying basic data type within the ValLoc.
+  // By default, we expect the standard use case, which is why passthru is set to false.
   template <template <typename, typename, typename> class Op, typename T, typename VType, typename DataType = T, typename IndexType = RAJA::Index_type, bool passthru = false>
   struct Reducer : public ForallParamBase {
     using op = Op<T,T,T>;
-    using value_type = T;
+    using value_type = T; // Can be basic data types, or ValLoc.
 
     RAJA_HOST_DEVICE Reducer() = default;
+    // Standard constructor
     RAJA_HOST_DEVICE Reducer(value_type *target_in) : valop_m(VType{}), target(target_in){}
+    // Pass through constructor
     RAJA_HOST_DEVICE Reducer(DataType *data_in, IndexType *index_in) : valop_m(VType(*data_in, *index_in)), target(&valop_m.val), passthruval(data_in), passthruindex(index_in) {}
 
     RAJA_HOST_DEVICE constexpr Reducer(Reducer const &) = default;
@@ -69,8 +75,18 @@ namespace detail
     RAJA_HOST_DEVICE Reducer& operator=(Reducer const &) = default;
     RAJA_HOST_DEVICE Reducer& operator=(Reducer &&) = default;
 
+    // VType should be a ValOp, and can accept basic data types or ValLoc's for T.
+    // Most internal reduction operations are performed on this.
+    // In the pass through use case, T is a ValLoc, and VType is ValOp<ValLoc>.
     VType valop_m = VType{};
+
+    // Points to the actual basic data type or ValLoc.
+    // This is set after valop_m has the final value.
     value_type *target = nullptr;
+
+    // Used when the pass through ReduceLoc(*data, *index) is called.
+    // These point to the actual data and index being passed in.
+    // These are set after valop_m has the final value.
     DataType *passthruval = nullptr;
     IndexType *passthruindex = nullptr; 
 
@@ -91,6 +107,7 @@ namespace detail
     unsigned int * device_count = nullptr;
 #endif
 
+    // These are types and parameters extracted from this struct, and given to the forall.
     using ARG_TUP_T = camp::tuple<VType*>;
     RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&valop_m); }
 
@@ -100,12 +117,14 @@ namespace detail
 
 } // namespace detail
 
+// Standard use case.
 template <template <typename, typename, typename> class Op, typename T, typename VType = ValOp<T, Op>>
 auto constexpr Reduce(T *target)
 {
   return detail::Reducer<Op, T, VType>(target);
 }
 
+// Pass through use case where reduction value and location are separate, non-ValLoc types.
 template <template <typename, typename, typename> class Op, typename T, typename IndexType = RAJA::Index_type, bool passingthru = true,
           std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value> * = nullptr>
 auto constexpr ReduceLoc(T *target, IndexType *index)
