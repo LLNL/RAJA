@@ -241,7 +241,7 @@ RAJA::expt::Reduce
           object for ``RAJA::forall``.
 
 .. important:: The order of the local reduction variables in the
-               kernel body lambda expression must be ``RAJA::expt::ValOp``s which
+               kernel body lambda expression must ``RAJA::expt::ValOp`` objects which
                match exactly in the underlying reduction data type, and RAJA
                operator, with the corresponding ``RAJA::expt::Reduce`` arguments
                to the ``RAJA::forall`` to ensure that the correct result is obtained.
