@@ -190,6 +190,9 @@ RAJA::expt::Reduce
 ..................
 ::
 
+  using VALOP_DOUBLE_SUM = RAJA::expt::ValOp<double, RAJA::operators::plus>;
+  using VALOP_DOUBLE_MIN = RAJA::expt::ValOp<double, RAJA::operators::minimum>;
+
   double* a = ...;
 
   double rs = 0.0;
@@ -198,9 +201,9 @@ RAJA::expt::Reduce
   RAJA::forall<EXEC_POL> ( Res, Seg,
   RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
   RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
-  [=] (int i, double& _rs, double& _rm) {
+  [=] (int i, VALOP_DOUBLE_SUM& _rs, VALOP_DOUBLE_MIN& _rm) {
     _rs += a[i];
-    _rm = RAJA_MIN(a[i], _rm);
+    _rm.min(a[i]);
   }
   );
 
@@ -213,13 +216,14 @@ RAJA::expt::Reduce
   above. The reduction operation will include the existing value of
   the given target variable.
 * The kernel body lambda expression passed to ``RAJA::forall`` must have a
-  parameter corresponding to each ``RAJA::expt::Reduce`` argument, ``_rs`` and
-  ``_rm`` in the example code. These parameters refer to a local target for each
-  reduction operation. It is important to note that the parameters follow the
-  kernel iteration variable, ``i`` in this case, and appear in the same order
-  as the corresponding ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The
-  parameter types must be references to the types used in the
-  ``RAJA::expt::Reduce`` arguments.
+  ``RAJA::expt::ValOp`` parameter corresponding to each ``RAJA::expt::Reduce``
+  argument, ``_rs`` and ``_rm`` in the example code. These parameters refer to a
+  local target for each reduction operation. Each ``ValOp`` needs to be templated
+  on the underlying data type (``double`` for ``_rs`` and ``_rm``), and the operator
+  being used. It is important to note that the parameters follow the kernel iteration
+  variable, ``i`` in this case, and appear in the same order as the corresponding
+  ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The parameter types must be
+  references to the types used in the ``RAJA::expt::Reduce`` arguments.
 * The local variables referred to by ``_rs`` and ``_rm`` are initialized with
   the *identity* of the reduction operation to be performed.
 * The local variables are updated in the user supplied lambda.
@@ -236,10 +240,11 @@ RAJA::expt::Reduce
           compatible with the ``EXEC_POL``. ``Seg`` is the iteration space
           object for ``RAJA::forall``.
 
-.. important:: The order and types of the local reduction variables in the
-               kernel body lambda expression must match exactly with the
-               corresponding ``RAJA::expt::Reduce`` arguments to the
-               ``RAJA::forall`` to ensure that the correct result is obtained.
+.. important:: The order of the local reduction variables in the
+               kernel body lambda expression must be ``RAJA::expt::ValOp``s which
+               match exactly in the underlying reduction data type, and RAJA
+               operator, with the corresponding ``RAJA::expt::Reduce`` arguments
+               to the ``RAJA::forall`` to ensure that the correct result is obtained.
 
 RAJA::expt::ValLoc
 ..................
@@ -247,27 +252,61 @@ RAJA::expt::ValLoc
 As with the current RAJA reduction interface, the new interface supports *loc*
 reductions, which provide the ability to get a kernel/loop index at which the
 final reduction value was found. With this new interface, *loc* reductions
-are performed using ``ValLoc<T>`` types. Since they are strongly typed, they
-provide ``min()`` and ``max()`` operations that are equivalent to using
-``RAJA_MIN()`` or ``RAJA_MAX`` macros as demonstrated in the code example below.
-Users must use the ``getVal()`` and ``getLoc()`` methods to access the reduction
-results::
+are performed using ``ValLoc<T,I>`` types, where ``T`` is the underlying data type,
+and ``I`` is the index type. Users must use the ``getVal()`` and ``getLoc()``
+methods to access the reduction results.
+
+In the kernel body lambda expression, a ``ValLoc<T,I>`` must be wrapped in a
+``ValOp``, and passed to the lambda in the same order as the corresponding 
+``RAJA::expt::Reduce`` arguments, e.g. ``ValOp<ValLoc<T,I>, minimum>``.
+For convenience, the alias of ``RAJA::expt::ValLocOp<T,I,Op>`` can be used.
+Within the lambda, this ``ValLocOp`` object provides ``minloc``, and ``maxloc``
+functions::
 
   double* a = ...;
+
+  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOp<ValLoc<double, RAJA::Index_type>,
+                                                       RAJA::expt::minimum>;
 
   using VL_DOUBLE = RAJA::expt::ValLoc<double>;
   VL_DOUBLE rm_loc;
 
   RAJA::forall<EXEC_POL> ( Res, Seg,
   RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc),
-  [=] (int i, VL_DOUBLE& _rm_loc) {
-    _rm_loc = RAJA_MIN(VL_DOUBLE(a[i], i), _rm_loc);
-    //_rm_loc.min(VL_DOUBLE(a[i], i)); // Alternative to RAJA_MIN
+  [=] (int i, VALOPLOC_DOUBLE_MIN& _rm_loc) {
+    _rm_loc.minloc(a[i], i);
   }
   );
 
   std::cout << rm_loc.getVal() ...
   std::cout << rm_loc.getLoc() ...
+
+Alternatively, *loc* reductions can be performed on separate reduction data, and
+location variables without a ``ValLoc``. The change required is to pass
+a ``RAJA::expt::ReduceLoc`` argument to the forall, templated on the reduction
+operation, and passing in references to the data and location in that respective
+order. The data and location can be accessed outside for the forall directly
+without ``getVal()`` or ``getLoc()`` functions.
+:: 
+
+  double* a = ...;
+
+  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOp<ValLoc<double, RAJA::Index_type>,
+                                                       RAJA::expt::minimum>;
+
+  double rm;
+  RAJA::Index_type loc;
+
+  RAJA::forall<EXEC_POL> ( Res, Seg,
+  RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&rm, &loc),
+  [=] (int i, VALOPLOC_DOUBLE_MIN& _rm_loc) {
+    _rm_loc.minloc(a[i], i);
+  }
+  );
+
+  std::cout << rm ...
+  std::cout << loc ...
+
 
 Lambda Arguments
 ................
@@ -276,6 +315,10 @@ This interface takes advantage of C++ parameter packs to allow users to pass
 any number of ``RAJA::expt::Reduce`` objects to the ``RAJA::forall`` method::
 
   double* a = ...;
+
+  using VALOP_DOUBLE_SUM = RAJA::expt::ValOp<double, RAJA::operators::plus>;
+  using VALOP_DOUBLE_MIN = RAJA::expt::ValOp<double, RAJA::operators::minimum>;
+  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValLocOp<double, RAJA::Index_type, RAJA::operators::minimum>;
 
   using VL_DOUBLE = RAJA::expt::ValLoc<double>;
   VL_DOUBLE rm_loc;
@@ -287,10 +330,13 @@ any number of ``RAJA::expt::Reduce`` objects to the ``RAJA::forall`` method::
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),     // --> 1 double added
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc), // --> 1 VL_DOUBLE added
     RAJA::expt::KernelName("MyFirstRAJAKernel"),           // --> NO args added
-    [=] (int i, double& _rs, double& _rm, VL_DOUBLE& _rm_loc) {
+    [=] (int i,
+         VALOP_DOUBLE_SUM& _rs,
+         VALOP_DOUBLE_MIN& _rm,
+         VALOPLOC_DOUBLE_MIN& _rm_loc) {
       _rs += a[i];
-      _rm = RAJA_MIN(a[i], _rm);
-      _rm_loc.min(VL_DOUBLE(a[i], i));
+      _rm.min(a[i]);
+      _rm_loc.minloc(a[i], i);
     }
   );
 
@@ -300,9 +346,10 @@ any number of ``RAJA::expt::Reduce`` objects to the ``RAJA::forall`` method::
   std::cout << rm_loc.getLoc() ...
 
 Again, the lambda expression parameters are in the same order as
-the ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. Both the types and
-order of the parameters must match to get correct results and to compile
-successfully. Otherwise, a static assertion will be triggered::
+the ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The ``ValOp`` underlying
+data types and operators, and order of the ``ValOp`` parameters must match 
+the corresponding ``RAJA::expt::Reduce`` types to get correct results and to
+compile successfully. Otherwise, a static assertion will be triggered::
 
   LAMBDA Not invocable w/ EXPECTED_ARGS.
 
@@ -329,6 +376,9 @@ The usage of the experiemental reductions is similar to the forall example as il
 
   double* a = ...;
 
+  using VALOP_DOUBLE_SUM = RAJA::expt::ValOp<double, RAJA::operators::plus>;
+  using VALOP_DOUBLE_MIN = RAJA::expt::ValOp<double, RAJA::operators::minimum>;
+
   double rs = 0.0;
   double rm = 1e100;
 
@@ -336,12 +386,12 @@ The usage of the experiemental reductions is similar to the forall example as il
     RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
     "LaunchReductionKernel",
-    [=] RAJA_HOST_DEVICE (int i, double& _rs, double& _rm) {
+    [=] RAJA_HOST_DEVICE (int i, VALOP_DOUBLE_SUM& _rs, VALOP_DOUBLE_MIN& _rm) {
 
       RAJA::loop<loop_pol>(ctx, Seg, [&] (int i) {
 
         _rs += a[i];
-        _rm = RAJA_MIN(a[i], _rm);
+        _rm.min(a[i], _rm);
 
         }
       );
