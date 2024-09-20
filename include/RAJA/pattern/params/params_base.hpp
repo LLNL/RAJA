@@ -12,14 +12,14 @@ namespace expt
     using index_type = IndexType;
     using value_type = T;
 
-    RAJA_HOST_DEVICE constexpr ValLoc() = default;
+    ValLoc() = default;
     RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v) {}
     RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v, index_type l) : val(v), loc(l) {}
 
-    RAJA_HOST_DEVICE constexpr ValLoc(ValLoc const &) = default;
-    RAJA_HOST_DEVICE constexpr ValLoc(ValLoc &&) = default;
-    RAJA_HOST_DEVICE ValLoc& operator=(ValLoc const &) = default;
-    RAJA_HOST_DEVICE ValLoc& operator=(ValLoc &&) = default;
+    ValLoc(ValLoc const &) = default;
+    ValLoc(ValLoc &&) = default;
+    ValLoc& operator=(ValLoc const &) = default;
+    ValLoc& operator=(ValLoc &&) = default;
 
     RAJA_HOST_DEVICE constexpr bool operator<(const ValLoc& rhs) const { return val < rhs.val; }
     RAJA_HOST_DEVICE constexpr bool operator>(const ValLoc& rhs) const { return val > rhs.val; }
@@ -38,13 +38,13 @@ namespace expt
     using value_type = T;
     using op_type = Op<T,T,T>;
 
-    RAJA_HOST_DEVICE constexpr ValOp() = default;
+    ValOp() = default;
     RAJA_HOST_DEVICE constexpr explicit ValOp(value_type v) : val(v) {}
 
-    RAJA_HOST_DEVICE constexpr ValOp(ValOp const &) = default;
-    RAJA_HOST_DEVICE constexpr ValOp(ValOp &&) = default;
-    RAJA_HOST_DEVICE ValOp& operator=(ValOp const &) = default;
-    RAJA_HOST_DEVICE ValOp& operator=(ValOp &&) = default;
+    ValOp(ValOp const &) = default;
+    ValOp(ValOp &&) = default;
+    ValOp& operator=(ValOp const &) = default;
+    ValOp& operator=(ValOp &&) = default;
 
     template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::minimum<T,T,T>>::value> * = nullptr>
     RAJA_HOST_DEVICE constexpr ValOp & min(value_type v) { if (v < val) { val = v; } return *this; }
@@ -80,14 +80,14 @@ namespace expt
     using valloc_value_type = typename value_type::value_type;
     using valloc_index_type = typename value_type::index_type;
 
-    RAJA_HOST_DEVICE constexpr ValOp() = default;
+    ValOp() = default;
     RAJA_HOST_DEVICE constexpr explicit ValOp(value_type v) : val(v) {}
     RAJA_HOST_DEVICE constexpr explicit ValOp(valloc_value_type v, valloc_index_type l) : val(v, l) {}
 
-    RAJA_HOST_DEVICE constexpr ValOp(ValOp const &) = default;
-    RAJA_HOST_DEVICE constexpr ValOp(ValOp &&) = default;
-    RAJA_HOST_DEVICE ValOp& operator=(ValOp const &) = default;
-    RAJA_HOST_DEVICE ValOp& operator=(ValOp &&) = default;
+    ValOp(ValOp const &) = default;
+    ValOp(ValOp &&) = default;
+    ValOp& operator=(ValOp const &) = default;
+    ValOp& operator=(ValOp &&) = default;
 
     template <typename U = op_type, std::enable_if_t<std::is_same<U, RAJA::operators::minimum<value_type,value_type,value_type>>::value> * = nullptr>
     RAJA_HOST_DEVICE constexpr ValOp & min(value_type v) { if (v < val) { val = v; } return *this; }
