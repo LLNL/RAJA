@@ -324,53 +324,6 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce( T * device_target,
   }
 }
 
-template <typename GlobalIterationGetter, template <typename, typename, typename> class OP, typename T>
-RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T, T>& red)
-{
-  using BlockIterationGetter = typename get_index_block<GlobalIterationGetter>::type;
-  using ThreadIterationGetter = typename get_index_thread<GlobalIterationGetter>::type;
-
-  const int numBlocks = BlockIterationGetter::size();
-  const int numThreads = ThreadIterationGetter::size();
-  const unsigned int wrap_around = numBlocks - 1;
-
-  const int blockId = BlockIterationGetter::index();
-  const int threadId = ThreadIterationGetter::index();
-
-  T temp = block_reduce<ThreadIterationGetter, OP>(red.val, OP<T,T,T>::identity());
-
-  // one thread per block writes to device_mem
-  bool lastBlock = false;
-  if (threadId == 0) {
-    red.device_mem.set(blockId, temp);
-    // ensure write visible to all threadblocks
-    __threadfence();
-    // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(red.device_count, wrap_around);
-    lastBlock = (old_count == wrap_around);
-  }
-
-  // returns non-zero value if any thread passes in a non-zero value
-  lastBlock = __syncthreads_or(lastBlock);
-
-  // last block accumulates values from device_mem
-  if (lastBlock) {
-    temp = OP<T,T,T>::identity();
-    __threadfence();
-
-    for (int i = threadId; i < numBlocks; i += numThreads) {
-      temp = OP<T,T,T>{}(temp, red.device_mem.get(i));
-    }
-
-    temp = block_reduce<ThreadIterationGetter, OP>(temp, OP<T,T,T>::identity());
-
-    // one thread returns value
-    if (threadId == 0) {
-      *(red.devicetarget) = temp;
-    }
-  }
-}
-
 } //  namespace expt
 
 
