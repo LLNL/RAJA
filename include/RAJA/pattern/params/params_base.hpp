@@ -14,7 +14,7 @@ namespace expt
 
     ValLoc() = default;
     RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v) {}
-    RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v, index_type l) : val(v), loc(l) {}
+    RAJA_HOST_DEVICE constexpr ValLoc(value_type v, index_type l) : val(v), loc(l) {}
 
     ValLoc(ValLoc const &) = default;
     ValLoc(ValLoc &&) = default;
@@ -28,6 +28,8 @@ namespace expt
     RAJA_HOST_DEVICE constexpr const index_type& getLoc() const {return loc;}
 
     RAJA_HOST_DEVICE void set(T inval, IndexType inindex) {val = inval; loc = inindex;}
+    RAJA_HOST_DEVICE void setVal(T inval) {val = inval;}
+    RAJA_HOST_DEVICE void setLoc(IndexType inindex) {loc = inindex;}
 
     value_type val;
     index_type loc = -1;
@@ -82,7 +84,7 @@ namespace expt
 
     ValOp() = default;
     RAJA_HOST_DEVICE constexpr explicit ValOp(value_type v) : val(v) {}
-    RAJA_HOST_DEVICE constexpr explicit ValOp(valloc_value_type v, valloc_index_type l) : val(v, l) {}
+    RAJA_HOST_DEVICE constexpr ValOp(valloc_value_type v, valloc_index_type l) : val(v, l) {}
 
     ValOp(ValOp const &) = default;
     ValOp(ValOp &&) = default;
