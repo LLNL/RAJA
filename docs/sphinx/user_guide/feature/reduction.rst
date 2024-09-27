@@ -263,7 +263,7 @@ methods to access the reduction results.
 In the kernel body lambda expression, a ``ValLoc<T,I>`` must be wrapped in a
 ``ValOp``, and passed to the lambda in the same order as the corresponding 
 ``RAJA::expt::Reduce`` arguments, e.g. ``ValOp<ValLoc<T,I>, Op>``.
-For convenience, the alias of ``RAJA::expt::ValLocOp<T,I,Op>`` can be used.
+For convenience, an alias of ``RAJA::expt::ValLocOp<T,I,Op>`` is provided.
 Within the lambda, this ``ValLocOp`` object provides ``minloc``, and ``maxloc``
 functions::
 
@@ -271,7 +271,7 @@ functions::
 
   using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOp<ValLoc<double, RAJA::Index_type>,
                                                        RAJA::operators::minimum>;
-  using VALOPLOC_DOUBLE_MAX = RAJA::expt::ValOpLoc<double, RAJA::Index_type,
+  using VALOPLOC_DOUBLE_MAX = RAJA::expt::ValLocOp<double, RAJA::Index_type,
                                                    RAJA::operators::minimum>;
 
   using VL_DOUBLE = RAJA::expt::ValLoc<double>;
@@ -302,7 +302,7 @@ the forall directly without ``getVal()`` or ``getLoc()`` functions.
 
   double* a = ...;
 
-  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOpLoc<double, RAJA::Index_type,
+  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValLocOp<double, RAJA::Index_type,
                                                    RAJA::operators::minimum>;
 
   // No ValLoc needed from the user here.
