@@ -240,11 +240,15 @@ RAJA::expt::Reduce
           compatible with the ``EXEC_POL``. ``Seg`` is the iteration space
           object for ``RAJA::forall``.
 
-.. important:: The order of the local reduction variables in the
-               kernel body lambda expression must ``RAJA::expt::ValOp`` objects which
-               match exactly in the underlying reduction data type, and RAJA
-               operator, with the corresponding ``RAJA::expt::Reduce`` arguments
-               to the ``RAJA::forall`` to ensure that the correct result is obtained.
+.. important:: The local reduction arguments to the lambda expression must be
+               ``RAJA::expt::ValOp`` references. Each ``ValOp`` references
+               corresponds to a ``RAJA::expt::Reduce`` call within the forall
+               arguments. The ``ValOp`` reduction data type and RAJA operator need
+               to match the data type referenced and operator template argument
+               in the ``RAJA::expt::Reduce`` call. Finally, the ordering of the
+               ``ValOp`` references must correspond to the ordering of the
+               ``RAJA::expt::Reduce`` calls to ensure that the correct result is
+               obtained.
 
 RAJA::expt::ValLoc
 ..................
@@ -258,7 +262,7 @@ methods to access the reduction results.
 
 In the kernel body lambda expression, a ``ValLoc<T,I>`` must be wrapped in a
 ``ValOp``, and passed to the lambda in the same order as the corresponding 
-``RAJA::expt::Reduce`` arguments, e.g. ``ValOp<ValLoc<T,I>, minimum>``.
+``RAJA::expt::Reduce`` arguments, e.g. ``ValOp<ValLoc<T,I>, Op>``.
 For convenience, the alias of ``RAJA::expt::ValLocOp<T,I,Op>`` can be used.
 Within the lambda, this ``ValLocOp`` object provides ``minloc``, and ``maxloc``
 functions::
@@ -266,34 +270,42 @@ functions::
   double* a = ...;
 
   using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOp<ValLoc<double, RAJA::Index_type>,
-                                                       RAJA::expt::minimum>;
+                                                       RAJA::operators::minimum>;
+  using VALOPLOC_DOUBLE_MAX = RAJA::expt::ValOpLoc<double, RAJA::Index_type,
+                                                   RAJA::operators::minimum>;
 
   using VL_DOUBLE = RAJA::expt::ValLoc<double>;
-  VL_DOUBLE rm_loc;
+  VL_DOUBLE rmin_loc;
+  VL_DOUBLE rmax_loc;
 
   RAJA::forall<EXEC_POL> ( Res, Seg,
-  RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc),
-  [=] (int i, VALOPLOC_DOUBLE_MIN& _rm_loc) {
-    _rm_loc.minloc(a[i], i);
+  RAJA::expt::Reduce<RAJA::operators::minimum>(&rmin_loc),
+  RAJA::expt::Reduce<RAJA::operators::maximum>(&rmax_loc),
+  [=] (int i, VALOPLOC_DOUBLE_MIN& _rmin_loc, VALOPLOC_DOUBLE_MAX& _rmax_loc) {
+    _rmin_loc.minloc(a[i], i);
+    _rmax_loc.minloc(a[i], i);
   }
   );
 
-  std::cout << rm_loc.getVal() ...
-  std::cout << rm_loc.getLoc() ...
+  std::cout << rmin_loc.getVal() ...
+  std::cout << rmin_loc.getLoc() ...
+  std::cout << rmax_loc.getVal() ...
+  std::cout << rmax_loc.getLoc() ...
 
 Alternatively, *loc* reductions can be performed on separate reduction data, and
-location variables without a ``ValLoc``. The change required is to pass
-a ``RAJA::expt::ReduceLoc`` argument to the forall, templated on the reduction
-operation, and passing in references to the data and location in that respective
-order. The data and location can be accessed outside for the forall directly
-without ``getVal()`` or ``getLoc()`` functions.
+location variables without a ``ValLoc`` object. To use this capability, a
+``RAJA::expt::ReduceLoc`` call must be passed to the ``RAJA::forall``, templated on
+the reduction operation, and passing in references to the data and location as
+``ReduceLoc`` function arguments. The data and location can be accessed outside of
+the forall directly without ``getVal()`` or ``getLoc()`` functions.
 :: 
 
   double* a = ...;
 
-  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOp<ValLoc<double, RAJA::Index_type>,
-                                                       RAJA::expt::minimum>;
+  using VALOPLOC_DOUBLE_MIN = RAJA::expt::ValOpLoc<double, RAJA::Index_type,
+                                                   RAJA::operators::minimum>;
 
+  // No ValLoc needed from the user here.
   double rm;
   RAJA::Index_type loc;
 
