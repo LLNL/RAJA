@@ -274,13 +274,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&omp_t_max2, &omp_t_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce Target OpenMP Kernel"),
     [=](int i,
-				VALOP_INT_SUM &_omp_t_sum,
-				VALOP_INT_MIN &_omp_t_min,
-				VALOP_INT_MAX &_omp_t_max,
-				VALOPLOC_INT_MIN &_omp_t_minloc,
-				VALOPLOC_INT_MAX &_omp_t_maxloc,
-				VALOPLOC_INT_MIN &_omp_t_minloc2,
-				VALOPLOC_INT_MAX &_omp_t_maxloc2) {
+        VALOP_INT_SUM &_omp_t_sum,
+        VALOP_INT_MIN &_omp_t_min,
+        VALOP_INT_MAX &_omp_t_max,
+        VALOPLOC_INT_MIN &_omp_t_minloc,
+        VALOPLOC_INT_MAX &_omp_t_maxloc,
+        VALOPLOC_INT_MIN &_omp_t_minloc2,
+        VALOPLOC_INT_MAX &_omp_t_maxloc2) {
       _omp_t_sum += a[i];
 
       _omp_t_min.min(a[i]);
@@ -483,13 +483,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&sycl_max2, &sycl_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce SYCL Kernel"),
     [=] RAJA_DEVICE ( int i,
-				              VALOP_INT_SUM &_sycl_sum,
-				              VALOP_INT_MIN &_sycl_min,
-				              VALOP_INT_MAX &_sycl_max,
-				              VALOPLOC_INT_MIN &_sycl_minloc,
-				              VALOPLOC_INT_MAX &_sycl_maxloc,
-				              VALOPLOC_INT_MIN &_sycl_minloc2,
-				              VALOPLOC_INT_MAX &_sycl_maxloc2) {
+                      VALOP_INT_SUM &_sycl_sum,
+                      VALOP_INT_MIN &_sycl_min,
+                      VALOP_INT_MAX &_sycl_max,
+                      VALOPLOC_INT_MIN &_sycl_minloc,
+                      VALOPLOC_INT_MAX &_sycl_maxloc,
+                      VALOPLOC_INT_MIN &_sycl_minloc2,
+                      VALOPLOC_INT_MAX &_sycl_maxloc2) {
       _sycl_sum += d_a[i];
 
       _sycl_min.min(d_a[i]);
