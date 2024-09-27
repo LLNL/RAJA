@@ -142,7 +142,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 32 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 32*65536 + (rand()/RAND_MAX);
+  const int num_z = 32*657 + (rand()/RAND_MAX);
 
 #endif
 
