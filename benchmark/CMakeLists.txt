@@ -17,10 +17,11 @@ raja_add_benchmark(
   SOURCES benchmark-atomic.cpp)
 endif()
 
-raja_add_benchmark(
-  NAME ltimes
-  SOURCES ltimes.cpp)
+#TODO: Fix build issues
+#raja_add_benchmark(
+#  NAME ltimes
+#  SOURCES ltimes.cpp)
 
-raja_add_bench_mark(
+raja_add_benchmark(
   NAME raja_view_blur
   SOURCES raja_view_blur.cpp)

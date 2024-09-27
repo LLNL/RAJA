@@ -15,7 +15,19 @@
  *
  */
 
-#if defined(RAJA_ENABLE_HIP)
+//Uncomment to specify variant
+//#define RUN_HIP_VARIANT
+//#define RUN_CUDA_VARIANT
+//#define RUN_SYCL_VARIANT
+//#define RUN_OPENMP_VARIANT
+#define RUN_SEQ_VARIANT
+
+
+using host_pol = RAJA::seq_exec;
+using host_resources = RAJA::resources::Host;
+
+
+#if defined(RAJA_ENABLE_HIP) && defined(RUN_HIP_VARIANT)
 using device_pol = RAJA::hip_exec<256>;
 using device_resources = RAJA::resource::Hip;
 
@@ -28,7 +40,9 @@ using kernel_pol = RAJA::KernelPolicy<
     >
    >
   >;
-#elif defined(RAJA_ENABLE_CUDA)
+#endif
+
+#if defined(RAJA_ENABLE_CUDA) && defined(RUN_CUDA_VARIANT)
 using device_pol = RAJA::cuda_exec<256>;
 using device_resources = RAJA::resources::Cuda;
 
@@ -41,33 +55,68 @@ using kernel_pol = RAJA::KernelPolicy<
     >
    >
   >;
-#else
-using host_pol = RAJA::seq_exec;
-using device_resources = RAJA::resources::Host;
 #endif
 
-using host_resources = RAJA::resources::Host;
+#if defined(RAJA_ENABLE_SYCL) && defined(RUN_SYCL_VARIANT)
+using device_pol = RAJA::sycl_exec<256>;
+using device_resources = RAJA::resources::Sycl;
+
+using kernel_pol = RAJA::KernelPolicy<
+  RAJA::statement::SyclKernel<
+    RAJA::statement::For<1, RAJA::sycl_global_item_1,
+      RAJA::statement::For<0, RAJA::sycl_global_item_2,
+         RAJA::statement::Lambda<0>
+      >
+    >
+   >
+  >;
+#endif
+
+#if defined(RAJA_ENABLE_OPENMP) && defined(RUN_OPENMP_VARIANT)
+using device_pol = RAJA::omp_parallel_for_exec;
+using device_resources = RAJA::resources::Host;
+
+using kernel_pol = RAJA::KernelPolicy<
+    RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+      RAJA::statement::For<0, RAJA::seq_exec,
+         RAJA::statement::Lambda<0>
+      >
+    >
+  >;
+#endif
+
+#if defined(RUN_SEQ_VARIANT)
+using device_pol = RAJA::seq_exec;
+using device_resources =  RAJA::resources::Host;
+
+using kernel_pol = RAJA::KernelPolicy<
+    RAJA::statement::For<1, RAJA::seq_exec,
+      RAJA::statement::For<0, RAJA::seq_exec,
+         RAJA::statement::Lambda<0>
+      >
+    >
+  >;
+#endif
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   const int N = 10000;
   const int K = 17;
-  
+
   device_resources def_device_res{device_resources::get_default()};
   host_resources   def_host_res{host_resources::get_default()};
-  
+
   auto timer = RAJA::Timer();
-  
+
   //launch to intialize the stream
   RAJA::forall<device_pol>
-    (RAJA::RangeSegment(0,1), [=] RAJA_DEVICE (int i) {
-      printf(" \n");
+    (RAJA::RangeSegment(0,1), [=] RAJA_HOST_DEVICE (int i) {
   });
 
   int * array      = def_host_res.allocate<int>(N * N);
   int * array_copy = def_host_res.allocate<int>(N * N);
-  
+
   //big array, or image
   for (int i = 0; i < N * N; ++i) {
     array[i] = 1;
@@ -75,7 +124,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   //small array that acts as the blur
-  //int* kernel = new int[K * K];
   int * kernel  = def_host_res.allocate<int>(K * K);
   for (int i = 0; i < K * K; ++i) {
     kernel[i] = 2;
@@ -102,7 +150,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::kernel<kernel_pol>
     (RAJA::make_tuple(range_i, range_j),
-     [=] RAJA_DEVICE (int i, int j) {
+     [=] RAJA_HOST_DEVICE (int i, int j) {
       int sum = 0;
 
       //looping through the "blur"
@@ -129,10 +177,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
  timer.reset();
  timer.start();
- 
+
   RAJA::kernel<kernel_pol>
     (RAJA::make_tuple(range_i, range_j),
-     [=] RAJA_DEVICE (int i, int j) {
+     [=] RAJA_HOST_DEVICE (int i, int j) {
       int sum = 0;
 
       // looping through the "blur"
@@ -161,10 +209,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   def_device_res.deallocate(d_array);
   def_device_res.deallocate(d_array_copy);
   def_device_res.deallocate(d_kernel);
-    
+
   def_host_res.deallocate(array);
   def_host_res.deallocate(array_copy);
   def_host_res.deallocate(kernel);
-  
+
   return 0;
 }
