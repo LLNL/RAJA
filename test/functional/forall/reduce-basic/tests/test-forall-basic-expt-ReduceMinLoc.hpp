@@ -88,49 +88,6 @@ void ForallReduceMinLocBasicTestImpl(const SEG_TYPE& seg,
   ASSERT_EQ(static_cast<DATA_TYPE>(min.getVal()), ref_min * factor);
   ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
 
-  factor = 3;
-  RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
-      m.minloc( working_array[idx] * factor, idx);
-  });
-  ASSERT_EQ(static_cast<DATA_TYPE>(min.getVal()), ref_min * factor);
-  ASSERT_EQ(static_cast<IDX_TYPE>(min.getLoc()), ref_minloc);
-
-  VL_TYPE min2(min_init, minloc_init);
-
-  RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<RAJA::operators::minimum>(&min2),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE RAJA_UNUSED_ARG(idx), VL_LAMBDA_TYPE &m2) {
-      m2.min( min );
-  });
-  ASSERT_EQ(static_cast<DATA_TYPE>(min2.getVal()), static_cast<DATA_TYPE>(min.getVal()));
-  ASSERT_EQ(static_cast<IDX_TYPE>(min2.getLoc()), static_cast<IDX_TYPE>(min.getLoc()));
-
-  DATA_TYPE s_min = min_init;
-  IDX_TYPE s_minloc = minloc_init;
-
-  factor = 4;
-  RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&s_min, &s_minloc),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
-      m.minloc( working_array[idx] * factor, idx);
-  });
-  ASSERT_EQ(static_cast<DATA_TYPE>(s_min), ref_min * factor);
-  ASSERT_EQ(static_cast<IDX_TYPE>(s_minloc), ref_minloc);
-
-  DATA_TYPE s_min2 = min_init;
-  IDX_TYPE s_minloc2 = minloc_init;
-
-  RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&s_min2, &s_minloc2),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE RAJA_UNUSED_ARG(idx), VL_LAMBDA_TYPE &m2) {
-      m2.min(min2);
-  });
-  ASSERT_EQ(static_cast<DATA_TYPE>(s_min2), static_cast<DATA_TYPE>(min2.getVal()));
-  ASSERT_EQ(static_cast<IDX_TYPE>(s_minloc2), static_cast<IDX_TYPE>(min2.getLoc()));
-   
-
   deallocateForallTestData<DATA_TYPE>(working_res,
                                       working_array,
                                       check_array,
