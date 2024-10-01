@@ -38,7 +38,7 @@ DATE=$(printf '%(%Y-%m-%d)T\n' -1)
 export PATH=${SYCL_PATH}/bin:$PATH
 export LD_LIBRARY_PATH=${SYCL_PATH}/lib:${SYCL_PATH}/lib64:$LD_LIBRARY_PATH
 
-module load cmake/3.24.2
+module load cmake/3.23.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
