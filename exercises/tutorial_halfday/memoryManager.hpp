@@ -28,12 +28,12 @@ namespace memoryManager
 {
 
 template <typename T>
-T* allocate(RAJA::Index_type size)
+T *allocate(RAJA::Index_type size)
 {
-  T* ptr;
+  T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(
-      cudaMallocManaged((void**)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
+      cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
 #else
   ptr = new T[size];
 #endif
@@ -41,10 +41,9 @@ T* allocate(RAJA::Index_type size)
 }
 
 template <typename T>
-void deallocate(T*& ptr)
+void deallocate(T *&ptr)
 {
-  if (ptr)
-  {
+  if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(ptr));
 #else
@@ -55,31 +54,30 @@ void deallocate(T*& ptr)
 }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-template <typename T>
-T* allocate_gpu(RAJA::Index_type size)
-{
-  T* ptr;
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMalloc((void**)&ptr, sizeof(T) * size));
-#elif defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipMalloc((void**)&ptr, sizeof(T) * size));
-#endif
-  return ptr;
-}
-
-template <typename T>
-void deallocate_gpu(T*& ptr)
-{
-  if (ptr)
+  template <typename T>
+  T *allocate_gpu(RAJA::Index_type size)
   {
+    T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaMalloc((void **)&ptr, sizeof(T) * size));
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipFree(ptr));
+    hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #endif
-    ptr = nullptr;
+    return ptr;
   }
-}
+
+  template <typename T>
+  void deallocate_gpu(T *&ptr)
+  {
+    if (ptr) {
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk(cudaFree(ptr));
+#elif defined(RAJA_ENABLE_HIP)
+      hipErrchk(hipFree(ptr));
+#endif
+      ptr = nullptr;
+    }
+  }
 #endif
 
 };  // namespace memoryManager

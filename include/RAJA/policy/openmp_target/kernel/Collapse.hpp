@@ -15,17 +15,14 @@ namespace RAJA
 namespace internal
 {
 
-template <
-    camp::idx_t Arg0,
-    camp::idx_t Arg1,
-    typename... EnclosedStmts,
-    typename Types>
-struct StatementExecutor<
-    statement::Collapse<
-        omp_target_parallel_collapse_exec,
-        ArgList<Arg0, Arg1>,
-        EnclosedStmts...>,
-    Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
+                                             ArgList<Arg0, Arg1>,
+                                             EnclosedStmts...>,
+                         Types>
 {
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
@@ -55,18 +52,15 @@ struct StatementExecutor<
   }
 };
 
-template <
-    camp::idx_t Arg0,
-    camp::idx_t Arg1,
-    camp::idx_t Arg2,
-    typename... EnclosedStmts,
-    typename Types>
-struct StatementExecutor<
-    statement::Collapse<
-        omp_target_parallel_collapse_exec,
-        ArgList<Arg0, Arg1, Arg2>,
-        EnclosedStmts...>,
-    Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          camp::idx_t Arg2,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
+                                             ArgList<Arg0, Arg1, Arg2>,
+                                             EnclosedStmts...>,
+                         Types>
 {
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)
@@ -102,19 +96,16 @@ struct StatementExecutor<
   }
 };
 
-template <
-    camp::idx_t Arg0,
-    camp::idx_t Arg1,
-    camp::idx_t Arg2,
-    camp::idx_t Arg3,
-    typename... EnclosedStmts,
-    typename Types>
-struct StatementExecutor<
-    statement::Collapse<
-        omp_target_parallel_collapse_exec,
-        ArgList<Arg0, Arg1, Arg2, Arg3>,
-        EnclosedStmts...>,
-    Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          camp::idx_t Arg2,
+          camp::idx_t Arg3,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<statement::Collapse<omp_target_parallel_collapse_exec,
+                                             ArgList<Arg0, Arg1, Arg2, Arg3>,
+                                             EnclosedStmts...>,
+                         Types>
 {
   template <typename Data>
   static RAJA_INLINE void exec(Data&& data)

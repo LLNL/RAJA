@@ -55,8 +55,8 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
     data_len = 1;
   }
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   if (RAJA::stripIndexType(N) > 0)
   {
@@ -66,41 +66,40 @@ void ForallListSegmentTestImpl(INDEX_TYPE N)
       test_array[RAJA::stripIndexType(idx_vals[i])] = idx_vals[i];
     }
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(
-        lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
-        { working_array[RAJA::stripIndexType(idx)] = idx; });
+    RAJA::forall<EXEC_POLICY>(lseg,
+                              [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+                                working_array[RAJA::stripIndexType(idx)] = idx;
+                              });
   }
   else
   {  // zero-length segment
 
     memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
 
-    working_res.memcpy(
-        working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+    working_res.memcpy(working_array, test_array,
+                       sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::forall<EXEC_POLICY>(
-        lseg,
-        [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
-        {
-          (void)idx;
-          working_array[0]++;
-        });
+    RAJA::forall<EXEC_POLICY>(lseg,
+                              [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                              {
+                                (void)idx;
+                                working_array[0]++;
+                              });
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
-    ASSERT_EQ(
-        test_array[RAJA::stripIndexType(i)],
-        check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
+              check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 

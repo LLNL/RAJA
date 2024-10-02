@@ -36,10 +36,9 @@ namespace expt
 namespace ET
 {
 
-template <
-    typename LEFT_OPERAND_TYPE,
-    typename RIGHT_OPERAND_TYPE,
-    class ENABLE = void>
+template <typename LEFT_OPERAND_TYPE,
+          typename RIGHT_OPERAND_TYPE,
+          class ENABLE = void>
 struct DivideOperator;
 
 
@@ -50,9 +49,8 @@ template <typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
 struct DivideOperator<
     LEFT_OPERAND_TYPE,
     RIGHT_OPERAND_TYPE,
-    typename std::enable_if<
-        LEFT_OPERAND_TYPE::s_num_dims == 0 &&
-        RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 0 &&
+                            RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
 {
 
   using result_type = typename RIGHT_OPERAND_TYPE::result_type;
@@ -70,10 +68,10 @@ struct DivideOperator<
    * Evaluate operands and perform element-wise divide
    */
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static result_type divide(
-      TILE_TYPE const&          tile,
-      LEFT_OPERAND_TYPE const&  left,
-      RIGHT_OPERAND_TYPE const& right)
+  RAJA_INLINE RAJA_HOST_DEVICE static result_type
+  divide(TILE_TYPE const& tile,
+         LEFT_OPERAND_TYPE const& left,
+         RIGHT_OPERAND_TYPE const& right)
   {
     result_type numerator(left.eval(tile));
 
@@ -94,9 +92,8 @@ template <typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
 struct DivideOperator<
     LEFT_OPERAND_TYPE,
     RIGHT_OPERAND_TYPE,
-    typename std::enable_if<
-        LEFT_OPERAND_TYPE::s_num_dims == 1 &&
-        RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 1 &&
+                            RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
 {
   using result_type = typename LEFT_OPERAND_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
@@ -114,10 +111,10 @@ struct DivideOperator<
    * Evaluate operands and perform element-wise divide
    */
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static result_type divide(
-      TILE_TYPE const&          tile,
-      LEFT_OPERAND_TYPE const&  left,
-      RIGHT_OPERAND_TYPE const& right)
+  RAJA_INLINE RAJA_HOST_DEVICE static result_type
+  divide(TILE_TYPE const& tile,
+         LEFT_OPERAND_TYPE const& left,
+         RIGHT_OPERAND_TYPE const& right)
   {
     result_type denominator(right.eval(tile));
 
@@ -140,9 +137,8 @@ template <typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
 struct DivideOperator<
     LEFT_OPERAND_TYPE,
     RIGHT_OPERAND_TYPE,
-    typename std::enable_if<
-        LEFT_OPERAND_TYPE::s_num_dims == 1 &&
-        RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 1 &&
+                            RIGHT_OPERAND_TYPE::s_num_dims == 1>::type>
 {
   using result_type = typename LEFT_OPERAND_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
@@ -160,10 +156,10 @@ struct DivideOperator<
    * Evaluate operands and perform element-wise divide
    */
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static result_type divide(
-      TILE_TYPE const&          tile,
-      LEFT_OPERAND_TYPE const&  left,
-      RIGHT_OPERAND_TYPE const& right)
+  RAJA_INLINE RAJA_HOST_DEVICE static result_type
+  divide(TILE_TYPE const& tile,
+         LEFT_OPERAND_TYPE const& left,
+         RIGHT_OPERAND_TYPE const& right)
   {
     if (tile.s_tensor_size == TENSOR_FULL)
     {
@@ -184,9 +180,8 @@ template <typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
 struct DivideOperator<
     LEFT_OPERAND_TYPE,
     RIGHT_OPERAND_TYPE,
-    typename std::enable_if<
-        LEFT_OPERAND_TYPE::s_num_dims == 0 &&
-        RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 0 &&
+                            RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
 {
 
   using result_type = typename RIGHT_OPERAND_TYPE::result_type;
@@ -204,10 +199,10 @@ struct DivideOperator<
    * Evaluate operands and perform element-wise divide
    */
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static result_type divide(
-      TILE_TYPE const&          tile,
-      LEFT_OPERAND_TYPE const&  left,
-      RIGHT_OPERAND_TYPE const& right)
+  RAJA_INLINE RAJA_HOST_DEVICE static result_type
+  divide(TILE_TYPE const& tile,
+         LEFT_OPERAND_TYPE const& left,
+         RIGHT_OPERAND_TYPE const& right)
   {
     result_type numerator(left.eval(tile));
 
@@ -216,8 +211,8 @@ struct DivideOperator<
       return numerator.divide(right.eval(tile));
     }
 
-    return numerator.divide_nm(
-        right.eval(tile), tile.m_size[0], tile.m_size[1]);
+    return numerator.divide_nm(right.eval(tile), tile.m_size[0],
+                               tile.m_size[1]);
   }
 };
 
@@ -229,9 +224,8 @@ template <typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
 struct DivideOperator<
     LEFT_OPERAND_TYPE,
     RIGHT_OPERAND_TYPE,
-    typename std::enable_if<
-        LEFT_OPERAND_TYPE::s_num_dims == 2 &&
-        RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 2 &&
+                            RIGHT_OPERAND_TYPE::s_num_dims == 0>::type>
 {
   using result_type = typename LEFT_OPERAND_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
@@ -250,10 +244,10 @@ struct DivideOperator<
    */
   RAJA_SUPPRESS_HD_WARN
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static result_type divide(
-      TILE_TYPE const&          tile,
-      LEFT_OPERAND_TYPE const&  left,
-      RIGHT_OPERAND_TYPE const& right)
+  RAJA_INLINE RAJA_HOST_DEVICE static result_type
+  divide(TILE_TYPE const& tile,
+         LEFT_OPERAND_TYPE const& left,
+         RIGHT_OPERAND_TYPE const& right)
   {
     result_type denominator(right.eval(tile));
 
@@ -263,8 +257,8 @@ struct DivideOperator<
     }
     else
     {
-      return left.eval(tile).divide_nm(
-          denominator, tile.m_size[0], tile.m_size[1]);
+      return left.eval(tile).divide_nm(denominator, tile.m_size[0],
+                                       tile.m_size[1]);
     }
   }
 };
@@ -277,9 +271,8 @@ template <typename LEFT_OPERAND_TYPE, typename RIGHT_OPERAND_TYPE>
 struct DivideOperator<
     LEFT_OPERAND_TYPE,
     RIGHT_OPERAND_TYPE,
-    typename std::enable_if<
-        LEFT_OPERAND_TYPE::s_num_dims == 2 &&
-        RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
+    typename std::enable_if<LEFT_OPERAND_TYPE::s_num_dims == 2 &&
+                            RIGHT_OPERAND_TYPE::s_num_dims == 2>::type>
 {
   using result_type = typename LEFT_OPERAND_TYPE::result_type;
   static constexpr camp::idx_t s_num_dims = LEFT_OPERAND_TYPE::s_num_dims;
@@ -297,10 +290,10 @@ struct DivideOperator<
    * Evaluate operands and perform element-wise divide
    */
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static result_type divide(
-      TILE_TYPE const&          tile,
-      LEFT_OPERAND_TYPE const&  left,
-      RIGHT_OPERAND_TYPE const& right)
+  RAJA_INLINE RAJA_HOST_DEVICE static result_type
+  divide(TILE_TYPE const& tile,
+         LEFT_OPERAND_TYPE const& left,
+         RIGHT_OPERAND_TYPE const& right)
   {
     if (tile.s_tensor_size == TENSOR_FULL)
     {
@@ -308,8 +301,8 @@ struct DivideOperator<
     }
     else
     {
-      return left.eval(tile).divide_nm(
-          right.eval(tile), tile.m_size[0], tile.m_size[1]);
+      return left.eval(tile).divide_nm(right.eval(tile), tile.m_size[0],
+                                       tile.m_size[1]);
     }
   }
 };
@@ -332,15 +325,14 @@ public:
 
 
 private:
-  left_operand_type  m_left_operand;
+  left_operand_type m_left_operand;
   right_operand_type m_right_operand;
 
 public:
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  TensorDivide(
-      left_operand_type const&  left_operand,
-      right_operand_type const& right_operand)
+  TensorDivide(left_operand_type const& left_operand,
+               right_operand_type const& right_operand)
       : m_left_operand {left_operand}, m_right_operand {right_operand}
   {}
 
@@ -404,8 +396,8 @@ template <
     typename std::enable_if<
         std::is_base_of<TensorExpressionConcreteBase, RHS>::value,
         bool>::type = true>
-RAJA_INLINE RAJA_HOST_DEVICE auto
-operator/(LHS const& left_operand, RHS const& right_operand)
+RAJA_INLINE RAJA_HOST_DEVICE auto operator/(LHS const& left_operand,
+                                            RHS const& right_operand)
     -> TensorDivide<typename NormalizeOperandHelper<LHS>::return_type, RHS>
 {
   return TensorDivide<typename NormalizeOperandHelper<LHS>::return_type, RHS>(

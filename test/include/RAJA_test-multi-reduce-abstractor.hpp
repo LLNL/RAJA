@@ -36,8 +36,8 @@ struct SumAbstractor
   template <typename Reducer>
   static bool consistent(Reducer const&)
   {
-    return RAJA::policy_has_trait<
-               typename Reducer::policy, RAJA::reduce::ordered>::value ||
+    return RAJA::policy_has_trait<typename Reducer::policy,
+                                  RAJA::reduce::ordered>::value ||
            !std::is_floating_point<typename Reducer::value_type>::value;
   }
 

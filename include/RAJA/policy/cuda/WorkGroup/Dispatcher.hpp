@@ -42,8 +42,8 @@ namespace cuda
 // global function that creates the value on the device using the
 // factory and writes it into a pinned ptr
 template <typename Factory>
-__global__ void
-get_value_global(typename Factory::value_type* ptr, Factory factory)
+__global__ void get_value_global(typename Factory::value_type* ptr,
+                                 Factory factory)
 {
   *ptr = factory();
 }
@@ -52,7 +52,7 @@ get_value_global(typename Factory::value_type* ptr, Factory factory)
 inline void* get_cached_value_ptr(size_t nbytes)
 {
   static size_t cached_nbytes = 0;
-  static void*  ptr           = nullptr;
+  static void* ptr            = nullptr;
   if (nbytes > cached_nbytes)
   {
     cached_nbytes = 0;
@@ -105,12 +105,11 @@ inline auto get_cached_value(Factory&& factory)
 /*!
  * Populate and return a Dispatcher object that can be used in device code
  */
-template <
-    typename T,
-    typename Dispatcher_T,
-    size_t BLOCK_SIZE,
-    size_t BLOCKS_PER_SM,
-    bool   Async>
+template <typename T,
+          typename Dispatcher_T,
+          size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
+          bool Async>
 inline const Dispatcher_T*
 get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
 {

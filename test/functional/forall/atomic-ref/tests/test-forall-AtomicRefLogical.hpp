@@ -16,11 +16,10 @@
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct AndEqOtherOp : int_op
 {
-  AndEqOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  AndEqOtherOp(T* dcount,
+               T* hcount,
+               camp::resources::Resource work_res,
+               RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max((T)seg.size()),
@@ -33,17 +32,16 @@ struct AndEqOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other &= (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchAndOtherOp : int_op
 {
-  FetchAndOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  FetchAndOtherOp(T* dcount,
+                  T* hcount,
+                  camp::resources::Resource work_res,
+                  RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max(np2m1((T)seg.size())),
@@ -56,17 +54,16 @@ struct FetchAndOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_and((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct OrEqOtherOp : int_op
 {
-  OrEqOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  OrEqOtherOp(T* dcount,
+              T* hcount,
+              camp::resources::Resource work_res,
+              RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max(np2m1((T)seg.size())),
@@ -79,17 +76,16 @@ struct OrEqOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other |= (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchOrOtherOp : int_op
 {
-  FetchOrOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  FetchOrOtherOp(T* dcount,
+                 T* hcount,
+                 camp::resources::Resource work_res,
+                 RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max(np2m1((T)seg.size())),
@@ -102,17 +98,16 @@ struct FetchOrOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_or((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct XorEqOtherOp : int_op
 {
-  XorEqOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  XorEqOtherOp(T* dcount,
+               T* hcount,
+               camp::resources::Resource work_res,
+               RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max(np2m1((T)seg.size())),
@@ -130,17 +125,16 @@ struct XorEqOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other ^= (T)i; }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct FetchXorOtherOp : int_op
 {
-  FetchXorOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  FetchXorOtherOp(T* dcount,
+                  T* hcount,
+                  camp::resources::Resource work_res,
+                  RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min(T(0)),
         max(np2m1((T)seg.size())),
@@ -158,61 +152,56 @@ struct FetchXorOtherOp : int_op
   RAJA_HOST_DEVICE
   T operator()(IdxType i) const { return other.fetch_xor((T)i); }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
-template <
-    typename ExecPolicy,
-    typename AtomicPolicy,
-    typename IdxType,
-    typename T,
-    template <typename, typename, typename>
-    class OtherOp>
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename IdxType,
+          typename T,
+          template <typename, typename, typename>
+          class OtherOp>
 // No test when underlying op type is int, and index type is float
 typename std::enable_if<
     (std::is_floating_point<T>::value &&
      std::is_base_of<int_op, OtherOp<T, AtomicPolicy, IdxType>>::value)>::type
-testAtomicRefLogicalOp(
-    RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg),
-    T*                               RAJA_UNUSED_ARG(count),
-    T*                               RAJA_UNUSED_ARG(list),
-    T*                               RAJA_UNUSED_ARG(hcount),
-    T*                               RAJA_UNUSED_ARG(hlist),
-    camp::resources::Resource        RAJA_UNUSED_ARG(work_res),
-    IdxType                          RAJA_UNUSED_ARG(N))
+testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> RAJA_UNUSED_ARG(seg),
+                       T* RAJA_UNUSED_ARG(count),
+                       T* RAJA_UNUSED_ARG(list),
+                       T* RAJA_UNUSED_ARG(hcount),
+                       T* RAJA_UNUSED_ARG(hlist),
+                       camp::resources::Resource RAJA_UNUSED_ARG(work_res),
+                       IdxType RAJA_UNUSED_ARG(N))
 {}
 
-template <
-    typename ExecPolicy,
-    typename AtomicPolicy,
-    typename IdxType,
-    typename T,
-    template <typename, typename, typename>
-    class OtherOp>
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename IdxType,
+          typename T,
+          template <typename, typename, typename>
+          class OtherOp>
 // Run test if T is integral and operation is int_op, or for any all_op
 typename std::enable_if<
     (std::is_integral<T>::value &&
      std::is_base_of<int_op, OtherOp<T, AtomicPolicy, IdxType>>::value) ||
     (std::is_base_of<all_op, OtherOp<T, AtomicPolicy, IdxType>>::value)>::type
-testAtomicRefLogicalOp(
-    RAJA::TypedRangeSegment<IdxType> seg,
-    T*                               count,
-    T*                               list,
-    T*                               hcount,
-    T*                               hlist,
-    camp::resources::Resource        work_res,
-    IdxType                          N)
+testAtomicRefLogicalOp(RAJA::TypedRangeSegment<IdxType> seg,
+                       T* count,
+                       T* list,
+                       T* hcount,
+                       T* hlist,
+                       camp::resources::Resource work_res,
+                       IdxType N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
-  RAJA::forall<ExecPolicy>(
-      seg,
-      [=] RAJA_HOST_DEVICE(IdxType i)
-      {
-        T val   = otherop(i);
-        list[i] = val;
-      });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { list[i] = otherop.max + (T)1; });
+  RAJA::forall<ExecPolicy>(seg,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           {
+                             T val   = otherop(i);
+                             list[i] = val;
+                           });
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -233,12 +222,11 @@ testAtomicRefLogicalOp(
 }
 
 
-template <
-    typename ExecPolicy,
-    typename AtomicPolicy,
-    typename WORKINGRES,
-    typename IdxType,
-    typename T>
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename WORKINGRES,
+          typename IdxType,
+          typename T>
 void ForallAtomicRefLogicalTestImpl(IdxType N)
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);

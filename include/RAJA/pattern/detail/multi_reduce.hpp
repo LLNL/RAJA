@@ -71,10 +71,9 @@ struct BaseMultiReduce
       : BaseMultiReduce {RepeatView<value_type>(MultiReduceOp::identity(), 0)}
   {}
 
-  explicit BaseMultiReduce(
-      size_t     num_bins,
-      value_type init_val = MultiReduceOp::identity(),
-      value_type identity = MultiReduceOp::identity())
+  explicit BaseMultiReduce(size_t num_bins,
+                           value_type init_val = MultiReduceOp::identity(),
+                           value_type identity = MultiReduceOp::identity())
       : BaseMultiReduce {RepeatView<value_type>(init_val, num_bins), identity}
   {}
 
@@ -85,9 +84,8 @@ struct BaseMultiReduce
           concepts::negate<std::is_convertible<Container, size_t>>,
           concepts::negate<std::is_base_of<BaseMultiReduce, Container>>>* =
           nullptr>
-  explicit BaseMultiReduce(
-      Container const& container,
-      value_type       identity = MultiReduceOp::identity())
+  explicit BaseMultiReduce(Container const& container,
+                           value_type identity = MultiReduceOp::identity())
       : data {container, identity}
   {}
 
@@ -105,20 +103,17 @@ struct BaseMultiReduce
     reset(RepeatView<value_type>(MultiReduceOp::identity(), size()));
   }
 
-  void reset(
-      size_t     num_bins,
-      value_type init_val = MultiReduceOp::identity(),
-      value_type identity = MultiReduceOp::identity())
+  void reset(size_t num_bins,
+             value_type init_val = MultiReduceOp::identity(),
+             value_type identity = MultiReduceOp::identity())
   {
     reset(RepeatView<value_type>(init_val, num_bins), identity);
   }
 
-  template <
-      typename Container,
-      concepts::enable_if_t<type_traits::is_range<Container>>* = nullptr>
-  void reset(
-      Container const& container,
-      value_type       identity = MultiReduceOp::identity())
+  template <typename Container,
+            concepts::enable_if_t<type_traits::is_range<Container>>* = nullptr>
+  void reset(Container const& container,
+             value_type identity = MultiReduceOp::identity())
   {
     for (size_t bin = 0; bin < data.num_bins(); ++bin)
     {
@@ -143,9 +138,8 @@ struct BaseMultiReduce
   value_type get(size_t bin) const { return data.get(bin); }
 
   //! Get the calculated reduced value for each bin and store it in container
-  template <
-      typename Container,
-      concepts::enable_if_t<type_traits::is_range<Container>>* = nullptr>
+  template <typename Container,
+            concepts::enable_if_t<type_traits::is_range<Container>>* = nullptr>
   void get_all(Container& container) const
   {
     RAJA_EXTRACT_BED_IT(container);
@@ -212,7 +206,7 @@ public:
 
   private:
     BaseMultiReduceMin const& m_base;
-    size_t                    m_bin;
+    size_t m_bin;
   };
 };
 
@@ -260,7 +254,7 @@ public:
 
   private:
     BaseMultiReduceMax const& m_base;
-    size_t                    m_bin;
+    size_t m_bin;
   };
 };
 
@@ -308,7 +302,7 @@ public:
 
   private:
     BaseMultiReduceSum const& m_base;
-    size_t                    m_bin;
+    size_t m_bin;
   };
 };
 
@@ -356,7 +350,7 @@ public:
 
   private:
     BaseMultiReduceBitOr const& m_base;
-    size_t                      m_bin;
+    size_t m_bin;
   };
 };
 
@@ -404,7 +398,7 @@ public:
 
   private:
     BaseMultiReduceBitAnd const& m_base;
-    size_t                       m_bin;
+    size_t m_bin;
   };
 };
 

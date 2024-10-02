@@ -30,9 +30,9 @@ TYPED_TEST_P(AtomicRefBasicBitwiseUnitTest, BasicBitwises)
   using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T  theval  = (T)1;
+  T theval   = (T)1;
   T* memaddr = &theval;
-  T  result;
+  T result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
@@ -66,34 +66,33 @@ TYPED_TEST_P(AtomicRefBasicBitwiseUnitTest, BasicBitwises)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicBitwiseUnitTest, BasicBitwises);
 
-using basic_types = ::testing::Types<
-    std::tuple<int, RAJA::builtin_atomic>,
-    std::tuple<int, RAJA::seq_atomic>,
-    std::tuple<unsigned int, RAJA::builtin_atomic>,
-    std::tuple<unsigned int, RAJA::seq_atomic>,
-    std::tuple<unsigned long long int, RAJA::builtin_atomic>,
-    std::tuple<unsigned long long int, RAJA::seq_atomic>
+using basic_types =
+    ::testing::Types<std::tuple<int, RAJA::builtin_atomic>,
+                     std::tuple<int, RAJA::seq_atomic>,
+                     std::tuple<unsigned int, RAJA::builtin_atomic>,
+                     std::tuple<unsigned int, RAJA::seq_atomic>,
+                     std::tuple<unsigned long long int, RAJA::builtin_atomic>,
+                     std::tuple<unsigned long long int, RAJA::seq_atomic>
 #if defined(RAJA_ENABLE_OPENMP)
-    ,
-    std::tuple<int, RAJA::omp_atomic>,
-    std::tuple<unsigned int, RAJA::omp_atomic>,
-    std::tuple<unsigned long long int, RAJA::omp_atomic>
+                     ,
+                     std::tuple<int, RAJA::omp_atomic>,
+                     std::tuple<unsigned int, RAJA::omp_atomic>,
+                     std::tuple<unsigned long long int, RAJA::omp_atomic>
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    std::tuple<int, RAJA::auto_atomic>,
-    std::tuple<int, RAJA::cuda_atomic>,
-    std::tuple<unsigned int, RAJA::auto_atomic>,
-    std::tuple<unsigned int, RAJA::cuda_atomic>,
-    std::tuple<unsigned long long int, RAJA::auto_atomic>,
-    std::tuple<unsigned long long int, RAJA::cuda_atomic>
+                     ,
+                     std::tuple<int, RAJA::auto_atomic>,
+                     std::tuple<int, RAJA::cuda_atomic>,
+                     std::tuple<unsigned int, RAJA::auto_atomic>,
+                     std::tuple<unsigned int, RAJA::cuda_atomic>,
+                     std::tuple<unsigned long long int, RAJA::auto_atomic>,
+                     std::tuple<unsigned long long int, RAJA::cuda_atomic>
 #endif
-    >;
+                     >;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    BasicBitwiseUnitTest,
-    AtomicRefBasicBitwiseUnitTest,
-    basic_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(BasicBitwiseUnitTest,
+                               AtomicRefBasicBitwiseUnitTest,
+                               basic_types);
 
 
 // Pure CUDA test.
@@ -160,16 +159,15 @@ GPU_TYPED_TEST_P(AtomicRefCUDABitwiseUnitTest, CUDABitwises)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDABitwiseUnitTest, CUDABitwises);
 
-using CUDA_types = ::testing::Types<
-    std::tuple<int, RAJA::auto_atomic>,
-    std::tuple<int, RAJA::cuda_atomic>,
-    std::tuple<unsigned int, RAJA::auto_atomic>,
-    std::tuple<unsigned int, RAJA::cuda_atomic>,
-    std::tuple<unsigned long long int, RAJA::auto_atomic>,
-    std::tuple<unsigned long long int, RAJA::cuda_atomic>>;
+using CUDA_types =
+    ::testing::Types<std::tuple<int, RAJA::auto_atomic>,
+                     std::tuple<int, RAJA::cuda_atomic>,
+                     std::tuple<unsigned int, RAJA::auto_atomic>,
+                     std::tuple<unsigned int, RAJA::cuda_atomic>,
+                     std::tuple<unsigned long long int, RAJA::auto_atomic>,
+                     std::tuple<unsigned long long int, RAJA::cuda_atomic>>;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    CUDABitwiseUnitTest,
-    AtomicRefCUDABitwiseUnitTest,
-    CUDA_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDABitwiseUnitTest,
+                               AtomicRefCUDABitwiseUnitTest,
+                               CUDA_types);
 #endif

@@ -42,18 +42,16 @@ namespace statement
  * Assigns the tile index to param ParamId
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename TilePolicy,
-    typename ExecPolicy,
-    typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename TilePolicy,
+          typename ExecPolicy,
+          typename... EnclosedStmts>
 struct TileTCount : public internal::Statement<ExecPolicy, EnclosedStmts...>
 {
-  static_assert(
-      std::is_base_of<internal::ParamBase, ParamId>::value,
-      "Inappropriate ParamId, ParamId must be of type "
-      "RAJA::Statement::Param< # >");
+  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+                "Inappropriate ParamId, ParamId must be of type "
+                "RAJA::Statement::Param< # >");
   using tile_policy_t = TilePolicy;
   using exec_policy_t = ExecPolicy;
 };
@@ -69,12 +67,11 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename Data,
-    typename Types,
-    typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Data,
+          typename Types,
+          typename... EnclosedStmts>
 struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
 {
 
@@ -102,13 +99,12 @@ struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
  *
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename TPol,
-    typename EPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename TPol,
+          typename EPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>,
     Types>
@@ -134,9 +130,8 @@ struct StatementExecutor<
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(
-        r, EPol {}, tiled_iterable, tile_wrapper,
-        RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r, EPol {}, tiled_iterable, tile_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;

@@ -25,13 +25,13 @@ void test_PermutedCombiningAdapter_2D(Segment const& seg0, Segment const& seg1)
   using std::begin;
   using std::distance;
   using std::end;
-  auto   seg0_begin  = begin(seg0);
-  auto   seg1_begin  = begin(seg1);
-  size_t seg_lens[2] = {
-      static_cast<size_t>(seg0.size()), static_cast<size_t>(seg1.size())};
+  auto seg0_begin    = begin(seg0);
+  auto seg1_begin    = begin(seg1);
+  size_t seg_lens[2] = {static_cast<size_t>(seg0.size()),
+                        static_cast<size_t>(seg1.size())};
 
   size_t counters[2] = {0, 0};
-  auto   adapter     = RAJA::make_PermutedCombiningAdapter<Perm>(
+  auto adapter       = RAJA::make_PermutedCombiningAdapter<Perm>(
       [&](IndexType i0, IndexType i1)
       {
         ASSERT_EQ(seg0_begin[counters[0]], i0);
@@ -60,11 +60,10 @@ void test_PermutedCombiningAdapter_2D(Segment const& seg0, Segment const& seg1)
 }
 
 template <typename Perm, typename IndexType>
-void test_types_PermutedCombiningAdapter_2D(
-    IndexType ibegin0,
-    IndexType iend0,
-    IndexType ibegin1,
-    IndexType iend1)
+void test_types_PermutedCombiningAdapter_2D(IndexType ibegin0,
+                                            IndexType iend0,
+                                            IndexType ibegin1,
+                                            IndexType iend1)
 {
   RAJA::TypedRangeSegment<IndexType> rseg0(ibegin0, iend0);
   RAJA::TypedRangeSegment<IndexType> rseg1(ibegin1, iend1);

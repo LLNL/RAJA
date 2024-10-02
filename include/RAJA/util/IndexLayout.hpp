@@ -129,10 +129,9 @@ struct IndexLayout_impl<camp::idx_seq<RangeInts...>, IdxLin, IndexTypes...>
 }  // namespace internal
 
 
-template <
-    size_t n_dims   = 1,
-    typename IdxLin = Index_type,
-    typename... IndexTypes>
+template <size_t n_dims   = 1,
+          typename IdxLin = Index_type,
+          typename... IndexTypes>
 struct IndexLayout
     : public internal::
           IndexLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin, IndexTypes...>
@@ -140,15 +139,14 @@ struct IndexLayout
   using Base = internal::
       IndexLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin, IndexTypes...>;
 
-  using internal::IndexLayout_impl<
-      camp::make_idx_seq_t<n_dims>,
-      IdxLin,
-      IndexTypes...>::IndexLayout_impl;
+  using internal::IndexLayout_impl<camp::make_idx_seq_t<n_dims>,
+                                   IdxLin,
+                                   IndexTypes...>::IndexLayout_impl;
 
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE IndexLayout(
-      const internal::
-          IndexLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin, IndexTypes...>&
-              rhs)
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  IndexLayout(const internal::IndexLayout_impl<camp::make_idx_seq_t<n_dims>,
+                                               IdxLin,
+                                               IndexTypes...>& rhs)
       : Base {rhs}
   {}
 };
@@ -168,16 +166,15 @@ auto make_index_tuple(IndexTypes... it) -> camp::tuple<IndexTypes...>
  * creates an index layout based on the input camp::tuple of index types
  *
  */
-template <
-    typename IdxLin = Index_type,
-    typename... Types,
-    typename... IndexTypes>
+template <typename IdxLin = Index_type,
+          typename... Types,
+          typename... IndexTypes>
 auto make_index_layout(camp::tuple<IndexTypes...> index_tuple_in, Types... ns)
     -> IndexLayout<sizeof...(Types), IdxLin, IndexTypes...>
 {
   static_assert(sizeof...(Types) == sizeof...(IndexTypes), "");
-  return IndexLayout<sizeof...(Types), IdxLin, IndexTypes...>(
-      index_tuple_in, ns...);
+  return IndexLayout<sizeof...(Types), IdxLin, IndexTypes...>(index_tuple_in,
+                                                              ns...);
 }
 
 }  // namespace RAJA

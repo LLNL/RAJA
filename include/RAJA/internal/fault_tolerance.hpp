@@ -39,9 +39,9 @@
 
 #define RAJA_FT_BEGIN                                                          \
   extern volatile int fault_type;                                              \
-  bool                repeat;                                                  \
-  bool                do_time = false;                                         \
-  ticks               start = 0, stop = 0;                                     \
+  bool repeat;                                                                 \
+  bool do_time = false;                                                        \
+  ticks start = 0, stop = 0;                                                   \
   if (fault_type != 0)                                                         \
   {                                                                            \
     printf("Uncaught fault %d\n", fault_type);                                 \
@@ -81,7 +81,7 @@
 #else
 #define RAJA_FT_BEGIN                                                          \
   extern volatile int fault_type;                                              \
-  bool                repeat;                                                  \
+  bool repeat;                                                                 \
   if (fault_type == 0)                                                         \
   {                                                                            \
     do                                                                         \

@@ -74,8 +74,8 @@ public:
   void reset() { telapsed = 0; }
 
 private:
-  TimeType    tstart;
-  TimeType    tstop;
+  TimeType tstart;
+  TimeType tstop;
   ElapsedType telapsed;
 };
 
@@ -126,8 +126,8 @@ public:
   void reset() { telapsed = 0; }
 
 private:
-  TimeType    tstart;
-  TimeType    tstop;
+  TimeType tstart;
+  TimeType tstop;
   ElapsedType telapsed;
 };
 
@@ -178,8 +178,8 @@ public:
   }
 
 private:
-  TimeType   tstart;
-  TimeType   tstop;
+  TimeType tstart;
+  TimeType tstop;
   ElasedType telapsed;
 
   ElapsedType stime_elapsed;
@@ -238,8 +238,8 @@ public:
   void reset() { telapsed = 0; }
 
 private:
-  TimeType    tstart;
-  TimeType    tstop;
+  TimeType tstart;
+  TimeType tstop;
   long double telapsed;
 
   void set_elapsed() { telapsed += (tstop - tstart); }

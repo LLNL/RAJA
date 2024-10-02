@@ -101,9 +101,9 @@ struct HipKernelExt
  * The kernel launch is synchronous.
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
-using HipKernelExp = HipKernelExt<
-    hip_explicit_launch<false, num_blocks, num_threads>,
-    EnclosedStmts...>;
+using HipKernelExp =
+    HipKernelExt<hip_explicit_launch<false, num_blocks, num_threads>,
+                 EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel with the flexibility
@@ -112,9 +112,9 @@ using HipKernelExp = HipKernelExt<
  * The kernel launch is asynchronous.
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
-using HipKernelExpAsync = HipKernelExt<
-    hip_explicit_launch<true, num_blocks, num_threads>,
-    EnclosedStmts...>;
+using HipKernelExpAsync =
+    HipKernelExt<hip_explicit_launch<true, num_blocks, num_threads>,
+                 EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a HIP kernel using the
@@ -247,11 +247,10 @@ struct HipKernelLauncherGetter<0, Data, executor_t>
  * Helper class that handles HIP kernel launching, and computing
  * maximum number of threads/blocks
  */
-template <
-    typename LaunchPolicy,
-    typename StmtList,
-    typename Data,
-    typename Types>
+template <typename LaunchPolicy,
+          typename StmtList,
+          typename Data,
+          typename Types>
 struct HipLaunchHelper;
 
 
@@ -260,18 +259,16 @@ struct HipLaunchHelper;
  * The user may specify the number of threads and blocks or let one or both be
  * determined at runtime using the HIP occupancy calculator.
  */
-template <
-    bool async0,
-    int  num_blocks,
-    int  num_threads,
-    typename StmtList,
-    typename Data,
-    typename Types>
-struct HipLaunchHelper<
-    hip_explicit_launch<async0, num_blocks, num_threads>,
-    StmtList,
-    Data,
-    Types>
+template <bool async0,
+          int num_blocks,
+          int num_threads,
+          typename StmtList,
+          typename Data,
+          typename Types>
+struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,
+                       StmtList,
+                       Data,
+                       Types>
 {
   using Self = HipLaunchHelper;
 
@@ -280,20 +277,19 @@ struct HipLaunchHelper<
   using executor_t =
       internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
-  using kernelGetter_t = HipKernelLauncherGetter<
-      (num_threads <= 0) ? 0 : num_threads,
-      Data,
-      executor_t>;
+  using kernelGetter_t =
+      HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,
+                              Data,
+                              executor_t>;
 
   inline static const void* get_func()
   {
     return reinterpret_cast<const void*>(kernelGetter_t::get());
   }
 
-  inline static void recommended_blocks_threads(
-      size_t shmem_size,
-      int&   recommended_blocks,
-      int&   recommended_threads)
+  inline static void recommended_blocks_threads(size_t shmem_size,
+                                                int& recommended_blocks,
+                                                int& recommended_threads)
   {
     auto func = Self::get_func();
 
@@ -355,8 +351,8 @@ struct HipLaunchHelper<
     }
   }
 
-  inline static void
-  max_threads(size_t RAJA_UNUSED_ARG(shmem_size), int& max_threads)
+  inline static void max_threads(size_t RAJA_UNUSED_ARG(shmem_size),
+                                 int& max_threads)
   {
     if (num_threads <= 0)
     {
@@ -429,10 +425,9 @@ struct HipLaunchHelper<
  * The algorithm is greedy (and probably could be improved), and favors
  * maximizing the number of threads (or blocks) in x, y, then z.
  */
-inline hip_dim_t fitHipDims(
-    hip_dim_member_t limit,
-    hip_dim_t        result,
-    hip_dim_t        minimum = hip_dim_t())
+inline hip_dim_t fitHipDims(hip_dim_member_t limit,
+                            hip_dim_t result,
+                            hip_dim_t minimum = hip_dim_t())
 {
 
 
@@ -532,8 +527,8 @@ struct StatementExecutor<
       //
       int recommended_blocks;
       int recommended_threads;
-      launch_t::recommended_blocks_threads(
-          shmem, recommended_blocks, recommended_threads);
+      launch_t::recommended_blocks_threads(shmem, recommended_blocks,
+                                           recommended_threads);
 
 
       //
@@ -551,9 +546,8 @@ struct StatementExecutor<
       if (recommended_threads >= get_size(launch_dims.min_dims.threads))
       {
 
-        fit_threads = fitHipDims(
-            recommended_threads, launch_dims.dims.threads,
-            launch_dims.min_dims.threads);
+        fit_threads = fitHipDims(recommended_threads, launch_dims.dims.threads,
+                                 launch_dims.min_dims.threads);
       }
 
       //
@@ -563,9 +557,8 @@ struct StatementExecutor<
           get_size(fit_threads) != recommended_threads)
       {
 
-        fit_threads = fitHipDims(
-            max_threads, launch_dims.dims.threads,
-            launch_dims.min_dims.threads);
+        fit_threads = fitHipDims(max_threads, launch_dims.dims.threads,
+                                 launch_dims.min_dims.threads);
       }
 
       launch_dims.dims.threads = fit_threads;
@@ -596,8 +589,8 @@ struct StatementExecutor<
         use_blocks = max_blocks;
       }
 
-      launch_dims.dims.blocks = fitHipDims(
-          use_blocks, launch_dims.dims.blocks, launch_dims.min_dims.blocks);
+      launch_dims.dims.blocks = fitHipDims(use_blocks, launch_dims.dims.blocks,
+                                           launch_dims.min_dims.blocks);
 
       //
       // make sure that we fit
@@ -629,9 +622,9 @@ struct StatementExecutor<
         // Launch the kernel
         //
         void* args[] = {(void*)&hip_data};
-        RAJA::hip::launch(
-            func, launch_dims.dims.blocks, launch_dims.dims.threads, args,
-            shmem, res, launch_t::async);
+        RAJA::hip::launch(func, launch_dims.dims.blocks,
+                          launch_dims.dims.threads, args, shmem, res,
+                          launch_t::async);
       }
     }
   }

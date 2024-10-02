@@ -36,21 +36,19 @@ namespace detail
  * Runs work in a storage container in order
  * and returns any per run resources
  */
-template <
-    size_t BLOCK_SIZE,
-    size_t BLOCKS_PER_SM,
-    bool   Async,
-    typename DISPATCH_POLICY_T,
-    typename ALLOCATOR_T,
-    typename INDEX_T,
-    typename... Args>
-struct WorkRunner<
-    RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
-    RAJA::ordered,
-    DISPATCH_POLICY_T,
-    ALLOCATOR_T,
-    INDEX_T,
-    Args...>
+template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
+          bool Async,
+          typename DISPATCH_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename... Args>
+struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+                  RAJA::ordered,
+                  DISPATCH_POLICY_T,
+                  ALLOCATOR_T,
+                  INDEX_T,
+                  Args...>
     : WorkRunnerForallOrdered<
           RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
           RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
@@ -77,10 +75,9 @@ struct WorkRunner<
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage
-  run(WorkContainer const&         storage,
-      typename base::resource_type r,
-      Args... args) const
+  per_run_storage run(WorkContainer const& storage,
+                      typename base::resource_type r,
+                      Args... args) const
   {
     per_run_storage run_storage =
         base::run(storage, r, std::forward<Args>(args)...);
@@ -104,21 +101,19 @@ struct WorkRunner<
  * Runs work in a storage container in reverse order
  * and returns any per run resources
  */
-template <
-    size_t BLOCK_SIZE,
-    size_t BLOCKS_PER_SM,
-    bool   Async,
-    typename DISPATCH_POLICY_T,
-    typename ALLOCATOR_T,
-    typename INDEX_T,
-    typename... Args>
-struct WorkRunner<
-    RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
-    RAJA::reverse_ordered,
-    DISPATCH_POLICY_T,
-    ALLOCATOR_T,
-    INDEX_T,
-    Args...>
+template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
+          bool Async,
+          typename DISPATCH_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename... Args>
+struct WorkRunner<RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
+                  RAJA::reverse_ordered,
+                  DISPATCH_POLICY_T,
+                  ALLOCATOR_T,
+                  INDEX_T,
+                  Args...>
     : WorkRunnerForallReverse<
           RAJA::cuda_exec_explicit_async<BLOCK_SIZE, BLOCKS_PER_SM>,
           RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
@@ -145,10 +140,9 @@ struct WorkRunner<
   /// run all loops asynchronously and synchronize after is necessary
   ///
   template <typename WorkContainer>
-  per_run_storage
-  run(WorkContainer const&         storage,
-      typename base::resource_type r,
-      Args... args) const
+  per_run_storage run(WorkContainer const& storage,
+                      typename base::resource_type r,
+                      Args... args) const
   {
     per_run_storage run_storage =
         base::run(storage, r, std::forward<Args>(args)...);
@@ -173,11 +167,10 @@ struct WorkRunner<
  * A body and segment holder for storing loops that will be executed
  * on the device
  */
-template <
-    typename Segment_type,
-    typename LoopBody,
-    typename index_type,
-    typename... Args>
+template <typename Segment_type,
+          typename LoopBody,
+          typename index_type,
+          typename... Args>
 struct HoldCudaDeviceXThreadblockLoop
 {
   template <typename segment_in, typename body_in>
@@ -192,8 +185,8 @@ struct HoldCudaDeviceXThreadblockLoop
     // TODO:: decide whether or not to privatize the loop body
     const index_type i_begin = threadIdx.x + blockIdx.x * blockDim.x;
     const index_type stride  = blockDim.x * gridDim.x;
-    const auto       begin   = m_segment.begin();
-    const auto       end     = m_segment.end();
+    const auto begin         = m_segment.begin();
+    const auto end           = m_segment.end();
     const index_type len(end - begin);
     for (index_type i = i_begin; i < len; i += stride)
     {
@@ -203,16 +196,15 @@ struct HoldCudaDeviceXThreadblockLoop
 
 private:
   Segment_type m_segment;
-  LoopBody     m_body;
+  LoopBody m_body;
 };
 
-template <
-    size_t BLOCK_SIZE,
-    size_t BLOCKS_PER_SM,
-    typename StorageIter,
-    typename value_type,
-    typename index_type,
-    typename... Args>
+template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
+          typename StorageIter,
+          typename value_type,
+          typename index_type,
+          typename... Args>
 __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
     void cuda_unordered_y_block_global(StorageIter iter, Args... args)
 {
@@ -229,14 +221,13 @@ __launch_bounds__(BLOCK_SIZE, BLOCKS_PER_SM) __global__
  * the x direction, with the number of threads in the x dimension determined
  * by the average number of iterates per loop
  */
-template <
-    size_t BLOCK_SIZE,
-    size_t BLOCKS_PER_SM,
-    bool   Async,
-    typename DISPATCH_POLICY_T,
-    typename ALLOCATOR_T,
-    typename INDEX_T,
-    typename... Args>
+template <size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
+          bool Async,
+          typename DISPATCH_POLICY_T,
+          typename ALLOCATOR_T,
+          typename INDEX_T,
+          typename... Args>
 struct WorkRunner<
     RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async>,
     RAJA::policy::cuda::unordered_cuda_loop_y_block_iter_x_threadblock_average,
@@ -277,11 +268,11 @@ struct WorkRunner<
   using dispatcher_holder_policy =
       dispatcher_transform_types_t<dispatch_policy, holder_type>;
 
-  using dispatcher_type = Dispatcher<
-      Platform::cuda,
-      dispatcher_holder_policy,
-      RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>,
-      Args...>;
+  using dispatcher_type =
+      Dispatcher<Platform::cuda,
+                 dispatcher_holder_policy,
+                 RAJA::cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, true>,
+                 Args...>;
 
   WorkRunner() = default;
 
@@ -317,9 +308,9 @@ struct WorkRunner<
     // using true_value_type = typename WorkContainer::template
     // true_value_type<holder>;
 
-    Iterator  begin = std::begin(iter);
-    Iterator  end   = std::end(iter);
-    IndexType len   = std::distance(begin, end);
+    Iterator begin = std::begin(iter);
+    Iterator end   = std::end(iter);
+    IndexType len  = std::distance(begin, end);
 
     // Only launch kernel if we have something to iterate over
     if (len > 0 && BLOCK_SIZE > 0)
@@ -349,20 +340,21 @@ struct WorkRunner<
   run(WorkContainer const& storage, resource_type r, Args... args) const
   {
     using Iterator   = camp::decay<decltype(std::begin(storage))>;
-    using IndexType  = camp::decay<decltype(std::distance(
-         std::begin(storage), std::end(storage)))>;
+    using IndexType  = camp::decay<decltype(std::distance(std::begin(storage),
+                                                          std::end(storage)))>;
     using value_type = typename WorkContainer::value_type;
 
     per_run_storage run_storage {};
 
-    auto func = cuda_unordered_y_block_global<
-        BLOCK_SIZE, BLOCKS_PER_SM, Iterator, value_type, index_type, Args...>;
+    auto func =
+        cuda_unordered_y_block_global<BLOCK_SIZE, BLOCKS_PER_SM, Iterator,
+                                      value_type, index_type, Args...>;
 
     //
     // Compute the requested iteration space size
     //
-    Iterator  begin     = std::begin(storage);
-    Iterator  end       = std::end(storage);
+    Iterator begin      = std::begin(storage);
+    Iterator end        = std::end(storage);
     IndexType num_loops = std::distance(begin, end);
 
     // Only launch kernel if we have something to iterate over
@@ -378,8 +370,8 @@ struct WorkRunner<
       constexpr index_type block_size = static_cast<index_type>(BLOCK_SIZE);
       cuda_dim_t blockSize {static_cast<cuda_dim_member_t>(block_size), 1, 1};
       cuda_dim_t gridSize {
-          static_cast<cuda_dim_member_t>(
-              (average_iterations + block_size - 1) / block_size),
+          static_cast<cuda_dim_member_t>((average_iterations + block_size - 1) /
+                                         block_size),
           static_cast<cuda_dim_member_t>(num_loops), 1};
 
       RAJA_FT_BEGIN;
@@ -394,8 +386,8 @@ struct WorkRunner<
         // Launch the kernel
         //
         void* func_args[] = {(void*)&begin, (void*)&args...};
-        RAJA::cuda::launch(
-            (const void*)func, gridSize, blockSize, func_args, shmem, r, Async);
+        RAJA::cuda::launch((const void*)func, gridSize, blockSize, func_args,
+                           shmem, r, Async);
       }
 
       RAJA_FT_END;

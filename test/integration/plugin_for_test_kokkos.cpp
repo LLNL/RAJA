@@ -9,17 +9,17 @@
 
 #include <exception>
 
-extern "C" void kokkosp_init_library(
-    const int      RAJA_UNUSED_ARG(loadSeq),
-    const uint64_t RAJA_UNUSED_ARG(interfaceVer),
-    const uint32_t RAJA_UNUSED_ARG(devInfoCount),
-    void*          RAJA_UNUSED_ARG(deviceInfo))
+extern "C" void
+kokkosp_init_library(const int RAJA_UNUSED_ARG(loadSeq),
+                     const uint64_t RAJA_UNUSED_ARG(interfaceVer),
+                     const uint32_t RAJA_UNUSED_ARG(devInfoCount),
+                     void* RAJA_UNUSED_ARG(deviceInfo))
 {}
 
-extern "C" void kokkosp_begin_parallel_for(
-    const char*    RAJA_UNUSED_ARG(name),
-    const uint32_t RAJA_UNUSED_ARG(devID),
-    uint64_t*      RAJA_UNUSED_ARG(kID))
+extern "C" void
+kokkosp_begin_parallel_for(const char* RAJA_UNUSED_ARG(name),
+                           const uint32_t RAJA_UNUSED_ARG(devID),
+                           uint64_t* RAJA_UNUSED_ARG(kID))
 {
   throw std::runtime_error("preLaunch");
 }

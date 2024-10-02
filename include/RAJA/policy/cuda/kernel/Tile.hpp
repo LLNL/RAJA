@@ -47,22 +47,21 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    kernel_sync_requirement sync,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::Tile<
-        ArgumentId,
-        RAJA::tile_fixed<chunk_size>,
-        RAJA::policy::cuda::
-            cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-        EnclosedStmts...>,
+    statement::Tile<ArgumentId,
+                    RAJA::tile_fixed<chunk_size>,
+                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                     sync,
+                                                     IndexMapper>,
+                    EnclosedStmts...>,
     Types>
 {
 
@@ -138,13 +137,12 @@ struct CudaStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::Tile<
@@ -240,13 +238,12 @@ struct CudaStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Meets no sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::Tile<
@@ -338,12 +335,11 @@ struct CudaStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename TPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
@@ -356,10 +352,9 @@ struct CudaStatementExecutor<
               RAJA::policy::cuda::cuda_indexer<
                   iteration_mapping::StridedLoop<named_usage::unspecified>,
                   kernel_sync_requirement::none,
-                  cuda::IndexGlobal<
-                      named_dim::x,
-                      named_usage::ignored,
-                      named_usage::ignored>>,
+                  cuda::IndexGlobal<named_dim::x,
+                                    named_usage::ignored,
+                                    named_usage::ignored>>,
               EnclosedStmts...>,
           Types>
 {};

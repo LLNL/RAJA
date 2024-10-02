@@ -58,15 +58,12 @@ void testBasicMultiReducerConstructorRegular(size_t num_bins)
     ASSERT_EQ(multi_reduce_min.get(bin), get_op_identity(multi_reduce_min));
     ASSERT_EQ(multi_reduce_max.get(bin), get_op_identity(multi_reduce_max));
 
-    ASSERT_EQ(
-        (NumericType)multi_reduce_sum[bin].get(),
-        get_op_identity(multi_reduce_sum));
-    ASSERT_EQ(
-        (NumericType)multi_reduce_min[bin].get(),
-        get_op_identity(multi_reduce_min));
-    ASSERT_EQ(
-        (NumericType)multi_reduce_max[bin].get(),
-        get_op_identity(multi_reduce_max));
+    ASSERT_EQ((NumericType)multi_reduce_sum[bin].get(),
+              get_op_identity(multi_reduce_sum));
+    ASSERT_EQ((NumericType)multi_reduce_min[bin].get(),
+              get_op_identity(multi_reduce_min));
+    ASSERT_EQ((NumericType)multi_reduce_max[bin].get(),
+              get_op_identity(multi_reduce_max));
   }
 }
 
@@ -86,19 +83,16 @@ void testBasicMultiReducerConstructorBitwise(size_t num_bins)
     ASSERT_EQ(multi_reduce_or.get(bin), get_op_identity(multi_reduce_or));
     ASSERT_EQ(multi_reduce_and.get(bin), get_op_identity(multi_reduce_and));
 
-    ASSERT_EQ(
-        (NumericType)multi_reduce_or[bin].get(),
-        get_op_identity(multi_reduce_or));
-    ASSERT_EQ(
-        (NumericType)multi_reduce_and[bin].get(),
-        get_op_identity(multi_reduce_and));
+    ASSERT_EQ((NumericType)multi_reduce_or[bin].get(),
+              get_op_identity(multi_reduce_or));
+    ASSERT_EQ((NumericType)multi_reduce_and[bin].get(),
+              get_op_identity(multi_reduce_and));
   }
 }
 
-template <
-    typename MultiReducePolicy,
-    typename NumericType,
-    std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
+template <typename MultiReducePolicy,
+          typename NumericType,
+          std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
 void testBasicMultiReducerConstructor(size_t num_bins)
 {
   testBasicMultiReducerConstructorRegular<MultiReducePolicy, NumericType>(
@@ -107,10 +101,9 @@ void testBasicMultiReducerConstructor(size_t num_bins)
       num_bins);
 }
 ///
-template <
-    typename MultiReducePolicy,
-    typename NumericType,
-    std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
+template <typename MultiReducePolicy,
+          typename NumericType,
+          std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
 void testBasicMultiReducerConstructor(size_t num_bins)
 {
   testBasicMultiReducerConstructorRegular<MultiReducePolicy, NumericType>(
@@ -130,9 +123,8 @@ TYPED_TEST_P(MultiReducerBasicConstructorUnitTest, MultiReducerConstructor)
 
 
 template <typename MultiReducePolicy, typename NumericType>
-void testMultiReducerSingleInitConstructorRegular(
-    size_t      num_bins,
-    NumericType initVal)
+void testMultiReducerSingleInitConstructorRegular(size_t num_bins,
+                                                  NumericType initVal)
 {
   RAJA::MultiReduceSum<MultiReducePolicy, NumericType> multi_reduce_sum(
       num_bins, initVal);
@@ -158,9 +150,8 @@ void testMultiReducerSingleInitConstructorRegular(
 }
 
 template <typename MultiReducePolicy, typename NumericType>
-void testMultiReducerSingleInitConstructorBitwise(
-    size_t      num_bins,
-    NumericType initVal)
+void testMultiReducerSingleInitConstructorBitwise(size_t num_bins,
+                                                  NumericType initVal)
 {
   RAJA::MultiReduceBitOr<MultiReducePolicy, NumericType> multi_reduce_or(
       num_bins, initVal);
@@ -180,10 +171,9 @@ void testMultiReducerSingleInitConstructorBitwise(
   }
 }
 
-template <
-    typename MultiReducePolicy,
-    typename NumericType,
-    std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
+template <typename MultiReducePolicy,
+          typename NumericType,
+          std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
 void testMultiReducerSingleInitConstructor(size_t num_bins, NumericType initVal)
 {
   testMultiReducerSingleInitConstructorRegular<MultiReducePolicy, NumericType>(
@@ -192,10 +182,9 @@ void testMultiReducerSingleInitConstructor(size_t num_bins, NumericType initVal)
       num_bins, initVal);
 }
 ///
-template <
-    typename MultiReducePolicy,
-    typename NumericType,
-    std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
+template <typename MultiReducePolicy,
+          typename NumericType,
+          std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
 void testMultiReducerSingleInitConstructor(size_t num_bins, NumericType initVal)
 {
   testMultiReducerSingleInitConstructorRegular<MultiReducePolicy, NumericType>(
@@ -269,40 +258,37 @@ void testMultiReducerContainerInitConstructorBitwise(Container const& container)
   }
 }
 
-template <
-    typename MultiReducePolicy,
-    typename NumericType,
-    typename Container,
-    std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
+template <typename MultiReducePolicy,
+          typename NumericType,
+          typename Container,
+          std::enable_if_t<std::is_integral<NumericType>::value>* = nullptr>
 void testMultiReducerContainerInitConstructor(Container const& container)
 {
-  testMultiReducerContainerInitConstructorRegular<
-      MultiReducePolicy, NumericType>(container);
-  testMultiReducerContainerInitConstructorBitwise<
-      MultiReducePolicy, NumericType>(container);
+  testMultiReducerContainerInitConstructorRegular<MultiReducePolicy,
+                                                  NumericType>(container);
+  testMultiReducerContainerInitConstructorBitwise<MultiReducePolicy,
+                                                  NumericType>(container);
 }
 ///
-template <
-    typename MultiReducePolicy,
-    typename NumericType,
-    typename Container,
-    std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
+template <typename MultiReducePolicy,
+          typename NumericType,
+          typename Container,
+          std::enable_if_t<!std::is_integral<NumericType>::value>* = nullptr>
 void testMultiReducerContainerInitConstructor(Container const& container)
 {
-  testMultiReducerContainerInitConstructorRegular<
-      MultiReducePolicy, NumericType>(container);
+  testMultiReducerContainerInitConstructorRegular<MultiReducePolicy,
+                                                  NumericType>(container);
 }
 
-TYPED_TEST_P(
-    MultiReducerContainerInitConstructorUnitTest,
-    MultiReducerConstructor)
+TYPED_TEST_P(MultiReducerContainerInitConstructorUnitTest,
+             MultiReducerConstructor)
 {
   using MultiReducePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using NumericType       = typename camp::at<TypeParam, camp::num<1>>::type;
 
   std::vector<NumericType> c0(0);
   std::vector<NumericType> c1(1, 3);
-  std::set<NumericType>    c2;
+  std::set<NumericType> c2;
   c2.emplace(5);
   c2.emplace(8);
   std::list<NumericType> c10;
@@ -317,16 +303,13 @@ TYPED_TEST_P(
 }
 
 
-REGISTER_TYPED_TEST_SUITE_P(
-    MultiReducerBasicConstructorUnitTest,
-    MultiReducerConstructor);
+REGISTER_TYPED_TEST_SUITE_P(MultiReducerBasicConstructorUnitTest,
+                            MultiReducerConstructor);
 
-REGISTER_TYPED_TEST_SUITE_P(
-    MultiReducerSingleInitConstructorUnitTest,
-    MultiReducerConstructor);
+REGISTER_TYPED_TEST_SUITE_P(MultiReducerSingleInitConstructorUnitTest,
+                            MultiReducerConstructor);
 
-REGISTER_TYPED_TEST_SUITE_P(
-    MultiReducerContainerInitConstructorUnitTest,
-    MultiReducerConstructor);
+REGISTER_TYPED_TEST_SUITE_P(MultiReducerContainerInitConstructorUnitTest,
+                            MultiReducerConstructor);
 
 #endif  //__TEST_MULTI_REDUCER_CONSTRUCTOR__

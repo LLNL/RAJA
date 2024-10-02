@@ -45,8 +45,7 @@ TYPED_TEST_P(KernelNestedLoopBlockReduceSumTest, NestedLoopBlockKernel)
       LOOP_TYPE(), 2345);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelNestedLoopBlockReduceSumTest,
-    NestedLoopBlockKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopBlockReduceSumTest,
+                            NestedLoopBlockKernel);
 
 #endif  // __TEST_KERNEL_NESTED_LOOP_MULTI_LAMBDA_PARAM_REDUCE_SUM_HPP__

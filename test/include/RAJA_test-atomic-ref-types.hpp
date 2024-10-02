@@ -20,7 +20,7 @@
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 1, T>::type
-            np2m1(T val)
+np2m1(T val)
 {
   val |= val >> 1;
   val |= val >> 2;
@@ -30,7 +30,7 @@ RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 1, T>::type
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 2, T>::type
-            np2m1(T val)
+np2m1(T val)
 {
   val |= val >> 1;
   val |= val >> 2;
@@ -41,7 +41,7 @@ RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 2, T>::type
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 4, T>::type
-            np2m1(T val)
+np2m1(T val)
 {
   val |= val >> 1;
   val |= val >> 2;
@@ -53,7 +53,7 @@ RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 4, T>::type
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 8, T>::type
-            np2m1(T val)
+np2m1(T val)
 {
   val |= val >> 1;
   val |= val >> 2;
@@ -66,7 +66,7 @@ RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 8, T>::type
 
 template <typename T>
 RAJA_INLINE RAJA_HOST_DEVICE typename std::enable_if<sizeof(T) == 16, T>::type
-            np2m1(T val)
+np2m1(T val)
 {
   val |= val >> 1;
   val |= val >> 2;

@@ -43,8 +43,7 @@ TYPED_TEST_P(KernelWarpThreadWarpLoopTest, WarpThreadWarpLoopKernel)
       LOOP_TYPE(), 2345);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelWarpThreadWarpLoopTest,
-    WarpThreadWarpLoopKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelWarpThreadWarpLoopTest,
+                            WarpThreadWarpLoopKernel);
 
 #endif  // __TEST_WARP_THREAD_RESOURCE_WARPLOOP_HPP__

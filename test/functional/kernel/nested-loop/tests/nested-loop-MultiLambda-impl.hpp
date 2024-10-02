@@ -10,24 +10,22 @@
 
 #include "RAJA_test-abs.hpp"
 
-template <
-    typename EXEC_POL,
-    bool USE_RESOURCE,
-    typename SEGMENTS,
-    typename WORKING_RES,
-    typename... Args>
+template <typename EXEC_POL,
+          bool USE_RESOURCE,
+          typename SEGMENTS,
+          typename WORKING_RES,
+          typename... Args>
 typename std::enable_if<USE_RESOURCE>::type
 call_kernel(SEGMENTS&& segs, WORKING_RES work_res, Args&&... args)
 {
   RAJA::kernel_resource<EXEC_POL>(segs, work_res, args...);
 }
 
-template <
-    typename EXEC_POL,
-    bool USE_RESOURCE,
-    typename SEGMENTS,
-    typename WORKING_RES,
-    typename... Args>
+template <typename EXEC_POL,
+          bool USE_RESOURCE,
+          typename SEGMENTS,
+          typename WORKING_RES,
+          typename... Args>
 typename std::enable_if<!USE_RESOURCE>::type
 call_kernel(SEGMENTS&& segs, WORKING_RES, Args&&... args)
 {
@@ -54,7 +52,7 @@ void KernelNestedLoopTest()
   constexpr static int DIM = 2;
 
   camp::resources::Resource host_res {camp::resources::Host()};
-  WORKING_RES               work_res {WORKING_RES::get_default()};
+  WORKING_RES work_res {WORKING_RES::get_default()};
 
   // Allocate Tests Data
   double* work_arrA = work_res.template allocate<double>(N * N);
@@ -72,10 +70,10 @@ void KernelNestedLoopTest()
     test_arrA[i] = i * 1.2;
     test_arrB[i] = i * 0.5;
   }
-  work_res.memcpy(
-      work_arrA, test_arrA, sizeof(double) * RAJA::stripIndexType(N * N));
-  work_res.memcpy(
-      work_arrB, test_arrB, sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrA, test_arrA,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(work_arrB, test_arrB,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
 
   // Initialize RAJA Views
   RAJA::View<double, RAJA::Layout<DIM>> test_viewA(test_arrA, N, N);
@@ -105,8 +103,8 @@ void KernelNestedLoopTest()
   RAJA::View<double, RAJA::Layout<DIM>> work_viewB(work_arrB, N, N);
 
   call_kernel<EXEC_POLICY, USE_RESOURCE>(
-      RAJA::make_tuple(
-          RAJA::RangeSegment {1, N - 1}, RAJA::RangeSegment {1, N - 1}),
+      RAJA::make_tuple(RAJA::RangeSegment {1, N - 1},
+                       RAJA::RangeSegment {1, N - 1}),
 
       // Resource
       work_res,
@@ -127,10 +125,10 @@ void KernelNestedLoopTest()
                                   work_viewB(i - 1, j));
       });
 
-  work_res.memcpy(
-      check_arrA, work_arrA, sizeof(double) * RAJA::stripIndexType(N * N));
-  work_res.memcpy(
-      check_arrB, work_arrB, sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(check_arrA, work_arrA,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
+  work_res.memcpy(check_arrB, work_arrB,
+                  sizeof(double) * RAJA::stripIndexType(N * N));
 
   RAJA::forall<RAJA::seq_exec>(
       RAJA::RangeSegment {0, N * N},
@@ -181,15 +179,15 @@ struct MultiLambdaNestedLoopExec<DEPTH_2, POLICY_DATA>
 template <typename POLICY_DATA>
 struct MultiLambdaNestedLoopExec<DEPTH_2_COLLAPSE, POLICY_DATA>
 {
-  using type = RAJA::KernelPolicy<
-      RAJA::statement::Collapse<
-          typename camp::at<POLICY_DATA, camp::num<0>>::type,
-          RAJA::ArgList<1, 0>,
-          RAJA::statement::Lambda<0>>,
-      RAJA::statement::Collapse<
-          typename camp::at<POLICY_DATA, camp::num<0>>::type,
-          RAJA::ArgList<1, 0>,
-          RAJA::statement::Lambda<1>>>;
+  using type =
+      RAJA::KernelPolicy<RAJA::statement::Collapse<
+                             typename camp::at<POLICY_DATA, camp::num<0>>::type,
+                             RAJA::ArgList<1, 0>,
+                             RAJA::statement::Lambda<0>>,
+                         RAJA::statement::Collapse<
+                             typename camp::at<POLICY_DATA, camp::num<0>>::type,
+                             RAJA::ArgList<1, 0>,
+                             RAJA::statement::Lambda<1>>>;
 };
 
 #if defined(RAJA_ENABLE_CUDA) or defined(RAJA_ENABLE_HIP) or                   \

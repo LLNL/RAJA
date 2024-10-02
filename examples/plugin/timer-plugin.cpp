@@ -21,20 +21,15 @@ public:
   void postLaunch(const RAJA::util::PluginContext& p) override
   {
     end_time = std::chrono::steady_clock::now();
-    double elapsedMs =
-        std::chrono::duration<double, std::milli>(end_time - start_time)
-            .count();
+    double elapsedMs = std::chrono::duration<double, std::milli>(end_time - start_time).count();
 
     if (p.platform == RAJA::Platform::host)
     {
-      printf(
-          "[TimerPlugin]: Elapsed time of host kernel was %f ms\n", elapsedMs);
+      printf("[TimerPlugin]: Elapsed time of host kernel was %f ms\n", elapsedMs);
     }
     else
     {
-      printf(
-          "[TimerPlugin]: Elapsed time of device kernel was %f ms\n",
-          elapsedMs);
+      printf("[TimerPlugin]: Elapsed time of device kernel was %f ms\n", elapsedMs);
     }
   }
 
@@ -44,11 +39,10 @@ private:
 };
 
 // Dynamically loading plugin.
-extern "C" RAJA::util::PluginStrategy* getPlugin() { return new TimerPlugin; }
+extern "C" RAJA::util::PluginStrategy *getPlugin()
+{
+  return new TimerPlugin;
+}
 
 // Statically loading plugin.
-static RAJA::util::PluginRegistry::add<TimerPlugin>
-    P("Timer",
-      "Prints elapsed "
-      "time of kernel "
-      "executions.");
+static RAJA::util::PluginRegistry::add<TimerPlugin> P("Timer", "Prints elapsed time of kernel executions.");

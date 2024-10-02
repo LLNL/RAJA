@@ -85,15 +85,13 @@ struct InsertionSortPairs<test_policy, RunOnHost>
 
   const char* name() { return "RAJA::insertion_sort[pairs]"; }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
@@ -126,15 +124,13 @@ struct ShellSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 
   const char* name() { return "RAJA::shell_sort[pairs]"; }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
@@ -167,15 +163,13 @@ struct HeapSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 
   const char* name() { return "RAJA::heap_sort[pairs]"; }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
@@ -208,15 +202,13 @@ struct IntroSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 
   const char* name() { return "RAJA::intro_sort[pairs]"; }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
@@ -249,15 +241,13 @@ struct MergeSortPairs<test_policy, RunOnHost> : ForoneSynchronize<test_policy>
 
   const char* name() { return "RAJA::merge_sort[pairs]"; }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     auto c        = RAJA::zip_span(keys, vals);
     using zip_ref = RAJA::detail::ContainerRef<camp::decay<decltype(c)>>;
@@ -277,9 +267,8 @@ struct InsertionSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   InsertionSort()
-      : m_name(
-            std::string("RAJA::insertion_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">"))
+      : m_name(std::string("RAJA::insertion_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -308,22 +297,19 @@ struct InsertionSortPairs<test_policy, RunOnDevice>
   std::string m_name;
 
   InsertionSortPairs()
-      : m_name(
-            std::string("RAJA::insertion_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">[pairs]"))
+      : m_name(std::string("RAJA::insertion_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     forone<test_policy>(
         [=] RAJA_DEVICE()
@@ -345,9 +331,8 @@ struct ShellSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   ShellSort()
-      : m_name(
-            std::string("RAJA::shell_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">"))
+      : m_name(std::string("RAJA::shell_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -375,22 +360,19 @@ struct ShellSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   ShellSortPairs()
-      : m_name(
-            std::string("RAJA::shell_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">[pairs]"))
+      : m_name(std::string("RAJA::shell_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     forone<test_policy>(
         [=] RAJA_DEVICE()
@@ -412,9 +394,8 @@ struct HeapSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   HeapSort()
-      : m_name(
-            std::string("RAJA::heap_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">"))
+      : m_name(std::string("RAJA::heap_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -442,22 +423,19 @@ struct HeapSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   HeapSortPairs()
-      : m_name(
-            std::string("RAJA::heap_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">[pairs]"))
+      : m_name(std::string("RAJA::heap_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     forone<test_policy>(
         [=] RAJA_DEVICE()
@@ -479,9 +457,8 @@ struct IntroSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   IntroSort()
-      : m_name(
-            std::string("RAJA::intro_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">"))
+      : m_name(std::string("RAJA::intro_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -509,22 +486,19 @@ struct IntroSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   IntroSortPairs()
-      : m_name(
-            std::string("RAJA::intro_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">[pairs]"))
+      : m_name(std::string("RAJA::intro_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     forone<test_policy>(
         [=] RAJA_DEVICE()
@@ -546,9 +520,8 @@ struct MergeSort<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   MergeSort()
-      : m_name(
-            std::string("RAJA::merge_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">"))
+      : m_name(std::string("RAJA::merge_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">"))
   {}
 
   const char* name() { return m_name.c_str(); }
@@ -576,22 +549,19 @@ struct MergeSortPairs<test_policy, RunOnDevice> : ForoneSynchronize<test_policy>
   std::string m_name;
 
   MergeSortPairs()
-      : m_name(
-            std::string("RAJA::merge_sort<") +
-            test_policy_info<test_policy>::name() + std::string(">[pairs]"))
+      : m_name(std::string("RAJA::merge_sort<") +
+               test_policy_info<test_policy>::name() + std::string(">[pairs]"))
   {}
 
   const char* name() { return m_name.c_str(); }
 
-  template <
-      typename KeyContainer,
-      typename ValContainer,
-      typename Compare =
-          RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
-  void operator()(
-      KeyContainer&& keys,
-      ValContainer&& vals,
-      Compare        comp = Compare {})
+  template <typename KeyContainer,
+            typename ValContainer,
+            typename Compare =
+                RAJA::operators::less<RAJA::detail::ContainerRef<KeyContainer>>>
+  void operator()(KeyContainer&& keys,
+                  ValContainer&& vals,
+                  Compare comp = Compare {})
   {
     forone<test_policy>(
         [=] RAJA_DEVICE()

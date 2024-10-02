@@ -42,7 +42,7 @@ void ET_MatrixVectorImpl()
 
   // alloc data2 - The input vector
 
-  std::vector<element_t>                                     data2_vec(N);
+  std::vector<element_t> data2_vec(N);
   RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_I, N>> data2_h(
       data2_vec.data());
 
@@ -52,7 +52,7 @@ void ET_MatrixVectorImpl()
 
   // alloc data3 - The output vector
 
-  std::vector<element_t>                         data3_vec(N);
+  std::vector<element_t> data3_vec(N);
   RAJA::View<element_t, RAJA::Layout<1, int, 0>> data3_h(data3_vec.data(), N);
 
   element_t* data3_ptr = tensor_malloc<policy_t>(data3_vec);

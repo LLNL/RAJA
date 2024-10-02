@@ -75,9 +75,8 @@ public:
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(
-      size_type             init_cap = 0,
-      const allocator_type& a        = allocator_type())
+  explicit RAJAVec(size_type init_cap      = 0,
+                   const allocator_type& a = allocator_type())
       : m_data(nullptr), m_allocator(a), m_capacity(0), m_size(0)
   {
     reserve(init_cap);
@@ -131,8 +130,8 @@ public:
   {
     if (&rhs != this)
     {
-      move_assign_private(
-          std::move(rhs), propagate_on_container_move_assignment {});
+      move_assign_private(std::move(rhs),
+                          propagate_on_container_move_assignment {});
     }
     return *this;
   }
@@ -306,10 +305,10 @@ public:
   void pop_back() { destroy_items_after(m_size - 1); }
 
 private:
-  pointer        m_data;
+  pointer m_data;
   allocator_type m_allocator;
-  size_type      m_capacity;
-  size_type      m_size;
+  size_type m_capacity;
+  size_type m_size;
 
   ///
   /// Copy assignment implementation
@@ -453,8 +452,8 @@ private:
   {
     for (; m_size < new_size; ++m_size)
     {
-      allocator_traits_type::construct(
-          m_allocator, m_data + m_size, std::forward<Os>(os)...);
+      allocator_traits_type::construct(m_allocator, m_data + m_size,
+                                       std::forward<Os>(os)...);
     }
   }
 
@@ -465,8 +464,8 @@ private:
   {
     for (; m_size < new_size; ++m_size)
     {
-      allocator_traits_type::construct(
-          m_allocator, m_data + m_size, o_data[m_size]);
+      allocator_traits_type::construct(m_allocator, m_data + m_size,
+                                       o_data[m_size]);
     }
   }
 
@@ -477,8 +476,8 @@ private:
   {
     for (; m_size < new_size; ++m_size)
     {
-      allocator_traits_type::construct(
-          m_allocator, m_data + m_size, std::move(o_data[m_size]));
+      allocator_traits_type::construct(m_allocator, m_data + m_size,
+                                       std::move(o_data[m_size]));
     }
   }
 
@@ -504,16 +503,16 @@ private:
     if (m_size > 0)
     {
       size_type i = m_size;
-      allocator_traits_type::construct(
-          m_allocator, m_data + i, std::move(m_data[i - 1]));
+      allocator_traits_type::construct(m_allocator, m_data + i,
+                                       std::move(m_data[i - 1]));
       for (--i; i > 0; --i)
       {
         m_data[i] = std::move(m_data[i - 1]);
       }
       allocator_traits_type::destroy(m_allocator, m_data);
     }
-    allocator_traits_type::construct(
-        m_allocator, m_data, std::forward<Os>(os)...);
+    allocator_traits_type::construct(m_allocator, m_data,
+                                     std::forward<Os>(os)...);
     m_size++;
   }
 
@@ -524,8 +523,8 @@ private:
   void emplace_back_private(Os&&... os)
   {
     reserve(m_size + 1);
-    allocator_traits_type::construct(
-        m_allocator, m_data + m_size, std::forward<Os>(os)...);
+    allocator_traits_type::construct(m_allocator, m_data + m_size,
+                                     std::forward<Os>(os)...);
     m_size++;
   }
 
@@ -535,7 +534,7 @@ private:
   // relying on STL directly.
   //
   static constexpr const size_type s_init_cap = 8;
-  static constexpr const double    s_grow_fac = 1.5;
+  static constexpr const double s_grow_fac    = 1.5;
 
   //
   // Get the next value for capacity given a target and minimum.
@@ -588,8 +587,8 @@ private:
     {
       for (size_type i = 0; i < m_size; ++i)
       {
-        allocator_traits_type::construct(
-            m_allocator, tdata + i, std::move(m_data[i]));
+        allocator_traits_type::construct(m_allocator, tdata + i,
+                                         std::move(m_data[i]));
         allocator_traits_type::destroy(m_allocator, m_data + i);
       }
       allocator_traits_type::deallocate(m_allocator, m_data, m_capacity);

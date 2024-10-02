@@ -16,12 +16,11 @@
 
 #include "../test-reducer.hpp"
 
-template <
-    typename ReducePolicy,
-    typename NumericType,
-    typename Indexer,
-    typename Tuple,
-    typename ForOnePol>
+template <typename ReducePolicy,
+          typename NumericType,
+          typename Indexer,
+          typename Tuple,
+          typename ForOnePol>
 typename std::enable_if<  // Empty function for non-device policy.
     std::is_base_of<RunOnHost, ForOnePol>::value>::type
 exec_dispatcher(
@@ -42,23 +41,22 @@ exec_dispatcher(
 }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-template <
-    typename ReducePolicy,
-    typename NumericType,
-    typename Indexer,
-    typename Tuple,
-    typename ForOnePol>
+template <typename ReducePolicy,
+          typename NumericType,
+          typename Indexer,
+          typename Tuple,
+          typename ForOnePol>
 typename std::enable_if<  // GPU policy execution.
     std::is_base_of<RunOnDevice, ForOnePol>::value>::type
 exec_dispatcher(
-    RAJA::ReduceSum<ReducePolicy, NumericType>&             reduce_sum,
-    RAJA::ReduceMin<ReducePolicy, NumericType>&             reduce_min,
-    RAJA::ReduceMax<ReducePolicy, NumericType>&             reduce_max,
+    RAJA::ReduceSum<ReducePolicy, NumericType>& reduce_sum,
+    RAJA::ReduceMin<ReducePolicy, NumericType>& reduce_min,
+    RAJA::ReduceMax<ReducePolicy, NumericType>& reduce_max,
     RAJA::ReduceMinLoc<ReducePolicy, NumericType, Indexer>& reduce_minloc,
     RAJA::ReduceMaxLoc<ReducePolicy, NumericType, Indexer>& reduce_maxloc,
-    RAJA::ReduceMinLoc<ReducePolicy, NumericType, Tuple>&   reduce_minloctup,
-    RAJA::ReduceMaxLoc<ReducePolicy, NumericType, Tuple>&   reduce_maxloctup,
-    NumericType                                             initVal)
+    RAJA::ReduceMinLoc<ReducePolicy, NumericType, Tuple>& reduce_minloctup,
+    RAJA::ReduceMaxLoc<ReducePolicy, NumericType, Tuple>& reduce_maxloctup,
+    NumericType initVal)
 {
   // Use device to activate any value for each reducer.
   forone<ForOnePol>(
@@ -83,11 +81,10 @@ class ReducerResetUnitTest : public ::testing::Test
 
 TYPED_TEST_SUITE_P(ReducerResetUnitTest);
 
-template <
-    typename ReducePolicy,
-    typename NumericType,
-    typename WORKING_RES,
-    typename ForOnePol>
+template <typename ReducePolicy,
+          typename NumericType,
+          typename WORKING_RES,
+          typename ForOnePol>
 void testReducerReset()
 {
   camp::resources::Resource work_res {WORKING_RES::get_default()};
@@ -112,26 +109,23 @@ void testReducerReset()
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  RAJA::ReduceSum<ReducePolicy, NumericType>    reduce_sum(initVal);
-  RAJA::ReduceMin<ReducePolicy, NumericType>    reduce_min(initVal);
-  RAJA::ReduceMax<ReducePolicy, NumericType>    reduce_max(initVal);
+  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
+  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
+  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
   RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
-  RAJA::ReduceMinLoc<
-      ReducePolicy, NumericType,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType,
+                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_minloctup(initVal, LocTup);
-  RAJA::ReduceMaxLoc<
-      ReducePolicy, NumericType,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType,
+                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_maxloctup(initVal, LocTup);
 
   // initiate some device computation if using device policy
-  exec_dispatcher<
-      ReducePolicy, NumericType, RAJA::Index_type,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>, ForOnePol>(
+  exec_dispatcher<ReducePolicy, NumericType, RAJA::Index_type,
+                  RAJA::tuple<RAJA::Index_type, RAJA::Index_type>, ForOnePol>(
       reduce_sum, reduce_min, reduce_max, reduce_minloc, reduce_maxloc,
       reduce_minloctup, reduce_maxloctup, initVal);
 
@@ -159,18 +153,14 @@ void testReducerReset()
   ASSERT_EQ((NumericType)reduce_maxloctup.get(), (NumericType)(resetVal[0]));
 
   // Reset of tuple loc defaults to 0
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())),
-      (RAJA::Index_type)0);
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())),
-      (RAJA::Index_type)0);
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())),
-      (RAJA::Index_type)0);
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())),
-      (RAJA::Index_type)0);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())),
+            (RAJA::Index_type)0);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())),
+            (RAJA::Index_type)0);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())),
+            (RAJA::Index_type)0);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())),
+            (RAJA::Index_type)0);
 
   // reset locs to default of -1.
   reduce_minloc.reset(resetVal[0], -1);

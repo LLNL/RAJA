@@ -20,15 +20,13 @@ class RangeSegmentUnitTest : public ::testing::Test
 TYPED_TEST_SUITE(RangeSegmentUnitTest, UnitIndexTypes);
 
 
-template <
-    typename T,
-    typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
 void NegativeRangeSegConstructorsTest()
 {}
 
-template <
-    typename T,
-    typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
 void NegativeRangeSegConstructorsTest()
 {
   RAJA::TypedRangeSegment<T> r1(-10, 7);
@@ -78,15 +76,13 @@ TYPED_TEST(RangeSegmentUnitTest, Swaps)
   ASSERT_EQ(r2, r3);
 }
 
-template <
-    typename T,
-    typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
 void NegativeRangeSegIteratorsTest()
 {}
 
-template <
-    typename T,
-    typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
 void NegativeRangeSegIteratorsTest()
 {
   RAJA::TypedRangeSegment<T> r3(-2, 100);
@@ -106,17 +102,15 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
   NegativeRangeSegIteratorsTest<TypeParam>();
 }
 
-template <
-    typename IDX_TYPE,
-    typename std::enable_if<std::is_unsigned<
-        RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+template <typename IDX_TYPE,
+          typename std::enable_if<std::is_unsigned<
+              RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
 void runNegativeIndexSliceTests()
 {}
 
-template <
-    typename IDX_TYPE,
-    typename std::enable_if<std::is_signed<
-        RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+template <typename IDX_TYPE,
+          typename std::enable_if<std::is_signed<
+              RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
 void runNegativeIndexSliceTests()
 {
   auto r1 = RAJA::TypedRangeSegment<IDX_TYPE>(-4, 4);

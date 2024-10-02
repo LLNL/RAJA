@@ -42,8 +42,8 @@ namespace hip
 // global function that creates the value on the device using the
 // factory and writes it into a pinned ptr
 template <typename Factory>
-__global__ void
-get_value_global(typename Factory::value_type* ptr, Factory factory)
+__global__ void get_value_global(typename Factory::value_type* ptr,
+                                 Factory factory)
 {
   *ptr = factory();
 }
@@ -52,7 +52,7 @@ get_value_global(typename Factory::value_type* ptr, Factory factory)
 inline void* get_cached_value_ptr(size_t nbytes)
 {
   static size_t cached_nbytes = 0;
-  static void*  ptr           = nullptr;
+  static void* ptr            = nullptr;
   if (nbytes > cached_nbytes)
   {
     cached_nbytes = 0;

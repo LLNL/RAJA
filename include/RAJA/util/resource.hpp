@@ -70,45 +70,41 @@ struct get_resource_from_platform<Platform::cuda>
   using type = camp::resources::Cuda;
 };
 
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    size_t BLOCKS_PER_SM,
-    bool   Async>
-struct get_resource<::RAJA::policy::cuda::cuda_exec_explicit<
-    IterationMapping,
-    IterationGetter,
-    Concretizer,
-    BLOCKS_PER_SM,
-    Async>>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          size_t BLOCKS_PER_SM,
+          bool Async>
+struct get_resource<::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
+                                                             IterationGetter,
+                                                             Concretizer,
+                                                             BLOCKS_PER_SM,
+                                                             Async>>
 {
   using type = camp::resources::Cuda;
 };
 
 template <bool Async, int num_threads, size_t BLOCKS_PER_SM>
-struct get_resource<
-    ::RAJA::policy::cuda::
-        cuda_launch_explicit_t<Async, num_threads, BLOCKS_PER_SM>>
+struct get_resource<::RAJA::policy::cuda::cuda_launch_explicit_t<Async,
+                                                                 num_threads,
+                                                                 BLOCKS_PER_SM>>
 {
   using type = camp::resources::Cuda;
 };
 
-template <
-    typename ISetIter,
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    size_t BLOCKS_PER_SM,
-    bool   Async>
-struct get_resource<ExecPolicy<
-    ISetIter,
-    ::RAJA::policy::cuda::cuda_exec_explicit<
-        IterationMapping,
-        IterationGetter,
-        Concretizer,
-        BLOCKS_PER_SM,
-        Async>>>
+template <typename ISetIter,
+          typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          size_t BLOCKS_PER_SM,
+          bool Async>
+struct get_resource<
+    ExecPolicy<ISetIter,
+               ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
+                                                        IterationGetter,
+                                                        Concretizer,
+                                                        BLOCKS_PER_SM,
+                                                        Async>>>
 {
   using type = camp::resources::Cuda;
 };
@@ -121,11 +117,10 @@ struct get_resource_from_platform<Platform::hip>
   using type = camp::resources::Hip;
 };
 
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async>
 struct get_resource<
     ::RAJA::policy::hip::
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async>>
@@ -139,12 +134,11 @@ struct get_resource<::RAJA::policy::hip::hip_launch_t<Async, num_threads>>
   using type = camp::resources::Hip;
 };
 
-template <
-    typename ISetIter,
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async>
+template <typename ISetIter,
+          typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async>
 struct get_resource<ExecPolicy<
     ISetIter,
     ::RAJA::policy::hip::

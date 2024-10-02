@@ -51,16 +51,14 @@ struct Privatizer
   using value_type     = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
-  static_assert(
-      !has_privatizer<T>::value,
-      "Privatizer selected "
-      "inappropriately, this is almost "
-      "certainly "
-      "a bug");
-  static_assert(
-      !std::is_base_of<GenericWrapperBase, T>::value,
-      "Privatizer selected inappropriately, this is almost certainly "
-      "a bug");
+  static_assert(!has_privatizer<T>::value,
+                "Privatizer selected "
+                "inappropriately, this is almost "
+                "certainly "
+                "a bug");
+  static_assert(!std::is_base_of<GenericWrapperBase, T>::value,
+                "Privatizer selected inappropriately, this is almost certainly "
+                "a bug");
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE Privatizer(const T& o) : priv {o} {}
@@ -86,18 +84,16 @@ struct Privatizer
  * that does not belong here.
  *
  */
-template <
-    typename T,
-    typename std::enable_if<!has_privatizer<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<!has_privatizer<T>::value>::type* = nullptr>
 RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T> {item};
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <
-    typename T,
-    typename std::enable_if<has_privatizer<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<has_privatizer<T>::value>::type* = nullptr>
 RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
 {
   return typename T::privatizer {item};

@@ -9,14 +9,13 @@
 #define __TEST_KERNEL_REGION_DATA_HPP__
 
 template <typename T>
-void allocRegionTestData(
-    int                       N,
-    camp::resources::Resource work_res,
-    T**                       work1,
-    T**                       work2,
-    T**                       work3,
-    camp::resources::Resource host_res,
-    T**                       check)
+void allocRegionTestData(int N,
+                         camp::resources::Resource work_res,
+                         T** work1,
+                         T** work2,
+                         T** work3,
+                         camp::resources::Resource host_res,
+                         T** check)
 {
   *work1 = work_res.allocate<T>(N);
   *work2 = work_res.allocate<T>(N);
@@ -26,13 +25,12 @@ void allocRegionTestData(
 }
 
 template <typename T>
-void deallocRegionTestData(
-    camp::resources::Resource work_res,
-    T*                        work1,
-    T*                        work2,
-    T*                        work3,
-    camp::resources::Resource host_res,
-    T*                        check)
+void deallocRegionTestData(camp::resources::Resource work_res,
+                           T* work1,
+                           T* work2,
+                           T* work3,
+                           camp::resources::Resource host_res,
+                           T* check)
 {
   work_res.deallocate(work1);
   work_res.deallocate(work2);

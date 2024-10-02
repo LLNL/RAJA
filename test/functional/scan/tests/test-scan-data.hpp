@@ -13,13 +13,12 @@
 //
 
 template <typename T>
-void allocScanTestData(
-    int                       N,
-    camp::resources::Resource work_res,
-    T**                       work_in,
-    T**                       work_out,
-    T**                       host_in,
-    T**                       host_out)
+void allocScanTestData(int N,
+                       camp::resources::Resource work_res,
+                       T** work_in,
+                       T** work_out,
+                       T** host_in,
+                       T** host_out)
 {
   camp::resources::Resource host_res {camp::resources::Host()};
 
@@ -31,12 +30,11 @@ void allocScanTestData(
 }
 
 template <typename T>
-void deallocScanTestData(
-    camp::resources::Resource work_res,
-    T*                        work_in,
-    T*                        work_out,
-    T*                        host_in,
-    T*                        host_out)
+void deallocScanTestData(camp::resources::Resource work_res,
+                         T* work_in,
+                         T* work_out,
+                         T* host_in,
+                         T* host_out)
 {
   camp::resources::Resource host_res {camp::resources::Host()};
 

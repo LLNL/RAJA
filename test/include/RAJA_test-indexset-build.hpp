@@ -21,24 +21,23 @@
 // Utility routine to construct index set with mix of Range, RangeStride,
 // and List segments to use in various tests.
 //
-template <
-    typename INDEX_TYPE,
-    typename RANGE_TYPE,
-    typename RANGESTRIDE_TYPE,
-    typename LIST_TYPE>
+template <typename INDEX_TYPE,
+          typename RANGE_TYPE,
+          typename RANGESTRIDE_TYPE,
+          typename LIST_TYPE>
 void buildIndexSet(
     RAJA::TypedIndexSet<RANGE_TYPE, RANGESTRIDE_TYPE, LIST_TYPE>& iset,
-    std::vector<INDEX_TYPE>&                                      indices_out,
-    camp::resources::Resource                                     working_res)
+    std::vector<INDEX_TYPE>& indices_out,
+    camp::resources::Resource working_res)
 {
   //
   //  Build vector of integers for creating List segments.
   //
-  std::default_random_engine             gen;
+  std::default_random_engine gen;
   std::uniform_real_distribution<double> dist(0.0, 1.0);
 
   std::vector<INDEX_TYPE> lindices;
-  INDEX_TYPE              idx = 0;
+  INDEX_TYPE idx = 0;
   while (lindices.size() < 3000)
   {
     double dval = dist(gen);
@@ -53,11 +52,11 @@ void buildIndexSet(
   // Construct a mix of Range, RangeStride, and List segments
   // and add them to index set
   //
-  INDEX_TYPE              rbeg     = 0;
-  INDEX_TYPE              rend     = 0;
-  INDEX_TYPE              stride   = 0;
-  INDEX_TYPE              last_idx = 0;
-  INDEX_TYPE              lseg_len = static_cast<INDEX_TYPE>(lindices.size());
+  INDEX_TYPE rbeg     = 0;
+  INDEX_TYPE rend     = 0;
+  INDEX_TYPE stride   = 0;
+  INDEX_TYPE last_idx = 0;
+  INDEX_TYPE lseg_len = static_cast<INDEX_TYPE>(lindices.size());
   std::vector<INDEX_TYPE> lseg(lseg_len);
   std::vector<INDEX_TYPE> lseg_vec(lseg_len);
 

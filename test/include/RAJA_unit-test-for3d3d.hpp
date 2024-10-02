@@ -123,26 +123,22 @@ inline void for3d3d(test_openmp_target, dim3d3d dim, L&& run)
 template <typename L>
 __global__ void for3d3d_cuda_global(L run)
 {
-  run(
-      dim3d3d {
-          {static_cast<int>(threadIdx.x), static_cast<int>(threadIdx.y),
-           static_cast<int>(threadIdx.z)},
-          {static_cast<int>(blockIdx.x), static_cast<int>(blockIdx.y),
-           static_cast<int>(blockIdx.z)}},
-      dim3d3d {
-          {static_cast<int>(blockDim.x), static_cast<int>(blockDim.y),
-           static_cast<int>(blockDim.z)},
-          {static_cast<int>(gridDim.x), static_cast<int>(gridDim.y),
-           static_cast<int>(gridDim.z)}});
+  run(dim3d3d {{static_cast<int>(threadIdx.x), static_cast<int>(threadIdx.y),
+                static_cast<int>(threadIdx.z)},
+               {static_cast<int>(blockIdx.x), static_cast<int>(blockIdx.y),
+                static_cast<int>(blockIdx.z)}},
+      dim3d3d {{static_cast<int>(blockDim.x), static_cast<int>(blockDim.y),
+                static_cast<int>(blockDim.z)},
+               {static_cast<int>(gridDim.x), static_cast<int>(gridDim.y),
+                static_cast<int>(gridDim.z)}});
 }
 
 // test_cuda implementation
 template <typename L>
 inline void for3d3d(test_cuda, dim3d3d dim, L&& run)
 {
-  for3d3d_cuda_global<<<
-      dim3(dim.block[0], dim.block[1], dim.block[2]),
-      dim3(dim.thread[0], dim.thread[1], dim.thread[2])>>>(
+  for3d3d_cuda_global<<<dim3(dim.block[0], dim.block[1], dim.block[2]),
+                        dim3(dim.thread[0], dim.thread[1], dim.thread[2])>>>(
       std::forward<L>(run));
   cudaErrchk(cudaGetLastError());
   cudaErrchk(cudaDeviceSynchronize());
@@ -155,28 +151,24 @@ inline void for3d3d(test_cuda, dim3d3d dim, L&& run)
 template <typename L>
 __global__ void for3d3d_hip_global(L run)
 {
-  run(
-      dim3d3d {
-          {static_cast<int>(threadIdx.x), static_cast<int>(threadIdx.y),
-           static_cast<int>(threadIdx.z)},
-          {static_cast<int>(blockIdx.x), static_cast<int>(blockIdx.y),
-           static_cast<int>(blockIdx.z)}},
-      dim3d3d {
-          {static_cast<int>(blockDim.x), static_cast<int>(blockDim.y),
-           static_cast<int>(blockDim.z)},
-          {static_cast<int>(gridDim.x), static_cast<int>(gridDim.y),
-           static_cast<int>(gridDim.z)}});
+  run(dim3d3d {{static_cast<int>(threadIdx.x), static_cast<int>(threadIdx.y),
+                static_cast<int>(threadIdx.z)},
+               {static_cast<int>(blockIdx.x), static_cast<int>(blockIdx.y),
+                static_cast<int>(blockIdx.z)}},
+      dim3d3d {{static_cast<int>(blockDim.x), static_cast<int>(blockDim.y),
+                static_cast<int>(blockDim.z)},
+               {static_cast<int>(gridDim.x), static_cast<int>(gridDim.y),
+                static_cast<int>(gridDim.z)}});
 }
 
 // test_hip implementation
 template <typename L>
 inline void for3d3d(test_hip, dim3d3d dim, L&& run)
 {
-  hipLaunchKernelGGL(
-      for3d3d_hip_global<camp::decay<L>>,
-      dim3(dim.block[0], dim.block[1], dim.block[2]),
-      dim3(dim.thread[0], dim.thread[1], dim.thread[2]), 0, 0,
-      std::forward<L>(run));
+  hipLaunchKernelGGL(for3d3d_hip_global<camp::decay<L>>,
+                     dim3(dim.block[0], dim.block[1], dim.block[2]),
+                     dim3(dim.thread[0], dim.thread[1], dim.thread[2]), 0, 0,
+                     std::forward<L>(run));
   hipErrchk(hipGetLastError());
   hipErrchk(hipDeviceSynchronize());
 }

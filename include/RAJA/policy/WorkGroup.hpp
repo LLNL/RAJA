@@ -67,13 +67,13 @@ struct constant_stride_array_of_objects
 
 /// Dispatch using function pointers to make indirect function calls
 struct indirect_function_call_dispatch
-    : RAJA::
-          make_policy_pattern_t<Policy::undefined, Pattern::workgroup_dispatch>
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_dispatch>
 {};
 /// Dispatch using virtual functions to make indirect function calls
 struct indirect_virtual_function_dispatch
-    : RAJA::
-          make_policy_pattern_t<Policy::undefined, Pattern::workgroup_dispatch>
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_dispatch>
 {};
 /// Dispatch using an implementation equivalent to a switch statement to select
 /// the type from RangeAndCallables and directly call the object.
@@ -82,15 +82,14 @@ struct indirect_virtual_function_dispatch
 /// objects that may be passed to WorkPool enqueue.
 template <typename... RangeAndCallables>
 struct direct_dispatch
-    : RAJA::
-          make_policy_pattern_t<Policy::undefined, Pattern::workgroup_dispatch>
+    : RAJA::make_policy_pattern_t<Policy::undefined,
+                                  Pattern::workgroup_dispatch>
 {};
 
-template <
-    typename EXEC_POLICY_T,
-    typename ORDER_POLICY_T,
-    typename STORAGE_POLICY_T,
-    typename DISPATCH_POLICY_T = indirect_function_call_dispatch>
+template <typename EXEC_POLICY_T,
+          typename ORDER_POLICY_T,
+          typename STORAGE_POLICY_T,
+          typename DISPATCH_POLICY_T = indirect_function_call_dispatch>
 struct WorkGroupPolicy : public RAJA::make_policy_pattern_platform_t<
                              policy_of<EXEC_POLICY_T>::value,
                              Pattern::workgroup,
@@ -102,16 +101,14 @@ struct WorkGroupPolicy : public RAJA::make_policy_pattern_platform_t<
   static_assert(
       RAJA::pattern_is<ORDER_POLICY_T, RAJA::Pattern::workgroup_order>::value,
       "WorkGroupPolicy: ORDER_POLICY_T must be a workgroup order policy");
-  static_assert(
-      RAJA::pattern_is<STORAGE_POLICY_T, RAJA::Pattern::workgroup_storage>::
-          value,
-      "WorkGroupPolicy: STORAGE_POLICY_T must be a workgroup storage "
-      "policy");
-  static_assert(
-      RAJA::pattern_is<DISPATCH_POLICY_T, RAJA::Pattern::workgroup_dispatch>::
-          value,
-      "WorkGroupPolicy: DISPATCH_POLICY_T must be a workgroup "
-      "dispatch policy");
+  static_assert(RAJA::pattern_is<STORAGE_POLICY_T,
+                                 RAJA::Pattern::workgroup_storage>::value,
+                "WorkGroupPolicy: STORAGE_POLICY_T must be a workgroup storage "
+                "policy");
+  static_assert(RAJA::pattern_is<DISPATCH_POLICY_T,
+                                 RAJA::Pattern::workgroup_dispatch>::value,
+                "WorkGroupPolicy: DISPATCH_POLICY_T must be a workgroup "
+                "dispatch policy");
 };
 
 }  // end namespace workgroup

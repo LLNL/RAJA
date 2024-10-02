@@ -39,26 +39,23 @@ namespace detail
 {
 
 
-template <
-    typename IdxLin,
-    typename Range,
-    typename Sizes,
-    typename Strides,
-    typename DimTypeList = void>
+template <typename IdxLin,
+          typename Range,
+          typename Sizes,
+          typename Strides,
+          typename DimTypeList = void>
 struct StaticLayoutBase_impl;
 
 
-template <
-    typename IdxLin,
-    IdxLin... RangeInts,
-    IdxLin... Sizes,
-    IdxLin... Strides>
-struct StaticLayoutBase_impl<
-    IdxLin,
-    camp::int_seq<IdxLin, RangeInts...>,
-    camp::int_seq<IdxLin, Sizes...>,
-    camp::int_seq<IdxLin, Strides...>,
-    void>
+template <typename IdxLin,
+          IdxLin... RangeInts,
+          IdxLin... Sizes,
+          IdxLin... Strides>
+struct StaticLayoutBase_impl<IdxLin,
+                             camp::int_seq<IdxLin, RangeInts...>,
+                             camp::int_seq<IdxLin, Sizes...>,
+                             camp::int_seq<IdxLin, Strides...>,
+                             void>
 {
 
   using IndexLinear = IdxLin;
@@ -78,9 +75,8 @@ struct StaticLayoutBase_impl<
 
   RAJA_INLINE static void print()
   {
-    camp::sink(printf(
-        "StaticLayout: arg%d: size=%d, stride=%d\n", (int)RangeInts, (int)Sizes,
-        (int)Strides)...);
+    camp::sink(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
+                      (int)RangeInts, (int)Sizes, (int)Strides)...);
   }
 
 
@@ -190,16 +186,14 @@ struct StrideCalculatorIdx<IdxLin, N, N, Sizes...>
 template <typename IdxLin, typename Range, typename Perm, typename Sizes>
 struct StrideCalculator;
 
-template <
-    typename IdxLin,
-    IdxLin... Range,
-    camp::idx_t... Perm,
-    IdxLin... Sizes>
-struct StrideCalculator<
-    IdxLin,
-    camp::int_seq<IdxLin, Range...>,
-    camp::idx_seq<Perm...>,
-    camp::int_seq<IdxLin, Sizes...>>
+template <typename IdxLin,
+          IdxLin... Range,
+          camp::idx_t... Perm,
+          IdxLin... Sizes>
+struct StrideCalculator<IdxLin,
+                        camp::int_seq<IdxLin, Range...>,
+                        camp::idx_seq<Perm...>,
+                        camp::int_seq<IdxLin, Sizes...>>
 {
   static_assert(sizeof...(Sizes) == sizeof...(Perm), "");
 
@@ -211,31 +205,28 @@ struct StrideCalculator<
 
   using strides_unperm = camp::int_seq<
       IdxLin,
-      StrideCalculatorIdx<
-          IdxLin,
-          N,
-          Range,
-          camp::seq_at<Perm, sizes>::value...>::stride...>;
+      StrideCalculatorIdx<IdxLin,
+                          N,
+                          Range,
+                          camp::seq_at<Perm, sizes>::value...>::stride...>;
 
-  using strides = camp::int_seq<
-      IdxLin,
-      camp::seq_at<camp::seq_at<Range, inv_perm>::value, strides_unperm>::
-          value...>;
+  using strides =
+      camp::int_seq<IdxLin,
+                    camp::seq_at<camp::seq_at<Range, inv_perm>::value,
+                                 strides_unperm>::value...>;
 };
 
 
-template <
-    typename IdxLin,
-    IdxLin... RangeInts,
-    IdxLin... Sizes,
-    IdxLin... Strides,
-    typename... DimTypes>
-struct StaticLayoutBase_impl<
-    IdxLin,
-    camp::int_seq<IdxLin, RangeInts...>,
-    camp::int_seq<IdxLin, Sizes...>,
-    camp::int_seq<IdxLin, Strides...>,
-    camp::list<DimTypes...>>
+template <typename IdxLin,
+          IdxLin... RangeInts,
+          IdxLin... Sizes,
+          IdxLin... Strides,
+          typename... DimTypes>
+struct StaticLayoutBase_impl<IdxLin,
+                             camp::int_seq<IdxLin, RangeInts...>,
+                             camp::int_seq<IdxLin, Sizes...>,
+                             camp::int_seq<IdxLin, Strides...>,
+                             camp::list<DimTypes...>>
 {
 
 
@@ -301,12 +292,11 @@ struct StaticLayoutBase_impl<
 };
 
 
-template <
-    typename Perm,
-    typename IdxLin,
-    typename Sizes,
-    typename Indexes,
-    typename TypeList>
+template <typename Perm,
+          typename IdxLin,
+          typename Sizes,
+          typename Indexes,
+          typename TypeList>
 struct StaticLayoutMaker
 {
   using strides =
@@ -329,11 +319,10 @@ using StaticLayoutT = typename detail::StaticLayoutMaker<
 template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = StaticLayoutT<Perm, camp::idx_t, Sizes...>;
 
-template <
-    typename Perm,
-    typename IdxLin,
-    typename TypeList,
-    camp::idx_t... Sizes>
+template <typename Perm,
+          typename IdxLin,
+          typename TypeList,
+          camp::idx_t... Sizes>
 using TypedStaticLayout = typename detail::StaticLayoutMaker<
     Perm,
     IdxLin,

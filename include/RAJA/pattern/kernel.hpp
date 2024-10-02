@@ -58,9 +58,8 @@ template <typename... Ts>
 struct IterableWrapperTuple<camp::tuple<Ts...>>
 {
 
-  using type = camp::tuple<RAJA::Span<
-      typename camp::decay<Ts>::iterator,
-      typename camp::decay<Ts>::IndexType>...>;
+  using type = camp::tuple<RAJA::Span<typename camp::decay<Ts>::iterator,
+                                      typename camp::decay<Ts>::IndexType>...>;
 };
 
 
@@ -68,19 +67,17 @@ namespace internal
 {
 template <class Tuple, camp::idx_t... I>
 RAJA_INLINE constexpr auto
-make_wrapped_tuple_impl(Tuple&& t, camp::idx_seq<I...>)
-    -> camp::tuple<RAJA::Span<
-        typename camp::decay<
-            camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
-        typename camp::decay<
-            camp::tuple_element_t<I, camp::decay<Tuple>>>::IndexType>...>
+make_wrapped_tuple_impl(Tuple&& t, camp::idx_seq<I...>) -> camp::tuple<
+    RAJA::Span<typename camp::decay<
+                   camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
+               typename camp::decay<
+                   camp::tuple_element_t<I, camp::decay<Tuple>>>::IndexType>...>
 {
   return camp::make_tuple(
-      RAJA::Span<
-          typename camp::decay<
-              camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
-          typename camp::decay<
-              camp::tuple_element_t<I, camp::decay<Tuple>>>::IndexType> {
+      RAJA::Span<typename camp::decay<
+                     camp::tuple_element_t<I, camp::decay<Tuple>>>::iterator,
+                 typename camp::decay<
+                     camp::tuple_element_t<I, camp::decay<Tuple>>>::IndexType> {
           camp::get<I>(std::forward<Tuple>(t)).begin(),
           camp::get<I>(std::forward<Tuple>(t)).end()}...);
 }
@@ -98,17 +95,16 @@ RAJA_INLINE constexpr auto make_wrapped_tuple(Tuple&& t)
 }
 
 
-template <
-    typename PolicyType,
-    typename SegmentTuple,
-    typename ParamTuple,
-    typename Resource,
-    typename... Bodies>
-RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
-    SegmentTuple&& segments,
-    ParamTuple&&   params,
-    Resource       resource,
-    Bodies&&... bodies)
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename ParamTuple,
+          typename Resource,
+          typename... Bodies>
+RAJA_INLINE resources::EventProxy<Resource>
+kernel_param_resource(SegmentTuple&& segments,
+                      ParamTuple&& params,
+                      Resource resource,
+                      Bodies&&... bodies)
 {
   util::PluginContext context {util::make_context<PolicyType>()};
 
@@ -123,8 +119,8 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
 
   using param_tuple_t = camp::decay<ParamTuple>;
 
-  using loop_data_t = internal::LoopData<
-      segment_tuple_t, param_tuple_t, Resource, camp::decay<Bodies>...>;
+  using loop_data_t = internal::LoopData<segment_tuple_t, param_tuple_t,
+                                         Resource, camp::decay<Bodies>...>;
 
 
   util::callPreCapturePlugins(context);
@@ -153,11 +149,10 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   return resources::EventProxy<Resource>(resource);
 }
 
-template <
-    typename PolicyType,
-    typename SegmentTuple,
-    typename Resource,
-    typename... Bodies>
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename Resource,
+          typename... Bodies>
 RAJA_INLINE resources::EventProxy<Resource>
 kernel_resource(SegmentTuple&& segments, Resource resource, Bodies&&... bodies)
 {
@@ -166,11 +161,10 @@ kernel_resource(SegmentTuple&& segments, Resource resource, Bodies&&... bodies)
       std::forward<Bodies>(bodies)...);
 }
 
-template <
-    typename PolicyType,
-    typename SegmentTuple,
-    typename ParamTuple,
-    typename... Bodies>
+template <typename PolicyType,
+          typename SegmentTuple,
+          typename ParamTuple,
+          typename... Bodies>
 RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>>
 kernel_param(SegmentTuple&& segments, ParamTuple&& params, Bodies&&... bodies)
 {
@@ -182,7 +176,7 @@ kernel_param(SegmentTuple&& segments, ParamTuple&& params, Bodies&&... bodies)
 
 template <typename PolicyType, typename SegmentTuple, typename... Bodies>
 RAJA_INLINE resources::EventProxy<resources::resource_from_pol_t<PolicyType>>
-            kernel(SegmentTuple&& segments, Bodies&&... bodies)
+kernel(SegmentTuple&& segments, Bodies&&... bodies)
 {
   auto res = resources::get_default_resource<PolicyType>();
   return RAJA::kernel_param_resource<PolicyType>(

@@ -36,12 +36,11 @@ namespace internal
 {
 
 
-template <
-    typename Data,
-    camp::idx_t HpArgumentId,
-    camp::idx_t... Args,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t HpArgumentId,
+          camp::idx_t... Args,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::
@@ -65,8 +64,8 @@ struct CudaStatementExecutor<
         segment_length<HpArgumentId>(data) +
         foldl(RAJA::operators::plus<int>(), segment_length<Args>(data)...);
 
-    int h_args = foldl(
-        RAJA::operators::plus<idx_t>(), camp::get<Args>(data.offset_tuple)...);
+    int h_args = foldl(RAJA::operators::plus<idx_t>(),
+                       camp::get<Args>(data.offset_tuple)...);
 
     // get length of i dimension
     auto i_len = segment_length<HpArgumentId>(data);

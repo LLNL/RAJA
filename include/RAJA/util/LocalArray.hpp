@@ -70,47 +70,43 @@ using getStaticLayoutType = typename StaticLayoutHelper<Perm, Sizes>::type;
 }  // namespace internal
 
 
-template <
-    typename ValueType,
-    typename Perm,
-    typename Sizes,
-    typename... IndexTypes>
-using TypedLocalArray = internal::TypedViewBase<
-    ValueType,
-    ValueType*,
-    internal::getStaticLayoutType<Perm, Sizes>,
-    camp::list<IndexTypes...>>;
+template <typename ValueType,
+          typename Perm,
+          typename Sizes,
+          typename... IndexTypes>
+using TypedLocalArray =
+    internal::TypedViewBase<ValueType,
+                            ValueType*,
+                            internal::getStaticLayoutType<Perm, Sizes>,
+                            camp::list<IndexTypes...>>;
 
 
 template <typename ValueType, typename Perm, typename Sizes>
-using LocalArray = internal::TypedViewBase<
-    ValueType,
-    ValueType*,
-    internal::getStaticLayoutType<Perm, Sizes>,
-    internal::getDefaultIndexTypes<Perm>>;
+using LocalArray =
+    internal::TypedViewBase<ValueType,
+                            ValueType*,
+                            internal::getStaticLayoutType<Perm, Sizes>,
+                            internal::getDefaultIndexTypes<Perm>>;
 
 
-template <
-    typename AtomicPolicy,
-    typename DataType,
-    typename Perm,
-    typename Sizes,
-    typename... IndexTypes>
+template <typename AtomicPolicy,
+          typename DataType,
+          typename Perm,
+          typename Sizes,
+          typename... IndexTypes>
 struct AtomicTypedLocalArray
 {};
 
-template <
-    typename AtomicPolicy,
-    typename DataType,
-    camp::idx_t... Perm,
-    Index_type... Sizes,
-    typename... IndexTypes>
-struct AtomicTypedLocalArray<
-    AtomicPolicy,
-    DataType,
-    camp::idx_seq<Perm...>,
-    RAJA::SizeList<Sizes...>,
-    IndexTypes...>
+template <typename AtomicPolicy,
+          typename DataType,
+          camp::idx_t... Perm,
+          Index_type... Sizes,
+          typename... IndexTypes>
+struct AtomicTypedLocalArray<AtomicPolicy,
+                             DataType,
+                             camp::idx_seq<Perm...>,
+                             RAJA::SizeList<Sizes...>,
+                             IndexTypes...>
 {
   DataType* m_arrayPtr = nullptr;
   using value_type     = DataType;

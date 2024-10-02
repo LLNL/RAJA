@@ -35,10 +35,10 @@
 namespace RAJA
 {
 
-struct omp_parallel_collapse_exec : make_policy_pattern_t<
-                                        RAJA::Policy::openmp,
-                                        RAJA::Pattern::forall,
-                                        RAJA::policy::omp::For>
+struct omp_parallel_collapse_exec
+    : make_policy_pattern_t<RAJA::Policy::openmp,
+                            RAJA::Pattern::forall,
+                            RAJA::policy::omp::For>
 {};
 
 namespace internal
@@ -48,17 +48,14 @@ namespace internal
 // Collapsing two loops
 /////////
 
-template <
-    camp::idx_t Arg0,
-    camp::idx_t Arg1,
-    typename... EnclosedStmts,
-    typename Types>
-struct StatementExecutor<
-    statement::Collapse<
-        omp_parallel_collapse_exec,
-        ArgList<Arg0, Arg1>,
-        EnclosedStmts...>,
-    Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
+                                             ArgList<Arg0, Arg1>,
+                                             EnclosedStmts...>,
+                         Types>
 {
 
 
@@ -96,18 +93,15 @@ struct StatementExecutor<
 };
 
 
-template <
-    camp::idx_t Arg0,
-    camp::idx_t Arg1,
-    camp::idx_t Arg2,
-    typename... EnclosedStmts,
-    typename Types>
-struct StatementExecutor<
-    statement::Collapse<
-        omp_parallel_collapse_exec,
-        ArgList<Arg0, Arg1, Arg2>,
-        EnclosedStmts...>,
-    Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          camp::idx_t Arg2,
+          typename... EnclosedStmts,
+          typename Types>
+struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
+                                             ArgList<Arg0, Arg1, Arg2>,
+                                             EnclosedStmts...>,
+                         Types>
 {
 
 
@@ -117,9 +111,9 @@ struct StatementExecutor<
     const auto l0 = segment_length<Arg0>(data);
     const auto l1 = segment_length<Arg1>(data);
     const auto l2 = segment_length<Arg2>(data);
-    auto       i0 = l0;
-    auto       i1 = l1;
-    auto       i2 = l2;
+    auto i0       = l0;
+    auto i1       = l1;
+    auto i2       = l2;
 
     // Set the argument types for this loop
     using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;

@@ -13,8 +13,8 @@ TEST(PluginTestDynamic, Exception)
   int* a = new int[10];
 
   ASSERT_ANY_THROW({
-    RAJA::forall<RAJA::seq_exec>(
-        RAJA::RangeSegment(0, 10), [=](int i) { a[i] = 0; });
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10),
+                                 [=](int i) { a[i] = 0; });
   });
 
   delete[] a;

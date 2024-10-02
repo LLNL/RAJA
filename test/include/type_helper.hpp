@@ -95,12 +95,10 @@ struct concat<T>
   using type = T;
 };
 
-template <
-    template <class...>
-    class T,
-    class... Front,
-    class... Next,
-    class... Rest>
+template <template <class...> class T,
+          class... Front,
+          class... Next,
+          class... Rest>
 struct concat<T<Front...>, T<Next...>, Rest...>
 {
   using type = typename concat<T<Front..., Next...>, Rest...>::type;

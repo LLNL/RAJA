@@ -19,11 +19,10 @@
 // not aligned with warp boundaries, for example, to check that reduction
 // mechanics don't depend on any sort of special indexing.
 //
-template <
-    typename IDX_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POLICY>
+template <typename IDX_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POLICY>
 void ForallIndexSetReduceMinLocMultipleTestImpl()
 {
   using RangeSegType = RAJA::TypedRangeSegment<IDX_TYPE>;
@@ -48,10 +47,10 @@ void ForallIndexSetReduceMinLocMultipleTestImpl()
   double* check_array;
   double* test_array;
 
-  allocateForallTestData<double>(
-      alen, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<double>(alen, working_res, &working_array,
+                                 &check_array, &test_array);
 
-  double   current_min = DBL_MAX;
+  double current_min   = DBL_MAX;
   IDX_TYPE current_loc = -1;
 
   for (IDX_TYPE i = 0; i < alen; ++i)
@@ -61,10 +60,10 @@ void ForallIndexSetReduceMinLocMultipleTestImpl()
 
   const int test_repeat = 4;
 
-  RAJA::ReduceMinLoc<REDUCE_POLICY, double, IDX_TYPE> dmin0(
-      current_min, current_loc);
-  RAJA::ReduceMinLoc<REDUCE_POLICY, double, IDX_TYPE> dmin1(
-      current_min, current_loc);
+  RAJA::ReduceMinLoc<REDUCE_POLICY, double, IDX_TYPE> dmin0(current_min,
+                                                            current_loc);
+  RAJA::ReduceMinLoc<REDUCE_POLICY, double, IDX_TYPE> dmin1(current_min,
+                                                            current_loc);
 
   for (int tcount = 1; tcount <= test_repeat; ++tcount)
   {
@@ -82,13 +81,12 @@ void ForallIndexSetReduceMinLocMultipleTestImpl()
 
     working_res.memcpy(working_array, test_array, sizeof(double) * alen);
 
-    RAJA::forall<EXEC_POLICY>(
-        iset,
-        [=] RAJA_HOST_DEVICE(IDX_TYPE i)
-        {
-          dmin0.minloc(working_array[i], i);
-          dmin1.minloc(2 * working_array[i], i);
-        });
+    RAJA::forall<EXEC_POLICY>(iset,
+                              [=] RAJA_HOST_DEVICE(IDX_TYPE i)
+                              {
+                                dmin0.minloc(working_array[i], i);
+                                dmin1.minloc(2 * working_array[i], i);
+                              });
 
     ASSERT_FLOAT_EQ(static_cast<double>(dmin0.get()), current_min);
     ASSERT_EQ(static_cast<IDX_TYPE>(dmin0.getLoc()), current_loc);
@@ -96,8 +94,8 @@ void ForallIndexSetReduceMinLocMultipleTestImpl()
     ASSERT_EQ(static_cast<IDX_TYPE>(dmin1.getLoc()), current_loc);
   }
 
-  deallocateForallTestData<double>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<double>(working_res, working_array, check_array,
+                                   test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallIndexSetReduceMinLocMultipleTest);
@@ -105,21 +103,19 @@ template <typename T>
 class ForallIndexSetReduceMinLocMultipleTest : public ::testing::Test
 {};
 
-TYPED_TEST_P(
-    ForallIndexSetReduceMinLocMultipleTest,
-    ReduceMinLocMultipleForallIndexSet)
+TYPED_TEST_P(ForallIndexSetReduceMinLocMultipleTest,
+             ReduceMinLocMultipleForallIndexSet)
 {
   using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
   using WORKING_RES   = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<2>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  ForallIndexSetReduceMinLocMultipleTestImpl<
-      IDX_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>();
+  ForallIndexSetReduceMinLocMultipleTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY,
+                                             REDUCE_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    ForallIndexSetReduceMinLocMultipleTest,
-    ReduceMinLocMultipleForallIndexSet);
+REGISTER_TYPED_TEST_SUITE_P(ForallIndexSetReduceMinLocMultipleTest,
+                            ReduceMinLocMultipleForallIndexSet);
 
 #endif  // __TEST_FORALL_INDEXSET_MULTIPLE_REDUCEMINLOC_HPP__

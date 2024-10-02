@@ -67,13 +67,11 @@ struct Span
   using iterator        = IterType;
   using const_iterator  = IterType;
 
-  static_assert(
-      type_traits::is_integral<IndexType>::value,
-      "IndexType must "
-      "model Integral");
-  static_assert(
-      type_traits::is_random_access_iterator<IterType>::value,
-      "IterType must model RandomAccessIterator");
+  static_assert(type_traits::is_integral<IndexType>::value,
+                "IndexType must "
+                "model Integral");
+  static_assert(type_traits::is_random_access_iterator<IterType>::value,
+                "IterType must model RandomAccessIterator");
 
   RAJA_HOST_DEVICE Span(iterator begin, iterator end)
       : m_begin {begin}, m_end {end}
@@ -83,8 +81,8 @@ struct Span
       : m_begin {begin}, m_end {begin + size}
   {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE iterator       begin() { return m_begin; }
-  RAJA_HOST_DEVICE RAJA_INLINE iterator       end() { return m_end; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator begin() { return m_begin; }
+  RAJA_HOST_DEVICE RAJA_INLINE iterator end() { return m_end; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator begin() const { return m_begin; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator end() const { return m_end; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return m_begin; }
@@ -138,13 +136,13 @@ struct Span
   {
     return slice(size() - count, count);
   }
-  RAJA_HOST_DEVICE RAJA_INLINE Span
-  subspan(size_type begin, size_type length) const
+  RAJA_HOST_DEVICE RAJA_INLINE Span subspan(size_type begin,
+                                            size_type length) const
   {
     return slice(begin, length);
   }
-  RAJA_HOST_DEVICE RAJA_INLINE Span
-  slice(size_type begin, size_type length) const
+  RAJA_HOST_DEVICE RAJA_INLINE Span slice(size_type begin,
+                                          size_type length) const
   {
     auto start = m_begin + begin;
     auto end   = start + length > m_end ? m_end : start + length;
@@ -177,8 +175,8 @@ private:
  *
  */
 template <typename IterType, typename IndexType>
-RAJA_HOST_DEVICE RAJA_INLINE Span<IterType, IndexType>
-                             make_span(IterType begin, IndexType size)
+RAJA_HOST_DEVICE RAJA_INLINE Span<IterType, IndexType> make_span(IterType begin,
+                                                                 IndexType size)
 {
   return Span<IterType, IndexType>(begin, size);
 }
@@ -189,9 +187,8 @@ RAJA_INLINE auto make_span(Iter& iterable)
   using std::begin;
   using std::distance;
   using std::end;
-  return Span<
-      typename Iter::iterator,
-      decltype(distance(begin(iterable), end(iterable)))>(
+  return Span<typename Iter::iterator,
+              decltype(distance(begin(iterable), end(iterable)))>(
       begin(iterable), end(iterable));
 }
 

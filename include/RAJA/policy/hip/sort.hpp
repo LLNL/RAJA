@@ -73,42 +73,38 @@ R* get_current(double_buffer<R>& d_bufs)
 /*!
         \brief static assert unimplemented stable sort
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename Iter,
-    typename Compare>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename Iter,
+          typename Compare>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     concepts::negate<concepts::all_of<
         type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
         std::is_pointer<Iter>,
         concepts::any_of<
-            camp::
-                is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-            camp::is_same<
-                Compare,
-                operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
-stable(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-    Iter,
-    Iter,
-    Compare)
+            camp::is_same<Compare,
+                          operators::less<RAJA::detail::IterVal<Iter>>>,
+            camp::is_same<Compare,
+                          operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
+stable(resources::Hip hip_res,
+       ::RAJA::policy::hip::
+           hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+       Iter,
+       Iter,
+       Compare)
 {
   static_assert(
       concepts::all_of<
           type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
           std::is_pointer<Iter>,
           concepts::any_of<
-              camp::is_same<
-                  Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-              camp::is_same<
-                  Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::
-          value,
+              camp::is_same<Compare,
+                            operators::less<RAJA::detail::IterVal<Iter>>>,
+              camp::is_same<Compare, operators::greater<
+                                         RAJA::detail::IterVal<Iter>>>>>::value,
       "RAJA stable_sort<hip_exec> is only implemented for pointers to "
       "arithmetic types and RAJA::operators::less and "
       "RAJA::operators::greater.");
@@ -119,23 +115,20 @@ stable(
 /*!
         \brief stable sort given range in ascending order
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename Iter>
-concepts::enable_if_t<
-    resources::EventProxy<resources::Hip>,
-    type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-    std::is_pointer<Iter>>
-stable(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-    Iter begin,
-    Iter end,
-    operators::less<RAJA::detail::IterVal<Iter>>)
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename Iter>
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+stable(resources::Hip hip_res,
+       ::RAJA::policy::hip::
+           hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+       Iter begin,
+       Iter end,
+       operators::less<RAJA::detail::IterVal<Iter>>)
 {
   hipStream_t stream = hip_res.get_stream();
 
@@ -153,16 +146,16 @@ stable(
   detail::double_buffer<R> d_keys(begin, d_out);
 
   // Determine temporary device storage requirements
-  void*  d_temp_storage     = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys(
-      d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
-      stream));
+  hipErrchk(::rocprim::radix_sort_keys(d_temp_storage, temp_storage_bytes,
+                                       d_keys, len, begin_bit, end_bit,
+                                       stream));
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortKeys(
-      d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
-      stream));
+  cudaErrchk(::cub::DeviceRadixSort::SortKeys(d_temp_storage,
+                                              temp_storage_bytes, d_keys, len,
+                                              begin_bit, end_bit, stream));
 #endif
   // Allocate temporary storage
   d_temp_storage =
@@ -171,13 +164,13 @@ stable(
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys(
-      d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
-      stream));
+  hipErrchk(::rocprim::radix_sort_keys(d_temp_storage, temp_storage_bytes,
+                                       d_keys, len, begin_bit, end_bit,
+                                       stream));
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortKeys(
-      d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
-      stream));
+  cudaErrchk(::cub::DeviceRadixSort::SortKeys(d_temp_storage,
+                                              temp_storage_bytes, d_keys, len,
+                                              begin_bit, end_bit, stream));
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
@@ -186,8 +179,8 @@ stable(
   {
 
     // copy
-    hipErrchk(hipMemcpyAsync(
-        begin, d_out, len * sizeof(R), hipMemcpyDefault, stream));
+    hipErrchk(hipMemcpyAsync(begin, d_out, len * sizeof(R), hipMemcpyDefault,
+                             stream));
   }
 
   hip::device_mempool_type::getInstance().free(d_out);
@@ -200,23 +193,20 @@ stable(
 /*!
         \brief stable sort given range in descending order
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename Iter>
-concepts::enable_if_t<
-    resources::EventProxy<resources::Hip>,
-    type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-    std::is_pointer<Iter>>
-stable(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-    Iter begin,
-    Iter end,
-    operators::greater<RAJA::detail::IterVal<Iter>>)
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename Iter>
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+stable(resources::Hip hip_res,
+       ::RAJA::policy::hip::
+           hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+       Iter begin,
+       Iter end,
+       operators::greater<RAJA::detail::IterVal<Iter>>)
 {
   hipStream_t stream = hip_res.get_stream();
 
@@ -234,12 +224,12 @@ stable(
   detail::double_buffer<R> d_keys(begin, d_out);
 
   // Determine temporary device storage requirements
-  void*  d_temp_storage     = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys_desc(
-      d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
-      stream));
+  hipErrchk(::rocprim::radix_sort_keys_desc(d_temp_storage, temp_storage_bytes,
+                                            d_keys, len, begin_bit, end_bit,
+                                            stream));
 #elif defined(__CUDACC__)
   cudaErrchk(::cub::DeviceRadixSort::SortKeysDescending(
       d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
@@ -252,9 +242,9 @@ stable(
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys_desc(
-      d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
-      stream));
+  hipErrchk(::rocprim::radix_sort_keys_desc(d_temp_storage, temp_storage_bytes,
+                                            d_keys, len, begin_bit, end_bit,
+                                            stream));
 #elif defined(__CUDACC__)
   cudaErrchk(::cub::DeviceRadixSort::SortKeysDescending(
       d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
@@ -267,8 +257,8 @@ stable(
   {
 
     // copy
-    hipErrchk(hipMemcpyAsync(
-        begin, d_out, len * sizeof(R), hipMemcpyDefault, stream));
+    hipErrchk(hipMemcpyAsync(begin, d_out, len * sizeof(R), hipMemcpyDefault,
+                             stream));
   }
 
   hip::device_mempool_type::getInstance().free(d_out);
@@ -282,42 +272,38 @@ stable(
 /*!
         \brief static assert unimplemented sort
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename Iter,
-    typename Compare>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename Iter,
+          typename Compare>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     concepts::negate<concepts::all_of<
         type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
         std::is_pointer<Iter>,
         concepts::any_of<
-            camp::
-                is_same<Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-            camp::is_same<
-                Compare,
-                operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
-unstable(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-    Iter,
-    Iter,
-    Compare)
+            camp::is_same<Compare,
+                          operators::less<RAJA::detail::IterVal<Iter>>>,
+            camp::is_same<Compare,
+                          operators::greater<RAJA::detail::IterVal<Iter>>>>>>>
+unstable(resources::Hip hip_res,
+         ::RAJA::policy::hip::
+             hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+         Iter,
+         Iter,
+         Compare)
 {
   static_assert(
       concepts::all_of<
           type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
           std::is_pointer<Iter>,
           concepts::any_of<
-              camp::is_same<
-                  Compare, operators::less<RAJA::detail::IterVal<Iter>>>,
-              camp::is_same<
-                  Compare, operators::greater<RAJA::detail::IterVal<Iter>>>>>::
-          value,
+              camp::is_same<Compare,
+                            operators::less<RAJA::detail::IterVal<Iter>>>,
+              camp::is_same<Compare, operators::greater<
+                                         RAJA::detail::IterVal<Iter>>>>>::value,
       "RAJA sort<hip_exec> is only implemented for pointers to arithmetic "
       "types and RAJA::operators::less and RAJA::operators::greater.");
 
@@ -327,23 +313,20 @@ unstable(
 /*!
         \brief sort given range in ascending order
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename Iter>
-concepts::enable_if_t<
-    resources::EventProxy<resources::Hip>,
-    type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-    std::is_pointer<Iter>>
-unstable(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-    Iter                                                                begin,
-    Iter                                                                end,
-    operators::less<RAJA::detail::IterVal<Iter>>                        comp)
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename Iter>
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+unstable(resources::Hip hip_res,
+         ::RAJA::policy::hip::
+             hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
+         Iter begin,
+         Iter end,
+         operators::less<RAJA::detail::IterVal<Iter>> comp)
 {
   return stable(hip_res, p, begin, end, comp);
 }
@@ -351,23 +334,20 @@ unstable(
 /*!
         \brief sort given range in descending order
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename Iter>
-concepts::enable_if_t<
-    resources::EventProxy<resources::Hip>,
-    type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
-    std::is_pointer<Iter>>
-unstable(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-    Iter                                                                begin,
-    Iter                                                                end,
-    operators::greater<RAJA::detail::IterVal<Iter>>                     comp)
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename Iter>
+concepts::enable_if_t<resources::EventProxy<resources::Hip>,
+                      type_traits::is_arithmetic<RAJA::detail::IterVal<Iter>>,
+                      std::is_pointer<Iter>>
+unstable(resources::Hip hip_res,
+         ::RAJA::policy::hip::
+             hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
+         Iter begin,
+         Iter end,
+         operators::greater<RAJA::detail::IterVal<Iter>> comp)
 {
   return stable(hip_res, p, begin, end, comp);
 }
@@ -376,14 +356,13 @@ unstable(
 /*!
         \brief static assert unimplemented stable sort pairs
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename KeyIter,
-    typename ValIter,
-    typename Compare>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename KeyIter,
+          typename ValIter,
+          typename Compare>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     concepts::negate<concepts::all_of<
@@ -391,9 +370,8 @@ concepts::enable_if_t<
         std::is_pointer<KeyIter>,
         std::is_pointer<ValIter>,
         concepts::any_of<
-            camp::is_same<
-                Compare,
-                operators::less<RAJA::detail::IterVal<KeyIter>>>,
+            camp::is_same<Compare,
+                          operators::less<RAJA::detail::IterVal<KeyIter>>>,
             camp::is_same<
                 Compare,
                 operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
@@ -406,21 +384,17 @@ stable_pairs(
     ValIter,
     Compare)
 {
-  static_assert(
-      std::is_pointer<KeyIter>::value,
-      "stable_sort_pairs<hip_exec> is only implemented for pointers");
-  static_assert(
-      std::is_pointer<ValIter>::value,
-      "stable_sort_pairs<hip_exec> is only implemented for pointers");
+  static_assert(std::is_pointer<KeyIter>::value,
+                "stable_sort_pairs<hip_exec> is only implemented for pointers");
+  static_assert(std::is_pointer<ValIter>::value,
+                "stable_sort_pairs<hip_exec> is only implemented for pointers");
   using K = RAJA::detail::IterVal<KeyIter>;
+  static_assert(type_traits::is_arithmetic<K>::value,
+                "stable_sort_pairs<hip_exec> is only implemented for "
+                "arithmetic types");
   static_assert(
-      type_traits::is_arithmetic<K>::value,
-      "stable_sort_pairs<hip_exec> is only implemented for "
-      "arithmetic types");
-  static_assert(
-      concepts::any_of<
-          camp::is_same<Compare, operators::less<K>>,
-          camp::is_same<Compare, operators::greater<K>>>::value,
+      concepts::any_of<camp::is_same<Compare, operators::less<K>>,
+                       camp::is_same<Compare, operators::greater<K>>>::value,
       "stable_sort_pairs<hip_exec> is only implemented for "
       "RAJA::operators::less or RAJA::operators::greater");
 
@@ -430,13 +404,12 @@ stable_pairs(
 /*!
         \brief stable sort given range of pairs in ascending order of keys
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename KeyIter,
-    typename ValIter>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename KeyIter,
+          typename ValIter>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -470,12 +443,12 @@ stable_pairs(
   detail::double_buffer<V> d_vals(vals_begin, d_vals_out);
 
   // Determine temporary device storage requirements
-  void*  d_temp_storage     = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs(
-      d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
-      end_bit, stream));
+  hipErrchk(::rocprim::radix_sort_pairs(d_temp_storage, temp_storage_bytes,
+                                        d_keys, d_vals, len, begin_bit, end_bit,
+                                        stream));
 #elif defined(__CUDACC__)
   cudaErrchk(::cub::DeviceRadixSort::SortPairs(
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
@@ -488,9 +461,9 @@ stable_pairs(
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs(
-      d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
-      end_bit, stream));
+  hipErrchk(::rocprim::radix_sort_pairs(d_temp_storage, temp_storage_bytes,
+                                        d_keys, d_vals, len, begin_bit, end_bit,
+                                        stream));
 #elif defined(__CUDACC__)
   cudaErrchk(::cub::DeviceRadixSort::SortPairs(
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
@@ -503,15 +476,15 @@ stable_pairs(
   {
 
     // copy keys
-    hipErrchk(hipMemcpyAsync(
-        keys_begin, d_keys_out, len * sizeof(K), hipMemcpyDefault, stream));
+    hipErrchk(hipMemcpyAsync(keys_begin, d_keys_out, len * sizeof(K),
+                             hipMemcpyDefault, stream));
   }
   if (detail::get_current(d_vals) == d_vals_out)
   {
 
     // copy vals
-    hipErrchk(hipMemcpyAsync(
-        vals_begin, d_vals_out, len * sizeof(V), hipMemcpyDefault, stream));
+    hipErrchk(hipMemcpyAsync(vals_begin, d_vals_out, len * sizeof(V),
+                             hipMemcpyDefault, stream));
   }
 
   hip::device_mempool_type::getInstance().free(d_keys_out);
@@ -525,13 +498,12 @@ stable_pairs(
 /*!
         \brief stable sort given range of pairs in descending order of keys
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename KeyIter,
-    typename ValIter>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename KeyIter,
+          typename ValIter>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -565,12 +537,12 @@ stable_pairs(
   detail::double_buffer<V> d_vals(vals_begin, d_vals_out);
 
   // Determine temporary device storage requirements
-  void*  d_temp_storage     = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs_desc(
-      d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
-      end_bit, stream));
+  hipErrchk(::rocprim::radix_sort_pairs_desc(d_temp_storage, temp_storage_bytes,
+                                             d_keys, d_vals, len, begin_bit,
+                                             end_bit, stream));
 #elif defined(__CUDACC__)
   cudaErrchk(::cub::DeviceRadixSort::SortPairsDescending(
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
@@ -583,9 +555,9 @@ stable_pairs(
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs_desc(
-      d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
-      end_bit, stream));
+  hipErrchk(::rocprim::radix_sort_pairs_desc(d_temp_storage, temp_storage_bytes,
+                                             d_keys, d_vals, len, begin_bit,
+                                             end_bit, stream));
 #elif defined(__CUDACC__)
   cudaErrchk(::cub::DeviceRadixSort::SortPairsDescending(
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
@@ -598,15 +570,15 @@ stable_pairs(
   {
 
     // copy keys
-    hipErrchk(hipMemcpyAsync(
-        keys_begin, d_keys_out, len * sizeof(K), hipMemcpyDefault, stream));
+    hipErrchk(hipMemcpyAsync(keys_begin, d_keys_out, len * sizeof(K),
+                             hipMemcpyDefault, stream));
   }
   if (detail::get_current(d_vals) == d_vals_out)
   {
 
     // copy vals
-    hipErrchk(hipMemcpyAsync(
-        vals_begin, d_vals_out, len * sizeof(V), hipMemcpyDefault, stream));
+    hipErrchk(hipMemcpyAsync(vals_begin, d_vals_out, len * sizeof(V),
+                             hipMemcpyDefault, stream));
   }
 
   hip::device_mempool_type::getInstance().free(d_keys_out);
@@ -621,14 +593,13 @@ stable_pairs(
 /*!
         \brief static assert unimplemented sort pairs
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename KeyIter,
-    typename ValIter,
-    typename Compare>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename KeyIter,
+          typename ValIter,
+          typename Compare>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     concepts::negate<concepts::all_of<
@@ -636,9 +607,8 @@ concepts::enable_if_t<
         std::is_pointer<KeyIter>,
         std::is_pointer<ValIter>,
         concepts::any_of<
-            camp::is_same<
-                Compare,
-                operators::less<RAJA::detail::IterVal<KeyIter>>>,
+            camp::is_same<Compare,
+                          operators::less<RAJA::detail::IterVal<KeyIter>>>,
             camp::is_same<
                 Compare,
                 operators::greater<RAJA::detail::IterVal<KeyIter>>>>>>>
@@ -651,21 +621,17 @@ unstable_pairs(
     ValIter,
     Compare)
 {
-  static_assert(
-      std::is_pointer<KeyIter>::value,
-      "sort_pairs<hip_exec> is only implemented for pointers");
-  static_assert(
-      std::is_pointer<ValIter>::value,
-      "sort_pairs<hip_exec> is only implemented for pointers");
+  static_assert(std::is_pointer<KeyIter>::value,
+                "sort_pairs<hip_exec> is only implemented for pointers");
+  static_assert(std::is_pointer<ValIter>::value,
+                "sort_pairs<hip_exec> is only implemented for pointers");
   using K = RAJA::detail::IterVal<KeyIter>;
+  static_assert(type_traits::is_arithmetic<K>::value,
+                "sort_pairs<hip_exec> is only implemented for arithmetic "
+                "types");
   static_assert(
-      type_traits::is_arithmetic<K>::value,
-      "sort_pairs<hip_exec> is only implemented for arithmetic "
-      "types");
-  static_assert(
-      concepts::any_of<
-          camp::is_same<Compare, operators::less<K>>,
-          camp::is_same<Compare, operators::greater<K>>>::value,
+      concepts::any_of<camp::is_same<Compare, operators::less<K>>,
+                       camp::is_same<Compare, operators::greater<K>>>::value,
       "sort_pairs<hip_exec> is only implemented for RAJA::operators::less or "
       "RAJA::operators::greater");
 
@@ -675,13 +641,12 @@ unstable_pairs(
 /*!
         \brief stable sort given range of pairs in ascending order of keys
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename KeyIter,
-    typename ValIter>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename KeyIter,
+          typename ValIter>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -691,9 +656,9 @@ unstable_pairs(
     resources::Hip hip_res,
     ::RAJA::policy::hip::
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-    KeyIter                                         keys_begin,
-    KeyIter                                         keys_end,
-    ValIter                                         vals_begin,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
     operators::less<RAJA::detail::IterVal<KeyIter>> comp)
 {
   return stable_pairs(hip_res, p, keys_begin, keys_end, vals_begin, comp);
@@ -702,13 +667,12 @@ unstable_pairs(
 /*!
         \brief stable sort given range of pairs in descending order of keys
 */
-template <
-    typename IterationMapping,
-    typename IterationGetter,
-    typename Concretizer,
-    bool Async,
-    typename KeyIter,
-    typename ValIter>
+template <typename IterationMapping,
+          typename IterationGetter,
+          typename Concretizer,
+          bool Async,
+          typename KeyIter,
+          typename ValIter>
 concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     type_traits::is_arithmetic<RAJA::detail::IterVal<KeyIter>>,
@@ -718,9 +682,9 @@ unstable_pairs(
     resources::Hip hip_res,
     ::RAJA::policy::hip::
         hip_exec<IterationMapping, IterationGetter, Concretizer, Async> p,
-    KeyIter                                            keys_begin,
-    KeyIter                                            keys_end,
-    ValIter                                            vals_begin,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
     operators::greater<RAJA::detail::IterVal<KeyIter>> comp)
 {
   return stable_pairs(hip_res, p, keys_begin, keys_end, vals_begin, comp);

@@ -40,7 +40,7 @@ void DefaultPolConstructors()
 
   // ref constructor
   RAJA::AtomicRef<T> const& reft1 = test1;
-  RAJA::AtomicRef<T>        reftest1(reft1);
+  RAJA::AtomicRef<T> reftest1(reft1);
 
   ASSERT_EQ(reftest1.getPointer(), nullptr);
 }
@@ -50,16 +50,14 @@ TYPED_TEST_P(AtomicRefDefaultConstructorUnitTest, DefaultPolConstructors)
   DefaultPolConstructors<TypeParam>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    AtomicRefDefaultConstructorUnitTest,
-    DefaultPolConstructors);
+REGISTER_TYPED_TEST_SUITE_P(AtomicRefDefaultConstructorUnitTest,
+                            DefaultPolConstructors);
 
 using default_types = ::testing::Types<int, float, double>;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    DefaultConstrUnitTest,
-    AtomicRefDefaultConstructorUnitTest,
-    default_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(DefaultConstrUnitTest,
+                               AtomicRefDefaultConstructorUnitTest,
+                               default_types);
 
 // Basic Constructors with policies
 
@@ -83,19 +81,17 @@ TYPED_TEST_P(AtomicRefBasicConstructorUnitTest, BasicConstructors)
 
   // ref constructor
   RAJA::AtomicRef<NumericType, AtomicPolicy> const& reft1 = test1;
-  RAJA::AtomicRef<NumericType, AtomicPolicy>        reftest1(reft1);
+  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1(reft1);
 
   ASSERT_EQ(reftest1.getPointer(), nullptr);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    AtomicRefBasicConstructorUnitTest,
-    BasicConstructors);
+REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicConstructorUnitTest,
+                            BasicConstructors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    BasicConstrUnitTest,
-    AtomicRefBasicConstructorUnitTest,
-    basic_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(BasicConstrUnitTest,
+                               AtomicRefBasicConstructorUnitTest,
+                               basic_types);
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -129,7 +125,7 @@ GPU_TYPED_TEST_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors)
 
   // ref constructor
   RAJA::AtomicRef<NumericType, AtomicPolicy> const& reft1 = test1;
-  RAJA::AtomicRef<NumericType, AtomicPolicy>        reftest1(reft1);
+  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1(reft1);
   forone<test_cuda>([=] __device__() { reftest1.getPointer(); });
   cudaErrchk(cudaDeviceSynchronize());
 
@@ -140,8 +136,7 @@ GPU_TYPED_TEST_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    CUDAConstrUnitTest,
-    AtomicRefCUDAConstructorUnitTest,
-    CUDA_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAConstrUnitTest,
+                               AtomicRefCUDAConstructorUnitTest,
+                               CUDA_types);
 #endif

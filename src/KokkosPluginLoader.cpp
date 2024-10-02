@@ -17,8 +17,8 @@ const uint64_t kokkos_interface_version = 20171029;
 RAJA_INLINE
 bool isSharedObject(const std::string& filename)
 {
-  return (
-      filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
+  return (filename.size() > 3 &&
+          !filename.compare(filename.size() - 3, 3, ".so"));
 }
 
 template <typename function>
@@ -99,14 +99,14 @@ void KokkosPluginLoader::initPlugin(const std::string& path)
   // Getting and storing supported kokkos functions.
   getFunction<init_function>(plugin, init_functions, "kokkosp_init_library");
 
-  getFunction<pre_function>(
-      plugin, pre_functions, "kokkosp_begin_parallel_for");
+  getFunction<pre_function>(plugin, pre_functions,
+                            "kokkosp_begin_parallel_for");
 
-  getFunction<post_function>(
-      plugin, post_functions, "kokkosp_end_parallel_for");
+  getFunction<post_function>(plugin, post_functions,
+                             "kokkosp_end_parallel_for");
 
-  getFunction<finalize_function>(
-      plugin, finalize_functions, "kokkosp_finalize_library");
+  getFunction<finalize_function>(plugin, finalize_functions,
+                                 "kokkosp_finalize_library");
 #else
   RAJA_UNUSED_ARG(path);
 #endif
@@ -122,7 +122,7 @@ void KokkosPluginLoader::initDirectory(const std::string& path)
     return;
   }
 
-  DIR*           dir;
+  DIR* dir;
   struct dirent* file;
 
   if ((dir = opendir(path.c_str())) != NULL)

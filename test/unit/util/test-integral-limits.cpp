@@ -25,17 +25,14 @@ TYPED_TEST_SUITE_P(IntegralLimitsUnitTest);
 
 TYPED_TEST_P(IntegralLimitsUnitTest, IntegralLimits)
 {
-  ASSERT_EQ(
-      RAJA::operators::limits<TypeParam>::min(),
-      std::numeric_limits<TypeParam>::min());
-  ASSERT_EQ(
-      RAJA::operators::limits<TypeParam>::max(),
-      std::numeric_limits<TypeParam>::max());
+  ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(),
+            std::numeric_limits<TypeParam>::min());
+  ASSERT_EQ(RAJA::operators::limits<TypeParam>::max(),
+            std::numeric_limits<TypeParam>::max());
 }
 
 REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsUnitTest, IntegralLimits);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    IntegralLimitsUnitTests,
-    IntegralLimitsUnitTest,
-    UnitIntegralTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsUnitTests,
+                               IntegralLimitsUnitTest,
+                               UnitIntegralTypes);

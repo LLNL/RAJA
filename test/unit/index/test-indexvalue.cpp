@@ -147,7 +147,7 @@ TYPED_TEST(IndexValueUnitTest, StrongTypesArith)
 
 TYPED_TEST(IndexValueUnitTest, IndexTypeArith)
 {
-  StrongTypeIndex  a(8);
+  StrongTypeIndex a(8);
   RAJA::Index_type b(2);
 
   ASSERT_EQ(StrongTypeIndex(10), a + b);
@@ -184,7 +184,7 @@ TYPED_TEST(IndexValueUnitTest, IndexTypeArith)
 
 
   RAJA_INDEX_VALUE_T(TestType, TypeParam, "Test Type");
-  TestType         c(8);
+  TestType c(8);
   RAJA::Index_type d(2);
 
   ASSERT_EQ(TestType(10), c + d);
@@ -250,7 +250,7 @@ TYPED_TEST(IndexValueUnitTest, StrongTypeCompare)
 
 TYPED_TEST(IndexValueUnitTest, IndexTypeCompare)
 {
-  StrongTypeIndex  v(5);
+  StrongTypeIndex v(5);
   RAJA::Index_type v_lower(4);
   RAJA::Index_type v_higher(6);
   RAJA::Index_type v_same(5);
@@ -265,7 +265,7 @@ TYPED_TEST(IndexValueUnitTest, IndexTypeCompare)
   ASSERT_NE(v, v_higher);
 
   RAJA_INDEX_VALUE_T(TestType, TypeParam, "Test Type");
-  TestType         x(5);
+  TestType x(5);
   RAJA::Index_type x_lower(4);
   RAJA::Index_type x_higher(6);
   RAJA::Index_type x_same(5);

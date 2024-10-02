@@ -27,13 +27,13 @@ void ScatterImpl()
 
   // Data to be read
   std::vector<element_t> input0_vec(num_elem);
-  element_t*             input0_hptr = input0_vec.data();
+  element_t* input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   // Indexing into output0
   std::vector<index_t> input1_vec(num_elem);
-  index_t*             input1_hptr = input1_vec.data();
-  index_t*             input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
+  index_t* input1_hptr = input1_vec.data();
+  index_t* input1_dptr = tensor_malloc<policy_t, index_t>(num_elem);
 
   // Scattered output (10x larger than output)
   std::vector<element_t> output0_vec(10 * num_elem);

@@ -30,7 +30,7 @@ init(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
 // Combine
 template <typename EXEC_POL, typename OP, typename T>
 RAJA_HOST_DEVICE camp::concepts::enable_if<type_traits::is_hip_policy<EXEC_POL>>
-                 combine(Reducer<OP, T>& red)
+combine(Reducer<OP, T>& red)
 {
   RAJA::hip::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter>(red);
 }

@@ -81,27 +81,25 @@ public:
 /// \param p MultiPolicy to use for selection
 /// \param iter iterable of items to supply to body
 /// \param body functor, will receive each value produced by iterable iter
-template <
-    typename Iterable,
-    typename Body,
-    typename Selector,
-    typename... Policies>
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
 RAJA_INLINE void
 forall_impl(MultiPolicy<Selector, Policies...> p, Iterable&& iter, Body&& body)
 {
   p.invoke(iter, body);
 }
-template <
-    typename Res,
-    typename Iterable,
-    typename Body,
-    typename Selector,
-    typename... Policies>
-RAJA_INLINE resources::EventProxy<Res> forall_impl(
-    Res                                r,
-    MultiPolicy<Selector, Policies...> p,
-    Iterable&&                         iter,
-    Body&&                             body)
+template <typename Res,
+          typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE resources::EventProxy<Res>
+forall_impl(Res r,
+            MultiPolicy<Selector, Policies...> p,
+            Iterable&& iter,
+            Body&& body)
 {
   p.invoke(iter, body);
   return resources::EventProxy<Res>(r);
@@ -116,10 +114,10 @@ namespace detail
 {
 
 template <camp::idx_t... Indices, typename... Policies, typename Selector>
-auto make_multi_policy(
-    camp::idx_seq<Indices...>,
-    Selector                s,
-    std::tuple<Policies...> policies) -> MultiPolicy<Selector, Policies...>
+auto make_multi_policy(camp::idx_seq<Indices...>,
+                       Selector s,
+                       std::tuple<Policies...> policies)
+    -> MultiPolicy<Selector, Policies...>
 {
   return MultiPolicy<Selector, Policies...>(s, std::get<Indices>(policies)...);
 }
@@ -154,8 +152,8 @@ RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
-  return detail::make_multi_policy(
-      camp::make_idx_seq_t<sizeof...(Policies)> {}, s, policies);
+  return detail::make_multi_policy(camp::make_idx_seq_t<sizeof...(Policies)> {},
+                                   s, policies);
 }
 
 namespace detail
@@ -195,9 +193,8 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...>
     }
     else
     {
-      NextInvoker::invoke(
-          offset, std::forward<Iterable>(iter),
-          std::forward<LoopBody>(loop_body));
+      NextInvoker::invoke(offset, std::forward<Iterable>(iter),
+                          std::forward<LoopBody>(loop_body));
     }
   }
 };
@@ -245,8 +242,8 @@ namespace type_traits
 
 template <typename T>
 struct is_multi_policy
-    : ::RAJA::type_traits::
-          SpecializationOf<RAJA::MultiPolicy, typename std::decay<T>::type>
+    : ::RAJA::type_traits::SpecializationOf<RAJA::MultiPolicy,
+                                            typename std::decay<T>::type>
 {};
 }  // namespace type_traits
 

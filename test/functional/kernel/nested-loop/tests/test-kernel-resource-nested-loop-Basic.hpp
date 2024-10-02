@@ -37,8 +37,8 @@ TYPED_TEST_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel)
 
   // For double nested loop tests the third arg is ignored.
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>(LOOP_TYPE(), 1, 1, 1);
-  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>(
-      LOOP_TYPE(), 40, 30, 20);
+  KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, USE_RES>(LOOP_TYPE(), 40, 30,
+                                                          20);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopBasicTest, NestedLoopBasicKernel);

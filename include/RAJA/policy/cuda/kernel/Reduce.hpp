@@ -34,21 +34,18 @@ namespace internal
 //
 // Executor that handles reductions across a single CUDA thread block
 //
-template <
-    typename Data,
-    template <typename...>
-    class ReduceOperator,
-    typename ParamId,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::Reduce<
-        RAJA::cuda_block_reduce,
-        ReduceOperator,
-        ParamId,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          template <typename...>
+          class ReduceOperator,
+          typename ParamId,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::Reduce<RAJA::cuda_block_reduce,
+                                               ReduceOperator,
+                                               ParamId,
+                                               EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -100,21 +97,18 @@ struct CudaStatementExecutor<
 //
 // Executor that handles reductions across a single CUDA thread warp
 //
-template <
-    typename Data,
-    template <typename...>
-    class ReduceOperator,
-    typename ParamId,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::Reduce<
-        RAJA::cuda_warp_reduce,
-        ReduceOperator,
-        ParamId,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          template <typename...>
+          class ReduceOperator,
+          typename ParamId,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::Reduce<RAJA::cuda_warp_reduce,
+                                               ReduceOperator,
+                                               ParamId,
+                                               EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;

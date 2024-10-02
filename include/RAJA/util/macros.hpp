@@ -167,9 +167,9 @@ inline void RAJA_ABORT_OR_THROW(const char* str)
 #else
 #ifdef RAJA_COMPILER_MSVC
   fflush(stdout);
-  char*  value;
+  char* value;
   size_t len;
-  bool   no_except = false;
+  bool no_except = false;
   if (_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr)
   {
     no_except = true;

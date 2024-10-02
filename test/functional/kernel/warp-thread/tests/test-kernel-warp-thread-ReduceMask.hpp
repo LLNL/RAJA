@@ -43,8 +43,7 @@ TYPED_TEST_P(KernelWarpThreadReduceMaskTest, WarpThreadReduceMaskKernel)
       LOOP_TYPE(), 64, 4 * 123);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelWarpThreadReduceMaskTest,
-    WarpThreadReduceMaskKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelWarpThreadReduceMaskTest,
+                            WarpThreadReduceMaskKernel);
 
 #endif  // __TEST_WARP_THREAD_REDUCEMASK_HPP__

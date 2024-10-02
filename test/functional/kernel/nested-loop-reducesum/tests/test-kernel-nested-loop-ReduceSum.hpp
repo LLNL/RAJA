@@ -45,8 +45,7 @@ TYPED_TEST_P(KernelNestedLoopReduceSumTest, NestedLoopReduceSumKernel)
       LOOP_TYPE(), 40, 30, 20);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelNestedLoopReduceSumTest,
-    NestedLoopReduceSumKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopReduceSumTest,
+                            NestedLoopReduceSumKernel);
 
 #endif  // __TEST_KERNEL_NESTED_LOOP_REDUCESUM_HPP__

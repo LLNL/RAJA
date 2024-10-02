@@ -19,14 +19,14 @@
 
 template <typename IDX_TYPE, typename DATA_TYPE, typename EXEC_POLICY>
 void KernelNestedLoopsSegmentTypesTestImpl(
-    const RAJA::TypedRangeSegment<IDX_TYPE>&       s1,
-    const std::vector<IDX_TYPE>&                   s1_idx,
+    const RAJA::TypedRangeSegment<IDX_TYPE>& s1,
+    const std::vector<IDX_TYPE>& s1_idx,
     const RAJA::TypedRangeStrideSegment<IDX_TYPE>& s2,
-    const std::vector<IDX_TYPE>&                   s2_idx,
-    const RAJA::TypedListSegment<IDX_TYPE>&        s3,
-    const std::vector<IDX_TYPE>&                   s3_idx,
-    camp::resources::Resource                      working_res,
-    int                                            perm)
+    const std::vector<IDX_TYPE>& s2_idx,
+    const RAJA::TypedListSegment<IDX_TYPE>& s3,
+    const std::vector<IDX_TYPE>& s3_idx,
+    camp::resources::Resource working_res,
+    int perm)
 {
   IDX_TYPE idx1_len = static_cast<IDX_TYPE>(s1_idx.size());
   IDX_TYPE idx2_len = static_cast<IDX_TYPE>(s2_idx.size());
@@ -55,21 +55,19 @@ void KernelNestedLoopsSegmentTypesTestImpl(
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
-  allocateForallTestData<DATA_TYPE>(
-      data_len, working_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(data_len, working_res, &work_array,
+                                    &check_array, &test_array);
 
-  RAJA::View<DATA_TYPE, RAJA::Layout<3>> work_view(
-      work_array, dim1, dim2, dim3);
-  RAJA::View<DATA_TYPE, RAJA::Layout<3>> test_view(
-      test_array, dim1, dim2, dim3);
+  RAJA::View<DATA_TYPE, RAJA::Layout<3>> work_view(work_array, dim1, dim2,
+                                                   dim3);
+  RAJA::View<DATA_TYPE, RAJA::Layout<3>> test_view(test_array, dim1, dim2,
+                                                   dim3);
 
-  memset(
-      static_cast<void*>(test_array), 0,
-      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  memset(static_cast<void*>(test_array), 0,
+         sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
-  working_res.memcpy(
-      work_array, test_array,
-      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(work_array, test_array,
+                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   if (!zero_legth_segment)
   {
@@ -123,9 +121,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
         });
   }
 
-  working_res.memcpy(
-      check_array, work_array,
-      sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
+  working_res.memcpy(check_array, work_array,
+                     sizeof(DATA_TYPE) * RAJA::stripIndexType(data_len));
 
   for (IDX_TYPE i = 0; i < data_len; ++i)
   {
@@ -133,8 +130,8 @@ void KernelNestedLoopsSegmentTypesTestImpl(
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      working_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(working_res, work_array, check_array,
+                                      test_array);
 }
 
 
@@ -192,7 +189,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
 
   // Zero-length range segment
   RAJA::TypedRangeSegment<IDX_TYPE> s4(4, 4);
-  std::vector<IDX_TYPE>             s4_idx;
+  std::vector<IDX_TYPE> s4_idx;
   RAJA::getIndices(s4_idx, s4);
 
   perm = 1;
@@ -209,7 +206,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
 
   // Zero-length range stride segment
   RAJA::TypedRangeStrideSegment<IDX_TYPE> s5(3, 3, 2);
-  std::vector<IDX_TYPE>                   s5_idx;
+  std::vector<IDX_TYPE> s5_idx;
   RAJA::getIndices(s5_idx, s5);
 
   perm = 1;
@@ -225,7 +222,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
       s1, s1_idx, s5, s5_idx, s3, s3_idx, working_res, perm);
 
   // Zero-length list segment
-  std::vector<IDX_TYPE>            s6_idx;
+  std::vector<IDX_TYPE> s6_idx;
   RAJA::TypedListSegment<IDX_TYPE> s6(nullptr, s6_idx.size(), working_res);
 
   perm = 1;
@@ -241,8 +238,7 @@ TYPED_TEST_P(KernelNestedLoopsSegmentTypesTest, NestedLoopsSegmentTypesKernel)
       s1, s1_idx, s2, s2_idx, s6, s6_idx, working_res, perm);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelNestedLoopsSegmentTypesTest,
-    NestedLoopsSegmentTypesKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopsSegmentTypesTest,
+                            NestedLoopsSegmentTypesKernel);
 
 #endif  // __TEST_KERNEL_NESTED_LOOPS_SEGMENT_TYPES_HPP__

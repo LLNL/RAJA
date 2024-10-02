@@ -32,7 +32,7 @@ void TransposeImpl()
 
   // alloc input0
 
-  std::vector<element_t>                 input0_vec(N * M);
+  std::vector<element_t> input0_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> input0_h(input0_vec.data(), N, M);
 
   element_t* input0_ptr = tensor_malloc<policy_t>(input0_vec);
@@ -41,7 +41,7 @@ void TransposeImpl()
 
   // alloc output0
 
-  std::vector<element_t>                 output0_vec(N * M);
+  std::vector<element_t> output0_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output0_h(output0_vec.data(), M, N);
 
   element_t* output0_ptr = tensor_malloc<policy_t>(output0_vec);

@@ -15,12 +15,11 @@
 #include "camp/resource.hpp"
 
 template <typename T>
-void allocateForallTestData(
-    size_t                    N,
-    camp::resources::Resource work_res,
-    T**                       work_array,
-    T**                       check_array,
-    T**                       test_array)
+void allocateForallTestData(size_t N,
+                            camp::resources::Resource work_res,
+                            T** work_array,
+                            T** check_array,
+                            T** test_array)
 {
   camp::resources::Resource host_res {camp::resources::Host()};
 
@@ -31,17 +30,15 @@ void allocateForallTestData(
 }
 
 // for RAJA strongly typed indices
-template <
-    typename T,
-    typename std::enable_if<
-        std::is_base_of<RAJA::IndexValueBase, camp::type::ptr::rem<T>>::value>::
-        type* = nullptr>
-void allocateForallTestData(
-    T                         N,
-    camp::resources::Resource work_res,
-    T**                       work_array,
-    T**                       check_array,
-    T**                       test_array)
+template <typename T,
+          typename std::enable_if<
+              std::is_base_of<RAJA::IndexValueBase,
+                              camp::type::ptr::rem<T>>::value>::type* = nullptr>
+void allocateForallTestData(T N,
+                            camp::resources::Resource work_res,
+                            T** work_array,
+                            T** check_array,
+                            T** test_array)
 {
   camp::resources::Resource host_res {camp::resources::Host()};
 
@@ -52,11 +49,10 @@ void allocateForallTestData(
 }
 
 template <typename T>
-void deallocateForallTestData(
-    camp::resources::Resource work_res,
-    T*                        work_array,
-    T*                        check_array,
-    T*                        test_array)
+void deallocateForallTestData(camp::resources::Resource work_res,
+                              T* work_array,
+                              T* check_array,
+                              T* test_array)
 {
   camp::resources::Resource host_res {camp::resources::Host()};
 

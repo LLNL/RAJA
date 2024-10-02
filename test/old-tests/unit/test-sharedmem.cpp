@@ -76,25 +76,24 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
     }
   }
 
-  using SharedTile = AtomicTypedLocalArray<
-      RAJA::auto_atomic, double, RAJA::PERM_IJ,
-      RAJA::SizeList<TILE_DIM, TILE_DIM>, TY, TX>;
+  using SharedTile =
+      AtomicTypedLocalArray<RAJA::auto_atomic, double, RAJA::PERM_IJ,
+                            RAJA::SizeList<TILE_DIM, TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
 
   const TX TX_TILE_DIM(16);
   const TY TY_TILE_DIM(16);
 
   RAJA::kernel_param<Pol>(
-      RAJA::make_tuple(
-          RAJA::TypedRangeSegment<TX>(0, inner_Dim0),
-          RAJA::TypedRangeSegment<TY>(0, inner_Dim1),
-          RAJA::TypedRangeSegment<TX>(0, outer_Dim0),
-          RAJA::TypedRangeSegment<TY>(0, outer_Dim1)),
+      RAJA::make_tuple(RAJA::TypedRangeSegment<TX>(0, inner_Dim0),
+                       RAJA::TypedRangeSegment<TY>(0, inner_Dim1),
+                       RAJA::TypedRangeSegment<TX>(0, outer_Dim0),
+                       RAJA::TypedRangeSegment<TY>(0, outer_Dim1)),
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx;  // Matrix column index
         TY row = by * TY_TILE_DIM + ty;  // Matrix row index
@@ -106,8 +105,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx;  // Matrix column index
         TY row = by * TY_TILE_DIM + ty;  // Matrix row index
@@ -123,8 +122,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
   {
     for (int col = 0; col < N_cols; ++col)
     {
-      ASSERT_FLOAT_EQ(
-          (double)B[col + row * N_cols], (double)A[col + row * N_cols]);
+      ASSERT_FLOAT_EQ((double)B[col + row * N_cols],
+                      (double)A[col + row * N_cols]);
     }
   }
 
@@ -165,7 +164,7 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   double *A, *B;
   double *d_A, *d_B;
-  size_t  Arr_sz = N_rows * N_cols;
+  size_t Arr_sz = N_rows * N_cols;
   hipMalloc(&d_A, sizeof(double) * Arr_sz);
   hipMalloc(&d_B, sizeof(double) * Arr_sz);
   A = new double[N_rows * N_cols];
@@ -173,10 +172,10 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> Aview(A, N_rows, N_cols);
   RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> Bview(B, N_rows, N_cols);
-  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Aview(
-      d_A, N_rows, N_cols);
-  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Bview(
-      d_B, N_rows, N_cols);
+  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Aview(d_A, N_rows,
+                                                             N_cols);
+  RAJA::TypedView<double, RAJA::Layout<DIM>, TY, TX> d_Bview(d_B, N_rows,
+                                                             N_cols);
 
   for (int row = 0; row < N_rows; ++row)
   {
@@ -188,24 +187,24 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   hipMemcpy(d_A, A, Arr_sz * sizeof(double), hipMemcpyHostToDevice);
 
-  using SharedTile = TypedLocalArray<
-      double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM, TILE_DIM>, TY, TX>;
+  using SharedTile =
+      TypedLocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM, TILE_DIM>,
+                      TY, TX>;
   SharedTile myTile, myTile2;
 
   const TX TX_TILE_DIM(16);
   const TY TY_TILE_DIM(16);
 
   RAJA::kernel_param<Pol>(
-      RAJA::make_tuple(
-          RAJA::TypedRangeSegment<TX>(0, inner_Dim0),
-          RAJA::TypedRangeSegment<TY>(0, inner_Dim1),
-          RAJA::TypedRangeSegment<TX>(0, outer_Dim0),
-          RAJA::TypedRangeSegment<TY>(0, outer_Dim1)),
+      RAJA::make_tuple(RAJA::TypedRangeSegment<TX>(0, inner_Dim0),
+                       RAJA::TypedRangeSegment<TY>(0, inner_Dim1),
+                       RAJA::TypedRangeSegment<TX>(0, outer_Dim0),
+                       RAJA::TypedRangeSegment<TY>(0, outer_Dim1)),
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx;  // Matrix column index
         TY row = by * TY_TILE_DIM + ty;  // Matrix row index
@@ -217,8 +216,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(
-          TX tx, TY ty, TX bx, TY by, SharedTile & myTile, SharedTile&)
+      [=] RAJA_HOST_DEVICE(TX tx, TY ty, TX bx, TY by, SharedTile & myTile,
+                           SharedTile&)
       {
         TX col = bx * TX_TILE_DIM + tx;  // Matrix column index
         TY row = by * TY_TILE_DIM + ty;  // Matrix row index
@@ -319,9 +318,8 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(
-          int tx, int ty, int bx, int by, SharedTile& myTile,
-          SharedTile& myTile2)
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
+                           SharedTile& myTile2)
       {
         int col = bx * TILE_DIM + tx;  // Matrix column index
         int row = by * TILE_DIM + ty;  // Matrix row index
@@ -334,9 +332,8 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(
-          int tx, int ty, int bx, int by, SharedTile& myTile,
-          SharedTile& myTile2)
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
+                           SharedTile& myTile2)
       {
         int col = by * TILE_DIM + tx;  // Transposed matrix column index
         int row = bx * TILE_DIM + ty;  // Transposed matrix row index
@@ -449,9 +446,8 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
       RAJA::make_tuple(myTile, myTile2),
 
       // Load data into shared memory
-      [=] RAJA_HOST_DEVICE(
-          int tx, int ty, int bx, int by, SharedTile& myTile,
-          SharedTile& myTile2)
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
+                           SharedTile& myTile2)
       {
         int col = bx * TILE_DIM + tx;  // Matrix column index
         int row = by * TILE_DIM + ty;  // Matrix row index
@@ -464,9 +460,8 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
       },
 
       // read from shared mem
-      [=] RAJA_HOST_DEVICE(
-          int tx, int ty, int bx, int by, SharedTile& myTile,
-          SharedTile& myTile2)
+      [=] RAJA_HOST_DEVICE(int tx, int ty, int bx, int by, SharedTile& myTile,
+                           SharedTile& myTile2)
       {
         int col = by * TILE_DIM + tx;  // Transposed matrix column index
         int row = bx * TILE_DIM + ty;  // Transposed matrix row index
@@ -529,10 +524,9 @@ using SeqTypes =
                 RAJA::statement::For<
                     1,
                     RAJA::seq_exec,
-                    RAJA::statement::For<
-                        0,
-                        RAJA::seq_exec,
-                        RAJA::statement::Lambda<1>>>
+                    RAJA::statement::For<0,
+                                         RAJA::seq_exec,
+                                         RAJA::statement::Lambda<1>>>
 
                 >  // close shared memory scope
             >      // for 2
@@ -558,20 +552,18 @@ using TestTypes = ::testing::Types<
                 RAJA::ParamList<0, 1>,
 
                 // Load data into shared memory
-                RAJA::statement::Collapse<
-                    RAJA::omp_parallel_collapse_exec,
-                    RAJA::ArgList<0, 1>,
-                    RAJA::statement::Lambda<0>>,
+                RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                          RAJA::ArgList<0, 1>,
+                                          RAJA::statement::Lambda<0>>,
 
                 // Read data from shared memory
-                RAJA::statement::Collapse<
-                    RAJA::omp_parallel_collapse_exec,
-                    RAJA::ArgList<0, 1>,
-                    RAJA::statement::Lambda<1>>>>  // for
-                                                   // 2
-        >                                          // for 3
-                                  >                // close policy
-               >                                   // close list
+                RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                          RAJA::ArgList<0, 1>,
+                                          RAJA::statement::Lambda<1>>>>  // for
+                                                                         // 2
+        >                            // for 3
+                                  >  // close policy
+               >                     // close list
 
     ,
     RAJA::list<RAJA::KernelPolicy<RAJA::statement::For<
@@ -661,16 +653,15 @@ using TestTypes = ::testing::Types<
             RAJA::statement::For<
                 1,
                 RAJA::seq_exec,
-                RAJA::statement::For<
-                    0,
-                    RAJA::seq_exec,
-                    RAJA::statement::Lambda<1>>>>  // close
-                                                   // shared
-                                                   // mem
-                                                   // window
-        >                                          // outer collapsed
-                                  >                // close policy list
-               >                                   // close list
+                RAJA::statement::For<0,
+                                     RAJA::seq_exec,
+                                     RAJA::statement::Lambda<1>>>>  // close
+                                                                    // shared
+                                                                    // mem
+                                                                    // window
+        >                            // outer collapsed
+                                  >  // close policy list
+               >                     // close list
     >;
 
 
@@ -697,20 +688,18 @@ using CUDATypes = ::testing::Types<
                     RAJA::statement::For<
                         1,
                         RAJA::cuda_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::cuda_thread_x_direct,
-                            RAJA::statement::Lambda<0>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::cuda_thread_x_direct,
+                                             RAJA::statement::Lambda<0>>>,
                     RAJA::statement::CudaSyncThreads,
 
                     // Read data from shared memory
                     RAJA::statement::For<
                         1,
                         RAJA::cuda_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::cuda_thread_x_direct,
-                            RAJA::statement::Lambda<1>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::cuda_thread_x_direct,
+                                             RAJA::statement::Lambda<1>>>,
                     RAJA::statement::CudaSyncThreads>     // close shared memory
                                                           // scope
                 >                                         // for 2
@@ -735,20 +724,18 @@ using CUDATypes = ::testing::Types<
                     RAJA::statement::For<
                         1,
                         RAJA::cuda_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::cuda_thread_x_direct,
-                            RAJA::statement::Lambda<0>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::cuda_thread_x_direct,
+                                             RAJA::statement::Lambda<0>>>,
                     RAJA::statement::CudaSyncThreads,
 
                     // Read data from shared memory
                     RAJA::statement::For<
                         1,
                         RAJA::cuda_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::cuda_thread_x_direct,
-                            RAJA::statement::Lambda<1>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::cuda_thread_x_direct,
+                                             RAJA::statement::Lambda<1>>>,
                     RAJA::statement::CudaSyncThreads>     // close shared memory
                                                           // scope
                 >                                         // for 2
@@ -781,20 +768,18 @@ using HIPTypes = ::testing::Types<
                     RAJA::statement::For<
                         1,
                         RAJA::hip_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::hip_thread_x_direct,
-                            RAJA::statement::Lambda<0>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::hip_thread_x_direct,
+                                             RAJA::statement::Lambda<0>>>,
                     RAJA::statement::HipSyncThreads,
 
                     // Read data from shared memory
                     RAJA::statement::For<
                         1,
                         RAJA::hip_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::hip_thread_x_direct,
-                            RAJA::statement::Lambda<1>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::hip_thread_x_direct,
+                                             RAJA::statement::Lambda<1>>>,
                     RAJA::statement::HipSyncThreads>     // close shared memory
                                                          // scope
                 >                                        // for 2
@@ -819,20 +804,18 @@ using HIPTypes = ::testing::Types<
                     RAJA::statement::For<
                         1,
                         RAJA::hip_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::hip_thread_x_direct,
-                            RAJA::statement::Lambda<0>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::hip_thread_x_direct,
+                                             RAJA::statement::Lambda<0>>>,
                     RAJA::statement::HipSyncThreads,
 
                     // Read data from shared memory
                     RAJA::statement::For<
                         1,
                         RAJA::hip_thread_y_direct,
-                        RAJA::statement::For<
-                            0,
-                            RAJA::hip_thread_x_direct,
-                            RAJA::statement::Lambda<1>>>,
+                        RAJA::statement::For<0,
+                                             RAJA::hip_thread_x_direct,
+                                             RAJA::statement::Lambda<1>>>,
                     RAJA::statement::HipSyncThreads>     // close shared memory
                                                          // scope
                 >                                        // for 2
@@ -933,13 +916,12 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
   using Shmem      = typename TypeParam::Shmem;
   using ThreadPriv = typename TypeParam::ThreadPriv;
 
-  Shmem      aShared, bShared;  // memory to be shared between threads
-  ThreadPriv pVal;              // iteration dependent data
+  Shmem aShared, bShared;  // memory to be shared between threads
+  ThreadPriv pVal;         // iteration dependent data
 
   RAJA::kernel_param<Pol>(
-      RAJA::make_tuple(
-          RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, M),
-          RAJA::RangeSegment(0, P)),
+      RAJA::make_tuple(RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, M),
+                       RAJA::RangeSegment(0, P)),
       RAJA::make_tuple(aShared, bShared, pVal),
 
       // Zero out thread local memory for storing dot products
@@ -955,9 +937,8 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
       { bShared(tm, tp) = Bview(m, p); },
 
       // Do partial update in shmem
-      [=] RAJA_HOST_DEVICE(
-          int tn, int tm, int tp, Shmem& aShared, Shmem& bShared,
-          ThreadPriv& pVal)
+      [=] RAJA_HOST_DEVICE(int tn, int tm, int tp, Shmem& aShared,
+                           Shmem& bShared, ThreadPriv& pVal)
       { pVal(tn, tp) += aShared(tn, tm) * bShared(tm, tp); },
 
       // Write out complete result
@@ -1066,18 +1047,18 @@ struct Policy_MatMultiply_cpu
                       RAJA::seq_exec,
 
                       // Load tile of A into shmem
-                      RAJA::statement::For<
-                          1,
-                          RAJA::seq_exec,
-                          RAJA::statement::
-                              For<0, RAJA::seq_exec, shmem_Lambda1>>,
+                      RAJA::statement::For<1,
+                                           RAJA::seq_exec,
+                                           RAJA::statement::For<0,
+                                                                RAJA::seq_exec,
+                                                                shmem_Lambda1>>,
 
                       // Load tile of B into shmem
-                      RAJA::statement::For<
-                          2,
-                          RAJA::seq_exec,
-                          RAJA::statement::
-                              For<1, RAJA::seq_exec, shmem_Lambda2>>,
+                      RAJA::statement::For<2,
+                                           RAJA::seq_exec,
+                                           RAJA::statement::For<1,
+                                                                RAJA::seq_exec,
+                                                                shmem_Lambda2>>,
 
                       // Partial multiplication
                       RAJA::statement::For<
@@ -1096,11 +1077,10 @@ struct Policy_MatMultiply_cpu
                   RAJA::statement::For<
                       2,
                       RAJA::seq_exec,
-                      RAJA::statement::For<
-                          0,
-                          RAJA::seq_exec,
-                          shmem_Lambda4>>>>>  // Create shared
-                                              // memory
+                      RAJA::statement::For<0,
+                                           RAJA::seq_exec,
+                                           shmem_Lambda4>>>>>  // Create shared
+                                                               // memory
       >;
 };
 

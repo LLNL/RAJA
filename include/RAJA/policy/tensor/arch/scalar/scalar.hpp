@@ -42,10 +42,10 @@ public:
   using element_type    = T;
   using register_type   = T;
 
-  using int_vector_type = Register<
-      typename internal::expt::RegisterTraits<scalar_register, T>::
-          int_element_type,
-      scalar_register>;
+  using int_vector_type =
+      Register<typename internal::expt::RegisterTraits<scalar_register,
+                                                       T>::int_element_type,
+               scalar_register>;
 
 
 private:

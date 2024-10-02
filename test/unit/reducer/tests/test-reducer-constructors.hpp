@@ -47,9 +47,8 @@ testReducerConstructor()
 
 // Basic constructor tests are only expected to be verified on the host.
 // Should not run this on a GPU.
-template <
-    typename ReducePolicy,
-    typename NumericType>
+template <typename ReducePolicy,
+          typename NumericType>
 typename std::enable_if<  // CPU policy.
 #if defined(RAJA_ENABLE_CUDA)
     !std::is_same<ReducePolicy, RAJA::cuda_reduce>::value
@@ -61,19 +60,17 @@ typename std::enable_if<  // CPU policy.
     >::type
 testReducerConstructor()
 {
-  RAJA::ReduceSum<ReducePolicy, NumericType>    reduce_sum;
-  RAJA::ReduceMin<ReducePolicy, NumericType>    reduce_min;
-  RAJA::ReduceMax<ReducePolicy, NumericType>    reduce_max;
+  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum;
+  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min;
+  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max;
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc;
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc;
 
-  RAJA::ReduceMinLoc<
-      ReducePolicy, NumericType,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType,
+                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_minloctup;
-  RAJA::ReduceMaxLoc<
-      ReducePolicy, NumericType,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType,
+                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_maxloctup;
 
   ASSERT_EQ((NumericType)reduce_sum.get(), NumericType());
@@ -87,18 +84,14 @@ testReducerConstructor()
 
   ASSERT_EQ((NumericType)reduce_minloctup.get(), NumericType());
   ASSERT_EQ((NumericType)reduce_maxloctup.get(), NumericType());
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())),
-      RAJA::Index_type());
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())),
-      RAJA::Index_type());
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())),
-      RAJA::Index_type());
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())),
-      RAJA::Index_type());
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())),
+            RAJA::Index_type());
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())),
+            RAJA::Index_type());
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())),
+            RAJA::Index_type());
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())),
+            RAJA::Index_type());
 }
 
 TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
@@ -109,10 +102,9 @@ TYPED_TEST_P(ReducerBasicConstructorUnitTest, BasicReducerConstructor)
   testReducerConstructor<ReducePolicy, NumericType>();
 }
 
-template <
-    typename ReducePolicy,
-    typename NumericType,
-    typename ForOnePol>
+template <typename ReducePolicy,
+          typename NumericType,
+          typename ForOnePol>
 typename std::enable_if<  // Host policy does nothing.
     std::is_base_of<RunOnHost, ForOnePol>::value>::type
 exec_dispatcher(NumericType* RAJA_UNUSED_ARG(initVal))
@@ -121,10 +113,9 @@ exec_dispatcher(NumericType* RAJA_UNUSED_ARG(initVal))
 }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-template <
-    typename ReducePolicy,
-    typename NumericType,
-    typename ForOnePol>
+template <typename ReducePolicy,
+          typename NumericType,
+          typename ForOnePol>
 typename std::enable_if<  // GPU policy fiddles with value.
     std::is_base_of<RunOnDevice, ForOnePol>::value>::type
 exec_dispatcher(NumericType* initVal)
@@ -138,11 +129,10 @@ exec_dispatcher(NumericType* initVal)
 }
 #endif
 
-template <
-    typename ReducePolicy,
-    typename NumericType,
-    typename WORKING_RES,
-    typename ForOnePol>
+template <typename ReducePolicy,
+          typename NumericType,
+          typename WORKING_RES,
+          typename ForOnePol>
 void testInitReducerConstructor()
 {
   camp::resources::Resource work_res {WORKING_RES::get_default()};
@@ -167,20 +157,18 @@ void testInitReducerConstructor()
   hipErrchk(hipDeviceSynchronize());
 #endif
 
-  RAJA::ReduceSum<ReducePolicy, NumericType>    reduce_sum(initVal);
-  RAJA::ReduceMin<ReducePolicy, NumericType>    reduce_min(initVal);
-  RAJA::ReduceMax<ReducePolicy, NumericType>    reduce_max(initVal);
+  RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
+  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
+  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(initVal);
   RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(initVal, 1);
   RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(initVal, 1);
 
   RAJA::tuple<RAJA::Index_type, RAJA::Index_type> LocTup(1, 1);
-  RAJA::ReduceMinLoc<
-      ReducePolicy, NumericType,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType,
+                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_minloctup(initVal, LocTup);
-  RAJA::ReduceMaxLoc<
-      ReducePolicy, NumericType,
-      RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType,
+                     RAJA::tuple<RAJA::Index_type, RAJA::Index_type>>
       reduce_maxloctup(initVal, LocTup);
 
   // move a value onto device and fiddle
@@ -203,18 +191,14 @@ void testInitReducerConstructor()
 
   ASSERT_EQ((NumericType)reduce_minloctup.get(), (NumericType)(initVal));
   ASSERT_EQ((NumericType)reduce_maxloctup.get(), (NumericType)(initVal));
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())),
-      (RAJA::Index_type)1);
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())),
-      (RAJA::Index_type)1);
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())),
-      (RAJA::Index_type)1);
-  ASSERT_EQ(
-      (RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())),
-      (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_minloctup.getLoc())),
+            (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_minloctup.getLoc())),
+            (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<0>(reduce_maxloctup.getLoc())),
+            (RAJA::Index_type)1);
+  ASSERT_EQ((RAJA::Index_type)(RAJA::get<1>(reduce_maxloctup.getLoc())),
+            (RAJA::Index_type)1);
 
   work_res.deallocate(workVal);
   host_res.deallocate(theVal);
@@ -227,17 +211,15 @@ TYPED_TEST_P(ReducerInitConstructorUnitTest, InitReducerConstructor)
   using ResourceType = typename camp::at<TypeParam, camp::num<2>>::type;
   using ForOneType   = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  testInitReducerConstructor<
-      ReduceType, NumericType, ResourceType, ForOneType>();
+  testInitReducerConstructor<ReduceType, NumericType, ResourceType,
+                             ForOneType>();
 }
 
 
-REGISTER_TYPED_TEST_SUITE_P(
-    ReducerBasicConstructorUnitTest,
-    BasicReducerConstructor);
+REGISTER_TYPED_TEST_SUITE_P(ReducerBasicConstructorUnitTest,
+                            BasicReducerConstructor);
 
-REGISTER_TYPED_TEST_SUITE_P(
-    ReducerInitConstructorUnitTest,
-    InitReducerConstructor);
+REGISTER_TYPED_TEST_SUITE_P(ReducerInitConstructorUnitTest,
+                            InitReducerConstructor);
 
 #endif  //__TEST_REDUCER_CONSTRUCTOR__

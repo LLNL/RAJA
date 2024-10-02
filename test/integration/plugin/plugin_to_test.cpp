@@ -77,8 +77,7 @@ public:
 };
 
 // Statically loading plugin.
-static RAJA::util::PluginRegistry::add<CounterPlugin>
-    P("counter-plugin",
-      "Coun"
-      "te"
-      "r");
+static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin",
+                                                        "Coun"
+                                                        "te"
+                                                        "r");

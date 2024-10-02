@@ -16,11 +16,10 @@
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct CASOtherOp : all_op
 {
-  CASOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  CASOtherOp(T* dcount,
+             T* hcount,
+             camp::resources::Resource work_res,
+             RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -41,17 +40,16 @@ struct CASOtherOp : all_op
     return received;
   }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct CompareExchangeWeakOtherOp : all_op
 {
-  CompareExchangeWeakOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  CompareExchangeWeakOtherOp(T* dcount,
+                             T* hcount,
+                             camp::resources::Resource work_res,
+                             RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -70,17 +68,16 @@ struct CompareExchangeWeakOtherOp : all_op
     return expect;
   }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
 template <typename T, typename AtomicPolicy, typename IdxType>
 struct CompareExchangeStrongOtherOp : all_op
 {
-  CompareExchangeStrongOtherOp(
-      T*                               dcount,
-      T*                               hcount,
-      camp::resources::Resource        work_res,
-      RAJA::TypedRangeSegment<IdxType> seg)
+  CompareExchangeStrongOtherOp(T* dcount,
+                               T* hcount,
+                               camp::resources::Resource work_res,
+                               RAJA::TypedRangeSegment<IdxType> seg)
       : other(dcount),
         min((T)0),
         max((T)seg.size() - (T)1),
@@ -99,35 +96,32 @@ struct CompareExchangeStrongOtherOp : all_op
     return expect;
   }
   RAJA::AtomicRef<T, AtomicPolicy> other;
-  T                                min, max, final_min, final_max;
+  T min, max, final_min, final_max;
 };
 
-template <
-    typename ExecPolicy,
-    typename AtomicPolicy,
-    typename IdxType,
-    typename T,
-    template <typename, typename, typename>
-    class OtherOp>
-void testAtomicRefCASOp(
-    RAJA::TypedRangeSegment<IdxType> seg,
-    T*                               count,
-    T*                               list,
-    T*                               hcount,
-    T*                               hlist,
-    camp::resources::Resource        work_res,
-    IdxType                          N)
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename IdxType,
+          typename T,
+          template <typename, typename, typename>
+          class OtherOp>
+void testAtomicRefCASOp(RAJA::TypedRangeSegment<IdxType> seg,
+                        T* count,
+                        T* list,
+                        T* hcount,
+                        T* hlist,
+                        camp::resources::Resource work_res,
+                        IdxType N)
 {
   OtherOp<T, AtomicPolicy, IdxType> otherop(count, hcount, work_res, seg);
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { list[i] = otherop.max + (T)1; });
-  RAJA::forall<ExecPolicy>(
-      seg,
-      [=] RAJA_HOST_DEVICE(IdxType i)
-      {
-        T val   = otherop(i);
-        list[i] = val;
-      });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { list[i] = otherop.max + (T)1; });
+  RAJA::forall<ExecPolicy>(seg,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           {
+                             T val   = otherop(i);
+                             list[i] = val;
+                           });
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
 #endif
@@ -148,12 +142,11 @@ void testAtomicRefCASOp(
 }
 
 
-template <
-    typename ExecPolicy,
-    typename AtomicPolicy,
-    typename WORKINGRES,
-    typename IdxType,
-    typename T>
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename WORKINGRES,
+          typename IdxType,
+          typename T>
 void ForallAtomicRefCASTestImpl(IdxType N)
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
@@ -178,12 +171,12 @@ void ForallAtomicRefCASTestImpl(IdxType N)
 
   testAtomicRefCASOp<ExecPolicy, AtomicPolicy, IdxType, T, CASOtherOp>(
       seg, count, list, hcount, hlist, work_res, N);
-  testAtomicRefCASOp<
-      ExecPolicy, AtomicPolicy, IdxType, T, CompareExchangeWeakOtherOp>(
-      seg, count, list, hcount, hlist, work_res, N);
-  testAtomicRefCASOp<
-      ExecPolicy, AtomicPolicy, IdxType, T, CompareExchangeStrongOtherOp>(
-      seg, count, list, hcount, hlist, work_res, N);
+  testAtomicRefCASOp<ExecPolicy, AtomicPolicy, IdxType, T,
+                     CompareExchangeWeakOtherOp>(seg, count, list, hcount,
+                                                 hlist, work_res, N);
+  testAtomicRefCASOp<ExecPolicy, AtomicPolicy, IdxType, T,
+                     CompareExchangeStrongOtherOp>(seg, count, list, hcount,
+                                                   hlist, work_res, N);
 
   work_res.deallocate(count);
   work_res.deallocate(list);

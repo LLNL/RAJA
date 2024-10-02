@@ -50,11 +50,11 @@ struct IndexValue : public IndexValueBase
   using value_type = VALUE;
 
   //! Default constructor initializes value to 0.
-  RAJA_INLINE constexpr IndexValue()                    = default;
-  constexpr RAJA_INLINE   IndexValue(IndexValue const&) = default;
-  constexpr RAJA_INLINE   IndexValue(IndexValue&&)      = default;
-  RAJA_INLINE IndexValue& operator=(IndexValue const&)  = default;
-  RAJA_INLINE IndexValue& operator=(IndexValue&&)       = default;
+  RAJA_INLINE constexpr IndexValue()                   = default;
+  constexpr RAJA_INLINE IndexValue(IndexValue const&)  = default;
+  constexpr RAJA_INLINE IndexValue(IndexValue&&)       = default;
+  RAJA_INLINE IndexValue& operator=(IndexValue const&) = default;
+  RAJA_INLINE IndexValue& operator=(IndexValue&&)      = default;
 
   /*!
    * \brief Explicit constructor.
@@ -315,10 +315,10 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM const val)
  */
 // This version is enabled if FROM is a strongly typed class
 template <typename FROM>
-constexpr RAJA_HOST_DEVICE RAJA_INLINE typename std::enable_if<
-    std::is_base_of<IndexValueBase, FROM>::value,
-    typename FROM::value_type>::type
-stripIndexType(FROM const val)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value,
+                            typename FROM::value_type>::type
+    stripIndexType(FROM const val)
 {
   return *val;
 }
@@ -326,8 +326,9 @@ stripIndexType(FROM const val)
  * enabled if FROM is not a strongly typed class
  */
 template <typename FROM>
-constexpr RAJA_HOST_DEVICE RAJA_INLINE typename std::
-    enable_if<!std::is_base_of<IndexValueBase, FROM>::value, FROM>::type
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
+    typename std::enable_if<!std::is_base_of<IndexValueBase, FROM>::value,
+                            FROM>::type
     stripIndexType(FROM const val)
 {
   return val;
@@ -366,10 +367,10 @@ using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
  * \param FROM the original type
  */
 template <typename FROM>
-using make_signed_t = typename std::conditional<
-    std::is_floating_point<FROM>::value,
-    std::common_type<FROM>,
-    std::make_signed<FROM>>::type::type;
+using make_signed_t =
+    typename std::conditional<std::is_floating_point<FROM>::value,
+                              std::common_type<FROM>,
+                              std::make_signed<FROM>>::type::type;
 
 }  // namespace RAJA
 
@@ -378,18 +379,18 @@ using make_signed_t = typename std::conditional<
  * \param TYPE the name of the type
  * \param NAME a string literal to identify this index type
  */
-#define RAJA_INDEX_VALUE(TYPE, NAME)                                             \
-  class TYPE : public ::RAJA::IndexValue<TYPE>                                   \
-  {                                                                              \
-    using parent = ::RAJA::IndexValue<TYPE>;                                     \
-                                                                                 \
-  public:                                                                        \
-    using IndexValueType = TYPE;                                                 \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}                \
-    RAJA_HOST_DEVICE             RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
-        : parent::IndexValue(v)                                                  \
-    {}                                                                           \
-    static inline std::string getName() { return NAME; }                         \
+#define RAJA_INDEX_VALUE(TYPE, NAME)                                           \
+  class TYPE : public ::RAJA::IndexValue<TYPE>                                 \
+  {                                                                            \
+    using parent = ::RAJA::IndexValue<TYPE>;                                   \
+                                                                               \
+  public:                                                                      \
+    using IndexValueType = TYPE;                                               \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}              \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v)           \
+        : parent::IndexValue(v)                                                \
+    {}                                                                         \
+    static inline std::string getName() { return NAME; }                       \
   };
 
 /*!

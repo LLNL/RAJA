@@ -47,10 +47,9 @@ struct add_offset<RAJA::TypedLayout<IdxLin, camp::tuple<DimTypes...>>>
   using type = RAJA::TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
 };
 
-template <
-    typename ValueType,
-    typename LayoutType,
-    typename PointerType = ValueType*>
+template <typename ValueType,
+          typename LayoutType,
+          typename PointerType = ValueType*>
 using View = internal::ViewBase<ValueType, PointerType, LayoutType>;
 
 
@@ -65,14 +64,12 @@ RAJA_INLINE View<ValueType, Layout<1, IndexType, 0>> make_view(ValueType* ptr)
   return View<ValueType, Layout<1, IndexType, 0>>(ptr, 1);
 }
 
-template <
-    size_t n_dims,
-    typename IndexType,
-    typename ValueType,
-    typename... IndexTypes>
+template <size_t n_dims,
+          typename IndexType,
+          typename ValueType,
+          typename... IndexTypes>
 RAJA_INLINE View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...>>
-            make_index_view(
-                ValueType*                                    ptr,
+make_index_view(ValueType* ptr,
                 IndexLayout<n_dims, IndexType, IndexTypes...> index_layout)
 {
   return View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...>>(
@@ -123,24 +120,20 @@ RAJA_HOST_DEVICE RAJA_INLINE auto
 removenth(Lay lyout, Tup&& tup) -> decltype(selecttuple<Lay>(
     lyout,
     std::forward<Tup>(tup),
-    cat_seq_t<
-        camp::make_idx_seq_t<Nth>,  // sequence up to Nth
-        offset_seq_t<
-            Nth + 1,  // after Nth
-            camp::make_idx_seq_t<
-                camp::tuple_size<Tup>::value - Nth - 1>>  // sequence after Nth
-        > {}))
+    cat_seq_t<camp::make_idx_seq_t<Nth>,  // sequence up to Nth
+              offset_seq_t<Nth + 1,       // after Nth
+                           camp::make_idx_seq_t<camp::tuple_size<Tup>::value -
+                                                Nth - 1>>  // sequence after Nth
+              > {}))
 {
   return selecttuple<Lay>(
       lyout, std::forward<Tup>(tup),
-      cat_seq_t<
-          camp::make_idx_seq_t<Nth>,  // sequence up to Nth
-          offset_seq_t<
-              Nth + 1,  // after Nth
-              camp::make_idx_seq_t<
-                  camp::tuple_size<Tup>::value - Nth - 1>>  // sequence after
-                                                            // Nth
-          > {});
+      cat_seq_t<camp::make_idx_seq_t<Nth>,  // sequence up to Nth
+                offset_seq_t<Nth + 1,       // after Nth
+                             camp::make_idx_seq_t<camp::tuple_size<Tup>::value -
+                                                  Nth - 1>>  // sequence after
+                                                             // Nth
+                > {});
 }
 
 
@@ -169,7 +162,7 @@ struct MultiView
       MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
   layout_type const layout;
-  nc_pointer_type   data;
+  nc_pointer_type data;
 
   template <typename... Args>
   RAJA_INLINE constexpr MultiView(pointer_type data_ptr, Args... dim_sizes)
@@ -198,15 +191,14 @@ struct MultiView
       RAJA::MultiView<ValueType, typename add_offset<layout_type>::type, P2Pidx>
       shift(const std::array<IdxLin, n_dims>& shift)
   {
-    static_assert(
-        n_dims == layout_type::n_dims, "Dimension mismatch in view shift");
+    static_assert(n_dims == layout_type::n_dims,
+                  "Dimension mismatch in view shift");
 
     typename add_offset<layout_type>::type shift_layout(layout);
     shift_layout.shift(shift);
 
-    return RAJA::MultiView<
-        ValueType, typename add_offset<layout_type>::type, P2Pidx>(
-        data, shift_layout);
+    return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type,
+                           P2Pidx>(data, shift_layout);
   }
 
   // Moving the position of the index into the array-of-pointers
@@ -283,7 +275,7 @@ struct AtomicViewWrapper<ViewType, RAJA::seq_atomic>
 
 template <typename AtomicPolicy, typename ViewType>
 RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy>
-            make_atomic_view(ViewType const& view)
+make_atomic_view(ViewType const& view)
 {
 
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);

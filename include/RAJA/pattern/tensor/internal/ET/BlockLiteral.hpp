@@ -62,7 +62,7 @@ public:
 
 private:
   storage_type m_storage;
-  tile_type    m_tile_origin;
+  tile_type m_tile_origin;
 
 public:
   RAJA_INLINE

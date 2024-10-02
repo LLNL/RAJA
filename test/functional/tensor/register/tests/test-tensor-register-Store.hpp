@@ -21,7 +21,7 @@ void StoreImpl()
 
   // Allocate
   std::vector<element_t> input0_vec(num_elem);
-  element_t*             input0_hptr = input0_vec.data();
+  element_t* input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(10 * num_elem);

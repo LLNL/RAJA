@@ -28,7 +28,7 @@ void test_PermutedCombiningAdapter_1D(Segment const& seg0)
   auto seg0_begin = begin(seg0);
 
   size_t counters[1] = {0};
-  auto   adapter     = RAJA::make_PermutedCombiningAdapter<Perm>(
+  auto adapter       = RAJA::make_PermutedCombiningAdapter<Perm>(
       [&](IndexType i0)
       {
         ASSERT_EQ(seg0_begin[counters[0]], i0);

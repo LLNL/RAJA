@@ -88,10 +88,9 @@ struct cuda_useReinterpretCommon
                                 (sizeof(T) == sizeof(unsigned int) ||
                                  sizeof(T) == sizeof(unsigned long long));
 
-  using type = std::conditional_t<
-      sizeof(T) == sizeof(unsigned int),
-      unsigned int,
-      unsigned long long>;
+  using type = std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                                  unsigned int,
+                                  unsigned long long>;
 };
 
 
@@ -109,9 +108,8 @@ using cuda_useReinterpretCommon_t = typename cuda_useReinterpretCommon<T>::type;
  * This overload using builtin functions is used to implement atomic loads
  * under some build configurations.
  */
-template <
-    typename T,
-    std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicOr(T* acc, T value)
 {
   return ::atomicOr(acc, value);
@@ -146,10 +144,9 @@ struct cuda_useReinterpretExchange
                                 (sizeof(T) == sizeof(unsigned int) ||
                                  sizeof(T) == sizeof(unsigned long long));
 
-  using type = std::conditional_t<
-      sizeof(T) == sizeof(unsigned int),
-      unsigned int,
-      unsigned long long>;
+  using type = std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                                  unsigned int,
+                                  unsigned long long>;
 };
 
 /*!
@@ -163,9 +160,8 @@ using cuda_useReinterpretExchange_t =
  * Performs an atomic exchange using a builtin function. Stores the new value
  * in the given address and returns the old value.
  */
-template <
-    typename T,
-    std::enable_if_t<cuda_useBuiltinExchange<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicExchange(T* acc, T value)
 {
   return ::atomicExch(acc, value);
@@ -175,9 +171,8 @@ RAJA_INLINE __device__ T cuda_atomicExchange(T* acc, T value)
  * Performs an atomic exchange using a reinterpret cast. Stores the new value
  * in the given address and returns the old value.
  */
-template <
-    typename T,
-    std::enable_if_t<cuda_useReinterpretExchange<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useReinterpretExchange<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicExchange(T* acc, T value)
 {
   using R = cuda_useReinterpretExchange_t<T>;
@@ -209,17 +204,15 @@ RAJA_INLINE __device__ void cuda_atomicStore(T* acc, T value)
 
 #else
 
-template <
-    typename T,
-    std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicLoad(T* acc)
 {
   return cuda_atomicOr(acc, static_cast<T>(0));
 }
 
-template <
-    typename T,
-    std::enable_if_t<cuda_useReinterpretCommon<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useReinterpretCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicLoad(T* acc)
 {
   using R = cuda_useReinterpretCommon_t<T>;
@@ -274,16 +267,14 @@ struct cuda_useReinterpretCAS
 
   using type =
 #if __CUDA_ARCH__ >= 700
-      std::conditional_t<
-          sizeof(T) == sizeof(unsigned short),
-          unsigned short,
+      std::conditional_t<sizeof(T) == sizeof(unsigned short),
+                         unsigned short,
 #endif
-          std::conditional_t<
-              sizeof(T) == sizeof(unsigned int),
-              unsigned int,
-              unsigned long long>
+                         std::conditional_t<sizeof(T) == sizeof(unsigned int),
+                                            unsigned int,
+                                            unsigned long long>
 #if __CUDA_ARCH__ >= 700
-          >
+                         >
 #endif
       ;
 };
@@ -294,17 +285,15 @@ struct cuda_useReinterpretCAS
 template <typename T>
 using cuda_useReinterpretCAS_t = typename cuda_useReinterpretCAS<T>::type;
 
-template <
-    typename T,
-    std::enable_if_t<cuda_useBuiltinCAS<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinCAS<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicCAS(T* acc, T compare, T value)
 {
   return ::atomicCAS(acc, compare, value);
 }
 
-template <
-    typename T,
-    std::enable_if_t<cuda_useReinterpretCAS<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useReinterpretCAS<T>::value, bool> = true>
 RAJA_INLINE __device__ T cuda_atomicCAS(T* acc, T compare, T value)
 {
   using R = cuda_useReinterpretCAS_t<T>;
@@ -319,24 +308,21 @@ RAJA_INLINE __device__ T cuda_atomicCAS(T* acc, T compare, T value)
  * integral type to avoid cases where the values will never compare equal
  * (most notably, NaNs).
  */
-template <
-    typename T,
-    std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useBuiltinCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
 {
   return a == b;
 }
 
-template <
-    typename T,
-    std::enable_if_t<cuda_useReinterpretCommon<T>::value, bool> = true>
+template <typename T,
+          std::enable_if_t<cuda_useReinterpretCommon<T>::value, bool> = true>
 RAJA_INLINE __device__ bool cuda_atomicCAS_equal(const T& a, const T& b)
 {
   using R = cuda_useReinterpretCommon_t<T>;
 
-  return cuda_atomicCAS_equal(
-      RAJA::util::reinterp_A_as_B<T, R>(a),
-      RAJA::util::reinterp_A_as_B<T, R>(b));
+  return cuda_atomicCAS_equal(RAJA::util::reinterp_A_as_B<T, R>(a),
+                              RAJA::util::reinterp_A_as_B<T, R>(b));
 }
 
 
@@ -368,8 +354,9 @@ RAJA_INLINE __device__ T cuda_atomicCAS_loop(T* acc, Oper&& oper)
  * result of this operation.
  */
 template <typename T, typename Oper, typename ShortCircuit>
-RAJA_INLINE __device__ T
-cuda_atomicCAS_loop(T* acc, Oper&& oper, ShortCircuit&& sc)
+RAJA_INLINE __device__ T cuda_atomicCAS_loop(T* acc,
+                                             Oper&& oper,
+                                             ShortCircuit&& sc)
 {
   T old = cuda_atomicLoad(acc);
 
@@ -393,21 +380,19 @@ cuda_atomicCAS_loop(T* acc, Oper&& oper, ShortCircuit&& sc)
 /*!
  * Atomic addition
  */
-using cuda_atomicAdd_builtin_types = ::camp::list<
-    int,
-    unsigned int,
-    unsigned long long int,
-    float
+using cuda_atomicAdd_builtin_types = ::camp::list<int,
+                                                  unsigned int,
+                                                  unsigned long long int,
+                                                  float
 #if __CUDA_ARCH__ >= 600
-    ,
-    double
+                                                  ,
+                                                  double
 #endif
-    >;
+                                                  >;
 
-template <
-    typename T,
-    RAJA::util::enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicAdd_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicAdd(T* acc, T value)
 {
   return cuda_atomicCAS_loop(acc, [value](T old) { return old + value; });
@@ -429,19 +414,18 @@ using cuda_atomicSub_builtin_types = cuda_atomicAdd_builtin_types;
 
 using cuda_atomicSub_via_Sub_builtin_types = ::camp::list<int, unsigned int>;
 
-using cuda_atomicSub_via_Add_builtin_types = ::camp::list<
-    unsigned long long int,
-    float
+using cuda_atomicSub_via_Add_builtin_types =
+    ::camp::list<unsigned long long int,
+                 float
 #if __CUDA_ARCH__ >= 600
-    ,
-    double
+                 ,
+                 double
 #endif
-    >;
+                 >;
 
-template <
-    typename T,
-    RAJA::util::enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicSub_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicSub(T* acc, T value)
 {
   return cuda_atomicCAS_loop(acc, [value](T old) { return old - value; });
@@ -469,15 +453,14 @@ RAJA_INLINE __device__ T cuda_atomicSub(T* acc, T value)
 /*!
  * Atomic min/max
  */
-using cuda_atomicMinMax_builtin_types = ::camp::list<
-    int,
-    unsigned int
+using cuda_atomicMinMax_builtin_types = ::camp::list<int,
+                                                     unsigned int
 #if __CUDA_ARCH__ >= 500
-    ,
-    long long int,
-    unsigned long long int
+                                                     ,
+                                                     long long int,
+                                                     unsigned long long int
 #endif
-    >;
+                                                     >;
 
 
 /*!
@@ -494,10 +477,9 @@ RAJA_INLINE __device__ T cuda_atomicMin(T* acc, T value)
       [value](T current) { return current <= value; });
 }
 
-template <
-    typename T,
-    RAJA::util::enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicMin(T* acc, T value)
 {
   return ::atomicMin(acc, value);
@@ -518,10 +500,9 @@ RAJA_INLINE __device__ T cuda_atomicMax(T* acc, T value)
       [value](T current) { return value <= current; });
 }
 
-template <
-    typename T,
-    RAJA::util::enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_any_of<T, cuda_atomicMinMax_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicMax(T* acc, T value)
 {
   return ::atomicMax(acc, value);
@@ -581,14 +562,13 @@ RAJA_INLINE __device__ T cuda_atomicDec(T* acc, T value)
 {
   // See:
   // http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#atomicdec
-  return cuda_atomicCAS_loop(
-      acc,
-      [value](T old)
-      {
-        return old == static_cast<T>(0) || value < old
-                   ? value
-                   : old - static_cast<T>(1);
-      });
+  return cuda_atomicCAS_loop(acc,
+                             [value](T old)
+                             {
+                               return old == static_cast<T>(0) || value < old
+                                          ? value
+                                          : old - static_cast<T>(1);
+                             });
 }
 
 template <
@@ -621,10 +601,9 @@ using cuda_atomicBit_builtin_types =
 /*!
  * Atomic and
  */
-template <
-    typename T,
-    RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicAnd(T* acc, T value)
 {
   return cuda_atomicCAS_loop(acc, [value](T old) { return old & value; });
@@ -642,10 +621,9 @@ RAJA_INLINE __device__ T cuda_atomicAnd(T* acc, T value)
 /*!
  * Atomic or
  */
-template <
-    typename T,
-    RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicOr(T* acc, T value)
 {
   return cuda_atomicCAS_loop(acc, [value](T old) { return old | value; });
@@ -660,10 +638,9 @@ RAJA_INLINE __device__ T cuda_atomicOr(T* acc, T value)
 /*!
  * Atomic xor
  */
-template <
-    typename T,
-    RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* =
-        nullptr>
+template <typename T,
+          RAJA::util::enable_if_is_none_of<T, cuda_atomicBit_builtin_types>* =
+              nullptr>
 RAJA_INLINE __device__ T cuda_atomicXor(T* acc, T value)
 {
   return cuda_atomicCAS_loop(acc, [value](T old) { return old ^ value; });
@@ -691,8 +668,8 @@ RAJA_INLINE __device__ T cuda_atomicXor(T* acc, T value)
  */
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicLoad(cuda_atomic_explicit<host_policy>, T* acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicLoad(cuda_atomic_explicit<host_policy>,
+                                          T* acc)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicLoad(acc);
@@ -715,8 +692,9 @@ atomicStore(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicAdd(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicAdd(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAdd(acc, value);
@@ -727,8 +705,9 @@ atomicAdd(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicSub(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicSub(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicSub(acc, value);
@@ -739,8 +718,9 @@ atomicSub(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicMin(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicMin(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMin(acc, value);
@@ -751,8 +731,9 @@ atomicMin(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicMax(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicMax(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicMax(acc, value);
@@ -763,8 +744,9 @@ atomicMax(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicInc(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   // See:
@@ -777,8 +759,8 @@ atomicInc(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicInc(cuda_atomic_explicit<host_policy>, T* acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(cuda_atomic_explicit<host_policy>,
+                                         T* acc)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicInc(acc);
@@ -789,8 +771,9 @@ atomicInc(cuda_atomic_explicit<host_policy>, T* acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicDec(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   // See:
@@ -803,8 +786,8 @@ atomicDec(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicDec(cuda_atomic_explicit<host_policy>, T* acc)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(cuda_atomic_explicit<host_policy>,
+                                         T* acc)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicDec(acc);
@@ -815,8 +798,9 @@ atomicDec(cuda_atomic_explicit<host_policy>, T* acc)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicAnd(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicAnd(acc, value);
@@ -827,8 +811,9 @@ atomicAnd(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicOr(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(cuda_atomic_explicit<host_policy>,
+                                        T* acc,
+                                        T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicOr(acc, value);
@@ -839,8 +824,9 @@ atomicOr(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicXor(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(cuda_atomic_explicit<host_policy>,
+                                         T* acc,
+                                         T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicXor(acc, value);
@@ -851,8 +837,9 @@ atomicXor(cuda_atomic_explicit<host_policy>, T* acc, T value)
 
 RAJA_SUPPRESS_HD_WARN
 template <typename T, typename host_policy>
-RAJA_INLINE RAJA_HOST_DEVICE T
-atomicExchange(cuda_atomic_explicit<host_policy>, T* acc, T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(cuda_atomic_explicit<host_policy>,
+                                              T* acc,
+                                              T value)
 {
 #ifdef __CUDA_ARCH__
   return detail::cuda_atomicExchange(acc, value);

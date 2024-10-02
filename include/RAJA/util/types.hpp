@@ -138,11 +138,11 @@ struct Direct : DirectBase
 ///   // 2 -> {6, 7}
 ///
 template <size_t max_iterations>
-struct Contiguousloop : ContiguousLoopBase,
-                        std::conditional_t<
-                            (max_iterations != named_usage::unspecified),
-                            SizedLoopSpecifyingBase<max_iterations>,
-                            UnsizedLoopBase>
+struct Contiguousloop
+    : ContiguousLoopBase,
+      std::conditional_t<(max_iterations != named_usage::unspecified),
+                         SizedLoopSpecifyingBase<max_iterations>,
+                         UnsizedLoopBase>
 {};
 
 ///
@@ -171,9 +171,9 @@ struct Contiguousloop : ContiguousLoopBase,
 ///   // 2 -> {2, 5}
 ///
 template <size_t max_iterations>
-struct StridedLoop : StridedLoopBase,
-                     std::conditional_t<
-                         (max_iterations != named_usage::unspecified),
+struct StridedLoop
+    : StridedLoopBase,
+      std::conditional_t<(max_iterations != named_usage::unspecified),
                          SizedLoopSpecifyingBase<max_iterations>,
                          UnsizedLoopBase>
 {};
@@ -845,15 +845,15 @@ using UnalignedReal_ptr       = Real_type*;
 using const_UnalignedReal_ptr = const Real_type*;
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
-using Real_ptr          = Real_type*                   RAJA_RESTRICT;
-using const_Real_ptr    = const Real_type*       RAJA_RESTRICT;
+using Real_ptr          = Real_type* RAJA_RESTRICT;
+using const_Real_ptr    = const Real_type* RAJA_RESTRICT;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr       = Complex_type*             RAJA_RESTRICT;
+using Complex_ptr       = Complex_type* RAJA_RESTRICT;
 using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
 #endif
 
-using UnalignedReal_ptr       = Real_type*             RAJA_RESTRICT;
+using UnalignedReal_ptr       = Real_type* RAJA_RESTRICT;
 using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
@@ -861,11 +861,11 @@ using Real_ptr           = TDRAReal_ptr;
 using const_Real_ptr     = const_TDRAReal_ptr;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr        = Complex_type*             RAJA_RESTRICT;
+using Complex_ptr        = Complex_type* RAJA_RESTRICT;
 using const_Complex_ptr  = const Complex_type* RAJA_RESTRICT;
 #endif
 
-using UnalignedReal_ptr       = Real_type*             RAJA_RESTRICT;
+using UnalignedReal_ptr       = Real_type* RAJA_RESTRICT;
 using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_PTR_CLASS)
@@ -912,18 +912,16 @@ struct DefaultAccessor
  * \brief Abstracts T into an equal or greater size array of integers whose
  * size is between min_integer_type_size and max_interger_type_size inclusive.
  */
-template <
-    typename T,
-    size_t min_integer_type_size = 1,
-    size_t max_integer_type_size = sizeof(unsigned long long)>
+template <typename T,
+          size_t min_integer_type_size = 1,
+          size_t max_integer_type_size = sizeof(unsigned long long)>
 struct AsIntegerArray
 {
-  static_assert(
-      min_integer_type_size <= max_integer_type_size,
-      "incompatible "
-      "min and max "
-      "integer type "
-      "size");
+  static_assert(min_integer_type_size <= max_integer_type_size,
+                "incompatible "
+                "min and max "
+                "integer type "
+                "size");
   using integer_type = std::conditional_t<
       ((alignof(T) >= alignof(unsigned long long) &&
         sizeof(unsigned long long) <= max_integer_type_size) ||
@@ -944,28 +942,25 @@ struct AsIntegerArray
                     sizeof(unsigned short) <= max_integer_type_size) ||
                    sizeof(unsigned char) < min_integer_type_size),
                   unsigned short,
-                  std::conditional_t<
-                      ((alignof(T) >= alignof(unsigned char) &&
-                        sizeof(unsigned char) <= max_integer_type_size)),
-                      unsigned char,
-                      void>>>>>;
-  static_assert(
-      !std::is_same<integer_type, void>::value,
-      "could not find a "
-      "compatible integer "
-      "type");
-  static_assert(
-      sizeof(integer_type) >= min_integer_type_size,
-      "integer_type "
-      "smaller than "
-      "min integer "
-      "type size");
-  static_assert(
-      sizeof(integer_type) <= max_integer_type_size,
-      "integer_type "
-      "greater than "
-      "max integer "
-      "type size");
+                  std::conditional_t<((alignof(T) >= alignof(unsigned char) &&
+                                       sizeof(unsigned char) <=
+                                           max_integer_type_size)),
+                                     unsigned char,
+                                     void>>>>>;
+  static_assert(!std::is_same<integer_type, void>::value,
+                "could not find a "
+                "compatible integer "
+                "type");
+  static_assert(sizeof(integer_type) >= min_integer_type_size,
+                "integer_type "
+                "smaller than "
+                "min integer "
+                "type size");
+  static_assert(sizeof(integer_type) <= max_integer_type_size,
+                "integer_type "
+                "greater than "
+                "max integer "
+                "type size");
 
   static constexpr size_t num_integer_type =
       (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
@@ -1021,7 +1016,7 @@ struct ScopedAssignment
 
 private:
   T& m_ref_to_val;
-  T  m_prev_val;
+  T m_prev_val;
 };
 
 }  // namespace detail

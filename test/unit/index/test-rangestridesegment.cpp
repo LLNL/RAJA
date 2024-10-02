@@ -62,15 +62,13 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Iterators)
   ASSERT_EQ(difftype_t(25), r1.size());
 }
 
-template <
-    typename T,
-    typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
 void NegativeRangeStrideTestSizes()
 {}
 
-template <
-    typename T,
-    typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+template <typename T,
+          typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
 void NegativeRangeStrideTestSizes()
 {
   RAJA::TypedRangeStrideSegment<T> segment16(-10, -2, 2);
@@ -144,17 +142,15 @@ TYPED_TEST(RangeStrideSegmentUnitTest, Sizes)
   NegativeRangeStrideTestSizes<TypeParam>();
 }
 
-template <
-    typename IDX_TYPE,
-    typename std::enable_if<std::is_unsigned<
-        RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+template <typename IDX_TYPE,
+          typename std::enable_if<std::is_unsigned<
+              RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
 void runNegativeIndexStrideSliceTests()
 {}
 
-template <
-    typename IDX_TYPE,
-    typename std::enable_if<std::is_signed<
-        RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+template <typename IDX_TYPE,
+          typename std::enable_if<std::is_signed<
+              RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
 void runNegativeIndexStrideSliceTests()
 {
   auto r1 = RAJA::TypedRangeStrideSegment<IDX_TYPE>(10, -1, -1);

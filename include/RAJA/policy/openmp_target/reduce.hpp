@@ -70,8 +70,8 @@ static constexpr int MaxNumTeams = policy::omp::MAXNUMTHREADS;
 //! Information necessary for OpenMP offload to be considered
 struct Offload_Info
 {
-  int  hostID {omp_get_initial_device()};
-  int  deviceID {omp_get_default_device()};
+  int hostID {omp_get_initial_device()};
+  int deviceID {omp_get_default_device()};
   bool isMapped {false};
 
   Offload_Info() = default;
@@ -89,8 +89,8 @@ template <typename T>
 struct Reduce_Data
 {
   mutable T value;
-  T*        device;
-  T*        host;
+  T* device;
+  T* host;
 
   //! disallow default constructor
   Reduce_Data() = delete;
@@ -129,10 +129,10 @@ struct Reduce_Data
   RAJA_INLINE void hostToDevice(Offload_Info& info)
   {
     // precondition: host and device are valid pointers
-    if (omp_target_memcpy(
-            reinterpret_cast<void*>(device), reinterpret_cast<void*>(host),
-            omp::MaxNumTeams * sizeof(T), 0, 0, info.deviceID,
-            info.hostID) != 0)
+    if (omp_target_memcpy(reinterpret_cast<void*>(device),
+                          reinterpret_cast<void*>(host),
+                          omp::MaxNumTeams * sizeof(T), 0, 0, info.deviceID,
+                          info.hostID) != 0)
     {
       printf("Unable to copy memory from host to device\n");
       exit(1);
@@ -143,10 +143,10 @@ struct Reduce_Data
   RAJA_INLINE void deviceToHost(Offload_Info& info)
   {
     // precondition: host and device are valid pointers
-    if (omp_target_memcpy(
-            reinterpret_cast<void*>(host), reinterpret_cast<void*>(device),
-            omp::MaxNumTeams * sizeof(T), 0, 0, info.hostID,
-            info.deviceID) != 0)
+    if (omp_target_memcpy(reinterpret_cast<void*>(host),
+                          reinterpret_cast<void*>(device),
+                          omp::MaxNumTeams * sizeof(T), 0, 0, info.hostID,
+                          info.deviceID) != 0)
     {
       printf("Unable to copy memory from device to host\n");
       exit(1);
@@ -256,8 +256,8 @@ private:
   omp::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
   omp::Reduce_Data<T> val;
-  T                   initVal;
-  T                   finalVal;
+  T initVal;
+  T finalVal;
 };
 
 //! OpenMP Target Reduction Location entity -- generalize on # of teams,
@@ -268,9 +268,9 @@ struct TargetReduceLoc
   TargetReduceLoc()                       = delete;
   TargetReduceLoc(const TargetReduceLoc&) = default;
   explicit TargetReduceLoc(
-      T         init_val_,
+      T init_val_,
       IndexType init_loc,
-      T         identity_val_ = Reducer::identity,
+      T identity_val_ = Reducer::identity,
       IndexType identity_loc_ =
           RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
@@ -282,12 +282,11 @@ struct TargetReduceLoc
         finalLoc(identity_loc_)
   {}
 
-  void reset(
-      T         init_val_,
-      IndexType init_loc_,
-      T         identity_val_ = Reducer::identity,
-      IndexType identity_loc_ =
-          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  void reset(T init_val_,
+             IndexType init_loc_,
+             T identity_val_ = Reducer::identity,
+             IndexType identity_loc_ =
+                 RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
     operator T();
     val.reset(identity_val_);
@@ -367,10 +366,10 @@ private:
   omp::Reduce_Data<T> val;
   //! storage for redcution data for location
   omp::Reduce_Data<IndexType> loc;
-  T                           initVal;
-  T                           finalVal;
-  IndexType                   initLoc;
-  IndexType                   finalLoc;
+  T initVal;
+  T finalVal;
+  IndexType initLoc;
+  IndexType finalLoc;
 };
 
 

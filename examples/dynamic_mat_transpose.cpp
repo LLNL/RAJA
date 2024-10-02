@@ -84,112 +84,98 @@ using launch_policy = RAJA::LaunchPolicy<
  * Up to 3 dimension are supported: x,y,z
  */
 using outer0 = RAJA::LoopPolicy<
-    RAJA::seq_exec
+                                       RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    RAJA::cuda_block_x_direct
+                                       ,
+                                       RAJA::cuda_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-    ,
-    RAJA::hip_block_x_direct
+                                       ,
+                                       RAJA::hip_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-    ,
-    RAJA::sycl_group_2_direct
+                                       ,
+                                       RAJA::sycl_group_2_direct
 #endif
-    >;
+                                       >;
 
 using outer1 = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-    RAJA::omp_for_exec
+                                      RAJA::omp_for_exec
 #else
-    RAJA::seq_exec
+                                       RAJA::seq_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    RAJA::cuda_block_y_direct
+                                       ,
+                                       RAJA::cuda_block_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-    ,
-    RAJA::hip_block_y_direct
+                                       ,
+                                       RAJA::hip_block_y_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-    ,
-    RAJA::sycl_group_1_direct
+                                       ,
+                                       RAJA::sycl_group_1_direct
 #endif
-    >;
+                                       >;
 /*
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
 using inner0 = RAJA::LoopPolicy<
-    RAJA::seq_exec
+                                         RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    RAJA::cuda_thread_x_direct
+                                         ,
+                                         RAJA::cuda_thread_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-    ,
-    RAJA::hip_thread_x_direct
+                                         ,
+                                         RAJA::hip_thread_x_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-    ,
-    RAJA::sycl_local_2_direct
+                                        ,
+                                         RAJA::sycl_local_2_direct
 #endif
-    >;
+                                         >;
 
-using inner1 = RAJA::LoopPolicy<
-    RAJA::seq_exec
+using inner1 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    RAJA::cuda_thread_y_direct
+                                         ,
+                                         RAJA::cuda_thread_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-    ,
-    RAJA::hip_thread_y_direct
+                                         ,
+                                         RAJA::hip_thread_y_direct
 #endif
 #if defined(RAJA_ENABLE_SYCL)
-    ,
-    RAJA::sycl_local_1_direct
+                                        ,
+                                         RAJA::sycl_local_1_direct
 #endif
-    >;
+                                         >;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 
-  if (argc != 2)
-  {
-    RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or "
-                        "./dynamic_mat_transpose device");
+  if(argc != 2) {
+    RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device");
   }
 
   //
   // Run time policy section is demonstrated in this example by specifying
   // kernel exection space as a command line argument (host or device).
-  // Example usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose
-  // device
+  // Example usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device
   //
   std::string exec_space = argv[1];
-  if (!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0))
-  {
-    RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or "
-                        "./dynamic_mat_transpose device");
+  if(!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0 )){
+    RAJA_ABORT_OR_THROW("Usage ./dynamic_mat_transpose host or ./dynamic_mat_transpose device");
     return 0;
   }
 
   RAJA::ExecPlace select_cpu_or_gpu;
-  if (exec_space.compare("host") == 0)
-  {
-    select_cpu_or_gpu = RAJA::ExecPlace::HOST;
-    std::cout << "Running RAJA::launch matrix transpose example on the host"
-              << std::endl;
-  }
-  if (exec_space.compare("device") == 0)
-  {
-    select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
-    std::cout << "Running RAJA::launch matrix transpose example on the device"
-              << std::endl;
-  }
+  if(exec_space.compare("host") == 0)
+    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; std::cout<<"Running RAJA::launch matrix transpose example on the host"<<std::endl; }
+  if(exec_space.compare("device") == 0)
+    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; std::cout<<"Running RAJA::launch matrix transpose example on the device" <<std::endl; }
 
   RAJA::resources::Host host_res;
 #if defined(RAJA_ENABLE_CUDA)
@@ -203,11 +189,9 @@ int main(int argc, char* argv[])
 #endif
 
 #if defined(RAJA_GPU_ACTIVE)
-  RAJA::resources::Resource res =
-      RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
 #else
-  RAJA::resources::Resource res =
-      RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
+  RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
   //
   // Define num rows/cols in matrix, tile dimensions, and number of tiles
@@ -225,8 +209,8 @@ int main(int argc, char* argv[])
   //
   // Allocate matrix data
   //
-  int* A  = host_res.allocate<int>(N_r * N_c);
-  int* At = host_res.allocate<int>(N_r * N_c);
+  int *A = host_res.allocate<int>(N_r * N_c);
+  int *At = host_res.allocate<int>(N_r * N_c);
   //
   // In the following implementations of matrix transpose, we
   // use RAJA 'View' objects to access the matrix data. A RAJA view
@@ -241,14 +225,12 @@ int main(int argc, char* argv[])
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row)
-  {
-    for (int col = 0; col < N_c; ++col)
-    {
+  for (int row = 0; row < N_r; ++row) {
+    for (int col = 0; col < N_c; ++col) {
       Aview(row, col) = col;
     }
   }
-  // printResult<int>(Aview, N_r, N_c);
+  //printResult<int>(Aview, N_r, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of shared matrix transpose...\n";
@@ -259,10 +241,8 @@ int main(int argc, char* argv[])
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dimr; ++by)
-  {
-    for (int bx = 0; bx < outer_Dimc; ++bx)
-    {
+  for (int by = 0; by < outer_Dimr; ++by) {
+    for (int bx = 0; bx < outer_Dimc; ++bx) {
 
       // Stack-allocated local array for data on a tile
       int Tile[TILE_DIM][TILE_DIM];
@@ -273,17 +253,14 @@ int main(int argc, char* argv[])
       //     Note: loops are ordered so that input matrix data access
       //           is stride-1.
       //
-      for (int ty = 0; ty < TILE_DIM; ++ty)
-      {
-        for (int tx = 0; tx < TILE_DIM; ++tx)
-        {
+      for (int ty = 0; ty < TILE_DIM; ++ty) {
+        for (int tx = 0; tx < TILE_DIM; ++tx) {
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c)
-          {
+          if (row < N_r && col < N_c) {
             Tile[ty][tx] = Aview(row, col);
           }
         }
@@ -295,21 +272,19 @@ int main(int argc, char* argv[])
       //     Note: loop order is swapped from above so that output matrix
       //           data access is stride-1.
       //
-      for (int tx = 0; tx < TILE_DIM; ++tx)
-      {
-        for (int ty = 0; ty < TILE_DIM; ++ty)
-        {
+      for (int tx = 0; tx < TILE_DIM; ++tx) {
+        for (int ty = 0; ty < TILE_DIM; ++ty) {
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c)
-          {
+          if (row < N_r && col < N_c) {
             Atview(col, row) = Tile[ty][tx];
           }
         }
       }
+
     }
   }
   // _dynamic_mattranspose_localarray_cstyle_end
@@ -319,26 +294,24 @@ int main(int argc, char* argv[])
 
   //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory "
-               "...\n";
+  std::cout << "\n Running RAJA matrix transpose w/ dynamic shared memory ...\n";
 
-  // Reset memory
+  //Reset memory
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
 #if defined(RAJA_GPU_ACTIVE)
-  // Allocate device side pointers
+  //Allocate device side pointers
   int *d_A = nullptr, *d_At = nullptr;
 
-  if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
-  {
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
 
-    d_A  = device_res.allocate<int>(N_r * N_c);
+    d_A  =  device_res.allocate<int>(N_r * N_c);
     d_At = device_res.allocate<int>(N_r * N_c);
 
     device_res.memcpy(d_A, A, sizeof(int) * N_r * N_c);
     device_res.memcpy(d_At, At, sizeof(int) * N_r * N_c);
 
-    // switch host/device pointers so we can reuse the views
+    //switch host/device pointers so we can reuse the views
     Aview.set_data(d_A);
     Atview.set_data(d_At);
   }
@@ -349,91 +322,65 @@ int main(int argc, char* argv[])
   // _dynamic_mattranspose_shared_mem_end
 
   // _dynamic_mattranspose_kernel_start
-  RAJA::launch<launch_policy>(
-      res,
-      RAJA::LaunchParams(
-          RAJA::Teams(outer_Dimc, outer_Dimr),
-          RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
-      "Matrix tranpose with dynamic shared memory kernel",
+  RAJA::launch<launch_policy>
+    (res, RAJA::LaunchParams(RAJA::Teams(outer_Dimc, outer_Dimr),
+                             RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
+     "Matrix tranpose with dynamic shared memory kernel",
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
-      {
-        RAJA::loop<outer1>(
-            ctx, RAJA::RangeSegment(0, outer_Dimr),
-            [&](int by)
-            {
-              RAJA::loop<outer0>(
-                  ctx, RAJA::RangeSegment(0, outer_Dimc),
-                  [&](int bx)
-                  {
-                    // Request memory from shared memory pool
-                    int* tile_ptr =
-                        ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
+  {
+    RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
+        RAJA::loop<outer0>(ctx, RAJA::RangeSegment(0, outer_Dimc), [&] (int bx){
 
-                    // Use RAJA View for simplified indexing
-                    RAJA::View<int, RAJA::Layout<2>> Tile(
-                        tile_ptr, TILE_DIM, TILE_DIM);
+            //Request memory from shared memory pool
+            int * tile_ptr = ctx.getSharedMemory<int>(TILE_DIM * TILE_DIM);
 
-                    RAJA::loop<inner1>(
-                        ctx, RAJA::RangeSegment(0, TILE_DIM),
-                        [&](int ty)
-                        {
-                          RAJA::loop<inner0>(
-                              ctx, RAJA::RangeSegment(0, TILE_DIM),
-                              [&](int tx)
-                              {
-                                int col =
-                                    bx * TILE_DIM + tx;  // Matrix column index
-                                int row =
-                                    by * TILE_DIM + ty;  // Matrix row index
+            //Use RAJA View for simplified indexing
+            RAJA::View<int, RAJA::Layout<2>> Tile(tile_ptr, TILE_DIM, TILE_DIM);
 
-                                // Bounds check
-                                if (row < N_r && col < N_c)
-                                {
-                                  Tile(ty, tx) = Aview(row, col);
-                                }
-                              });
-                        });
+            RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+              RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
 
-                    // Barrier is needed to ensure all threads have written to
-                    // Tile
-                    ctx.teamSync();
+                  int col = bx * TILE_DIM + tx;  // Matrix column index
+                  int row = by * TILE_DIM + ty;  // Matrix row index
 
-                    RAJA::loop<inner1>(
-                        ctx, RAJA::RangeSegment(0, TILE_DIM),
-                        [&](int ty)
-                        {
-                          RAJA::loop<inner0>(
-                              ctx, RAJA::RangeSegment(0, TILE_DIM),
-                              [&](int tx)
-                              {
-                                int col =
-                                    bx * TILE_DIM + tx;  // Matrix column index
-                                int row =
-                                    by * TILE_DIM + ty;  // Matrix row index
+                  // Bounds check
+                  if (row < N_r && col < N_c) {
+                    Tile(ty,tx) = Aview(row, col);
+                  }
 
-                                // Bounds check
-                                if (row < N_r && col < N_c)
-                                {
-                                  Atview(col, row) = Tile(ty, tx);
-                                }
-                              });
-                        });
+                });
+              });
 
-                    // The launch context uses bump style allocator in which
-                    // calls to getSharedMemory moves a memory buffer pointer to
-                    // return different segments of shared memory. To avoid
-                    // requesting beyond the pre-allocated memory quantity we
-                    // reset the allocator offset counter in the launch context
-                    // effectively releasing shared memory.
-                    ctx.releaseSharedMemory();
-                  });
-            });
+            //Barrier is needed to ensure all threads have written to Tile
+            ctx.teamSync();
+
+            RAJA::loop<inner1>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int ty){
+              RAJA::loop<inner0>(ctx, RAJA::RangeSegment(0, TILE_DIM), [&] (int tx){
+
+                  int col = bx * TILE_DIM + tx;  // Matrix column index
+                  int row = by * TILE_DIM + ty;  // Matrix row index
+
+                  // Bounds check
+                  if (row < N_r && col < N_c) {
+                    Atview(col, row) = Tile(ty, tx);
+                  }
+
+                });
+              });
+
+            //The launch context uses bump style allocator in which calls
+	    //to getSharedMemory moves a memory buffer pointer to return
+	    //different segments of shared memory. To avoid requesting beyond
+	    //the pre-allocated memory quantity we reset the allocator offset counter
+	    //in the launch context effectively releasing shared memory.
+            ctx.releaseSharedMemory();
+          });
       });
+  });
   // _dynamic_mattranspose_kernel_end
 
 #if defined(RAJA_GPU_ACTIVE)
-  if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
-  {
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
 
     device_res.memcpy(A, d_A, sizeof(int) * N_r * N_c);
     device_res.memcpy(At, d_At, sizeof(int) * N_r * N_c);
@@ -445,16 +392,15 @@ int main(int argc, char* argv[])
 
 
   checkResult<int>(Atview, N_c, N_r);
-  // printResult<int>(Atview, N_c, N_r);
+  //printResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
 
-  // Release data
+  //Release data
   host_res.deallocate(A);
   host_res.deallocate(At);
 
 #if defined(RAJA_GPU_ACTIVE)
-  if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
-  {
+  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
     device_res.deallocate(d_A);
     device_res.deallocate(d_At);
   }
@@ -472,22 +418,16 @@ template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
   bool match = true;
-  for (int row = 0; row < N_r; ++row)
-  {
-    for (int col = 0; col < N_c; ++col)
-    {
-      if (Atview(row, col) != row)
-      {
+  for (int row = 0; row < N_r; ++row) {
+    for (int col = 0; col < N_c; ++col) {
+      if (Atview(row, col) != row) {
         match = false;
       }
     }
   }
-  if (match)
-  {
+  if (match) {
     std::cout << "\n\t result -- PASS\n";
-  }
-  else
-  {
+  } else {
     std::cout << "\n\t result -- FAIL\n";
   }
 };
@@ -499,13 +439,11 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
   std::cout << std::endl;
-  for (int row = 0; row < N_r; ++row)
-  {
-    for (int col = 0; col < N_c; ++col)
-    {
-      // std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
+  for (int row = 0; row < N_r; ++row) {
+    for (int col = 0; col < N_c; ++col) {
+      //std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
       //<< std::endl;
-      printf("%d ", Atview(row, col));
+      printf("%d ",Atview(row, col));
     }
     std::cout << "" << std::endl;
   }

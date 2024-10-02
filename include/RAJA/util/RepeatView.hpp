@@ -122,8 +122,8 @@ struct RepeatView
       lhs -= rhs;
       return lhs;
     }
-    friend constexpr difference_type
-    operator-(iterator const& lhs, iterator const& rhs)
+    friend constexpr difference_type operator-(iterator const& lhs,
+                                               iterator const& rhs)
     {
       return static_cast<difference_type>(lhs.m_index) -
              static_cast<difference_type>(rhs.m_index);
@@ -157,7 +157,7 @@ struct RepeatView
 
   private:
     const T* m_value = nullptr;
-    size_t   m_index = 0;
+    size_t m_index   = 0;
   };
 
   RepeatView() = delete;
@@ -184,13 +184,13 @@ struct RepeatView
   constexpr iterator cend() const { return iterator(&m_value, m_bound); }
 
   constexpr explicit operator bool() const { return m_bound != 0; }
-  constexpr bool     empty() const { return m_bound == 0; }
+  constexpr bool empty() const { return m_bound == 0; }
 
   constexpr size_t size() const { return m_bound; }
 
 private:
   size_t m_bound = 0;
-  T      m_value;
+  T m_value;
 };
 
 }  // end namespace RAJA

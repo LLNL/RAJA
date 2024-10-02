@@ -28,20 +28,20 @@ namespace memoryManager
 {
 
 #if defined(RAJA_ENABLE_SYCL)
-static camp::resources::Resource* sycl_res;
+  static camp::resources::Resource* sycl_res;
 #endif
 
 template <typename T>
-T* allocate(RAJA::Index_type size)
+T *allocate(RAJA::Index_type size)
 {
-  T* ptr;
+  T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(
-      cudaMallocManaged((void**)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
+      cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
 #elif defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipMalloc((void**)&ptr, sizeof(T) * size));
+      hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #elif defined(RAJA_ENABLE_SYCL)
-  ptr = sycl_res->allocate<T>(size, camp::resources::MemoryAccess::Managed);
+      ptr = sycl_res->allocate<T>(size, camp::resources::MemoryAccess::Managed);
 #else
   ptr = new T[size];
 #endif
@@ -49,10 +49,9 @@ T* allocate(RAJA::Index_type size)
 }
 
 template <typename T>
-void deallocate(T*& ptr)
+void deallocate(T *&ptr)
 {
-  if (ptr)
-  {
+  if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(ptr));
 #elif defined(RAJA_ENABLE_HIP)
@@ -66,38 +65,36 @@ void deallocate(T*& ptr)
   }
 }
 
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) ||                   \
-    defined(RAJA_ENABLE_SYCL)
-template <typename T>
-T* allocate_gpu(RAJA::Index_type size)
-{
-  T* ptr;
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMalloc((void**)&ptr, sizeof(T) * size));
-#elif defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipMalloc((void**)&ptr, sizeof(T) * size));
-#elif defined(RAJA_ENABLE_SYCL)
-  auto qu = sycl_res->get<camp::resources::Sycl>().get_queue();
-  ptr     = cl::sycl::malloc_device<T>(size, *qu);
-#endif
-  return ptr;
-}
-
-template <typename T>
-void deallocate_gpu(T*& ptr)
-{
-  if (ptr)
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
+  template <typename T>
+  T *allocate_gpu(RAJA::Index_type size)
   {
+    T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaMalloc((void **)&ptr, sizeof(T) * size));
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipFree(ptr));
+    hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
+#elif defined(RAJA_ENABLE_SYCL)
+      auto qu = sycl_res->get<camp::resources::Sycl>().get_queue();
+      ptr = cl::sycl::malloc_device<T>(size, *qu);
+#endif
+    return ptr;
+  }
+
+  template <typename T>
+  void deallocate_gpu(T *&ptr)
+  {
+    if (ptr) {
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk(cudaFree(ptr));
+#elif defined(RAJA_ENABLE_HIP)
+      hipErrchk(hipFree(ptr));
 #elif defined(RAJA_ENABLE_SYCL)
     sycl_res->deallocate(ptr);
 #endif
-    ptr = nullptr;
+      ptr = nullptr;
+    }
   }
-}
 #endif
 
 };  // namespace memoryManager

@@ -22,15 +22,15 @@ void FMSImpl()
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t*             input0_hptr = input0_vec.data();
+  element_t* input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t*             input1_hptr = input1_vec.data();
+  element_t* input1_hptr = input1_vec.data();
   element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input2_vec(num_elem);
-  element_t*             input2_hptr = input2_vec.data();
+  element_t* input2_hptr = input2_vec.data();
   element_t* input2_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -76,9 +76,8 @@ void FMSImpl()
 
   for (camp::idx_t lane = 0; lane < num_elem; ++lane)
   {
-    ASSERT_SCALAR_EQ(
-        input0_vec[lane] * input1_vec[lane] - input2_vec[lane],
-        output0_vec[lane]);
+    ASSERT_SCALAR_EQ(input0_vec[lane] * input1_vec[lane] - input2_vec[lane],
+                     output0_vec[lane]);
   }
 
 

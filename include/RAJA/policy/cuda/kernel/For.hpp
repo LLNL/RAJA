@@ -36,20 +36,19 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename IndexMapper,
-    kernel_sync_requirement sync,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<
-        ArgumentId,
-        RAJA::policy::cuda::
-            cuda_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-        EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::policy::cuda::cuda_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    IndexMapper>,
+                   EnclosedStmts...>,
     Types>
 {
 
@@ -103,21 +102,19 @@ struct CudaStatementExecutor<
  * Assigns the loop index to offset ArgumentId.
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<
-        ArgumentId,
-        RAJA::policy::cuda::cuda_indexer<
-            iteration_mapping::StridedLoop<named_usage::unspecified>,
-            kernel_sync_requirement::sync,
-            IndexMapper>,
-        EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::policy::cuda::cuda_indexer<
+                       iteration_mapping::StridedLoop<named_usage::unspecified>,
+                       kernel_sync_requirement::sync,
+                       IndexMapper>,
+                   EnclosedStmts...>,
     Types>
 {
 
@@ -183,21 +180,19 @@ struct CudaStatementExecutor<
  * Assigns the loop index to offset ArgumentId.
  * Meets no sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<
-        ArgumentId,
-        RAJA::policy::cuda::cuda_indexer<
-            iteration_mapping::StridedLoop<named_usage::unspecified>,
-            kernel_sync_requirement::none,
-            IndexMapper>,
-        EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::policy::cuda::cuda_indexer<
+                       iteration_mapping::StridedLoop<named_usage::unspecified>,
+                       kernel_sync_requirement::none,
+                       IndexMapper>,
+                   EnclosedStmts...>,
     Types>
 {
 
@@ -256,11 +251,10 @@ struct CudaStatementExecutor<
 /*
  * Executor for sequential loops inside of a CudaKernel.
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
@@ -272,10 +266,9 @@ struct CudaStatementExecutor<
               RAJA::policy::cuda::cuda_indexer<
                   iteration_mapping::StridedLoop<named_usage::unspecified>,
                   kernel_sync_requirement::none,
-                  cuda::IndexGlobal<
-                      named_dim::x,
-                      named_usage::ignored,
-                      named_usage::ignored>>,
+                  cuda::IndexGlobal<named_dim::x,
+                                    named_usage::ignored,
+                                    named_usage::ignored>>,
               EnclosedStmts...>,
           Types>
 {};
@@ -286,17 +279,16 @@ struct CudaStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::cuda_warp_masked_direct<Mask>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::cuda_warp_masked_direct<Mask>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -311,9 +303,9 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static_assert(
-      mask_t::max_masked_size <= RAJA::policy::cuda::device_constants.WARP_SIZE,
-      "BitMask is too large for CUDA warp size");
+  static_assert(mask_t::max_masked_size <=
+                    RAJA::policy::cuda::device_constants.WARP_SIZE,
+                "BitMask is too large for CUDA warp size");
 
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
@@ -353,17 +345,16 @@ struct CudaStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::cuda_warp_masked_loop<Mask>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::cuda_warp_masked_loop<Mask>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -378,9 +369,9 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static_assert(
-      mask_t::max_masked_size <= RAJA::policy::cuda::device_constants.WARP_SIZE,
-      "BitMask is too large for CUDA warp size");
+  static_assert(mask_t::max_masked_size <=
+                    RAJA::policy::cuda::device_constants.WARP_SIZE,
+                "BitMask is too large for CUDA warp size");
 
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
@@ -431,18 +422,16 @@ struct CudaStatementExecutor<
  * Mapping directly from raw threadIdx.x
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
-    statement::For<
-        ArgumentId,
-        RAJA::cuda_thread_masked_direct<Mask>,
-        EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::cuda_thread_masked_direct<Mask>,
+                   EnclosedStmts...>,
     Types>
 {
 
@@ -497,17 +486,16 @@ struct CudaStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::cuda_thread_masked_loop<Mask>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::cuda_thread_masked_loop<Mask>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;

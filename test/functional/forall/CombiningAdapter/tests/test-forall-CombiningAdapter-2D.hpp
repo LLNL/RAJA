@@ -14,29 +14,28 @@
 #include "RAJA/util/CombiningAdapter.hpp"
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void ForallCombiningAdapter2DTestImpl(
-    INDEX_TYPE first0,
-    INDEX_TYPE last0,
-    INDEX_TYPE first1,
-    INDEX_TYPE last1)
+void ForallCombiningAdapter2DTestImpl(INDEX_TYPE first0,
+                                      INDEX_TYPE last0,
+                                      INDEX_TYPE first1,
+                                      INDEX_TYPE last1)
 {
-  RAJA::TypedRangeSegment<INDEX_TYPE> r0(
-      RAJA::stripIndexType(first0), RAJA::stripIndexType(last0));
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(
-      RAJA::stripIndexType(first1), RAJA::stripIndexType(last1));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r0(RAJA::stripIndexType(first0),
+                                         RAJA::stripIndexType(last0));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first1),
+                                         RAJA::stripIndexType(last1));
   INDEX_TYPE N0 = static_cast<INDEX_TYPE>(r0.end() - r0.begin());
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N  = N0 * N1;
 
   camp::resources::Resource working_res {WORKING_RES::get_default()};
-  INDEX_TYPE*               working_array;
-  INDEX_TYPE*               check_array;
-  INDEX_TYPE*               test_array;
+  INDEX_TYPE* working_array;
+  INDEX_TYPE* check_array;
+  INDEX_TYPE* test_array;
 
   size_t data_len = RAJA::stripIndexType(N) + 1;
 
-  allocateForallTestData<INDEX_TYPE>(
-      data_len, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(data_len, working_res, &working_array,
+                                     &check_array, &test_array);
 
   {
 
@@ -57,8 +56,8 @@ void ForallCombiningAdapter2DTestImpl(
           if (idx0 >= first0 && idx0 < last0 && idx1 >= first1 && idx1 < last1)
           {
             // in bounds
-            working_array[RAJA::stripIndexType(
-                (idx0 - first0) * N1 + (idx1 - first1))] +=
+            working_array[RAJA::stripIndexType((idx0 - first0) * N1 +
+                                               (idx1 - first1))] +=
                 (idx0 - first0) * N1 + (idx1 - first1);
           }
           else
@@ -76,13 +75,12 @@ void ForallCombiningAdapter2DTestImpl(
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i <= N; i++)
   {
-    ASSERT_EQ(
-        test_array[RAJA::stripIndexType(i)],
-        check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
+              check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 
@@ -91,21 +89,19 @@ template <typename T>
 class ForallCombiningAdapter2DTest : public ::testing::Test
 {};
 
-template <
-    typename INDEX_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename std::enable_if<std::is_unsigned<
-        RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
+template <typename INDEX_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename std::enable_if<std::is_unsigned<
+              RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {}
 
-template <
-    typename INDEX_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename std::enable_if<std::is_signed<
-        RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
+template <typename INDEX_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename std::enable_if<std::is_signed<
+              RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type* = nullptr>
 void runNegativeTests()
 {
   // test zero-length range segment

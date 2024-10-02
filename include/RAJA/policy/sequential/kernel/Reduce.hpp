@@ -29,12 +29,10 @@ namespace internal
 //
 // Executor that handles reductions for
 //
-template <
-    template <typename...>
-    class ReduceOperator,
-    typename ParamId,
-    typename... EnclosedStmts,
-    typename Types>
+template <template <typename...> class ReduceOperator,
+          typename ParamId,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>,
     Types>

@@ -21,15 +21,14 @@
 //
 // Atomic data types
 //
-using AtomicDataTypeList = camp::list<
-    RAJA::Index_type,
-    int,
+using AtomicDataTypeList = camp::list<RAJA::Index_type,
+                                      int,
 #if defined(RAJA_TEST_EXHAUSTIVE)
-    unsigned int,
-    long long,
-    unsigned long long,
-    float,
+                                      unsigned int,
+                                      long long,
+                                      unsigned long long,
+                                      float,
 #endif
-    double>;
+                                      double>;
 
 #endif  // __RAJA_test_atomic_types_HPP__

@@ -26,9 +26,8 @@ void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
   INDEX_TYPE* check_array;
 
-  allocRegionTestData(
-      N, work_res, &work_array1, &work_array2, &work_array3, host_res,
-      &check_array);
+  allocRegionTestData(N, work_res, &work_array1, &work_array2, &work_array3,
+                      host_res, &check_array);
 
   work_res.memset(work_array1, 0, sizeof(INDEX_TYPE) * N);
   work_res.memset(work_array2, 0, sizeof(INDEX_TYPE) * N);
@@ -73,8 +72,8 @@ void KernelRegionSyncTestImpl(INDEX_TYPE first, INDEX_TYPE last)
     ASSERT_EQ(check_array[i], 151);
   }
 
-  deallocRegionTestData(
-      work_res, work_array1, work_array2, work_array3, host_res, check_array);
+  deallocRegionTestData(work_res, work_array1, work_array2, work_array3,
+                        host_res, check_array);
 }
 
 

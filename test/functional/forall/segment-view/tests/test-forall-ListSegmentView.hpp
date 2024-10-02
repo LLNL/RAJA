@@ -44,8 +44,8 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -66,25 +66,23 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
 #else
 #define IS_TRIVIALLY_COPYABLE(T) std::is_trivially_copyable<T>::value
 #endif
-  static_assert(
-      IS_TRIVIALLY_COPYABLE(layout_type),
-      "These layouts should always be triviallly copyable");
+  static_assert(IS_TRIVIALLY_COPYABLE(layout_type),
+                "These layouts should always be triviallly copyable");
 
   // AJK: see ViewBase Ctor notes in RAJA/Util/TypedViewBase.hpp
 #if (!defined(RAJA_ENABLE_CUDA) && !defined(RAJA_ENABLE_CLANG_CUDA))
-  static_assert(
-      IS_TRIVIALLY_COPYABLE(view_type),
-      "These views should always be triviallly copyable");
+  static_assert(IS_TRIVIALLY_COPYABLE(view_type),
+                "These views should always be triviallly copyable");
 #endif
 
 
 #endif
 
   RAJA::Layout<1> layout(N);
-  view_type       work_view(working_array, layout);
+  view_type work_view(working_array, layout);
 
-  RAJA::forall<EXEC_POLICY>(
-      lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) { work_view(idx) = idx; });
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            { work_view(idx) = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -93,8 +91,8 @@ void ForallListSegmentViewTestImpl(INDEX_TYPE N)
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
@@ -125,8 +123,8 @@ void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -141,12 +139,11 @@ void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
   using view_type   = RAJA::View<INDEX_TYPE, layout_type>;
 
   INDEX_TYPE N_offset = N + offset;
-  view_type  work_view(
-       working_array,
-       RAJA::make_offset_layout<1, INDEX_TYPE>({{offset}}, {{N_offset}}));
+  view_type work_view(working_array, RAJA::make_offset_layout<1, INDEX_TYPE>(
+                                         {{offset}}, {{N_offset}}));
 
-  RAJA::forall<EXEC_POLICY>(
-      lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) { work_view(idx) = idx; });
+  RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            { work_view(idx) = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -155,8 +152,8 @@ void ForallListSegmentOffsetViewTestImpl(INDEX_TYPE N, INDEX_TYPE offset)
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(working_res, working_array, check_array,
+                                       test_array);
 }
 
 TYPED_TEST_SUITE_P(ForallListSegmentViewTest);
@@ -176,12 +173,12 @@ TYPED_TEST_P(ForallListSegmentViewTest, ListSegmentForallView)
   ForallListSegmentViewTestImpl<INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(
       32000);
 
-  ForallListSegmentOffsetViewTestImpl<
-      INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(13, 1);
-  ForallListSegmentOffsetViewTestImpl<
-      INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(2047, 2);
-  ForallListSegmentOffsetViewTestImpl<
-      INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>(32000, 3);
+  ForallListSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE,
+                                      EXEC_POLICY>(13, 1);
+  ForallListSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE,
+                                      EXEC_POLICY>(2047, 2);
+  ForallListSegmentOffsetViewTestImpl<INDEX_TYPE, WORKING_RESOURCE,
+                                      EXEC_POLICY>(32000, 3);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ForallListSegmentViewTest, ListSegmentForallView);

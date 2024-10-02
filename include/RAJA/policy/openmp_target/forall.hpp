@@ -33,22 +33,20 @@ namespace omp
 /// OpenMP target parallel for policy implementation
 ///
 
-template <
-    size_t ThreadsPerTeam,
-    typename Iterable,
-    typename Func,
-    typename ForallParam>
+template <size_t ThreadsPerTeam,
+          typename Iterable,
+          typename Func,
+          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Omp>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(
-    resources::Omp                                      omp_res,
-    const omp_target_parallel_for_exec<ThreadsPerTeam>& p,
-    Iterable&&                                          iter,
-    Func&&                                              loop_body,
-    ForallParam                                         f_params)
+forall_impl(resources::Omp omp_res,
+            const omp_target_parallel_for_exec<ThreadsPerTeam>& p,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -94,21 +92,19 @@ forall_impl(
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 
-template <
-    size_t ThreadsPerTeam,
-    typename Iterable,
-    typename Func,
-    typename ForallParam>
+template <size_t ThreadsPerTeam,
+          typename Iterable,
+          typename Func,
+          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Omp>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(
-    resources::Omp omp_res,
-    const omp_target_parallel_for_exec<ThreadsPerTeam>&,
-    Iterable&& iter,
-    Func&&     loop_body,
-    ForallParam)
+forall_impl(resources::Omp omp_res,
+            const omp_target_parallel_for_exec<ThreadsPerTeam>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body  = loop_body;
@@ -155,12 +151,11 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(
-    resources::Omp                         omp_res,
-    const omp_target_parallel_for_exec_nt& p,
-    Iterable&&                             iter,
-    Func&&                                 loop_body,
-    ForallParam                            f_params)
+forall_impl(resources::Omp omp_res,
+            const omp_target_parallel_for_exec_nt& p,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam f_params)
 {
   using EXEC_POL = typename std::decay<decltype(p)>::type;
   RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
@@ -189,12 +184,11 @@ RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Omp>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(
-    resources::Omp omp_res,
-    const omp_target_parallel_for_exec_nt&,
-    Iterable&& iter,
-    Func&&     loop_body,
-    ForallParam)
+forall_impl(resources::Omp omp_res,
+            const omp_target_parallel_for_exec_nt&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
   Body body  = loop_body;

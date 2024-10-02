@@ -35,58 +35,53 @@ namespace expt
 /*
  * 2D (Matrix) specialization of TensorRegister
  */
-template <
-    typename REGISTER_POLICY,
-    typename T,
-    camp::idx_t ROW_ORD,
-    camp::idx_t COL_ORD,
-    camp::idx_t ROW_SIZE,
-    camp::idx_t COL_SIZE>
-class TensorRegister<
-    REGISTER_POLICY,
-    T,
-    TensorLayout<ROW_ORD, COL_ORD>,
-    camp::idx_seq<ROW_SIZE, COL_SIZE>>
-    : public RAJA::internal::expt::TensorRegisterBase<TensorRegister<
-          REGISTER_POLICY,
-          T,
-          TensorLayout<ROW_ORD, COL_ORD>,
-          camp::idx_seq<ROW_SIZE, COL_SIZE>>>
+template <typename REGISTER_POLICY,
+          typename T,
+          camp::idx_t ROW_ORD,
+          camp::idx_t COL_ORD,
+          camp::idx_t ROW_SIZE,
+          camp::idx_t COL_SIZE>
+class TensorRegister<REGISTER_POLICY,
+                     T,
+                     TensorLayout<ROW_ORD, COL_ORD>,
+                     camp::idx_seq<ROW_SIZE, COL_SIZE>>
+    : public RAJA::internal::expt::TensorRegisterBase<
+          TensorRegister<REGISTER_POLICY,
+                         T,
+                         TensorLayout<ROW_ORD, COL_ORD>,
+                         camp::idx_seq<ROW_SIZE, COL_SIZE>>>
 {
 public:
-  using self_type = TensorRegister<
-      REGISTER_POLICY,
-      T,
-      TensorLayout<ROW_ORD, COL_ORD>,
-      camp::idx_seq<ROW_SIZE, COL_SIZE>>;
-  using base_type     = RAJA::internal::expt::TensorRegisterBase<TensorRegister<
-      REGISTER_POLICY,
-      T,
-      TensorLayout<ROW_ORD, COL_ORD>,
-      camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
-  using register_type = Register<T, REGISTER_POLICY>;
+  using self_type = TensorRegister<REGISTER_POLICY,
+                                   T,
+                                   TensorLayout<ROW_ORD, COL_ORD>,
+                                   camp::idx_seq<ROW_SIZE, COL_SIZE>>;
+  using base_type = RAJA::internal::expt::TensorRegisterBase<
+      TensorRegister<REGISTER_POLICY,
+                     T,
+                     TensorLayout<ROW_ORD, COL_ORD>,
+                     camp::idx_seq<ROW_SIZE, COL_SIZE>>>;
+  using register_type      = Register<T, REGISTER_POLICY>;
   using row_vector_type    = VectorRegister<T, REGISTER_POLICY, COL_SIZE>;
   using column_vector_type = VectorRegister<T, REGISTER_POLICY, ROW_SIZE>;
   using register_policy    = REGISTER_POLICY;
   using element_type       = T;
   using layout_type        = TensorLayout<ROW_ORD, COL_ORD>;
 
-  using transpose_tensor_type = TensorRegister<
-      REGISTER_POLICY,
-      T,
-      TensorLayout<!ROW_ORD, !COL_ORD>,
-      camp::idx_seq<ROW_SIZE, COL_SIZE>>;
+  using transpose_tensor_type =
+      TensorRegister<REGISTER_POLICY,
+                     T,
+                     TensorLayout<!ROW_ORD, !COL_ORD>,
+                     camp::idx_seq<ROW_SIZE, COL_SIZE>>;
 
-  using transpose_type = TensorRegister<
-      REGISTER_POLICY,
-      T,
-      layout_type,
-      camp::idx_seq<COL_SIZE, ROW_SIZE>>;
-  using product_type = TensorRegister<
-      REGISTER_POLICY,
-      T,
-      layout_type,
-      camp::idx_seq<ROW_SIZE, ROW_SIZE>>;
+  using transpose_type = TensorRegister<REGISTER_POLICY,
+                                        T,
+                                        layout_type,
+                                        camp::idx_seq<COL_SIZE, ROW_SIZE>>;
+  using product_type   = TensorRegister<REGISTER_POLICY,
+                                      T,
+                                      layout_type,
+                                      camp::idx_seq<ROW_SIZE, ROW_SIZE>>;
 
   static constexpr camp::idx_t s_num_rows    = ROW_SIZE;
   static constexpr camp::idx_t s_num_columns = COL_SIZE;
@@ -100,10 +95,10 @@ public:
       (ROW_SIZE * COL_SIZE) / s_elements_per_register;
 
   // We only allow matrix sizes that exactly fit in some number of registers
-  static_assert(
-      (ROW_SIZE * COL_SIZE) == s_num_registers * s_elements_per_register,
-      "MatrixRegister must be dimensioned to exactly fit an integer "
-      "number of registers");
+  static_assert((ROW_SIZE * COL_SIZE) ==
+                    s_num_registers * s_elements_per_register,
+                "MatrixRegister must be dimensioned to exactly fit an integer "
+                "number of registers");
 
   using log_base2_t = RAJA::LogBase2<s_elements_per_register>;
 
@@ -125,16 +120,14 @@ public:
   static constexpr camp::idx_t s_minor_dim_registers =
       s_minor_dim_elements / s_elements_per_register;
 
-  static_assert(
-      s_minor_dim_registers > 0 || log_base2_t::is_exact,
-      "Minor dimension smaller than a vector need to be a power of "
-      "two fraction");
+  static_assert(s_minor_dim_registers > 0 || log_base2_t::is_exact,
+                "Minor dimension smaller than a vector need to be a power of "
+                "two fraction");
 
-  static_assert(
-      s_minor_dim_registers == 0 ||
-          (s_minor_dim_elements % s_elements_per_register == 0),
-      "Minor dimensions greater than a vector length must be an "
-      "integer number of vectors");
+  static_assert(s_minor_dim_registers == 0 ||
+                    (s_minor_dim_elements % s_elements_per_register == 0),
+                "Minor dimensions greater than a vector length must be an "
+                "integer number of vectors");
 
 
   static constexpr camp::idx_t s_major_dim_per_register =
@@ -145,8 +138,8 @@ public:
 
 private:
   template <typename IDX>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr static auto
-  to_register(IDX row, IDX col) -> IDX
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr static auto to_register(IDX row,
+                                                                 IDX col) -> IDX
   {
     return layout_type::is_row_major()
                ? (row * IDX(COL_SIZE) + col) >> IDX(s_shift_per_register)
@@ -264,11 +257,10 @@ public:
   }
 
 
-  template <
-      typename POINTER_TYPE,
-      typename INDEX_TYPE,
-      RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-      camp::idx_t                          STRIDE_ONE_DIM>
+  template <typename POINTER_TYPE,
+            typename INDEX_TYPE,
+            RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
+            camp::idx_t STRIDE_ONE_DIM>
   struct RefBridge<
       RAJA::internal::expt::
           TensorRef<POINTER_TYPE, INDEX_TYPE, TENSOR_SIZE, 2, STRIDE_ONE_DIM>>
@@ -299,9 +291,8 @@ public:
         // partial
         else
         {
-          self.load_packed_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.load_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                              ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -315,9 +306,8 @@ public:
         // partial
         else
         {
-          self.load_strided_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.load_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -345,9 +335,8 @@ public:
         // partial
         else
         {
-          self.store_packed_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.store_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -361,26 +350,24 @@ public:
         // partial
         else
         {
-          self.store_strided_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.store_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
   };
 
 
-  template <
-      typename POINTER_TYPE,
-      typename INDEX_TYPE,
-      RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
-      INDEX_TYPE                           StrideInt1,
-      INDEX_TYPE                           StrideInt2,
-      INDEX_TYPE                           BeginInt1,
-      INDEX_TYPE                           BeginInt2,
-      INDEX_TYPE                           SizeInt1,
-      INDEX_TYPE                           SizeInt2,
-      camp::idx_t                          STRIDE_ONE_DIM>
+  template <typename POINTER_TYPE,
+            typename INDEX_TYPE,
+            RAJA::internal::expt::TensorTileSize TENSOR_SIZE,
+            INDEX_TYPE StrideInt1,
+            INDEX_TYPE StrideInt2,
+            INDEX_TYPE BeginInt1,
+            INDEX_TYPE BeginInt2,
+            INDEX_TYPE SizeInt1,
+            INDEX_TYPE SizeInt2,
+            camp::idx_t STRIDE_ONE_DIM>
   struct RefBridge<RAJA::internal::expt::StaticTensorRef<
       POINTER_TYPE,
       INDEX_TYPE,
@@ -422,9 +409,8 @@ public:
         // partial
         else
         {
-          self.load_packed_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.load_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                              ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -438,9 +424,8 @@ public:
         // partial
         else
         {
-          self.load_strided_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.load_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -468,9 +453,8 @@ public:
         // partial
         else
         {
-          self.store_packed_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.store_packed_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                               ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
       // strided data
@@ -484,9 +468,8 @@ public:
         // partial
         else
         {
-          self.store_strided_nm(
-              ptr, ref.m_stride[0], ref.m_stride[1], ref.m_tile.m_size[0],
-              ref.m_tile.m_size[1]);
+          self.store_strided_nm(ptr, ref.m_stride[0], ref.m_stride[1],
+                                ref.m_tile.m_size[0], ref.m_tile.m_size[1]);
         }
       }
     }
@@ -599,8 +582,8 @@ public:
               i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
           camp::idx_t col =
               s_elements_per_register * (i - (row * s_minor_dim_registers));
-          m_registers[i].load_strided(
-              ptr + row * row_stride + col * col_stride, col_stride);
+          m_registers[i].load_strided(ptr + row * row_stride + col * col_stride,
+                                      col_stride);
         }
       }
       // less than one register per row
@@ -610,8 +593,8 @@ public:
         {
           element_type const* ptr_i =
               ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load(
-              ptr_i, s_segbits, col_stride, row_stride);
+          m_registers[i].segmented_load(ptr_i, s_segbits, col_stride,
+                                        row_stride);
         }
       }
     }
@@ -630,8 +613,8 @@ public:
           camp::idx_t row =
               s_elements_per_register * (i - (col * s_minor_dim_registers));
 
-          m_registers[i].load_strided(
-              ptr + row * row_stride + col * col_stride, row_stride);
+          m_registers[i].load_strided(ptr + row * row_stride + col * col_stride,
+                                      row_stride);
         }
       }
       // less than one register per column
@@ -641,8 +624,8 @@ public:
         {
           element_type const* ptr_i =
               ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load(
-              ptr_i, s_segbits, row_stride, col_stride);
+          m_registers[i].segmented_load(ptr_i, s_segbits, row_stride,
+                                        col_stride);
         }
       }
     }
@@ -655,12 +638,11 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type& load_packed_nm(
-      element_type const* ptr,
-      int                 row_stride,
-      int                 col_stride,
-      int                 num_rows,
-      int                 num_cols)
+  self_type& load_packed_nm(element_type const* ptr,
+                            int row_stride,
+                            int col_stride,
+                            int num_rows,
+                            int num_cols)
   {
 
     if (layout_type::is_row_major())
@@ -791,12 +773,11 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type& load_strided_nm(
-      element_type const* ptr,
-      int                 row_stride,
-      int                 col_stride,
-      int                 num_rows,
-      int                 num_cols)
+  self_type& load_strided_nm(element_type const* ptr,
+                             int row_stride,
+                             int col_stride,
+                             int num_rows,
+                             int num_cols)
   {
 
     if (layout_type::is_row_major())
@@ -823,9 +804,9 @@ public:
             if (reg_num_cols + col > num_cols)
             {
               reg_num_cols = num_cols - col;
-              m_registers[i].load_strided_n(
-                  ptr + row * row_stride + col * col_stride, col_stride,
-                  reg_num_cols);
+              m_registers[i].load_strided_n(ptr + row * row_stride +
+                                                col * col_stride,
+                                            col_stride, reg_num_cols);
             }
             else
             {
@@ -849,8 +830,8 @@ public:
 
           element_type const* ptr_i =
               ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load_nm(
-              ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
+          m_registers[i].segmented_load_nm(ptr_i, s_segbits, col_stride,
+                                           row_stride, num_cols, reg_num_rows);
         }
       }
     }
@@ -879,9 +860,9 @@ public:
             if (reg_num_rows + row > num_rows)
             {
               reg_num_rows = num_rows - row;
-              m_registers[i].load_strided_n(
-                  ptr + row * row_stride + col * col_stride, row_stride,
-                  reg_num_rows);
+              m_registers[i].load_strided_n(ptr + row * row_stride +
+                                                col * col_stride,
+                                            row_stride, reg_num_rows);
             }
             else
             {
@@ -904,8 +885,8 @@ public:
 
           element_type const* ptr_i =
               ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_load_nm(
-              ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
+          m_registers[i].segmented_load_nm(ptr_i, s_segbits, row_stride,
+                                           col_stride, num_rows, reg_num_cols);
         }
       }
     }
@@ -949,8 +930,8 @@ public:
               i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
           camp::idx_t col =
               s_elements_per_register * (i - (row * s_minor_dim_registers));
-          m_registers[i].store_packed(
-              ptr + row * row_stride + col * col_stride);
+          m_registers[i].store_packed(ptr + row * row_stride +
+                                      col * col_stride);
         }
       }
       // more than one column per register
@@ -971,8 +952,8 @@ public:
               i / (s_minor_dim_registers ? s_minor_dim_registers : 1);
           camp::idx_t row =
               s_elements_per_register * (i - (col * s_minor_dim_registers));
-          m_registers[i].store_packed(
-              ptr + row * row_stride + col * col_stride);
+          m_registers[i].store_packed(ptr + row * row_stride +
+                                      col * col_stride);
         }
       }
       // more than one row per register
@@ -1018,8 +999,8 @@ public:
         for (camp::idx_t i = 0; i < s_num_registers; ++i)
         {
           element_type* ptr_i = ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store(
-              ptr_i, s_segbits, col_stride, row_stride);
+          m_registers[i].segmented_store(ptr_i, s_segbits, col_stride,
+                                         row_stride);
         }
       }
     }
@@ -1046,8 +1027,8 @@ public:
         for (camp::idx_t i = 0; i < s_num_registers; ++i)
         {
           element_type* ptr_i = ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store(
-              ptr_i, s_segbits, row_stride, col_stride);
+          m_registers[i].segmented_store(ptr_i, s_segbits, row_stride,
+                                         col_stride);
         }
       }
     }
@@ -1060,12 +1041,11 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type const& store_packed_nm(
-      element_type* ptr,
-      int           row_stride,
-      int           col_stride,
-      int           num_rows,
-      int           num_cols) const
+  self_type const& store_packed_nm(element_type* ptr,
+                                   int row_stride,
+                                   int col_stride,
+                                   int num_rows,
+                                   int num_cols) const
   {
 
 
@@ -1106,8 +1086,8 @@ public:
       else
       {
         // default to strided operation
-        return store_strided_nm(
-            ptr, row_stride, col_stride, num_rows, num_cols);
+        return store_strided_nm(ptr, row_stride, col_stride, num_rows,
+                                num_cols);
       }
     }
     // Do semi-dense store for column-major
@@ -1149,8 +1129,8 @@ public:
       {
 
         // default to strided operation
-        return store_strided_nm(
-            ptr, row_stride, col_stride, num_rows, num_cols);
+        return store_strided_nm(ptr, row_stride, col_stride, num_rows,
+                                num_cols);
       }
     }
 
@@ -1162,12 +1142,11 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  self_type const& store_strided_nm(
-      element_type* ptr,
-      int           row_stride,
-      int           col_stride,
-      int           num_rows,
-      int           num_cols) const
+  self_type const& store_strided_nm(element_type* ptr,
+                                    int row_stride,
+                                    int col_stride,
+                                    int num_rows,
+                                    int num_cols) const
   {
 
 
@@ -1191,9 +1170,9 @@ public:
             if (reg_num_cols + col > num_cols)
             {
               reg_num_cols = num_cols - col;
-              m_registers[i].store_strided_n(
-                  ptr + row * row_stride + col * col_stride, col_stride,
-                  reg_num_cols);
+              m_registers[i].store_strided_n(ptr + row * row_stride +
+                                                 col * col_stride,
+                                             col_stride, reg_num_cols);
             }
             else
             {
@@ -1216,8 +1195,8 @@ public:
                                          : reg_num_rows;
 
           element_type* ptr_i = ptr + i * row_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store_nm(
-              ptr_i, s_segbits, col_stride, row_stride, num_cols, reg_num_rows);
+          m_registers[i].segmented_store_nm(ptr_i, s_segbits, col_stride,
+                                            row_stride, num_cols, reg_num_rows);
         }
       }
     }
@@ -1242,9 +1221,9 @@ public:
             if (reg_num_rows + row > num_rows)
             {
               reg_num_rows = num_rows - row;
-              m_registers[i].store_strided_n(
-                  ptr + row * row_stride + col * col_stride, row_stride,
-                  reg_num_rows);
+              m_registers[i].store_strided_n(ptr + row * row_stride +
+                                                 col * col_stride,
+                                             row_stride, reg_num_rows);
             }
             else
             {
@@ -1266,8 +1245,8 @@ public:
                                          : reg_num_cols;
 
           element_type* ptr_i = ptr + i * col_stride * s_major_dim_per_register;
-          m_registers[i].segmented_store_nm(
-              ptr_i, s_segbits, row_stride, col_stride, num_rows, reg_num_cols);
+          m_registers[i].segmented_store_nm(ptr_i, s_segbits, row_stride,
+                                            col_stride, num_rows, reg_num_cols);
         }
       }
     }
@@ -1564,9 +1543,9 @@ public:
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  column_vector_type right_multiply_vector_accumulate(
-      row_vector_type const& v,
-      column_vector_type     result) const
+  column_vector_type
+  right_multiply_vector_accumulate(row_vector_type const& v,
+                                   column_vector_type result) const
   {
 
     if (layout_type::is_row_major())
@@ -1692,9 +1671,8 @@ public:
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  row_vector_type left_multiply_vector_accumulate(
-      column_vector_type const& v,
-      row_vector_type           result) const
+  row_vector_type left_multiply_vector_accumulate(column_vector_type const& v,
+                                                  row_vector_type result) const
   {
 
     if (layout_type::is_row_major())
@@ -1873,10 +1851,9 @@ public:
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  register_type extract_diagonal_register(
-      camp::idx_t starting_column,
-      camp::idx_t segbits,
-      camp::idx_t segment) const
+  register_type extract_diagonal_register(camp::idx_t starting_column,
+                                          camp::idx_t segbits,
+                                          camp::idx_t segment) const
   {
 
     register_type result(0);
@@ -1889,9 +1866,9 @@ public:
 
     for (camp::idx_t i = 0; i < num_rows; ++i)
     {
-      camp::idx_t col   = (col0 + i) % s_num_columns;
-      camp::idx_t row   = row0 + i;
-      auto        value = get(row, col);
+      camp::idx_t col = (col0 + i) % s_num_columns;
+      camp::idx_t row = row0 + i;
+      auto value      = get(row, col);
       for (camp::idx_t j = 0; j < num_repeats; ++j)
       {
         result.set(value, (i << segbits) + j);

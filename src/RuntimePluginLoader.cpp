@@ -15,8 +15,8 @@
 RAJA_INLINE
 bool isSharedObject(const std::string& filename)
 {
-  return (
-      filename.size() > 3 && !filename.compare(filename.size() - 3, 3, ".so"));
+  return (filename.size() > 3 &&
+          !filename.compare(filename.size() - 3, 3, ".so"));
 }
 
 namespace RAJA
@@ -121,7 +121,7 @@ void RuntimePluginLoader::initDirectory(const std::string& path)
     return;
   }
 
-  DIR*           dir;
+  DIR* dir;
   struct dirent* file;
 
   if ((dir = opendir(path.c_str())) != NULL)

@@ -127,28 +127,25 @@ struct TensorIndexTraits<RAJA::expt::TensorIndex<IDX, TENSOR_TYPE, DIM>>
 };
 
 
-template <
-    typename IDX,
-    typename TENSOR_TYPE,
-    camp::idx_t             DIM,
-    IDX                     INDEX_VALUE,
-    strip_index_type_t<IDX> LENGTH_VALUE>
-struct TensorIndexTraits<
-    RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<
-        IDX,
-        TENSOR_TYPE,
-        DIM,
-        INDEX_VALUE,
-        LENGTH_VALUE>>>
+template <typename IDX,
+          typename TENSOR_TYPE,
+          camp::idx_t DIM,
+          IDX INDEX_VALUE,
+          strip_index_type_t<IDX> LENGTH_VALUE>
+struct TensorIndexTraits<RAJA::expt::StaticTensorIndex<
+    RAJA::expt::StaticTensorIndexInner<IDX,
+                                       TENSOR_TYPE,
+                                       DIM,
+                                       INDEX_VALUE,
+                                       LENGTH_VALUE>>>
 {
-  using base_type = RAJA::expt::TensorIndex<IDX, TENSOR_TYPE, DIM>;
-  using index_type =
-      RAJA::expt::StaticTensorIndex<RAJA::expt::StaticTensorIndexInner<
-          IDX,
-          TENSOR_TYPE,
-          DIM,
-          INDEX_VALUE,
-          LENGTH_VALUE>>;
+  using base_type  = RAJA::expt::TensorIndex<IDX, TENSOR_TYPE, DIM>;
+  using index_type = RAJA::expt::StaticTensorIndex<
+      RAJA::expt::StaticTensorIndexInner<IDX,
+                                         TENSOR_TYPE,
+                                         DIM,
+                                         INDEX_VALUE,
+                                         LENGTH_VALUE>>;
   using arg_type   = IDX;
   using value_type = strip_index_type_t<IDX>;
 
@@ -218,8 +215,8 @@ stripTensorIndexByValue(ARG const arg) ->
  * For VectorIndex types, returns the number of vector lanes.
  */
 template <typename ARG, typename IDX>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr IDX
-getTensorSize(ARG const& arg, IDX dim_size)
+RAJA_INLINE RAJA_HOST_DEVICE constexpr IDX getTensorSize(ARG const& arg,
+                                                         IDX dim_size)
 {
   return TensorIndexTraits<ARG>::size(arg) >= 0
              ? IDX(TensorIndexTraits<ARG>::size(arg))
@@ -231,8 +228,8 @@ getTensorSize(ARG const& arg, IDX dim_size)
  *
  */
 template <typename ARG, typename IDX>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr IDX
-getTensorBegin(ARG const& arg, IDX dim_minval)
+RAJA_INLINE RAJA_HOST_DEVICE constexpr IDX getTensorBegin(ARG const& arg,
+                                                          IDX dim_minval)
 {
   return TensorIndexTraits<ARG>::begin(arg) >= 0
              ? IDX(TensorIndexTraits<ARG>::begin(arg))

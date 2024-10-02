@@ -49,9 +49,9 @@ TEST(IndexSetBuild, Aligned)
 
   RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
 
-  RAJA::buildIndexSetAligned(
-      iset, res, &indices[0], static_cast<RAJA::Index_type>(indices.size()),
-      range_min_length, range_align);
+  RAJA::buildIndexSetAligned(iset, res, &indices[0],
+                             static_cast<RAJA::Index_type>(indices.size()),
+                             range_min_length, range_align);
 
   ASSERT_EQ(iset.getLength(), indices.size());
 

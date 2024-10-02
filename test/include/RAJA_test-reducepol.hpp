@@ -33,23 +33,23 @@ using OpenMPReducePols =
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaReducePols = camp::list<
-    RAJA::cuda_reduce_device_fence,
-    RAJA::cuda_reduce_block_fence,
-    RAJA::cuda_reduce_atomic_device_init_device_fence,
-    RAJA::cuda_reduce_atomic_device_init_block_fence,
-    RAJA::cuda_reduce_atomic_host_init_device_fence,
-    RAJA::cuda_reduce_atomic_host_init_block_fence>;
+using CudaReducePols =
+    camp::list<RAJA::cuda_reduce_device_fence,
+               RAJA::cuda_reduce_block_fence,
+               RAJA::cuda_reduce_atomic_device_init_device_fence,
+               RAJA::cuda_reduce_atomic_device_init_block_fence,
+               RAJA::cuda_reduce_atomic_host_init_device_fence,
+               RAJA::cuda_reduce_atomic_host_init_block_fence>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipReducePols = camp::list<
-    RAJA::hip_reduce_device_fence,
-    RAJA::hip_reduce_block_fence,
-    RAJA::hip_reduce_atomic_device_init_device_fence,
-    RAJA::hip_reduce_atomic_device_init_block_fence,
-    RAJA::hip_reduce_atomic_host_init_device_fence,
-    RAJA::hip_reduce_atomic_host_init_block_fence>;
+using HipReducePols =
+    camp::list<RAJA::hip_reduce_device_fence,
+               RAJA::hip_reduce_block_fence,
+               RAJA::hip_reduce_atomic_device_init_device_fence,
+               RAJA::hip_reduce_atomic_device_init_block_fence,
+               RAJA::hip_reduce_atomic_host_init_device_fence,
+               RAJA::hip_reduce_atomic_host_init_block_fence>;
 #endif
 
 #if defined(RAJA_ENABLE_SYCL)

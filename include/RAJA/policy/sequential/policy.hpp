@@ -34,7 +34,7 @@ template <multi_reduce_algorithm t_multi_algorithm>
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_multi_algorithm;
-  static constexpr bool                   consistent =
+  static constexpr bool consistent =
       (algorithm == multi_reduce_algorithm::left_fold);
 };
 
@@ -57,25 +57,22 @@ namespace sequential
 /// Segment execution policies
 ///
 
-struct seq_region : make_policy_pattern_launch_platform_t<
-                        Policy::sequential,
-                        Pattern::region,
-                        Launch::sync,
-                        Platform::host>
+struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                          Pattern::region,
+                                                          Launch::sync,
+                                                          Platform::host>
 {};
 
-struct seq_launch_t : make_policy_pattern_launch_platform_t<
-                          Policy::sequential,
-                          Pattern::region,
-                          Launch::sync,
-                          Platform::host>
+struct seq_launch_t : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                            Pattern::region,
+                                                            Launch::sync,
+                                                            Platform::host>
 {};
 
-struct seq_exec : make_policy_pattern_launch_platform_t<
-                      Policy::sequential,
-                      Pattern::forall,
-                      Launch::undefined,
-                      Platform::host>
+struct seq_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                        Pattern::forall,
+                                                        Launch::undefined,
+                                                        Platform::host>
 {};
 
 ///
@@ -86,11 +83,10 @@ using seq_segit = seq_exec;
 ///
 /// WorkGroup execution policies
 ///
-struct seq_work : make_policy_pattern_launch_platform_t<
-                      Policy::sequential,
-                      Pattern::workgroup_exec,
-                      Launch::sync,
-                      Platform::host>
+struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                        Pattern::workgroup_exec,
+                                                        Launch::sync,
+                                                        Platform::host>
 {};
 
 ///
@@ -100,11 +96,10 @@ struct seq_work : make_policy_pattern_launch_platform_t<
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce : make_policy_pattern_launch_platform_t<
-                        Policy::sequential,
-                        Pattern::reduce,
-                        Launch::undefined,
-                        Platform::host>
+struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                          Pattern::reduce,
+                                                          Launch::undefined,
+                                                          Platform::host>
 {};
 
 ///
@@ -114,10 +109,9 @@ struct seq_multi_reduce_policy : make_policy_pattern_launch_platform_t<
                                      Pattern::multi_reduce,
                                      Launch::undefined,
                                      Platform::host,
-                                     std::conditional_t<
-                                         tuning::consistent,
-                                         reduce::ordered,
-                                         reduce::unordered>>
+                                     std::conditional_t<tuning::consistent,
+                                                        reduce::ordered,
+                                                        reduce::unordered>>
 {};
 
 ///

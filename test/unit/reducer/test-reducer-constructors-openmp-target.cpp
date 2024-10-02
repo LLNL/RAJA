@@ -13,14 +13,13 @@
 #include "tests/test-reducer-constructors.hpp"
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetInitReducerConstructorTypes = Test<camp::cartesian_product<
-    OpenMPTargetReducerPolicyList,
-    DataTypeList,
-    OpenMPTargetResourceList,
-    SequentialUnitTestPolicyList>>::Types;
+using OpenMPTargetInitReducerConstructorTypes =
+    Test<camp::cartesian_product<OpenMPTargetReducerPolicyList,
+                                 DataTypeList,
+                                 OpenMPTargetResourceList,
+                                 SequentialUnitTestPolicyList>>::Types;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    OpenMPTargetInitTest,
-    ReducerInitConstructorUnitTest,
-    OpenMPTargetInitReducerConstructorTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPTargetInitTest,
+                               ReducerInitConstructorUnitTest,
+                               OpenMPTargetInitReducerConstructorTypes);
 #endif

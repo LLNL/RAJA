@@ -11,36 +11,32 @@
 #include <numeric>
 #include <type_traits>
 
-template <
-    typename INDEX_TYPE,
-    typename DATA_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POLICY>
+template <typename INDEX_TYPE,
+          typename DATA_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POLICY>
 typename std::enable_if<
     std::is_unsigned<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type
-KernelHyperplane3DTestImpl(
-    const int RAJA_UNUSED_ARG(groups),
-    const int RAJA_UNUSED_ARG(idim),
-    const int RAJA_UNUSED_ARG(jdim),
-    const int RAJA_UNUSED_ARG(kdim))
+KernelHyperplane3DTestImpl(const int RAJA_UNUSED_ARG(groups),
+                           const int RAJA_UNUSED_ARG(idim),
+                           const int RAJA_UNUSED_ARG(jdim),
+                           const int RAJA_UNUSED_ARG(kdim))
 {
   // do nothing for unsigned index types
 }
 
-template <
-    typename INDEX_TYPE,
-    typename DATA_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POLICY>
+template <typename INDEX_TYPE,
+          typename DATA_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POLICY>
 typename std::enable_if<
     std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type
-KernelHyperplane3DTestImpl(
-    const int groups,
-    const int idimin,
-    const int jdimin,
-    const int kdimin)
+KernelHyperplane3DTestImpl(const int groups,
+                           const int idimin,
+                           const int jdimin,
+                           const int kdimin)
 {
   // This test traverses "groups" number of 3D arrays, and modifies values in a
   // 2D hyperplane manner.
@@ -68,8 +64,8 @@ KernelHyperplane3DTestImpl(
 
   INDEX_TYPE array_length = groups * idim * jdim * kdim;
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array,
+                                    &check_array, &test_array);
 
   RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>> HostView(
       test_array, groups, idim, jdim, kdim);
@@ -87,49 +83,49 @@ KernelHyperplane3DTestImpl(
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> oob_count(0);
 
   // perform array arithmetic with a 2D J-K hyperplane
-  RAJA::TypedRangeSegment<INDEX_TYPE>       Grange(0, groups);
+  RAJA::TypedRangeSegment<INDEX_TYPE> Grange(0, groups);
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> Irange(0, idim, 1);
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> Jrange(jdim - 1, -1, -1);
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> Krange(0, kdim, 1);
 
-  RAJA::kernel<EXEC_POLICY>(
-      RAJA::make_tuple(Grange, Irange, Jrange, Krange),
-      [=] RAJA_HOST_DEVICE(
-          INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj, INDEX_TYPE kk)
-      {
-        if (g < 0 || g >= groups || ii < 0 || ii >= idim || jj < 0 ||
-            jj >= jdim || kk < 0 || kk >= kdim)
-        {
-          oob_count += 1;
-        }
+  RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(Grange, Irange, Jrange, Krange),
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE g, INDEX_TYPE ii,
+                                                 INDEX_TYPE jj, INDEX_TYPE kk)
+                            {
+                              if (g < 0 || g >= groups || ii < 0 ||
+                                  ii >= idim || jj < 0 || jj >= jdim ||
+                                  kk < 0 || kk >= kdim)
+                              {
+                                oob_count += 1;
+                              }
 
-        DATA_TYPE left = 1;
-        if (ii > 0)
-        {
-          left = WorkView(g, ii - 1, jj, kk);
-        }
+                              DATA_TYPE left = 1;
+                              if (ii > 0)
+                              {
+                                left = WorkView(g, ii - 1, jj, kk);
+                              }
 
-        DATA_TYPE up = 1;
-        if (jj > 0)
-        {
-          up = WorkView(g, ii, jj - 1, kk);
-        }
+                              DATA_TYPE up = 1;
+                              if (jj > 0)
+                              {
+                                up = WorkView(g, ii, jj - 1, kk);
+                              }
 
-        DATA_TYPE back = 1;
-        if (kk > 0)
-        {
-          back = WorkView(g, ii, jj, kk - 1);
-        }
+                              DATA_TYPE back = 1;
+                              if (kk > 0)
+                              {
+                                back = WorkView(g, ii, jj, kk - 1);
+                              }
 
-        WorkView(g, ii, jj, kk) = left + up + back;
+                              WorkView(g, ii, jj, kk) = left + up + back;
 
-        trip_count += 1;
-      });
+                              trip_count += 1;
+                            });
 
   work_res.memcpy(check_array, work_array, sizeof(DATA_TYPE) * array_length);
 
-  ASSERT_EQ(
-      (INDEX_TYPE)trip_count.get(), (INDEX_TYPE)groups * idim * jdim * kdim);
+  ASSERT_EQ((INDEX_TYPE)trip_count.get(),
+            (INDEX_TYPE)groups * idim * jdim * kdim);
   ASSERT_EQ((INDEX_TYPE)oob_count.get(), (INDEX_TYPE)0);
 
   // perform array arithmetic on the CPU
@@ -179,8 +175,8 @@ KernelHyperplane3DTestImpl(
     }
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array, check_array,
+                                      test_array);
 }
 
 
@@ -197,15 +193,12 @@ TYPED_TEST_P(KernelHyperplane3DTest, Hyperplane3DKernel)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  KernelHyperplane3DTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(
-      1, 10, 10, 10);
-  KernelHyperplane3DTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(
-      2, 151, 111, 205);
-  KernelHyperplane3DTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(
-      3, 101, 213, 123);
+  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
+                             REDUCE_POLICY>(1, 10, 10, 10);
+  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
+                             REDUCE_POLICY>(2, 151, 111, 205);
+  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
+                             REDUCE_POLICY>(3, 101, 213, 123);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelHyperplane3DTest, Hyperplane3DKernel);

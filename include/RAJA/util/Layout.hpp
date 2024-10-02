@@ -38,10 +38,9 @@ namespace detail
 {
 
 
-template <
-    typename Range,
-    typename IdxLin        = Index_type,
-    ptrdiff_t StrideOneDim = -1>
+template <typename Range,
+          typename IdxLin        = Index_type,
+          ptrdiff_t StrideOneDim = -1>
 struct LayoutBase_impl;
 
 /*!
@@ -75,8 +74,8 @@ public:
   using IndexLinear = IdxLin;
   using IndexRange  = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
-  static constexpr size_t    n_dims = sizeof...(RangeInts);
-  static constexpr IdxLin    limit  = RAJA::operators::limits<IdxLin>::max();
+  static constexpr size_t n_dims = sizeof...(RangeInts);
+  static constexpr IdxLin limit  = RAJA::operators::limits<IdxLin>::max();
   static constexpr ptrdiff_t stride_one_dim = StrideOneDim;
 
   IdxLin sizes[n_dims]       = {0};
@@ -106,8 +105,8 @@ public:
         inv_strides {(strides[RangeInts] ? strides[RangeInts] : IdxLin(1))...},
         inv_mods {(sizes[RangeInts] ? sizes[RangeInts] : IdxLin(1))...}
   {
-    static_assert(
-        n_dims == sizeof...(Types), "number of dimensions must match");
+    static_assert(n_dims == sizeof...(Types),
+                  "number of dimensions must match");
   }
 
   /*!
@@ -115,10 +114,9 @@ public:
    */
   template <typename CIdxLin, ptrdiff_t CStrideOneDim>
   constexpr RAJA_INLINE RAJA_HOST_DEVICE
-  LayoutBase_impl(const LayoutBase_impl<
-                  camp::idx_seq<RangeInts...>,
-                  CIdxLin,
-                  CStrideOneDim>& rhs)
+  LayoutBase_impl(const LayoutBase_impl<camp::idx_seq<RangeInts...>,
+                                        CIdxLin,
+                                        CStrideOneDim>& rhs)
       : sizes {static_cast<IdxLin>(rhs.sizes[RangeInts])...},
         strides {static_cast<IdxLin>(rhs.strides[RangeInts])...},
         inv_strides {static_cast<IdxLin>(rhs.inv_strides[RangeInts])...},
@@ -145,10 +143,9 @@ public:
   template <camp::idx_t N, typename Idx>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
   {
-    printf(
-        "Error at index %d, value %ld is not within bounds [0, %ld] \n",
-        static_cast<int>(N), static_cast<long int>(idx),
-        static_cast<long int>(sizes[N] - 1));
+    printf("Error at index %d, value %ld is not within bounds [0, %ld] \n",
+           static_cast<int>(N), static_cast<long int>(idx),
+           static_cast<long int>(sizes[N] - 1));
     RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }
 
@@ -157,8 +154,8 @@ public:
   {}
 
   template <camp::idx_t N, typename Idx, typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE void
-  BoundsCheck(Idx idx, Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx,
+                                                Indices... indices) const
   {
     if (sizes[N] > 0 && !(0 <= idx && idx < static_cast<Idx>(sizes[N])))
     {
@@ -184,13 +181,12 @@ public:
     BoundsCheck<0>(indices...);
 #endif
     // dot product of strides and indices
-    return sum<IdxLin>(
-        (RangeInts == stride_one_dim
-             ?  // Is this dimension stride-one?
-             indices
-             :  // it's stride one, so dont bother with multiply
-             strides[RangeInts] * indices  // it's not stride one
-         )...);
+    return sum<IdxLin>((RangeInts == stride_one_dim
+                            ?  // Is this dimension stride-one?
+                            indices
+                            :  // it's stride one, so dont bother with multiply
+                            strides[RangeInts] * indices  // it's not stride one
+                        )...);
   }
 
 
@@ -205,25 +201,23 @@ public:
    *                 dimensionality of this layout.
    */
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE void
-  toIndices(IdxLin linear_index, Indices&&... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              Indices&&... indices) const
   {
 #if defined(RAJA_BOUNDS_CHECK_INTERNAL)
     IdxLin totSize = size_noproj();
     if (totSize > 0 && (linear_index < 0 || linear_index >= totSize))
     {
-      printf(
-          "Error! Linear index %ld is not within bounds [0, %ld]. \n",
-          static_cast<long int>(linear_index),
-          static_cast<long int>(totSize - 1));
+      printf("Error! Linear index %ld is not within bounds [0, %ld]. \n",
+             static_cast<long int>(linear_index),
+             static_cast<long int>(totSize - 1));
       RAJA_ABORT_OR_THROW("Out of bounds error \n");
     }
 #endif
 
-    camp::sink((
-        indices =
-            (camp::decay<
-                Indices>)((linear_index / inv_strides[RangeInts]) % inv_mods[RangeInts]))...);
+    camp::sink((indices = (camp::decay<Indices>)((linear_index /
+                                                  inv_strides[RangeInts]) %
+                                                 inv_mods[RangeInts]))...);
   }
 
   /*!
@@ -374,13 +368,12 @@ struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>
    * @param indices  Variadic list of indices to be assigned, number must match
    *                 dimensionality of this layout.
    */
-  RAJA_INLINE RAJA_HOST_DEVICE void
-  toIndices(IdxLin linear_index, DimTypes&... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              DimTypes&... indices) const
   {
-    toIndicesHelper(
-        camp::make_idx_seq_t<sizeof...(DimTypes)> {},
-        std::forward<IdxLin>(linear_index),
-        std::forward<DimTypes&>(indices)...);
+    toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)> {},
+                    std::forward<IdxLin>(linear_index),
+                    std::forward<DimTypes&>(indices)...);
   }
 
 private:
@@ -392,10 +385,9 @@ private:
    *
    */
   template <typename... Indices, camp::idx_t... RangeInts>
-  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(
-      camp::idx_seq<RangeInts...>,
-      IdxLin linear_index,
-      Indices&... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(camp::idx_seq<RangeInts...>,
+                                                    IdxLin linear_index,
+                                                    Indices&... indices) const
   {
     StrippedIdxLin locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);
@@ -411,7 +403,7 @@ private:
  */
 template <ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
 RAJA_INLINE Layout<n_dims, IdxLin, s1_dim>
-            make_stride_one(Layout<n_dims, IdxLin> const& l)
+make_stride_one(Layout<n_dims, IdxLin> const& l)
 {
   return Layout<n_dims, IdxLin, s1_dim>(l);
 }
@@ -423,7 +415,7 @@ RAJA_INLINE Layout<n_dims, IdxLin, s1_dim>
  */
 template <ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
 RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim>
-            make_stride_one(TypedLayout<IdxLin, IdxTuple> const& l)
+make_stride_one(TypedLayout<IdxLin, IdxTuple> const& l)
 {
   // strip l to it's base-class type
   using Base    = typename TypedLayout<IdxLin, IdxTuple>::Base;

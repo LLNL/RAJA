@@ -71,10 +71,9 @@ struct MultiReduceDataSeq<
 
   MultiReduceDataSeq() = delete;
 
-  template <
-      typename Container,
-      std::enable_if_t<!std::is_same<Container, MultiReduceDataSeq>::value>* =
-          nullptr>
+  template <typename Container,
+            std::enable_if_t<
+                !std::is_same<Container, MultiReduceDataSeq>::value>* = nullptr>
   MultiReduceDataSeq(Container const& container, T identity)
       : m_parent(nullptr),
         m_num_bins(container.size()),
@@ -138,9 +137,9 @@ struct MultiReduceDataSeq<
 
 private:
   MultiReduceDataSeq const* m_parent;
-  size_t                    m_num_bins;
-  T                         m_identity;
-  T*                        m_data;
+  size_t m_num_bins;
+  T m_identity;
+  T* m_data;
 
   template <typename Container>
   static T* create_data(Container const& container, size_t num_bins)
@@ -150,8 +149,8 @@ private:
       return nullptr;
     }
 
-    auto   data = static_cast<T*>(malloc(num_bins * sizeof(T)));
-    size_t bin  = 0;
+    auto data  = static_cast<T*>(malloc(num_bins * sizeof(T)));
+    size_t bin = 0;
     for (auto const& value : container)
     {
       new (&data[bin]) T(value);
@@ -178,9 +177,8 @@ private:
 
 }  // namespace detail
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(
-    policy::sequential::seq_multi_reduce_policy,
-    detail::MultiReduceDataSeq)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::sequential::seq_multi_reduce_policy,
+                                detail::MultiReduceDataSeq)
 
 }  // namespace RAJA
 

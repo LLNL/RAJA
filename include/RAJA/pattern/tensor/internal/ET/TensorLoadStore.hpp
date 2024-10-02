@@ -170,8 +170,8 @@ public:
   RAJA_SUPPRESS_HD_WARN
   template <typename TILE_TYPE>
   RAJA_INLINE RAJA_HOST_DEVICE auto eval_lhs(TILE_TYPE const& tile) const
-      -> decltype(TENSOR_TYPE::create_et_store_ref(
-          merge_ref_tile(this->m_ref, tile)))
+      -> decltype(TENSOR_TYPE::create_et_store_ref(merge_ref_tile(this->m_ref,
+                                                                  tile)))
   {
     return TENSOR_TYPE::create_et_store_ref(merge_ref_tile(m_ref, tile));
   }

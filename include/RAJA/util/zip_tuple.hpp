@@ -50,9 +50,9 @@ using zip_tuple_element_t = typename zip_tuple_element<I, ZT>::type;
 // the reference type returned by get depends on the reference type
 // of the zip_tuple that get is called on
 template <camp::idx_t I, bool is_val, typename... Ts>
-RAJA_HOST_DEVICE constexpr RAJA::
-    zip_tuple_element_t<I, zip_tuple<is_val, Ts...>>&
-    get(zip_tuple<is_val, Ts...>& z) noexcept
+RAJA_HOST_DEVICE constexpr RAJA::zip_tuple_element_t<I,
+                                                     zip_tuple<is_val, Ts...>>&
+get(zip_tuple<is_val, Ts...>& z) noexcept
 {
   return z.template get<I>();
 }
@@ -195,9 +195,8 @@ template <typename Tuple0, typename Tuple1, typename F, camp::idx_t... Is>
 RAJA_HOST_DEVICE inline void
 zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
 {
-  camp::sink(std::forward<F>(f)(
-      RAJA::get<Is>(std::forward<Tuple0>(t0)),
-      RAJA::get<Is>(std::forward<Tuple1>(t1)))...);
+  camp::sink(std::forward<F>(f)(RAJA::get<Is>(std::forward<Tuple0>(t0)),
+                                RAJA::get<Is>(std::forward<Tuple1>(t1)))...);
 }
 
 /*!
@@ -206,9 +205,8 @@ zip_for_each_impl(Tuple0&& t0, Tuple1&& t1, F&& f, camp::idx_seq<Is...>)
 template <typename Tuple, typename F>
 RAJA_HOST_DEVICE inline void zip_for_each(Tuple&& t, F&& f)
 {
-  zip_for_each_impl(
-      std::forward<Tuple>(t), std::forward<F>(f),
-      typename camp::decay<Tuple>::IdxSeq {});
+  zip_for_each_impl(std::forward<Tuple>(t), std::forward<F>(f),
+                    typename camp::decay<Tuple>::IdxSeq {});
 }
 
 /*!
@@ -217,14 +215,12 @@ RAJA_HOST_DEVICE inline void zip_for_each(Tuple&& t, F&& f)
 template <typename Tuple0, typename Tuple1, typename F>
 RAJA_HOST_DEVICE inline void zip_for_each(Tuple0&& t0, Tuple1&& t1, F&& f)
 {
-  static_assert(
-      std::is_same<
-          typename camp::decay<Tuple0>::IdxSeq,
-          typename camp::decay<Tuple1>::IdxSeq>::value,
-      "Tuple0 and Tuple1 must have the same size");
-  zip_for_each_impl(
-      std::forward<Tuple0>(t0), std::forward<Tuple1>(t1), std::forward<F>(f),
-      typename camp::decay<Tuple0>::IdxSeq {});
+  static_assert(std::is_same<typename camp::decay<Tuple0>::IdxSeq,
+                             typename camp::decay<Tuple1>::IdxSeq>::value,
+                "Tuple0 and Tuple1 must have the same size");
+  zip_for_each_impl(std::forward<Tuple0>(t0), std::forward<Tuple1>(t1),
+                    std::forward<F>(f),
+                    typename camp::decay<Tuple0>::IdxSeq {});
 }
 
 }  // end namespace detail
@@ -240,10 +236,10 @@ struct zip_tuple
   using value_type = RAJA::tuple<Ts...>;
 
   template <typename T>
-  using opp_type = typename std::conditional<
-      is_val,
-      typename std::add_lvalue_reference<T>::type,
-      typename std::remove_reference<T>::type>::type;
+  using opp_type =
+      typename std::conditional<is_val,
+                                typename std::add_lvalue_reference<T>::type,
+                                typename std::remove_reference<T>::type>::type;
 
   // zip_tuple type with opposite is_val
   using opp_tuple = zip_tuple<!is_val, opp_type<Ts>...>;
@@ -260,11 +256,10 @@ struct zip_tuple
   {}
 
   // assignment from types convertible to Ts
-  template <
-      typename... Os,
-      typename = concepts::enable_if<type_traits::convertible_to<
-          Os&&,
-          typename std::remove_reference<Ts>::type>...>>
+  template <typename... Os,
+            typename = concepts::enable_if<type_traits::convertible_to<
+                Os&&,
+                typename std::remove_reference<Ts>::type>...>>
   zip_tuple& assign(Os&&... os)
   {
     return assign_helper(IdxSeq {}, std::forward<Os>(os)...);
@@ -349,16 +344,16 @@ struct zip_tuple
   }
 
   // safe_swap that calls swap on each pair in the tuple
-  RAJA_HOST_DEVICE friend RAJA_INLINE void
-  safe_swap(zip_tuple& lhs, zip_tuple& rhs)
+  RAJA_HOST_DEVICE friend RAJA_INLINE void safe_swap(zip_tuple& lhs,
+                                                     zip_tuple& rhs)
   {
     detail::zip_for_each(lhs, rhs, detail::Swap {});
   }
 
   // safe_swap for swapping zip_tuples with opposite is_val
   // calls swap on each pair in the tuple
-  RAJA_HOST_DEVICE friend RAJA_INLINE void
-  safe_swap(zip_tuple& lhs, opp_tuple& rhs)
+  RAJA_HOST_DEVICE friend RAJA_INLINE void safe_swap(zip_tuple& lhs,
+                                                     opp_tuple& rhs)
   {
     detail::zip_for_each(lhs, rhs, detail::Swap {});
   }
@@ -391,8 +386,8 @@ private:
       : zip_tuple(RAJA::get<Is>(o)...)
   {}
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE
-  zip_tuple(zip_tuple const& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(zip_tuple const& o,
+                                         camp::idx_seq<Is...>)
       : zip_tuple(RAJA::get<Is>(o)...)
   {}
   template <camp::idx_t... Is>
@@ -402,8 +397,8 @@ private:
 
   // copy and move assignment operator helpers
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple&
-  assign_helper(zip_tuple& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple& o,
+                                                        camp::idx_seq<Is...>)
   {
     if (this != &o)
     {
@@ -412,8 +407,8 @@ private:
     return *this;
   }
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple&
-  assign_helper(zip_tuple const& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple const& o,
+                                                        camp::idx_seq<Is...>)
   {
     if (this != &o)
     {
@@ -422,8 +417,8 @@ private:
     return *this;
   }
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple&
-  assign_helper(zip_tuple&& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(zip_tuple&& o,
+                                                        camp::idx_seq<Is...>)
   {
     if (this != &o)
     {
@@ -438,8 +433,8 @@ private:
       : zip_tuple(RAJA::get<Is>(o)...)
   {}
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE
-  zip_tuple(opp_tuple const& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple(opp_tuple const& o,
+                                         camp::idx_seq<Is...>)
       : zip_tuple(RAJA::get<Is>(o)...)
   {}
   template <camp::idx_t... Is>
@@ -449,22 +444,22 @@ private:
 
   // copy and move assignment operator helpers from opp_tuple type zip_tuples
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple&
-  assign_helper(opp_tuple& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple& o,
+                                                        camp::idx_seq<Is...>)
   {
     camp::sink(get<Is>() = RAJA::get<Is>(o)...);
     return *this;
   }
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple&
-  assign_helper(opp_tuple const& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple const& o,
+                                                        camp::idx_seq<Is...>)
   {
     camp::sink(get<Is>() = RAJA::get<Is>(o)...);
     return *this;
   }
   template <camp::idx_t... Is>
-  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple&
-  assign_helper(opp_tuple&& o, camp::idx_seq<Is...>)
+  RAJA_HOST_DEVICE RAJA_INLINE zip_tuple& assign_helper(opp_tuple&& o,
+                                                        camp::idx_seq<Is...>)
   {
     camp::sink(get<Is>() = RAJA::get<Is>(std::move(o))...);
     return *this;

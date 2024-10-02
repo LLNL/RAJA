@@ -52,12 +52,14 @@ template <typename Container>
 using ContainerRef = decltype(*camp::val<camp::iterator_from<Container>>());
 
 template <typename Container>
-using ContainerDiff = camp::decay<
-    decltype(camp::val<camp::iterator_from<Container>>() - camp::val<camp::iterator_from<Container>>())>;
+using ContainerDiff =
+    camp::decay<decltype(camp::val<camp::iterator_from<Container>>() -
+                         camp::val<camp::iterator_from<Container>>())>;
 
 template <typename DiffType, typename CountType>
-RAJA_INLINE DiffType
-firstIndex(DiffType n, CountType num_threads, CountType thread_id)
+RAJA_INLINE DiffType firstIndex(DiffType n,
+                                CountType num_threads,
+                                CountType thread_id)
 {
   return (static_cast<size_t>(n) * thread_id) / num_threads;
 }

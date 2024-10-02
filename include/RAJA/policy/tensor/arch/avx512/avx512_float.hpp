@@ -181,8 +181,8 @@ public:
   self_type& load_strided(element_type const* ptr, camp::idx_t stride)
   {
     // AVX512F
-    m_value = _mm512_i32gather_ps(
-        createStridedOffsets(stride), ptr, sizeof(element_type));
+    m_value = _mm512_i32gather_ps(createStridedOffsets(stride), ptr,
+                                  sizeof(element_type));
     return *this;
   }
 
@@ -197,9 +197,9 @@ public:
   load_strided_n(element_type const* ptr, camp::idx_t stride, camp::idx_t N)
   {
     // AVX512F
-    m_value = _mm512_mask_i32gather_ps(
-        _mm512_setzero_ps(), createMask(N), createStridedOffsets(stride), ptr,
-        sizeof(element_type));
+    m_value = _mm512_mask_i32gather_ps(_mm512_setzero_ps(), createMask(N),
+                                       createStridedOffsets(stride), ptr,
+                                       sizeof(element_type));
     return *this;
   }
 
@@ -236,8 +236,8 @@ public:
   self_type const& store_strided(element_type* ptr, camp::idx_t stride) const
   {
     // AVX512F
-    _mm512_i32scatter_ps(
-        ptr, createStridedOffsets(stride), m_value, sizeof(element_type));
+    _mm512_i32scatter_ps(ptr, createStridedOffsets(stride), m_value,
+                         sizeof(element_type));
     return *this;
   }
 
@@ -251,9 +251,8 @@ public:
   store_strided_n(element_type* ptr, camp::idx_t stride, camp::idx_t N) const
   {
     // AVX512F
-    _mm512_mask_i32scatter_ps(
-        ptr, createMask(N), createStridedOffsets(stride), m_value,
-        sizeof(element_type));
+    _mm512_mask_i32scatter_ps(ptr, createMask(N), createStridedOffsets(stride),
+                              m_value, sizeof(element_type));
     return *this;
   }
 

@@ -18,8 +18,8 @@ TYPED_TEST_SUITE(TypedLayoutUnitTest, UnitIndexTypes);
 TYPED_TEST(TypedLayoutUnitTest, TypedLayoutConstructors)
 {
 
-  const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(
-      10, 5);
+  const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,
+                                                                          5);
 
   ASSERT_EQ(TypeParam {0}, l(TypeParam {0}, TypeParam {0}));
 
@@ -144,8 +144,9 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
 TYPED_TEST(TypedLayoutUnitTest, 2D_StaticLayout)
 {
   RAJA::Layout<2, TypeParam> dynamic_layout(7, 5);
-  using static_layout = RAJA::TypedStaticLayout<
-      RAJA::PERM_IJ, TypeParam, RAJA::list<TypeParam, TypeParam>, 7, 5>;
+  using static_layout =
+      RAJA::TypedStaticLayout<RAJA::PERM_IJ, TypeParam,
+                              RAJA::list<TypeParam, TypeParam>, 7, 5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)
@@ -162,8 +163,9 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
 {
   auto dynamic_layout = RAJA::make_permuted_layout(
       {{7, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
-  using static_layout = RAJA::TypedStaticLayout<
-      RAJA::PERM_JI, TypeParam, RAJA::list<TypeParam, TypeParam>, 7, 5>;
+  using static_layout =
+      RAJA::TypedStaticLayout<RAJA::PERM_JI, TypeParam,
+                              RAJA::list<TypeParam, TypeParam>, 7, 5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)
@@ -179,9 +181,10 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
 {
   auto dynamic_layout = RAJA::make_permuted_layout(
       {{7, 13, 5}}, RAJA::as_array<RAJA::PERM_JKI>::get());
-  using static_layout = RAJA::TypedStaticLayout<
-      RAJA::PERM_JKI, TypeParam, RAJA::list<TypeParam, TypeParam, TypeParam>, 7,
-      13, 5>;
+  using static_layout =
+      RAJA::TypedStaticLayout<RAJA::PERM_JKI, TypeParam,
+                              RAJA::list<TypeParam, TypeParam, TypeParam>, 7,
+                              13, 5>;
 
   // Check that we get the same layout
   for (TypeParam i = 0; i < 7; ++i)
@@ -190,8 +193,8 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
     {
       for (TypeParam k = 0; k < 5; ++k)
       {
-        ASSERT_EQ(
-            TypeParam(dynamic_layout(i, j, k)), static_layout::s_oper(i, j, k));
+        ASSERT_EQ(TypeParam(dynamic_layout(i, j, k)),
+                  static_layout::s_oper(i, j, k));
       }
     }
   }
@@ -215,9 +218,8 @@ TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
       {
         for (TypeParam l = 0; l < 5; ++l)
         {
-          ASSERT_EQ(
-              TypeParam(dynamic_layout(i, j, k, l)),
-              static_layout::s_oper(i, j, k, l));
+          ASSERT_EQ(TypeParam(dynamic_layout(i, j, k, l)),
+                    static_layout::s_oper(i, j, k, l));
         }
       }
     }

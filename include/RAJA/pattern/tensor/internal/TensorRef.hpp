@@ -144,12 +144,11 @@ struct PrependStaticIndexArray<
 };
 
 
-template <
-    typename INDEX_TYPE,
-    size_t     IDX,
-    INDEX_TYPE DELTA,
-    INDEX_TYPE HEAD,
-    INDEX_TYPE... TAIL>
+template <typename INDEX_TYPE,
+          size_t IDX,
+          INDEX_TYPE DELTA,
+          INDEX_TYPE HEAD,
+          INDEX_TYPE... TAIL>
 struct AddStaticIndexArray<
     INDEX_TYPE,
     IDX,
@@ -157,21 +156,19 @@ struct AddStaticIndexArray<
     StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>>
 {
   using Orig    = StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>;
-  using AddTail = typename AddStaticIndexArray<
-      INDEX_TYPE,
-      IDX - 1,
-      DELTA,
-      typename Orig::Tail>::Type;
+  using AddTail = typename AddStaticIndexArray<INDEX_TYPE,
+                                               IDX - 1,
+                                               DELTA,
+                                               typename Orig::Tail>::Type;
   using Type =
       typename PrependStaticIndexArray<INDEX_TYPE, HEAD, AddTail>::Type;
   using Seq = typename PrependStaticIndexArray<INDEX_TYPE, HEAD, AddTail>::Seq;
 };
 
-template <
-    typename INDEX_TYPE,
-    INDEX_TYPE DELTA,
-    INDEX_TYPE HEAD,
-    INDEX_TYPE... TAIL>
+template <typename INDEX_TYPE,
+          INDEX_TYPE DELTA,
+          INDEX_TYPE HEAD,
+          INDEX_TYPE... TAIL>
 struct AddStaticIndexArray<
     INDEX_TYPE,
     0,
@@ -180,23 +177,20 @@ struct AddStaticIndexArray<
 {
 
   using Orig = StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>;
-  using Type = typename PrependStaticIndexArray<
-      INDEX_TYPE,
-      HEAD + DELTA,
-      typename Orig::Tail>::Type;
-  using Seq = typename PrependStaticIndexArray<
-      INDEX_TYPE,
-      HEAD + DELTA,
-      typename Orig::Tail>::Seq;
+  using Type = typename PrependStaticIndexArray<INDEX_TYPE,
+                                                HEAD + DELTA,
+                                                typename Orig::Tail>::Type;
+  using Seq  = typename PrependStaticIndexArray<INDEX_TYPE,
+                                               HEAD + DELTA,
+                                               typename Orig::Tail>::Seq;
 };
 
 
-template <
-    typename INDEX_TYPE,
-    size_t     IDX,
-    INDEX_TYPE VALUE,
-    INDEX_TYPE HEAD,
-    INDEX_TYPE... TAIL>
+template <typename INDEX_TYPE,
+          size_t IDX,
+          INDEX_TYPE VALUE,
+          INDEX_TYPE HEAD,
+          INDEX_TYPE... TAIL>
 struct SetStaticIndexArray<
     INDEX_TYPE,
     IDX,
@@ -204,21 +198,19 @@ struct SetStaticIndexArray<
     StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>>
 {
   using Orig    = StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>;
-  using SetTail = typename SetStaticIndexArray<
-      INDEX_TYPE,
-      IDX - 1,
-      VALUE,
-      typename Orig::Tail>::Type;
+  using SetTail = typename SetStaticIndexArray<INDEX_TYPE,
+                                               IDX - 1,
+                                               VALUE,
+                                               typename Orig::Tail>::Type;
   using Type =
       typename PrependStaticIndexArray<INDEX_TYPE, HEAD, SetTail>::Type;
   using Seq = typename PrependStaticIndexArray<INDEX_TYPE, HEAD, SetTail>::Seq;
 };
 
-template <
-    typename INDEX_TYPE,
-    INDEX_TYPE VALUE,
-    INDEX_TYPE HEAD,
-    INDEX_TYPE... TAIL>
+template <typename INDEX_TYPE,
+          INDEX_TYPE VALUE,
+          INDEX_TYPE HEAD,
+          INDEX_TYPE... TAIL>
 struct SetStaticIndexArray<
     INDEX_TYPE,
     0,
@@ -226,12 +218,12 @@ struct SetStaticIndexArray<
     StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>>
 {
   using Orig = StaticIndexArray<camp::int_seq<INDEX_TYPE, HEAD, TAIL...>>;
-  using Type =
-      typename PrependStaticIndexArray<INDEX_TYPE, VALUE, typename Orig::Tail>::
-          Type;
-  using Seq =
-      typename PrependStaticIndexArray<INDEX_TYPE, VALUE, typename Orig::Tail>::
-          Seq;
+  using Type = typename PrependStaticIndexArray<INDEX_TYPE,
+                                                VALUE,
+                                                typename Orig::Tail>::Type;
+  using Seq  = typename PrependStaticIndexArray<INDEX_TYPE,
+                                               VALUE,
+                                               typename Orig::Tail>::Seq;
 };
 
 
@@ -251,7 +243,7 @@ struct TensorTile
   index_type m_begin[NUM_DIMS];
   index_type m_size[NUM_DIMS];
 
-  static constexpr camp::idx_t    s_num_dims    = NUM_DIMS;
+  static constexpr camp::idx_t s_num_dims       = NUM_DIMS;
   static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
 
@@ -308,23 +300,20 @@ struct TensorTile
 };
 
 
-template <
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    typename TBEGIN,
-    typename TSIZE>
+template <typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          typename TBEGIN,
+          typename TSIZE>
 struct StaticTensorTile;
 
-template <
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    INDEX_TYPE... BeginInts,
-    INDEX_TYPE... SizeInts>
-struct StaticTensorTile<
-    INDEX_TYPE,
-    TENSOR_SIZE,
-    camp::int_seq<INDEX_TYPE, BeginInts...>,
-    camp::int_seq<INDEX_TYPE, SizeInts...>>
+template <typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          INDEX_TYPE... BeginInts,
+          INDEX_TYPE... SizeInts>
+struct StaticTensorTile<INDEX_TYPE,
+                        TENSOR_SIZE,
+                        camp::int_seq<INDEX_TYPE, BeginInts...>,
+                        camp::int_seq<INDEX_TYPE, SizeInts...>>
 {
 
 
@@ -344,19 +333,18 @@ struct StaticTensorTile<
   using Full = StaticTensorTile<INDEX_TYPE, TENSOR_FULL, begin_seq, size_seq>;
 
   begin_type m_begin;
-  size_type  m_size;
+  size_type m_size;
 
-  static_assert(
-      sizeof...(BeginInts) == sizeof...(SizeInts),
-      "Mismatch between "
-      "number of "
-      "elements in "
-      "Begin and Size "
-      "series of "
-      "StaticTensorTil"
-      "e");
+  static_assert(sizeof...(BeginInts) == sizeof...(SizeInts),
+                "Mismatch between "
+                "number of "
+                "elements in "
+                "Begin and Size "
+                "series of "
+                "StaticTensorTil"
+                "e");
 
-  static constexpr camp::idx_t    s_num_dims    = sizeof...(BeginInts);
+  static constexpr camp::idx_t s_num_dims       = sizeof...(BeginInts);
   static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
   constexpr operator nonstatic_self_type() const
@@ -391,13 +379,12 @@ struct StaticTensorTile<
 template <typename TILE, typename VALUE, size_t IDX>
 struct SetStaticTensorTileBegin;
 
-template <
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    typename TBEGIN,
-    typename TSIZE,
-    INDEX_TYPE VALUE,
-    size_t     IDX>
+template <typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          typename TBEGIN,
+          typename TSIZE,
+          INDEX_TYPE VALUE,
+          size_t IDX>
 struct SetStaticTensorTileBegin<
     StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, TBEGIN, TSIZE>,
     camp::integral_constant<INDEX_TYPE, VALUE>,
@@ -414,13 +401,12 @@ struct SetStaticTensorTileBegin<
 template <typename TILE, typename VALUE, size_t IDX>
 struct SetStaticTensorTileSize;
 
-template <
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    typename TBEGIN,
-    typename TSIZE,
-    INDEX_TYPE VALUE,
-    size_t     IDX>
+template <typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          typename TBEGIN,
+          typename TSIZE,
+          INDEX_TYPE VALUE,
+          size_t IDX>
 struct SetStaticTensorTileSize<
     StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, TBEGIN, TSIZE>,
     camp::integral_constant<INDEX_TYPE, VALUE>,
@@ -435,40 +421,37 @@ struct SetStaticTensorTileSize<
 };
 
 
-template <
-    typename POINTER_TYPE,
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    camp::idx_t    NUM_DIMS,
-    camp::idx_t    STRIDE_ONE_DIM = -1>
+template <typename POINTER_TYPE,
+          typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          camp::idx_t NUM_DIMS,
+          camp::idx_t STRIDE_ONE_DIM = -1>
 struct TensorRef
 {
-  static constexpr camp::idx_t    s_stride_one_dim = STRIDE_ONE_DIM;
-  static constexpr camp::idx_t    s_num_dims       = NUM_DIMS;
-  static constexpr TensorTileSize s_tensor_size    = TENSOR_SIZE;
+  static constexpr camp::idx_t s_stride_one_dim = STRIDE_ONE_DIM;
+  static constexpr camp::idx_t s_num_dims       = NUM_DIMS;
+  static constexpr TensorTileSize s_tensor_size = TENSOR_SIZE;
 
-  using self_type = TensorRef<
-      POINTER_TYPE,
-      INDEX_TYPE,
-      TENSOR_SIZE,
-      NUM_DIMS,
-      STRIDE_ONE_DIM>;
+  using self_type    = TensorRef<POINTER_TYPE,
+                              INDEX_TYPE,
+                              TENSOR_SIZE,
+                              NUM_DIMS,
+                              STRIDE_ONE_DIM>;
   using tile_type    = TensorTile<INDEX_TYPE, TENSOR_SIZE, NUM_DIMS>;
   using pointer_type = POINTER_TYPE;
   using index_type   = INDEX_TYPE;
 
 
   pointer_type m_pointer;
-  index_type   m_stride[NUM_DIMS];
-  tile_type    m_tile;
+  index_type m_stride[NUM_DIMS];
+  tile_type m_tile;
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
   void print() const
   {
-    printf(
-        "TensorRef: dims=%d, m_pointer=%p, m_stride=[", (int)NUM_DIMS,
-        m_pointer);
+    printf("TensorRef: dims=%d, m_pointer=%p, m_stride=[", (int)NUM_DIMS,
+           m_pointer);
 
     for (camp::idx_t i = 0; i < NUM_DIMS; ++i)
     {
@@ -482,36 +465,33 @@ struct TensorRef
 };
 
 
-template <
-    typename POINTER_TYPE,
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    typename STRIDE_TYPE,
-    typename BEGIN_TYPE,
-    typename SIZE_TYPE,
-    camp::idx_t STRIDE_ONE_DIM = -1>
+template <typename POINTER_TYPE,
+          typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          typename STRIDE_TYPE,
+          typename BEGIN_TYPE,
+          typename SIZE_TYPE,
+          camp::idx_t STRIDE_ONE_DIM = -1>
 struct StaticTensorRef;
 
-template <
-    typename POINTER_TYPE,
-    typename INDEX_TYPE,
-    TensorTileSize TENSOR_SIZE,
-    INDEX_TYPE... StrideInts,
-    INDEX_TYPE... BeginInts,
-    INDEX_TYPE... SizeInts,
-    camp::idx_t STRIDE_ONE_DIM>
-struct StaticTensorRef<
-    POINTER_TYPE,
-    INDEX_TYPE,
-    TENSOR_SIZE,
-    camp::int_seq<INDEX_TYPE, StrideInts...>,
-    camp::int_seq<INDEX_TYPE, BeginInts...>,
-    camp::int_seq<INDEX_TYPE, SizeInts...>,
-    STRIDE_ONE_DIM>
+template <typename POINTER_TYPE,
+          typename INDEX_TYPE,
+          TensorTileSize TENSOR_SIZE,
+          INDEX_TYPE... StrideInts,
+          INDEX_TYPE... BeginInts,
+          INDEX_TYPE... SizeInts,
+          camp::idx_t STRIDE_ONE_DIM>
+struct StaticTensorRef<POINTER_TYPE,
+                       INDEX_TYPE,
+                       TENSOR_SIZE,
+                       camp::int_seq<INDEX_TYPE, StrideInts...>,
+                       camp::int_seq<INDEX_TYPE, BeginInts...>,
+                       camp::int_seq<INDEX_TYPE, SizeInts...>,
+                       STRIDE_ONE_DIM>
 {
 
-  static constexpr camp::idx_t    s_num_dims        = sizeof...(BeginInts);
-  static constexpr camp::idx_t    s_stride_one_dim  = STRIDE_ONE_DIM;
+  static constexpr camp::idx_t s_num_dims           = sizeof...(BeginInts);
+  static constexpr camp::idx_t s_stride_one_dim     = STRIDE_ONE_DIM;
   static constexpr TensorTileSize s_ref_tensor_size = TENSOR_SIZE;
   using pointer_type                                = POINTER_TYPE;
   using index_type                                  = INDEX_TYPE;
@@ -522,35 +502,32 @@ struct StaticTensorRef<
 
   using stride_type = StaticIndexArray<stride_seq>;
 
-  static_assert(
-      (sizeof...(BeginInts) == sizeof...(SizeInts)) &&
-          (sizeof...(SizeInts) == sizeof...(StrideInts)),
-      "Mismatch between number of elements in Begin and Size series "
-      "of StaticTensorRef");
+  static_assert((sizeof...(BeginInts) == sizeof...(SizeInts)) &&
+                    (sizeof...(SizeInts) == sizeof...(StrideInts)),
+                "Mismatch between number of elements in Begin and Size series "
+                "of StaticTensorRef");
 
 
-  using self_type = StaticTensorRef<
-      POINTER_TYPE,
-      INDEX_TYPE,
-      TENSOR_SIZE,
-      stride_seq,
-      begin_seq,
-      size_seq>;
+  using self_type = StaticTensorRef<POINTER_TYPE,
+                                    INDEX_TYPE,
+                                    TENSOR_SIZE,
+                                    stride_seq,
+                                    begin_seq,
+                                    size_seq>;
   using tile_type =
       StaticTensorTile<INDEX_TYPE, TENSOR_SIZE, begin_seq, size_seq>;
 
 
   pointer_type m_pointer;
-  stride_type  m_stride;
-  tile_type    m_tile;
+  stride_type m_stride;
+  tile_type m_tile;
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
   void print() const
   {
-    printf(
-        "StaticTensorRef: dims=%d, m_pointer=%p, m_stride=", (int)s_num_dims,
-        m_pointer);
+    printf("StaticTensorRef: dims=%d, m_pointer=%p, m_stride=", (int)s_num_dims,
+           m_pointer);
 
     m_stride.print();
 
@@ -568,17 +545,16 @@ template <typename REF_TYPE, typename TILE_TYPE, camp::idx_t... DIM_SEQ>
 struct MergeRefTile<REF_TYPE, TILE_TYPE, camp::idx_seq<DIM_SEQ...>>
 {
 
-  static_assert(
-      REF_TYPE::s_num_dims == TILE_TYPE::s_num_dims,
-      "Merging a ref "
-      "with a tile "
-      "requires an "
-      "equivalent "
-      "number of "
-      "dimensions.");
+  static_assert(REF_TYPE::s_num_dims == TILE_TYPE::s_num_dims,
+                "Merging a ref "
+                "with a tile "
+                "requires an "
+                "equivalent "
+                "number of "
+                "dimensions.");
 
-  static constexpr camp::idx_t    s_num_dims       = REF_TYPE::s_num_dims;
-  static constexpr camp::idx_t    s_stride_one_dim = REF_TYPE::s_stride_one_dim;
+  static constexpr camp::idx_t s_num_dims       = REF_TYPE::s_num_dims;
+  static constexpr camp::idx_t s_stride_one_dim = REF_TYPE::s_stride_one_dim;
   static constexpr TensorTileSize s_ref_tensor_size = TILE_TYPE::s_tensor_size;
   using pointer_type   = typename REF_TYPE::pointer_type;
   using ref_index_type = typename REF_TYPE::index_type;
@@ -586,12 +562,11 @@ struct MergeRefTile<REF_TYPE, TILE_TYPE, camp::idx_seq<DIM_SEQ...>>
   static constexpr TensorTileSize s_tile_tensor_size = TILE_TYPE::s_tensor_size;
   using tile_index_type = typename TILE_TYPE::index_type;
 
-  using merge_type = TensorRef<
-      pointer_type,
-      tile_index_type,
-      s_tile_tensor_size,
-      s_num_dims,
-      s_stride_one_dim>;
+  using merge_type = TensorRef<pointer_type,
+                               tile_index_type,
+                               s_tile_tensor_size,
+                               s_num_dims,
+                               s_stride_one_dim>;
   using shift_type = merge_type;
 
   RAJA_INLINE
@@ -604,95 +579,87 @@ struct MergeRefTile<REF_TYPE, TILE_TYPE, camp::idx_seq<DIM_SEQ...>>
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr shift_type
-  shift_origin(REF_TYPE const& ref, TILE_TYPE const& tile_origin)
+  static constexpr shift_type shift_origin(REF_TYPE const& ref,
+                                           TILE_TYPE const& tile_origin)
   {
     return shift_type {
-        ref.m_pointer -
-            RAJA::sum<camp::idx_t>(
-                (tile_origin.m_begin[DIM_SEQ] * ref.m_stride[DIM_SEQ])...),
+        ref.m_pointer - RAJA::sum<camp::idx_t>((tile_origin.m_begin[DIM_SEQ] *
+                                                ref.m_stride[DIM_SEQ])...),
         {tile_index_type(ref.m_stride[DIM_SEQ])...},
         ref.m_tile};
   }
 };
 
 
-template <
-    typename POINTER_TYPE,
-    typename INDEX_TYPE1,
-    TensorTileSize RTENSOR_SIZE,
-    typename STRIDE,
-    INDEX_TYPE1... BEGIN1,
-    INDEX_TYPE1... SIZE1,
-    camp::idx_t STRIDE_ONE_DIM,
-    typename INDEX_TYPE2,
-    TensorTileSize TENSOR_SIZE,
-    typename BEGIN2,
-    typename SIZE2,
-    camp::idx_t... DIM_SEQ>
-struct MergeRefTile<
-    StaticTensorRef<
-        POINTER_TYPE,
-        INDEX_TYPE1,
-        RTENSOR_SIZE,
-        STRIDE,
-        camp::int_seq<INDEX_TYPE1, BEGIN1...>,
-        camp::int_seq<INDEX_TYPE1, SIZE1...>,
-        STRIDE_ONE_DIM>,
-    StaticTensorTile<INDEX_TYPE2, TENSOR_SIZE, BEGIN2, SIZE2>,
-    camp::idx_seq<DIM_SEQ...>>
+template <typename POINTER_TYPE,
+          typename INDEX_TYPE1,
+          TensorTileSize RTENSOR_SIZE,
+          typename STRIDE,
+          INDEX_TYPE1... BEGIN1,
+          INDEX_TYPE1... SIZE1,
+          camp::idx_t STRIDE_ONE_DIM,
+          typename INDEX_TYPE2,
+          TensorTileSize TENSOR_SIZE,
+          typename BEGIN2,
+          typename SIZE2,
+          camp::idx_t... DIM_SEQ>
+struct MergeRefTile<StaticTensorRef<POINTER_TYPE,
+                                    INDEX_TYPE1,
+                                    RTENSOR_SIZE,
+                                    STRIDE,
+                                    camp::int_seq<INDEX_TYPE1, BEGIN1...>,
+                                    camp::int_seq<INDEX_TYPE1, SIZE1...>,
+                                    STRIDE_ONE_DIM>,
+                    StaticTensorTile<INDEX_TYPE2, TENSOR_SIZE, BEGIN2, SIZE2>,
+                    camp::idx_seq<DIM_SEQ...>>
 {
 
-  using ref_tile_type = StaticTensorTile<
-      INDEX_TYPE1,
-      RTENSOR_SIZE,
-      camp::int_seq<INDEX_TYPE1, BEGIN1...>,
-      camp::int_seq<INDEX_TYPE1, SIZE1...>>;
+  using ref_tile_type = StaticTensorTile<INDEX_TYPE1,
+                                         RTENSOR_SIZE,
+                                         camp::int_seq<INDEX_TYPE1, BEGIN1...>,
+                                         camp::int_seq<INDEX_TYPE1, SIZE1...>>;
 
-  using ref_type = StaticTensorRef<
-      POINTER_TYPE,
-      INDEX_TYPE1,
-      RTENSOR_SIZE,
-      STRIDE,
-      camp::int_seq<INDEX_TYPE1, BEGIN1...>,
-      camp::int_seq<INDEX_TYPE1, SIZE1...>,
-      STRIDE_ONE_DIM>;
+  using ref_type = StaticTensorRef<POINTER_TYPE,
+                                   INDEX_TYPE1,
+                                   RTENSOR_SIZE,
+                                   STRIDE,
+                                   camp::int_seq<INDEX_TYPE1, BEGIN1...>,
+                                   camp::int_seq<INDEX_TYPE1, SIZE1...>,
+                                   STRIDE_ONE_DIM>;
 
   using tile_type = StaticTensorTile<INDEX_TYPE2, TENSOR_SIZE, BEGIN2, SIZE2>;
 
   using ref_stride_type = typename ref_type ::stride_type;
 
-  using new_stride_seq = camp::
-      int_seq<INDEX_TYPE2, INDEX_TYPE2(ref_stride_type::value_at(DIM_SEQ))...>;
+  using new_stride_seq =
+      camp::int_seq<INDEX_TYPE2,
+                    INDEX_TYPE2(ref_stride_type::value_at(DIM_SEQ))...>;
 
   using shift_begin_seq = camp::int_seq<INDEX_TYPE2, INDEX_TYPE2(BEGIN1)...>;
   using shift_size_seq  = camp::int_seq<INDEX_TYPE2, INDEX_TYPE2(SIZE1)...>;
 
-  using shift_tile_type = StaticTensorTile<
-      INDEX_TYPE2,
-      TENSOR_SIZE,
-      shift_begin_seq,
-      shift_size_seq>;
+  using shift_tile_type = StaticTensorTile<INDEX_TYPE2,
+                                           TENSOR_SIZE,
+                                           shift_begin_seq,
+                                           shift_size_seq>;
 
   using new_stride_type = StaticIndexArray<new_stride_seq>;
 
-  using merge_type = StaticTensorRef<
-      POINTER_TYPE,
-      INDEX_TYPE2,
-      TENSOR_SIZE,
-      new_stride_seq,
-      BEGIN2,
-      SIZE2,
-      STRIDE_ONE_DIM>;
+  using merge_type = StaticTensorRef<POINTER_TYPE,
+                                     INDEX_TYPE2,
+                                     TENSOR_SIZE,
+                                     new_stride_seq,
+                                     BEGIN2,
+                                     SIZE2,
+                                     STRIDE_ONE_DIM>;
 
-  using shift_type = StaticTensorRef<
-      POINTER_TYPE,
-      INDEX_TYPE2,
-      TENSOR_SIZE,
-      new_stride_seq,
-      shift_begin_seq,
-      shift_size_seq,
-      STRIDE_ONE_DIM>;
+  using shift_type = StaticTensorRef<POINTER_TYPE,
+                                     INDEX_TYPE2,
+                                     TENSOR_SIZE,
+                                     new_stride_seq,
+                                     shift_begin_seq,
+                                     shift_size_seq,
+                                     STRIDE_ONE_DIM>;
 
 
   RAJA_INLINE
@@ -704,13 +671,12 @@ struct MergeRefTile<
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  static constexpr shift_type
-  shift_origin(ref_type const& ref, tile_type const& tile_origin)
+  static constexpr shift_type shift_origin(ref_type const& ref,
+                                           tile_type const& tile_origin)
   {
     return shift_type {
-        ref.m_pointer -
-            RAJA::sum<camp::idx_t>(
-                (tile_origin.m_begin[DIM_SEQ] * ref.m_stride[DIM_SEQ])...),
+        ref.m_pointer - RAJA::sum<camp::idx_t>((tile_origin.m_begin[DIM_SEQ] *
+                                                ref.m_stride[DIM_SEQ])...),
         new_stride_type(), shift_tile_type()};
   }
 };
@@ -724,9 +690,9 @@ merge_ref_tile(REF_TYPE const& ref, TILE_TYPE const& tile) ->
         TILE_TYPE,
         camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge_type
 {
-  return MergeRefTile<
-      REF_TYPE, TILE_TYPE,
-      camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge(ref, tile);
+  return MergeRefTile<REF_TYPE, TILE_TYPE,
+                      camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::merge(ref,
+                                                                          tile);
 }
 
 
@@ -743,18 +709,18 @@ shift_tile_origin(REF_TYPE const& ref, TILE_TYPE const& tile_origin) ->
         camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::shift_type
 {
   return MergeRefTile<
-      REF_TYPE, TILE_TYPE, camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::
-      shift_origin(ref, tile_origin);
+      REF_TYPE, TILE_TYPE,
+      camp::make_idx_seq_t<TILE_TYPE::s_num_dims>>::shift_origin(ref,
+                                                                 tile_origin);
 }
 
 
 /*!
  * Changes TensorTile size type to FULL
  */
-template <
-    typename INDEX_TYPE,
-    TensorTileSize RTENSOR_SIZE,
-    camp::idx_t    NUM_DIMS>
+template <typename INDEX_TYPE,
+          TensorTileSize RTENSOR_SIZE,
+          camp::idx_t NUM_DIMS>
 RAJA_INLINE
     RAJA_HOST_DEVICE constexpr TensorTile<INDEX_TYPE, TENSOR_FULL, NUM_DIMS>&
     make_tensor_tile_full(TensorTile<INDEX_TYPE, RTENSOR_SIZE, NUM_DIMS>& tile)
@@ -765,10 +731,9 @@ RAJA_INLINE
 /*!
  * Changes TensorTile size type to PARTIAL
  */
-template <
-    typename INDEX_TYPE,
-    TensorTileSize RTENSOR_SIZE,
-    camp::idx_t    NUM_DIMS>
+template <typename INDEX_TYPE,
+          TensorTileSize RTENSOR_SIZE,
+          camp::idx_t NUM_DIMS>
 RAJA_INLINE
     RAJA_HOST_DEVICE constexpr TensorTile<INDEX_TYPE, TENSOR_PARTIAL, NUM_DIMS>&
     make_tensor_tile_partial(
@@ -782,16 +747,14 @@ RAJA_INLINE
 /*!
  * Changes StaticTensorTile size type to FULL
  */
-template <
-    typename INDEX_TYPE,
-    TensorTileSize RTENSOR_SIZE,
-    typename TBEGIN,
-    typename TSIZE>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticTensorTile<
-    INDEX_TYPE,
-    TENSOR_FULL,
-    TBEGIN,
-    TSIZE>&
+template <typename INDEX_TYPE,
+          TensorTileSize RTENSOR_SIZE,
+          typename TBEGIN,
+          typename TSIZE>
+RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticTensorTile<INDEX_TYPE,
+                                                        TENSOR_FULL,
+                                                        TBEGIN,
+                                                        TSIZE>&
 make_tensor_tile_full(
     StaticTensorTile<INDEX_TYPE, RTENSOR_SIZE, TBEGIN, TSIZE>& tile)
 {
@@ -802,16 +765,14 @@ make_tensor_tile_full(
 /*!
  * Changes StaticTensorTile size type to PARTIAL
  */
-template <
-    typename INDEX_TYPE,
-    TensorTileSize RTENSOR_SIZE,
-    typename TBEGIN,
-    typename TSIZE>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticTensorTile<
-    INDEX_TYPE,
-    TENSOR_PARTIAL,
-    TBEGIN,
-    TSIZE>&
+template <typename INDEX_TYPE,
+          TensorTileSize RTENSOR_SIZE,
+          typename TBEGIN,
+          typename TSIZE>
+RAJA_INLINE RAJA_HOST_DEVICE constexpr StaticTensorTile<INDEX_TYPE,
+                                                        TENSOR_PARTIAL,
+                                                        TBEGIN,
+                                                        TSIZE>&
 make_tensor_tile_partial(
     StaticTensorTile<INDEX_TYPE, RTENSOR_SIZE, TBEGIN, TSIZE>& tile)
 {

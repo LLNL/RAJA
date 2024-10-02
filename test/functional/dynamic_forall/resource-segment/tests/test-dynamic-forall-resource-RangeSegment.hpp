@@ -12,24 +12,23 @@
 #include <iostream>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename POLICY_LIST>
-void DynamicForallResourceRangeSegmentTestImpl(
-    INDEX_TYPE first,
-    INDEX_TYPE last,
-    const int  pol)
+void DynamicForallResourceRangeSegmentTestImpl(INDEX_TYPE first,
+                                               INDEX_TYPE last,
+                                               const int pol)
 {
 
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(
-      RAJA::stripIndexType(first), RAJA::stripIndexType(last));
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first),
+                                         RAJA::stripIndexType(last));
   INDEX_TYPE N = INDEX_TYPE(r1.end() - r1.begin());
 
-  WORKING_RES               working_res;
+  WORKING_RES working_res;
   camp::resources::Resource erased_working_res {working_res};
-  INDEX_TYPE*               working_array;
-  INDEX_TYPE*               check_array;
-  INDEX_TYPE*               test_array;
+  INDEX_TYPE* working_array;
+  INDEX_TYPE* check_array;
+  INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   const INDEX_TYPE rbegin = *r1.begin();
 
@@ -40,18 +39,17 @@ void DynamicForallResourceRangeSegmentTestImpl(
       [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
       { working_array[RAJA::stripIndexType(idx - rbegin)] = idx; });
 
-  working_res.memcpy(
-      check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.memcpy(check_array, working_array,
+                     sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++)
   {
-    ASSERT_EQ(
-        test_array[RAJA::stripIndexType(i)],
-        check_array[RAJA::stripIndexType(i)]);
+    ASSERT_EQ(test_array[RAJA::stripIndexType(i)],
+              check_array[RAJA::stripIndexType(i)]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 
@@ -78,9 +76,9 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
   // If N == 5 host, openmp, device are on
 
   camp::resources::Resource working_res {WORKING_RES::get_default()};
-  bool                      is_on_host =
+  bool is_on_host =
       working_res.get_platform() == camp::resources::Platform::host ? true
-                                                                                         : false;
+                                                                    : false;
 
   if (is_on_host)
   {
@@ -91,8 +89,8 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
     // Loop through policy list
     for (int pol = 0; pol < host_range; ++pol)
     {
-      DynamicForallResourceRangeSegmentTestImpl<
-          INDEX_TYPE, WORKING_RES, POLICY_LIST>(
+      DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES,
+                                                POLICY_LIST>(
           INDEX_TYPE(0), INDEX_TYPE(27), pol);
     }
   }
@@ -105,16 +103,15 @@ TYPED_TEST_P(DynamicForallResourceRangeSegmentTest, RangeSegmentForallResource)
 #endif
     for (int pol = device_start; pol < N; ++pol)
     {
-      DynamicForallResourceRangeSegmentTestImpl<
-          INDEX_TYPE, WORKING_RES, POLICY_LIST>(
+      DynamicForallResourceRangeSegmentTestImpl<INDEX_TYPE, WORKING_RES,
+                                                POLICY_LIST>(
           INDEX_TYPE(0), INDEX_TYPE(27), pol);
     }
   }
 #endif
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    DynamicForallResourceRangeSegmentTest,
-    RangeSegmentForallResource);
+REGISTER_TYPED_TEST_SUITE_P(DynamicForallResourceRangeSegmentTest,
+                            RangeSegmentForallResource);
 
 #endif  // __TEST_BASIC_SHARED_HPP__

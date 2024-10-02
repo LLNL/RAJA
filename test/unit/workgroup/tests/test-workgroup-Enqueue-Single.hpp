@@ -18,19 +18,19 @@
 #include <random>
 
 
-template <
-    typename ExecPolicy,
-    typename OrderPolicy,
-    typename StoragePolicy,
-    typename DispatchTyper,
-    typename IndexType,
-    typename Allocator>
+template <typename ExecPolicy,
+          typename OrderPolicy,
+          typename StoragePolicy,
+          typename DispatchTyper,
+          typename IndexType,
+          typename Allocator>
 struct testWorkGroupEnqueueSingle
 {
   template <typename... Args>
-  void
-  operator()(RAJA::xargs<Args...>, bool do_instantiate, size_t rep, size_t num)
-      const
+  void operator()(RAJA::xargs<Args...>,
+                  bool do_instantiate,
+                  size_t rep,
+                  size_t num) const
   {
     IndexType success = (IndexType)1;
 
@@ -40,15 +40,15 @@ struct testWorkGroupEnqueueSingle
     using DispatchPolicy = typename DispatchTyper::template type<
         camp::list<range_segment, callable>>;
 
-    using WorkPool_type = RAJA::WorkPool<
-        RAJA::WorkGroupPolicy<
-            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
-        IndexType, RAJA::xargs<Args...>, Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<Args...>, Allocator>;
 
-    using WorkGroup_type = RAJA::WorkGroup<
-        RAJA::WorkGroupPolicy<
-            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
-        IndexType, RAJA::xargs<Args...>, Allocator>;
+    using WorkGroup_type =
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<Args...>, Allocator>;
 
     {
       WorkPool_type pool(Allocator {});
@@ -63,8 +63,8 @@ struct testWorkGroupEnqueueSingle
         {
           for (size_t i = 0; i < num; ++i)
           {
-            pool.enqueue(
-                range_segment {0, 1}, callable {&success, IndexType(0)});
+            pool.enqueue(range_segment {0, 1},
+                         callable {&success, IndexType(0)});
           }
 
           ASSERT_EQ(pool.num_loops(), (size_t)num);
@@ -93,12 +93,11 @@ struct testWorkGroupEnqueueSingle
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported types untested
-template <
-    size_t BLOCK_SIZE,
-    bool   Async,
-    typename StoragePolicy,
-    typename IndexType,
-    typename Allocator>
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator>
 struct testWorkGroupEnqueueSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -112,12 +111,11 @@ struct testWorkGroupEnqueueSingle<
   {}
 };
 ///
-template <
-    size_t BLOCK_SIZE,
-    bool   Async,
-    typename StoragePolicy,
-    typename IndexType,
-    typename Allocator>
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator>
 struct testWorkGroupEnqueueSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -151,12 +149,12 @@ TYPED_TEST_P(WorkGroupBasicEnqueueSingleUnitTest, BasicWorkGroupEnqueueSingle)
   using Xargs         = typename camp::at<TypeParam, camp::num<5>>::type;
   using Allocator     = typename camp::at<TypeParam, camp::num<6>>::type;
 
-  testWorkGroupEnqueueSingle<
-      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
-      Allocator> {}(Xargs {}, false, 1, 1);
-  testWorkGroupEnqueueSingle<
-      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
-      Allocator> {}(Xargs {}, true, 1, 1);
+  testWorkGroupEnqueueSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator> {}(
+      Xargs {}, false, 1, 1);
+  testWorkGroupEnqueueSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator> {}(
+      Xargs {}, true, 1, 1);
 }
 
 #endif  //__TEST_WORKGROUP_ENQUEUESINGLE__

@@ -48,15 +48,14 @@ namespace internal
  * Assigns the tile index to param ParamId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    kernel_sync_requirement sync,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<
@@ -128,14 +127,13 @@ struct CudaStatementExecutor<
  * Assigns the tile index to param ParamId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<
@@ -221,14 +219,13 @@ struct CudaStatementExecutor<
  * Assigns the tile index to param ParamId
  * Meets no sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::TileTCount<
@@ -309,13 +306,12 @@ struct CudaStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename TPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct CudaStatementExecutor<
     Data,
     statement::
@@ -330,10 +326,9 @@ struct CudaStatementExecutor<
               RAJA::policy::cuda::cuda_indexer<
                   iteration_mapping::StridedLoop<named_usage::unspecified>,
                   kernel_sync_requirement::none,
-                  cuda::IndexGlobal<
-                      named_dim::x,
-                      named_usage::ignored,
-                      named_usage::ignored>>,
+                  cuda::IndexGlobal<named_dim::x,
+                                    named_usage::ignored,
+                                    named_usage::ignored>>,
               EnclosedStmts...>,
           Types>
 {};

@@ -46,8 +46,8 @@ struct LeftFoldReduce
 {
   RAJA_HOST_DEVICE
   RAJA_INLINE constexpr explicit LeftFoldReduce(
-      T        init = BinaryOp::identity(),
-      BinaryOp op   = BinaryOp {}) noexcept
+      T init      = BinaryOp::identity(),
+      BinaryOp op = BinaryOp {}) noexcept
       : m_op(std::move(op)), m_accumulated_value(std::move(init))
   {}
 
@@ -94,33 +94,31 @@ struct LeftFoldReduce
 
 private:
   BinaryOp m_op;
-  T        m_accumulated_value;
+  T m_accumulated_value;
 };
 
 /*!
     \brief Reduce class that does a reduction with a binary tree.
 */
-template <
-    typename T,
-    typename BinaryOp,
-    typename SizeType     = size_t,
-    SizeType t_num_levels = CHAR_BIT * sizeof(SizeType)>
+template <typename T,
+          typename BinaryOp,
+          typename SizeType     = size_t,
+          SizeType t_num_levels = CHAR_BIT * sizeof(SizeType)>
 struct BinaryTreeReduce
 {
   static_assert(std::is_unsigned<SizeType>::value, "SizeType must be unsigned");
-  static_assert(
-      t_num_levels <= CHAR_BIT * sizeof(SizeType),
-      "SizeType must be "
-      "large enough to "
-      "act at a bitset "
-      "for num_levels");
+  static_assert(t_num_levels <= CHAR_BIT * sizeof(SizeType),
+                "SizeType must be "
+                "large enough to "
+                "act at a bitset "
+                "for num_levels");
 
   static constexpr SizeType num_levels = t_num_levels;
 
   RAJA_HOST_DEVICE
   RAJA_INLINE constexpr explicit BinaryTreeReduce(
-      T        init = BinaryOp::identity(),
-      BinaryOp op   = BinaryOp {}) noexcept
+      T init      = BinaryOp::identity(),
+      BinaryOp op = BinaryOp {}) noexcept
       : m_op(std::move(op))
   {
     combine(std::move(init));
@@ -250,10 +248,10 @@ private:
 
 
 template <typename T, typename BinaryOp>
-using HighAccuracyReduce = std::conditional_t<
-    RAJA::operators::is_fp_associative<T>::value,
-    BinaryTreeReduce<T, BinaryOp>,
-    LeftFoldReduce<T, BinaryOp>>;
+using HighAccuracyReduce =
+    std::conditional_t<RAJA::operators::is_fp_associative<T>::value,
+                       BinaryTreeReduce<T, BinaryOp>,
+                       LeftFoldReduce<T, BinaryOp>>;
 
 
 /*!
@@ -288,8 +286,8 @@ binary_tree_reduce(Iter begin, Iter end, T init, BinaryOp op)
 {
   using std::distance;
   using SizeType = std::make_unsigned_t<decltype(distance(begin, end))>;
-  BinaryTreeReduce<T, BinaryOp, SizeType> reducer(
-      std::move(init), std::move(op));
+  BinaryTreeReduce<T, BinaryOp, SizeType> reducer(std::move(init),
+                                                  std::move(op));
 
   for (; begin != end; ++begin)
   {
@@ -327,25 +325,22 @@ high_accuracy_reduce(Iter begin, Iter end, T init, BinaryOp op)
   using a left fold algorithm in O(N) operations and O(1) extra memory
     see https://en.cppreference.com/w/cpp/algorithm/accumulate
 */
-template <
-    typename Container,
-    typename T        = detail::ContainerVal<Container>,
-    typename BinaryOp = operators::plus<T>>
+template <typename Container,
+          typename T        = detail::ContainerVal<Container>,
+          typename BinaryOp = operators::plus<T>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if_t<T, type_traits::is_range<Container>>
-                accumulate(
-                    Container&& c,
-                    T           init = BinaryOp::identity(),
-                    BinaryOp    op   = BinaryOp {})
+    accumulate(Container&& c,
+               T init      = BinaryOp::identity(),
+               BinaryOp op = BinaryOp {})
 {
   using std::begin;
   using std::end;
-  static_assert(
-      type_traits::is_binary_function<BinaryOp, T, T, T>::value,
-      "BinaryOp must model BinaryFunction");
+  static_assert(type_traits::is_binary_function<BinaryOp, T, T, T>::value,
+                "BinaryOp must model BinaryFunction");
 
-  return detail::left_fold_reduce(
-      begin(c), end(c), std::move(init), std::move(op));
+  return detail::left_fold_reduce(begin(c), end(c), std::move(init),
+                                  std::move(op));
 }
 
 /*!
@@ -353,25 +348,22 @@ RAJA_HOST_DEVICE
   using a binary tree algorithm in O(N) operations and O(lg(N)) extra memory
     see https://en.cppreference.com/w/cpp/algorithm/reduce
 */
-template <
-    typename Container,
-    typename T        = detail::ContainerVal<Container>,
-    typename BinaryOp = operators::plus<T>>
+template <typename Container,
+          typename T        = detail::ContainerVal<Container>,
+          typename BinaryOp = operators::plus<T>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if_t<T, type_traits::is_range<Container>>
-                binary_tree_reduce(
-                    Container&& c,
-                    T           init = BinaryOp::identity(),
-                    BinaryOp    op   = BinaryOp {})
+    binary_tree_reduce(Container&& c,
+                       T init      = BinaryOp::identity(),
+                       BinaryOp op = BinaryOp {})
 {
   using std::begin;
   using std::end;
-  static_assert(
-      type_traits::is_binary_function<BinaryOp, T, T, T>::value,
-      "BinaryOp must model BinaryFunction");
+  static_assert(type_traits::is_binary_function<BinaryOp, T, T, T>::value,
+                "BinaryOp must model BinaryFunction");
 
-  return detail::binary_tree_reduce(
-      begin(c), end(c), std::move(init), std::move(op));
+  return detail::binary_tree_reduce(begin(c), end(c), std::move(init),
+                                    std::move(op));
 }
 
 /*!
@@ -380,25 +372,22 @@ RAJA_HOST_DEVICE
   concern
     see https://en.cppreference.com/w/cpp/algorithm/reduce
 */
-template <
-    typename Container,
-    typename T        = detail::ContainerVal<Container>,
-    typename BinaryOp = operators::plus<T>>
+template <typename Container,
+          typename T        = detail::ContainerVal<Container>,
+          typename BinaryOp = operators::plus<T>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if_t<T, type_traits::is_range<Container>>
-                high_accuracy_reduce(
-                    Container&& c,
-                    T           init = BinaryOp::identity(),
-                    BinaryOp    op   = BinaryOp {})
+    high_accuracy_reduce(Container&& c,
+                         T init      = BinaryOp::identity(),
+                         BinaryOp op = BinaryOp {})
 {
   using std::begin;
   using std::end;
-  static_assert(
-      type_traits::is_binary_function<BinaryOp, T, T, T>::value,
-      "BinaryOp must model BinaryFunction");
+  static_assert(type_traits::is_binary_function<BinaryOp, T, T, T>::value,
+                "BinaryOp must model BinaryFunction");
 
-  return detail::high_accuracy_reduce(
-      begin(c), end(c), std::move(init), std::move(op));
+  return detail::high_accuracy_reduce(begin(c), end(c), std::move(init),
+                                      std::move(op));
 }
 
 }  // namespace RAJA

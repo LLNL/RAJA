@@ -48,8 +48,9 @@ template <typename T, typename TypeList>
 using enable_if_is_any_of = std::enable_if_t<is_any_of<T, TypeList>::value, T>;
 
 template <typename T, typename TypeList>
-using enable_if_is_none_of = std::
-    enable_if_t<::RAJA::concepts::negate<is_any_of<T, TypeList>>::value, T>;
+using enable_if_is_none_of =
+    std::enable_if_t<::RAJA::concepts::negate<is_any_of<T, TypeList>>::value,
+                     T>;
 
 
 }  // namespace util

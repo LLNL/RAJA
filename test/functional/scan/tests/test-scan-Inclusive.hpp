@@ -11,10 +11,10 @@
 #include <numeric>
 
 template <typename OP>
-::testing::AssertionResult check_inclusive(
-    const typename OP::result_type* actual,
-    const typename OP::result_type* original,
-    int                             N)
+::testing::AssertionResult
+check_inclusive(const typename OP::result_type* actual,
+                const typename OP::result_type* original,
+                int N)
 {
   typename OP::result_type init = OP::identity();
   for (int i = 0; i < N; ++i)
@@ -36,7 +36,7 @@ void ScanInclusiveTestImpl(int N)
 {
   using T = typename OP_TYPE::result_type;
 
-  WORKING_RES               res {WORKING_RES::get_default()};
+  WORKING_RES res {WORKING_RES::get_default()};
   camp::resources::Resource working_res {res};
 
   T* work_in;

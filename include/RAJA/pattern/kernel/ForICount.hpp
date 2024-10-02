@@ -39,20 +39,18 @@ namespace statement
  * Assigns the loop index to param ParamId
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename ExecPolicy = camp::nil,
-    typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename ExecPolicy = camp::nil,
+          typename... EnclosedStmts>
 struct ForICount : public internal::ForList,
                    public internal::ForTraitBase<ArgumentId, ExecPolicy>,
                    public internal::Statement<ExecPolicy, EnclosedStmts...>
 {
 
-  static_assert(
-      std::is_base_of<internal::ParamBase, ParamId>::value,
-      "Inappropriate ParamId, ParamId must be of type "
-      "RAJA::Statement::Param< # >");
+  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+                "Inappropriate ParamId, ParamId must be of type "
+                "RAJA::Statement::Param< # >");
   // TODO: add static_assert for valid policy in Pol
   using execution_policy_t = ExecPolicy;
 };
@@ -67,12 +65,11 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename Data,
-    typename Types,
-    typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Data,
+          typename Types,
+          typename... EnclosedStmts>
 struct ForICountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
 {
 
@@ -95,12 +92,11 @@ struct ForICountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
  *
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename ExecPolicy,
-    typename... EnclosedStmts,
-    typename Types>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename ExecPolicy,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::ForICount<ArgumentId, ParamId, ExecPolicy, EnclosedStmts...>,
     Types>
@@ -123,9 +119,8 @@ struct StatementExecutor<
 
     auto r = resources::get_resource<ExecPolicy>::type::get_default();
 
-    forall_impl(
-        r, ExecPolicy {}, TypedRangeSegment<len_t>(0, len), for_wrapper,
-        RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r, ExecPolicy {}, TypedRangeSegment<len_t>(0, len), for_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
   }
 };
 

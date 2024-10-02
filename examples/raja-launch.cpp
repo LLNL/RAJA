@@ -56,37 +56,36 @@ using launch_policy = RAJA::LaunchPolicy<
  */
 using teams_x = RAJA::LoopPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
-    RAJA::omp_parallel_for_exec
+                                       RAJA::omp_parallel_for_exec
 #else
-    RAJA::seq_exec
+                                       RAJA::seq_exec
 #endif
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    RAJA::cuda_block_x_direct
+                                       ,
+                                       RAJA::cuda_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-    ,
-    RAJA::hip_block_x_direct
+                                       ,
+                                       RAJA::hip_block_x_direct
 #endif
-    >;
+                                       >;
 /*
  * Define thread policies.
  * Up to 3 dimension are supported: x,y,z
  */
-using threads_x = RAJA::LoopPolicy<
-    RAJA::seq_exec
+using threads_x = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-    ,
-    RAJA::cuda_thread_x_loop
+                                         ,
+                                         RAJA::cuda_thread_x_loop
 #endif
 #if defined(RAJA_ENABLE_HIP)
-    ,
-    RAJA::hip_thread_x_loop
+                                         ,
+                                         RAJA::hip_thread_x_loop
 #endif
-    >;
+                                         >;
 
 
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   // Resource object for host
@@ -110,8 +109,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // RAJA teams may switch between host and device policies at run time.
   // The loop below will execute through the available backends.
 
-  for (int exec_place = 0; exec_place < num_of_backends; ++exec_place)
-  {
+  for (int exec_place = 0; exec_place < num_of_backends; ++exec_place) {
 
     auto select_cpu_or_gpu = (RAJA::ExecPlace)exec_place;
 
@@ -119,14 +117,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     int N_tri = 5;
 
     int* Ddat = nullptr;
-    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST)
-    {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       Ddat = host_res.allocate<int>(N_tri * N_tri);
     }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
-    {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
       Ddat = device_res.allocate<int>(N_tri * N_tri);
     }
 #endif
@@ -145,58 +141,46 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
      * and is used to perform thread synchronizations within a team.
      */
 
-    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST)
-    {
-      std::cout << "\n Running upper triangular pattern example on the "
-                   "host...\n";
-    }
-    else
-    {
-      std::cout << "\n Running upper triangular pattern example on the "
-                   "device...\n";
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST){
+      std::cout << "\n Running upper triangular pattern example on the host...\n";
+    } else {
+      std::cout << "\n Running upper triangular pattern example on the device...\n";
     }
 
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
-    RAJA::launch<launch_policy>(
-        select_cpu_or_gpu,
-        RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
-        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
-        {
-          RAJA::loop<teams_x>(
-              ctx, RAJA::RangeSegment(0, N_tri),
-              [&](int r)
-              {
-                // Array shared within threads of the same team
-                RAJA_TEAM_SHARED int s_A[1];
+    RAJA::launch<launch_policy>
+      (select_cpu_or_gpu,
+       RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
+       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-                RAJA::loop<threads_x>(
-                    ctx, RAJA::RangeSegment(0, 1),
-                    [&](int c) { s_A[c] = r; });  // loop c
+         RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {
 
-                ctx.teamSync();
+           // Array shared within threads of the same team
+           RAJA_TEAM_SHARED int s_A[1];
 
-                RAJA::loop<threads_x>(
-                    ctx, RAJA::RangeSegment(r, N_tri),
-                    [&](int c)
-                    {
-                      D(r, c) = r * N_tri + c;
-                      printf(
-                          "r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c),
-                          s_A[0]);
-                    });  // loop c
-              });        // loop r
-        });              // outer lambda
+           RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(0, 1), [&](int c) {
+              s_A[c] = r;
+           });  // loop c
 
-    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST)
-    {
+           ctx.teamSync();
+
+           RAJA::loop<threads_x>(ctx, RAJA::RangeSegment(r, N_tri), [&](int c) {
+               D(r, c) = r * N_tri + c;
+               printf("r=%d, c=%d : D=%d : s_A = %d \n", r, c, D(r, c), s_A[0]);
+           });  // loop c
+
+         });  // loop r
+
+       });  // outer lambda
+
+    if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       host_res.deallocate(Ddat);
     }
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
-    {
+    if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
       device_res.deallocate(Ddat);
     }
 #endif

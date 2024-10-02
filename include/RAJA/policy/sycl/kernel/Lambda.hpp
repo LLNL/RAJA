@@ -42,15 +42,13 @@ namespace internal
 
 // SyclStatementExecutor for actually invoking the lambda
 
-template <
-    typename Data,
-    camp::idx_t LambdaIndex,
-    typename... Args,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Lambda<LambdaIndex, Args...>,
-    Types>
+template <typename Data,
+          camp::idx_t LambdaIndex,
+          typename... Args,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::Lambda<LambdaIndex, Args...>,
+                             Types>
 {
 
   static inline RAJA_DEVICE void

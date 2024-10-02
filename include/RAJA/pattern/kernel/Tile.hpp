@@ -51,11 +51,10 @@ namespace statement
  * A RAJA::kernel statement that implements a tiling (or blocking) loop.
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    typename TilePolicy,
-    typename ExecPolicy,
-    typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename TilePolicy,
+          typename ExecPolicy,
+          typename... EnclosedStmts>
 struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...>
 {
   using tile_policy_t = TilePolicy;
@@ -86,11 +85,10 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    typename Data,
-    typename Types,
-    typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename Data,
+          typename Types,
+          typename... EnclosedStmts>
 struct TileWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
 {
 
@@ -125,7 +123,7 @@ struct IterableTiler
   {
     // NOTE: this must be held by value for NVCC support, *even on the host*
     const IterableTiler itiler;
-    const Index_type    block_id;
+    const Index_type block_id;
 
   public:
     using value_type        = iterate;
@@ -164,9 +162,9 @@ struct IterableTiler
     RAJA_HOST_DEVICE
     RAJA_INLINE iterator operator+(const difference_type& rhs) const
     {
-      return iterator(
-          itiler, block_id + rhs >= itiler.num_blocks ? itiler.num_blocks
-                                                      : block_id + rhs);
+      return iterator(itiler, block_id + rhs >= itiler.num_blocks
+                                  ? itiler.num_blocks
+                                  : block_id + rhs);
     }
 
     RAJA_HOST_DEVICE
@@ -213,7 +211,7 @@ struct IterableTiler
   RAJA_INLINE
   iterator end() const { return iterator(*this, num_blocks); }
 
-  value_type  it;
+  value_type it;
   camp::idx_t block_size;
   camp::idx_t num_blocks;
   camp::idx_t dist;
@@ -224,12 +222,11 @@ struct IterableTiler
  *
  *
  */
-template <
-    camp::idx_t ArgumentId,
-    camp::idx_t ChunkSize,
-    typename EPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <camp::idx_t ArgumentId,
+          camp::idx_t ChunkSize,
+          typename EPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::Tile<ArgumentId, tile_fixed<ChunkSize>, EPol, EnclosedStmts...>,
     Types>
@@ -253,20 +250,18 @@ struct StatementExecutor<
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(
-        r, EPol {}, tiled_iterable, tile_wrapper,
-        RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r, EPol {}, tiled_iterable, tile_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
   }
 };
 
-template <
-    camp::idx_t ArgumentId,
-    typename EPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <camp::idx_t ArgumentId,
+          typename EPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::
         Tile<ArgumentId, tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>,
@@ -293,9 +288,8 @@ struct StatementExecutor<
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(
-        r, EPol {}, tiled_iterable, tile_wrapper,
-        RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r, EPol {}, tiled_iterable, tile_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;

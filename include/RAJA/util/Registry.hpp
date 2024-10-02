@@ -18,20 +18,19 @@ namespace util
 template <typename T>
 class RegistryEntry
 {
-  std::string        Name, Desc;
+  std::string Name, Desc;
   std::shared_ptr<T> object;
 
 public:
-  RegistryEntry(
-      const std::string& N,
-      const std::string& D,
-      std::shared_ptr<T> (*C)())
+  RegistryEntry(const std::string& N,
+                const std::string& D,
+                std::shared_ptr<T> (*C)())
       : Name(N), Desc(D), object(C())
   {}
 
   const std::string& getName() const { return Name; }
   const std::string& getDesc() const { return Desc; }
-  T*                 get() const { return object.get(); }
+  T* get() const { return object.get(); }
 };
 
 /// A global registry used in conjunction with static constructors to make
@@ -61,7 +60,7 @@ public:
     friend class iterator;
     friend Registry<T>;
 
-    node*        Next;
+    node* Next;
     const entry& Val;
 
   public:
@@ -86,8 +85,8 @@ public:
   public:
     explicit iterator(const node* N) : Cur(N) {}
 
-    bool      operator==(const iterator& That) const { return Cur == That.Cur; }
-    bool      operator!=(const iterator& That) const { return Cur != That.Cur; }
+    bool operator==(const iterator& That) const { return Cur == That.Cur; }
+    bool operator!=(const iterator& That) const { return Cur != That.Cur; }
     iterator& operator++()
     {
       Cur = Cur->Next;
@@ -100,14 +99,14 @@ public:
   // begin is not defined here in order to avoid usage of an undefined static
   // data member, instead it's instantiated by RAJA_INSTANTIATE_REGISTRY.
   static RAJASHAREDDLL_API iterator begin();
-  static iterator                   end() { return iterator(nullptr); }
+  static iterator end() { return iterator(nullptr); }
 
   /// A static registration template.
   template <typename V>
   class add
   {
     entry Entry;
-    node  Node;
+    node Node;
 
     static std::shared_ptr<T> CtorFn() { return std::make_shared<V>(); }
 

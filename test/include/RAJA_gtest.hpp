@@ -34,9 +34,8 @@
 
 #define GPU_TEST_F(test_fixture, test_name)                                    \
   static void gpu_test_f_##test_fixture##_##test_name();                       \
-  GTEST_TEST_(                                                                 \
-      test_fixture, test_name, test_fixture,                                   \
-      ::testing::internal::GetTypeId<test_fixture>())                          \
+  GTEST_TEST_(test_fixture, test_name, test_fixture,                           \
+              ::testing::internal::GetTypeId<test_fixture>())                  \
   {                                                                            \
     gpu_test_f_##test_fixture##_##test_name();                                 \
   }                                                                            \
@@ -70,11 +69,11 @@
       return 0;                                                                \
     }                                                                          \
     static int gtest_registering_dummy_ GTEST_ATTRIBUTE_UNUSED_;               \
-    GTEST_DISALLOW_COPY_AND_ASSIGN_(                                           \
-        GTEST_TEST_CLASS_NAME_(test_case_name, test_name));                    \
+    GTEST_DISALLOW_COPY_AND_ASSIGN_(GTEST_TEST_CLASS_NAME_(test_case_name,     \
+                                                           test_name));        \
   };                                                                           \
-  int GTEST_TEST_CLASS_NAME_(                                                  \
-      test_case_name, test_name)::gtest_registering_dummy_ =                   \
+  int GTEST_TEST_CLASS_NAME_(test_case_name,                                   \
+                             test_name)::gtest_registering_dummy_ =            \
       GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::AddToRegistry();      \
   template <typename Invocable>                                                \
   static void gtest_gpu_##test_case_name##_##test_name(Invocable&& GetParam)
@@ -87,7 +86,7 @@
     {                                                                          \
     private:                                                                   \
       typedef SuiteName<gtest_TypeParam_> TestFixture;                         \
-      typedef gtest_TypeParam_            TypeParam;                           \
+      typedef gtest_TypeParam_ TypeParam;                                      \
                                                                                \
     public:                                                                    \
       void TestBody() override;                                                \

@@ -35,9 +35,9 @@ using SequentialPluginKernelExecPols = camp::list<
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPPluginKernelExecPols = camp::list<
-    RAJA::KernelPolicy<
-        RAJA::statement::
-            For<0, RAJA::omp_parallel_for_exec, RAJA::statement::Lambda<0>>>,
+    RAJA::KernelPolicy<RAJA::statement::For<0,
+                                            RAJA::omp_parallel_for_exec,
+                                            RAJA::statement::Lambda<0>>>,
     RAJA::KernelPolicy<RAJA::statement::Tile<
         0,
         RAJA::tile_fixed<2>,
@@ -46,11 +46,10 @@ using OpenMPPluginKernelExecPols = camp::list<
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetPluginKernelExecPols =
-    camp::list<RAJA::KernelPolicy<RAJA::statement::For<
-        0,
-        RAJA::omp_target_parallel_for_exec<64>,
-        RAJA::statement::Lambda<0>>>>;
+using OpenMPTargetPluginKernelExecPols = camp::list<RAJA::KernelPolicy<
+    RAJA::statement::For<0,
+                         RAJA::omp_target_parallel_for_exec<64>,
+                         RAJA::statement::Lambda<0>>>>;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -74,10 +73,9 @@ using CudaPluginKernelExecPols = camp::list<
             0,
             RAJA::tile_fixed<128>,
             RAJA::cuda_block_x_direct,
-            RAJA::statement::For<
-                0,
-                RAJA::cuda_thread_x_direct,
-                RAJA::statement::Lambda<0>>>>>>;
+            RAJA::statement::For<0,
+                                 RAJA::cuda_thread_x_direct,
+                                 RAJA::statement::Lambda<0>>>>>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
@@ -101,10 +99,9 @@ using HipPluginKernelExecPols = camp::list<
             0,
             RAJA::tile_fixed<128>,
             RAJA::hip_block_x_direct,
-            RAJA::statement::For<
-                0,
-                RAJA::hip_thread_x_direct,
-                RAJA::statement::Lambda<0>>>>>>;
+            RAJA::statement::For<0,
+                                 RAJA::hip_thread_x_direct,
+                                 RAJA::statement::Lambda<0>>>>>>;
 #endif
 
 #endif  // __RAJA_test_plugin_kernelpol_HPP__

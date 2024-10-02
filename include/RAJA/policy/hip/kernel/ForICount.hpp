@@ -37,14 +37,13 @@ namespace internal
  * Assigns the loop index to param ParamId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename IndexMapper,
-    kernel_sync_requirement sync,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::ForICount<
@@ -66,11 +65,11 @@ struct HipStatementExecutor<
 
   using Base = HipStatementExecutor<
       Data,
-      statement::For<
-          ArgumentId,
-          RAJA::policy::hip::
-              hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-          EnclosedStmts...>,
+      statement::For<ArgumentId,
+                     RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
+                                                    sync,
+                                                    IndexMapper>,
+                     EnclosedStmts...>,
       Types>;
 
   using typename Base::diff_t;
@@ -102,13 +101,12 @@ struct HipStatementExecutor<
  * Assigns the loop index to param ParamId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::ForICount<
@@ -180,13 +178,12 @@ struct HipStatementExecutor<
  * Assigns the loop index to param ParamId
  * Meets no sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::ForICount<
@@ -254,12 +251,11 @@ struct HipStatementExecutor<
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>,
@@ -271,10 +267,9 @@ struct HipStatementExecutor<
               RAJA::policy::hip::hip_indexer<
                   iteration_mapping::StridedLoop<named_usage::unspecified>,
                   kernel_sync_requirement::none,
-                  hip::IndexGlobal<
-                      named_dim::x,
-                      named_usage::ignored,
-                      named_usage::ignored>>,
+                  hip::IndexGlobal<named_dim::x,
+                                   named_usage::ignored,
+                                   named_usage::ignored>>,
               EnclosedStmts...>,
           Types>
 {};
@@ -285,35 +280,33 @@ struct HipStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<
-        ArgumentId,
-        ParamId,
-        RAJA::hip_warp_masked_direct<Mask>,
-        EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::hip_warp_masked_direct<Mask>,
+                         EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
           Data,
-          statement::For<
-              ArgumentId,
-              RAJA::hip_warp_masked_direct<Mask>,
-              EnclosedStmts...>,
+          statement::For<ArgumentId,
+                         RAJA::hip_warp_masked_direct<Mask>,
+                         EnclosedStmts...>,
           Types>
 {
 
-  using Base = HipStatementExecutor<
-      Data,
-      statement::
-          For<ArgumentId, RAJA::hip_warp_masked_direct<Mask>, EnclosedStmts...>,
-      Types>;
+  using Base =
+      HipStatementExecutor<Data,
+                           statement::For<ArgumentId,
+                                          RAJA::hip_warp_masked_direct<Mask>,
+                                          EnclosedStmts...>,
+                           Types>;
 
   using typename Base::diff_t;
 
@@ -327,9 +320,9 @@ struct HipStatementExecutor<
 
   using mask_t = Mask;
 
-  static_assert(
-      mask_t::max_masked_size <= RAJA::policy::hip::device_constants.WARP_SIZE,
-      "BitMask is too large for HIP warp size");
+  static_assert(mask_t::max_masked_size <=
+                    RAJA::policy::hip::device_constants.WARP_SIZE,
+                "BitMask is too large for HIP warp size");
 
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
@@ -352,35 +345,33 @@ struct HipStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<
-        ArgumentId,
-        ParamId,
-        RAJA::hip_warp_masked_loop<Mask>,
-        EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::hip_warp_masked_loop<Mask>,
+                         EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
           Data,
-          statement::For<
-              ArgumentId,
-              RAJA::hip_warp_masked_loop<Mask>,
-              EnclosedStmts...>,
+          statement::For<ArgumentId,
+                         RAJA::hip_warp_masked_loop<Mask>,
+                         EnclosedStmts...>,
           Types>
 {
 
-  using Base = HipStatementExecutor<
-      Data,
-      statement::
-          For<ArgumentId, RAJA::hip_warp_masked_loop<Mask>, EnclosedStmts...>,
-      Types>;
+  using Base =
+      HipStatementExecutor<Data,
+                           statement::For<ArgumentId,
+                                          RAJA::hip_warp_masked_loop<Mask>,
+                                          EnclosedStmts...>,
+                           Types>;
 
   using typename Base::diff_t;
 
@@ -394,9 +385,9 @@ struct HipStatementExecutor<
 
   using mask_t = Mask;
 
-  static_assert(
-      mask_t::max_masked_size <= RAJA::policy::hip::device_constants.WARP_SIZE,
-      "BitMask is too large for HIP warp size");
+  static_assert(mask_t::max_masked_size <=
+                    RAJA::policy::hip::device_constants.WARP_SIZE,
+                "BitMask is too large for HIP warp size");
 
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
@@ -430,37 +421,33 @@ struct HipStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<
-        ArgumentId,
-        ParamId,
-        RAJA::hip_thread_masked_direct<Mask>,
-        EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::hip_thread_masked_direct<Mask>,
+                         EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
           Data,
-          statement::For<
-              ArgumentId,
-              RAJA::hip_thread_masked_direct<Mask>,
-              EnclosedStmts...>,
+          statement::For<ArgumentId,
+                         RAJA::hip_thread_masked_direct<Mask>,
+                         EnclosedStmts...>,
           Types>
 {
 
-  using Base = HipStatementExecutor<
-      Data,
-      statement::For<
-          ArgumentId,
-          RAJA::hip_thread_masked_direct<Mask>,
-          EnclosedStmts...>,
-      Types>;
+  using Base =
+      HipStatementExecutor<Data,
+                           statement::For<ArgumentId,
+                                          RAJA::hip_thread_masked_direct<Mask>,
+                                          EnclosedStmts...>,
+                           Types>;
 
   using typename Base::diff_t;
 
@@ -495,35 +482,33 @@ struct HipStatementExecutor<
  * Mapping directly from a warp lane
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename Mask,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Mask,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::ForICount<
-        ArgumentId,
-        ParamId,
-        RAJA::hip_thread_masked_loop<Mask>,
-        EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::hip_thread_masked_loop<Mask>,
+                         EnclosedStmts...>,
     Types>
     : public HipStatementExecutor<
           Data,
-          statement::For<
-              ArgumentId,
-              RAJA::hip_thread_masked_loop<Mask>,
-              EnclosedStmts...>,
+          statement::For<ArgumentId,
+                         RAJA::hip_thread_masked_loop<Mask>,
+                         EnclosedStmts...>,
           Types>
 {
 
-  using Base = HipStatementExecutor<
-      Data,
-      statement::
-          For<ArgumentId, RAJA::hip_thread_masked_loop<Mask>, EnclosedStmts...>,
-      Types>;
+  using Base =
+      HipStatementExecutor<Data,
+                           statement::For<ArgumentId,
+                                          RAJA::hip_thread_masked_loop<Mask>,
+                                          EnclosedStmts...>,
+                           Types>;
 
   using typename Base::diff_t;
 

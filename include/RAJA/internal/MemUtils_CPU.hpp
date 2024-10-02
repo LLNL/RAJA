@@ -44,7 +44,7 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #if defined(RAJA_HAVE_POSIX_MEMALIGN)
   // posix_memalign available
   void* ret = nullptr;
-  int   err = posix_memalign(&ret, alignment, size);
+  int err   = posix_memalign(&ret, alignment, size);
   return err ? nullptr : ret;
 #elif defined(RAJA_HAVE_ALIGNED_ALLOC)
   return std::aligned_alloc(alignment, size);
@@ -55,8 +55,8 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #else
   char* mem = (char*)malloc(size + alignment + sizeof(void*));
   if (nullptr == mem) return nullptr;
-  void** ptr =
-      (void**)((std::uintptr_t)(mem + alignment + sizeof(void*)) & ~(alignment - 1));
+  void** ptr = (void**)((std::uintptr_t)(mem + alignment + sizeof(void*)) &
+                        ~(alignment - 1));
   // Store the original address one position behind what we give the user.
   ptr[-1] = mem;
   return ptr;

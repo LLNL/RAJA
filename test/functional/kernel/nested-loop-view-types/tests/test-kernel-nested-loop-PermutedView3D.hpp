@@ -10,14 +10,13 @@
 
 
 template <typename IDX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
-void KernelPermutedView3DTestImpl(
-    std::array<IDX_TYPE, 3>    dim,
-    std::array<RAJA::idx_t, 3> perm)
+void KernelPermutedView3DTestImpl(std::array<IDX_TYPE, 3> dim,
+                                  std::array<RAJA::idx_t, 3> perm)
 {
   camp::resources::Resource working_res {WORKING_RES::get_default()};
-  IDX_TYPE*                 working_array;
-  IDX_TYPE*                 check_array;
-  IDX_TYPE*                 test_array;
+  IDX_TYPE* working_array;
+  IDX_TYPE* check_array;
+  IDX_TYPE* test_array;
 
   std::array<RAJA::idx_t, 3> dim_strip {
       {static_cast<RAJA::idx_t>(RAJA::stripIndexType(dim.at(0))),
@@ -25,8 +24,8 @@ void KernelPermutedView3DTestImpl(
        static_cast<RAJA::idx_t>(RAJA::stripIndexType(dim.at(2)))}};
   RAJA::idx_t N = dim_strip.at(0) * dim_strip.at(1) * dim_strip.at(2);
 
-  allocateForallTestData<IDX_TYPE>(
-      N, working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<IDX_TYPE>(N, working_res, &working_array, &check_array,
+                                   &test_array);
 
   memset(static_cast<void*>(test_array), 0, sizeof(IDX_TYPE) * N);
 
@@ -42,10 +41,9 @@ void KernelPermutedView3DTestImpl(
   RAJA::View<IDX_TYPE, RAJA::Layout<3, int>> view(working_array, layout);
 
   RAJA::kernel<EXEC_POLICY>(
-      RAJA::make_tuple(
-          RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(0)),
-          RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(1)),
-          RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(2))),
+      RAJA::make_tuple(RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(0)),
+                       RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(1)),
+                       RAJA::TypedRangeSegment<IDX_TYPE>(0, dim_strip.at(2))),
       [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE j, IDX_TYPE k)
       {
         int val       = RAJA::stripIndexType(layout(i, j, k)) % mod_val;
@@ -59,8 +57,8 @@ void KernelPermutedView3DTestImpl(
     ASSERT_EQ(test_array[ii], check_array[ii]);
   }
 
-  deallocateForallTestData<IDX_TYPE>(
-      working_res, working_array, check_array, test_array);
+  deallocateForallTestData<IDX_TYPE>(working_res, working_array, check_array,
+                                     test_array);
 }
 
 
@@ -81,9 +79,9 @@ TYPED_TEST_P(KernelNestedLoopPermutedView3DTest, PermutedView3DKernelTest)
   //
   // Square view
   //
-  std::array<IDX_TYPE, 3> dim_s {
-      {static_cast<IDX_TYPE>(21), static_cast<IDX_TYPE>(21),
-       static_cast<IDX_TYPE>(21)}};
+  std::array<IDX_TYPE, 3> dim_s {{static_cast<IDX_TYPE>(21),
+                                  static_cast<IDX_TYPE>(21),
+                                  static_cast<IDX_TYPE>(21)}};
   KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim_s, perm);
 
   perm = std::array<RAJA::idx_t, 3> {{1, 2, 0}};
@@ -96,23 +94,22 @@ TYPED_TEST_P(KernelNestedLoopPermutedView3DTest, PermutedView3DKernelTest)
   //
   // Non-square view
   //
-  std::array<IDX_TYPE, 3> dim_ns {
-      {static_cast<IDX_TYPE>(15), static_cast<IDX_TYPE>(24),
-       static_cast<IDX_TYPE>(17)}};
-  KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim_ns, perm);
+  std::array<IDX_TYPE, 3> dim_ns {{static_cast<IDX_TYPE>(15),
+                                   static_cast<IDX_TYPE>(24),
+                                   static_cast<IDX_TYPE>(17)}};
+  KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim_ns,
+                                                                   perm);
 
   perm = std::array<RAJA::idx_t, 3> {{1, 2, 0}};
-  KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim_ns, perm);
+  KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim_ns,
+                                                                   perm);
 
   perm = std::array<RAJA::idx_t, 3> {{2, 0, 1}};
-  KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(
-      dim_ns, perm);
+  KernelPermutedView3DTestImpl<IDX_TYPE, WORKING_RES, EXEC_POLICY>(dim_ns,
+                                                                   perm);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelNestedLoopPermutedView3DTest,
-    PermutedView3DKernelTest);
+REGISTER_TYPED_TEST_SUITE_P(KernelNestedLoopPermutedView3DTest,
+                            PermutedView3DKernelTest);
 
 #endif  // __TEST_KERNEL_NESTEDLOOP_PERMUTEDVIEW3D_HPP_

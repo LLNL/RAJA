@@ -37,19 +37,17 @@ namespace internal
  * Mapping directly to indicies
  * Assigns the global index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    int         Dim,
-    int         Local_Size,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int Dim,
+          int Local_Size,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<
-        ArgumentId,
-        RAJA::sycl_global_012<Dim, Local_Size>,
-        EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::sycl_global_012<Dim, Local_Size>,
+                   EnclosedStmts...>,
     Types>
 {
 
@@ -109,17 +107,16 @@ struct SyclStatementExecutor<
  * Mapping directly to indicies
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    int         Dim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::sycl_group_012_direct<Dim>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int Dim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_group_012_direct<Dim>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -176,17 +173,16 @@ struct SyclStatementExecutor<
  * each group in dims.
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    int         Dim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::sycl_group_012_loop<Dim>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int Dim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_group_012_loop<Dim>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -247,17 +243,16 @@ struct SyclStatementExecutor<
  * Mapping directly to indicies
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    int         Dim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::sycl_local_012_direct<Dim>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int Dim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_local_012_direct<Dim>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -314,17 +309,16 @@ struct SyclStatementExecutor<
  * for each item in dim.
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    int         Dim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::
-        For<ArgumentId, RAJA::sycl_local_012_loop<Dim>, EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int Dim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_local_012_loop<Dim>,
+                                            EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -395,12 +389,11 @@ struct SyclStatementExecutor<
  * Mapping directly to indicies
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    int         Local_Size,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          int Local_Size,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
     statement::For<ArgumentId, RAJA::sycl_exec<Local_Size>, EnclosedStmts...>,
@@ -455,11 +448,10 @@ struct SyclStatementExecutor<
  * This is specialized since it need to execute the loop immediately.
  * Assigns the loop index to offset ArgumentId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
     statement::For<ArgumentId, seq_exec, EnclosedStmts...>,

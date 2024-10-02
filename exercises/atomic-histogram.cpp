@@ -19,9 +19,9 @@
  *
  *  In this exercise, you will use use RAJA atomic operations to compute
  *  an array which represents a histogram of values in another array.
- *  Given an array of length N containing integers in the interval [0, M),
- *  you will compute entries in an array 'hist' of length M. Each entry
- *  hist[i] in the histogram array will equal the number of occurrences of
+ *  Given an array of length N containing integers in the interval [0, M), 
+ *  you will compute entries in an array 'hist' of length M. Each entry 
+ *  hist[i] in the histogram array will equal the number of occurrences of 
  *  the value 'i' in the orginal array.
  *
  *  This file contains sequential and OpenMP variants of the histogram
@@ -41,11 +41,11 @@
   Specifies the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-// const int CUDA_BLOCK_SIZE = 256;
+//const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-// const int HIP_BLOCK_SIZE = 256;
+//const int HIP_BLOCK_SIZE = 256;
 #endif
 
 //
@@ -62,7 +62,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //
   // Define array bounds and initialize array to compute histogram of values
-  // on.
+  // on. 
   //
 
   // _array_atomic_histogram_start
@@ -70,35 +70,33 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 100000;
 
   int* array = memoryManager::allocate<int>(N);
-  int* hist  = memoryManager::allocate<int>(M);
+  int* hist = memoryManager::allocate<int>(M);
 
-  for (int i = 0; i < N; ++i)
-  {
+  for (int i = 0; i < N; ++i) { 
     array[i] = rand() % M;
   }
   // _array_atomic_histogram_end
 
   int* hist_ref = memoryManager::allocate<int>(M);
 
-  //----------------------------------------------------------------------------//
-  // C-style sequential variant establishes reference solution to compare with.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// C-style sequential variant establishes reference solution to compare with.
+//----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running C-style sequential historgram...\n";
 
   std::memset(hist_ref, 0, M * sizeof(int));
 
-  for (int i = 0; i < N; ++i)
-  {
-    hist_ref[array[i]]++;
+  for (int i = 0; i < N; ++i) {
+      hist_ref[ array[i] ]++;
   }
 
-  // printArray(hist_ref, M);
+//printArray(hist_ref, M);
 
 
-  //----------------------------------------------------------------------------//
-  // C-style OpenMP multithreading variant.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// C-style OpenMP multithreading variant.
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -106,51 +104,50 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::memset(hist, 0, M * sizeof(int));
 
-#pragma omp parallel for
-  for (int i = 0; i < N; ++i)
-  {
-#pragma omp atomic
-    hist[array[i]]++;
+  #pragma omp parallel for
+  for (int i = 0; i < N; ++i) {
+      #pragma omp atomic
+      hist[ array[i] ]++;
   }
 
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
-#endif
+#endif 
 
 
-  //----------------------------------------------------------------------------//
-  // RAJA::seq_exec policy enforces strictly sequential execution.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA::seq_exec policy enforces strictly sequential execution.
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential atomic histogram...\n";
 
   std::memset(hist, 0, M * sizeof(int));
 
   // _range_atomic_histogram_start
-  // RAJA::TypedRangeSegment<int> array_range(0,N);
+  //RAJA::TypedRangeSegment<int> array_range(0,N);
   // _range_atomic_histogram_end
 
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
-  ///           method with RAJA::seq_exec execution policy type and a
+  ///           method with RAJA::seq_exec execution policy type and a 
   ///           RAJA::atomicAdd operation with RAJA::seq_atomic policy.
   ///
   ///           You will need to uncomment the range segment definition
   ///           above to use it in the kernel.
   ///
-  // RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
-  // });
+  //RAJA::forall<RAJA::seq_exec>(array_range, [=](int i) {
+  //});
 
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 
-  //----------------------------------------------------------------------------//
-  // RAJA omp_atomic policy is used with the RAJA OpenMP execution policy.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA omp_atomic policy is used with the RAJA OpenMP execution policy.
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -162,44 +159,44 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
-  ///           method with RAJA::omp_parallel_for_exec execution policy type
+  ///           method with RAJA::omp_parallel_for_exec execution policy type 
   ///           and a RAJA::atomicAdd operation with RAJA::omp_atomic policy.
-  ///
+  /// 
 
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 #endif
 
 
-  //----------------------------------------------------------------------------//
-  // RAJA auto_atomic policy can also be used with the RAJA OpenMP
-  // execution policy.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA auto_atomic policy can also be used with the RAJA OpenMP 
+// execution policy. 
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
   std::cout << "\n Running RAJA OpenMP histogram with auto atomic policy...\n";
-
+  
   std::memset(hist, 0, M * sizeof(int));
 
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement the atomic histogram kernel using a RAJA::forall
-  ///           method with RAJA::omp_parallel_for_exec execution policy type
+  ///           method with RAJA::omp_parallel_for_exec execution policy type 
   ///           and a RAJA::atomicAdd operation with RAJA::auto_atomic policy.
   ///
 
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 #endif
 
 
-  //----------------------------------------------------------------------------//
-  // RAJA cuda_atomic policy is used with the RAJA CUDA execution policy.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA cuda_atomic policy is used with the RAJA CUDA execution policy.
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -219,20 +216,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
 
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 #endif
 
 
-  //----------------------------------------------------------------------------//
-  // RAJA auto_atomic policy can also be used with the RAJA CUDA
-  // execution policy.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA auto_atomic policy can also be used with the RAJA CUDA 
+// execution policy.
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
   std::cout << "\n Running RAJA CUDA histogram with auto atomic policy...\n";
-
+ 
   std::memset(hist, 0, M * sizeof(int));
 
   ///
@@ -245,15 +242,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here.
   ///
-
+   
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 #endif
 
-  //----------------------------------------------------------------------------//
-  // RAJA hip_atomic policy is used with the RAJA HIP execution policy.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA hip_atomic policy is used with the RAJA HIP execution policy.
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -273,20 +270,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
 
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 #endif
 
 
-  //----------------------------------------------------------------------------//
-  // RAJA auto_atomic policy can also be used with the RAJA HIP
-  // execution policy.
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+// RAJA auto_atomic policy can also be used with the RAJA HIP 
+// execution policy.
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
 
   std::cout << "\n Running RAJA HIP histogram with auto atomic policy...\n";
-
+ 
   std::memset(hist, 0, M * sizeof(int));
 
   ///
@@ -299,9 +296,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           NOTE: You will need to uncomment 'HIP_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here.
   ///
-
+   
   checkResult(hist, hist_ref, M);
-  // printArray(hist, M);
+//printArray(hist, M);
 
 #endif
 
@@ -324,19 +321,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 void checkResult(int* hist, int* hist_ref, int len)
 {
   bool correct = true;
-  for (int i = 0; i < len; i++)
-  {
-    if (correct && hist[i] != hist_ref[i])
-    {
-      correct = false;
-    }
+  for (int i = 0; i < len; i++) {
+    if ( correct && hist[i] != hist_ref[i] ) { correct = false; }
   }
-  if (correct)
-  {
+  if ( correct ) {
     std::cout << "\n\t result -- PASS\n";
-  }
-  else
-  {
+  } else {
     std::cout << "\n\t result -- FAIL\n";
   }
 }
@@ -347,8 +337,7 @@ void checkResult(int* hist, int* hist_ref, int len)
 void printArray(int* v, int len)
 {
   std::cout << std::endl;
-  for (int i = 0; i < len; i++)
-  {
+  for (int i = 0; i < len; i++) {
     std::cout << "v[" << i << "] = " << v[i] << std::endl;
   }
   std::cout << std::endl;

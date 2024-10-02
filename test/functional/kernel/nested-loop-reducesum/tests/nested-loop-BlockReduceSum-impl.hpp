@@ -10,29 +10,26 @@
 
 #include <numeric>
 
-template <
-    typename EXEC_POL,
-    bool USE_RESOURCE,
-    typename SEGMENTS,
-    typename PARAMS,
-    typename WORKING_RES,
-    typename... Args>
-typename std::enable_if<USE_RESOURCE>::type call_kernel(
-    SEGMENTS&&  segs,
-    PARAMS&&    params,
-    WORKING_RES work_res,
-    Args&&... args)
+template <typename EXEC_POL,
+          bool USE_RESOURCE,
+          typename SEGMENTS,
+          typename PARAMS,
+          typename WORKING_RES,
+          typename... Args>
+typename std::enable_if<USE_RESOURCE>::type call_kernel(SEGMENTS&& segs,
+                                                        PARAMS&& params,
+                                                        WORKING_RES work_res,
+                                                        Args&&... args)
 {
   RAJA::kernel_param_resource<EXEC_POL>(segs, params, work_res, args...);
 }
 
-template <
-    typename EXEC_POL,
-    bool USE_RESOURCE,
-    typename SEGMENTS,
-    typename PARAMS,
-    typename WORKING_RES,
-    typename... Args>
+template <typename EXEC_POL,
+          bool USE_RESOURCE,
+          typename SEGMENTS,
+          typename PARAMS,
+          typename WORKING_RES,
+          typename... Args>
 typename std::enable_if<!USE_RESOURCE>::type
 call_kernel(SEGMENTS&& segs, PARAMS&& params, WORKING_RES, Args&&... args)
 {
@@ -52,15 +49,14 @@ using BlockReduceSumSupportedLoopTypeList =
 // Nest loop trip count test.
 //
 //
-template <
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POL,
-    bool USE_RESOURCE>
+template <typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POL,
+          bool USE_RESOURCE>
 void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
 {
 
-  WORKING_RES               work_res {WORKING_RES::get_default()};
+  WORKING_RES work_res {WORKING_RES::get_default()};
   camp::resources::Resource erased_work_res {work_res};
 
   // Allocate Tests Data
@@ -68,16 +64,16 @@ void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
   int* check_array;
   int* test_array;
 
-  allocateForallTestData<int>(
-      N, erased_work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<int>(N, erased_work_res, &work_array, &check_array,
+                              &test_array);
 
   RAJA::TypedRangeSegment<int> range(0, N);
 
   // Initialize Data
   std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
 
-  erased_work_res.memcpy(
-      work_array, test_array, sizeof(int) * RAJA::stripIndexType(N));
+  erased_work_res.memcpy(work_array, test_array,
+                         sizeof(int) * RAJA::stripIndexType(N));
 
   RAJA::ReduceSum<REDUCE_POL, int> worksum(0);
 
@@ -105,18 +101,17 @@ void KernelNestedLoopTest(const DEPTH_1_REDUCESUM&, const int N)
 
   ASSERT_EQ(worksum.get(), N * (N - 1) / 2);
 
-  deallocateForallTestData<int>(
-      erased_work_res, work_array, check_array, test_array);
+  deallocateForallTestData<int>(erased_work_res, work_array, check_array,
+                                test_array);
 }
 
 // DEVICE_ and DEPTH_1_REDUCESUM execution policies use the above
 // DEPTH_1_REDUCESUM test.
-template <
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POL,
-    bool USE_RESOURCE,
-    typename... Args>
+template <typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POL,
+          bool USE_RESOURCE,
+          typename... Args>
 void KernelNestedLoopTest(const DEVICE_DEPTH_1_REDUCESUM&, Args... args)
 {
   KernelNestedLoopTest<WORKING_RES, EXEC_POLICY, REDUCE_POL, USE_RESOURCE>(
@@ -151,10 +146,9 @@ template <typename REDUCE_POL, typename POLICY_DATA>
 struct BlockNestedLoopExec<DEVICE_DEPTH_1_REDUCESUM, REDUCE_POL, POLICY_DATA>
 {
   using type = RAJA::KernelPolicy<RAJA::statement::DEVICE_KERNEL<
-      RAJA::statement::For<
-          0,
-          typename camp::at<POLICY_DATA, camp::num<0>>::type,
-          RAJA::statement::Lambda<1>>,
+      RAJA::statement::For<0,
+                           typename camp::at<POLICY_DATA, camp::num<0>>::type,
+                           RAJA::statement::Lambda<1>>,
       RAJA::statement::Reduce<
           typename camp::at<POLICY_DATA, camp::num<1>>::type,
           RAJA::operators::plus,

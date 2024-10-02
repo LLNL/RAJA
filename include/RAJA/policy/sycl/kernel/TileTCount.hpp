@@ -47,13 +47,12 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename TPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
     statement::
@@ -111,41 +110,37 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    int         BlockDim,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<
-        ArgumentId,
-        ParamId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_group_012_direct<BlockDim>,
-        EnclosedStmts...>,
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_direct<BlockDim>,
+                          EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::Tile<
-              ArgumentId,
-              RAJA::tile_fixed<chunk_size>,
-              sycl_group_012_direct<BlockDim>,
-              EnclosedStmts...>,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_direct<BlockDim>,
+                          EnclosedStmts...>,
           Types>
 {
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::Tile<
-          ArgumentId,
-          RAJA::tile_fixed<chunk_size>,
-          sycl_group_012_direct<BlockDim>,
-          EnclosedStmts...>,
-      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_group_012_direct<BlockDim>,
+                                            EnclosedStmts...>,
+                            Types>;
 
   using typename Base::diff_t;
   using typename Base::enclosed_stmts_t;
@@ -189,41 +184,37 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    int         BlockDim,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<
-        ArgumentId,
-        ParamId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_group_012_loop<BlockDim>,
-        EnclosedStmts...>,
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_loop<BlockDim>,
+                          EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::Tile<
-              ArgumentId,
-              RAJA::tile_fixed<chunk_size>,
-              sycl_group_012_loop<BlockDim>,
-              EnclosedStmts...>,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_loop<BlockDim>,
+                          EnclosedStmts...>,
           Types>
 {
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::Tile<
-          ArgumentId,
-          RAJA::tile_fixed<chunk_size>,
-          sycl_group_012_loop<BlockDim>,
-          EnclosedStmts...>,
-      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_group_012_loop<BlockDim>,
+                                            EnclosedStmts...>,
+                            Types>;
 
   using typename Base::diff_t;
   using typename Base::enclosed_stmts_t;
@@ -268,41 +259,37 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    int         ThreadDim,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<
-        ArgumentId,
-        ParamId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_local_012_direct<ThreadDim>,
-        EnclosedStmts...>,
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_local_012_direct<ThreadDim>,
+                          EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::Tile<
-              ArgumentId,
-              RAJA::tile_fixed<chunk_size>,
-              sycl_local_012_direct<ThreadDim>,
-              EnclosedStmts...>,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_local_012_direct<ThreadDim>,
+                          EnclosedStmts...>,
           Types>
 {
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::Tile<
-          ArgumentId,
-          RAJA::tile_fixed<chunk_size>,
-          sycl_local_012_direct<ThreadDim>,
-          EnclosedStmts...>,
-      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_local_012_direct<ThreadDim>,
+                                            EnclosedStmts...>,
+                            Types>;
 
   using typename Base::diff_t;
   using typename Base::enclosed_stmts_t;
@@ -346,41 +333,37 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    int         ThreadDim,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<
-        ArgumentId,
-        ParamId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_local_012_loop<ThreadDim>,
-        EnclosedStmts...>,
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_local_012_loop<ThreadDim>,
+                          EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
           Data,
-          statement::Tile<
-              ArgumentId,
-              RAJA::tile_fixed<chunk_size>,
-              sycl_local_012_loop<ThreadDim>,
-              EnclosedStmts...>,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_local_012_loop<ThreadDim>,
+                          EnclosedStmts...>,
           Types>
 {
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::Tile<
-          ArgumentId,
-          RAJA::tile_fixed<chunk_size>,
-          sycl_local_012_loop<ThreadDim>,
-          EnclosedStmts...>,
-      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_local_012_loop<ThreadDim>,
+                                            EnclosedStmts...>,
+                            Types>;
 
   using typename Base::diff_t;
   using typename Base::enclosed_stmts_t;

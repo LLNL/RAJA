@@ -11,16 +11,14 @@
 #include <numeric>
 #include <type_traits>
 
-template <
-    typename INDEX_TYPE,
-    typename DATA_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POLICY>
-void KernelHyperplane2DTestImpl(
-    const int groups,
-    const int idim,
-    const int jdim)
+template <typename INDEX_TYPE,
+          typename DATA_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POLICY>
+void KernelHyperplane2DTestImpl(const int groups,
+                                const int idim,
+                                const int jdim)
 {
   // This test traverses "groups" 2D arrays, and modifies values in a 1D
   // hyperplane manner.
@@ -33,8 +31,8 @@ void KernelHyperplane2DTestImpl(
 
   INDEX_TYPE array_length = groups * idim * jdim;
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array,
+                                    &check_array, &test_array);
 
   RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>> HostView(
       test_array, groups, idim, jdim);
@@ -124,8 +122,8 @@ void KernelHyperplane2DTestImpl(
     }
   }
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array, check_array,
+                                      test_array);
 }
 
 
@@ -142,15 +140,12 @@ TYPED_TEST_P(KernelHyperplane2DTest, Hyperplane2DKernel)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  KernelHyperplane2DTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(
-      1, 10, 10);
-  KernelHyperplane2DTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(
-      2, 111, 205);
-  KernelHyperplane2DTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(
-      3, 213, 123);
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
+                             REDUCE_POLICY>(1, 10, 10);
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
+                             REDUCE_POLICY>(2, 111, 205);
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY,
+                             REDUCE_POLICY>(3, 213, 123);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelHyperplane2DTest, Hyperplane2DKernel);

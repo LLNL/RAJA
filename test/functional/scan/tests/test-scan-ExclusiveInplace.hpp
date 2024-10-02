@@ -11,11 +11,10 @@
 #include <numeric>
 
 template <typename OP, typename T>
-::testing::AssertionResult check_exclusive(
-    const T* actual,
-    const T* original,
-    int      N,
-    T        init = OP::identity())
+::testing::AssertionResult check_exclusive(const T* actual,
+                                           const T* original,
+                                           int N,
+                                           T init = OP::identity())
 {
   for (int i = 0; i < N; ++i)
   {
@@ -33,12 +32,12 @@ template <typename OP, typename T>
 
 template <typename EXEC_POLICY, typename WORKING_RES, typename OP_TYPE>
 void ScanExclusiveInplaceTestImpl(
-    int                           N,
+    int N,
     typename OP_TYPE::result_type offset = OP_TYPE::identity())
 {
   using T = typename OP_TYPE::result_type;
 
-  WORKING_RES               res {WORKING_RES::get_default()};
+  WORKING_RES res {WORKING_RES::get_default()};
   camp::resources::Resource working_res {res};
 
   T* work_in;
@@ -54,8 +53,8 @@ void ScanExclusiveInplaceTestImpl(
   res.memcpy(work_in, host_in, sizeof(T) * N);
   res.wait();
 
-  RAJA::exclusive_scan_inplace<EXEC_POLICY>(
-      RAJA::make_span(work_in, N), OP_TYPE {}, offset);
+  RAJA::exclusive_scan_inplace<EXEC_POLICY>(RAJA::make_span(work_in, N),
+                                            OP_TYPE {}, offset);
 
   res.memcpy(host_out, work_in, sizeof(T) * N);
   res.wait();
@@ -65,8 +64,8 @@ void ScanExclusiveInplaceTestImpl(
   // test interface with resource
   res.memcpy(work_in, host_in, sizeof(T) * N);
 
-  RAJA::exclusive_scan_inplace<EXEC_POLICY>(
-      res, RAJA::make_span(work_in, N), OP_TYPE {}, offset);
+  RAJA::exclusive_scan_inplace<EXEC_POLICY>(res, RAJA::make_span(work_in, N),
+                                            OP_TYPE {}, offset);
 
   res.memcpy(host_out, work_in, sizeof(T) * N);
   res.wait();
@@ -97,12 +96,12 @@ TYPED_TEST_P(ScanExclusiveInplaceTest, ScanExclusiveInplace)
   //
   using T = typename OP_TYPE::result_type;
 
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(
-      0, T(13));
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(
-      357, T(15));
-  ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(
-      32000, T(2));
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(0,
+                                                                       T(13));
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(357,
+                                                                       T(15));
+  ScanExclusiveInplaceTestImpl<EXEC_POLICY, WORKING_RESOURCE, OP_TYPE>(32000,
+                                                                       T(2));
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ScanExclusiveInplaceTest, ScanExclusiveInplace);

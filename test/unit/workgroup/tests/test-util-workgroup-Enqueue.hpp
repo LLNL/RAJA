@@ -36,7 +36,7 @@ struct EnqueueTestCallable
 
 private:
   IndexType* ptr;
-  IndexType  val;
+  IndexType val;
 };
 
 #endif  //__TEST_UTIL_WORKGROUP_ENQUEUE__

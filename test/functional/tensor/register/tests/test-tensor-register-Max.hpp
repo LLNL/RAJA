@@ -22,15 +22,15 @@ void MaxImpl()
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t*             input0_hptr = input0_vec.data();
+  element_t* input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t*             input1_hptr = input1_vec.data();
+  element_t* input1_hptr = input1_vec.data();
   element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(1);
-  element_t*             output0_dptr = tensor_malloc<policy_t, element_t>(1);
+  element_t* output0_dptr = tensor_malloc<policy_t, element_t>(1);
 
   std::vector<element_t> output1_vec(num_elem);
   element_t* output1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
@@ -89,8 +89,8 @@ void MaxImpl()
   // check element-wise operation
   for (camp::idx_t i = 0; i < num_elem; ++i)
   {
-    ASSERT_SCALAR_EQ(
-        std::max<element_t>(input0_vec[i], input1_vec[i]), output1_vec[i]);
+    ASSERT_SCALAR_EQ(std::max<element_t>(input0_vec[i], input1_vec[i]),
+                     output1_vec[i]);
   }
 
 

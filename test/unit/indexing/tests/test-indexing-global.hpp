@@ -20,12 +20,11 @@ class IndexingUnitTest : public ::testing::Test
 
 TYPED_TEST_SUITE_P(IndexingUnitTest);
 
-template <
-    typename test_policy,
-    typename indexer_type,
-    RAJA::named_dim dim_012,
-    int             BLOCK_SIZE,
-    int             GRID_SIZE>
+template <typename test_policy,
+          typename indexer_type,
+          RAJA::named_dim dim_012,
+          int BLOCK_SIZE,
+          int GRID_SIZE>
 void testBasicIndexing()
 {
   dim3d3d expected_dim {{1, 1, 1}, {1, 1, 1}};
@@ -72,14 +71,13 @@ void testBasicIndexing()
   actual_size =
       test_reallocate(working_res, host_res, actual_size, total_global);
 
-  for3d3d<test_policy>(
-      expected_dim,
-      [=] RAJA_HOST_DEVICE(dim3d3d idx, dim3d3d dim)
-      {
-        int i           = index(idx, dim);
-        actual_index[i] = indexer_type::template index<int>();
-        actual_size[i]  = indexer_type::template size<int>();
-      });
+  for3d3d<test_policy>(expected_dim,
+                       [=] RAJA_HOST_DEVICE(dim3d3d idx, dim3d3d dim)
+                       {
+                         int i           = index(idx, dim);
+                         actual_index[i] = indexer_type::template index<int>();
+                         actual_size[i]  = indexer_type::template size<int>();
+                       });
 
   actual_index =
       test_reallocate(host_res, working_res, actual_index, total_global);
@@ -107,9 +105,8 @@ TYPED_TEST_P(IndexingUnitTest, BasicIndexing)
   using indexer_type = typename indexer_holder_type::template type<
       dim_type::value, threads_type::value, blocks_type::value>;
 
-  testBasicIndexing<
-      test_policy, indexer_type, dim_type::value, threads_type::value,
-      blocks_type::value>();
+  testBasicIndexing<test_policy, indexer_type, dim_type::value,
+                    threads_type::value, blocks_type::value>();
 }
 
 REGISTER_TYPED_TEST_SUITE_P(IndexingUnitTest, BasicIndexing);

@@ -141,51 +141,51 @@ struct random_access_iterator : iterator_base
     return copy;
   }
 
-  RAJA_HOST_DEVICE friend inline difference_type operator-(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline difference_type
+  operator-(random_access_iterator const& lhs,
+            random_access_iterator const& rhs)
   {
     return static_cast<base const&>(lhs) - static_cast<base const&>(rhs);
   }
 
-  RAJA_HOST_DEVICE friend inline bool operator==(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline bool
+  operator==(random_access_iterator const& lhs,
+             random_access_iterator const& rhs)
   {
     return static_cast<base const&>(lhs) == static_cast<base const&>(rhs);
   }
 
-  RAJA_HOST_DEVICE friend inline bool operator!=(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline bool
+  operator!=(random_access_iterator const& lhs,
+             random_access_iterator const& rhs)
   {
     return !(lhs == rhs);
   }
 
-  RAJA_HOST_DEVICE friend inline bool operator<(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline bool
+  operator<(random_access_iterator const& lhs,
+            random_access_iterator const& rhs)
   {
     return static_cast<base const&>(lhs) < static_cast<base const&>(rhs);
   }
 
-  RAJA_HOST_DEVICE friend inline bool operator<=(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline bool
+  operator<=(random_access_iterator const& lhs,
+             random_access_iterator const& rhs)
   {
     return !(rhs < lhs);
   }
 
-  RAJA_HOST_DEVICE friend inline bool operator>(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline bool
+  operator>(random_access_iterator const& lhs,
+            random_access_iterator const& rhs)
   {
     return rhs < lhs;
   }
 
-  RAJA_HOST_DEVICE friend inline bool operator>=(
-      random_access_iterator const& lhs,
-      random_access_iterator const& rhs)
+  RAJA_HOST_DEVICE friend inline bool
+  operator>=(random_access_iterator const& lhs,
+             random_access_iterator const& rhs)
   {
     return !(lhs < rhs);
   }
@@ -195,10 +195,9 @@ struct random_access_iterator : iterator_base
 /*!
  * A storage container for work groups
  */
-template <
-    typename STORAGE_POLICY_T,
-    typename ALLOCATOR_T,
-    typename Dispatcher_T>
+template <typename STORAGE_POLICY_T,
+          typename ALLOCATOR_T,
+          typename Dispatcher_T>
 class WorkStorage;
 
 template <typename ALLOCATOR_T, typename Dispatcher_T>
@@ -235,7 +234,7 @@ private:
   // struct used in storage vector to retain pointer and allocation size
   struct pointer_and_size
   {
-    pointer   ptr;
+    pointer ptr;
     size_type size;
   };
 
@@ -260,23 +259,23 @@ public:
       return *this;
     }
 
-    RAJA_HOST_DEVICE friend inline difference_type operator-(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline difference_type
+    operator-(const_iterator_base const& lhs_iter,
+              const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_ptrptr - rhs_iter.m_ptrptr;
     }
 
-    RAJA_HOST_DEVICE friend inline bool operator==(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline bool
+    operator==(const_iterator_base const& lhs_iter,
+               const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_ptrptr == rhs_iter.m_ptrptr;
     }
 
-    RAJA_HOST_DEVICE friend inline bool operator<(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline bool
+    operator<(const_iterator_base const& lhs_iter,
+              const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_ptrptr < rhs_iter.m_ptrptr;
     }
@@ -303,8 +302,8 @@ public:
   {
     if (this != &rhs)
     {
-      move_assign_private(
-          std::move(rhs), propagate_on_container_move_assignment {});
+      move_assign_private(std::move(rhs),
+                          propagate_on_container_move_assignment {});
     }
     return *this;
   }
@@ -337,8 +336,8 @@ public:
   }
 
   template <typename holder, typename... holder_ctor_args>
-  void
-  emplace(const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
+  void emplace(const dispatcher_type* dispatcher,
+               holder_ctor_args&&... ctor_args)
   {
     m_vec.emplace_back(create_value<holder>(
         dispatcher, std::forward<holder_ctor_args>(ctor_args)...));
@@ -361,7 +360,7 @@ private:
   RAJAVec<
       pointer_and_size,
       typename allocator_traits_type::template rebind_alloc<pointer_and_size>>
-                 m_vec;
+      m_vec;
   allocator_type m_aloc;
 
   // move assignment if allocator propagates on move assignment
@@ -395,9 +394,8 @@ private:
 
   // allocate and construct value in storage
   template <typename holder, typename... holder_ctor_args>
-  pointer_and_size create_value(
-      const dispatcher_type* dispatcher,
-      holder_ctor_args&&... ctor_args)
+  pointer_and_size create_value(const dispatcher_type* dispatcher,
+                                holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
 
@@ -412,8 +410,8 @@ private:
 
   // allocate and move construct object as copy of other value and
   // destroy and deallocate other value
-  pointer_and_size
-  move_destroy_value(WorkStorage&& rhs, pointer_and_size other_value_and_size)
+  pointer_and_size move_destroy_value(WorkStorage&& rhs,
+                                      pointer_and_size other_value_and_size)
   {
     pointer value_ptr = reinterpret_cast<pointer>(
         allocator_traits_type::allocate(m_aloc, other_value_and_size.size));
@@ -492,29 +490,29 @@ public:
       return *this;
     }
 
-    RAJA_HOST_DEVICE friend inline difference_type operator-(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline difference_type
+    operator-(const_iterator_base const& lhs_iter,
+              const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_offset_iter - rhs_iter.m_offset_iter;
     }
 
-    RAJA_HOST_DEVICE friend inline bool operator==(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline bool
+    operator==(const_iterator_base const& lhs_iter,
+               const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_offset_iter == rhs_iter.m_offset_iter;
     }
 
-    RAJA_HOST_DEVICE friend inline bool operator<(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline bool
+    operator<(const_iterator_base const& lhs_iter,
+              const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_offset_iter < rhs_iter.m_offset_iter;
     }
 
   private:
-    const char*      m_array_begin;
+    const char* m_array_begin;
     const size_type* m_offset_iter;
   };
 
@@ -544,8 +542,8 @@ public:
   {
     if (this != &rhs)
     {
-      move_assign_private(
-          std::move(rhs), propagate_on_container_move_assignment {});
+      move_assign_private(std::move(rhs),
+                          propagate_on_container_move_assignment {});
     }
     return *this;
   }
@@ -575,8 +573,8 @@ public:
   size_type storage_size() const { return m_array_end - m_array_begin; }
 
   template <typename holder, typename... holder_ctor_args>
-  void
-  emplace(const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
+  void emplace(const dispatcher_type* dispatcher,
+               holder_ctor_args&&... ctor_args)
   {
     size_type value_offset = storage_size();
     size_type value_size   = create_value<holder>(
@@ -591,8 +589,8 @@ public:
     array_clear();
     if (m_array_begin != nullptr)
     {
-      allocator_traits_type::deallocate(
-          m_aloc, m_array_begin, storage_capacity());
+      allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                        storage_capacity());
       m_array_begin = nullptr;
       m_array_end   = nullptr;
       m_array_cap   = nullptr;
@@ -602,13 +600,12 @@ public:
   ~WorkStorage() { clear(); }
 
 private:
-  RAJAVec<
-      size_type,
-      typename allocator_traits_type::template rebind_alloc<size_type>>
-                 m_offsets;
-  char*          m_array_begin = nullptr;
-  char*          m_array_end   = nullptr;
-  char*          m_array_cap   = nullptr;
+  RAJAVec<size_type,
+          typename allocator_traits_type::template rebind_alloc<size_type>>
+      m_offsets;
+  char* m_array_begin = nullptr;
+  char* m_array_end   = nullptr;
+  char* m_array_cap   = nullptr;
   allocator_type m_aloc;
 
   // move assignment if allocator propagates on move assignment
@@ -679,14 +676,14 @@ private:
 
       for (size_type i = 0; i < size(); ++i)
       {
-        move_destroy_value(
-            new_array_begin + m_offsets[i], m_array_begin + m_offsets[i]);
+        move_destroy_value(new_array_begin + m_offsets[i],
+                           m_array_begin + m_offsets[i]);
       }
 
       if (m_array_begin != nullptr)
       {
-        allocator_traits_type::deallocate(
-            m_aloc, m_array_begin, storage_capacity());
+        allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                          storage_capacity());
       }
 
       m_array_begin = new_array_begin;
@@ -710,10 +707,9 @@ private:
   // ensure there is enough storage to hold the next loop body at value offset
   // and store the loop body
   template <typename holder, typename... holder_ctor_args>
-  size_type create_value(
-      size_type              value_offset,
-      const dispatcher_type* dispatcher,
-      holder_ctor_args&&... ctor_args)
+  size_type create_value(size_type value_offset,
+                         const dispatcher_type* dispatcher,
+                         holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
 
@@ -735,9 +731,8 @@ private:
   // loop body in other
   void move_destroy_value(char* value_ptr, char* other_value_ptr)
   {
-    value_type::move_destroy(
-        reinterpret_cast<pointer>(value_ptr),
-        reinterpret_cast<pointer>(other_value_ptr));
+    value_type::move_destroy(reinterpret_cast<pointer>(value_ptr),
+                             reinterpret_cast<pointer>(other_value_ptr));
   }
 
   // destroy the loop body at value offset
@@ -749,10 +744,9 @@ private:
 };
 
 template <typename ALLOCATOR_T, typename Dispatcher_T>
-class WorkStorage<
-    RAJA::constant_stride_array_of_objects,
-    ALLOCATOR_T,
-    Dispatcher_T>
+class WorkStorage<RAJA::constant_stride_array_of_objects,
+                  ALLOCATOR_T,
+                  Dispatcher_T>
 {
   using allocator_traits_type = std::allocator_traits<ALLOCATOR_T>;
   using propagate_on_container_copy_assignment =
@@ -806,30 +800,30 @@ public:
       return *this;
     }
 
-    RAJA_HOST_DEVICE friend inline difference_type operator-(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline difference_type
+    operator-(const_iterator_base const& lhs_iter,
+              const_iterator_base const& rhs_iter)
     {
       return (lhs_iter.m_array_pos - rhs_iter.m_array_pos) / lhs_iter.m_stride;
     }
 
-    RAJA_HOST_DEVICE friend inline bool operator==(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline bool
+    operator==(const_iterator_base const& lhs_iter,
+               const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_array_pos == rhs_iter.m_array_pos;
     }
 
-    RAJA_HOST_DEVICE friend inline bool operator<(
-        const_iterator_base const& lhs_iter,
-        const_iterator_base const& rhs_iter)
+    RAJA_HOST_DEVICE friend inline bool
+    operator<(const_iterator_base const& lhs_iter,
+              const_iterator_base const& rhs_iter)
     {
       return lhs_iter.m_array_pos < rhs_iter.m_array_pos;
     }
 
   private:
     const char* m_array_pos;
-    size_type   m_stride;
+    size_type m_stride;
   };
 
   using const_iterator = random_access_iterator<const_iterator_base>;
@@ -857,8 +851,8 @@ public:
   {
     if (this != &rhs)
     {
-      move_assign_private(
-          std::move(rhs), propagate_on_container_move_assignment {});
+      move_assign_private(std::move(rhs),
+                          propagate_on_container_move_assignment {});
     }
     return *this;
   }
@@ -886,11 +880,11 @@ public:
   size_type storage_size() const { return m_array_end - m_array_begin; }
 
   template <typename holder, typename... holder_ctor_args>
-  void
-  emplace(const dispatcher_type* dispatcher, holder_ctor_args&&... ctor_args)
+  void emplace(const dispatcher_type* dispatcher,
+               holder_ctor_args&&... ctor_args)
   {
-    create_value<holder>(
-        dispatcher, std::forward<holder_ctor_args>(ctor_args)...);
+    create_value<holder>(dispatcher,
+                         std::forward<holder_ctor_args>(ctor_args)...);
     m_array_end += m_stride;
   }
 
@@ -900,8 +894,8 @@ public:
     array_clear();
     if (m_array_begin != nullptr)
     {
-      allocator_traits_type::deallocate(
-          m_aloc, m_array_begin, storage_capacity());
+      allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                        storage_capacity());
       m_array_begin = nullptr;
       m_array_end   = nullptr;
       m_array_cap   = nullptr;
@@ -912,10 +906,10 @@ public:
 
 private:
   allocator_type m_aloc;
-  size_type      m_stride      = 1;  // can't be 0 because size divides stride
-  char*          m_array_begin = nullptr;
-  char*          m_array_end   = nullptr;
-  char*          m_array_cap   = nullptr;
+  size_type m_stride  = 1;  // can't be 0 because size divides stride
+  char* m_array_begin = nullptr;
+  char* m_array_end   = nullptr;
+  char* m_array_cap   = nullptr;
 
   // move assignment if allocator propagates on move assignment
   void move_assign_private(WorkStorage&& rhs, std::true_type)
@@ -990,14 +984,14 @@ private:
 
       for (size_type i = 0; i < size(); ++i)
       {
-        move_destroy_value(
-            new_array_begin + i * new_stride, m_array_begin + i * m_stride);
+        move_destroy_value(new_array_begin + i * new_stride,
+                           m_array_begin + i * m_stride);
       }
 
       if (m_array_begin != nullptr)
       {
-        allocator_traits_type::deallocate(
-            m_aloc, m_array_begin, storage_capacity());
+        allocator_traits_type::deallocate(m_aloc, m_array_begin,
+                                          storage_capacity());
       }
 
       m_stride      = new_stride;
@@ -1021,17 +1015,15 @@ private:
   // ensure there is enough storage to store the loop body
   // and construct the body in storage.
   template <typename holder, typename... holder_ctor_args>
-  void create_value(
-      const dispatcher_type* dispatcher,
-      holder_ctor_args&&... ctor_args)
+  void create_value(const dispatcher_type* dispatcher,
+                    holder_ctor_args&&... ctor_args)
   {
     const size_type value_size = sizeof(true_value_type<holder>);
 
     if (value_size > storage_unused() && value_size <= m_stride)
     {
-      array_reserve(
-          std::max(storage_size() + m_stride, 2 * storage_capacity()),
-          m_stride);
+      array_reserve(std::max(storage_size() + m_stride, 2 * storage_capacity()),
+                    m_stride);
     }
     else if (value_size > m_stride)
     {
@@ -1049,9 +1041,8 @@ private:
   // destroy the loop body in other
   void move_destroy_value(char* value_ptr, char* other_value_ptr)
   {
-    value_type::move_destroy(
-        reinterpret_cast<pointer>(value_ptr),
-        reinterpret_cast<pointer>(other_value_ptr));
+    value_type::move_destroy(reinterpret_cast<pointer>(value_ptr),
+                             reinterpret_cast<pointer>(other_value_ptr));
   }
 
   // destroy the loop body at value offset

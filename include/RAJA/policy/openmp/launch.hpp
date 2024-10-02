@@ -33,12 +33,11 @@ struct LaunchExecute<RAJA::omp_launch_t>
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
-  exec(
-      RAJA::resources::Resource res,
-      LaunchParams const&       params,
-      const char*,
-      BODY const&   body,
-      ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
+  exec(RAJA::resources::Resource res,
+       LaunchParams const& params,
+       const char*,
+       BODY const& body,
+       ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
     RAJA::region<RAJA::omp_parallel_region>(
         [&]()
@@ -65,12 +64,11 @@ struct LaunchExecute<RAJA::omp_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
-  exec(
-      RAJA::resources::Resource res,
-      LaunchParams const&       launch_params,
-      const char*               RAJA_UNUSED_ARG(kernel_name),
-      BODY const&               body,
-      ReduceParams&             f_params)
+  exec(RAJA::resources::Resource res,
+       LaunchParams const& launch_params,
+       const char* RAJA_UNUSED_ARG(kernel_name),
+       BODY const& body,
+       ReduceParams& f_params)
   {
 
     using EXEC_POL = RAJA::omp_launch_t;
@@ -108,10 +106,10 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT>
 {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     int len = segment.end() - segment.begin();
@@ -129,11 +127,11 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT>
         });
   }
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       BODY const& body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -151,20 +149,20 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT>
             for (int i = 0; i < len0; i++)
             {
 
-              loop_body.get_priv()(
-                  *(segment0.begin() + i), *(segment1.begin() + j));
+              loop_body.get_priv()(*(segment0.begin() + i),
+                                   *(segment1.begin() + j));
             }
           }
         });
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      SEGMENT const&      segment2,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       SEGMENT const& segment2,
+       BODY const& body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -184,9 +182,9 @@ struct LoopExecute<omp_parallel_for_exec, SEGMENT>
             {
               for (int i = 0; i < len0; i++)
               {
-                loop_body.get_priv()(
-                    *(segment0.begin() + i), *(segment1.begin() + j),
-                    *(segment2.begin() + k));
+                loop_body.get_priv()(*(segment0.begin() + i),
+                                     *(segment1.begin() + j),
+                                     *(segment2.begin() + k));
               }
             }
           }
@@ -199,10 +197,10 @@ struct LoopExecute<omp_for_exec, SEGMENT>
 {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     int len = segment.end() - segment.begin();
@@ -215,11 +213,11 @@ struct LoopExecute<omp_for_exec, SEGMENT>
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       BODY const& body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -237,12 +235,12 @@ struct LoopExecute<omp_for_exec, SEGMENT>
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      SEGMENT const&      segment2,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       SEGMENT const& segment2,
+       BODY const& body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -256,9 +254,8 @@ struct LoopExecute<omp_for_exec, SEGMENT>
       {
         for (int i = 0; i < len0; i++)
         {
-          body(
-              *(segment0.begin() + i), *(segment1.begin() + j),
-              *(segment2.begin() + k));
+          body(*(segment0.begin() + i), *(segment1.begin() + j),
+               *(segment2.begin() + k));
         }
       }
     }
@@ -273,10 +270,10 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
 {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     int len = segment.end() - segment.begin();
@@ -289,11 +286,11 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       BODY const& body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -311,12 +308,12 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      SEGMENT const&      segment2,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       SEGMENT const& segment2,
+       BODY const& body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -330,9 +327,8 @@ struct LoopICountExecute<omp_for_exec, SEGMENT>
       {
         for (int i = 0; i < len0; i++)
         {
-          body(
-              *(segment0.begin() + i), *(segment1.begin() + j),
-              *(segment2.begin() + k), i, j, k);
+          body(*(segment0.begin() + i), *(segment1.begin() + j),
+               *(segment2.begin() + k), i, j, k);
         }
       }
     }
@@ -347,11 +343,11 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT>
 {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       BODY const& body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -369,20 +365,20 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT>
             for (int i = 0; i < len0; i++)
             {
 
-              loop_body.get_priv()(
-                  *(segment0.begin() + i), *(segment1.begin() + j));
+              loop_body.get_priv()(*(segment0.begin() + i),
+                                   *(segment1.begin() + j));
             }
           }
         });
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      SEGMENT const&      segment2,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       SEGMENT const& segment2,
+       BODY const& body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -402,9 +398,9 @@ struct LoopExecute<omp_parallel_nested_for_exec, SEGMENT>
             {
               for (int i = 0; i < len0; i++)
               {
-                loop_body.get_priv()(
-                    *(segment0.begin() + i), *(segment1.begin() + j),
-                    *(segment2.begin() + k));
+                loop_body.get_priv()(*(segment0.begin() + i),
+                                     *(segment1.begin() + j),
+                                     *(segment2.begin() + k));
               }
             }
           }
@@ -418,11 +414,11 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT>
 {
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       BODY const& body)
   {
 
     const int len1 = segment1.end() - segment1.begin();
@@ -440,20 +436,20 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT>
             for (int i = 0; i < len0; i++)
             {
 
-              loop_body.get_priv()(
-                  *(segment0.begin() + i), *(segment1.begin() + j), i, j);
+              loop_body.get_priv()(*(segment0.begin() + i),
+                                   *(segment1.begin() + j), i, j);
             }
           }
         });
   }
 
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      SEGMENT const&      segment0,
-      SEGMENT const&      segment1,
-      SEGMENT const&      segment2,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       SEGMENT const& segment0,
+       SEGMENT const& segment1,
+       SEGMENT const& segment2,
+       BODY const& body)
   {
 
     const int len2 = segment2.end() - segment2.begin();
@@ -473,9 +469,9 @@ struct LoopICountExecute<omp_parallel_nested_for_exec, SEGMENT>
             {
               for (int i = 0; i < len0; i++)
               {
-                loop_body.get_priv()(
-                    *(segment0.begin() + i), *(segment1.begin() + j),
-                    *(segment2.begin() + k), i, j, k);
+                loop_body.get_priv()(*(segment0.begin() + i),
+                                     *(segment1.begin() + j),
+                                     *(segment2.begin() + k), i, j, k);
               }
             }
           }
@@ -489,11 +485,11 @@ struct TileExecute<omp_parallel_for_exec, SEGMENT>
 {
 
   template <typename BODY, typename TILE_T>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T              tile_size,
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       TILE_T tile_size,
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     int len = segment.end() - segment.begin();
@@ -518,11 +514,11 @@ struct TileTCountExecute<omp_parallel_for_exec, SEGMENT>
 {
 
   template <typename BODY, typename TILE_T>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T              tile_size,
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       TILE_T tile_size,
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     const int len      = segment.end() - segment.begin();
@@ -549,11 +545,11 @@ struct TileExecute<omp_for_exec, SEGMENT>
 {
 
   template <typename BODY, typename TILE_T>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T              tile_size,
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       TILE_T tile_size,
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     int len = segment.end() - segment.begin();
@@ -570,11 +566,11 @@ struct TileTCountExecute<omp_for_exec, SEGMENT>
 {
 
   template <typename BODY, typename TILE_T>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      LaunchContext const RAJA_UNUSED_ARG(&ctx),
-      TILE_T              tile_size,
-      SEGMENT const&      segment,
-      BODY const&         body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void
+  exec(LaunchContext const RAJA_UNUSED_ARG(&ctx),
+       TILE_T tile_size,
+       SEGMENT const& segment,
+       BODY const& body)
   {
 
     const int len      = segment.end() - segment.begin();

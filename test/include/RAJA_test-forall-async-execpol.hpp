@@ -38,10 +38,10 @@ using OpenMPTargetAsyncForallAtomicExecPols = OpenMPTargetForallAtomicExecPols;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAsyncForallExecPols = camp::list<
-    RAJA::cuda_exec<128, true>,
-    RAJA::cuda_exec<256, true>,
-    RAJA::cuda_exec_explicit<256, 2, true>>;
+using CudaAsyncForallExecPols =
+    camp::list<RAJA::cuda_exec<128, true>,
+               RAJA::cuda_exec<256, true>,
+               RAJA::cuda_exec_explicit<256, 2, true>>;
 
 using CudaAsyncForallReduceExecPols = CudaForallExecPols;
 

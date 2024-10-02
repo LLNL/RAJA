@@ -40,11 +40,10 @@ namespace policy
 namespace tensor
 {
 
-template <
-    typename EXEC_POLICY,
-    typename TENSOR_TYPE,
-    camp::idx_t DIM,
-    camp::idx_t TILE_SIZE>
+template <typename EXEC_POLICY,
+          typename TENSOR_TYPE,
+          camp::idx_t DIM,
+          camp::idx_t TILE_SIZE>
 struct tensor_exec : public EXEC_POLICY
 {
   using exec_policy = EXEC_POLICY;

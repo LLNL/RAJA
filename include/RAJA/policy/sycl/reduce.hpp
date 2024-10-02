@@ -74,8 +74,8 @@ static int MaxNumTeams = 1;
 //! Information necessary for SYCL offload to be considered
 struct Offload_Info
 {
-  int  hostID {1};
-  int  deviceID {2};
+  int hostID {1};
+  int deviceID {2};
   bool isMapped {false};
 
   Offload_Info() = default;
@@ -93,8 +93,8 @@ template <typename T>
 struct Reduce_Data
 {
   mutable T value;
-  T*        device;
-  T*        host;
+  T* device;
+  T* host;
 
   //! disallow default constructor
   Reduce_Data() = delete;
@@ -145,9 +145,9 @@ struct Reduce_Data
     }
 
     // precondition: host and device are valid pointers
-    auto e = q->memcpy(
-        reinterpret_cast<void*>(device), reinterpret_cast<void*>(host),
-        sycl::MaxNumTeams * sizeof(T));
+    auto e =
+        q->memcpy(reinterpret_cast<void*>(device),
+                  reinterpret_cast<void*>(host), sycl::MaxNumTeams * sizeof(T));
 
     e.wait();
   }
@@ -164,9 +164,9 @@ struct Reduce_Data
     }
 
     // precondition: host and device are valid pointers
-    auto e = q->memcpy(
-        reinterpret_cast<void*>(host), reinterpret_cast<void*>(device),
-        sycl::MaxNumTeams * sizeof(T));
+    auto e = q->memcpy(reinterpret_cast<void*>(host),
+                       reinterpret_cast<void*>(device),
+                       sycl::MaxNumTeams * sizeof(T));
 
     e.wait();
   }
@@ -246,10 +246,12 @@ struct TargetReduce
   TargetReduce& reduce(T rhsVal)
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            val.device[i]);
     Reducer {}(atm, rhsVal);
     return *this;
 #else
@@ -262,10 +264,12 @@ struct TargetReduce
   const TargetReduce& reduce(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            val.device[i]);
     Reducer {}(atm, rhsVal);
     return *this;
 #else
@@ -293,9 +297,9 @@ struct TargetReduceLoc
   TargetReduceLoc()                       = delete;
   TargetReduceLoc(const TargetReduceLoc&) = default;
   explicit TargetReduceLoc(
-      T         init_val,
+      T init_val,
       IndexType init_loc,
-      T         identity_val_ = Reducer::identity,
+      T identity_val_ = Reducer::identity,
       IndexType identity_loc_ =
           RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
@@ -307,12 +311,11 @@ struct TargetReduceLoc
         finalLoc(identity_loc_)
   {}
 
-  void reset(
-      T         init_val_,
-      IndexType init_loc_,
-      T         identity_val_ = Reducer::identity,
-      IndexType identity_loc_ =
-          RAJA::reduce::detail::DefaultLoc<IndexType>().value())
+  void reset(T init_val_,
+             IndexType init_loc_,
+             T identity_val_ = Reducer::identity,
+             IndexType identity_loc_ =
+                 RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
     val.cleanup(info);
     val = sycl::Reduce_Data<T>(identity_val_, identity_val_, info);
@@ -369,11 +372,11 @@ struct TargetReduceLoc
   {
 #ifdef __SYCL_DEVICE_ONLY__
     auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    cl::sycl::atomic_fence(
-        cl::sycl::memory_order_acquire, cl::sycl::memory_scope::device);
+    cl::sycl::atomic_fence(cl::sycl::memory_order_acquire,
+                           cl::sycl::memory_scope::device);
     Reducer {}(val.device[i], loc.device[i], rhsVal, rhsLoc);
-    cl::sycl::atomic_fence(
-        cl::sycl::memory_order_release, cl::sycl::memory_scope::device);
+    cl::sycl::atomic_fence(cl::sycl::memory_order_release,
+                           cl::sycl::memory_scope::device);
     return *this;
 #else
     Reducer {}(val.value, loc.value, rhsVal, rhsLoc);
@@ -389,7 +392,7 @@ struct TargetReduceLoc
   }
 
   //! storage for reduction data for value
-  sycl::Reduce_Data<T>         val;
+  sycl::Reduce_Data<T> val;
   sycl::Reduce_Data<IndexType> loc;
 
 private:
@@ -398,9 +401,9 @@ private:
   //! storage for reduction data for value
   //  sycl::Reduce_Data<T> val;
   //! storage for redcution data for location
-  T         initVal;
-  T         finalVal;
-  T         returnVal;
+  T initVal;
+  T finalVal;
+  T returnVal;
   IndexType initLoc;
   IndexType finalLoc;
   IndexType returnLoc;
@@ -427,10 +430,12 @@ public:
   const self& operator+=(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm.fetch_add(rhsVal);
     return *this;
 #else
@@ -454,10 +459,12 @@ public:
   self& operator|=(T rhsVal)
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm |= rhsVal;
     return *this;
 #else
@@ -470,10 +477,12 @@ public:
   const self& operator|=(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm |= rhsVal;
     return *this;
 #else
@@ -497,10 +506,12 @@ public:
   self& operator&=(T rhsVal)
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm &= rhsVal;
     return *this;
 #else
@@ -513,10 +524,12 @@ public:
   const self& operator&=(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm &= rhsVal;
     return *this;
 #else
@@ -540,10 +553,12 @@ public:
   self& min(T rhsVal)
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm.fetch_min(rhsVal);
     return *this;
 #else
@@ -556,10 +571,12 @@ public:
   const self& min(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm.fetch_min(rhsVal);
     return *this;
 #else
@@ -583,10 +600,12 @@ public:
   self& max(T rhsVal)
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm.fetch_max(rhsVal);
     return *this;
 #else
@@ -599,10 +618,12 @@ public:
   const self& max(T rhsVal) const
   {
 #ifdef __SYCL_DEVICE_ONLY__
-    auto i   = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
-    auto atm = ::sycl::atomic_ref<
-        T, cl::sycl::memory_order_acq_rel, cl::sycl::memory_scope::device,
-        cl::sycl::access::address_space::global_space>(parent::val.device[i]);
+    auto i = 0;  //__spirv::initLocalInvocationId<1, cl::sycl::id<1>>()[0];
+    auto atm =
+        ::sycl::atomic_ref<T, cl::sycl::memory_order_acq_rel,
+                           cl::sycl::memory_scope::device,
+                           cl::sycl::access::address_space::global_space>(
+            parent::val.device[i]);
     atm.fetch_max(rhsVal);
     return *this;
 #else

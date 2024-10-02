@@ -36,11 +36,10 @@ call_dispatcher(Invoker invoker, CallArgs... callArgs)
 template <typename IndexType, typename... Args>
 struct DispatcherTestCallable
 {
-  DispatcherTestCallable(
-      IndexType* _ptr_call,
-      IndexType  _val_call,
-      IndexType* _ptr_dtor,
-      IndexType  _val_dtor)
+  DispatcherTestCallable(IndexType* _ptr_call,
+                         IndexType _val_call,
+                         IndexType* _ptr_dtor,
+                         IndexType _val_dtor)
       : ptr_call(_ptr_call),
         val_call(_val_call),
         ptr_dtor(_ptr_dtor),
@@ -79,21 +78,20 @@ struct DispatcherTestCallable
 
 private:
   IndexType* ptr_call;
-  IndexType  val_call;
+  IndexType val_call;
   IndexType* ptr_dtor;
-  IndexType  val_dtor;
+  IndexType val_dtor;
 
 public:
   bool move_constructed = false;
   bool moved_from       = false;
 };
 
-template <
-    typename ExecPolicy,
-    typename DispatchTyper,
-    typename IndexType,
-    typename WORKING_RES,
-    typename ForOnePol>
+template <typename ExecPolicy,
+          typename DispatchTyper,
+          typename IndexType,
+          typename WORKING_RES,
+          typename ForOnePol>
 struct testWorkGroupDispatcherSingle
 {
   template <typename... Args>
@@ -106,9 +104,9 @@ struct testWorkGroupDispatcherSingle
 
     static constexpr auto platform = RAJA::platform_of<ExecPolicy>::value;
     using DispatchPolicy  = typename DispatchTyper::template type<TestCallable>;
-    using Dispatcher_type = RAJA::detail::Dispatcher<
-        platform, DispatchPolicy, void, IndexType, Args...>;
-    using Invoker_type         = typename Dispatcher_type::invoker_type;
+    using Dispatcher_type = RAJA::detail::Dispatcher<platform, DispatchPolicy,
+                                                     void, IndexType, Args...>;
+    using Invoker_type    = typename Dispatcher_type::invoker_type;
     using Dispatcher_cptr_type = typename Dispatcher_type::void_cptr_wrapper;
     const Dispatcher_type* dispatcher =
         RAJA::detail::get_Dispatcher<TestCallable, Dispatcher_type>(
@@ -174,9 +172,9 @@ struct testWorkGroupDispatcherSingle
     work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
 
     // move a value onto device and fiddle
-    call_dispatcher<
-        ForOnePol, Invoker_type, Dispatcher_cptr_type, IndexType, Args...>(
-        dispatcher->invoke, wrk_obj, (IndexType)1, Args {}...);
+    call_dispatcher<ForOnePol, Invoker_type, Dispatcher_cptr_type, IndexType,
+                    Args...>(dispatcher->invoke, wrk_obj, (IndexType)1,
+                             Args {}...);
 
     work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);
 
@@ -207,12 +205,11 @@ struct testWorkGroupDispatcherSingle
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported types untested
-template <
-    size_t BLOCK_SIZE,
-    bool   Async,
-    typename IndexType,
-    typename WORKING_RES,
-    typename ForOnePol>
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename IndexType,
+          typename WORKING_RES,
+          typename ForOnePol>
 struct testWorkGroupDispatcherSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     detail::indirect_function_call_dispatch_typer,
@@ -225,12 +222,11 @@ struct testWorkGroupDispatcherSingle<
   {}
 };
 ///
-template <
-    size_t BLOCK_SIZE,
-    bool   Async,
-    typename IndexType,
-    typename WORKING_RES,
-    typename ForOnePol>
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename IndexType,
+          typename WORKING_RES,
+          typename ForOnePol>
 struct testWorkGroupDispatcherSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     detail::indirect_virtual_function_dispatch_typer,
@@ -252,9 +248,8 @@ class WorkGroupBasicDispatcherSingleUnitTest : public ::testing::Test
 
 TYPED_TEST_SUITE_P(WorkGroupBasicDispatcherSingleUnitTest);
 
-TYPED_TEST_P(
-    WorkGroupBasicDispatcherSingleUnitTest,
-    BasicWorkGroupDispatcherSingle)
+TYPED_TEST_P(WorkGroupBasicDispatcherSingleUnitTest,
+             BasicWorkGroupDispatcherSingle)
 {
   using ExecPolicy    = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -263,9 +258,8 @@ TYPED_TEST_P(
   using ResourceType  = typename camp::at<TypeParam, camp::num<4>>::type;
   using ForOneType    = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  testWorkGroupDispatcherSingle<
-      ExecPolicy, DispatchTyper, IndexType, ResourceType, ForOneType> {}(
-      Args {});
+  testWorkGroupDispatcherSingle<ExecPolicy, DispatchTyper, IndexType,
+                                ResourceType, ForOneType> {}(Args {});
 }
 
 #endif  //__TEST_WORKGROUP_DISPATCHER__

@@ -11,8 +11,10 @@ SortIncludes: false
 
 # Alignment of consecutive declarations, assignments etc
 AlignConsecutiveAssignments : true
-AlignConsecutiveDeclarations : true
+AlignConsecutiveDeclarations : false
 AlignConsecutiveMacros : true
+AlignTrailingComments : true
+AlwaysBreakAfterDefinitionReturnType: false
 
 # Control curly brace placement
 BreakBeforeBraces : Custom
@@ -49,7 +51,7 @@ BinPackParameters : false
 ConstructorInitializerAllOnOneLineOrOnePerLine : true
 ColumnLimit : 80
 
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: Align
 AlignOperands : true
 AlwaysBreakTemplateDeclarations : true
 BreakBeforeBinaryOperators : None

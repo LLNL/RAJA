@@ -42,11 +42,10 @@ namespace RAJA
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(
-    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
-    int                                      fastDim,
-    int                                      midDim,
-    int                                      slowDim)
+void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+                                int fastDim,
+                                int midDim,
+                                int slowDim)
 {
   constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100;
 
@@ -111,8 +110,8 @@ void buildLockFreeBlockIndexset(
           RAJA::Index_type len      = end - start;
           // printf("%d %d\n", start + (lane  )*len/3,
           //                   start + (lane+1)*len/3  ) ;
-          iset.push_back(RAJA::RangeSegment(
-              start + (lane)*len / 3, start + (lane + 1) * len / 3));
+          iset.push_back(RAJA::RangeSegment(start + (lane)*len / 3,
+                                            start + (lane + 1) * len / 3));
         }
       }
     }
@@ -214,22 +213,22 @@ void buildLockFreeBlockIndexset(
  */
 void buildLockFreeColorIndexset(
     RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment>& iset,
-    camp::resources::Resource                                   work_res,
-    RAJA::Index_type const*                                     domainToRange,
-    int                                                         numEntity,
-    int               numRangePerDomain,
-    int               numEntityRange,
+    camp::resources::Resource work_res,
+    RAJA::Index_type const* domainToRange,
+    int numEntity,
+    int numRangePerDomain,
+    int numEntityRange,
     RAJA::Index_type* elemPermutation,
     RAJA::Index_type* ielemPermutation)
 {
-  bool  done     = false;
+  bool done      = false;
   bool* isMarked = new bool[numEntity];
 
-  RAJA::Index_type  numWorkset   = 0;
+  RAJA::Index_type numWorkset    = 0;
   RAJA::Index_type* worksetDelim = new RAJA::Index_type[numEntity];
 
-  RAJA::Index_type  worksetSize = 0;
-  RAJA::Index_type* workset     = new RAJA::Index_type[numEntity];
+  RAJA::Index_type worksetSize = 0;
+  RAJA::Index_type* workset    = new RAJA::Index_type[numEntity];
 
   RAJA::Index_type* rangeToDomain =
       new RAJA::Index_type[numEntityRange * numRangePerDomain];

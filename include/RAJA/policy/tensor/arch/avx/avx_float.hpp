@@ -56,9 +56,9 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi32(
-        N >= 8 ? -1 : 0, N >= 7 ? -1 : 0, N >= 6 ? -1 : 0, N >= 5 ? -1 : 0,
-        N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
+    return _mm256_set_epi32(N >= 8 ? -1 : 0, N >= 7 ? -1 : 0, N >= 6 ? -1 : 0,
+                            N >= 5 ? -1 : 0, N >= 4 ? -1 : 0, N >= 3 ? -1 : 0,
+                            N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
   }
 
 public:
@@ -81,15 +81,14 @@ public:
    * @brief Construct register with explicit values
    */
   RAJA_INLINE
-  Register(
-      element_type x0,
-      element_type x1,
-      element_type x2,
-      element_type x3,
-      element_type x4,
-      element_type x5,
-      element_type x6,
-      element_type x7)
+  Register(element_type x0,
+           element_type x1,
+           element_type x2,
+           element_type x3,
+           element_type x4,
+           element_type x5,
+           element_type x6,
+           element_type x7)
       : m_value(_mm256_set_ps(x7, x6, x5, x4, x3, x2, x1, x0))
   {}
 

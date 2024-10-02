@@ -97,25 +97,22 @@ struct KELB_impl;
 
 template <typename T, typename First, typename... Rest>
 struct is_in_type_list<T, list<First, Rest...>>
-    : std::conditional<
-          std::is_same<typename T::LoopType, First>::value,
-          list<T>,
-          typename is_in_type_list<T, list<Rest...>>::type>
+    : std::conditional<std::is_same<typename T::LoopType, First>::value,
+                       list<T>,
+                       typename is_in_type_list<T, list<Rest...>>::type>
 {};
 
 template <typename T, typename Last>
 struct is_in_type_list<T, list<Last>>
-    : std::conditional<
-          std::is_same<typename T::LoopType, Last>::value,
-          list<T>,
-          list<>>
+    : std::conditional<std::is_same<typename T::LoopType, Last>::value,
+                       list<T>,
+                       list<>>
 {};
 
 template <typename POL_TYPE_LIST, typename First, typename... Rest>
 struct KELB_impl<POL_TYPE_LIST, list<First, Rest...>>
-    : join<
-          typename KELB_impl<POL_TYPE_LIST, list<First>>::type,
-          typename KELB_impl<POL_TYPE_LIST, list<Rest...>>::type>
+    : join<typename KELB_impl<POL_TYPE_LIST, list<First>>::type,
+           typename KELB_impl<POL_TYPE_LIST, list<Rest...>>::type>
 {};
 
 template <typename POL_TYPE_LIST, typename Last>

@@ -97,7 +97,7 @@ public:
       for (free_type::iterator iter = m_free_space.begin(); iter != end; ++iter)
       {
 
-        void*  adj_ptr = iter->first;
+        void* adj_ptr = iter->first;
         size_t cap =
             static_cast<char*>(iter->second) - static_cast<char*>(adj_ptr);
 
@@ -106,8 +106,8 @@ public:
 
           ptr_out = adj_ptr;
 
-          remove_free_chunk(
-              iter, adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
+          remove_free_chunk(iter, adj_ptr,
+                            static_cast<char*>(adj_ptr) + nbytes);
 
           add_used_chunk(adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 
@@ -253,8 +253,8 @@ private:
   }
 
   memory_chunk m_allocation;
-  free_type    m_free_space;
-  used_type    m_used_space;
+  free_type m_free_space;
+  used_type m_used_space;
 };
 
 } /* end namespace detail */
@@ -368,9 +368,9 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
-    const size_t                   size = nTs * sizeof(T);
-    void*                          ptr  = nullptr;
-    arena_container_type::iterator end  = m_arenas.end();
+    const size_t size                  = nTs * sizeof(T);
+    void* ptr                          = nullptr;
+    arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end;
          ++iter)
     {
@@ -402,7 +402,7 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
-    void*                          ptr = const_cast<void*>(cptr);
+    void* ptr                          = const_cast<void*>(cptr);
     arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end;
          ++iter)
@@ -427,8 +427,8 @@ private:
 #endif
 
   arena_container_type m_arenas;
-  size_t               m_default_arena_size;
-  allocator_t          m_alloc;
+  size_t m_default_arena_size;
+  allocator_t m_alloc;
 };
 
 //! example allocator for basic_mempool using malloc/free

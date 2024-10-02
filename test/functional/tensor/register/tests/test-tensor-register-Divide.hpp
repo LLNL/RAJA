@@ -22,11 +22,11 @@ void DivideImpl()
   // Allocate
 
   std::vector<element_t> input0_vec(num_elem);
-  element_t*             input0_hptr = input0_vec.data();
+  element_t* input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> input1_vec(num_elem);
-  element_t*             input1_hptr = input1_vec.data();
+  element_t* input1_hptr = input1_vec.data();
   element_t* input1_dptr = tensor_malloc<policy_t, element_t>(num_elem);
 
   std::vector<element_t> output0_vec(num_elem);
@@ -164,8 +164,8 @@ void DivideImpl()
     {
       if (lane < N)
       {
-        ASSERT_SCALAR_EQ(
-            input0_vec[lane] / input1_vec[lane], output0_vec[lane]);
+        ASSERT_SCALAR_EQ(input0_vec[lane] / input1_vec[lane],
+                         output0_vec[lane]);
       }
       else
       {

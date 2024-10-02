@@ -47,12 +47,11 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename TPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct SyclStatementExecutor<
     Data,
     statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
@@ -121,21 +120,18 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    int         BlockDim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Tile<
-        ArgumentId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_group_012_direct<BlockDim>,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_group_012_direct<BlockDim>,
+                                             EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -219,21 +215,18 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    int         BlockDim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Tile<
-        ArgumentId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_group_012_loop<BlockDim>,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int BlockDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_group_012_loop<BlockDim>,
+                                             EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -312,21 +305,18 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    int         ThreadDim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Tile<
-        ArgumentId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_local_012_direct<ThreadDim>,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_local_012_direct<ThreadDim>,
+                                             EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -404,21 +394,18 @@ struct SyclStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    camp::idx_t chunk_size,
-    int         ThreadDim,
-    typename... EnclosedStmts,
-    typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Tile<
-        ArgumentId,
-        RAJA::tile_fixed<chunk_size>,
-        sycl_local_012_loop<ThreadDim>,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          camp::idx_t chunk_size,
+          int ThreadDim,
+          typename... EnclosedStmts,
+          typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_local_012_loop<ThreadDim>,
+                                             EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;

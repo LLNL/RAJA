@@ -184,10 +184,10 @@ struct LaunchDims
           ((launch_global.z / launch_local.z) + 1) * launch_local.z;
     }
 
-    cl::sycl::range<3> ret_th = {
-        launch_local.x, launch_local.y, launch_local.z};
-    cl::sycl::range<3> ret_gl = {
-        launch_global.x, launch_global.y, launch_global.z};
+    cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y,
+                                 launch_local.z};
+    cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y,
+                                 launch_global.z};
 
     return cl::sycl::nd_range<3>(ret_gl, ret_th);
   }

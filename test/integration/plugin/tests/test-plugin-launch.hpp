@@ -53,8 +53,8 @@ void PluginLaunchTestImpl()
   }
 
   CounterData plugin_data;
-  plugin_test_resource->memcpy(
-      &plugin_data, plugin_test_data, sizeof(CounterData));
+  plugin_test_resource->memcpy(&plugin_data, plugin_test_data,
+                               sizeof(CounterData));
   ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
   ASSERT_EQ(plugin_data.capture_counter_pre, 10);
   ASSERT_EQ(plugin_data.capture_counter_post, 10);

@@ -20,17 +20,14 @@ void testFractionMultiplyTypesValues()
 
   ASSERT_EQ(Frac::multiply(IntegerType(0)), IntegerType(0));
 
-  ASSERT_EQ(
-      Frac::multiply(IntegerType(1)),
-      IntegerType(double(numerator) / double(denominator)));
+  ASSERT_EQ(Frac::multiply(IntegerType(1)),
+            IntegerType(double(numerator) / double(denominator)));
 
-  ASSERT_EQ(
-      Frac::multiply(IntegerType(100)),
-      IntegerType(double(numerator) / double(denominator) * double(100)));
+  ASSERT_EQ(Frac::multiply(IntegerType(100)),
+            IntegerType(double(numerator) / double(denominator) * double(100)));
 
-  ASSERT_EQ(
-      Frac::multiply(IntegerType(101)),
-      IntegerType(double(numerator) / double(denominator) * double(101)));
+  ASSERT_EQ(Frac::multiply(IntegerType(101)),
+            IntegerType(double(numerator) / double(denominator) * double(101)));
 
   // Test where naive algorithm causes overflow, when within precision of double
   if /*constexpr*/ (sizeof(IntegerType) < sizeof(double))

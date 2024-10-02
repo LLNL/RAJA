@@ -43,11 +43,10 @@ template <camp::idx_t idx, camp::idx_t N, typename StmtList, typename Types>
 struct StatementListExecutor;
 
 
-template <
-    camp::idx_t statement_index,
-    camp::idx_t num_statements,
-    typename StmtList,
-    typename Types>
+template <camp::idx_t statement_index,
+          camp::idx_t num_statements,
+          typename StmtList,
+          typename Types>
 struct StatementListExecutor
 {
 
@@ -62,9 +61,8 @@ struct StatementListExecutor
     StatementExecutor<statement, Types>::exec(std::forward<Data>(data));
 
     // call our next statement
-    StatementListExecutor<
-        statement_index + 1, num_statements, StmtList,
-        Types>::exec(std::forward<Data>(data));
+    StatementListExecutor<statement_index + 1, num_statements, StmtList,
+                          Types>::exec(std::forward<Data>(data));
   }
 };
 

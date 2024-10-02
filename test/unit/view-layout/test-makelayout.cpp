@@ -241,8 +241,8 @@ TEST(StaticLayoutUnitTest, 4D_PermutedStaticLayout)
       {
         for (int l = 0; l < 5; ++l)
         {
-          ASSERT_EQ(
-              dynamic_layout(i, j, k, l), static_layout::s_oper(i, j, k, l));
+          ASSERT_EQ(dynamic_layout(i, j, k, l),
+                    static_layout::s_oper(i, j, k, l));
         }
       }
     }

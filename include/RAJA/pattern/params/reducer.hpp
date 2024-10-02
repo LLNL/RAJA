@@ -48,7 +48,7 @@ struct ValLoc
   bool constexpr operator<(const ValLoc& rhs) const { return val < rhs.val; }
   bool constexpr operator>(const ValLoc& rhs) const { return val > rhs.val; }
 
-  value_type       getVal() { return val; }
+  value_type getVal() { return val; }
   RAJA::Index_type getLoc() { return loc; }
 
 private:
@@ -109,14 +109,14 @@ struct Reducer : public ForallParamBase
   Reducer(value_type* target_in) : target(target_in), val(op::identity()) {}
 
   value_type* target = nullptr;
-  value_type  val    = op::identity();
+  value_type val     = op::identity();
 
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) ||                   \
     defined(RAJA_SYCL_ACTIVE)
   // Device related attributes.
-  value_type*                                         devicetarget = nullptr;
+  value_type* devicetarget = nullptr;
   RAJA::detail::SoAPtr<value_type, device_mem_pool_t> device_mem;
-  unsigned int*                                       device_count = nullptr;
+  unsigned int* device_count = nullptr;
 #endif
 
   using ARG_TUP_T = camp::tuple<value_type*>;

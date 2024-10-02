@@ -23,8 +23,8 @@ TEST(Span, basic_assign_Span) {RAJA_SPAN_RUN_TEST(testSpanAssignTypes)}
 
 TEST(Span, basic_iterator_Span) {RAJA_SPAN_RUN_TEST(testSpanIteratorTypes)}
 
-TEST(Span, basic_element_access_Span) {
-    RAJA_SPAN_RUN_TEST(testSpanElementAccessTypes)}
+TEST(Span,
+     basic_element_access_Span) {RAJA_SPAN_RUN_TEST(testSpanElementAccessTypes)}
 
 TEST(Span, basic_observe_Span) {RAJA_SPAN_RUN_TEST(testSpanObserveTypes)}
 

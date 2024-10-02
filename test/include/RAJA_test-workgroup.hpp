@@ -88,16 +88,16 @@ struct ResourceAllocator
     Resource const& get_resource() const { return m_res; }
 
     template <typename U>
-    friend inline bool
-    operator==(std_allocator const& /*lhs*/, std_allocator<U> const& /*rhs*/)
+    friend inline bool operator==(std_allocator const& /*lhs*/,
+                                  std_allocator<U> const& /*rhs*/)
     {
       return true;  // lhs.get_resource() == rhs.get_resource(); // TODO not
                     // equality comparable yet
     }
 
     template <typename U>
-    friend inline bool
-    operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator!=(std_allocator const& lhs,
+                                  std_allocator<U> const& rhs)
     {
       return !(lhs == rhs);
     }
@@ -137,8 +137,8 @@ struct NeverEqualAllocator
   /*[[nodiscard]]*/
   void* allocate(size_t size)
   {
-    void* ptr    = malloc(size);
-    auto  iter_b = m_allocations.emplace(ptr, size);
+    void* ptr   = malloc(size);
+    auto iter_b = m_allocations.emplace(ptr, size);
     if (!iter_b.second)
     {
       RAJA_ABORT_OR_THROW("failed to add allocation to map");
@@ -286,15 +286,15 @@ struct WorkStorageTestAllocator
     AllocatorImpl const& get_impl() const { return m_impl; }
 
     template <typename U>
-    friend inline bool
-    operator==(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator==(std_allocator const& lhs,
+                                  std_allocator<U> const& rhs)
     {
       return lhs.get_impl() == rhs.get_impl();
     }
 
     template <typename U>
-    friend inline bool
-    operator!=(std_allocator const& lhs, std_allocator<U> const& rhs)
+    friend inline bool operator!=(std_allocator const& lhs,
+                                  std_allocator<U> const& rhs)
     {
       return !(lhs == rhs);
     }
@@ -322,10 +322,10 @@ using SequentialOrderedPolicyList =
     camp::list<RAJA::ordered, RAJA::reverse_ordered>;
 using SequentialOrderPolicyList =
     camp::list<RAJA::ordered, RAJA::reverse_ordered>;
-using SequentialStoragePolicyList = camp::list<
-    RAJA::array_of_pointers,
-    RAJA::ragged_array_of_objects,
-    RAJA::constant_stride_array_of_objects>;
+using SequentialStoragePolicyList =
+    camp::list<RAJA::array_of_pointers,
+               RAJA::ragged_array_of_objects,
+               RAJA::constant_stride_array_of_objects>;
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPExecPolicyList    = camp::list<RAJA::omp_work>;
@@ -352,10 +352,10 @@ using CudaExecPolicyList = camp::list<
     RAJA::cuda_work<1024>,
     RAJA::cuda_work_explicit<256, 2>>;
 using CudaOrderedPolicyList = SequentialOrderedPolicyList;
-using CudaOrderPolicyList   = camp::list<
-    RAJA::ordered,
-    RAJA::reverse_ordered,
-    RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average>;
+using CudaOrderPolicyList =
+    camp::list<RAJA::ordered,
+               RAJA::reverse_ordered,
+               RAJA::unordered_cuda_loop_y_block_iter_x_threadblock_average>;
 using CudaStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -366,10 +366,10 @@ using HipExecPolicyList = camp::list<
 #endif
     RAJA::hip_work<1024>>;
 using HipOrderedPolicyList = SequentialOrderedPolicyList;
-using HipOrderPolicyList   = camp::list<
-    RAJA::ordered,
-    RAJA::reverse_ordered,
-    RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average>;
+using HipOrderPolicyList =
+    camp::list<RAJA::ordered,
+               RAJA::reverse_ordered,
+               RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average>;
 using HipStoragePolicyList = SequentialStoragePolicyList;
 #endif
 
@@ -415,12 +415,12 @@ using OpenMPTargetAllocatorList = camp::list<typename detail::ResourceAllocator<
 //
 // Memory resource types for testing different std allocator requirements
 //
-using WorkStorageAllocatorList = camp::list<
-    typename detail::WorkStorageTestAllocator<
-        detail::AlwaysEqualAllocator>::template std_allocator<char>,
-    typename detail::WorkStorageTestAllocator<
-        detail::NeverEqualAllocator>::template std_allocator<char>,
-    typename detail::WorkStorageTestAllocator<
-        detail::PropogatingAllocator>::template std_allocator<char>>;
+using WorkStorageAllocatorList =
+    camp::list<typename detail::WorkStorageTestAllocator<
+                   detail::AlwaysEqualAllocator>::template std_allocator<char>,
+               typename detail::WorkStorageTestAllocator<
+                   detail::NeverEqualAllocator>::template std_allocator<char>,
+               typename detail::WorkStorageTestAllocator<
+                   detail::PropogatingAllocator>::template std_allocator<char>>;
 
 #endif  // __TEST_WORKGROUP_UTILS_HPP__

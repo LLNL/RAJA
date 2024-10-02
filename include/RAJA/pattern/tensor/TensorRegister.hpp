@@ -53,9 +53,8 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<
-            RAJA::internal::expt::TensorRegisterConcreteBase,
-            RIGHT>::value,
+        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
+                        RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator+(LEFT const& lhs, RIGHT const& rhs)
 {
@@ -71,9 +70,8 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<
-            RAJA::internal::expt::TensorRegisterConcreteBase,
-            RIGHT>::value,
+        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
+                        RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator-(LEFT const& lhs, RIGHT const& rhs)
 {
@@ -89,9 +87,8 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<
-            RAJA::internal::expt::TensorRegisterConcreteBase,
-            RIGHT>::value,
+        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
+                        RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator*(LEFT const& lhs, RIGHT const& rhs)
 {
@@ -107,9 +104,8 @@ template <
     typename RIGHT,
     typename std::enable_if<std::is_arithmetic<LEFT>::value, bool>::type = true,
     typename std::enable_if<
-        std::is_base_of<
-            RAJA::internal::expt::TensorRegisterConcreteBase,
-            RIGHT>::value,
+        std::is_base_of<RAJA::internal::expt::TensorRegisterConcreteBase,
+                        RIGHT>::value,
         bool>::type = true>
 RAJA_INLINE RAJA_HOST_DEVICE RIGHT operator/(LEFT const& lhs, RIGHT const& rhs)
 {

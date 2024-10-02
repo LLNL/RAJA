@@ -48,15 +48,14 @@ namespace internal
  * Assigns the tile index to param ParamId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    kernel_sync_requirement sync,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          kernel_sync_requirement sync,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::TileTCount<
@@ -80,12 +79,12 @@ struct HipStatementExecutor<
 
   using Base = HipStatementExecutor<
       Data,
-      statement::Tile<
-          ArgumentId,
-          RAJA::tile_fixed<chunk_size>,
-          RAJA::policy::hip::
-              hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-          EnclosedStmts...>,
+      statement::Tile<ArgumentId,
+                      RAJA::tile_fixed<chunk_size>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
+                                                     sync,
+                                                     IndexMapper>,
+                      EnclosedStmts...>,
       Types>;
 
   using typename Base::diff_t;
@@ -128,14 +127,13 @@ struct HipStatementExecutor<
  * Assigns the tile index to param ParamId
  * Meets all sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::TileTCount<
@@ -221,14 +219,13 @@ struct HipStatementExecutor<
  * Assigns the tile index to param ParamId
  * Meets no sync requirements
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    camp::idx_t chunk_size,
-    typename IndexMapper,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          camp::idx_t chunk_size,
+          typename IndexMapper,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::TileTCount<
@@ -309,13 +306,12 @@ struct HipStatementExecutor<
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <
-    typename Data,
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename TPol,
-    typename... EnclosedStmts,
-    typename Types>
+template <typename Data,
+          camp::idx_t ArgumentId,
+          typename ParamId,
+          typename TPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct HipStatementExecutor<
     Data,
     statement::
@@ -330,10 +326,9 @@ struct HipStatementExecutor<
               RAJA::policy::hip::hip_indexer<
                   iteration_mapping::StridedLoop<named_usage::unspecified>,
                   kernel_sync_requirement::none,
-                  hip::IndexGlobal<
-                      named_dim::x,
-                      named_usage::ignored,
-                      named_usage::ignored>>,
+                  hip::IndexGlobal<named_dim::x,
+                                   named_usage::ignored,
+                                   named_usage::ignored>>,
               EnclosedStmts...>,
           Types>
 {};

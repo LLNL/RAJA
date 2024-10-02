@@ -34,7 +34,7 @@ void ET_TransposeImpl()
 
   // alloc input0
 
-  std::vector<element_t>                 input0_vec(N * M);
+  std::vector<element_t> input0_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> input0_h(input0_vec.data(), N, M);
 
   element_t* input0_ptr = tensor_malloc<policy_t>(input0_vec);
@@ -54,7 +54,7 @@ void ET_TransposeImpl()
 
   // alloc output0
 
-  std::vector<element_t>                 output0_vec(N * M);
+  std::vector<element_t> output0_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output0_h(output0_vec.data(), M, N);
 
   element_t* output0_ptr = tensor_malloc<policy_t>(output0_vec);
@@ -63,7 +63,7 @@ void ET_TransposeImpl()
 
   // alloc output1
 
-  std::vector<element_t>                 output1_vec(N * M);
+  std::vector<element_t> output1_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output1_h(output1_vec.data(), M, N);
 
   element_t* output1_ptr = tensor_malloc<policy_t>(output1_vec);
@@ -72,7 +72,7 @@ void ET_TransposeImpl()
 
   // alloc output2
 
-  std::vector<element_t>                 output2_vec(N * M);
+  std::vector<element_t> output2_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output2_h(output2_vec.data(), M, N);
 
   element_t* output2_ptr = tensor_malloc<policy_t>(output2_vec);
@@ -81,7 +81,7 @@ void ET_TransposeImpl()
 
   // alloc output3
 
-  std::vector<element_t>                 output3_vec(N * M);
+  std::vector<element_t> output3_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output3_h(output3_vec.data(), M, N);
 
   element_t* output3_ptr = tensor_malloc<policy_t>(output3_vec);
@@ -90,7 +90,7 @@ void ET_TransposeImpl()
 
   // alloc output4
 
-  std::vector<element_t>                 output4_vec(N * M);
+  std::vector<element_t> output4_vec(N * M);
   RAJA::View<element_t, RAJA::Layout<2>> output4_h(output4_vec.data(), M, N);
 
   element_t* output4_ptr = tensor_malloc<policy_t>(output4_vec);

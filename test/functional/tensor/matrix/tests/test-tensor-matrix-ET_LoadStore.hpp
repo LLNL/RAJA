@@ -24,8 +24,8 @@ void ET_LoadStoreImpl()
   //
 
   // alloc data1
-  std::vector<element_t> data1_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
+  std::vector<element_t> data1_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(
       data1_vec.data(), matrix_t::s_num_rows, matrix_t::s_num_columns);
 
@@ -35,8 +35,8 @@ void ET_LoadStoreImpl()
 
 
   // alloc data2
-  std::vector<element_t> data2_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
+  std::vector<element_t> data2_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(
       data2_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 
@@ -46,25 +46,21 @@ void ET_LoadStoreImpl()
 
 
   // alloc data3 with StaticLayout
-  std::vector<element_t> data3_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
-  RAJA::View<
-      element_t,
-      RAJA::StaticLayout<
-          RAJA::PERM_IJ, matrix_t::s_num_rows, matrix_t::s_num_columns>>
+  std::vector<element_t> data3_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ, matrix_t::s_num_rows,
+                                           matrix_t::s_num_columns>>
       data3_h(data3_vec.data());
 
   element_t* data3_ptr = tensor_malloc<policy_t>(data3_vec);
-  RAJA::View<
-      element_t,
-      RAJA::StaticLayout<
-          RAJA::PERM_IJ, matrix_t::s_num_rows, matrix_t::s_num_columns>>
+  RAJA::View<element_t, RAJA::StaticLayout<RAJA::PERM_IJ, matrix_t::s_num_rows,
+                                           matrix_t::s_num_columns>>
       data3_d(data3_ptr);
 
 
   // alloc data4
-  std::vector<element_t> data4_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
+  std::vector<element_t> data4_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data4_h(
       data4_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 
@@ -74,8 +70,8 @@ void ET_LoadStoreImpl()
 
 
   // alloc data5
-  std::vector<element_t> data5_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
+  std::vector<element_t> data5_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data5_h(
       data5_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 
@@ -85,8 +81,8 @@ void ET_LoadStoreImpl()
 
 
   // alloc data6
-  std::vector<element_t> data6_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
+  std::vector<element_t> data6_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data6_h(
       data6_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 
@@ -96,8 +92,8 @@ void ET_LoadStoreImpl()
 
 
   // alloc data7
-  std::vector<element_t> data7_vec(
-      matrix_t::s_num_rows * matrix_t::s_num_columns);
+  std::vector<element_t> data7_vec(matrix_t::s_num_rows *
+                                   matrix_t::s_num_columns);
   RAJA::View<element_t, RAJA::Layout<2>> data7_h(
       data7_vec.data(), matrix_t::s_num_columns, matrix_t::s_num_rows);
 

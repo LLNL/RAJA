@@ -11,12 +11,11 @@
 #include <numeric>
 #include <vector>
 
-template <
-    typename INDEX_TYPE,
-    typename DATA_TYPE,
-    typename WORKING_RES,
-    typename EXEC_POLICY,
-    typename REDUCE_POLICY>
+template <typename INDEX_TYPE,
+          typename DATA_TYPE,
+          typename WORKING_RES,
+          typename EXEC_POLICY,
+          typename REDUCE_POLICY>
 void KernelTileFixed2DMinMaxTestImpl(const int rows, const int cols)
 {
   // This test reduces min and max with tiling.
@@ -29,8 +28,8 @@ void KernelTileFixed2DMinMaxTestImpl(const int rows, const int cols)
 
   INDEX_TYPE array_length = rows * cols;
 
-  allocateForallTestData<DATA_TYPE>(
-      array_length, work_res, &work_array, &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(array_length, work_res, &work_array,
+                                    &check_array, &test_array);
 
   // initialize arrays
   std::iota(test_array, test_array + array_length, 1);
@@ -55,25 +54,23 @@ void KernelTileFixed2DMinMaxTestImpl(const int rows, const int cols)
     colidx.push_back(ii);
   }
 
-  RAJA::TypedListSegment<INDEX_TYPE> colrange(
-      &colidx[0], colidx.size(), work_res);
+  RAJA::TypedListSegment<INDEX_TYPE> colrange(&colidx[0], colidx.size(),
+                                              work_res);
 
   // find min and max on target platform
-  RAJA::kernel<EXEC_POLICY>(
-      RAJA::make_tuple(colrange, rowrange),
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr)
-      {
-        workmin.min(WorkView(rr, cc));
-        workmax.max(WorkView(rr, cc));
-      });
+  RAJA::kernel<EXEC_POLICY>(RAJA::make_tuple(colrange, rowrange),
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE cc, INDEX_TYPE rr)
+                            {
+                              workmin.min(WorkView(rr, cc));
+                              workmax.max(WorkView(rr, cc));
+                            });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(-1), static_cast<DATA_TYPE>(workmin.get()));
-  ASSERT_EQ(
-      static_cast<DATA_TYPE>(array_length + 2),
-      static_cast<DATA_TYPE>(workmax.get()));
+  ASSERT_EQ(static_cast<DATA_TYPE>(array_length + 2),
+            static_cast<DATA_TYPE>(workmax.get()));
 
-  deallocateForallTestData<DATA_TYPE>(
-      work_res, work_array, check_array, test_array);
+  deallocateForallTestData<DATA_TYPE>(work_res, work_array, check_array,
+                                      test_array);
 }
 
 
@@ -90,16 +87,15 @@ TYPED_TEST_P(KernelTileFixed2DMinMaxTest, TileFixed2DMinMaxKernel)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  KernelTileFixed2DMinMaxTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(10, 10);
-  KernelTileFixed2DMinMaxTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(151, 111);
-  KernelTileFixed2DMinMaxTestImpl<
-      INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(362, 362);
+  KernelTileFixed2DMinMaxTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
+                                  EXEC_POLICY, REDUCE_POLICY>(10, 10);
+  KernelTileFixed2DMinMaxTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
+                                  EXEC_POLICY, REDUCE_POLICY>(151, 111);
+  KernelTileFixed2DMinMaxTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES,
+                                  EXEC_POLICY, REDUCE_POLICY>(362, 362);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelTileFixed2DMinMaxTest,
-    TileFixed2DMinMaxKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelTileFixed2DMinMaxTest,
+                            TileFixed2DMinMaxKernel);
 
 #endif  // __TEST_KERNEL_TILE_FIXED2DMINMAX_HPP__

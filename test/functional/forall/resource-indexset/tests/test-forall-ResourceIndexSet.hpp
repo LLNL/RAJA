@@ -23,10 +23,10 @@ void ForallResourceIndexSetTestImpl()
   using IndexSetType =
       RAJA::TypedIndexSet<RangeSegType, RangeStrideSegType, ListSegType>;
 
-  WORKING_RES               working_res;
+  WORKING_RES working_res;
   camp::resources::Resource erased_working_res {working_res};
 
-  IndexSetType            iset;
+  IndexSetType iset;
   std::vector<INDEX_TYPE> is_indices;
   buildIndexSet<INDEX_TYPE, RangeSegType, RangeStrideSegType, ListSegType>(
       iset, is_indices, erased_working_res);
@@ -43,8 +43,8 @@ void ForallResourceIndexSetTestImpl()
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -55,9 +55,9 @@ void ForallResourceIndexSetTestImpl()
     test_array[is_indices[i]] = is_indices[i];
   }
 
-  RAJA::forall<EXEC_POLICY>(
-      working_res, iset,
-      [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) { working_array[idx] = idx; });
+  RAJA::forall<EXEC_POLICY>(working_res, iset,
+                            [=] RAJA_HOST_DEVICE(INDEX_TYPE idx)
+                            { working_array[idx] = idx; });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * N);
 
@@ -67,8 +67,8 @@ void ForallResourceIndexSetTestImpl()
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 

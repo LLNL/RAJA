@@ -19,14 +19,13 @@
 #include <vector>
 
 
-template <
-    typename ExecPolicy,
-    typename OrderPolicy,
-    typename StoragePolicy,
-    typename DispatchTyper,
-    typename IndexType,
-    typename Allocator,
-    typename WORKING_RES>
+template <typename ExecPolicy,
+          typename OrderPolicy,
+          typename StoragePolicy,
+          typename DispatchTyper,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES>
 struct testWorkGroupOrderedSingle
 {
   void operator()(IndexType begin, IndexType end) const
@@ -35,15 +34,15 @@ struct testWorkGroupOrderedSingle
     ASSERT_GE(end, begin);
     IndexType N = end + begin;
 
-    WORKING_RES               res = WORKING_RES::get_default();
+    WORKING_RES res = WORKING_RES::get_default();
     camp::resources::Resource working_res {res};
 
     IndexType* working_array;
     IndexType* check_array;
     IndexType* test_array;
 
-    allocateForallTestData<IndexType>(
-        N, working_res, &working_array, &check_array, &test_array);
+    allocateForallTestData<IndexType>(N, working_res, &working_array,
+                                      &check_array, &test_array);
 
     IndexType const test_val(5);
 
@@ -59,20 +58,20 @@ struct testWorkGroupOrderedSingle
         camp::list<range_segment, decltype(callable1)>,
         camp::list<range_segment, decltype(callable2)>>;
 
-    using WorkPool_type = RAJA::WorkPool<
-        RAJA::WorkGroupPolicy<
-            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
-        IndexType, RAJA::xargs<>, Allocator>;
+    using WorkPool_type =
+        RAJA::WorkPool<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkGroup_type = RAJA::WorkGroup<
-        RAJA::WorkGroupPolicy<
-            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
-        IndexType, RAJA::xargs<>, Allocator>;
+    using WorkGroup_type =
+        RAJA::WorkGroup<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                              StoragePolicy, DispatchPolicy>,
+                        IndexType, RAJA::xargs<>, Allocator>;
 
-    using WorkSite_type = RAJA::WorkSite<
-        RAJA::WorkGroupPolicy<
-            ExecPolicy, OrderPolicy, StoragePolicy, DispatchPolicy>,
-        IndexType, RAJA::xargs<>, Allocator>;
+    using WorkSite_type =
+        RAJA::WorkSite<RAJA::WorkGroupPolicy<ExecPolicy, OrderPolicy,
+                                             StoragePolicy, DispatchPolicy>,
+                       IndexType, RAJA::xargs<>, Allocator>;
 
     {
       for (IndexType i = IndexType(0); i < N; i++)
@@ -118,8 +117,8 @@ struct testWorkGroupOrderedSingle
     }
 
 
-    deallocateForallTestData<IndexType>(
-        working_res, working_array, check_array, test_array);
+    deallocateForallTestData<IndexType>(working_res, working_array, check_array,
+                                        test_array);
   }
 };
 
@@ -127,13 +126,12 @@ struct testWorkGroupOrderedSingle
 #if defined(RAJA_ENABLE_HIP) && !defined(RAJA_ENABLE_HIP_INDIRECT_FUNCTION_CALL)
 
 /// leave unsupported types untested
-template <
-    size_t BLOCK_SIZE,
-    bool   Async,
-    typename StoragePolicy,
-    typename IndexType,
-    typename Allocator,
-    typename WORKING_RES>
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES>
 struct testWorkGroupOrderedSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -146,13 +144,12 @@ struct testWorkGroupOrderedSingle<
   void operator()(IndexType, IndexType) const {}
 };
 ///
-template <
-    size_t BLOCK_SIZE,
-    bool   Async,
-    typename StoragePolicy,
-    typename IndexType,
-    typename Allocator,
-    typename WORKING_RES>
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename StoragePolicy,
+          typename IndexType,
+          typename Allocator,
+          typename WORKING_RES>
 struct testWorkGroupOrderedSingle<
     RAJA::hip_work<BLOCK_SIZE, Async>,
     RAJA::unordered_hip_loop_y_block_iter_x_threadblock_average,
@@ -175,9 +172,8 @@ class WorkGroupBasicOrderedSingleFunctionalTest : public ::testing::Test
 TYPED_TEST_SUITE_P(WorkGroupBasicOrderedSingleFunctionalTest);
 
 
-TYPED_TEST_P(
-    WorkGroupBasicOrderedSingleFunctionalTest,
-    BasicWorkGroupOrderedSingle)
+TYPED_TEST_P(WorkGroupBasicOrderedSingleFunctionalTest,
+             BasicWorkGroupOrderedSingle)
 {
   using ExecPolicy       = typename camp::at<TypeParam, camp::num<0>>::type;
   using OrderPolicy      = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -199,15 +195,15 @@ TYPED_TEST_P(
   IndexType b3 = dist_type(e2, IndexType(1023))(rng);
   IndexType e3 = dist_type(b3, IndexType(1024))(rng);
 
-  testWorkGroupOrderedSingle<
-      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
-      Allocator, WORKING_RESOURCE> {}(b1, e1);
-  testWorkGroupOrderedSingle<
-      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
-      Allocator, WORKING_RESOURCE> {}(b2, e2);
-  testWorkGroupOrderedSingle<
-      ExecPolicy, OrderPolicy, StoragePolicy, DispatchTyper, IndexType,
-      Allocator, WORKING_RESOURCE> {}(b3, e3);
+  testWorkGroupOrderedSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator,
+                             WORKING_RESOURCE> {}(b1, e1);
+  testWorkGroupOrderedSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator,
+                             WORKING_RESOURCE> {}(b2, e2);
+  testWorkGroupOrderedSingle<ExecPolicy, OrderPolicy, StoragePolicy,
+                             DispatchTyper, IndexType, Allocator,
+                             WORKING_RESOURCE> {}(b3, e3);
 }
 
 #endif  //__TEST_WORKGROUP_ORDERED_SINGLE__

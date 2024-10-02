@@ -27,7 +27,7 @@ void ET_SubtractImpl()
   //
 
   // alloc data1
-  std::vector<element_t>                 data1_vec(N * N);
+  std::vector<element_t> data1_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data1_h(data1_vec.data(), N, N);
 
   element_t* data1_ptr = tensor_malloc<policy_t>(data1_vec);
@@ -35,7 +35,7 @@ void ET_SubtractImpl()
 
 
   // alloc data2
-  std::vector<element_t>                 data2_vec(N * N);
+  std::vector<element_t> data2_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data2_h(data2_vec.data(), N, N);
 
   element_t* data2_ptr = tensor_malloc<policy_t>(data2_vec);
@@ -63,7 +63,7 @@ void ET_SubtractImpl()
 
 
   // alloc data5
-  std::vector<element_t>                 data5_vec(N * N);
+  std::vector<element_t> data5_vec(N * N);
   RAJA::View<element_t, RAJA::Layout<2>> data5_h(data5_vec.data(), N, N);
 
   element_t* data5_ptr = tensor_malloc<policy_t>(data5_vec);
@@ -125,9 +125,8 @@ void ET_SubtractImpl()
   {
     for (camp::idx_t j = 0; j < N; ++j)
     {
-      ASSERT_SCALAR_EQ(
-          data5_h(j, i),
-          data1_h(i, j) - data2_h(j, i) + data3_h(i, j) - data4_h(j, i));
+      ASSERT_SCALAR_EQ(data5_h(j, i), data1_h(i, j) - data2_h(j, i) +
+                                          data3_h(i, j) - data4_h(j, i));
       //      printf("%d,%d:  %lf, %lf\n", (int)i, (int)j, data1(i,j),
       //      data2(i,j));
     }

@@ -57,36 +57,35 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi32(
-        N >= 8 ? -1 : 0, N >= 7 ? -1 : 0, N >= 6 ? -1 : 0, N >= 5 ? -1 : 0,
-        N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
+    return _mm256_set_epi32(N >= 8 ? -1 : 0, N >= 7 ? -1 : 0, N >= 6 ? -1 : 0,
+                            N >= 5 ? -1 : 0, N >= 4 ? -1 : 0, N >= 3 ? -1 : 0,
+                            N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
   }
 
   RAJA_INLINE
   __m256i createStridedOffsets(camp::idx_t stride) const
   {
     // Generate a strided offset list
-    return _mm256_set_epi32(
-        7 * stride, 6 * stride, 5 * stride, 4 * stride, 3 * stride, 2 * stride,
-        stride, 0);
+    return _mm256_set_epi32(7 * stride, 6 * stride, 5 * stride, 4 * stride,
+                            3 * stride, 2 * stride, stride, 0);
   }
 
   RAJA_INLINE
   __m256i createPermute1(camp::idx_t N) const
   {
     // Generate a permutation for first round of min/max routines
-    return _mm256_set_epi32(
-        N >= 7 ? 6 : 0, N >= 8 ? 7 : 0, N >= 5 ? 4 : 0, N >= 6 ? 5 : 0,
-        N >= 3 ? 2 : 0, N >= 4 ? 3 : 0, N >= 1 ? 0 : 0, N >= 2 ? 1 : 0);
+    return _mm256_set_epi32(N >= 7 ? 6 : 0, N >= 8 ? 7 : 0, N >= 5 ? 4 : 0,
+                            N >= 6 ? 5 : 0, N >= 3 ? 2 : 0, N >= 4 ? 3 : 0,
+                            N >= 1 ? 0 : 0, N >= 2 ? 1 : 0);
   }
 
   RAJA_INLINE
   __m256i createPermute2(camp::idx_t N) const
   {
     // Generate a permutation for second round of min/max routines
-    return _mm256_set_epi32(
-        N >= 6 ? 5 : 0, N >= 5 ? 4 : 0, N >= 8 ? 7 : 0, N >= 7 ? 6 : 0,
-        N >= 2 ? 1 : 0, N >= 1 ? 0 : 0, N >= 4 ? 3 : 0, N >= 2 ? 2 : 0);
+    return _mm256_set_epi32(N >= 6 ? 5 : 0, N >= 5 ? 4 : 0, N >= 8 ? 7 : 0,
+                            N >= 7 ? 6 : 0, N >= 2 ? 1 : 0, N >= 1 ? 0 : 0,
+                            N >= 4 ? 3 : 0, N >= 2 ? 2 : 0);
   }
 
 public:
@@ -103,15 +102,14 @@ public:
    * @brief Construct register with explicit values
    */
   RAJA_INLINE
-  Register(
-      element_type x0,
-      element_type x1,
-      element_type x2,
-      element_type x3,
-      element_type x4,
-      element_type x5,
-      element_type x6,
-      element_type x7)
+  Register(element_type x0,
+           element_type x1,
+           element_type x2,
+           element_type x3,
+           element_type x4,
+           element_type x5,
+           element_type x6,
+           element_type x7)
       : m_value(_mm256_set_epi32(x7, x6, x5, x4, x3, x2, x1, x0))
   {}
 
@@ -183,8 +181,8 @@ public:
   RAJA_INLINE
   self_type& load_strided(element_type const* ptr, camp::idx_t stride)
   {
-    m_value = _mm256_i32gather_epi32(
-        ptr, createStridedOffsets(stride), sizeof(element_type));
+    m_value = _mm256_i32gather_epi32(ptr, createStridedOffsets(stride),
+                                     sizeof(element_type));
     return *this;
   }
 
@@ -198,9 +196,9 @@ public:
   self_type&
   load_strided_n(element_type const* ptr, camp::idx_t stride, camp::idx_t N)
   {
-    m_value = _mm256_mask_i32gather_epi32(
-        _mm256_setzero_si256(), ptr, createStridedOffsets(stride),
-        createMask(N), sizeof(element_type));
+    m_value = _mm256_mask_i32gather_epi32(_mm256_setzero_si256(), ptr,
+                                          createStridedOffsets(stride),
+                                          createMask(N), sizeof(element_type));
     return *this;
   }
 
@@ -395,10 +393,10 @@ public:
   self_type divide(self_type const& b) const
   {
     // AVX2 does not supply an integer divide, so do it manually
-    return self_type(_mm256_set_epi32(
-        get(7) / b.get(7), get(6) / b.get(6), get(5) / b.get(5),
-        get(4) / b.get(4), get(3) / b.get(3), get(2) / b.get(2),
-        get(1) / b.get(1), get(0) / b.get(0)));
+    return self_type(_mm256_set_epi32(get(7) / b.get(7), get(6) / b.get(6),
+                                      get(5) / b.get(5), get(4) / b.get(4),
+                                      get(3) / b.get(3), get(2) / b.get(2),
+                                      get(1) / b.get(1), get(0) / b.get(0)));
   }
 
   RAJA_HOST_DEVICE
@@ -452,8 +450,8 @@ public:
     auto sh2  = _mm256_permutevar8x32_epi32(red1, createPermute2(8));
     auto red2 = _mm256_max_epi32(red1, sh2);
 
-    return std::max<element_type>(
-        _mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
+    return std::max<element_type>(_mm256_extract_epi32(red2, 0),
+                                  _mm256_extract_epi32(red2, 4));
   }
 
   /*!
@@ -488,16 +486,16 @@ public:
     }
     if (N == 4)
     {
-      return std::max<element_type>(
-          _mm256_extract_epi32(red1, 0), _mm256_extract_epi32(red1, 2));
+      return std::max<element_type>(_mm256_extract_epi32(red1, 0),
+                                    _mm256_extract_epi32(red1, 2));
     }
 
     // swap odd-even quads and add
     auto sh2  = _mm256_permutevar8x32_epi32(red1, createPermute2(N));
     auto red2 = _mm256_max_epi32(red1, sh2);
 
-    return std::max<element_type>(
-        _mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
+    return std::max<element_type>(_mm256_extract_epi32(red2, 0),
+                                  _mm256_extract_epi32(red2, 4));
   }
 
   /*!
@@ -527,8 +525,8 @@ public:
     auto sh2  = _mm256_permutevar8x32_epi32(red1, createPermute2(8));
     auto red2 = _mm256_min_epi32(red1, sh2);
 
-    return std::min<element_type>(
-        _mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
+    return std::min<element_type>(_mm256_extract_epi32(red2, 0),
+                                  _mm256_extract_epi32(red2, 4));
   }
 
   /*!
@@ -563,16 +561,16 @@ public:
     }
     if (N == 4)
     {
-      return std::min<element_type>(
-          _mm256_extract_epi32(red1, 0), _mm256_extract_epi32(red1, 2));
+      return std::min<element_type>(_mm256_extract_epi32(red1, 0),
+                                    _mm256_extract_epi32(red1, 2));
     }
 
     // swap odd-even quads and add
     auto sh2  = _mm256_permutevar8x32_epi32(red1, createPermute2(N));
     auto red2 = _mm256_min_epi32(red1, sh2);
 
-    return std::min<element_type>(
-        _mm256_extract_epi32(red2, 0), _mm256_extract_epi32(red2, 4));
+    return std::min<element_type>(_mm256_extract_epi32(red2, 0),
+                                  _mm256_extract_epi32(red2, 4));
   }
 
   /*!

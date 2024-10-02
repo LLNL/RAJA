@@ -56,7 +56,7 @@ template <multi_reduce_algorithm t_algorithm>
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_algorithm;
-  static constexpr bool                   consistent =
+  static constexpr bool consistent =
       (algorithm == multi_reduce_algorithm::combine_on_get);
 };
 
@@ -75,9 +75,9 @@ struct ScheduleTag
 template <omp_sched_t Sched, int Chunk>
 struct Schedule : public ScheduleTag
 {
-  constexpr static omp_sched_t schedule   = Sched;
-  constexpr static int         chunk_size = Chunk;
-  constexpr static Policy      policy     = Policy::openmp;
+  constexpr static omp_sched_t schedule = Sched;
+  constexpr static int chunk_size       = Chunk;
+  constexpr static Policy policy        = Policy::openmp;
 };
 }  // namespace internal
 
@@ -113,8 +113,8 @@ using Dynamic = internal::Schedule<omp_sched_dynamic, ChunkSize>;
 template <int ChunkSize = default_chunk_size>
 using Guided = internal::Schedule<omp_sched_guided, ChunkSize>;
 
-struct Runtime : private internal::
-                     Schedule<static_cast<omp_sched_t>(-1), default_chunk_size>
+struct Runtime : private internal::Schedule<static_cast<omp_sched_t>(-1),
+                                            default_chunk_size>
 {};
 
 //
@@ -128,21 +128,20 @@ struct Runtime : private internal::
 ///
 ///  Struct supporting OpenMP parallel region.
 ///
-struct omp_parallel_region : make_policy_pattern_launch_platform_t<
-                                 Policy::openmp,
-                                 Pattern::region,
-                                 Launch::undefined,
-                                 Platform::host>
+struct omp_parallel_region
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::region,
+                                            Launch::undefined,
+                                            Platform::host>
 {};
 
 ///
 ///  Struct supporting OpenMP parallel region for Teams
 ///
-struct omp_launch_t : make_policy_pattern_launch_platform_t<
-                          Policy::openmp,
-                          Pattern::region,
-                          Launch::undefined,
-                          Platform::host>
+struct omp_launch_t : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                            Pattern::region,
+                                                            Launch::undefined,
+                                                            Platform::host>
 {};
 
 
@@ -150,14 +149,14 @@ struct omp_launch_t : make_policy_pattern_launch_platform_t<
 ///  Struct supporting OpenMP 'for nowait schedule( )'
 ///
 template <typename Sched>
-struct omp_for_nowait_schedule_exec : make_policy_pattern_launch_platform_t<
-                                          Policy::openmp,
-                                          Pattern::forall,
-                                          Launch::undefined,
-                                          Platform::host,
-                                          omp::For,
-                                          omp::NoWait,
-                                          Sched>
+struct omp_for_nowait_schedule_exec
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            omp::For,
+                                            omp::NoWait,
+                                            Sched>
 {
   static_assert(
       std::is_base_of<::RAJA::policy::omp::internal::ScheduleTag, Sched>::value,
@@ -169,13 +168,13 @@ struct omp_for_nowait_schedule_exec : make_policy_pattern_launch_platform_t<
 ///  Struct supporting OpenMP 'for schedule( )'
 ///
 template <typename Sched>
-struct omp_for_schedule_exec : make_policy_pattern_launch_platform_t<
-                                   Policy::openmp,
-                                   Pattern::forall,
-                                   Launch::undefined,
-                                   Platform::host,
-                                   omp::For,
-                                   Sched>
+struct omp_for_schedule_exec
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            omp::For,
+                                            Sched>
 {
   static_assert(
       std::is_base_of<::RAJA::policy::omp::internal::ScheduleTag, Sched>::value,
@@ -226,13 +225,13 @@ using omp_for_nowait_static_exec =
 ///  execution construct.
 ///
 template <typename InnerPolicy>
-using omp_parallel_exec = make_policy_pattern_launch_platform_t<
-    Policy::openmp,
-    Pattern::forall,
-    Launch::undefined,
-    Platform::host,
-    omp::Parallel,
-    wrapper<InnerPolicy>>;
+using omp_parallel_exec =
+    make_policy_pattern_launch_platform_t<Policy::openmp,
+                                          Pattern::forall,
+                                          Launch::undefined,
+                                          Platform::host,
+                                          omp::Parallel,
+                                          wrapper<InnerPolicy>>;
 
 ///
 ///  Internal type aliases supporting 'omp parallel for schedule( )' for
@@ -297,11 +296,10 @@ struct omp_taskgraph_interval_segit
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct omp_work : make_policy_pattern_launch_platform_t<
-                      Policy::openmp,
-                      Pattern::workgroup_exec,
-                      Launch::sync,
-                      Platform::host>
+struct omp_work : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                        Pattern::workgroup_exec,
+                                                        Launch::sync,
+                                                        Platform::host>
 {};
 
 ///
@@ -326,17 +324,15 @@ struct omp_multi_reduce_policy : make_policy_pattern_launch_platform_t<
                                      Pattern::multi_reduce,
                                      Launch::undefined,
                                      Platform::host,
-                                     std::conditional_t<
-                                         tuning::consistent,
-                                         reduce::ordered,
-                                         reduce::unordered>>
+                                     std::conditional_t<tuning::consistent,
+                                                        reduce::ordered,
+                                                        reduce::unordered>>
 {};
 
 ///
-struct omp_synchronize : make_policy_pattern_launch_t<
-                             Policy::openmp,
-                             Pattern::synchronize,
-                             Launch::sync>
+struct omp_synchronize : make_policy_pattern_launch_t<Policy::openmp,
+                                                      Pattern::synchronize,
+                                                      Launch::sync>
 {};
 
 #if defined(RAJA_COMPILER_MSVC)

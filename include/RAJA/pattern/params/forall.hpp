@@ -43,26 +43,25 @@ struct ForallParamPack
 private:
   // Init
   template <typename EXEC_POL, camp::idx_t... Seq, typename... Args>
-  static constexpr void detail_init(
-      EXEC_POL,
-      camp::idx_seq<Seq...>,
-      ForallParamPack& f_params,
-      Args&&... args)
+  static constexpr void detail_init(EXEC_POL,
+                                    camp::idx_seq<Seq...>,
+                                    ForallParamPack& f_params,
+                                    Args&&... args)
   {
-    CAMP_EXPAND(expt::detail::init<EXEC_POL>(
-        camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)...));
+    CAMP_EXPAND(expt::detail::init<EXEC_POL>(camp::get<Seq>(f_params.param_tup),
+                                             std::forward<Args>(args)...));
   }
 
   // Combine
   template <typename EXEC_POL, camp::idx_t... Seq>
-  RAJA_HOST_DEVICE static constexpr void detail_combine(
-      EXEC_POL,
-      camp::idx_seq<Seq...>,
-      ForallParamPack&       out,
-      const ForallParamPack& in)
+  RAJA_HOST_DEVICE static constexpr void
+  detail_combine(EXEC_POL,
+                 camp::idx_seq<Seq...>,
+                 ForallParamPack& out,
+                 const ForallParamPack& in)
   {
-    CAMP_EXPAND(detail::combine<EXEC_POL>(
-        camp::get<Seq>(out.param_tup), camp::get<Seq>(in.param_tup)));
+    CAMP_EXPAND(detail::combine<EXEC_POL>(camp::get<Seq>(out.param_tup),
+                                          camp::get<Seq>(in.param_tup)));
   }
 
   template <typename EXEC_POL, camp::idx_t... Seq>
@@ -74,14 +73,13 @@ private:
 
   // Resolve
   template <typename EXEC_POL, camp::idx_t... Seq, typename... Args>
-  static constexpr void detail_resolve(
-      EXEC_POL,
-      camp::idx_seq<Seq...>,
-      ForallParamPack& f_params,
-      Args&&... args)
+  static constexpr void detail_resolve(EXEC_POL,
+                                       camp::idx_seq<Seq...>,
+                                       ForallParamPack& f_params,
+                                       Args&&... args)
   {
-    CAMP_EXPAND(detail::resolve<EXEC_POL>(
-        camp::get<Seq>(f_params.param_tup), std::forward<Args>(args)...));
+    CAMP_EXPAND(detail::resolve<EXEC_POL>(camp::get<Seq>(f_params.param_tup),
+                                          std::forward<Args>(args)...));
   }
 
   // Used to construct the argument TYPES that will be invoked with the lambda.
@@ -95,16 +93,14 @@ private:
   {
     return typename First::ARG_TUP_T();
   };
-  template <
-      typename null_t = camp::nil,
-      typename First,
-      typename Second,
-      typename... Rest>
+  template <typename null_t = camp::nil,
+            typename First,
+            typename Second,
+            typename... Rest>
   static constexpr auto LAMBDA_ARG_TUP_T()
   {
-    return camp::tuple_cat_pair(
-        typename First::ARG_TUP_T(),
-        LAMBDA_ARG_TUP_T<camp::nil, Second, Rest...>());
+    return camp::tuple_cat_pair(typename First::ARG_TUP_T(),
+                                LAMBDA_ARG_TUP_T<camp::nil, Second, Rest...>());
   };
 
   using lambda_arg_tuple_t = decltype(LAMBDA_ARG_TUP_T<camp::nil, Params...>());
@@ -150,44 +146,35 @@ public:
 //
 struct ParamMultiplexer
 {
-  template <
-      typename EXEC_POL,
-      typename... Params,
-      typename... Args,
-      typename FP = ForallParamPack<Params...>>
-  static void constexpr init(
-      ForallParamPack<Params...>& f_params,
-      Args&&... args)
+  template <typename EXEC_POL,
+            typename... Params,
+            typename... Args,
+            typename FP = ForallParamPack<Params...>>
+  static void constexpr init(ForallParamPack<Params...>& f_params,
+                             Args&&... args)
   {
-    FP::detail_init(
-        EXEC_POL(), typename FP::params_seq(), f_params,
-        std::forward<Args>(args)...);
+    FP::detail_init(EXEC_POL(), typename FP::params_seq(), f_params,
+                    std::forward<Args>(args)...);
   }
-  template <
-      typename EXEC_POL,
-      typename... Params,
-      typename... Args,
-      typename FP = ForallParamPack<Params...>>
-  static void constexpr combine(
-      ForallParamPack<Params...>& f_params,
-      Args&&... args)
+  template <typename EXEC_POL,
+            typename... Params,
+            typename... Args,
+            typename FP = ForallParamPack<Params...>>
+  static void constexpr combine(ForallParamPack<Params...>& f_params,
+                                Args&&... args)
   {
-    FP::detail_combine(
-        EXEC_POL(), typename FP::params_seq(), f_params,
-        std::forward<Args>(args)...);
+    FP::detail_combine(EXEC_POL(), typename FP::params_seq(), f_params,
+                       std::forward<Args>(args)...);
   }
-  template <
-      typename EXEC_POL,
-      typename... Params,
-      typename... Args,
-      typename FP = ForallParamPack<Params...>>
-  static void constexpr resolve(
-      ForallParamPack<Params...>& f_params,
-      Args&&... args)
+  template <typename EXEC_POL,
+            typename... Params,
+            typename... Args,
+            typename FP = ForallParamPack<Params...>>
+  static void constexpr resolve(ForallParamPack<Params...>& f_params,
+                                Args&&... args)
   {
-    FP::detail_resolve(
-        EXEC_POL(), typename FP::params_seq(), f_params,
-        std::forward<Args>(args)...);
+    FP::detail_resolve(EXEC_POL(), typename FP::params_seq(), f_params,
+                       std::forward<Args>(args)...);
   }
 };
 //===========================================================================
@@ -223,11 +210,10 @@ using check_types_derive_base =
 template <typename... Ts>
 constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple)
 {
-  static_assert(
-      detail::check_types_derive_base<
-          detail::ForallParamBase, camp::decay<Ts>...>::value,
-      "Forall optional arguments do not derive ForallParamBase. "
-      "Please see Reducer, ReducerLoc and KernelName for examples.");
+  static_assert(detail::check_types_derive_base<detail::ForallParamBase,
+                                                camp::decay<Ts>...>::value,
+                "Forall optional arguments do not derive ForallParamBase. "
+                "Please see Reducer, ReducerLoc and KernelName for examples.");
   return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
 }
 
@@ -245,8 +231,8 @@ constexpr auto tuple_from_seq(const camp::idx_seq<Seq...>&, TupleType&& tuple)
 template <typename... Ts>
 constexpr auto strip_last_elem(camp::tuple<Ts...>&& tuple)
 {
-  return tuple_from_seq(
-      camp::make_idx_seq_t<sizeof...(Ts) - 1> {}, std::move(tuple));
+  return tuple_from_seq(camp::make_idx_seq_t<sizeof...(Ts) - 1> {},
+                        std::move(tuple));
 };
 }  // namespace detail
 
@@ -374,9 +360,8 @@ check_invocable(LAMBDA&&, const camp::list<EXPECTED_ARGS...>&)
 {
 #if !defined(RAJA_ENABLE_HIP)
   static_assert(
-      is_invocable<
-          LAMBDA, typename get_lambda_index_type<LAMBDA>::type,
-          EXPECTED_ARGS...>::value,
+      is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type,
+                   EXPECTED_ARGS...>::value,
       "LAMBDA Not invocable w/ EXPECTED_ARGS.");
 #endif
 }
@@ -442,14 +427,13 @@ RAJA_HOST_DEVICE constexpr auto get_lambda_args(FP& fpp)
 
 CAMP_SUPPRESS_HD_WARN
 template <typename Fn, camp::idx_t... Sequence, typename Params, typename... Ts>
-RAJA_HOST_DEVICE constexpr auto invoke_with_order(
-    Params&& params,
-    Fn&&     f,
-    camp::idx_seq<Sequence...>,
-    Ts&&... extra)
+RAJA_HOST_DEVICE constexpr auto invoke_with_order(Params&& params,
+                                                  Fn&& f,
+                                                  camp::idx_seq<Sequence...>,
+                                                  Ts&&... extra)
 {
-  return f(
-      std::forward<Ts...>(extra...), (get_lambda_args<Sequence>(params))...);
+  return f(std::forward<Ts...>(extra...),
+           (get_lambda_args<Sequence>(params))...);
 }
 }  // namespace detail
 

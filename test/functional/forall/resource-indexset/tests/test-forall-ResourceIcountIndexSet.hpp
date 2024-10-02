@@ -24,10 +24,10 @@ void ForallResourceIcountIndexSetTestImpl()
   using IndexSetType =
       RAJA::TypedIndexSet<RangeSegType, RangeStrideSegType, ListSegType>;
 
-  WORKING_RES               working_res;
+  WORKING_RES working_res;
   camp::resources::Resource erased_working_res {working_res};
 
-  IndexSetType            iset;
+  IndexSetType iset;
   std::vector<INDEX_TYPE> is_indices;
   buildIndexSet<INDEX_TYPE, RangeSegType, RangeStrideSegType, ListSegType>(
       iset, is_indices, erased_working_res);
@@ -44,8 +44,8 @@ void ForallResourceIcountIndexSetTestImpl()
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
 
-  allocateForallTestData<INDEX_TYPE>(
-      N, erased_working_res, &working_array, &check_array, &test_array);
+  allocateForallTestData<INDEX_TYPE>(N, erased_working_res, &working_array,
+                                     &check_array, &test_array);
 
   memset(test_array, 0, sizeof(INDEX_TYPE) * N);
 
@@ -69,8 +69,8 @@ void ForallResourceIcountIndexSetTestImpl()
     ASSERT_EQ(test_array[i], check_array[i]);
   }
 
-  deallocateForallTestData<INDEX_TYPE>(
-      erased_working_res, working_array, check_array, test_array);
+  deallocateForallTestData<INDEX_TYPE>(erased_working_res, working_array,
+                                       check_array, test_array);
 }
 
 
@@ -85,12 +85,11 @@ TYPED_TEST_P(ForallResourceIcountIndexSetTest, ResourceIndexSetForallIcount)
   using WORKING_RESOURCE = typename camp::at<TypeParam, camp::num<1>>::type;
   using EXEC_POLICY      = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  ForallResourceIcountIndexSetTestImpl<
-      INDEX_TYPE, WORKING_RESOURCE, EXEC_POLICY>();
+  ForallResourceIcountIndexSetTestImpl<INDEX_TYPE, WORKING_RESOURCE,
+                                       EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    ForallResourceIcountIndexSetTest,
-    ResourceIndexSetForallIcount);
+REGISTER_TYPED_TEST_SUITE_P(ForallResourceIcountIndexSetTest,
+                            ResourceIndexSetForallIcount);
 
 #endif  // __TEST_FORALL_RESOURCE_ICOUNT_INDEXSET_HPP__

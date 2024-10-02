@@ -15,12 +15,11 @@
 
 #include <cmath>
 
-template <
-    typename ExecPolicy,
-    typename AtomicPolicy,
-    typename WORKINGRES,
-    typename IdxType,
-    typename T>
+template <typename ExecPolicy,
+          typename AtomicPolicy,
+          typename WORKINGRES,
+          typename IdxType,
+          typename T>
 void ForallAtomicMultiViewTestImpl(IdxType N)
 {
   // Functionally similar to ForallAtomicViewTestImpl
@@ -36,11 +35,11 @@ void ForallAtomicMultiViewTestImpl(IdxType N)
   camp::resources::Resource work_res {WORKINGRES()};
   camp::resources::Resource host_res {camp::resources::Host()};
 
-  T*  actualsource = work_res.allocate<T>(N);
-  T** source       = work_res.allocate<T*>(src_side);
-  T*  actualdest   = work_res.allocate<T>(N / 2);
-  T** dest         = work_res.allocate<T*>(dst_side);
-  T*  check_array  = host_res.allocate<T>(N / 2);
+  T* actualsource = work_res.allocate<T>(N);
+  T** source      = work_res.allocate<T*>(src_side);
+  T* actualdest   = work_res.allocate<T>(N / 2);
+  T** dest        = work_res.allocate<T*>(dst_side);
+  T* check_array  = host_res.allocate<T>(N / 2);
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaDeviceSynchronize());
@@ -51,17 +50,15 @@ void ForallAtomicMultiViewTestImpl(IdxType N)
 #endif
 
   // assumes each source[] will be 2x size of each dest[], src_side x dst_side
-  RAJA::forall<ExecPolicy>(
-      seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
-      { source[ii] = actualsource + (ii * dst_side); });
+  RAJA::forall<ExecPolicy>(seg_srcside, [=] RAJA_HOST_DEVICE(IdxType ii)
+                           { source[ii] = actualsource + (ii * dst_side); });
 
   // assumes each dest[] will be a square matrix, dst_side x dst_side
-  RAJA::forall<ExecPolicy>(
-      seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
-      { dest[ii] = actualdest + (ii * dst_side); });
+  RAJA::forall<ExecPolicy>(seg_dstside, [=] RAJA_HOST_DEVICE(IdxType ii)
+                           { dest[ii] = actualdest + (ii * dst_side); });
 
-  RAJA::forall<ExecPolicy>(
-      seg, [=] RAJA_HOST_DEVICE(IdxType i) { actualsource[i] = (T)1; });
+  RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(IdxType i)
+                           { actualsource[i] = (T)1; });
 
   // use atomic add to reduce the array
   // 1D defaut MultiView
@@ -73,26 +70,25 @@ void ForallAtomicMultiViewTestImpl(IdxType N)
 
 
   // Zero out dest using atomic MultiView
-  RAJA::forall<ExecPolicy>(
-      seg_dstside,
-      [=] RAJA_HOST_DEVICE(IdxType i)
-      {
-        for (int aopidx = 0; aopidx < dst_side; ++aopidx)
-        {
-          sum_atomic_view(i, aopidx) = (T)0;
-        }
-      });
+  RAJA::forall<ExecPolicy>(seg_dstside,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           {
+                             for (int aopidx = 0; aopidx < dst_side; ++aopidx)
+                             {
+                               sum_atomic_view(i, aopidx) = (T)0;
+                             }
+                           });
 
   // Assign values to dest using atomic MultiView
-  RAJA::forall<ExecPolicy>(
-      seg_srcside,
-      [=] RAJA_HOST_DEVICE(IdxType i)
-      {
-        for (int aopidx = 0; aopidx < dst_side; ++aopidx)
-        {
-          sum_atomic_view(i / 2, aopidx) += vec_view(aopidx, i / 2);
-        }
-      });
+  RAJA::forall<ExecPolicy>(seg_srcside,
+                           [=] RAJA_HOST_DEVICE(IdxType i)
+                           {
+                             for (int aopidx = 0; aopidx < dst_side; ++aopidx)
+                             {
+                               sum_atomic_view(i / 2, aopidx) +=
+                                   vec_view(aopidx, i / 2);
+                             }
+                           });
 
   work_res.memcpy(check_array, actualdest, sizeof(T) * N / 2);
 

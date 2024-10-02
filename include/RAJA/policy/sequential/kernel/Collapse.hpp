@@ -49,11 +49,10 @@ struct StatementExecutor<
 // Executor that handles collapsing of an arbitrarily deep set of seq_exec
 // loops
 //
-template <
-    camp::idx_t Arg0,
-    camp::idx_t... ArgRest,
-    typename... EnclosedStmts,
-    typename Types>
+template <camp::idx_t Arg0,
+          camp::idx_t... ArgRest,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::Collapse<seq_exec, ArgList<Arg0, ArgRest...>, EnclosedStmts...>,
     Types>

@@ -77,8 +77,7 @@ TYPED_TEST_P(KernelSingleLoopForICountTest, ForICountSingleLoopKernel)
       IDX_TYPE(1035), tsize);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelSingleLoopForICountTest,
-    ForICountSingleLoopKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelSingleLoopForICountTest,
+                            ForICountSingleLoopKernel);
 
 #endif  // __TEST_KERNEL_SINGLE_LOOP_FORICOUNT_HPP__

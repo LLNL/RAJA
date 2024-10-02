@@ -257,11 +257,10 @@ public:
    */
   RAJA_DEVICE
   RAJA_INLINE
-  self_type& segmented_load(
-      element_type const* ptr,
-      camp::idx_t         segbits,
-      camp::idx_t         stride_inner,
-      camp::idx_t         stride_outer)
+  self_type& segmented_load(element_type const* ptr,
+                            camp::idx_t segbits,
+                            camp::idx_t stride_inner,
+                            camp::idx_t stride_outer)
   {
     auto lane = get_lane();
 
@@ -283,13 +282,12 @@ public:
    */
   RAJA_DEVICE
   RAJA_INLINE
-  self_type& segmented_load_nm(
-      element_type const* ptr,
-      camp::idx_t         segbits,
-      camp::idx_t         stride_inner,
-      camp::idx_t         stride_outer,
-      camp::idx_t         num_inner,
-      camp::idx_t         num_outer)
+  self_type& segmented_load_nm(element_type const* ptr,
+                               camp::idx_t segbits,
+                               camp::idx_t stride_inner,
+                               camp::idx_t stride_outer,
+                               camp::idx_t num_inner,
+                               camp::idx_t num_outer)
   {
     auto lane = get_lane();
 
@@ -390,8 +388,8 @@ public:
    *
    */
   template <typename T2>
-  RAJA_DEVICE RAJA_INLINE self_type const&
-  scatter(element_type* ptr, T2 const& offsets) const
+  RAJA_DEVICE RAJA_INLINE self_type const& scatter(element_type* ptr,
+                                                   T2 const& offsets) const
   {
 
     ptr[offsets.get_raw_value()] = m_value;
@@ -428,11 +426,10 @@ public:
    */
   RAJA_DEVICE
   RAJA_INLINE
-  self_type const& segmented_store(
-      element_type* ptr,
-      camp::idx_t   segbits,
-      camp::idx_t   stride_inner,
-      camp::idx_t   stride_outer) const
+  self_type const& segmented_store(element_type* ptr,
+                                   camp::idx_t segbits,
+                                   camp::idx_t stride_inner,
+                                   camp::idx_t stride_outer) const
   {
     auto lane = get_lane();
 
@@ -452,13 +449,12 @@ public:
    */
   RAJA_DEVICE
   RAJA_INLINE
-  self_type const& segmented_store_nm(
-      element_type* ptr,
-      camp::idx_t   segbits,
-      camp::idx_t   stride_inner,
-      camp::idx_t   stride_outer,
-      camp::idx_t   num_inner,
-      camp::idx_t   num_outer) const
+  self_type const& segmented_store_nm(element_type* ptr,
+                                      camp::idx_t segbits,
+                                      camp::idx_t stride_inner,
+                                      camp::idx_t stride_outer,
+                                      camp::idx_t num_inner,
+                                      camp::idx_t num_outer) const
   {
     auto lane = get_lane();
 
@@ -577,10 +573,10 @@ public:
    * floats and doubles use the CUDA instrinsic FMA
    */
   template <typename RETURN_TYPE = self_type>
-  RAJA_DEVICE RAJA_INLINE typename std::enable_if<
-      !std::numeric_limits<element_type>::is_integer,
-      RETURN_TYPE>::type
-  multiply_add(self_type const& b, self_type const& c) const
+  RAJA_DEVICE RAJA_INLINE
+      typename std::enable_if<!std::numeric_limits<element_type>::is_integer,
+                              RETURN_TYPE>::type
+      multiply_add(self_type const& b, self_type const& c) const
   {
     return self_type(fma(m_value, b.m_value, c.m_value));
   }
@@ -589,10 +585,10 @@ public:
    * int32 and int64 don't have a CUDA intrinsic FMA, do unfused ops
    */
   template <typename RETURN_TYPE = self_type>
-  RAJA_DEVICE RAJA_INLINE typename std::enable_if<
-      std::numeric_limits<element_type>::is_integer,
-      RETURN_TYPE>::type
-  multiply_add(self_type const& b, self_type const& c) const
+  RAJA_DEVICE RAJA_INLINE
+      typename std::enable_if<std::numeric_limits<element_type>::is_integer,
+                              RETURN_TYPE>::type
+      multiply_add(self_type const& b, self_type const& c) const
   {
     return self_type(m_value * b.m_value + c.m_value);
   }
@@ -601,10 +597,10 @@ public:
    * floats and doubles use the CUDA instrinsic FMS
    */
   template <typename RETURN_TYPE = self_type>
-  RAJA_DEVICE RAJA_INLINE typename std::enable_if<
-      !std::numeric_limits<element_type>::is_integer,
-      RETURN_TYPE>::type
-  multiply_subtract(self_type const& b, self_type const& c) const
+  RAJA_DEVICE RAJA_INLINE
+      typename std::enable_if<!std::numeric_limits<element_type>::is_integer,
+                              RETURN_TYPE>::type
+      multiply_subtract(self_type const& b, self_type const& c) const
   {
     return self_type(fma(m_value, b.m_value, -c.m_value));
   }
@@ -613,10 +609,10 @@ public:
    * int32 and int64 don't have a CUDA intrinsic FMS, do unfused ops
    */
   template <typename RETURN_TYPE = self_type>
-  RAJA_DEVICE RAJA_INLINE typename std::enable_if<
-      std::numeric_limits<element_type>::is_integer,
-      RETURN_TYPE>::type
-  multiply_subtract(self_type const& b, self_type const& c) const
+  RAJA_DEVICE RAJA_INLINE
+      typename std::enable_if<std::numeric_limits<element_type>::is_integer,
+                              RETURN_TYPE>::type
+      multiply_subtract(self_type const& b, self_type const& c) const
   {
     return self_type(m_value * b.m_value - c.m_value);
   }
@@ -647,8 +643,9 @@ public:
   element_type max() const
   {
     // Allreduce maximum
-    using combiner_t = RAJA::reduce::detail::op_adapter<
-        element_type, RAJA::operators::maximum>;
+    using combiner_t =
+        RAJA::reduce::detail::op_adapter<element_type,
+                                         RAJA::operators::maximum>;
 
     return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(m_value);
   }
@@ -662,8 +659,9 @@ public:
   element_type max_n(int N) const
   {
     // Allreduce maximum
-    using combiner_t = RAJA::reduce::detail::op_adapter<
-        element_type, RAJA::operators::maximum>;
+    using combiner_t =
+        RAJA::reduce::detail::op_adapter<element_type,
+                                         RAJA::operators::maximum>;
 
     auto ident = RAJA::operators::limits<element_type>::min();
     auto lane  = get_lane();
@@ -691,8 +689,9 @@ public:
   element_type min() const
   {
     // Allreduce minimum
-    using combiner_t = RAJA::reduce::detail::op_adapter<
-        element_type, RAJA::operators::minimum>;
+    using combiner_t =
+        RAJA::reduce::detail::op_adapter<element_type,
+                                         RAJA::operators::minimum>;
 
     return RAJA::hip::impl::warp_allreduce<combiner_t, element_type>(m_value);
   }
@@ -706,8 +705,9 @@ public:
   element_type min_n(int N) const
   {
     // Allreduce minimum
-    using combiner_t = RAJA::reduce::detail::op_adapter<
-        element_type, RAJA::operators::minimum>;
+    using combiner_t =
+        RAJA::reduce::detail::op_adapter<element_type,
+                                         RAJA::operators::minimum>;
 
     auto ident = RAJA::operators::limits<element_type>::max();
     auto lane  = get_lane();
@@ -736,10 +736,9 @@ public:
    */
   RAJA_INLINE
   RAJA_DEVICE
-  static int_vector_type s_segmented_offsets(
-      camp::idx_t segbits,
-      camp::idx_t stride_inner,
-      camp::idx_t stride_outer)
+  static int_vector_type s_segmented_offsets(camp::idx_t segbits,
+                                             camp::idx_t stride_inner,
+                                             camp::idx_t stride_outer)
   {
     int_vector_type result;
 
@@ -790,8 +789,8 @@ public:
    */
   RAJA_INLINE
   RAJA_DEVICE
-  self_type
-  segmented_sum_inner(camp::idx_t segbits, camp::idx_t output_segment) const
+  self_type segmented_sum_inner(camp::idx_t segbits,
+                                camp::idx_t output_segment) const
   {
 
     // First: tree reduce values within each segment
@@ -814,8 +813,8 @@ public:
     // Third: mask off everything but output_segment
     //        this is because all output segments are valid at this point
     // (5-segbits), the 5 is since the warp-width is 32 == 1<<5
-    int  our_output_segment = get_lane() >> (6 - segbits);
-    bool in_output_segment  = our_output_segment == output_segment;
+    int our_output_segment = get_lane() >> (6 - segbits);
+    bool in_output_segment = our_output_segment == output_segment;
     if (!in_output_segment)
     {
       result.get_raw_value() = 0;
@@ -857,8 +856,8 @@ public:
    */
   RAJA_INLINE
   RAJA_DEVICE
-  self_type
-  segmented_sum_outer(camp::idx_t segbits, camp::idx_t output_segment) const
+  self_type segmented_sum_outer(camp::idx_t segbits,
+                                camp::idx_t output_segment) const
   {
 
     // First: tree reduce values within each segment
@@ -868,8 +867,8 @@ public:
     {
 
       // tree shuffle
-      int          delta = s_num_elem >> (i + 1);
-      element_type y     = hip::impl::shfl_sync(x, get_lane() + delta);
+      int delta      = s_num_elem >> (i + 1);
+      element_type y = hip::impl::shfl_sync(x, get_lane() + delta);
 
       // reduce
       x += y;
@@ -877,7 +876,7 @@ public:
 
     // Second: send result to output segment lanes
     self_type result;
-    int       get_from     = get_lane() & ((1 << segbits) - 1);
+    int get_from           = get_lane() & ((1 << segbits) - 1);
     result.get_raw_value() = hip::impl::shfl_sync(x, get_from);
 
     int mask = (get_lane() >> segbits) == output_segment;
@@ -894,11 +893,10 @@ public:
 
   RAJA_INLINE
   RAJA_DEVICE
-  self_type segmented_divide_nm(
-      self_type   den,
-      camp::idx_t segbits,
-      camp::idx_t num_inner,
-      camp::idx_t num_outer) const
+  self_type segmented_divide_nm(self_type den,
+                                camp::idx_t segbits,
+                                camp::idx_t num_inner,
+                                camp::idx_t num_outer) const
   {
     self_type result;
 
@@ -970,9 +968,8 @@ public:
    */
   RAJA_INLINE
   RAJA_DEVICE
-  self_type segmented_broadcast_inner(
-      camp::idx_t segbits,
-      camp::idx_t input_segment) const
+  self_type segmented_broadcast_inner(camp::idx_t segbits,
+                                      camp::idx_t input_segment) const
   {
     self_type result;
 
@@ -1027,9 +1024,8 @@ public:
    */
   RAJA_INLINE
   RAJA_DEVICE
-  self_type segmented_broadcast_outer(
-      camp::idx_t segbits,
-      camp::idx_t input_segment) const
+  self_type segmented_broadcast_outer(camp::idx_t segbits,
+                                      camp::idx_t input_segment) const
   {
     self_type result;
 

@@ -40,8 +40,9 @@ namespace detail
     and using O(N) predicate evaluations and O(1) memory
 */
 template <typename Iter, typename Predicate>
-RAJA_HOST_DEVICE RAJA_INLINE Iter
-partition(Iter begin, Iter end, Predicate pred)
+RAJA_HOST_DEVICE RAJA_INLINE Iter partition(Iter begin,
+                                            Iter end,
+                                            Predicate pred)
 {
   using ::RAJA::safe_iter_swap;
 
@@ -452,8 +453,8 @@ void RAJA_INLINE inplace_merge(Iter first, Iter middle, Iter last, Compare comp)
   buf_deleter_type buf_deleter;
 
   std::unique_ptr<value_type, buf_deleter_type&> copy_buf(
-      RAJA::allocate_aligned_type<value_type>(
-          RAJA::DATA_ALIGN, copylen * sizeof(value_type)),
+      RAJA::allocate_aligned_type<value_type>(RAJA::DATA_ALIGN,
+                                              copylen * sizeof(value_type)),
       buf_deleter);
 
   value_type* copyarr = copy_buf.get();
@@ -505,13 +506,13 @@ void RAJA_INLINE inplace_merge(Iter first, Iter middle, Iter last, Compare comp)
 */
 template <typename Iter1, typename Iter2, typename OutIter, typename Compare>
 // constexpr OutIter // <-- std:: return value
-void RAJA_INLINE merge_like_std(
-    Iter1   first1,
-    Iter1   last1,
-    Iter2   first2,
-    Iter2   last2,
-    OutIter d_first,  // using this as direct access to result
-    Compare comp)
+void RAJA_INLINE
+merge_like_std(Iter1 first1,
+               Iter1 last1,
+               Iter2 first2,
+               Iter2 last2,
+               OutIter d_first,  // using this as direct access to result
+               Compare comp)
 {
   using ::RAJA::safe_iter_swap;
 
@@ -577,7 +578,7 @@ RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
   auto minlam = [](diff_type a, diff_type b) { return (a < b) ? a : b; };
 
   // insertion sort for sizes <= 16
-  diff_type                  len                   = end - begin;
+  diff_type len                                    = end - begin;
   static constexpr diff_type insertion_sort_cutoff = 16;
   if (len <= insertion_sort_cutoff && len > 0)
   {
@@ -599,8 +600,8 @@ RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
     buf_deleter_type buf_deleter;
 
     std::unique_ptr<value_type, buf_deleter_type&> copy_buf(
-        RAJA::allocate_aligned_type<value_type>(
-            RAJA::DATA_ALIGN, len * sizeof(value_type)),
+        RAJA::allocate_aligned_type<value_type>(RAJA::DATA_ALIGN,
+                                                len * sizeof(value_type)),
         buf_deleter);
 
     value_type* copyarr = copy_buf.get();
@@ -651,16 +652,15 @@ RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
         if (copyvalid)  // switch arrays per level of merging to avoid copying
                         // back to copyarr
         {
-          detail::merge_like_std(
-              copyarr + start, copyarr + start + midpoint,
-              copyarr + start + midpoint, copyarr + finish, begin + start,
-              comp);
+          detail::merge_like_std(copyarr + start, copyarr + start + midpoint,
+                                 copyarr + start + midpoint, copyarr + finish,
+                                 begin + start, comp);
         }
         else
         {
-          detail::merge_like_std(
-              begin + start, begin + start + midpoint, begin + start + midpoint,
-              begin + finish, copyarr + start, comp);
+          detail::merge_like_std(begin + start, begin + start + midpoint,
+                                 begin + start + midpoint, begin + finish,
+                                 copyarr + start, comp);
         }
       }
 
@@ -689,22 +689,19 @@ RAJA_INLINE void merge_sort(Iter begin, Iter end, Compare comp)
     \brief stable insertion sort given range inplace using comparison function
     and using O(N^2) comparisons and O(1) memory
 */
-template <
-    typename Container,
-    typename Compare = operators::less<detail::ContainerVal<Container>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-                insertion_sort(Container&& c, Compare comp = Compare {})
+    insertion_sort(Container&& c, Compare comp = Compare {})
 {
   using std::begin;
   using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
-  static_assert(
-      type_traits::is_binary_function<Compare, bool, T, T>::value,
-      "Compare must model BinaryFunction");
-  static_assert(
-      type_traits::is_random_access_range<Container>::value,
-      "Container must model RandomAccessRange");
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
   auto end_it   = end(c);
@@ -723,22 +720,19 @@ RAJA_HOST_DEVICE
     \brief unstable shell sort given range inplace using comparison function
     and using O(N^?) comparisons and O(1) memory
 */
-template <
-    typename Container,
-    typename Compare = operators::less<detail::ContainerVal<Container>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-                shell_sort(Container&& c, Compare comp = Compare {})
+    shell_sort(Container&& c, Compare comp = Compare {})
 {
   using std::begin;
   using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
-  static_assert(
-      type_traits::is_binary_function<Compare, bool, T, T>::value,
-      "Compare must model BinaryFunction");
-  static_assert(
-      type_traits::is_random_access_range<Container>::value,
-      "Container must model RandomAccessRange");
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
   auto end_it   = end(c);
@@ -757,22 +751,19 @@ RAJA_HOST_DEVICE
     \brief unstable heap sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(1) memory
 */
-template <
-    typename Container,
-    typename Compare = operators::less<detail::ContainerVal<Container>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-                heap_sort(Container&& c, Compare comp = Compare {})
+    heap_sort(Container&& c, Compare comp = Compare {})
 {
   using std::begin;
   using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
-  static_assert(
-      type_traits::is_binary_function<Compare, bool, T, T>::value,
-      "Compare must model BinaryFunction");
-  static_assert(
-      type_traits::is_random_access_range<Container>::value,
-      "Container must model RandomAccessRange");
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
   auto end_it   = end(c);
@@ -791,22 +782,19 @@ RAJA_HOST_DEVICE
     \brief unstable intro sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(lg(N)) memory
 */
-template <
-    typename Container,
-    typename Compare = operators::less<detail::ContainerVal<Container>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_HOST_DEVICE
     RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-                intro_sort(Container&& c, Compare comp = Compare {})
+    intro_sort(Container&& c, Compare comp = Compare {})
 {
   using std::begin;
   using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
-  static_assert(
-      type_traits::is_binary_function<Compare, bool, T, T>::value,
-      "Compare must model BinaryFunction");
-  static_assert(
-      type_traits::is_random_access_range<Container>::value,
-      "Container must model RandomAccessRange");
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
   auto end_it   = end(c);
@@ -825,21 +813,18 @@ RAJA_HOST_DEVICE
     \brief stable merge sort given range inplace using comparison function
     and using O(N*lg(N)) comparisons and O(N) memory
 */
-template <
-    typename Container,
-    typename Compare = operators::less<detail::ContainerVal<Container>>>
+template <typename Container,
+          typename Compare = operators::less<detail::ContainerVal<Container>>>
 RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>>
-            merge_sort(Container&& c, Compare comp = Compare {})
+merge_sort(Container&& c, Compare comp = Compare {})
 {
   using std::begin;
   using std::end;
   using T = RAJA::detail::ContainerVal<Container>;
-  static_assert(
-      type_traits::is_binary_function<Compare, bool, T, T>::value,
-      "Compare must model BinaryFunction");
-  static_assert(
-      type_traits::is_random_access_range<Container>::value,
-      "Container must model RandomAccessRange");
+  static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
+                "Compare must model BinaryFunction");
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container must model RandomAccessRange");
 
   auto begin_it = begin(c);
   auto end_it   = end(c);

@@ -144,9 +144,9 @@ struct PluginTestCallable
   }
 
 private:
-  CounterData*       m_data_optr = nullptr;
+  CounterData* m_data_optr       = nullptr;
   const CounterData* m_data_iptr = nullptr;
-  CounterData        m_data;
+  CounterData m_data;
 
 
   RAJA_HOST_DEVICE void clear()

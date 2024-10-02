@@ -14,39 +14,34 @@ using MatrixElementType = double;
 using TensorMatrixTypes = ::testing::Types<
 
 #ifdef RAJA_ENABLE_CUDA
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        8,
-        4,
-        RAJA::expt::cuda_warp_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        8,
-        8,
-        RAJA::expt::cuda_warp_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   8,
+                                   4,
+                                   RAJA::expt::cuda_warp_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   8,
+                                   8,
+                                   RAJA::expt::cuda_warp_register>,
 #endif
 
 #ifdef RAJA_ENABLE_HIP
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        16,
-        8,
-        RAJA::expt::hip_wave_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        8,
-        8,
-        RAJA::expt::hip_wave_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        8,
-        16,
-        RAJA::expt::hip_wave_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   16,
+                                   8,
+                                   RAJA::expt::hip_wave_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   8,
+                                   8,
+                                   RAJA::expt::hip_wave_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   8,
+                                   16,
+                                   RAJA::expt::hip_wave_register>,
 #endif
 
 
@@ -70,24 +65,21 @@ using TensorMatrixTypes = ::testing::Types<
 
 
 #ifdef __AVX2__
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        2,
-        4,
-        RAJA::expt::avx2_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        2,
-        8,
-        RAJA::expt::avx2_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        2,
-        12,
-        RAJA::expt::avx2_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   2,
+                                   4,
+                                   RAJA::expt::avx2_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   2,
+                                   8,
+                                   RAJA::expt::avx2_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   2,
+                                   12,
+                                   RAJA::expt::avx2_register>,
 
 //    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
 //    4,8, RAJA::expt::avx2_register>,
@@ -103,48 +95,41 @@ using TensorMatrixTypes = ::testing::Types<
 
 
 #ifdef __AVX512__
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        4,
-        8,
-        RAJA::expt::avx512_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        4,
-        16,
-        RAJA::expt::avx512_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        8,
-        16,
-        RAJA::expt::avx512_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        16,
-        16,
-        RAJA::expt::avx512_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        16,
-        8,
-        RAJA::expt::avx512_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        16,
-        4,
-        RAJA::expt::avx512_register>,
-    RAJA::expt::RectMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        8,
-        4,
-        RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   4,
+                                   8,
+                                   RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   4,
+                                   16,
+                                   RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   8,
+                                   16,
+                                   RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   16,
+                                   16,
+                                   RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   16,
+                                   8,
+                                   RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   16,
+                                   4,
+                                   RAJA::expt::avx512_register>,
+    RAJA::expt::RectMatrixRegister<MatrixElementType,
+                                   TensorMatrixLayoutType,
+                                   8,
+                                   4,
+                                   RAJA::expt::avx512_register>,
 #endif
 
 
@@ -152,9 +137,8 @@ using TensorMatrixTypes = ::testing::Types<
     RAJA::expt::SquareMatrixRegister<MatrixElementType, TensorMatrixLayoutType>,
 
     // Always test the non-vectorized scalar type
-    RAJA::expt::SquareMatrixRegister<
-        MatrixElementType,
-        TensorMatrixLayoutType,
-        RAJA::expt::scalar_register>
+    RAJA::expt::SquareMatrixRegister<MatrixElementType,
+                                     TensorMatrixLayoutType,
+                                     RAJA::expt::scalar_register>
 
     >;

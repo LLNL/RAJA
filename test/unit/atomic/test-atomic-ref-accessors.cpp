@@ -33,9 +33,9 @@ TYPED_TEST_P(AtomicRefBasicAccessorUnitTest, BasicAccessors)
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   // should also work with CUDA
-  T  theval  = (T)0;
+  T theval   = (T)0;
   T* memaddr = &theval;
-  T  result;
+  T result;
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
@@ -60,10 +60,9 @@ TYPED_TEST_P(AtomicRefBasicAccessorUnitTest, BasicAccessors)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicAccessorUnitTest, BasicAccessors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    BasicAccessUnitTest,
-    AtomicRefBasicAccessorUnitTest,
-    basic_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(BasicAccessUnitTest,
+                               AtomicRefBasicAccessorUnitTest,
+                               basic_types);
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -134,8 +133,7 @@ GPU_TYPED_TEST_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors)
 
 REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(
-    CUDAAccessUnitTest,
-    AtomicRefCUDAAccessorUnitTest,
-    CUDA_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAAccessUnitTest,
+                               AtomicRefCUDAAccessorUnitTest,
+                               CUDA_types);
 #endif

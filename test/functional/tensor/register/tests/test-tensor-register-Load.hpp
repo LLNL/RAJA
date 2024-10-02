@@ -21,7 +21,7 @@ void LoadImpl()
 
   // Allocate
   std::vector<element_t> input0_vec(10 * num_elem);
-  element_t*             input0_hptr = input0_vec.data();
+  element_t* input0_hptr = input0_vec.data();
   element_t* input0_dptr = tensor_malloc<policy_t, element_t>(10 * num_elem);
 
   std::vector<element_t> output0_vec(num_elem);

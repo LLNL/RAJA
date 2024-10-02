@@ -65,8 +65,8 @@ hipAssert(hipError_t code, const char* file, int line, bool abort = true)
     }
     else
     {
-      fprintf(
-          stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file, line);
+      fprintf(stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file,
+              line);
     }
   }
 }

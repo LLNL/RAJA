@@ -16,9 +16,9 @@
 /*
  *  Vector Dot Product Exercise
  *
- *  Computes dot = (a,b), where a, b are vectors of
+ *  Computes dot = (a,b), where a, b are vectors of 
  *  doubles and dot is a scalar double. It illustrates how RAJA
- *  supports a portable parallel reduction opertion in a way that
+ *  supports a portable parallel reduction opertion in a way that 
  *  the code looks like it does in a sequential implementation.
  *
  *  RAJA features shown:
@@ -35,40 +35,38 @@
 //
 void checkResult(double compdot, double refdot);
 
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nExercise: vector dot product...\n";
 
-  //
-  // Define vector length
-  //
+//
+// Define vector length
+//
   constexpr int N = 1000000;
 
-  //
-  // Allocate and initialize vector data
-  //
-  double* a = memoryManager::allocate<double>(N);
-  double* b = memoryManager::allocate<double>(N);
+//
+// Allocate and initialize vector data
+//
+  double *a = memoryManager::allocate<double>(N);
+  double *b = memoryManager::allocate<double>(N);
 
-  for (int i = 0; i < N; ++i)
-  {
+  for (int i = 0; i < N; ++i) {
     a[i] = 1.0;
     b[i] = 1.0;
   }
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
-  //
-  // C-style dot product operation.
-  //
+//
+// C-style dot product operation.
+//
   std::cout << "\n Running C-version of dot product...\n";
 
   // _csytle_dotprod_start
   double dot = 0.0;
 
-  for (int i = 0; i < N; ++i)
-  {
+  for (int i = 0; i < N; ++i) {
     dot += a[i] * b[i];
   }
 
@@ -77,7 +75,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   double dot_ref = dot;
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
@@ -86,9 +84,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajaseq_dotprod_start
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
-  RAJA::forall<RAJA::seq_exec>(
-      RAJA::TypedRangeSegment<int>(0, N),
-      [=](int i) { seqdot += a[i] * b[i]; });
+  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
+    seqdot += a[i] * b[i]; 
+  });
 
   dot = seqdot.get();
   // _rajaseq_dotprod_end
@@ -98,7 +96,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, dot_ref);
 
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
@@ -108,8 +106,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajaomp_dotprod_start
   RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(
-      RAJA::RangeSegment(0, N), [=](int i) { ompdot += a[i] * b[i]; });
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
+    ompdot += a[i] * b[i]; 
+  }); 
 
   dot = ompdot.get();
   // _rajaomp_dotprod_end
@@ -120,7 +119,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -133,9 +132,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_dotprod_start
   RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-      RAJA::RangeSegment(0, N),
-      [=] RAJA_DEVICE(int i) { cudot += a[i] * b[i]; });
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
+    [=] RAJA_DEVICE (int i) { 
+    cudot += a[i] * b[i]; 
+  });    
 
   dot = cudot.get();
   // _rajacuda_dotprod_end
@@ -145,7 +145,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, dot_ref);
 #endif
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -155,18 +155,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   dot = 0.0;
 
-  double* d_a = memoryManager::allocate_gpu<double>(N);
-  double* d_b = memoryManager::allocate_gpu<double>(N);
+  double *d_a = memoryManager::allocate_gpu<double>(N);
+  double *d_b = memoryManager::allocate_gpu<double>(N);
 
-  hipErrchk(hipMemcpy(d_a, a, N * sizeof(double), hipMemcpyHostToDevice));
-  hipErrchk(hipMemcpy(d_b, b, N * sizeof(double), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy( d_a, a, N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy( d_b, b, N * sizeof(double), hipMemcpyHostToDevice ));
 
   // _rajahip_dotprod_start
   RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
 
-  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
-      RAJA::RangeSegment(0, N),
-      [=] RAJA_DEVICE(int i) { hpdot += d_a[i] * d_b[i]; });
+  RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    hpdot += d_a[i] * d_b[i];
+  });
 
   dot = hpdot.get();
   // _rajahip_dotprod_end
@@ -179,7 +180,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate_gpu(d_b);
 #endif
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_SYCL)
 
@@ -192,9 +193,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _rajasycl_dotprod_start
   RAJA::ReduceSum<RAJA::sycl_reduce, double> hpdot(0.0);
 
-  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE, false>>(
-      RAJA::RangeSegment(0, N),
-      [=] RAJA_DEVICE(int i) { hpdot += a[i] * b[i]; });
+  RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE, false>>(RAJA::RangeSegment(0, N),
+    [=] RAJA_DEVICE (int i) {
+    hpdot += a[i] * b[i];
+  });
 
   dot = static_cast<double>(hpdot.get());
   // _rajasycl_dotprod_end
@@ -205,7 +207,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 
   memoryManager::deallocate(a);
@@ -221,12 +223,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 void checkResult(double compdot, double refdot)
 {
-  if (compdot == refdot)
-  {
+  if ( compdot == refdot ) {
     std::cout << "\n\t result -- PASS\n";
-  }
-  else
-  {
+  } else {
     std::cout << "\n\t result -- FAIL\n";
   }
 }
+

@@ -42,11 +42,10 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <
-    camp::idx_t ArgumentId,
-    typename ParamId,
-    typename... EnclosedStmts,
-    typename Types>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
     statement::
         ForICount<ArgumentId, ParamId, RAJA::simd_exec, EnclosedStmts...>,
@@ -75,7 +74,7 @@ struct StatementExecutor<
 
       // Privatize data for SIMD correctness reasons
       using RAJA::internal::thread_privatize;
-      auto  privatizer   = thread_privatize(data);
+      auto privatizer    = thread_privatize(data);
       auto& private_data = privatizer.get_priv();
 
       Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(

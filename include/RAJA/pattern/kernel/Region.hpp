@@ -45,9 +45,8 @@ namespace internal
 // Note: RAJA region's lambda must capture by reference otherwise
 // internal function calls are undefined.
 template <typename RegionPolicy, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<
-    statement::Region<RegionPolicy, EnclosedStmts...>,
-    Types>
+struct StatementExecutor<statement::Region<RegionPolicy, EnclosedStmts...>,
+                         Types>
 {
 
   template <typename Data>

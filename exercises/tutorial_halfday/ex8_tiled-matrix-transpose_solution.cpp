@@ -50,7 +50,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nExercise #8: RAJA Tiled Matrix Transpose...\n";
@@ -64,8 +64,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int* A  = memoryManager::allocate<int>(N_r * N_c);
-  int* At = memoryManager::allocate<int>(N_r * N_c);
+  int *A = memoryManager::allocate<int>(N_r * N_c);
+  int *At = memoryManager::allocate<int>(N_r * N_c);
 
   //
   // In the following implementations of tiled matrix transpose, we
@@ -79,7 +79,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Construct a permuted layout for At so that the column index has stride 1
   //
   std::array<RAJA::idx_t, 2> perm {{1, 0}};
-  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, perm);
+  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout( {{N_c, N_r}}, 
+                                                            perm );
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
@@ -94,16 +95,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row)
-  {
-    for (int col = 0; col < N_c; ++col)
-    {
+  for (int row = 0; row < N_r; ++row) {
+    for (int col = 0; col < N_c; ++col) {
       Aview(row, col) = col;
     }
   }
-  // printResult<int>(Aview, N_r, N_c);
+  //printResult<int>(Aview, N_r, N_c);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of tiled matrix transpose...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
@@ -111,42 +110,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dimr; ++by)
-  {
-    for (int bx = 0; bx < outer_Dimc; ++bx)
-    {
+  for (int by = 0; by < outer_Dimr; ++by) {
+    for (int bx = 0; bx < outer_Dimc; ++bx) {
 
       //
       // (1) Loops to iterate over tile entries
       //
       //     Note: loops are ordered so that output matrix data access
-      //           is stride-1.
+      //           is stride-1.   
       //
-      for (int trow = 0; trow < TILE_SZ; ++trow)
-      {
-        for (int tcol = 0; tcol < TILE_SZ; ++tcol)
-        {
+      for (int trow = 0; trow < TILE_SZ; ++trow) {
+        for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
 
           int col = bx * TILE_SZ + tcol;  // Matrix column index
           int row = by * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c)
-          {
+          if (row < N_r && col < N_c) {
             Atview(col, row) = Aview(row, col);
           }
         }
       }
+
     }
   }
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
   //
-  // The following RAJA variants will use the RAJA::kernel method to
+  // The following RAJA variants will use the RAJA::kernel method to 
   // perform the matrix transpose operation.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
@@ -157,7 +152,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
   std::cout << "\n Running RAJA sequential tiled matrix transpose ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -167,26 +162,32 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // tile_fixed corresponds to the dimension size of the tile.
   //
 
-  using KERNEL_EXEC_POL_SEQ = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-      RAJA::statement::Tile<
-          0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-          RAJA::statement::For<
-              1, RAJA::seq_exec,
-              RAJA::statement::For<
-                  0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>>>;
+  using KERNEL_EXEC_POL_SEQ =
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
+                               RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
+                                 RAJA::seq_exec,
+          RAJA::statement::For<1, RAJA::seq_exec,
+            RAJA::statement::For<0, RAJA::seq_exec,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
+      >
+    >;
 
-  RAJA::kernel<KERNEL_EXEC_POL_SEQ>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+  RAJA::kernel<KERNEL_EXEC_POL_SEQ>( RAJA::make_tuple(col_Range, row_Range),
+    [=](int col, int row) {
+      Atview(col, row) = Aview(row, col);
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
 //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running RAJA openmp tiled matrix transpose -  parallel top "
-               "inner loop...\n";
+  std::cout << "\n Running RAJA openmp tiled matrix transpose -  parallel top inner loop...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -195,26 +196,35 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // one of the inner loops.
   //
 
-  using KERNEL_EXEC_POL_OMP = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-      RAJA::statement::Tile<
-          0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-          RAJA::statement::For<
-              1, RAJA::omp_parallel_for_exec,
-              RAJA::statement::For<
-                  0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>>>;
+  using KERNEL_EXEC_POL_OMP =
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
+                               RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
+                                 RAJA::seq_exec,
+          RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+            RAJA::statement::For<0, RAJA::seq_exec,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
+      >
+    >;
 
   RAJA::kernel<KERNEL_EXEC_POL_OMP>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+                          RAJA::make_tuple(col_Range, row_Range),
+                          [=](int col, int row) {
+
+    Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
-  //----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA openmp tiled matrix transpose - collapsed "
-               "inner loops...\n";
+  std::cout << "\n Running RAJA openmp tiled matrix transpose - collapsed inner loops...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -224,20 +234,27 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // to/from the tile.
   //
 
-  using KERNEL_EXEC_POL_OMP2 = RAJA::KernelPolicy<RAJA::statement::Tile<
-      1, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-      RAJA::statement::Tile<
-          0, RAJA::tile_fixed<TILE_SZ>, RAJA::seq_exec,
-          RAJA::statement::Collapse<
-              RAJA::omp_parallel_collapse_exec, RAJA::ArgList<0, 1>,
-              RAJA::statement::Lambda<0>>             // closes collapse
-          >                                           // closes Tile 0
-      >                                               // closes Tile 1
-                                                  >;  // closes policy list
+  using KERNEL_EXEC_POL_OMP2 =
+    RAJA::KernelPolicy<
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
+                               RAJA::seq_exec,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
+                                 RAJA::seq_exec,
+          RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+                                    RAJA::ArgList<0, 1>,
+            RAJA::statement::Lambda<0>
+          > //closes collapse
+        > // closes Tile 0
+      > // closes Tile 1
+    >; // closes policy list
 
   RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
-      RAJA::make_tuple(col_Range, row_Range),
-      [=](int col, int row) { Atview(col, row) = Aview(row, col); });
+                        RAJA::make_tuple(col_Range, row_Range),
+                        [=](int col, int row) {
+
+    Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -250,19 +267,29 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using KERNEL_EXEC_POL_CUDA =
-      RAJA::KernelPolicy<RAJA::statement::CudaKernel<RAJA::statement::Tile<
-          1, RAJA::tile_fixed<TILE_SZ>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<
-              0, RAJA::tile_fixed<TILE_SZ>, RAJA::cuda_block_x_loop,
-              RAJA::statement::For<
-                  1, RAJA::cuda_thread_y_direct,
-                  RAJA::statement::For<
-                      0, RAJA::cuda_thread_x_direct,
-                      RAJA::statement::Lambda<0>>>>>>>;
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
+                                 RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_SZ>,
+                                   RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >
+    >;
 
   RAJA::kernel<KERNEL_EXEC_POL_CUDA>(
-      RAJA::make_tuple(col_Range, row_Range), [=] RAJA_DEVICE(int col, int row)
-      { Atview(col, row) = Aview(row, col); });
+                           RAJA::make_tuple(col_Range, row_Range),
+                           [=] RAJA_DEVICE (int col, int row) {
+
+                             Atview(col, row) = Aview(row, col);
+
+  });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -287,22 +314,16 @@ template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
   bool match = true;
-  for (int row = 0; row < N_r; ++row)
-  {
-    for (int col = 0; col < N_c; ++col)
-    {
-      if (Atview(row, col) != row)
-      {
+  for (int row = 0; row < N_r; ++row) {
+    for (int col = 0; col < N_c; ++col) {
+      if (Atview(row, col) != row) {
         match &= false;
       }
     }
   }
-  if (match)
-  {
+  if (match) {
     std::cout << "\n\t result -- PASS\n";
-  }
-  else
-  {
+  } else {
     std::cout << "\n\t result -- FAIL\n";
   }
 };
@@ -314,13 +335,11 @@ template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
   std::cout << std::endl;
-  for (int row = 0; row < N_r; ++row)
-  {
-    for (int col = 0; col < N_c; ++col)
-    {
+  for (int row = 0; row < N_r; ++row) {
+    for (int col = 0; col < N_c; ++col) {
       // std::cout << "At(" << row << "," << col << ") = " << Atview(row, col)
       //                << std::endl;
-      std::cout << Atview(row, col) << " ";
+      std::cout<<Atview(row, col)<<" ";
     }
     std::cout << "" << std::endl;
   }

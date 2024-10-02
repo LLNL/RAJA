@@ -55,8 +55,8 @@ private:
   __m256i createMask(camp::idx_t N) const
   {
     // Generate a mask
-    return _mm256_set_epi64x(
-        N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0, N >= 1 ? -1 : 0);
+    return _mm256_set_epi64x(N >= 4 ? -1 : 0, N >= 3 ? -1 : 0, N >= 2 ? -1 : 0,
+                             N >= 1 ? -1 : 0);
   }
 
   RAJA_INLINE
@@ -166,9 +166,9 @@ public:
   RAJA_INLINE
   self_type& load_strided(int64_t const* ptr, camp::idx_t stride)
   {
-    m_value = _mm256_i64gather_epi64(
-        reinterpret_cast<long long const*>(ptr), createStridedOffsets(stride),
-        sizeof(element_type));
+    m_value = _mm256_i64gather_epi64(reinterpret_cast<long long const*>(ptr),
+                                     createStridedOffsets(stride),
+                                     sizeof(element_type));
     return *this;
   }
 
@@ -203,9 +203,9 @@ public:
 #ifdef RAJA_ENABLE_VECTOR_STATS
     RAJA::tensor_stats::num_vector_load_strided_n++;
 #endif
-    m_value = _mm256_i64gather_epi64(
-        reinterpret_cast<long long const*>(ptr), offsets.get_register(),
-        sizeof(element_type));
+    m_value =
+        _mm256_i64gather_epi64(reinterpret_cast<long long const*>(ptr),
+                               offsets.get_register(), sizeof(element_type));
     return *this;
   }
 
@@ -250,8 +250,8 @@ public:
   RAJA_INLINE
   self_type const& store_packed_n(element_type* ptr, camp::idx_t N) const
   {
-    _mm256_maskstore_epi64(
-        reinterpret_cast<long long*>(ptr), createMask(N), m_value);
+    _mm256_maskstore_epi64(reinterpret_cast<long long*>(ptr), createMask(N),
+                           m_value);
     return *this;
   }
 
@@ -374,9 +374,8 @@ public:
   self_type multiply(self_type const& b) const
   {
     // AVX2 does not supply an int64_t multiply, so do it manually
-    return self_type(_mm256_set_epi64x(
-        get(3) * b.get(3), get(2) * b.get(2), get(1) * b.get(1),
-        get(0) * b.get(0)));
+    return self_type(_mm256_set_epi64x(get(3) * b.get(3), get(2) * b.get(2),
+                                       get(1) * b.get(1), get(0) * b.get(0)));
   }
 
   RAJA_HOST_DEVICE
@@ -384,9 +383,8 @@ public:
   self_type divide(self_type const& b) const
   {
     // AVX2 does not supply an integer divide, so do it manually
-    return self_type(_mm256_set_epi64x(
-        get(3) / b.get(3), get(2) / b.get(2), get(1) / b.get(1),
-        get(0) / b.get(0)));
+    return self_type(_mm256_set_epi64x(get(3) / b.get(3), get(2) / b.get(2),
+                                       get(1) / b.get(1), get(0) / b.get(0)));
   }
 
   RAJA_HOST_DEVICE
@@ -480,11 +478,10 @@ public:
   RAJA_INLINE
   self_type vmax(self_type a) const
   {
-    return self_type(_mm256_set_epi64x(
-        get(3) > a.get(3) ? get(3) : a.get(3),
-        get(2) > a.get(2) ? get(2) : a.get(2),
-        get(1) > a.get(1) ? get(1) : a.get(1),
-        get(0) > a.get(0) ? get(0) : a.get(0)));
+    return self_type(_mm256_set_epi64x(get(3) > a.get(3) ? get(3) : a.get(3),
+                                       get(2) > a.get(2) ? get(2) : a.get(2),
+                                       get(1) > a.get(1) ? get(1) : a.get(1),
+                                       get(0) > a.get(0) ? get(0) : a.get(0)));
   }
 
   /*!
@@ -550,11 +547,10 @@ public:
   RAJA_INLINE
   self_type vmin(self_type a) const
   {
-    return self_type(_mm256_set_epi64x(
-        get(3) < a.get(3) ? get(3) : a.get(3),
-        get(2) < a.get(2) ? get(2) : a.get(2),
-        get(1) < a.get(1) ? get(1) : a.get(1),
-        get(0) < a.get(0) ? get(0) : a.get(0)));
+    return self_type(_mm256_set_epi64x(get(3) < a.get(3) ? get(3) : a.get(3),
+                                       get(2) < a.get(2) ? get(2) : a.get(2),
+                                       get(1) < a.get(1) ? get(1) : a.get(1),
+                                       get(0) < a.get(0) ? get(0) : a.get(0)));
   }
 };
 

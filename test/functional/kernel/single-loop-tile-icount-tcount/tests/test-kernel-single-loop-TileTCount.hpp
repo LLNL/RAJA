@@ -79,8 +79,7 @@ TYPED_TEST_P(KernelSingleLoopTileTCountTest, TileTCountSingleLoopKernel)
       IDX_TYPE(1035), tsize);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(
-    KernelSingleLoopTileTCountTest,
-    TileTCountSingleLoopKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelSingleLoopTileTCountTest,
+                            TileTCountSingleLoopKernel);
 
 #endif  // __TEST_KERNEL_SINGLE_LOOP_TILETCOUNT_HPP_

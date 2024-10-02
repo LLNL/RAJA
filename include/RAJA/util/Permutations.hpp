@@ -221,11 +221,11 @@ template <camp::idx_t... Range, camp::idx_t... Perm>
 struct InversePermutationHelper<camp::idx_seq<Range...>, camp::idx_seq<Perm...>>
 {
   static_assert(sizeof...(Range) == sizeof...(Perm), "Fatal Error");
-  using type = camp::idx_seq<CalcInversePermutationElem<
-      Range,
-      0,
-      sizeof...(Range),
-      camp::idx_seq<Perm...>>::value...>;
+  using type = camp::idx_seq<
+      CalcInversePermutationElem<Range,
+                                 0,
+                                 sizeof...(Range),
+                                 camp::idx_seq<Perm...>>::value...>;
 };
 
 

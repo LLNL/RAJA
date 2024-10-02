@@ -231,9 +231,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicAnd(T* acc, T value)
 {
-  static_assert(
-      std::is_integral<T>::value,
-      "atomicAnd can only be used on integral types");
+  static_assert(std::is_integral<T>::value,
+                "atomicAnd can only be used on integral types");
   return RAJA::atomicAnd(Policy {}, acc, value);
 }
 
@@ -249,9 +248,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicOr(T* acc, T value)
 {
-  static_assert(
-      std::is_integral<T>::value,
-      "atomicOr can only be used on integral types");
+  static_assert(std::is_integral<T>::value,
+                "atomicOr can only be used on integral types");
   return RAJA::atomicOr(Policy {}, acc, value);
 }
 
@@ -267,9 +265,8 @@ RAJA_SUPPRESS_HD_WARN
 template <typename Policy, typename T>
 RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(T* acc, T value)
 {
-  static_assert(
-      std::is_integral<T>::value,
-      "atomicXor can only be used on integral types");
+  static_assert(std::is_integral<T>::value,
+                "atomicXor can only be used on integral types");
   return RAJA::atomicXor(Policy {}, acc, value);
 }
 

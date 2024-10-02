@@ -40,18 +40,15 @@ namespace internal
 {
 
 // Intialize thread shared array
-template <
-    typename Data,
-    camp::idx_t... Indices,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::InitLocalMem<
-        RAJA::cuda_shared_mem,
-        camp::idx_seq<Indices...>,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t... Indices,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::InitLocalMem<RAJA::cuda_shared_mem,
+                                                     camp::idx_seq<Indices...>,
+                                                     EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t      = StatementList<EnclosedStmts...>;
@@ -125,18 +122,15 @@ struct CudaStatementExecutor<
 };
 
 // Intialize thread private array
-template <
-    typename Data,
-    camp::idx_t... Indices,
-    typename... EnclosedStmts,
-    typename Types>
-struct CudaStatementExecutor<
-    Data,
-    statement::InitLocalMem<
-        RAJA::cuda_thread_mem,
-        camp::idx_seq<Indices...>,
-        EnclosedStmts...>,
-    Types>
+template <typename Data,
+          camp::idx_t... Indices,
+          typename... EnclosedStmts,
+          typename Types>
+struct CudaStatementExecutor<Data,
+                             statement::InitLocalMem<RAJA::cuda_thread_mem,
+                                                     camp::idx_seq<Indices...>,
+                                                     EnclosedStmts...>,
+                             Types>
 {
 
   using stmt_list_t      = StatementList<EnclosedStmts...>;
