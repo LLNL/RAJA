@@ -200,7 +200,7 @@ RAJA_DEVICE RAJA_INLINE int grid_reduce_last_block(T& val,
 
 namespace expt {
 
-template <typename ThreadIterationGetter, template <typename, typename, typename> class Combiner, typename T>
+template <typename ThreadIterationGetter, typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   const int numThreads = ThreadIterationGetter::size();
@@ -216,7 +216,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     // reduce each warp
     for (int i = 1; i < RAJA::policy::cuda::device_constants.WARP_SIZE; i *= 2) {
       T rhs = RAJA::cuda::impl::shfl_xor_sync(temp, i);
-      temp = Combiner<T,T,T>{}(temp, rhs);
+      temp = Combiner{}(temp, rhs);
     }
 
   } else {
@@ -227,7 +227,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
       T rhs = RAJA::cuda::impl::shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads) {
-        temp = Combiner<T,T,T>{}(temp, rhs);
+        temp = Combiner{}(temp, rhs);
       }
     }
   }
@@ -263,7 +263,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
       for (int i = 1; i < RAJA::policy::cuda::device_constants.MAX_WARPS; i *= 2) {
         T rhs = RAJA::cuda::impl::shfl_xor_sync(temp, i);
-        temp = Combiner<T,T,T>{}(temp, rhs);
+        temp = Combiner{}(temp, rhs);
       }
     }
 
@@ -274,7 +274,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 }
 
 
-template <typename GlobalIterationGetter, template <typename, typename, typename> class OP, typename T>
+template <typename GlobalIterationGetter, typename OP, typename T>
 RAJA_DEVICE RAJA_INLINE void grid_reduce( T * device_target,
                                           T val,
                                           RAJA::detail::SoAPtr<T,RAJA::cuda::device_mempool_type> device_mem,
@@ -290,7 +290,7 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce( T * device_target,
   const int blockId = BlockIterationGetter::index();
   const int threadId = ThreadIterationGetter::index();
 
-  T temp = block_reduce<ThreadIterationGetter, OP>(val, OP<T,T,T>::identity());
+  T temp = block_reduce<ThreadIterationGetter, OP>(val, OP::identity());
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
@@ -308,14 +308,14 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce( T * device_target,
 
   // last block accumulates values from device_mem
   if (lastBlock) {
-    temp = OP<T,T,T>::identity();
+    temp = OP::identity();
     __threadfence();
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
-      temp = OP<T,T,T>{}(temp, device_mem.get(i));
+      temp = OP{}(temp, device_mem.get(i));
     }
 
-    temp = block_reduce<ThreadIterationGetter, OP>(temp, OP<T,T,T>::identity());
+    temp = block_reduce<ThreadIterationGetter, OP>(temp, OP::identity());
 
     // one thread returns value
     if (threadId == 0) {

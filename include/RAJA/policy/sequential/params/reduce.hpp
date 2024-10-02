@@ -8,27 +8,24 @@ namespace expt {
 namespace detail {
 
   // Init
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename I, typename VType>
+  template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  init(Reducer<OP, T, I, VType>& red) {
-    using VT = typename Reducer<OP, T, I, VType>::value_type;
-    red.valop_m.val = OP<VT,VT,VT>::identity();
+  init(Reducer<OP, T, VType>& red) {
+    red.valop_m.val = OP::identity();
   }
 
   // Combine
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename I, typename VType>
+  template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  combine(Reducer<OP, T, I, VType>& out, const Reducer<OP, T, I, VType>& in) {
-    using VT = typename Reducer<OP, T, I, VType>::value_type;
-    out.valop_m.val = OP<VT,VT,VT>{}(out.valop_m.val, in.valop_m.val);
+  combine(Reducer<OP, T, VType>& out, const Reducer<OP, T, VType>& in) {
+    out.valop_m.val = OP{}(out.valop_m.val, in.valop_m.val);
   }
 
   // Resolve
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename I, typename VType>
+  template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
-  resolve(Reducer<OP, T, I, VType>& red) {
-    using VT = typename Reducer<OP, T, I, VType>::value_type;
-    red.set(OP<VT,VT,VT>{}(*red.target, red.valop_m.val));
+  resolve(Reducer<OP, T, VType>& red) {
+    red.setTarget(OP{}(*red.target, red.valop_m.val));
   }
 
 } //  namespace detail

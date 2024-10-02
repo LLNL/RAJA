@@ -15,40 +15,36 @@ namespace expt {
 namespace detail {
 
   // Init
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename I, typename VType>
+  template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  init(Reducer<OP, T, I, VType>& red, RAJA::cuda::detail::cudaInfo& ci)
+  init(Reducer<OP, T, VType>& red, RAJA::cuda::detail::cudaInfo& ci)
   {
-    using VT = typename Reducer<OP, T, I, VType>::value_type;
-    red.devicetarget = RAJA::cuda::pinned_mempool_type::getInstance().template malloc<VT>(1);
+    red.devicetarget = RAJA::cuda::pinned_mempool_type::getInstance().template malloc<T>(1);
     red.device_mem.allocate(ci.gridDim.x * ci.gridDim.y * ci.gridDim.z);
     red.device_count = RAJA::cuda::device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
   }
 
   // Combine
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename I, typename VType>
+  template<typename EXEC_POL, typename OP, typename T, typename VType>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  combine(Reducer<OP, T, I, VType>& red)
+  combine(Reducer<OP, T, VType>& red)
   {
-    using VT = typename Reducer<OP, T, I, VType>::value_type;
-    RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter, OP, VT>(red.devicetarget,
+    RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter, OP>(red.devicetarget,
                                                                             red.getVal(),
                                                                             red.device_mem,
                                                                             red.device_count);
   }
 
   // Resolve
-  template<typename EXEC_POL, template <typename, typename, typename> class OP, typename T, typename I, typename VType>
+  template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  resolve(Reducer<OP, T, I, VType>& red, RAJA::cuda::detail::cudaInfo& ci)
+  resolve(Reducer<OP, T, VType>& red, RAJA::cuda::detail::cudaInfo& ci)
   {
-    using VT = typename Reducer<OP, T, I, VType>::value_type;
-
     // complete reduction
     ci.res.wait();
 
-    red.set(OP<VT,VT,VT>{}(*red.target, *red.devicetarget));
+    red.setTarget(OP{}(*red.target, *red.devicetarget));
 
     // free memory
     RAJA::cuda::device_zeroed_mempool_type::getInstance().free(red.device_count);
