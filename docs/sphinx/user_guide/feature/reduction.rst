@@ -374,7 +374,7 @@ data types and operators, and order of the ``ValOp`` parameters must match
 the corresponding ``RAJA::expt::Reduce`` types to get correct results and to
 compile successfully. Otherwise, a static assertion will be triggered::
 
-  LAMBDA Not invocable w/ EXPECTED_ARGS.
+  LAMBDA Not invocable w/ EXPECTED_ARGS. Ordering and types must match between RAJA::expt::Reduce() and ValOp arguments.
 
 .. note:: This static assert is only enabled when passing an undecorated C++
           lambda. Meaning, this check will not happen when passing
