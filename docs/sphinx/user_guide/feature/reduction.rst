@@ -240,15 +240,19 @@ RAJA::expt::Reduce
           compatible with the ``EXEC_POL``. ``Seg`` is the iteration space
           object for ``RAJA::forall``.
 
-.. important:: The local reduction arguments to the lambda expression must be
-               ``RAJA::expt::ValOp`` references. Each ``ValOp`` references
-               corresponds to a ``RAJA::expt::Reduce`` call within the forall
-               arguments. The ``ValOp`` reduction data type and RAJA operator need
-               to match the data type referenced and operator template argument
-               in the ``RAJA::expt::Reduce`` call. Finally, the ordering of the
-               ``ValOp`` references must correspond to the ordering of the
-               ``RAJA::expt::Reduce`` calls to ensure that the correct result is
-               obtained.
+.. important:: * ``RAJA::expt::Reduce`` arguments must be passed to the forall.
+                 These arguments are templated on the reduction operator, and take
+                 a pointer to the target reduction variable that was declared outside
+                 of the forall.
+               * The local reduction arguments to the lambda expression must be
+                 ``RAJA::expt::ValOp`` references. Each ``ValOp`` reference
+                 corresponds to a ``RAJA::expt::Reduce`` argument within the forall.
+               * The ordering of the ``ValOp`` references must correspond to the
+                 ordering of the ``RAJA::expt::Reduce`` arguments to ensure that the
+                 correct result is obtained.
+               * Each ``ValOp`` reduction data type and RAJA operator need to match
+                 the data type referenced, and operator template argument in the
+                 corresponding ``RAJA::expt::Reduce`` argument.
 
 RAJA::expt::ValLoc
 ..................
@@ -258,14 +262,18 @@ reductions, which provide the ability to get a kernel/loop index at which the
 final reduction value was found. With this new interface, *loc* reductions
 are performed using ``ValLoc<T,I>`` types, where ``T`` is the underlying data type,
 and ``I`` is the index type. Users must use the ``getVal()`` and ``getLoc()``
-methods to access the reduction results.
+methods to access the reduction results after the kernel completes.
 
-In the kernel body lambda expression, a ``ValLoc<T,I>`` must be wrapped in a
-``ValOp``, and passed to the lambda in the same order as the corresponding 
-``RAJA::expt::Reduce`` arguments, e.g. ``ValOp<ValLoc<T,I>, Op>``.
+In the lambda expression, a ``ValLoc<T,I>`` must be wrapped in a
+``ValOp`` type, and passed to the lambda in the same order as the corresponding 
+``RAJA::expt::Reduce`` arguments, e.g. ``ValOp<ValLoc<T,I>, Op>``. In the example
+below, ``VALOPLOC_DOUBLE_MIN`` represents a wrapped ``ValLoc`` usable within the
+lambda.
+
 For convenience, an alias of ``RAJA::expt::ValLocOp<T,I,Op>`` is provided.
 Within the lambda, this ``ValLocOp`` object provides ``minloc``, and ``maxloc``
-functions::
+functions. In the example below, ``VALOPLOC_DOUBLE_MAX`` represents a wrapped
+``ValLoc`` using the ``ValLocOp`` alias::
 
   double* a = ...;
 
@@ -293,11 +301,13 @@ functions::
   std::cout << rmax_loc.getLoc() ...
 
 Alternatively, *loc* reductions can be performed on separate reduction data, and
-location variables without a ``ValLoc`` object. To use this capability, a
-``RAJA::expt::ReduceLoc`` call must be passed to the ``RAJA::forall``, templated on
-the reduction operation, and passing in references to the data and location as
-``ReduceLoc`` function arguments. The data and location can be accessed outside of
-the forall directly without ``getVal()`` or ``getLoc()`` functions.
+location variables without a ``ValLoc`` object, seen in the next example below.
+To use this capability, a ``RAJA::expt::ReduceLoc`` argument must be passed to the
+``RAJA::forall``, templated on the reduction operation, and passing in references to
+the data and location. This is illustrated in the example below, with references to
+``rm`` and ``loc`` being passed into the ``ReduceLoc`` argument in the forall. The
+data and location can be accessed outside of the forall directly without
+``getVal()`` or ``getLoc()`` functions.
 :: 
 
   double* a = ...;
@@ -310,12 +320,13 @@ the forall directly without ``getVal()`` or ``getLoc()`` functions.
   RAJA::Index_type loc;
 
   RAJA::forall<EXEC_POL> ( Res, Seg,
-  RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&rm, &loc),
+  RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&rm, &loc), // --> 1 double & 1 index added
   [=] (int i, VALOPLOC_DOUBLE_MIN& _rm_loc) {
     _rm_loc.minloc(a[i], i);
   }
   );
 
+  // No getVal() or getLoc() required. Access results in their original form.
   std::cout << rm ...
   std::cout << loc ...
 
@@ -324,7 +335,7 @@ Lambda Arguments
 ................
 
 This interface takes advantage of C++ parameter packs to allow users to pass
-any number of ``RAJA::expt::Reduce`` objects to the ``RAJA::forall`` method::
+any number of ``RAJA::expt::Reduce`` arguments to the ``RAJA::forall`` method::
 
   double* a = ...;
 
