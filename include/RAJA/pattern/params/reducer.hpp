@@ -58,11 +58,10 @@ namespace detail
 
   // Basic data type Reducer
   // T must be a basic data type
-  // IndexType not used here
   // VType must be ValOp<T, Op>
   template <typename Op, typename T, typename VType>
   struct Reducer : public ForallParamBase {
-    //using op = Op<T,T,T>;
+    using op = Op;
     using value_type = T; // This is a basic data type
 
     Reducer() = default;
@@ -104,16 +103,13 @@ namespace detail
   };
 
   // Partial specialization of Reducer for ValLoc
-  // T must be a ValLoc
-  // TTOp is the template template version of Op, required by ValOp
-  // VType must be ValOp<ValLoc<>,Op>
-  template <typename Op, typename T, template <typename, typename, typename> class TTOp>
-  struct Reducer<Op, T, ValOp<ValLoc<typename T::value_type, typename T::index_type>, TTOp>> : public ForallParamBase {
-    using target_value_type = typename T::value_type; // This should be a basic data type extracted from the T=ValLoc passed in
-    using target_index_type = typename T::index_type;
-    using value_type = T; // Note that this struct operates on ValLoc
-    using op = TTOp<value_type,value_type,value_type>;
-    using VType = ValOp<ValLoc<target_value_type,target_index_type>, TTOp>;
+  template <typename T, typename I, template <typename, typename, typename> class Op>
+  struct Reducer<Op<ValLoc<T,I>, ValLoc<T,I>, ValLoc<T,I>>, ValLoc<T,I>, ValOp<ValLoc<T,I>, Op>> : public ForallParamBase {
+    using target_value_type = T;
+    using target_index_type = I;
+    using value_type = ValLoc<T,I>;
+    using op = Op<value_type,value_type,value_type>;
+    using VType = ValOp<ValLoc<target_value_type,target_index_type>, Op>;
 
     Reducer() = default;
 
@@ -164,8 +160,7 @@ namespace detail
 } // namespace detail
 
 // Standard use case.
-template <template <typename, typename, typename> class Op, typename T, typename IndexType = RAJA::Index_type,
-          std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value> * = nullptr>
+template <template <typename, typename, typename> class Op, typename T>
 auto constexpr Reduce(T *target)
 {
   return detail::Reducer<Op<T,T,T>, T, ValOp<T, Op>>(target);
@@ -180,8 +175,7 @@ auto constexpr Reduce(ValLoc<T, IndexType> *target)
 }
 
 // Pass through use case where reduction value and location are separate, non-ValLoc types supplied by the user.
-template <template <typename, typename, typename> class Op, typename T, typename IndexType,
-          std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value> * = nullptr>
+template <template <typename, typename, typename> class Op, typename T, typename IndexType>
 auto constexpr ReduceLoc(T *target, IndexType *index)
 {
   using VL = ValLoc<T,IndexType>;
