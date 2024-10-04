@@ -67,7 +67,7 @@ namespace detail
     Reducer() = default;
 
     // Basic data type constructor
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : valop_m(VType{}), target(target_in){}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VType{}), target(target_in){}
 
     Reducer(Reducer const &) = default;
     Reducer(Reducer &&) = default;
@@ -75,7 +75,7 @@ namespace detail
     Reducer& operator=(Reducer &&) = default;
 
     // Internal ValOp object that is used within RAJA::forall/launch
-    VType valop_m = VType{};
+    VType m_valop = VType{};
 
     // Points to the user specified result variable
     value_type *target = nullptr;
@@ -85,7 +85,7 @@ namespace detail
 
     RAJA_HOST_DEVICE
     value_type &
-    getVal() { return valop_m.val; }
+    getVal() { return m_valop.val; }
 
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
     // Device related attributes.
@@ -96,7 +96,7 @@ namespace detail
 
     // These are types and parameters extracted from this struct, and given to the forall.
     using ARG_TUP_T = camp::tuple<VType*>;
-    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&valop_m); }
+    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&m_valop); }
 
     using ARG_LIST_T = typename ARG_TUP_T::TList;
     static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value ;
@@ -115,18 +115,18 @@ namespace detail
 
     // ValLoc constructor
     // Note that the passthru variables point to the val and loc within the user defined target ValLoc
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : valop_m(VType{}), target(target_in), passthruval(&target_in->val), passthruindex(&target_in->loc) {}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VType{}), target(target_in), passthruval(&target_in->val), passthruindex(&target_in->loc) {}
 
     // Pass through constructor for ReduceLoc<>(data, index) case
     // The passthru variables point to vars defined by the user
-    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : valop_m(VType(*data_in, *index_in)), target(&valop_m.val), passthruval(data_in), passthruindex(index_in) {}
+    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VType(*data_in, *index_in)), target(&m_valop.val), passthruval(data_in), passthruindex(index_in) {}
 
     Reducer(Reducer const &) = default;
     Reducer(Reducer &&) = default;
     Reducer& operator=(Reducer const &) = default;
     Reducer& operator=(Reducer &&) = default;
 
-    VType valop_m = VType{};
+    VType m_valop = VType{};
 
     value_type *target = nullptr;
 
@@ -140,7 +140,7 @@ namespace detail
 
     RAJA_HOST_DEVICE
     value_type &
-    getVal() { return valop_m.val; }
+    getVal() { return m_valop.val; }
 
 #if defined(RAJA_CUDA_ACTIVE) || defined(RAJA_HIP_ACTIVE) || defined(RAJA_SYCL_ACTIVE)
     // Device related attributes.
@@ -151,7 +151,7 @@ namespace detail
 
     // These are types and parameters extracted from this struct, and given to the forall.
     using ARG_TUP_T = camp::tuple<VType*>;
-    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&valop_m); }
+    RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&m_valop); }
 
     using ARG_LIST_T = typename ARG_TUP_T::TList;
     static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value ;
