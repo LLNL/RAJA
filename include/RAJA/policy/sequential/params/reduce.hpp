@@ -25,7 +25,7 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< std::is_same< EXEC_POL, RAJA::seq_exec> >
   resolve(Reducer<OP, T, VType>& red) {
-    red.setTarget(OP{}(*red.target, red.m_valop.val));
+    red.combineTarget(red.m_valop.val);
   }
 
 } //  namespace detail

@@ -42,7 +42,7 @@ namespace detail {
     // complete reduction
     hi.res.wait();
 
-    red.setTarget(OP{}(*red.target, *red.devicetarget));
+    red.combineTarget(*red.devicetarget);
 
     // free memory
     RAJA::hip::device_zeroed_mempool_type::getInstance().free(red.device_count);

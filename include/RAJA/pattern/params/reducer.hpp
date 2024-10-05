@@ -80,8 +80,12 @@ namespace detail
     // Points to the user specified result variable
     value_type *target = nullptr;
 
-    // Used in the resolve() call to set target in each backend
-    RAJA_HOST_DEVICE void setTarget(value_type in) { *target = in; }
+    // combineTarget() performs the final op on the target data and location in resolve()
+    RAJA_HOST_DEVICE void combineTarget(value_type in)
+    {
+      value_type temp = op{}(*target, in);
+      *target = temp;
+    }
 
     RAJA_HOST_DEVICE
     value_type &
@@ -103,6 +107,8 @@ namespace detail
   };
 
   // Partial specialization of Reducer for ValLoc
+  // T is a deduced basic data type
+  // I is a deduced index type
   template <typename T, typename I, template <typename, typename, typename> class Op>
   struct Reducer<Op<ValLoc<T,I>, ValLoc<T,I>, ValLoc<T,I>>, ValLoc<T,I>, ValOp<ValLoc<T,I>, Op>> : public ForallParamBase {
     using target_value_type = T;
@@ -114,29 +120,34 @@ namespace detail
     Reducer() = default;
 
     // ValLoc constructor
-    // Note that the passthru variables point to the val and loc within the user defined target ValLoc
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VType{}), target(target_in), passthruval(&target_in->val), passthruindex(&target_in->loc) {}
+    // Note that the target_ variables point to the val and loc within the user defined target ValLoc
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VType(target_in->val, target_in->loc)), target_value(&target_in->val), target_index(&target_in->loc) {}
 
-    // Pass through constructor for ReduceLoc<>(data, index) case
-    // The passthru variables point to vars defined by the user
-    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VType(*data_in, *index_in)), target(&m_valop.val), passthruval(data_in), passthruindex(index_in) {}
+    // Dual input constructor for ReduceLoc<>(data, index) case
+    // The target_ variables point to vars defined by the user
+    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VType(*data_in, *index_in)), target_value(data_in), target_index(index_in) {}
 
     Reducer(Reducer const &) = default;
     Reducer(Reducer &&) = default;
     Reducer& operator=(Reducer const &) = default;
     Reducer& operator=(Reducer &&) = default;
 
+    // The ValLoc within m_valop is initialized with data and location values from either a ValLoc, or dual data and location values, passed into the constructor
     VType m_valop = VType{};
 
-    value_type *target = nullptr;
+    // Points to either dual value and index defined by the user, or value and index within a ValLoc defined by the user
+    target_value_type *target_value = nullptr;
+    target_index_type *target_index = nullptr;
 
-    target_value_type *passthruval = nullptr;
-    target_index_type *passthruindex = nullptr;
-
-    // This single-argument setTarget() matches the basic data type Reducer::setTarget()'s
-    // function signature to make the init/combine/resolve backend calls easier
-    // to maintain, but operates on the passthru variables instead
-    RAJA_HOST_DEVICE void setTarget(value_type in) { *passthruval = in.val; *passthruindex = in.loc; }
+    // combineTarget() performs the final op on the target data and location in resolve()
+    RAJA_HOST_DEVICE void combineTarget(value_type in)
+    {
+      // Create a different temp ValLoc solely for combining
+      value_type temp(*target_value, *target_index);
+      temp = op{}(temp, in);
+      *target_value = temp.val;
+      *target_index = temp.loc;
+    }
 
     RAJA_HOST_DEVICE
     value_type &
@@ -174,7 +185,7 @@ auto constexpr Reduce(ValLoc<T, IndexType> *target)
   return detail::Reducer<Op<VL,VL,VL>, VL, ValOp<ValLoc<T, IndexType>, Op>>(target);
 }
 
-// Pass through use case where reduction value and location are separate, non-ValLoc types supplied by the user.
+// Dual input use case where reduction value and location are separate, non-ValLoc types supplied by the user.
 template <template <typename, typename, typename> class Op, typename T, typename IndexType>
 auto constexpr ReduceLoc(T *target, IndexType *index)
 {

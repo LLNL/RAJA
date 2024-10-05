@@ -27,7 +27,7 @@ namespace detail {
   template<typename EXEC_POL, typename OP, typename T, typename VType>
   camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
   resolve(Reducer<OP, T, VType>& red) {
-    red.setTarget(OP{}(*red.target, red.m_valop.val));
+    red.combineTarget(red.m_valop.val);
   }
 
 #endif
