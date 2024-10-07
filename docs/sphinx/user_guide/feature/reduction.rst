@@ -222,8 +222,8 @@ RAJA::expt::Reduce
   on the underlying data type (``double`` for ``_rs`` and ``_rm``), and the operator
   being used. It is important to note that the parameters follow the kernel iteration
   variable, ``i`` in this case, and appear in the same order as the corresponding
-  ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The parameter types must be
-  references to the types used in the ``RAJA::expt::Reduce`` arguments.
+  ``RAJA::expt::Reduce`` arguments to ``RAJA::forall``. The ``ValOp`` parameters must
+  be references to the objects instantiated by the ``RAJA::expt::Reduce`` arguments.
 * The local variables referred to by ``_rs`` and ``_rm`` are initialized with
   the *identity* of the reduction operation to be performed.
 * The local variables are updated in the user supplied lambda.
