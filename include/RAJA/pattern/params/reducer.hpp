@@ -58,8 +58,8 @@ namespace detail
 
   // Basic data type Reducer
   // T must be a basic data type
-  // VType must be ValOp<T, Op>
-  template <typename Op, typename T, typename VType>
+  // VOp must be ValOp<T, Op>
+  template <typename Op, typename T, typename VOp>
   struct Reducer : public ForallParamBase {
     using op = Op;
     using value_type = T; // This is a basic data type
@@ -67,7 +67,7 @@ namespace detail
     Reducer() = default;
 
     // Basic data type constructor
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VType{}), target(target_in){}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VOp{}), target(target_in){}
 
     Reducer(Reducer const &) = default;
     Reducer(Reducer &&) = default;
@@ -75,7 +75,7 @@ namespace detail
     Reducer& operator=(Reducer &&) = default;
 
     // Internal ValOp object that is used within RAJA::forall/launch
-    VType m_valop = VType{};
+    VOp m_valop = VOp{};
 
     // Points to the user specified result variable
     value_type *target = nullptr;
@@ -99,7 +99,7 @@ namespace detail
 #endif
 
     // These are types and parameters extracted from this struct, and given to the forall.
-    using ARG_TUP_T = camp::tuple<VType*>;
+    using ARG_TUP_T = camp::tuple<VOp*>;
     RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&m_valop); }
 
     using ARG_LIST_T = typename ARG_TUP_T::TList;
@@ -115,17 +115,17 @@ namespace detail
     using target_index_type = I;
     using value_type = ValLoc<T,I>;
     using op = Op<value_type,value_type,value_type>;
-    using VType = ValOp<ValLoc<target_value_type,target_index_type>, Op>;
+    using VOp = ValOp<ValLoc<target_value_type,target_index_type>, Op>;
 
     Reducer() = default;
 
     // ValLoc constructor
     // Note that the target_ variables point to the val and loc within the user defined target ValLoc
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VType(target_in->val, target_in->loc)), target_value(&target_in->val), target_index(&target_in->loc) {}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VOp(target_in->val, target_in->loc)), target_value(&target_in->val), target_index(&target_in->loc) {}
 
     // Dual input constructor for ReduceLoc<>(data, index) case
     // The target_ variables point to vars defined by the user
-    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VType(*data_in, *index_in)), target_value(data_in), target_index(index_in) {}
+    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VOp(*data_in, *index_in)), target_value(data_in), target_index(index_in) {}
 
     Reducer(Reducer const &) = default;
     Reducer(Reducer &&) = default;
@@ -133,7 +133,7 @@ namespace detail
     Reducer& operator=(Reducer &&) = default;
 
     // The ValLoc within m_valop is initialized with data and location values from either a ValLoc, or dual data and location values, passed into the constructor
-    VType m_valop = VType{};
+    VOp m_valop = VOp{};
 
     // Points to either dual value and index defined by the user, or value and index within a ValLoc defined by the user
     target_value_type *target_value = nullptr;
@@ -161,7 +161,7 @@ namespace detail
 #endif
 
     // These are types and parameters extracted from this struct, and given to the forall.
-    using ARG_TUP_T = camp::tuple<VType*>;
+    using ARG_TUP_T = camp::tuple<VOp*>;
     RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(&m_valop); }
 
     using ARG_LIST_T = typename ARG_TUP_T::TList;
