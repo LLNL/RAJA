@@ -8,14 +8,16 @@
 #include "RAJA/policy/cuda/reduce.hpp"
 #include "RAJA/pattern/params/reducer.hpp"
 
+#include "RAJA/policy/cuda/policy.hpp"
+
 namespace RAJA {
 namespace expt {
 namespace detail {
 
   // Init
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  init(Reducer<OP, T>& red, RAJA::cuda::detail::cudaInfo& ci)
+  init(Reducer<OP, T, VOp>& red, RAJA::cuda::detail::cudaInfo& ci)
   {
     red.devicetarget = RAJA::cuda::pinned_mempool_type::getInstance().template malloc<T>(1);
     red.device_mem.allocate(ci.gridDim.x * ci.gridDim.y * ci.gridDim.z);
@@ -23,22 +25,26 @@ namespace detail {
   }
 
   // Combine
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  combine(Reducer<OP, T>& red)
+  combine(Reducer<OP, T, VOp>& red)
   {
-    RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter>(red);
+    RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter, OP>(red.devicetarget,
+                                                                            red.getVal(),
+                                                                            red.device_mem,
+                                                                            red.device_count);
   }
 
   // Resolve
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
-  resolve(Reducer<OP, T>& red, RAJA::cuda::detail::cudaInfo& ci)
+  resolve(Reducer<OP, T, VOp>& red, RAJA::cuda::detail::cudaInfo& ci)
   {
     // complete reduction
     ci.res.wait();
-    *red.target = OP{}(*red.target, *red.devicetarget);
+
+    red.combineTarget(*red.devicetarget);
 
     // free memory
     RAJA::cuda::device_zeroed_mempool_type::getInstance().free(red.device_count);
