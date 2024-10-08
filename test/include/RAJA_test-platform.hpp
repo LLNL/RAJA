@@ -16,10 +16,10 @@
 
 #include "camp/list.hpp"
 
-template < RAJA::Platform PLATFORM >
+template <RAJA::Platform PLATFORM>
 struct PlatformHolder
 {
-   static const RAJA::Platform platform = PLATFORM;
+  static const RAJA::Platform platform = PLATFORM;
 };
 
 //
@@ -38,11 +38,12 @@ using CudaPlatformList = camp::list<PlatformHolder<RAJA::Platform::cuda>>;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetPlatformList = camp::list<PlatformHolder<RAJA::Platform::omp_target>>;
+using OpenMPTargetPlatformList =
+    camp::list<PlatformHolder<RAJA::Platform::omp_target>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
 using HipPlatformList = camp::list<PlatformHolder<RAJA::Platform::hip>>;
 #endif
 
-#endif // __RAJA_test_platform_HPP__
+#endif  // __RAJA_test_platform_HPP__

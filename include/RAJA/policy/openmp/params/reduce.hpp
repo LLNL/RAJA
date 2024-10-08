@@ -3,37 +3,43 @@
 
 #include "RAJA/pattern/params/reducer.hpp"
 
-namespace RAJA {
-namespace expt {
-namespace detail {
+namespace RAJA
+{
+namespace expt
+{
+namespace detail
+{
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  // Init
-  template<typename EXEC_POL, typename OP, typename T, typename VOp>
-  camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
-  init(Reducer<OP, T, VOp>& red) {
-    red.m_valop.val = OP::identity();
-  }
+// Init
+template <typename EXEC_POL, typename OP, typename T, typename VOp>
+camp::concepts::enable_if<type_traits::is_openmp_policy<EXEC_POL>>
+init(Reducer<OP, T, VOp>& red)
+{
+  red.m_valop.val = OP::identity();
+}
 
-  // Combine
-  template<typename EXEC_POL, typename OP, typename T, typename VOp>
-  camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
-  combine(Reducer<OP, T, VOp>& out, const Reducer<OP, T, VOp>& in) {
-    out.m_valop.val = OP{}(out.m_valop.val, in.m_valop.val);
-  }
+// Combine
+template <typename EXEC_POL, typename OP, typename T, typename VOp>
+camp::concepts::enable_if<type_traits::is_openmp_policy<EXEC_POL>>
+combine(Reducer<OP, T, VOp>& out, const Reducer<OP, T, VOp>& in)
+{
+  out.m_valop.val = OP {}(out.m_valop.val, in.m_valop.val);
+}
 
-  // Resolve
-  template<typename EXEC_POL, typename OP, typename T, typename VOp>
-  camp::concepts::enable_if< type_traits::is_openmp_policy<EXEC_POL> >
-  resolve(Reducer<OP, T, VOp>& red) {
-    red.combineTarget(red.m_valop.val);
-  }
+// Resolve
+template <typename EXEC_POL, typename OP, typename T, typename VOp>
+camp::concepts::enable_if<type_traits::is_openmp_policy<EXEC_POL>>
+resolve(Reducer<OP, T, VOp>& red)
+{
+  red.combineTarget(red.m_valop.val);
+}
 
 #endif
 
-} //  namespace detail
-} //  namespace expt
-} //  namespace RAJA
+}  //  namespace detail
+}  //  namespace expt
+}  //  namespace RAJA
 
-#endif //  NEW_REDUCE_OMP_REDUCE_HPP
+#endif  //  NEW_REDUCE_OMP_REDUCE_HPP

@@ -28,16 +28,14 @@ namespace RAJA
 namespace expt
 {
 
-  // Convenience to describe ScalarTensors
-  template<typename T>
-  using ScalarRegister = TensorRegister<scalar_register,
-                                        T,
-                                        ScalarLayout,
-                                        camp::idx_seq<>>;
+// Convenience to describe ScalarTensors
+template <typename T>
+using ScalarRegister =
+    TensorRegister<scalar_register, T, ScalarLayout, camp::idx_seq<>>;
 
 
-} // namespace expt
-} // namespace RAJA
+}  // namespace expt
+}  // namespace RAJA
 
 
 #endif

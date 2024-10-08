@@ -25,47 +25,44 @@ template <typename T>
 class AtomicRefBasicMinMaxUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_SUITE_P( AtomicRefBasicMinMaxUnitTest );
+TYPED_TEST_SUITE_P(AtomicRefBasicMinMaxUnitTest);
 
-TYPED_TEST_P( AtomicRefBasicMinMaxUnitTest, BasicMinMaxs )
+TYPED_TEST_P(AtomicRefBasicMinMaxUnitTest, BasicMinMaxs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T theval = (T)91;
-  T * memaddr = &theval;
+  T theval   = (T)91;
+  T* memaddr = &theval;
   T result;
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
+  RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
 
   // test min
-  result = test1.fetch_min( (T)87 );
-  ASSERT_EQ( result, (T)91 );
-  ASSERT_EQ( test1, (T)87 );
+  result = test1.fetch_min((T)87);
+  ASSERT_EQ(result, (T)91);
+  ASSERT_EQ(test1, (T)87);
 
-  result = test1.min( (T)83 );
-  ASSERT_EQ( result, (T)83 );
-  ASSERT_EQ( test1, (T)83 );
+  result = test1.min((T)83);
+  ASSERT_EQ(result, (T)83);
+  ASSERT_EQ(test1, (T)83);
 
   // test max
-  result = test1.fetch_max( (T)87 );
-  ASSERT_EQ( result, (T)83 );
-  ASSERT_EQ( test1, (T)87 );
+  result = test1.fetch_max((T)87);
+  ASSERT_EQ(result, (T)83);
+  ASSERT_EQ(test1, (T)87);
 
-  result = test1.max( (T)91 );
-  ASSERT_EQ( result, (T)91 );
-  ASSERT_EQ( test1, (T)91 );
+  result = test1.max((T)91);
+  ASSERT_EQ(result, (T)91);
+  ASSERT_EQ(test1, (T)91);
 }
 
-REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicMinMaxUnitTest,
-                             BasicMinMaxs
-                           );
+REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicMinMaxUnitTest, BasicMinMaxs);
 
-INSTANTIATE_TYPED_TEST_SUITE_P( BasicMinMaxUnitTest,
-                                AtomicRefBasicMinMaxUnitTest,
-                                basic_types
-                              );
+INSTANTIATE_TYPED_TEST_SUITE_P(BasicMinMaxUnitTest,
+                               AtomicRefBasicMinMaxUnitTest,
+                               basic_types);
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -75,57 +72,53 @@ template <typename T>
 class AtomicRefCUDAMinMaxUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_SUITE_P( AtomicRefCUDAMinMaxUnitTest );
+TYPED_TEST_SUITE_P(AtomicRefCUDAMinMaxUnitTest);
 
-GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
+GPU_TYPED_TEST_P(AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T * result = nullptr;
-  T * memaddr = nullptr;
+  T* result  = nullptr;
+  T* memaddr = nullptr;
   cudaErrchk(cudaMallocManaged(&result, sizeof(T)));
   cudaErrchk(cudaMallocManaged(&memaddr, sizeof(T)));
   memaddr[0] = (T)91;
   cudaErrchk(cudaDeviceSynchronize());
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
+  RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
 
   // test min
-  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_min( (T)87 );} );
+  forone<test_cuda>([=] __device__() { result[0] = test1.fetch_min((T)87); });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)91 );
-  ASSERT_EQ( test1, (T)87 );
+  ASSERT_EQ(result[0], (T)91);
+  ASSERT_EQ(test1, (T)87);
 
-  forone<test_cuda>( [=] __device__ () {result[0] = test1.min( (T)83 );} );
+  forone<test_cuda>([=] __device__() { result[0] = test1.min((T)83); });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)83 );
-  ASSERT_EQ( test1, (T)83 );
+  ASSERT_EQ(result[0], (T)83);
+  ASSERT_EQ(test1, (T)83);
 
   // test max
-  forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_max( (T)87 );} );
+  forone<test_cuda>([=] __device__() { result[0] = test1.fetch_max((T)87); });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)83 );
-  ASSERT_EQ( test1, (T)87 );
+  ASSERT_EQ(result[0], (T)83);
+  ASSERT_EQ(test1, (T)87);
 
-  forone<test_cuda>( [=] __device__ () {result[0] = test1.max( (T)91 );} );
+  forone<test_cuda>([=] __device__() { result[0] = test1.max((T)91); });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)91 );
-  ASSERT_EQ( test1, (T)91 );
+  ASSERT_EQ(result[0], (T)91);
+  ASSERT_EQ(test1, (T)91);
 
   cudaErrchk(cudaDeviceSynchronize());
   cudaErrchk(cudaFree(result));
   cudaErrchk(cudaFree(memaddr));
 }
 
-REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAMinMaxUnitTest,
-                             CUDAMinMaxs
-                           );
+REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs);
 
-INSTANTIATE_TYPED_TEST_SUITE_P( CUDAMinMaxUnitTest,
-                                AtomicRefCUDAMinMaxUnitTest,
-                                CUDA_types
-                              );
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAMinMaxUnitTest,
+                               AtomicRefCUDAMinMaxUnitTest,
+                               CUDA_types);
 #endif
-

@@ -30,9 +30,9 @@ namespace RAJA
 namespace statement
 {
 
-template<typename RegionPolicy, typename... EnclosedStmts>
-struct Region : public internal::Statement<camp::nil> {
-};
+template <typename RegionPolicy, typename... EnclosedStmts>
+struct Region : public internal::Statement<camp::nil>
+{};
 
 
 }  // end namespace statement
@@ -40,23 +40,27 @@ struct Region : public internal::Statement<camp::nil> {
 namespace internal
 {
 
-//Statement executor to create a region within kernel
+// Statement executor to create a region within kernel
 
-//Note: RAJA region's lambda must capture by reference otherwise
-//internal function calls are undefined.
-template<typename RegionPolicy, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::Region<RegionPolicy, EnclosedStmts...>, Types> {
-
-template<typename Data>
-static RAJA_INLINE void exec(Data &&data)
+// Note: RAJA region's lambda must capture by reference otherwise
+// internal function calls are undefined.
+template <typename RegionPolicy, typename... EnclosedStmts, typename Types>
+struct StatementExecutor<statement::Region<RegionPolicy, EnclosedStmts...>,
+                         Types>
 {
 
-  RAJA::region<RegionPolicy>([&]() {
-      using data_t = camp::decay<Data>;
-      execute_statement_list<camp::list<EnclosedStmts...>, Types>(data_t(data));
-    });
-}
+  template <typename Data>
+  static RAJA_INLINE void exec(Data&& data)
+  {
 
+    RAJA::region<RegionPolicy>(
+        [&]()
+        {
+          using data_t = camp::decay<Data>;
+          execute_statement_list<camp::list<EnclosedStmts...>, Types>(
+              data_t(data));
+        });
+  }
 };
 
 

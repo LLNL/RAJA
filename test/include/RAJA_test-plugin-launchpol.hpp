@@ -17,18 +17,22 @@
 #include "camp/list.hpp"
 
 // Sequential execution policy types
-using SequentialPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::seq_launch_t>>;
+using SequentialPluginLaunchExecPols =
+    camp::list<RAJA::LaunchPolicy<RAJA::seq_launch_t>>;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::omp_launch_t>>;
+using OpenMPPluginLaunchExecPols =
+    camp::list<RAJA::LaunchPolicy<RAJA::omp_launch_t>>;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>>;
+using CudaPluginLaunchExecPols =
+    camp::list<RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>>;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipPluginLaunchExecPols = camp::list<RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>>;
+using HipPluginLaunchExecPols =
+    camp::list<RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>>;
 
 #endif
 

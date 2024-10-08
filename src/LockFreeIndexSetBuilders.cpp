@@ -38,15 +38,14 @@ namespace RAJA
  ******************************************************************************
  *
  * Generate a lock-free "block" index set (planar division) containing
- * range segments. 
+ * range segments.
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(
-    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
-    int fastDim,
-    int midDim,
-    int slowDim)
+void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+                                int fastDim,
+                                int midDim,
+                                int slowDim)
 {
   constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100;
 
@@ -56,10 +55,13 @@ void buildLockFreeBlockIndexset(
 
   if ((midDim | slowDim) == 0) /* 1d mesh */
   {
-    if (fastDim / PROFITABLE_ENTITY_THRESHOLD_BLOCK <= 1) {
+    if (fastDim / PROFITABLE_ENTITY_THRESHOLD_BLOCK <= 1)
+    {
       // printf("%d %d\n", 0, fastDim) ;
       iset.push_back(RAJA::RangeSegment(0, fastDim));
-    } else {
+    }
+    else
+    {
       /* This just sets up the schedule -- a truly safe */
       /* execution of this schedule would require a check */
       /* for completion of dependent threads before execution. */
@@ -68,22 +70,28 @@ void buildLockFreeBlockIndexset(
       /* profitability ratio is really bad, but for */
       /* now use the brain dead approach. */
       int numSegments = numThreads * 3;
-      for (int lane = 0; lane < 3; ++lane) {
-        for (int i = lane; i < numSegments; i += 3) {
+      for (int lane = 0; lane < 3; ++lane)
+      {
+        for (int i = lane; i < numSegments; i += 3)
+        {
           RAJA::Index_type start = i * fastDim / numSegments;
-          RAJA::Index_type end = (i + 1) * fastDim / numSegments;
+          RAJA::Index_type end   = (i + 1) * fastDim / numSegments;
           // printf("%d %d\n", start, end) ;
           iset.push_back(RAJA::RangeSegment(start, end));
         }
       }
     }
-  } else if (slowDim == 0) /* 2d mesh */
+  }
+  else if (slowDim == 0) /* 2d mesh */
   {
     int rowsPerSegment = midDim / (3 * numThreads);
-    if (rowsPerSegment == 0) {
+    if (rowsPerSegment == 0)
+    {
       // printf("%d %d\n", 0, fastDim*midDim) ;
       iset.push_back(RAJA::RangeSegment(0, fastDim * midDim));
-    } else {
+    }
+    else
+    {
       /* This just sets up the schedule -- a truly safe */
       /* execution of this schedule would require a check */
       /* for completion of dependent threads before execution. */
@@ -91,13 +99,15 @@ void buildLockFreeBlockIndexset(
       /* We might want to force one thread if the */
       /* profitability ratio is really bad, but for */
       /* now use the brain dead approach. */
-      for (int lane = 0; lane < 3; ++lane) {
-        for (int i = 0; i < numThreads; ++i) {
+      for (int lane = 0; lane < 3; ++lane)
+      {
+        for (int i = 0; i < numThreads; ++i)
+        {
           RAJA::Index_type startRow = i * midDim / numThreads;
-          RAJA::Index_type endRow = (i + 1) * midDim / numThreads;
-          RAJA::Index_type start = startRow * fastDim;
-          RAJA::Index_type end = endRow * fastDim;
-          RAJA::Index_type len = end - start;
+          RAJA::Index_type endRow   = (i + 1) * midDim / numThreads;
+          RAJA::Index_type start    = startRow * fastDim;
+          RAJA::Index_type end      = endRow * fastDim;
+          RAJA::Index_type len      = end - start;
           // printf("%d %d\n", start + (lane  )*len/3,
           //                   start + (lane+1)*len/3  ) ;
           iset.push_back(RAJA::RangeSegment(start + (lane)*len / 3,
@@ -105,7 +115,9 @@ void buildLockFreeBlockIndexset(
         }
       }
     }
-  } else { /* 3d mesh */
+  }
+  else
+  { /* 3d mesh */
 
     // this requires dependence graph - commenting out for now
 
@@ -209,14 +221,14 @@ void buildLockFreeColorIndexset(
     RAJA::Index_type* elemPermutation,
     RAJA::Index_type* ielemPermutation)
 {
-  bool done = false;
+  bool done      = false;
   bool* isMarked = new bool[numEntity];
 
-  RAJA::Index_type numWorkset = 0;
+  RAJA::Index_type numWorkset    = 0;
   RAJA::Index_type* worksetDelim = new RAJA::Index_type[numEntity];
 
   RAJA::Index_type worksetSize = 0;
-  RAJA::Index_type* workset = new RAJA::Index_type[numEntity];
+  RAJA::Index_type* workset    = new RAJA::Index_type[numEntity];
 
   RAJA::Index_type* rangeToDomain =
       new RAJA::Index_type[numEntityRange * numRangePerDomain];
@@ -225,12 +237,15 @@ void buildLockFreeColorIndexset(
   memset(rangeToDomainCount, 0, numEntityRange * sizeof(RAJA::Index_type));
 
   /* create an inverse mapping */
-  for (int i = 0; i < numEntity; ++i) {
-    for (int j = 0; j < numRangePerDomain; ++j) {
-      RAJA::Index_type id = domainToRange[i * numRangePerDomain + j];
+  for (int i = 0; i < numEntity; ++i)
+  {
+    for (int j = 0; j < numRangePerDomain; ++j)
+    {
+      RAJA::Index_type id  = domainToRange[i * numRangePerDomain + j];
       RAJA::Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
       if (idx > numEntityRange * numRangePerDomain ||
-          rangeToDomainCount[id] > numRangePerDomain) {
+          rangeToDomainCount[id] > numRangePerDomain)
+      {
         printf("foiled!\n");
         exit(-1);
       }
@@ -238,30 +253,39 @@ void buildLockFreeColorIndexset(
     }
   }
 
-  while (!done) {
+  while (!done)
+  {
     done = true;
 
-    for (int i = 0; i < numEntity; ++i) {
+    for (int i = 0; i < numEntity; ++i)
+    {
       isMarked[i] = false;
     }
 
-    for (int i = 0; i < worksetSize; ++i) {
+    for (int i = 0; i < worksetSize; ++i)
+    {
       isMarked[workset[i]] = true;
     }
 
-    for (int i = 0; i < numEntity; ++i) {
-      if (isMarked[i] == false) {
+    for (int i = 0; i < numEntity; ++i)
+    {
+      if (isMarked[i] == false)
+      {
         done = false;
-        if (worksetSize >= numEntity) {
+        if (worksetSize >= numEntity)
+        {
           printf("foiled!\n");
           exit(-1);
         }
         workset[worksetSize++] = i;
-        for (int j = 0; j < numRangePerDomain; ++j) {
+        for (int j = 0; j < numRangePerDomain; ++j)
+        {
           RAJA::Index_type id = domainToRange[i * numRangePerDomain + j];
-          for (int k = 0; k < rangeToDomainCount[id]; ++k) {
+          for (int k = 0; k < rangeToDomainCount[id]; ++k)
+          {
             RAJA::Index_type idx = rangeToDomain[id * numRangePerDomain + k];
-            if (idx < 0 || idx >= numEntity) {
+            if (idx < 0 || idx >= numEntity)
+            {
               printf("foiled!\n");
               exit(-1);
             }
@@ -270,7 +294,8 @@ void buildLockFreeColorIndexset(
         }
       }
     }
-    if (done == false) {
+    if (done == false)
+    {
       worksetDelim[numWorkset++] = worksetSize;
     }
   }
@@ -278,45 +303,58 @@ void buildLockFreeColorIndexset(
   delete[] rangeToDomainCount;
   delete[] rangeToDomain;
 
-  if (worksetSize != numEntity) {
+  if (worksetSize != numEntity)
+  {
     printf("foiled!!!\n");
     exit(-1);
   }
 
   /* we may want to create a permutation array here */
-  if (elemPermutation != 0l) {
+  if (elemPermutation != 0l)
+  {
     /* send back permutaion array, and corresponding range segments */
 
     memcpy(elemPermutation, &workset[0], numEntity * sizeof(int));
-    if (ielemPermutation != 0l) {
-      for (int i = 0; i < numEntity; ++i) {
+    if (ielemPermutation != 0l)
+    {
+      for (int i = 0; i < numEntity; ++i)
+      {
         ielemPermutation[elemPermutation[i]] = i;
       }
     }
     RAJA::Index_type end = 0;
-    for (int i = 0; i < numWorkset; ++i) {
+    for (int i = 0; i < numWorkset; ++i)
+    {
       RAJA::Index_type begin = end;
-      end = worksetDelim[i];
+      end                    = worksetDelim[i];
       iset.push_back(RAJA::RangeSegment(begin, end));
     }
-  } else {
+  }
+  else
+  {
     RAJA::Index_type end = 0;
-    for (int i = 0; i < numWorkset; ++i) {
+    for (int i = 0; i < numWorkset; ++i)
+    {
       RAJA::Index_type begin = end;
-      end = worksetDelim[i];
-      bool isRange = true;
-      for (int j = begin + 1; j < end; ++j) {
-        if (workset[j - 1] + 1 != workset[j]) {
+      end                    = worksetDelim[i];
+      bool isRange           = true;
+      for (int j = begin + 1; j < end; ++j)
+      {
+        if (workset[j - 1] + 1 != workset[j])
+        {
           isRange = false;
           break;
         }
       }
-      if (isRange) {
+      if (isRange)
+      {
         iset.push_back(
             RAJA::RangeSegment(workset[begin], workset[end - 1] + 1));
-      } else {
-        iset.push_back(RAJA::ListSegment(&workset[begin], end - begin,
-                                         work_res));
+      }
+      else
+      {
+        iset.push_back(
+            RAJA::ListSegment(&workset[begin], end - begin, work_res));
         // printf("segment %d\n", i) ;
         // for (int j=begin; j<end; ++j) {
         //    printf("%d\n", workset[j]) ;

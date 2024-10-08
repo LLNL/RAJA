@@ -33,61 +33,58 @@ namespace expt
 {
 
 
-  namespace ET
+namespace ET
+{
+
+template <typename ET_TYPE>
+class TensorNegate : public TensorExpressionBase<TensorNegate<ET_TYPE>>
+{
+public:
+  using self_type    = TensorNegate<ET_TYPE>;
+  using rhs_type     = ET_TYPE;
+  using tensor_type  = typename ET_TYPE::result_type;
+  using element_type = typename tensor_type::element_type;
+  using index_type   = typename ET_TYPE::index_type;
+
+  using result_type                       = tensor_type;
+  using tile_type                         = typename ET_TYPE::tile_type;
+  static constexpr camp::idx_t s_num_dims = ET_TYPE::s_num_dims;
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  TensorNegate(rhs_type const& tensor) : m_tensor {tensor} {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr index_type getDimSize(index_type dim) const
   {
+    return m_tensor.getDimSize(dim);
+  }
 
-    template<typename ET_TYPE>
-    class TensorNegate :  public TensorExpressionBase<TensorNegate<ET_TYPE>> {
-      public:
-        using self_type = TensorNegate<ET_TYPE>;
-        using rhs_type = ET_TYPE;
-        using tensor_type = typename ET_TYPE::result_type;
-        using element_type = typename tensor_type::element_type;
-        using index_type = typename ET_TYPE::index_type;
+  template <typename TILE_TYPE>
+  RAJA_INLINE RAJA_HOST_DEVICE result_type eval(TILE_TYPE const& tile) const
+  {
+    return m_tensor.eval(tile).scale(-1);
+  }
 
-        using result_type = tensor_type;
-        using tile_type = typename ET_TYPE::tile_type;
-        static constexpr camp::idx_t s_num_dims = ET_TYPE::s_num_dims;
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void print_ast() const
+  {
+    printf("Negate(");
+    m_tensor.print_ast();
+    printf(")");
+  }
 
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        TensorNegate(rhs_type const &tensor) :
-        m_tensor{tensor}
-        {}
-
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        constexpr
-        index_type getDimSize(index_type dim) const {
-          return m_tensor.getDimSize(dim);
-        }
-
-        template<typename TILE_TYPE>
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        result_type eval(TILE_TYPE const &tile) const
-        {
-          return m_tensor.eval(tile).scale(-1);
-        }
-
-        RAJA_INLINE
-        RAJA_HOST_DEVICE
-        void print_ast() const {
-          printf("Negate(");
-          m_tensor.print_ast();
-          printf(")");
-        }
-
-      private:
-        rhs_type m_tensor;
-    };
+private:
+  rhs_type m_tensor;
+};
 
 
+}  // namespace ET
 
-  } // namespace ET
-
-  } // namespace internal
-} // namespace expt
+}  // namespace expt
+}  // namespace internal
 
 }  // namespace RAJA
 

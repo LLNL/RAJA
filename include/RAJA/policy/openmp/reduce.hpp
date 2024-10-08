@@ -55,7 +55,8 @@ public:
 
   ~ReduceOMP()
   {
-    if (Base::parent) {
+    if (Base::parent)
+    {
 #pragma omp critical(ompReduceCritical)
       Reduce()(Base::parent->local(), Base::my_data);
       Base::my_data = Base::identity;
@@ -101,20 +102,22 @@ public:
 
   ~ReduceOMPOrdered()
   {
-    Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
+    Reduce {}((*data)[omp_get_thread_num()], Base::my_data);
     Base::my_data = Base::identity;
   }
 
   T get_combined() const
   {
-    if (Base::my_data != Base::identity) {
-      Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
+    if (Base::my_data != Base::identity)
+    {
+      Reduce {}((*data)[omp_get_thread_num()], Base::my_data);
       Base::my_data = Base::identity;
     }
 
     T res = Base::identity;
-    for (size_t i = 0; i < data->size(); ++i) {
-      Reduce{}(res, (*data)[i]);
+    for (size_t i = 0; i < data->size(); ++i)
+    {
+      Reduce {}(res, (*data)[i]);
     }
     return res;
   }

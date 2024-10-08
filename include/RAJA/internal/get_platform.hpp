@@ -8,18 +8,21 @@
 namespace RAJA
 {
 
-namespace policy {
-namespace multi {
+namespace policy
+{
+namespace multi
+{
 template <typename Selector, typename... Policies>
 class MultiPolicy;
 
 }
-}
+}  // namespace policy
 
-namespace detail 
+namespace detail
 {
 
-struct max_platform {
+struct max_platform
+{
   RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr RAJA::Platform operator()(const RAJA::Platform& l,
@@ -34,7 +37,8 @@ struct max_platform {
  * This is a catch-all, so anything undefined gets Platform::undefined
  */
 template <typename T, typename = void>
-struct get_platform {
+struct get_platform
+{
   // catch-all: undefined platform
   static constexpr Platform value = Platform::undefined;
 };
@@ -45,7 +49,8 @@ struct get_platform {
  * reduction of them all.
  */
 template <typename... Policies>
-struct get_platform_from_list {
+struct get_platform_from_list
+{
   static constexpr Platform value =
       foldl(max_platform(), get_platform<Policies>::value...);
 };
@@ -54,7 +59,8 @@ struct get_platform_from_list {
  * Define an empty list as Platform::undefined;
  */
 template <>
-struct get_platform_from_list<> {
+struct get_platform_from_list<>
+{
   static constexpr Platform value = Platform::undefined;
 };
 
@@ -67,10 +73,10 @@ struct get_platform_from_list<> {
  */
 template <typename T>
 struct get_platform<T,
-                    typename std::
-                        enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
-                                  && !RAJA::type_traits::is_indexset_policy<T>::
-                                         value>::type> {
+                    typename std::enable_if<
+                        std::is_base_of<RAJA::PolicyBase, T>::value &&
+                        !RAJA::type_traits::is_indexset_policy<T>::value>::type>
+{
 
   static constexpr Platform value = T::platform;
 };
@@ -83,12 +89,13 @@ struct get_platform<T,
  */
 template <typename SEG, typename EXEC>
 struct get_platform<RAJA::ExecPolicy<SEG, EXEC>>
-    : public get_platform_from_list<SEG, EXEC> {
-};
+    : public get_platform_from_list<SEG, EXEC>
+{};
 
 
 template <typename T>
-struct get_statement_platform {
+struct get_statement_platform
+{
   static constexpr Platform value =
       get_platform_from_list<typename T::execution_policy_t,
                              typename T::enclosed_statements_t>::value;
@@ -102,7 +109,8 @@ struct get_statement_platform {
  * each of them.
  */
 template <typename... Stmts>
-struct get_platform<RAJA::internal::StatementList<Stmts...>> {
+struct get_platform<RAJA::internal::StatementList<Stmts...>>
+{
   static constexpr Platform value =
       foldl(max_platform(), get_statement_platform<Stmts>::value...);
 };
@@ -111,7 +119,8 @@ struct get_platform<RAJA::internal::StatementList<Stmts...>> {
  * Specialize for an empty statement list to be undefined
  */
 template <>
-struct get_platform<RAJA::internal::StatementList<>> {
+struct get_platform<RAJA::internal::StatementList<>>
+{
   static constexpr Platform value = Platform::undefined;
 };
 
@@ -120,11 +129,12 @@ struct get_platform<RAJA::internal::StatementList<>> {
 // Once a specific policy is selected, that policy will select the correct
 // platform... see policy_invoker in MultiPolicy.hpp
 template <typename SELECTOR, typename... POLICIES>
-struct get_platform<RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>> {
+struct get_platform<RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>>
+{
   static constexpr Platform value = Platform::undefined;
 };
 
-} // closing brace for detail namespace
-} // closing brace for RAJA namespace
+}  // namespace detail
+}  // namespace RAJA
 
-#endif // RAJA_get_platform_HPP
+#endif  // RAJA_get_platform_HPP

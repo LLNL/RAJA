@@ -47,10 +47,11 @@ namespace detail
 {
 
 //! struct containing data necessary to coordinate kernel launches with reducers
-struct syclInfo {
-  sycl_dim_t gridDim{0};
-  sycl_dim_t blockDim{0};
-  cl::sycl::queue qu = cl::sycl::queue();
+struct syclInfo
+{
+  sycl_dim_t gridDim {0};
+  sycl_dim_t blockDim {0};
+  cl::sycl::queue qu  = cl::sycl::queue();
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   syclInfo* thread_states = nullptr;
@@ -67,14 +68,15 @@ extern std::unordered_map<cl::sycl::queue, bool> g_queue_info_map;
 }  // namespace detail
 
 //! Allocator for pinned memory for use in basic_mempool
-struct PinnedAllocator {
+struct PinnedAllocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
     void* ptr;
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
-    ptr = ::sycl::malloc_host(nbytes, *q);
+    ptr              = ::sycl::malloc_host(nbytes, *q);
     return ptr;
   }
 
@@ -89,14 +91,15 @@ struct PinnedAllocator {
 };
 
 //! Allocator for device memory for use in basic_mempool
-struct DeviceAllocator {
+struct DeviceAllocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
     void* ptr;
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
-    ptr = ::sycl::malloc_device(nbytes, *q);
+    ptr              = ::sycl::malloc_device(nbytes, *q);
     return ptr;
   }
 
@@ -112,14 +115,15 @@ struct DeviceAllocator {
 
 //! Allocator for pre-zeroed device memory for use in basic_mempool
 //  Note: Memory must be zero when returned to mempool
-struct DeviceZeroedAllocator {
+struct DeviceZeroedAllocator
+{
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
     void* ptr;
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
-    ptr = ::sycl::malloc_device(nbytes, *q);
+    ptr              = ::sycl::malloc_device(nbytes, *q);
     q->memset(ptr, 0, nbytes);
     return ptr;
   }
@@ -146,4 +150,3 @@ using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 #endif  // closing endif for RAJA_ENABLE_SYCL
 
 #endif  // closing endif for header file include guard
-

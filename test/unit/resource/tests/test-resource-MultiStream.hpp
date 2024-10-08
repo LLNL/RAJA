@@ -13,7 +13,7 @@
 template <typename WORKING_RES, typename EXEC_POLICY>
 void ResourceMultiStreamTestImpl()
 {
-  constexpr std::size_t ARRAY_SIZE{10000};
+  constexpr std::size_t ARRAY_SIZE {10000};
   using namespace RAJA;
 
   WORKING_RES dev1;
@@ -21,29 +21,35 @@ void ResourceMultiStreamTestImpl()
   WORKING_RES dev3;
   resources::Host host;
 
-  int* d_array = resources::Resource{dev1}.allocate<int>(ARRAY_SIZE);
-  int* h_array  = host.allocate<int>(ARRAY_SIZE);
+  int* d_array = resources::Resource {dev1}.allocate<int>(ARRAY_SIZE);
+  int* h_array = host.allocate<int>(ARRAY_SIZE);
 
-  resources::Event e1 = forall<EXEC_POLICY>(dev1, RangeSegment(0,ARRAY_SIZE),
-    [=] RAJA_HOST_DEVICE (int i) {
-      if (i % 3 == 0) {
-        d_array[i] = i;
-      }
-  });
+  resources::Event e1 = forall<EXEC_POLICY>(dev1, RangeSegment(0, ARRAY_SIZE),
+                                            [=] RAJA_HOST_DEVICE(int i)
+                                            {
+                                              if (i % 3 == 0)
+                                              {
+                                                d_array[i] = i;
+                                              }
+                                            });
 
-  resources::Event e2 = forall<EXEC_POLICY>(dev2, RangeSegment(0,ARRAY_SIZE),
-    [=] RAJA_HOST_DEVICE (int i) {
-      if (i % 3 == 1) {
-        d_array[i] = i;
-      }
-  });
+  resources::Event e2 = forall<EXEC_POLICY>(dev2, RangeSegment(0, ARRAY_SIZE),
+                                            [=] RAJA_HOST_DEVICE(int i)
+                                            {
+                                              if (i % 3 == 1)
+                                              {
+                                                d_array[i] = i;
+                                              }
+                                            });
 
-  resources::Event e3 = forall<EXEC_POLICY>(dev2, RangeSegment(0,ARRAY_SIZE),
-    [=] RAJA_HOST_DEVICE (int i) {
-      if (i % 3 == 2) {
-        d_array[i] = i;
-      }
-  });
+  resources::Event e3 = forall<EXEC_POLICY>(dev2, RangeSegment(0, ARRAY_SIZE),
+                                            [=] RAJA_HOST_DEVICE(int i)
+                                            {
+                                              if (i % 3 == 2)
+                                              {
+                                                d_array[i] = i;
+                                              }
+                                            });
 
   dev1.wait_for(&e2);
   dev1.wait_for(&e3);
@@ -52,11 +58,9 @@ void ResourceMultiStreamTestImpl()
 
   dev1.wait();
 
-  forall<policy::sequential::seq_exec>(host, RangeSegment(0,ARRAY_SIZE),
-    [=] (int i) {
-      ASSERT_EQ(h_array[i], i); 
-    }
-  );
+  forall<policy::sequential::seq_exec>(host, RangeSegment(0, ARRAY_SIZE),
+                                       [=](int i)
+                                       { ASSERT_EQ(h_array[i], i); });
 
   dev1.deallocate(d_array);
   host.deallocate(h_array);
@@ -65,8 +69,7 @@ void ResourceMultiStreamTestImpl()
 TYPED_TEST_SUITE_P(ResourceMultiStreamTest);
 template <typename T>
 class ResourceMultiStreamTest : public ::testing::Test
-{
-};
+{};
 
 TYPED_TEST_P(ResourceMultiStreamTest, ResourceMultiStream)
 {
@@ -76,7 +79,6 @@ TYPED_TEST_P(ResourceMultiStreamTest, ResourceMultiStream)
   ResourceMultiStreamTestImpl<WORKING_RES, EXEC_POLICY>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ResourceMultiStreamTest,
-                            ResourceMultiStream);
+REGISTER_TYPED_TEST_SUITE_P(ResourceMultiStreamTest, ResourceMultiStream);
 
 #endif  // __TEST_RESOURCE_MULTISTREAM_HPP__

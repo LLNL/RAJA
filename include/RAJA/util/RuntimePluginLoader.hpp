@@ -14,39 +14,40 @@
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 
-namespace RAJA {
-namespace util {
+namespace RAJA
+{
+namespace util
+{
 
-  class RuntimePluginLoader : public RAJA::util::PluginStrategy
-  {
-    using Parent = RAJA::util::PluginStrategy;
+class RuntimePluginLoader : public RAJA::util::PluginStrategy
+{
+  using Parent = RAJA::util::PluginStrategy;
 
-  public:
-    RuntimePluginLoader();
+public:
+  RuntimePluginLoader();
 
-    void init(const RAJA::util::PluginOptions& p) override;
+  void init(const RAJA::util::PluginOptions& p) override;
 
-    void preCapture(const RAJA::util::PluginContext& p) override;
+  void preCapture(const RAJA::util::PluginContext& p) override;
 
-    void postCapture(const RAJA::util::PluginContext& p) override;
+  void postCapture(const RAJA::util::PluginContext& p) override;
 
-    void preLaunch(const RAJA::util::PluginContext& p) override;
+  void preLaunch(const RAJA::util::PluginContext& p) override;
 
-    void postLaunch(const RAJA::util::PluginContext& p) override;
+  void postLaunch(const RAJA::util::PluginContext& p) override;
 
-    void finalize() override;
+  void finalize() override;
 
-  private:
+private:
+  void initPlugin(const std::string& path);
 
-    void initPlugin(const std::string &path);
-    
-    void initDirectory(const std::string &path);
+  void initDirectory(const std::string& path);
 
-    std::vector<std::unique_ptr<Parent>> plugins;
+  std::vector<std::unique_ptr<Parent>> plugins;
 
-  };  // end RuntimePluginLoader class
+};  // end RuntimePluginLoader class
 
-  void linkRuntimePluginLoader();
+void linkRuntimePluginLoader();
 
 }  // end namespace util
 }  // end namespace RAJA

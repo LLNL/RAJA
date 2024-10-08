@@ -6,21 +6,22 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA reducer constructors and initialization.
+/// Source file containing tests for RAJA reducer constructors and
+/// initialization.
 ///
 
 #include "tests/test-reducer-constructors.hpp"
 
-using SequentialBasicReducerConstructorTypes = 
-  Test< camp::cartesian_product< SequentialReducerPolicyList,
+using SequentialBasicReducerConstructorTypes =
+    Test<camp::cartesian_product<SequentialReducerPolicyList,
                                  DataTypeList,
-                                 HostResourceList > >::Types;
+                                 HostResourceList>>::Types;
 
-using SequentialInitReducerConstructorTypes = 
-  Test< camp::cartesian_product< SequentialReducerPolicyList,
+using SequentialInitReducerConstructorTypes =
+    Test<camp::cartesian_product<SequentialReducerPolicyList,
                                  DataTypeList,
                                  HostResourceList,
-                                 SequentialUnitTestPolicyList > >::Types;
+                                 SequentialUnitTestPolicyList>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
                                ReducerBasicConstructorUnitTest,
@@ -29,5 +30,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(SequentialBasicTest,
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialInitTest,
                                ReducerInitConstructorUnitTest,
                                SequentialInitReducerConstructorTypes);
-
-

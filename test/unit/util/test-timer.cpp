@@ -51,7 +51,8 @@ TEST(TimerUnitTest, No2)
 
   timer.start("test_timer");
 
-  for (int i = 2; i > 0; --i) {
+  for (int i = 2; i > 0; --i)
+  {
     std::cout << i << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
@@ -73,7 +74,8 @@ TEST(TimerUnitTest, No3)
 
   timer.start("test_timer");
 
-  for (int i = 2; i > 0; --i) {
+  for (int i = 2; i > 0; --i)
+  {
     std::cout << i << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
@@ -95,5 +97,5 @@ TEST(TimerUnitTest, No3)
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
   timer.stop();
   elapsed = timer.elapsed();
-  EXPECT_GT(elapsed, 0.01); 
+  EXPECT_GT(elapsed, 0.01);
 }

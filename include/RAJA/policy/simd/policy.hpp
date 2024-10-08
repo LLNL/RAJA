@@ -41,8 +41,8 @@ namespace simd
 struct simd_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                          Pattern::forall,
                                                          Launch::undefined,
-                                                         Platform::host> {
-};
+                                                         Platform::host>
+{};
 
 }  // end of namespace simd
 

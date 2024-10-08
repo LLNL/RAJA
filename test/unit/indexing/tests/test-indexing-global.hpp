@@ -18,83 +18,97 @@ template <typename T>
 class IndexingUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_SUITE_P( IndexingUnitTest );
+TYPED_TEST_SUITE_P(IndexingUnitTest);
 
-template < typename test_policy,
-           typename indexer_type,
-           RAJA::named_dim dim_012,
-           int BLOCK_SIZE,
-           int GRID_SIZE >
+template <typename test_policy,
+          typename indexer_type,
+          RAJA::named_dim dim_012,
+          int BLOCK_SIZE,
+          int GRID_SIZE>
 void testBasicIndexing()
 {
-  dim3d3d expected_dim{{1,1,1}, {1,1,1}};
-  if (BLOCK_SIZE != RAJA::named_usage::ignored) {
-    if (BLOCK_SIZE == RAJA::named_usage::unspecified) {
+  dim3d3d expected_dim {{1, 1, 1}, {1, 1, 1}};
+  if (BLOCK_SIZE != RAJA::named_usage::ignored)
+  {
+    if (BLOCK_SIZE == RAJA::named_usage::unspecified)
+    {
       expected_dim.thread[static_cast<int>(dim_012)] = 3;
-    } else {
+    }
+    else
+    {
       expected_dim.thread[static_cast<int>(dim_012)] = BLOCK_SIZE;
     }
   }
 
-  if (GRID_SIZE != RAJA::named_usage::ignored) {
-    if (GRID_SIZE == RAJA::named_usage::unspecified) {
+  if (GRID_SIZE != RAJA::named_usage::ignored)
+  {
+    if (GRID_SIZE == RAJA::named_usage::unspecified)
+    {
       expected_dim.block[static_cast<int>(dim_012)] = 5;
-    } else {
+    }
+    else
+    {
       expected_dim.block[static_cast<int>(dim_012)] = GRID_SIZE;
     }
   }
 
   const int total_global = expected_dim.product();
 
-  auto host_res = get_test_resource<test_seq>();
+  auto host_res    = get_test_resource<test_seq>();
   auto working_res = get_test_resource<test_policy>();
 
   int* actual_index = host_res.allocate<int>(total_global);
-  int* actual_size = host_res.allocate<int>(total_global);
+  int* actual_size  = host_res.allocate<int>(total_global);
 
-  for (int i = 0; i < total_global; ++i) {
+  for (int i = 0; i < total_global; ++i)
+  {
     actual_index[i] = -1;
-    actual_size[i] = -1;
+    actual_size[i]  = -1;
   }
 
-  actual_index = test_reallocate(working_res, host_res, actual_index, total_global);
-  actual_size = test_reallocate(working_res, host_res, actual_size, total_global);
+  actual_index =
+      test_reallocate(working_res, host_res, actual_index, total_global);
+  actual_size =
+      test_reallocate(working_res, host_res, actual_size, total_global);
 
   for3d3d<test_policy>(expected_dim,
-      [=] RAJA_HOST_DEVICE (dim3d3d idx, dim3d3d dim) {
-    int i = index(idx, dim);
-    actual_index[i] = indexer_type::template index<int>();
-    actual_size[i] = indexer_type::template size<int>();
-  });
+                       [=] RAJA_HOST_DEVICE(dim3d3d idx, dim3d3d dim)
+                       {
+                         int i           = index(idx, dim);
+                         actual_index[i] = indexer_type::template index<int>();
+                         actual_size[i]  = indexer_type::template size<int>();
+                       });
 
-  actual_index = test_reallocate(host_res, working_res, actual_index, total_global);
-  actual_size = test_reallocate(host_res, working_res, actual_size, total_global);
+  actual_index =
+      test_reallocate(host_res, working_res, actual_index, total_global);
+  actual_size =
+      test_reallocate(host_res, working_res, actual_size, total_global);
 
-  for (int i = 0; i < total_global; ++i) {
-    ASSERT_EQ( actual_index[i], i );
-    ASSERT_EQ( actual_size[i], total_global );
+  for (int i = 0; i < total_global; ++i)
+  {
+    ASSERT_EQ(actual_index[i], i);
+    ASSERT_EQ(actual_size[i], total_global);
   }
 
   host_res.deallocate(actual_index);
   host_res.deallocate(actual_size);
 }
 
-TYPED_TEST_P( IndexingUnitTest, BasicIndexing )
+TYPED_TEST_P(IndexingUnitTest, BasicIndexing)
 {
-  using test_policy = typename camp::at<TypeParam, camp::num<0>>::type;
+  using test_policy         = typename camp::at<TypeParam, camp::num<0>>::type;
   using indexer_holder_type = typename camp::at<TypeParam, camp::num<1>>::type;
-  using dim_type = typename camp::at<TypeParam, camp::num<2>>::type;
-  using threads_type = typename camp::at<TypeParam, camp::num<3>>::type;
-  using blocks_type = typename camp::at<TypeParam, camp::num<4>>::type;
+  using dim_type            = typename camp::at<TypeParam, camp::num<2>>::type;
+  using threads_type        = typename camp::at<TypeParam, camp::num<3>>::type;
+  using blocks_type         = typename camp::at<TypeParam, camp::num<4>>::type;
 
   using indexer_type = typename indexer_holder_type::template type<
       dim_type::value, threads_type::value, blocks_type::value>;
 
-  testBasicIndexing< test_policy, indexer_type,
-                     dim_type::value, threads_type::value, blocks_type::value >();
+  testBasicIndexing<test_policy, indexer_type, dim_type::value,
+                    threads_type::value, blocks_type::value>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P( IndexingUnitTest,
-                             BasicIndexing );
+REGISTER_TYPED_TEST_SUITE_P(IndexingUnitTest, BasicIndexing);
 
 #endif  //__TEST_INDEXING_GLOBAL__

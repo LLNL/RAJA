@@ -31,46 +31,47 @@ template <typename Indices>
 struct as_array;
 
 template <camp::idx_t... Indices>
-struct as_array<camp::idx_seq<Indices...>> {
+struct as_array<camp::idx_seq<Indices...>>
+{
   static constexpr std::array<Index_type, sizeof...(Indices)> get()
   {
     return {{Indices...}};
   }
 };
 
-using PERM_I = camp::idx_seq<0>;
-using PERM_IJ = camp::idx_seq<0, 1>;
-using PERM_JI = camp::idx_seq<1, 0>;
-using PERM_IJK = camp::idx_seq<0, 1, 2>;
-using PERM_IKJ = camp::idx_seq<0, 2, 1>;
-using PERM_JIK = camp::idx_seq<1, 0, 2>;
-using PERM_JKI = camp::idx_seq<1, 2, 0>;
-using PERM_KIJ = camp::idx_seq<2, 0, 1>;
-using PERM_KJI = camp::idx_seq<2, 1, 0>;
-using PERM_IJKL = camp::idx_seq<0, 1, 2, 3>;
-using PERM_IJLK = camp::idx_seq<0, 1, 3, 2>;
-using PERM_IKJL = camp::idx_seq<0, 2, 1, 3>;
-using PERM_IKLJ = camp::idx_seq<0, 2, 3, 1>;
-using PERM_ILJK = camp::idx_seq<0, 3, 1, 2>;
-using PERM_ILKJ = camp::idx_seq<0, 3, 2, 1>;
-using PERM_JIKL = camp::idx_seq<1, 0, 2, 3>;
-using PERM_JILK = camp::idx_seq<1, 0, 3, 2>;
-using PERM_JKIL = camp::idx_seq<1, 2, 0, 3>;
-using PERM_JKLI = camp::idx_seq<1, 2, 3, 0>;
-using PERM_JLIK = camp::idx_seq<1, 3, 0, 2>;
-using PERM_JLKI = camp::idx_seq<1, 3, 2, 0>;
-using PERM_KIJL = camp::idx_seq<2, 0, 1, 3>;
-using PERM_KILJ = camp::idx_seq<2, 0, 3, 1>;
-using PERM_KJIL = camp::idx_seq<2, 1, 0, 3>;
-using PERM_KJLI = camp::idx_seq<2, 1, 3, 0>;
-using PERM_KLIJ = camp::idx_seq<2, 3, 0, 1>;
-using PERM_KLJI = camp::idx_seq<2, 3, 1, 0>;
-using PERM_LIJK = camp::idx_seq<3, 0, 1, 2>;
-using PERM_LIKJ = camp::idx_seq<3, 0, 2, 1>;
-using PERM_LJIK = camp::idx_seq<3, 1, 0, 2>;
-using PERM_LJKI = camp::idx_seq<3, 1, 2, 0>;
-using PERM_LKIJ = camp::idx_seq<3, 2, 0, 1>;
-using PERM_LKJI = camp::idx_seq<3, 2, 1, 0>;
+using PERM_I     = camp::idx_seq<0>;
+using PERM_IJ    = camp::idx_seq<0, 1>;
+using PERM_JI    = camp::idx_seq<1, 0>;
+using PERM_IJK   = camp::idx_seq<0, 1, 2>;
+using PERM_IKJ   = camp::idx_seq<0, 2, 1>;
+using PERM_JIK   = camp::idx_seq<1, 0, 2>;
+using PERM_JKI   = camp::idx_seq<1, 2, 0>;
+using PERM_KIJ   = camp::idx_seq<2, 0, 1>;
+using PERM_KJI   = camp::idx_seq<2, 1, 0>;
+using PERM_IJKL  = camp::idx_seq<0, 1, 2, 3>;
+using PERM_IJLK  = camp::idx_seq<0, 1, 3, 2>;
+using PERM_IKJL  = camp::idx_seq<0, 2, 1, 3>;
+using PERM_IKLJ  = camp::idx_seq<0, 2, 3, 1>;
+using PERM_ILJK  = camp::idx_seq<0, 3, 1, 2>;
+using PERM_ILKJ  = camp::idx_seq<0, 3, 2, 1>;
+using PERM_JIKL  = camp::idx_seq<1, 0, 2, 3>;
+using PERM_JILK  = camp::idx_seq<1, 0, 3, 2>;
+using PERM_JKIL  = camp::idx_seq<1, 2, 0, 3>;
+using PERM_JKLI  = camp::idx_seq<1, 2, 3, 0>;
+using PERM_JLIK  = camp::idx_seq<1, 3, 0, 2>;
+using PERM_JLKI  = camp::idx_seq<1, 3, 2, 0>;
+using PERM_KIJL  = camp::idx_seq<2, 0, 1, 3>;
+using PERM_KILJ  = camp::idx_seq<2, 0, 3, 1>;
+using PERM_KJIL  = camp::idx_seq<2, 1, 0, 3>;
+using PERM_KJLI  = camp::idx_seq<2, 1, 3, 0>;
+using PERM_KLIJ  = camp::idx_seq<2, 3, 0, 1>;
+using PERM_KLJI  = camp::idx_seq<2, 3, 1, 0>;
+using PERM_LIJK  = camp::idx_seq<3, 0, 1, 2>;
+using PERM_LIKJ  = camp::idx_seq<3, 0, 2, 1>;
+using PERM_LJIK  = camp::idx_seq<3, 1, 0, 2>;
+using PERM_LJKI  = camp::idx_seq<3, 1, 2, 0>;
+using PERM_LKIJ  = camp::idx_seq<3, 2, 0, 1>;
+using PERM_LKJI  = camp::idx_seq<3, 2, 1, 0>;
 using PERM_IJKLM = camp::idx_seq<0, 1, 2, 3, 4>;
 using PERM_IJKML = camp::idx_seq<0, 1, 2, 4, 3>;
 using PERM_IJLKM = camp::idx_seq<0, 1, 3, 2, 4>;
@@ -193,51 +194,51 @@ using PERM_MLKIJ = camp::idx_seq<4, 3, 2, 0, 1>;
 using PERM_MLKJI = camp::idx_seq<4, 3, 2, 1, 0>;
 
 
-
-
-namespace internal 
+namespace internal
 {
 
 
-template<camp::idx_t I, camp::idx_t J, camp::idx_t N, typename Perm>
+template <camp::idx_t I, camp::idx_t J, camp::idx_t N, typename Perm>
 struct CalcInversePermutationElem
 {
-  static constexpr camp::idx_t value = 
-    camp::seq_at<J, Perm>::value == I ? J : CalcInversePermutationElem<I, J+1, N, Perm>::value;
+  static constexpr camp::idx_t value =
+      camp::seq_at<J, Perm>::value == I
+          ? J
+          : CalcInversePermutationElem<I, J + 1, N, Perm>::value;
 };
 
-template<camp::idx_t I, camp::idx_t N, typename Perm>
+template <camp::idx_t I, camp::idx_t N, typename Perm>
 struct CalcInversePermutationElem<I, N, N, Perm>
 {
   static constexpr camp::idx_t value = I;
 };
 
 
-
-template<typename Range, typename Perm>
+template <typename Range, typename Perm>
 struct InversePermutationHelper;
 
-template<camp::idx_t ... Range, camp::idx_t ... Perm>
-struct InversePermutationHelper<camp::idx_seq<Range...>, 
-                                camp::idx_seq<Perm...>>
+template <camp::idx_t... Range, camp::idx_t... Perm>
+struct InversePermutationHelper<camp::idx_seq<Range...>, camp::idx_seq<Perm...>>
 {
   static_assert(sizeof...(Range) == sizeof...(Perm), "Fatal Error");
-  using type = camp::idx_seq< 
-    CalcInversePermutationElem<Range, 0, sizeof...(Range), camp::idx_seq<Perm...>>::value ...  
-  >;  
+  using type = camp::idx_seq<
+      CalcInversePermutationElem<Range,
+                                 0,
+                                 sizeof...(Range),
+                                 camp::idx_seq<Perm...>>::value...>;
 };
 
 
-
-} // namespace internal
-
+}  // namespace internal
 
 
 /*!
   Inverts a permutation
 */
-template<typename Perm>
-using invert_permutation = typename internal::InversePermutationHelper<camp::make_idx_seq_t<camp::size<Perm>::value>, Perm>::type;
+template <typename Perm>
+using invert_permutation = typename internal::InversePermutationHelper<
+    camp::make_idx_seq_t<camp::size<Perm>::value>,
+    Perm>::type;
 
 }  // namespace RAJA
 

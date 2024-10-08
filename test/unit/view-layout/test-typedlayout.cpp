@@ -8,8 +8,9 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_unit-test-types.hpp"
 
-template<typename T>
-class TypedLayoutUnitTest : public ::testing::Test {};
+template <typename T>
+class TypedLayoutUnitTest : public ::testing::Test
+{};
 
 TYPED_TEST_SUITE(TypedLayoutUnitTest, UnitIndexTypes);
 
@@ -17,24 +18,26 @@ TYPED_TEST_SUITE(TypedLayoutUnitTest, UnitIndexTypes);
 TYPED_TEST(TypedLayoutUnitTest, TypedLayoutConstructors)
 {
 
-  const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,5);
+  const RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>> l(10,
+                                                                          5);
 
-  ASSERT_EQ(TypeParam{0}, l(TypeParam{0}, TypeParam{0}));
+  ASSERT_EQ(TypeParam {0}, l(TypeParam {0}, TypeParam {0}));
 
-  ASSERT_EQ(TypeParam{2}, l(TypeParam{0}, TypeParam{2}));
+  ASSERT_EQ(TypeParam {2}, l(TypeParam {0}, TypeParam {2}));
 
-  ASSERT_EQ(TypeParam{10}, l(TypeParam{2}, TypeParam{0}));
+  ASSERT_EQ(TypeParam {10}, l(TypeParam {2}, TypeParam {0}));
 
-  TypeParam x{5};
-  TypeParam y{0};
-  l.toIndices(TypeParam{10}, y, x);
-  ASSERT_EQ(x, TypeParam{0});
-  ASSERT_EQ(y, TypeParam{2});
+  TypeParam x {5};
+  TypeParam y {0};
+  l.toIndices(TypeParam {10}, y, x);
+  ASSERT_EQ(x, TypeParam {0});
+  ASSERT_EQ(y, TypeParam {2});
 }
 
 TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
 {
-  using my_layout = RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
+  using my_layout =
+      RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
 
   /*
    * Construct a 2D layout:
@@ -66,7 +69,8 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
   ASSERT_EQ(TypeParam(4), layout(0, 4));
 
   // Check that we get the identity
-  for (int k = 0; k < 15; ++k) {
+  for (int k = 0; k < 15; ++k)
+  {
 
     // inverse map
     TypeParam i, j;
@@ -82,12 +86,12 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_accessor)
     ASSERT_EQ(k2, layout_a(i, j));
     ASSERT_EQ(k2, layout_b(i, j));
   }
-
 }
 
 TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
 {
-  using my_layout = RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
+  using my_layout =
+      RAJA::TypedLayout<TypeParam, RAJA::tuple<TypeParam, TypeParam>>;
 
   /*
    * Construct a 2D projective layout:
@@ -118,7 +122,8 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
 
   TypeParam pK = 0;
   // Check that we get the identity (mod 7)
-  for (int k = 0; k < 20; ++k) {
+  for (int k = 0; k < 20; ++k)
+  {
 
     // inverse map
     TypeParam i, j;
@@ -139,50 +144,57 @@ TYPED_TEST(TypedLayoutUnitTest, 2D_IJ_ProjJ)
 TYPED_TEST(TypedLayoutUnitTest, 2D_StaticLayout)
 {
   RAJA::Layout<2, TypeParam> dynamic_layout(7, 5);
-  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_IJ,TypeParam,RAJA::list<TypeParam,TypeParam>,7,5>;
+  using static_layout =
+      RAJA::TypedStaticLayout<RAJA::PERM_IJ, TypeParam,
+                              RAJA::list<TypeParam, TypeParam>, 7, 5>;
 
   // Check that we get the same layout
-  for (TypeParam i = 0; i < 7; ++i) {
-    for (TypeParam j = 0; j < 5; ++j) {
+  for (TypeParam i = 0; i < 7; ++i)
+  {
+    for (TypeParam j = 0; j < 5; ++j)
+    {
 
-      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i,j));
+      ASSERT_EQ(dynamic_layout(i, j), static_layout::s_oper(i, j));
     }
   }
-
 }
 
 TYPED_TEST(TypedLayoutUnitTest, 2D_PermutedStaticLayout)
 {
-  auto dynamic_layout =
-    RAJA::make_permuted_layout({{7, 5}},
-                               RAJA::as_array<RAJA::PERM_JI>::get());
-  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_JI,
-                                                TypeParam,
-                                                RAJA::list<TypeParam,TypeParam>, 7,5>;
+  auto dynamic_layout = RAJA::make_permuted_layout(
+      {{7, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
+  using static_layout =
+      RAJA::TypedStaticLayout<RAJA::PERM_JI, TypeParam,
+                              RAJA::list<TypeParam, TypeParam>, 7, 5>;
 
   // Check that we get the same layout
-  for (TypeParam i = 0; i < 7; ++i) {
-    for (TypeParam j = 0; j < 5; ++j) {
-      ASSERT_EQ(TypeParam(dynamic_layout(i, j)), static_layout::s_oper(i,j));
+  for (TypeParam i = 0; i < 7; ++i)
+  {
+    for (TypeParam j = 0; j < 5; ++j)
+    {
+      ASSERT_EQ(TypeParam(dynamic_layout(i, j)), static_layout::s_oper(i, j));
     }
   }
 }
 
 TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
 {
-  auto dynamic_layout =
-    RAJA::make_permuted_layout({{7, 13, 5}},
-                               RAJA::as_array<RAJA::PERM_JKI>::get());
-  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_JKI,
-                                                TypeParam,
-                                                RAJA::list<TypeParam,TypeParam,TypeParam>,
-                                                7,13,5>;
+  auto dynamic_layout = RAJA::make_permuted_layout(
+      {{7, 13, 5}}, RAJA::as_array<RAJA::PERM_JKI>::get());
+  using static_layout =
+      RAJA::TypedStaticLayout<RAJA::PERM_JKI, TypeParam,
+                              RAJA::list<TypeParam, TypeParam, TypeParam>, 7,
+                              13, 5>;
 
   // Check that we get the same layout
-  for (TypeParam i = 0; i < 7; ++i) {
-    for (TypeParam j = 0; j < 9; ++j) {
-      for (TypeParam k = 0; k < 5; ++k) {
-        ASSERT_EQ(TypeParam(dynamic_layout(i, j, k)), static_layout::s_oper(i,j,k));
+  for (TypeParam i = 0; i < 7; ++i)
+  {
+    for (TypeParam j = 0; j < 9; ++j)
+    {
+      for (TypeParam k = 0; k < 5; ++k)
+      {
+        ASSERT_EQ(TypeParam(dynamic_layout(i, j, k)),
+                  static_layout::s_oper(i, j, k));
       }
     }
   }
@@ -191,20 +203,23 @@ TYPED_TEST(TypedLayoutUnitTest, 3D_PermutedStaticLayout)
 
 TYPED_TEST(TypedLayoutUnitTest, 4D_PermutedStaticLayout)
 {
-  auto dynamic_layout =
-    RAJA::make_permuted_layout({{7, 13, 5, 17}},
-                               RAJA::as_array<RAJA::PERM_LJKI>::get());
-  using static_layout = RAJA::TypedStaticLayout<RAJA::PERM_LJKI,
-                                                TypeParam,
-                                                RAJA::list<TypeParam,TypeParam,TypeParam,TypeParam>,
-                                                7,13,5,17>;
+  auto dynamic_layout = RAJA::make_permuted_layout(
+      {{7, 13, 5, 17}}, RAJA::as_array<RAJA::PERM_LJKI>::get());
+  using static_layout = RAJA::TypedStaticLayout<
+      RAJA::PERM_LJKI, TypeParam,
+      RAJA::list<TypeParam, TypeParam, TypeParam, TypeParam>, 7, 13, 5, 17>;
 
   // Check that we get the same layout
-  for (TypeParam i = 0; i < 7; ++i) {
-    for (TypeParam j = 0; j < 8; ++j) {
-      for (TypeParam k = 0; k < 5; ++k) {
-        for (TypeParam l = 0; l < 5; ++l) {
-          ASSERT_EQ(TypeParam(dynamic_layout(i, j, k, l)), static_layout::s_oper(i,j,k,l));
+  for (TypeParam i = 0; i < 7; ++i)
+  {
+    for (TypeParam j = 0; j < 8; ++j)
+    {
+      for (TypeParam k = 0; k < 5; ++k)
+      {
+        for (TypeParam l = 0; l < 5; ++l)
+        {
+          ASSERT_EQ(TypeParam(dynamic_layout(i, j, k, l)),
+                    static_layout::s_oper(i, j, k, l));
         }
       }
     }

@@ -8,14 +8,14 @@
 #ifndef __TEST_TENSOR_VECTOR_SumDot_HPP__
 #define __TEST_TENSOR_VECTOR_SumDot_HPP__
 
-#include<RAJA/RAJA.hpp>
+#include <RAJA/RAJA.hpp>
 
 template <typename VECTOR_TYPE>
 void SumDotImpl()
 {
 
-  using vector_t = VECTOR_TYPE;
-  using policy_t = typename vector_t::register_policy;
+  using vector_t  = VECTOR_TYPE;
+  using policy_t  = typename vector_t::register_policy;
   using element_t = typename vector_t::element_type;
 
   std::vector<element_t> A(vector_t::s_num_elem);
@@ -25,11 +25,12 @@ void SumDotImpl()
   element_t host_sum = 0;
   element_t host_dot = 0;
 
-  element_t * A_ptr = tensor_malloc<policy_t>(A);
-  element_t * ex_sum_ptr = tensor_malloc<policy_t>(ex_sum);
-  element_t * ex_dot_ptr = tensor_malloc<policy_t>(ex_dot);
+  element_t* A_ptr      = tensor_malloc<policy_t>(A);
+  element_t* ex_sum_ptr = tensor_malloc<policy_t>(ex_sum);
+  element_t* ex_dot_ptr = tensor_malloc<policy_t>(ex_dot);
 
-  for(camp::idx_t i = 0;i < vector_t::s_num_elem;++ i){
+  for (camp::idx_t i = 0; i < vector_t::s_num_elem; ++i)
+  {
     A[i] = (element_t)i;
   }
 
@@ -37,9 +38,10 @@ void SumDotImpl()
   ex_dot[0] = (element_t)0;
 
   // compute expected values on host
-  for(camp::idx_t i = 0; i < vector_t::s_num_elem; ++i){
+  for (camp::idx_t i = 0; i < vector_t::s_num_elem; ++i)
+  {
     host_sum += A[i];
-    host_dot += A[i]*A[i];
+    host_dot += A[i] * A[i];
   }
 
   tensor_copy_to_device<policy_t>(A_ptr, A);
@@ -48,14 +50,16 @@ void SumDotImpl()
 
   // For Fixed vectors, only try with fixed length
   // For Stream vectors, try all lengths
-  tensor_do<policy_t>([=] RAJA_HOST_DEVICE (){
-    // load array A as vector
-    vector_t vec;
-    vec.load_packed_n(A_ptr, vector_t::s_num_elem);
+  tensor_do<policy_t>(
+      [=] RAJA_HOST_DEVICE()
+      {
+        // load array A as vector
+        vector_t vec;
+        vec.load_packed_n(A_ptr, vector_t::s_num_elem);
 
-    ex_sum_ptr[0] = vec.sum();
-    ex_dot_ptr[0] = vec.dot(vec);
-  });
+        ex_sum_ptr[0] = vec.sum();
+        ex_dot_ptr[0] = vec.dot(vec);
+      });
 
   tensor_copy_to_host<policy_t>(ex_sum, ex_sum_ptr);
   tensor_copy_to_host<policy_t>(ex_dot, ex_dot_ptr);
@@ -72,11 +76,7 @@ void SumDotImpl()
 }
 
 
-
-TYPED_TEST_P(TestTensorVector, SumDot)
-{
-  SumDotImpl<TypeParam>();
-}
+TYPED_TEST_P(TestTensorVector, SumDot) { SumDotImpl<TypeParam>(); }
 
 
 #endif

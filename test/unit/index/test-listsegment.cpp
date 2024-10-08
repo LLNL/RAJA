@@ -17,26 +17,28 @@
 
 #include <vector>
 
-template<typename T>
-class ListSegmentUnitTest : public ::testing::Test {};
+template <typename T>
+class ListSegmentUnitTest : public ::testing::Test
+{};
 
 TYPED_TEST_SUITE(ListSegmentUnitTest, UnitIndexTypes);
 
 //
 // Resource object used to construct list segment objects with indices
-// living in host (CPU) memory. Used in all tests in this file. 
+// living in host (CPU) memory. Used in all tests in this file.
 //
-camp::resources::Resource host_res{camp::resources::Host()};
+camp::resources::Resource host_res {camp::resources::Host()};
 
 
 TYPED_TEST(ListSegmentUnitTest, Constructors)
 {
   std::vector<TypeParam> idx;
-  for (TypeParam i = 0; i < 5; ++i){
+  for (TypeParam i = 0; i < 5; ++i)
+  {
     idx.push_back(i);
   }
 
-  RAJA::TypedListSegment<TypeParam> list1( &idx[0], idx.size(), host_res);
+  RAJA::TypedListSegment<TypeParam> list1(&idx[0], idx.size(), host_res);
   ASSERT_EQ(list1.size(), idx.size());
   ASSERT_EQ(list1.getIndexOwnership(), RAJA::Owned);
 
@@ -50,20 +52,21 @@ TYPED_TEST(ListSegmentUnitTest, Constructors)
 
   RAJA::TypedListSegment<TypeParam> container(idx, host_res);
   ASSERT_EQ(container.getIndexOwnership(), RAJA::Owned);
-  ASSERT_EQ(moved, container); 
+  ASSERT_EQ(moved, container);
 }
 
 TYPED_TEST(ListSegmentUnitTest, Swaps)
 {
   std::vector<TypeParam> idx1;
   std::vector<TypeParam> idx2;
-  for (TypeParam i = 0; i < 5; ++i){
+  for (TypeParam i = 0; i < 5; ++i)
+  {
     idx1.push_back(i);
-    idx2.push_back(i+5);
+    idx2.push_back(i + 5);
   }
 
-  RAJA::TypedListSegment<TypeParam> list1( idx1, host_res );
-  RAJA::TypedListSegment<TypeParam> list2( idx2, host_res );
+  RAJA::TypedListSegment<TypeParam> list1(idx1, host_res);
+  RAJA::TypedListSegment<TypeParam> list2(idx2, host_res);
   auto list3 = RAJA::TypedListSegment<TypeParam>(list1);
   auto list4 = RAJA::TypedListSegment<TypeParam>(list2);
 
@@ -80,26 +83,25 @@ TYPED_TEST(ListSegmentUnitTest, Swaps)
 
 TYPED_TEST(ListSegmentUnitTest, Equality)
 {
-  std::vector<TypeParam> idx1{5,3,1,2};
-  RAJA::TypedListSegment<TypeParam> list( idx1, host_res );
+  std::vector<TypeParam> idx1 {5, 3, 1, 2};
+  RAJA::TypedListSegment<TypeParam> list(idx1, host_res);
 
-  std::vector<TypeParam> idx2{2,1,3,5};
-  
-  ASSERT_EQ(list.indicesEqual( &idx2.begin()[0], idx2.size() ), false);
+  std::vector<TypeParam> idx2 {2, 1, 3, 5};
 
-  std::reverse( idx2.begin(), idx2.end() );
+  ASSERT_EQ(list.indicesEqual(&idx2.begin()[0], idx2.size()), false);
 
-  ASSERT_EQ(list.indicesEqual( &idx2.begin()[0], idx2.size() ), true);
+  std::reverse(idx2.begin(), idx2.end());
+
+  ASSERT_EQ(list.indicesEqual(&idx2.begin()[0], idx2.size()), true);
 }
 
 TYPED_TEST(ListSegmentUnitTest, Iterators)
 {
-  std::vector<TypeParam> idx1{5,3,1,2};
-  RAJA::TypedListSegment<TypeParam> list( idx1, host_res );
+  std::vector<TypeParam> idx1 {5, 3, 1, 2};
+  RAJA::TypedListSegment<TypeParam> list(idx1, host_res);
 
   ASSERT_EQ(TypeParam(5), *list.begin());
-  ASSERT_EQ(TypeParam(2), *(list.end()-1));
+  ASSERT_EQ(TypeParam(2), *(list.end() - 1));
 
   ASSERT_EQ(4, list.size());
 }
-

@@ -12,11 +12,11 @@
 
 #include "counter.hpp"
 
-class CounterPlugin :
-  public RAJA::util::PluginStrategy
+class CounterPlugin : public RAJA::util::PluginStrategy
 {
-  public:
-  void preCapture(const RAJA::util::PluginContext& p) override {
+public:
+  void preCapture(const RAJA::util::PluginContext& p) override
+  {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -30,7 +30,8 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void postCapture(const RAJA::util::PluginContext& p) override {
+  void postCapture(const RAJA::util::PluginContext& p) override
+  {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -44,7 +45,8 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void preLaunch(const RAJA::util::PluginContext& p) override {
+  void preLaunch(const RAJA::util::PluginContext& p) override
+  {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -58,7 +60,8 @@ class CounterPlugin :
     plugin_test_resource->memcpy(plugin_test_data, &data, sizeof(CounterData));
   }
 
-  void postLaunch(const RAJA::util::PluginContext& p) override {
+  void postLaunch(const RAJA::util::PluginContext& p) override
+  {
     ASSERT_NE(plugin_test_data, nullptr);
     ASSERT_NE(plugin_test_resource, nullptr);
 
@@ -74,4 +77,5 @@ class CounterPlugin :
 };
 
 // Statically loading plugin.
-static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin", "Counter");
+static RAJA::util::PluginRegistry::add<CounterPlugin> P("counter-plugin",
+                                                        "Counter");

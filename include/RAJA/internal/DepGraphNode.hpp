@@ -57,8 +57,7 @@ public:
   ///
   DepGraphNode()
       : m_num_dep_tasks(0), m_semaphore_reload_value(0), m_semaphore_value(0)
-  {
-  }
+  {}
 
   ///
   /// Get/set semaphore value; i.e., the current number of (unsatisfied)
@@ -82,7 +81,8 @@ public:
   ///
   void satisfyOne()
   {
-    if (m_semaphore_value > 0) {
+    if (m_semaphore_value > 0)
+    {
       --m_semaphore_value;
     }
   }
@@ -92,7 +92,8 @@ public:
   ///
   void wait()
   {
-    while (m_semaphore_value > 0) {
+    while (m_semaphore_value > 0)
+    {
       // TODO: an efficient wait would be better here, but the standard
       // promise/future is not good enough
       std::this_thread::yield();

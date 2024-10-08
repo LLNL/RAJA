@@ -6,22 +6,23 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA reducer constructors and initialization.
+/// Source file containing tests for RAJA reducer constructors and
+/// initialization.
 ///
 
 #include "tests/test-reducer-constructors.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPBasicReducerConstructorTypes = 
-  Test< camp::cartesian_product< OpenMPReducerPolicyList,
+using OpenMPBasicReducerConstructorTypes =
+    Test<camp::cartesian_product<OpenMPReducerPolicyList,
                                  DataTypeList,
-                                 HostResourceList > >::Types;
+                                 HostResourceList>>::Types;
 
-using OpenMPInitReducerConstructorTypes = 
-  Test< camp::cartesian_product< OpenMPReducerPolicyList,
+using OpenMPInitReducerConstructorTypes =
+    Test<camp::cartesian_product<OpenMPReducerPolicyList,
                                  DataTypeList,
                                  HostResourceList,
-                                 SequentialUnitTestPolicyList > >::Types;
+                                 SequentialUnitTestPolicyList>>::Types;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPBasicTest,
                                ReducerBasicConstructorUnitTest,
@@ -31,4 +32,3 @@ INSTANTIATE_TYPED_TEST_SUITE_P(OpenMPInitTest,
                                ReducerInitConstructorUnitTest,
                                OpenMPInitReducerConstructorTypes);
 #endif
-
