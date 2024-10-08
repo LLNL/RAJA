@@ -121,11 +121,11 @@ namespace detail
 
     // ValLoc constructor
     // Note that the target_ variables point to the val and loc within the user defined target ValLoc
-    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VOp(target_in->val, target_in->loc)), target_value(&target_in->val), target_index(&target_in->loc) {}
+    RAJA_HOST_DEVICE Reducer(value_type *target_in) : m_valop(VOp{}), target_value(&target_in->val), target_index(&target_in->loc) {}
 
     // Dual input constructor for ReduceLoc<>(data, index) case
     // The target_ variables point to vars defined by the user
-    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VOp(*data_in, *index_in)), target_value(data_in), target_index(index_in) {}
+    RAJA_HOST_DEVICE Reducer(target_value_type *data_in, target_index_type *index_in) : m_valop(VOp{}), target_value(data_in), target_index(index_in) {}
 
     Reducer(Reducer const &) = default;
     Reducer(Reducer &&) = default;
