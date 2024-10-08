@@ -10,25 +10,24 @@ namespace detail {
 #if defined(RAJA_ENABLE_SYCL)
 
   // Init
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  init(Reducer<OP, T>& red) {
-    red.val = OP::identity();
+  init(Reducer<OP, T, VOp>& red) {
+    red.m_valop.val = OP::identity();
   }
 
   // Combine
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  SYCL_EXTERNAL
-  combine(Reducer<OP, T>& out, const Reducer<OP, T>& in) {
-    out.val = OP{}(out.val, in.val);
+  combine(Reducer<OP, T, VOp>& out, const Reducer<OP, T, VOp>& in) {
+    out.m_valop.val = OP{}(out.m_valop.val, in.m_valop.val);
   }
 
   // Resolve
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_sycl_policy<EXEC_POL> >
-  resolve(Reducer<OP, T>& red) {
-    *red.target = OP{}(*red.target, red.val);
+  resolve(Reducer<OP, T, VOp>& red) {
+    red.combineTarget(red.m_valop.val);
   }
 
 #endif
