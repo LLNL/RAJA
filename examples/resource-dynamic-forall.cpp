@@ -44,11 +44,13 @@ using policy_list = camp::list<RAJA::seq_exec
 
 // clang-format on
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 
-  if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./cuda-dynamic-forall N, where N is the index of  the policy to run");
+  if (argc != 2)
+  {
+    RAJA_ABORT_OR_THROW("Usage ./cuda-dynamic-forall N, where N is the index "
+                        "of  the policy to run");
   }
 
   //
@@ -60,50 +62,55 @@ int main(int argc, char *argv[])
   const int pol = std::stoi(argv[1]);
 
   RAJA::ExecPlace select_cpu_or_gpu;
-  if(pol < 2) {
+  if (pol < 2)
+  {
     select_cpu_or_gpu = RAJA::ExecPlace::HOST;
-  } else {
+  }
+  else
+  {
     select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
   }
 
   std::cout << "\n\nRAJA vector addition example...\n";
-  std::cout << "Using policy # "<<pol<<std::endl;
+  std::cout << "Using policy # " << pol << std::endl;
 
-//
-// Define vector length
-//
+  //
+  // Define vector length
+  //
   const int N = 1000000;
 
-//
-// Allocate and initialize vector data
-//
-  int *a = memoryManager::allocate<int>(N);
-  int *b = memoryManager::allocate<int>(N);
-  int *c = memoryManager::allocate<int>(N);
+  //
+  // Allocate and initialize vector data
+  //
+  int* a = memoryManager::allocate<int>(N);
+  int* b = memoryManager::allocate<int>(N);
+  int* c = memoryManager::allocate<int>(N);
 
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     a[i] = -i;
     b[i] = i;
   }
 
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running C-style vector addition...\n";
 
   // _cstyle_vector_add_start
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     c[i] = a[i] + b[i];
   }
   // _cstyle_vector_add_end
 
   checkResult(c, N);
-//printResult(c, N);
+  // printResult(c, N);
 
 
-//----------------------------------------------------------------------------//
-// Example of dynamic policy selection for forall
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Example of dynamic policy selection for forall
+  //----------------------------------------------------------------------------//
 
   RAJA::resources::Host host_res;
 #if defined(RAJA_ENABLE_CUDA)
@@ -114,30 +121,33 @@ int main(int argc, char *argv[])
 #endif
 #if defined(RAJA_ENABLE_SYCL)
   RAJA::resources::Sycl device_res;
-#endif  
-
-  //Get typed erased resource - it will internally store if we are running on the host or device
-#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
-  RAJA::resources::Resource res = RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
-#else
-  RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
-  RAJA::expt::dynamic_forall<policy_list>
-  (res, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
+  // Get typed erased resource - it will internally store if we are running on
+  // the host or device
+#if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) ||                   \
+    defined(RAJA_ENABLE_SYCL)
+  RAJA::resources::Resource res =
+      RAJA::Get_Runtime_Resource(host_res, device_res, select_cpu_or_gpu);
+#else
+  RAJA::resources::Resource res =
+      RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
+#endif
 
-    c[i] = a[i] + b[i];
-
-  });
+  RAJA::expt::dynamic_forall<policy_list>(res, pol, RAJA::RangeSegment(0, N),
+                                          [=] RAJA_HOST_DEVICE(int i)
+                                          {
+                                            c[i] = a[i] + b[i];
+                                          });
 
   checkResult(c, N);
-  //printResult(c, N);
+  // printResult(c, N);
 
 
-//----------------------------------------------------------------------------//
-//
-// Clean up.
-//
+  //----------------------------------------------------------------------------//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(a);
   memoryManager::deallocate(b);
   memoryManager::deallocate(c);
@@ -153,12 +163,19 @@ int main(int argc, char *argv[])
 void checkResult(int* res, int len)
 {
   bool correct = true;
-  for (int i = 0; i < len; i++) {
-    if ( res[i] != 0 ) { correct = false; }
+  for (int i = 0; i < len; i++)
+  {
+    if (res[i] != 0)
+    {
+      correct = false;
+    }
   }
-  if ( correct ) {
+  if (correct)
+  {
     std::cout << "\n\t result -- PASS\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\n\t result -- FAIL\n";
   }
 }
@@ -169,7 +186,8 @@ void checkResult(int* res, int len)
 void printResult(int* res, int len)
 {
   std::cout << std::endl;
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; i++)
+  {
     std::cout << "result[" << i << "] = " << res[i] << std::endl;
   }
   std::cout << std::endl;

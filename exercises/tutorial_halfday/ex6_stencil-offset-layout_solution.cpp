@@ -15,7 +15,7 @@
 #include "memoryManager.hpp"
 
 /*
- *  EXERCISE #6: Offset layout stencil computation. 
+ *  EXERCISE #6: Offset layout stencil computation.
  *
  *  In this exercise, you will use RAJA Layouts and Views to perform
  *  a simple 5-point stencil computation on a 2-dimensional Cartesian mesh.
@@ -26,23 +26,23 @@
  *  The five-cell stencil accumulates values in a cell from itself and
  *  its four neighbors. Assuming the cells are indexed using (i,j) pairs on
  *  the two dimensional mesh, the stencil computation looks like:
- * 
+ *
  *  out(i, j) = in(i, j) + in(i - 1, j) + in(i + 1, j) +
  *              in(i, j - 1) + in(i, j + 1)
  *
  *  where 'in' is the input data array and 'out' is the result of
- *  the stencil computation. For simplicity, in the code examples, we refer 
- *  to the index tuples used to access input array entries as C (center), 
+ *  the stencil computation. For simplicity, in the code examples, we refer
+ *  to the index tuples used to access input array entries as C (center),
  *  W (west), E (east), S (south), and N (north).
  *
- *  We assume that the input array has an entry for N x M interior mesh cells 
+ *  We assume that the input array has an entry for N x M interior mesh cells
  *  plus a one cell wide halo region around the mesh interior; i.e., the size
  *  of the input array is (N + 2) * (M + 2). The output array has an entry
  *  for N x M interior mesh cells only, so its size is N * M. Note that since
- *  the arrays have different sizes, C-style indexing requires different 
+ *  the arrays have different sizes, C-style indexing requires different
  *  offset values in the code for accessing a cell entry in each array.
- * 
- *  The input array is initialized so that the entry for each interior cell 
+ *
+ *  The input array is initialized so that the entry for each interior cell
  *  is one and the entry for each halo cell is zero. So for the case where
  *  N = 3 and M = 2, the input array looks like:
  *
@@ -66,7 +66,7 @@
  *      | 3 | 4 | 3 |
  *      -------------
  *
- *  You can think about indexing into this mesh as illustrated in the 
+ *  You can think about indexing into this mesh as illustrated in the
  *  following diagram:
  *
  *  ---------------------------------------------------
@@ -79,31 +79,31 @@
  *  | (-1,-1) | (0, -1) | (1, -1) | (2, -1) | (3, -1) |
  *  ---------------------------------------------------
  *
- *  Notably (0, 0) corresponds to the bottom left corner of the interior 
- *  region, which extends to (2, 1), and (-1, -1) corresponds to the bottom 
+ *  Notably (0, 0) corresponds to the bottom left corner of the interior
+ *  region, which extends to (2, 1), and (-1, -1) corresponds to the bottom
  *  left corner of the halo region, which extends to (3, 2).
  *
- *  This file contains two C-style sequential implementations of stencil 
- *  computation. One has column indexing as stride-1 with the outer loop 
- *  traversing the rows ('i' loop variable) and the inner loop traversing the 
+ *  This file contains two C-style sequential implementations of stencil
+ *  computation. One has column indexing as stride-1 with the outer loop
+ *  traversing the rows ('i' loop variable) and the inner loop traversing the
  *  columns ('j' loop variable). The other has row indexing as stride-1 and
- *  reverses the order of the loops. This shows that a C-style implementation 
+ *  reverses the order of the loops. This shows that a C-style implementation
  *  requires two different implementations, one for each loop order, since the
- *  array offset arithmetic is different in the two cases. Where indicated 
+ *  array offset arithmetic is different in the two cases. Where indicated
  *  by comments, you will fill in versions using two-dimensional RAJA Views
  *  with offset layouts. One loop ordering requires permutations, while the
  *  other does not. If done properly, you will see that both RAJA versions
  *  have identical inner loop bodies, which is not the case for the C-style
  *  variants.
  *
- *  Note that you will use the same for-loop patterns as the C-style loops. 
+ *  Note that you will use the same for-loop patterns as the C-style loops.
  *  In a later exercise, we will show you how to use RAJA's nested loop
- *  support, which allows you to write both RAJA variants with identical 
+ *  support, which allows you to write both RAJA variants with identical
  *  source code.
  *
  *  RAJA features you will use:
  *    -  Offset-layouts and RAJA Views
- * 
+ *
  *  Since this exercise is done on a CPU only, we use C++ new and delete
  *  operators to allocate and deallocate the arrays we will use.
  */
@@ -111,14 +111,14 @@
 //
 // Functions for printing and checking results
 //
-// For array printing, 'stride1dim' indicates which mesh dimenstride is 
-// stride-1 (Rows indicates each row is stride-1, 
+// For array printing, 'stride1dim' indicates which mesh dimenstride is
+// stride-1 (Rows indicates each row is stride-1,
 //           Columns indicates each column is stride-1).
 //
 enum class Stride1
 {
-   Rows,
-   Columns 
+  Rows,
+  Columns
 };
 void printArrayOnMesh(int* v, int Nrows, int Ncols, Stride1 stride1dim);
 void checkResult(int* A, int* A_ref, int Ntot);
@@ -128,73 +128,76 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nExercise #6: Offset layout stencil computation...\n";
 
-//
-// Define number of rows and columns of cells in the 2D mesh.
-//
+  //
+  // Define number of rows and columns of cells in the 2D mesh.
+  //
   const int DIM = 2;
 
-  const int Nr_int = 5; 
+  const int Nr_int = 5;
   const int Nc_int = 8;
 
-  const int Nr_tot = Nr_int + 2; 
+  const int Nr_tot = Nr_int + 2;
   const int Nc_tot = Nc_int + 2;
-  
-  const int int_cells = Nr_int * Nc_int;
-  const int tot_cells = Nr_tot * Nc_tot; 
 
-//
-// Allocate and initialize input array
-//
-  int* B = memoryManager::allocate<int>(tot_cells * sizeof(int));
-  int* A = memoryManager::allocate<int>(int_cells * sizeof(int));
+  const int int_cells = Nr_int * Nc_int;
+  const int tot_cells = Nr_tot * Nc_tot;
+
+  //
+  // Allocate and initialize input array
+  //
+  int* B     = memoryManager::allocate<int>(tot_cells * sizeof(int));
+  int* A     = memoryManager::allocate<int>(int_cells * sizeof(int));
   int* A_ref = memoryManager::allocate<int>(int_cells * sizeof(int));
 
 
-//----------------------------------------------------------------------------//
-// First variant of stencil computation with column indexing as stride-1.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // First variant of stencil computation with column indexing as stride-1.
+  //----------------------------------------------------------------------------//
 
   std::memset(B, 0, tot_cells * sizeof(int));
 
-//
-// We assume that for each cell id (i,j) that j is the stride-1 index.
-//
-  for (int i = 1; i <= Nc_int; ++i) {
-    for (int j = 1; j <= Nr_int; ++j) {
+  //
+  // We assume that for each cell id (i,j) that j is the stride-1 index.
+  //
+  for (int i = 1; i <= Nc_int; ++i)
+  {
+    for (int j = 1; j <= Nr_int; ++j)
+    {
       int idx = j + Nr_tot * i;
-      B[idx] = 1;
+      B[idx]  = 1;
     }
   }
-//printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Columns); 
+  // printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Columns);
 
 
-//----------------------------------------------------------------------------//
-// C-style stencil computation establishes reference solution to compare with.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // C-style stencil computation establishes reference solution to compare with.
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running C-style stencil computation (reference soln)...\n";
 
   std::memset(A_ref, 0, int_cells * sizeof(int));
 
-  for (int i = 0; i < Nc_int; ++i) {
-    for (int j = 0; j < Nr_int; ++j) {
+  for (int i = 0; i < Nc_int; ++i)
+  {
+    for (int j = 0; j < Nr_int; ++j)
+    {
 
       int idx_out = j + Nr_int * i;
-      int idx_in = (j + 1) + Nr_tot * (i + 1);
+      int idx_in  = (j + 1) + Nr_tot * (i + 1);
 
       A_ref[idx_out] = B[idx_in] +                                // C
                        B[idx_in - Nr_tot] + B[idx_in + Nr_tot] +  // W, E
                        B[idx_in - 1] + B[idx_in + 1];             // S, N
-
     }
   }
 
-//printArrayOnMesh(A_ref, Nr_int, Nc_int, Stride1::Columns);
+  // printArrayOnMesh(A_ref, Nr_int, Nc_int, Stride1::Columns);
 
 
-//----------------------------------------------------------------------------//
-// Variant using RAJA Layouts and Views (no permutation).
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Variant using RAJA Layouts and Views (no permutation).
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running stencil computation with RAJA Views...\n";
 
@@ -203,80 +206,85 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //
   // Create offset Layout and Views for data access. Note that only
   // the input array access requires an offset since the loops iterate over
-  // the interior (i, j) indices. We can use the default layout for the 
-  // output array. Also, since the 'j' index (rightmost) is stride-1, 
+  // the interior (i, j) indices. We can use the default layout for the
+  // output array. Also, since the 'j' index (rightmost) is stride-1,
   // we don't need a permutation for this case.
   //
 
-// clang-format off
+  // clang-format off
   RAJA::OffsetLayout<DIM> B_layout =
       RAJA::make_offset_layout<DIM>({{-1, -1}}, {{Nc_tot-1, Nr_tot-1}});
 
-// clang-format on
+  // clang-format on
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Bview(B, B_layout);
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, Nc_int, Nr_int);
 
-  for (int i = 0; i < Nc_int; ++i) {
-    for (int j = 0; j < Nr_int; ++j) {
+  for (int i = 0; i < Nc_int; ++i)
+  {
+    for (int j = 0; j < Nr_int; ++j)
+    {
 
-      Aview(i, j) = Bview(i, j) +                           // C
-                    Bview(i - 1, j) + Bview(i + 1, j) +     // W, E
-                    Bview(i, j - 1) + Bview(i, j + 1);      // S, N
-
+      Aview(i, j) = Bview(i, j) +                        // C
+                    Bview(i - 1, j) + Bview(i + 1, j) +  // W, E
+                    Bview(i, j - 1) + Bview(i, j + 1);   // S, N
     }
   }
 
   checkResult(A, A_ref, int_cells);
-//printArrayOnMesh(A, Nr_int, Nc_int, Stride1::Columns);
+  // printArrayOnMesh(A, Nr_int, Nc_int, Stride1::Columns);
 
 
-//----------------------------------------------------------------------------//
-// Second variant of stencil computation with row indexing as stride-1.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Second variant of stencil computation with row indexing as stride-1.
+  //----------------------------------------------------------------------------//
 
   std::memset(B, 0, tot_cells * sizeof(int));
 
-//
-// We assume that for each cell id (i,j) that i is the stride-1 index.
-//
-  for (int j = 1; j <= Nr_int; ++j) {
-    for (int i = 1; i <= Nc_int; ++i) {
+  //
+  // We assume that for each cell id (i,j) that i is the stride-1 index.
+  //
+  for (int j = 1; j <= Nr_int; ++j)
+  {
+    for (int i = 1; i <= Nc_int; ++i)
+    {
       int idx = i + Nc_tot * j;
-      B[idx] = 1;
+      B[idx]  = 1;
     }
   }
-//printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Rows);
+  // printArrayOnMesh(B, Nr_tot, Nc_tot, Stride1::Rows);
 
 
-//----------------------------------------------------------------------------//
-// C-style stencil computation establishes reference solution to compare with.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // C-style stencil computation establishes reference solution to compare with.
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n\n Running C-style stencil computation (reference soln)...\n";
 
   std::memset(A_ref, 0, int_cells * sizeof(int));
 
-  for (int j = 0; j < Nr_int; ++j) {
-    for (int i = 0; i < Nc_int; ++i) {
+  for (int j = 0; j < Nr_int; ++j)
+  {
+    for (int i = 0; i < Nc_int; ++i)
+    {
 
       int idx_out = i + Nc_int * j;
-      int idx_in = (i + 1) + Nc_tot * (j + 1);
+      int idx_in  = (i + 1) + Nc_tot * (j + 1);
 
       A_ref[idx_out] = B[idx_in] +                                // C
                        B[idx_in - Nc_tot] + B[idx_in + Nc_tot] +  // S, N
                        B[idx_in - 1] + B[idx_in + 1];             // W, E
-
     }
   }
 
-//printArrayOnMesh(A_ref, Nr_int, Nc_int, Stride1::Rows);
+  // printArrayOnMesh(A_ref, Nr_int, Nc_int, Stride1::Rows);
 
 
-//----------------------------------------------------------------------------//
-// Variant using RAJA Layouts and Views (with permutation).
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Variant using RAJA Layouts and Views (with permutation).
+  //----------------------------------------------------------------------------//
 
-  std::cout << "\n\n Running stencil computation with RAJA Views (permuted)...\n";
+  std::cout
+      << "\n\n Running stencil computation with RAJA Views (permuted)...\n";
 
   std::memset(A, 0, int_cells * sizeof(int));
 
@@ -291,35 +299,35 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // application.
   //
 
-  std::array<RAJA::idx_t, DIM> perm {{1, 0}};  // 'i' index (position zero0) 
-                                               // is stride-1 
+  std::array<RAJA::idx_t, DIM> perm {{1, 0}};  // 'i' index (position zero0)
+                                               // is stride-1
 
-  RAJA::OffsetLayout<DIM> pB_layout =
-    RAJA::make_permuted_offset_layout( {{-1, -1}}, {{Nc_tot-1, Nr_tot-1}},
-                                       perm );
+  RAJA::OffsetLayout<DIM> pB_layout = RAJA::make_permuted_offset_layout(
+      {{-1, -1}}, {{Nc_tot - 1, Nr_tot - 1}}, perm);
 
-  RAJA::Layout<DIM> pA_layout = 
-      RAJA::make_permuted_layout( {{Nc_int, Nr_int}}, perm );
+  RAJA::Layout<DIM> pA_layout =
+      RAJA::make_permuted_layout({{Nc_int, Nr_int}}, perm);
 
   RAJA::View<int, RAJA::OffsetLayout<DIM>> pBview(B, pB_layout);
   RAJA::View<int, RAJA::Layout<DIM>> pAview(A, pA_layout);
 
-  for (int j = 0; j < Nr_int; ++j) {
-    for (int i = 0; i < Nc_int; ++i) {
+  for (int j = 0; j < Nr_int; ++j)
+  {
+    for (int i = 0; i < Nc_int; ++i)
+    {
 
-      pAview(i, j) = pBview(i, j) +                            // C
-                     pBview(i - 1, j) + pBview(i + 1, j) +     // W, E
-                     pBview(i, j - 1) + pBview(i, j + 1);      // S, N
-
+      pAview(i, j) = pBview(i, j) +                         // C
+                     pBview(i - 1, j) + pBview(i + 1, j) +  // W, E
+                     pBview(i, j - 1) + pBview(i, j + 1);   // S, N
     }
   }
 
   checkResult(A, A_ref, int_cells);
-//printArrayOnMesh(A, Nr_int, Nc_int, Stride1::Rows);
+  // printArrayOnMesh(A, Nr_int, Nc_int, Stride1::Rows);
 
-//
-// Clean up.
-//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(B);
   memoryManager::deallocate(A);
   memoryManager::deallocate(A_ref);
@@ -330,7 +338,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 //
-// For array printing, 'stride1dim' indicates which mesh dimenstride is 
+// For array printing, 'stride1dim' indicates which mesh dimenstride is
 // clang-format off
 // stride-1 (0 indicates each row is stride-1, 
 //           1 indicates each column is stride-1).

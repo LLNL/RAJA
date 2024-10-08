@@ -10,40 +10,40 @@
 using namespace RAJA;
 using namespace RAJA::statement;
 
-int main(int /*argc*/, char** /*argv[]*/) {
+int main(int /*argc*/, char** /*argv[]*/)
+{
 
-// clang-format off
+  // clang-format off
   // using Pol = KernelPolicy<
   //               For<1, RAJA::seq_exec>,
   //               For<0, RAJA::omp_target_parallel_for_exec<1>, Lambda<0> >
   //             >;
   using Pol = KernelPolicy<
-// clang-format on
-    Collapse<omp_target_parallel_collapse_exec, ArgList<0,1>, Lambda<0> > >;
+      // clang-format on
+      Collapse<omp_target_parallel_collapse_exec, ArgList<0, 1>, Lambda<0>>>;
 
-// clang-format on
-  double* array = new double[25*25];
+  // clang-format on
+  double* array = new double[25 * 25];
 
-#pragma omp target enter data map(to: array[0:25*25])
+#pragma omp target enter data map(to : array [0:25 * 25])
 #pragma omp target data use_device_ptr(array)
 
 #if 1
   RAJA::kernel<Pol>(
-      RAJA::make_tuple(
-        RAJA::RangeSegment(0,25),
-        RAJA::RangeSegment(0,25)),
-      [=] (int /*i*/, int /*j*/) {
-      //array[i + (25*j)] = i*j;
-  //    int idx = i;
-      //array[0] = i*j;
-  });
+      RAJA::make_tuple(RAJA::RangeSegment(0, 25), RAJA::RangeSegment(0, 25)),
+      [=](int /*i*/, int /*j*/)
+      {
+        // array[i + (25*j)] = i*j;
+        //    int idx = i;
+        // array[0] = i*j;
+      });
 #else
-// clang-format off
+  // clang-format off
   RAJA::forall<RAJA::omp_target_parallel_for_exec<1>>(
       RAJA::RangeSegment(0,25),
       [=] (int i) {
       //
   });
 #endif
-// clang-format on
+  // clang-format on
 }

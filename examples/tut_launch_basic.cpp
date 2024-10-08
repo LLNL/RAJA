@@ -31,7 +31,7 @@
  * the example below choses a sequential
  * execution space and either a CUDA or HIP
  * execution device execution space.
-*/
+ */
 
 // __host_launch_start
 using host_launch = RAJA::seq_launch_t;
@@ -45,12 +45,12 @@ using device_launch = RAJA::cuda_launch_t<false>;
 using device_launch = RAJA::hip_launch_t<false>;
 #endif
 
-using launch_policy = RAJA::LaunchPolicy<
-  host_launch
+using launch_policy = RAJA::LaunchPolicy<host_launch
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
-  ,device_launch
+                                         ,
+                                         device_launch
 #endif
-  >;
+                                         >;
 
 /*
  * RAJA launch exposes a thread/block programming model
@@ -64,69 +64,70 @@ using launch_policy = RAJA::LaunchPolicy<
  * On the host the loops expands to standard C style for loops.
  */
 
-using teams_x = RAJA::LoopPolicy<
-                                       RAJA::seq_exec
+using teams_x = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                       ,
-                                       RAJA::cuda_block_x_direct
+                                 ,
+                                 RAJA::cuda_block_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_block_x_direct
+                                 ,
+                                 RAJA::hip_block_x_direct
 #endif
-                                       >;
+                                 >;
 
-using teams_y = RAJA::LoopPolicy<
-                                       RAJA::seq_exec
+using teams_y = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                       ,
-                                       RAJA::cuda_block_y_direct
+                                 ,
+                                 RAJA::cuda_block_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                       ,
-                                       RAJA::hip_block_y_direct
+                                 ,
+                                 RAJA::hip_block_y_direct
 #endif
-                                       >;
+                                 >;
 
 using threads_x = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                         ,
-                                         RAJA::cuda_thread_x_direct
+                                   ,
+                                   RAJA::cuda_thread_x_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                         ,
-                                         RAJA::hip_thread_x_direct
+                                   ,
+                                   RAJA::hip_thread_x_direct
 #endif
-                                         >;
+                                   >;
 
 using threads_y = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_CUDA)
-                                         ,
-                                         RAJA::cuda_thread_y_direct
+                                   ,
+                                   RAJA::cuda_thread_y_direct
 #endif
 #if defined(RAJA_ENABLE_HIP)
-                                         ,
-                                         RAJA::hip_thread_y_direct
+                                   ,
+                                   RAJA::hip_thread_y_direct
 #endif
-                                         >;
+                                   >;
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 __global__ void gpuKernel()
 {
-  //Equivalent CUDA/HIP style thread/block mapping
-  // _device_loop_start
-  {int by = blockIdx.y;
-    {int bx = blockIdx.x;
+  // Equivalent CUDA/HIP style thread/block mapping
+  //  _device_loop_start
+  {
+    int by = blockIdx.y;
+    {
+      int bx = blockIdx.x;
 
-      {int ty = threadIdx.y;
-        {int tx = blockIdx.x;
+      {
+        int ty = threadIdx.y;
+        {
+          int tx = blockIdx.x;
 
-          printf("device-iter: threadIdx_tx %d threadIdx_ty %d block_bx %d block_by %d \n",
+          printf("device-iter: threadIdx_tx %d threadIdx_ty %d block_bx %d "
+                 "block_by %d \n",
                  tx, ty, bx, by);
-
         }
       }
-
     }
   }
   // _device_loop_end
@@ -142,40 +143,50 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
 
-  if(argc != 2) {
-    RAJA_ABORT_OR_THROW("Usage ./tut_launch_basic host or ./tut_launch_basic device");
+  if (argc != 2)
+  {
+    RAJA_ABORT_OR_THROW(
+        "Usage ./tut_launch_basic host or ./tut_launch_basic device");
   }
 
-//
-// Run time policy section is demonstrated in this example by specifying
-// kernel exection space as a command line argument (host or device).
-// Example usage ./tut_launch_basic host or ./tut_launch_basic device
-//
+  //
+  // Run time policy section is demonstrated in this example by specifying
+  // kernel exection space as a command line argument (host or device).
+  // Example usage ./tut_launch_basic host or ./tut_launch_basic device
+  //
   std::string exec_space = argv[1];
-  if(!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0 )){
-    RAJA_ABORT_OR_THROW("Usage ./tut_launch_basic host or ./tut_launch_basic device");
+  if (!(exec_space.compare("host") == 0 || exec_space.compare("device") == 0))
+  {
+    RAJA_ABORT_OR_THROW(
+        "Usage ./tut_launch_basic host or ./tut_launch_basic device");
     return 0;
   }
 
   RAJA::ExecPlace select_cpu_or_gpu;
-  if(exec_space.compare("host") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::HOST; printf("Running RAJA-Teams on the host \n"); }
-  if(exec_space.compare("device") == 0)
-    { select_cpu_or_gpu = RAJA::ExecPlace::DEVICE; printf("Running RAJA-Teams on the device \n"); }
+  if (exec_space.compare("host") == 0)
+  {
+    select_cpu_or_gpu = RAJA::ExecPlace::HOST;
+    printf("Running RAJA-Teams on the host \n");
+  }
+  if (exec_space.compare("device") == 0)
+  {
+    select_cpu_or_gpu = RAJA::ExecPlace::DEVICE;
+    printf("Running RAJA-Teams on the device \n");
+  }
 
-//
-// The following three kernels illustrate loop based parallelism
-// based on nested for loops. For correctness team and thread loops
-// make the assumption that all work inside can be done
-// concurrently.
-//
+  //
+  // The following three kernels illustrate loop based parallelism
+  // based on nested for loops. For correctness team and thread loops
+  // make the assumption that all work inside can be done
+  // concurrently.
+  //
 
   // __compute_grid_start
-  const int Nteams  = 2;
+  const int Nteams   = 2;
   const int Nthreads = 2;
   // __compute_grid_end
 
-// clang-format off
+  // clang-format off
   RAJA::launch<launch_policy>(select_cpu_or_gpu,
     RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
                      RAJA::Threads(Nthreads,Nthreads)),
@@ -201,21 +212,25 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
    });
 
-// clang-format on
-  //Equivalent C style loops
-  if(select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
+  // clang-format on
+  // Equivalent C style loops
+  if (select_cpu_or_gpu == RAJA::ExecPlace::HOST)
+  {
     // _c_style_loops_start
-    for (int by=0; by<Nteams; ++by) {
-      for (int bx=0; bx<Nteams; ++bx) {
+    for (int by = 0; by < Nteams; ++by)
+    {
+      for (int bx = 0; bx < Nteams; ++bx)
+      {
 
-        for (int ty=0; ty<Nthreads; ++ty) {
-          for (int tx=0; tx<Nthreads; ++tx) {
+        for (int ty = 0; ty < Nthreads; ++ty)
+        {
+          for (int tx = 0; tx < Nthreads; ++tx)
+          {
 
-            printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n",
-	    tx, ty, bx, by);
+            printf("c-iter: iter_tx %d iter_ty %d iter_bx %d iter_by %d \n", tx,
+                   ty, bx, by);
           }
         }
-
       }
     }
     // _c_style_loops_end
@@ -234,13 +249,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
+  if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
     gpuKernel<<<griddim, blockdim>>>();
   cudaDeviceSynchronize();
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-  if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
+  if (select_cpu_or_gpu == RAJA::ExecPlace::DEVICE)
     hipLaunchKernelGGL((gpuKernel), dim3(griddim), dim3(blockdim), 0, 0);
   hipDeviceSynchronize();
 #endif

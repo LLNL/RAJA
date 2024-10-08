@@ -34,16 +34,17 @@
  */
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block when using forall
-  CUDA_WORKGROUP_BLOCK_SIZE - specifies the number of threads in a CUDA thread block when using workgroup
+  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block when
+  using forall CUDA_WORKGROUP_BLOCK_SIZE - specifies the number of threads in a
+  CUDA thread block when using workgroup
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_SIZE = 256;
+const int CUDA_BLOCK_SIZE           = 256;
 const int CUDA_WORKGROUP_BLOCK_SIZE = 1024;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-const int HIP_BLOCK_SIZE = 256;
+const int HIP_BLOCK_SIZE           = 256;
 const int HIP_WORKGROUP_BLOCK_SIZE = 1024;
 #endif
 
@@ -69,22 +70,23 @@ void printResult(std::vector<double*> const& vars, int var_size, int num_vars);
 void create_pack_lists(std::vector<int*>& pack_index_lists, std::vector<int>& pack_index_list_lengths,
                        const int halo_width, const int* grid_dims);
 void create_unpack_lists(std::vector<int*>& unpack_index_lists, std::vector<int>& unpack_index_list_lengths,
-// clang-format on
-                         const int halo_width, const int* grid_dims);
+                         // clang-format on
+                         const int halo_width,
+                         const int* grid_dims);
 void destroy_pack_lists(std::vector<int*>& pack_index_lists);
 // clang-format on
 void destroy_unpack_lists(std::vector<int*>& unpack_index_lists);
 
 
-template < typename T >
+template <typename T>
 struct memory_manager_allocator
 {
   using value_type = T;
 
   memory_manager_allocator() = default;
 
-  template < typename U >
-// clang-format off
+  template <typename U>
+  // clang-format off
   constexpr memory_manager_allocator(memory_manager_allocator<U> const&) noexcept
   { }
 

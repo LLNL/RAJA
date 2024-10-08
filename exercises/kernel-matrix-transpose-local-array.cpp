@@ -70,7 +70,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
 // clang-format on
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA shared matrix transpose exercise...\n";
@@ -91,8 +91,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int *A = memoryManager::allocate<int>(N_r * N_c);
-  int *At = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
+  int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
   // In the following implementations of matrix transpose, we
@@ -108,8 +108,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
       Aview(row, col) = col;
     }
   }
@@ -124,8 +126,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dimr; ++by) {
-    for (int bx = 0; bx < outer_Dimc; ++bx) {
+  for (int by = 0; by < outer_Dimr; ++by)
+  {
+    for (int bx = 0; bx < outer_Dimc; ++bx)
+    {
 
       // Stack-allocated local array for data on a tile
       int Tile[TILE_DIM][TILE_DIM];
@@ -136,14 +140,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loops are ordered so that input matrix data access
       //           is stride-1.
       //
-      for (int ty = 0; ty < TILE_DIM; ++ty) {
-        for (int tx = 0; tx < TILE_DIM; ++tx) {
+      for (int ty = 0; ty < TILE_DIM; ++ty)
+      {
+        for (int tx = 0; tx < TILE_DIM; ++tx)
+        {
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c) {
+          if (row < N_r && col < N_c)
+          {
             Tile[ty][tx] = Aview(row, col);
           }
         }
@@ -155,19 +162,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loop order is swapped from above so that output matrix
       //           data access is stride-1.
       //
-      for (int tx = 0; tx < TILE_DIM; ++tx) {
-        for (int ty = 0; ty < TILE_DIM; ++ty) {
+      for (int tx = 0; tx < TILE_DIM; ++tx)
+      {
+        for (int ty = 0; ty < TILE_DIM; ++ty)
+        {
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c) {
+          if (row < N_r && col < N_c)
+          {
             Atview(col, row) = Tile[ty][tx];
           }
         }
       }
-
     }
   }
   // _mattranspose_localarray_cstyle_end
@@ -190,8 +199,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   // _mattranspose_localarray_start
-  using TILE_MEM =
-    RAJA::LocalArray<int, RAJA::Perm<0, 1>, RAJA::SizeList<TILE_DIM, TILE_DIM>>;
+  using TILE_MEM = RAJA::LocalArray<int, RAJA::Perm<0, 1>,
+                                    RAJA::SizeList<TILE_DIM, TILE_DIM>>;
   TILE_MEM Tile_Array;
   // _mattranspose_localarray_end
 
@@ -219,19 +228,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           ///
           /// TODO...
           ///
-          /// EXERCISE: Initialize the local memory statement as position 2 
+          /// EXERCISE: Initialize the local memory statement as position 2
           ///           in the paramater list.
           ///
 
-          RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
-            RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
-              RAJA::statement::Lambda<0>
+          RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
+RAJA::seq_exec, RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
+RAJA::seq_exec, RAJA::statement::Lambda<0>
             >
           >,
 
-          RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
-            RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
-              RAJA::statement::Lambda<1>
+          RAJA::statement::ForICount<0, RAJA::statement::Param<1>,
+RAJA::seq_exec, RAJA::statement::ForICount<1, RAJA::statement::Param<0>,
+RAJA::seq_exec, RAJA::statement::Lambda<1>
             >
           >
 
@@ -242,7 +251,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // clang-format on
 // clang-format off
-  RAJA::kernel_param<SEQ_EXEC_POL_I>( 
+  RAJA::kernel_param<SEQ_EXEC_POL_I>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
 
@@ -258,7 +267,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
   */
-// clang-format on
+  // clang-format on
   // _mattranspose_localarray_raja_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -286,8 +295,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     //      These loops iterate over the number of
     //      tiles needed to carry out the transpose
     //
-    RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::omp_parallel_for_exec,
-      RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
+    RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>,
+RAJA::omp_parallel_for_exec, RAJA::statement::Tile<0,
+RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
         // This statement will initalize local array memory inside a
         // kernel. The cpu_tile_mem policy specifies that memory should be
         // allocated on the stack. The entries in the RAJA::ParamList
@@ -302,7 +312,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           ///
           /// TODO...
           ///
-          /// EXERCISE: Use two ForICount statements with seq_exec to call the first lambda.
+          /// EXERCISE: Use two ForICount statements with seq_exec to call the
+first lambda.
           ///
 
           //
@@ -317,7 +328,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           ///
           /// TODO...
           ///
-          /// EXERCISE: Use two ForICount statements with seq_exec to call the second lambda.
+          /// EXERCISE: Use two ForICount statements with seq_exec to call the
+second lambda.
           ///
         >
       >
@@ -344,7 +356,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
   */
-// clang-format on
+  // clang-format on
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -356,7 +368,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using OPENMP_EXEC_2_POL =
-// clang-format off
+      // clang-format off
   RAJA::KernelPolicy<
     //
     // (0) Execution policies for outer loops
@@ -398,8 +410,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
-// clang-format on
-// clang-format off
+  // clang-format on
+  // clang-format off
   RAJA::kernel_param<OPENMP_EXEC_2_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -418,7 +430,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-// clang-format on
+  // clang-format on
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_r, N_c);
 #endif
@@ -430,7 +442,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using CUDA_EXEC_POL =
-// clang-format off
+      // clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       //
@@ -480,9 +492,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
-// clang-format on
+  // clang-format on
 
-// clang-format off
+  // clang-format off
   RAJA::kernel_param<CUDA_EXEC_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -501,19 +513,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-// clang-format on
+  // clang-format on
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
 
-//--------------------------------------------------------------------------//
+  //--------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
   //--------------------------------------------------------------------------//
   std::cout << "\n Running RAJA - HIP matrix transpose exercise ...\n";
 
-  int *d_A = memoryManager::allocate_gpu<int>(N_r * N_c);
-  int *d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int* d_A  = memoryManager::allocate_gpu<int>(N_r * N_c);
+  int* d_At = memoryManager::allocate_gpu<int>(N_r * N_c);
 
   //
   // In the following implementations of matrix transpose, we
@@ -525,11 +537,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<DIM>> d_Atview(d_At, N_c, N_r);
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
-  hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice));
+  hipErrchk(
+      hipMemcpy(d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice));
 
   using HIP_EXEC_POL =
-// clang-format off
+      // clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
       //
@@ -579,9 +592,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
-// clang-format on
+  // clang-format on
 
-// clang-format off
+  // clang-format off
   RAJA::kernel_param<HIP_EXEC_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -600,22 +613,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-// clang-format on
-  hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+  // clang-format on
+  hipErrchk(
+      hipMemcpy(At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost));
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
 
 
   //--------------------------------------------------------------------------//
-  std::cout << "\n Running RAJA - sequential matrix transpose exercise with args in statement ...\n";
+  std::cout << "\n Running RAJA - sequential matrix transpose exercise with "
+               "args in statement ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
-  //Alias for convenience
-  using RAJA::Segs;
+  // Alias for convenience
   using RAJA::Offsets;
   using RAJA::Params;
+  using RAJA::Segs;
 
   // _mattranspose_localarray_raja_lambdaargs_start
   ///
@@ -634,7 +649,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           RAJA::statement::For<1, RAJA::seq_exec,
             RAJA::statement::For<0, RAJA::seq_exec,
-              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>, Offsets<1>, Params<0> >
+              RAJA::statement::Lambda<0, Segs<0>, Segs<1>, Offsets<0>,
+Offsets<1>, Params<0> >
             >
           >,
 
@@ -651,7 +667,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // clang-format on
 // clang-format off
-  RAJA::kernel_param<SEQ_EXEC_POL_II>( 
+  RAJA::kernel_param<SEQ_EXEC_POL_II>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
 
@@ -666,13 +682,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
   */
-// clang-format on
+  // clang-format on
   // _mattranspose_localarray_raja_lambdaargs_end
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
-//--------------------------------------------------------------------------//
+  //--------------------------------------------------------------------------//
 
   return 0;
 }

@@ -28,7 +28,7 @@ namespace memoryManager
 {
 
 #if defined(RAJA_ENABLE_SYCL)
-  static camp::resources::Resource* sycl_res;
+static camp::resources::Resource* sycl_res;
 #endif
 
 // clang-format off

@@ -10,7 +10,7 @@
 
 using namespace RAJA;
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -19,17 +19,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr int N = 10;
   constexpr int M = 1000000;
 
-  RAJA::resources::Cuda def_cuda_res{RAJA::resources::Cuda::get_default()};
-  RAJA::resources::Host def_host_res{RAJA::resources::Host::get_default()};
-  int* d_array = def_cuda_res.allocate<int>(N*M);
-  int* h_array = def_host_res.allocate<int>(N*M);
+  RAJA::resources::Cuda def_cuda_res {RAJA::resources::Cuda::get_default()};
+  RAJA::resources::Host def_host_res {RAJA::resources::Host::get_default()};
+  int* d_array = def_cuda_res.allocate<int>(N * M);
+  int* h_array = def_host_res.allocate<int>(N * M);
 
   RAJA::RangeSegment one_range(0, 1);
   RAJA::RangeSegment m_range(0, M);
   RAJA::RangeSegment n_range(0, N);
 
   using TEST_POL =
-// clang-format off
+      // clang-format off
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
         statement::For<0, cuda_block_x_loop,
@@ -40,8 +40,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
-// clang-format on
-// clang-format off
+  // clang-format on
+  // clang-format off
   RAJA::forall<RAJA::seq_exec>(def_host_res, n_range,
     [=, &def_cuda_res](int i){
       RAJA::resources::Cuda res_cuda; 
@@ -61,18 +61,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-// clang-format on
+  // clang-format on
   def_cuda_res.memcpy(h_array, d_array, sizeof(int) * N * M);
 
   int ec_count = 0;
-  RAJA::forall<RAJA::seq_exec>( RAJA::RangeSegment(0, N*M),
-    [=, &ec_count](int i){
-      if (h_array[i] != i) ec_count++;
-    }
-  );
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N * M),
+                               [=, &ec_count](int i)
+                               {
+                                 if (h_array[i] != i) ec_count++;
+                               });
 
   std::cout << "    Result -- ";
-  if (ec_count > 0) 
+  if (ec_count > 0)
     std::cout << "FAIL : error count = " << ec_count << "\n";
   else
     std::cout << "PASS!\n";

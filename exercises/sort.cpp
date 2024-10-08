@@ -53,7 +53,7 @@
 // clang-format on
 
 #if defined(RAJA_ENABLE_HIP)
-//constexpr int HIP_BLOCK_SIZE = 16;
+// constexpr int HIP_BLOCK_SIZE = 16;
 #endif
 
 //
@@ -62,14 +62,20 @@
 template <typename Function, typename T>
 void checkUnstableSortResult(const T* in, const T* out, int N);
 template <typename Function, typename T, typename U>
-void checkUnstableSortResult(const T* in, const T* out,
-                             const U* in_vals, const U* out_vals, int N);
+void checkUnstableSortResult(const T* in,
+                             const T* out,
+                             const U* in_vals,
+                             const U* out_vals,
+                             int N);
 //
 template <typename Function, typename T>
 void checkStableSortResult(const T* in, const T* out, int N);
 template <typename Function, typename T, typename U>
-void checkStableSortResult(const T* in, const T* out,
-                           const U* in_vals, const U* out_vals, int N);
+void checkStableSortResult(const T* in,
+                           const T* out,
+                           const U* in_vals,
+                           const U* out_vals,
+                           int N);
 //
 template <typename T>
 void printArray(const T* k, int N);
@@ -83,27 +89,27 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA sort example...\n";
 
   // _sort_array_init_start
-//
-// Define array length
-//
+  //
+  // Define array length
+  //
   constexpr int N = 20;
 
-//
-// Allocate and initialize vector data
-//
-  int* in = memoryManager::allocate<int>(N);
+  //
+  // Allocate and initialize vector data
+  //
+  int* in  = memoryManager::allocate<int>(N);
   int* out = memoryManager::allocate<int>(N);
 
-  unsigned* in_vals = memoryManager::allocate<unsigned>(N);
+  unsigned* in_vals  = memoryManager::allocate<unsigned>(N);
   unsigned* out_vals = memoryManager::allocate<unsigned>(N);
 
-  std::iota(in      , in + N/2, 0);
-  std::iota(in + N/2, in + N  , 0);
-  std::shuffle(in      , in + N/2, std::mt19937{12345u});
-  std::shuffle(in + N/2, in + N  , std::mt19937{67890u});
+  std::iota(in, in + N / 2, 0);
+  std::iota(in + N / 2, in + N, 0);
+  std::shuffle(in, in + N / 2, std::mt19937 {12345u});
+  std::shuffle(in + N / 2, in + N, std::mt19937 {67890u});
 
-  std::fill(in_vals      , in_vals + N/2, 0);
-  std::fill(in_vals + N/2, in_vals + N  , 1);
+  std::fill(in_vals, in_vals + N / 2, 0);
+  std::fill(in_vals + N / 2, in_vals + N, 1);
 
   std::cout << "\n in keys...\n";
   printArray(in, N);
@@ -114,10 +120,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _sort_array_init_end
 
 
-//----------------------------------------------------------------------------//
-// Perform various sequential sorts to illustrate unstable/stable,
-// pairs, default sorts with different comparators
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform various sequential sorts to illustrate unstable/stable,
+  // pairs, default sorts with different comparators
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential sort (default)...\n";
 
@@ -125,7 +131,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a RAJA sort with RAJA::seq_exec
-  ///           execution policy type. 
+  ///           execution policy type.
   ///
   /// NOTE: We've done this one for you to help you get started...
   ///
@@ -136,12 +142,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N));
   // _sort_seq_end
 
-  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential sort (non-decreasing)...\n";
 
@@ -151,15 +157,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a RAJA sort with RAJA::seq_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
 
-  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential stable_sort (non-decreasing)...\n";
 
@@ -169,15 +175,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a stable RAJA sort with RAJA::seq_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
 
-  //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
+  // checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential stable_sort (non-increasing)...\n";
 
@@ -187,15 +193,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a stable RAJA sort with RAJA::seq_exec execution
-  ///           policy type and an explicit greater operation. 
+  ///           policy type and an explicit greater operation.
   ///
 
-  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  // checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_GREATER);
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential sort_pairs (non-decreasing)...\n";
 
@@ -206,15 +212,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a RAJA pair sort with RAJA::seq_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
 
-  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
+  // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals,
+  // out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_LESS);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential stable_sort_pairs (non-increasing)...\n";
 
@@ -225,10 +232,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a stable RAJA pair sort with RAJA::seq_exec execution
-  ///           policy type and an explicit greater operation. 
+  ///           policy type and an explicit greater operation.
   ///
 
-  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  // checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals,
+  // out_vals, N);
   CHECK_STABLE_SORT_PAIR_RESULT(OP_GREATER);
   printArray(out, out_vals, N);
   std::cout << "\n";
@@ -236,9 +244,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-//----------------------------------------------------------------------------//
-// Perform a couple of OpenMP sorts...
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform a couple of OpenMP sorts...
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running OpenMP sort (non-decreasing)...\n";
 
@@ -248,15 +256,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a RAJA sort with RAJA::omp_parallel_for_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
 
-  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
+  // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running OpenMP stable_sort_pairs (non-increasing)...\n";
 
@@ -266,24 +274,26 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///
   /// TODO...
   ///
-  /// EXERCISE: Implement a stable RAJA sort with RAJA::omp_parallel_for_exec execution
-  ///           policy type and an explicit greater operation. 
+  /// EXERCISE: Implement a stable RAJA sort with RAJA::omp_parallel_for_exec
+  /// execution
+  ///           policy type and an explicit greater operation.
   ///
 
-  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  // checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals,
+  // out_vals, N);
   CHECK_STABLE_SORT_PAIR_RESULT(OP_GREATER);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
-//----------------------------------------------------------------------------//
-// Perform a couple of CUDA sorts...
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform a couple of CUDA sorts...
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA sort_pairs (non-increasing)...\n";
 
@@ -294,18 +304,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a RAJA pair sort with RAJA::cuda_exec execution
-  ///           policy type and an explicit greater operation. 
+  ///           policy type and an explicit greater operation.
   ///
-  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here.
   ///
 
-  //checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
+  // checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals,
+  // out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_GREATER);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA stable_sort (non-decreasing)...\n";
 
@@ -315,77 +326,80 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement a stable RAJA pair sort with RAJA::cuda_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
-  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here.
   ///
 
-  //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
+  // checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_LESS);
   printArray(out, N);
   std::cout << "\n";
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
 
-//----------------------------------------------------------------------------//
-// Perform a couple of HIP sorts...
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform a couple of HIP sorts...
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running HIP sort_pairs (non-decreasing)...\n";
 
   std::copy_n(in, N, out);
   std::copy_n(in_vals, N, out_vals);
 
-  int* d_out = memoryManager::allocate_gpu<int>(N);
+  int* d_out      = memoryManager::allocate_gpu<int>(N);
   int* d_out_vals = memoryManager::allocate_gpu<int>(N);
 
-  hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));
+  hipErrchk(
+      hipMemcpy(d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice));
 
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement a RAJA pair sort with RAJA::hip_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
-  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here.
   ///
 
-  hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
-  hipErrchk(hipMemcpy( out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
+  hipErrchk(
+      hipMemcpy(out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost));
 
-  //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
+  // checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals,
+  // out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_LESS);
   printArray(out, out_vals, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running HIP stable_sort (non-increasing)...\n";
 
   std::copy_n(in, N, out);
 
-  hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));
 
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement a stable RAJA sort with RAJA::hip_exec execution
-  ///           policy type and an explicit less operation. 
+  ///           policy type and an explicit less operation.
   ///
-  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the 
+  ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' near the
   ///                 top of the file if you want to use it here.
   ///
 
-  hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
 
-  //checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
+  // checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_GREATER);
   printArray(out, N);
   std::cout << "\n";
@@ -396,11 +410,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
-//
-// Clean up.
-//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(in);
   memoryManager::deallocate(out);
 

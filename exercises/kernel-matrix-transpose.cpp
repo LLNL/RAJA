@@ -48,7 +48,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
 // clang-format on
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA matrix transpose exercise...\n";
@@ -64,8 +64,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int *A = memoryManager::allocate<int>(N_r * N_c);
-  int *At = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
+  int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
   // In the following implementations of matrix transpose, we
@@ -81,12 +81,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
       Aview(row, col) = col;
     }
   }
-  //printResult<int>(Aview, N_r, N_c);
+  // printResult<int>(Aview, N_r, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of matrix transpose...\n";
@@ -94,9 +96,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   // _cstyle_mattranspose_start
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
-        Atview(col, row) = Aview(row, col);
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
+      Atview(col, row) = Aview(row, col);
     }
   }
   // _cstyle_mattranspose_end
@@ -108,13 +112,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // The following RAJA variants use the RAJA::kernel method to carryout the
-  // transpose. 
+  // transpose.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
-  // Iterations inside a RAJA loop is given by their global iteration number. 
+  // Iterations inside a RAJA loop is given by their global iteration number.
   //
-//RAJA::TypedRangeSegment<int> row_Range(0, N_r);
-//RAJA::TypedRangeSegment<int> col_Range(0, N_c);
+  // RAJA::TypedRangeSegment<int> row_Range(0, N_r);
+  // RAJA::TypedRangeSegment<int> col_Range(0, N_c);
 
   //----------------------------------------------------------------------------//
   std::cout << "\n Running sequential matrix transpose ...\n";
@@ -122,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // The following policy carries out the transpose
-  // using sequential loops. 
+  // using sequential loops.
   //
   // _raja_mattranspose_start
 
@@ -131,9 +135,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement a sequential RAJA::kernel execution policy for a
   ///           basic matrix transpose.
-  ///   
+  ///
   ///           Uncomment 'row_Range' and 'col_Range' objects above so they
-  ///           can be used in the kernel. 
+  ///           can be used in the kernel.
   ///
 
   ///
@@ -153,7 +157,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // printResult<int>(Atview, N_c, N_r);
 //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running openmp matrix transpose -  parallel top inner loop...\n";
+  std::cout
+      << "\n Running openmp matrix transpose -  parallel top inner loop...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -167,9 +172,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement an openmp RAJA::kernel execution policy for a
   ///           basic matrix transpose.
-  ///   
+  ///
   ///           Uncomment 'row_Range' and 'col_Range' objects above so they
-  ///           can be used in the kernel. 
+  ///           can be used in the kernel.
   ///
 
   ///
@@ -178,7 +183,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Uncomment this code block.
   ///
   /*
-  RAJA::kernel<KERNEL_EXEC_POL_OMP>( RAJA::make_tuple(col_Range, row_Range), 
+  RAJA::kernel<KERNEL_EXEC_POL_OMP>( RAJA::make_tuple(col_Range, row_Range),
     [=](int col, int row) {
       Atview(col, row) = Aview(row, col);
   });
@@ -187,13 +192,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running cuda matrix transpose ...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
-  
+
   // _raja_mattranspose_cuda_start
 
   ///
@@ -201,9 +206,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// EXERCISE: Implement a CUDA RAJA::kernel execution policy for a
   ///           basic matrix transpose.
-  ///   
+  ///
   ///           Uncomment 'row_Range' and 'col_Range' objects above so they
-  ///           can be used in the kernel. 
+  ///           can be used in the kernel.
   ///
 
   ///
@@ -212,7 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// EXERCISE: Uncomment this code block.
   ///
   /*
-  RAJA::kernel<KERNEL_EXEC_POL_CUDA>( RAJA::make_tuple(col_Range, row_Range), 
+  RAJA::kernel<KERNEL_EXEC_POL_CUDA>( RAJA::make_tuple(col_Range, row_Range),
     [=] RAJA_DEVICE (int col, int row) {
       Atview(col, row) = Aview(row, col);
   });
@@ -220,10 +225,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _raja_mattranspose_cuda_end
 
   checkResult<int>(Atview, N_c, N_r);
-  //printResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   //
   // Clean up.
@@ -234,7 +239,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n DONE!...\n";
 
   return 0;
-} 
+}
 
 //
 // Function to check result and report P/F.

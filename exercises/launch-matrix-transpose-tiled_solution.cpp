@@ -60,7 +60,7 @@ void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
 // clang-format on
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nRAJA tiled matrix transpose example...\n";
@@ -81,8 +81,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int *A = memoryManager::allocate<int>(N_r * N_c);
-  int *At = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
+  int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
   // In the following implementations of tiled matrix transpose, we
@@ -98,12 +98,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
       Aview(row, col) = col;
     }
   }
-  //printResult<int>(Aview, N_r, N_c);
+  // printResult<int>(Aview, N_r, N_c);
 
 
   //----------------------------------------------------------------------------//
@@ -115,30 +117,34 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dimr; ++by) {
-    for (int bx = 0; bx < outer_Dimc; ++bx) {
+  for (int by = 0; by < outer_Dimr; ++by)
+  {
+    for (int bx = 0; bx < outer_Dimc; ++bx)
+    {
       //
       // (1) Loops to iterate over tile entries
       //
-      for (int ty = 0; ty < TILE_DIM; ++ty) {
-        for (int tx = 0; tx < TILE_DIM; ++tx) {
+      for (int ty = 0; ty < TILE_DIM; ++ty)
+      {
+        for (int tx = 0; tx < TILE_DIM; ++tx)
+        {
 
           int col = bx * TILE_DIM + tx;  // Matrix column index
           int row = by * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c) {
+          if (row < N_r && col < N_c)
+          {
             Atview(col, row) = Aview(row, col);
           }
         }
       }
-
     }
   }
   // _cstyle_tiled_mattranspose_end
 
   checkResult<int>(Atview, N_c, N_r);
-  //printResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
   //----------------------------------------------------------------------------//
 
   //
@@ -163,10 +169,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // tile_fixed corresponds to the dimension size of the tile.
   //
   // _raja_tiled_mattranspose_start
-  using loop_pol_1 = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using loop_pol_1      = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_1 = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
-// clang-format off
+  // clang-format off
   RAJA::launch<launch_policy_1>(RAJA::LaunchParams(), //LaunchParams may be empty when running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
@@ -187,14 +193,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _raja_tiled_mattranspose_end
-// clang-format on
+  // clang-format on
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
 //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running openmp tiled matrix transpose -  parallel top inner loop...\n";
+  std::cout << "\n Running openmp tiled matrix transpose -  parallel top inner "
+               "loop...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -202,11 +209,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This policy loops over tiles sequentially while exposing parallelism on
   // one of the inner loops.
   //
-  using omp_for_pol_2 = RAJA::LoopPolicy<RAJA::omp_for_exec>;
-  using loop_pol_2 = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using omp_for_pol_2   = RAJA::LoopPolicy<RAJA::omp_for_exec>;
+  using loop_pol_2      = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_2 = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
-// clang-format off
+  // clang-format off
   RAJA::launch<launch_policy_2>(
     RAJA::LaunchParams(), //LaunchParams may be empty when running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
@@ -228,13 +235,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
 
-// clang-format on
+  // clang-format on
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << "\n Running cuda tiled matrix transpose ...\n";
@@ -243,9 +250,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   constexpr int c_block_sz = TILE_DIM;
   constexpr int r_block_sz = TILE_DIM;
-  const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
-  const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
-  
+  const int n_blocks_c     = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
+  const int n_blocks_r     = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
+
   // _raja_mattranspose_cuda_start
   using cuda_teams_y = RAJA::LoopPolicy<RAJA::cuda_block_y_direct>;
   using cuda_teams_x = RAJA::LoopPolicy<RAJA::cuda_block_x_direct>;
@@ -254,9 +261,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using cuda_threads_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_direct>;
 
   const bool cuda_async = false;
-  using cuda_launch_policy = RAJA::LaunchPolicy<RAJA::cuda_launch_t<cuda_async>>;
+  using cuda_launch_policy =
+      RAJA::LaunchPolicy<RAJA::cuda_launch_t<cuda_async>>;
 
-// clang-format off
+  // clang-format off
   RAJA::launch<cuda_launch_policy>(
     RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
                      RAJA::Threads(c_block_sz, r_block_sz)),
@@ -279,13 +287,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _raja_mattranspose_cuda_end
-// clang-format on
+  // clang-format on
 
   checkResult<int>(Atview, N_c, N_r);
-  //printResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
   std::cout << "\n Running hip tiled matrix transpose ...\n";
@@ -297,13 +305,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<DIM>> d_Atview(d_At, N_c, N_r);
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
-  hipErrchk(hipMemcpy( d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_A, A, N_r * N_c * sizeof(int), hipMemcpyHostToDevice));
+  hipErrchk(
+      hipMemcpy(d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice));
 
   constexpr int c_block_sz = TILE_DIM;
   constexpr int r_block_sz = TILE_DIM;
-  const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
-  const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
+  const int n_blocks_c     = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
+  const int n_blocks_r     = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
   using hip_teams_y = RAJA::LoopPolicy<RAJA::hip_block_y_direct>;
   using hip_teams_x = RAJA::LoopPolicy<RAJA::hip_block_x_direct>;
@@ -311,10 +320,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using hip_threads_y = RAJA::LoopPolicy<RAJA::hip_thread_y_direct>;
   using hip_threads_x = RAJA::LoopPolicy<RAJA::hip_thread_x_direct>;
 
-  const bool hip_async = false;
+  const bool hip_async    = false;
   using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<hip_async>>;
 
-// clang-format off
+  // clang-format off
   RAJA::launch<hip_launch_policy>(
     RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
                      RAJA::Threads(c_block_sz, r_block_sz)),
@@ -337,10 +346,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
 
-// clang-format on
-  hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
+  // clang-format on
+  hipErrchk(
+      hipMemcpy(At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost));
   checkResult<int>(Atview, N_c, N_r);
-  //printResult<int>(Atview, N_c, N_r);
+  // printResult<int>(Atview, N_c, N_r);
 #endif
 
   //----------------------------------------------------------------------------//
