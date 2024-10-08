@@ -51,7 +51,7 @@ public:
   using ElapsedType = double;
 
 private:
-  using TimeType     = timeval;
+  using TimeType = timeval;
   using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
@@ -104,13 +104,14 @@ public:
   using ElapsedType = double;
 
 private:
-  using ClockType    = std::chrono::steady_clock;
-  using TimeType     = ClockType::time_point;
+  using ClockType = std::chrono::steady_clock;
+  using TimeType = ClockType::time_point;
   using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
   ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), telapsed(0)
-  {}
+  {
+  }
 
   void start() { tstart = ClockType::now(); }
 
@@ -173,7 +174,7 @@ public:
 
   void reset()
   {
-    stime_elapsed  = 0;
+    stime_elapsed = 0;
     nstime_elapsed = 0;
   }
 

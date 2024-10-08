@@ -13,38 +13,37 @@
 #include <numeric>
 #include <vector>
 
-template <typename IDX_TYPE,
-          typename DATA_TYPE,
+template <typename IDX_TYPE, typename DATA_TYPE,
           typename SEG_TYPE,
-          typename EXEC_POLICY,
-          typename REDUCE_POLICY>
+          typename EXEC_POLICY, typename REDUCE_POLICY>
 void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
                                   camp::resources::Resource working_res)
 {
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
-  IDX_TYPE idx_len  = static_cast<IDX_TYPE>(seg_idx.size());
+  IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
   DATA_TYPE* working_array;
   DATA_TYPE* check_array;
   DATA_TYPE* test_array;
 
-  allocateForallTestData<DATA_TYPE>(data_len, working_res, &working_array,
-                                    &check_array, &test_array);
+  allocateForallTestData<DATA_TYPE>(data_len,
+                                    working_res,
+                                    &working_array,
+                                    &check_array,
+                                    &test_array);
 
-  const int modval          = 100;
-  const DATA_TYPE min_init  = modval + 1;
+  const int modval = 100;
+  const DATA_TYPE min_init = modval+1;
   const DATA_TYPE small_min = -modval;
 
-  for (IDX_TYPE i = 0; i < data_len; ++i)
-  {
-    test_array[i] = static_cast<DATA_TYPE>(rand() % modval);
+  for (IDX_TYPE i = 0; i < data_len; ++i) {
+    test_array[i] = static_cast<DATA_TYPE>( rand() % modval );
   }
 
   DATA_TYPE ref_min = min_init;
-  for (IDX_TYPE i = 0; i < idx_len; ++i)
-  {
-    ref_min = RAJA_MIN(test_array[seg_idx[i]], ref_min);
+  for (IDX_TYPE i = 0; i < idx_len; ++i) {
+    ref_min = RAJA_MIN(test_array[ seg_idx[i] ], ref_min); 
   }
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
@@ -53,12 +52,10 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> mininit(small_min);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min(min_init);
 
-  RAJA::forall<EXEC_POLICY>(seg,
-                            [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
-                            {
-                              mininit.min(working_array[idx]);
-                              min.min(working_array[idx]);
-                            });
+  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+    mininit.min( working_array[idx] );
+    min.min( working_array[idx] );
+  });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(mininit.get()), small_min);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min);
@@ -66,20 +63,24 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
   min.reset(min_init);
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), min_init);
 
-  DATA_TYPE factor = 3;
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
-                            { min.min(working_array[idx] * factor); });
+  DATA_TYPE factor = 3; 
+  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+    min.min( working_array[idx] * factor);
+  });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
 
   factor = 2;
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx)
-                            { min.min(working_array[idx] * factor); });
+  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) { 
+    min.min( working_array[idx] * factor);
+  });
 
   ASSERT_EQ(static_cast<DATA_TYPE>(min.get()), ref_min * factor);
+   
 
-
-  deallocateForallTestData<DATA_TYPE>(working_res, working_array, check_array,
+  deallocateForallTestData<DATA_TYPE>(working_res,
+                                      working_array,
+                                      check_array,
                                       test_array);
 }
 
@@ -87,7 +88,8 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
 TYPED_TEST_SUITE_P(ForallReduceMinBasicTest);
 template <typename T>
 class ForallReduceMinBasicTest : public ::testing::Test
-{};
+{
+};
 
 TYPED_TEST_P(ForallReduceMinBasicTest, ReduceMinBasicForall)
 {
@@ -97,66 +99,70 @@ TYPED_TEST_P(ForallReduceMinBasicTest, ReduceMinBasicForall)
   using EXEC_POLICY   = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
 
-  camp::resources::Resource working_res {WORKING_RES::get_default()};
+  camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   std::vector<IDX_TYPE> seg_idx;
 
-  // Range segment tests
-  RAJA::TypedRangeSegment<IDX_TYPE> r1(0, 28);
+// Range segment tests
+  RAJA::TypedRangeSegment<IDX_TYPE> r1( 0, 28 );
   RAJA::getIndices(seg_idx, r1);
   ForallReduceMinBasicTestImpl<IDX_TYPE, DATA_TYPE,
-                               RAJA::TypedRangeSegment<IDX_TYPE>, EXEC_POLICY,
-                               REDUCE_POLICY>(r1, seg_idx, working_res);
+                               RAJA::TypedRangeSegment<IDX_TYPE>,
+                               EXEC_POLICY, REDUCE_POLICY>(
+                                 r1, seg_idx, working_res);
 
   seg_idx.clear();
-  RAJA::TypedRangeSegment<IDX_TYPE> r2(3, 642);
+  RAJA::TypedRangeSegment<IDX_TYPE> r2( 3, 642 );
   RAJA::getIndices(seg_idx, r2);
   ForallReduceMinBasicTestImpl<IDX_TYPE, DATA_TYPE,
-                               RAJA::TypedRangeSegment<IDX_TYPE>, EXEC_POLICY,
-                               REDUCE_POLICY>(r2, seg_idx, working_res);
+                               RAJA::TypedRangeSegment<IDX_TYPE>,
+                               EXEC_POLICY, REDUCE_POLICY>(
+                                 r2, seg_idx, working_res);
 
   seg_idx.clear();
-  RAJA::TypedRangeSegment<IDX_TYPE> r3(0, 2057);
+  RAJA::TypedRangeSegment<IDX_TYPE> r3( 0, 2057 );
   RAJA::getIndices(seg_idx, r3);
   ForallReduceMinBasicTestImpl<IDX_TYPE, DATA_TYPE,
-                               RAJA::TypedRangeSegment<IDX_TYPE>, EXEC_POLICY,
-                               REDUCE_POLICY>(r3, seg_idx, working_res);
+                               RAJA::TypedRangeSegment<IDX_TYPE>,
+                               EXEC_POLICY, REDUCE_POLICY>(
+                                 r3, seg_idx, working_res);
 
-  // Range-stride segment tests
+// Range-stride segment tests
   seg_idx.clear();
-  RAJA::TypedRangeStrideSegment<IDX_TYPE> r4(0, 188, 2);
+  RAJA::TypedRangeStrideSegment<IDX_TYPE> r4( 0, 188, 2 );
   RAJA::getIndices(seg_idx, r4);
   ForallReduceMinBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                               EXEC_POLICY, REDUCE_POLICY>(r4, seg_idx,
-                                                           working_res);
+                               EXEC_POLICY, REDUCE_POLICY>(
+                                 r4, seg_idx, working_res);
 
   seg_idx.clear();
-  RAJA::TypedRangeStrideSegment<IDX_TYPE> r5(3, 1029, 3);
+  RAJA::TypedRangeStrideSegment<IDX_TYPE> r5( 3, 1029, 3 );
   RAJA::getIndices(seg_idx, r5);
   ForallReduceMinBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                RAJA::TypedRangeStrideSegment<IDX_TYPE>,
-                               EXEC_POLICY, REDUCE_POLICY>(r5, seg_idx,
-                                                           working_res);
+                               EXEC_POLICY, REDUCE_POLICY>(
+                                 r5, seg_idx, working_res);
 
-  // List segment tests
+// List segment tests
   seg_idx.clear();
   IDX_TYPE last = 10567;
-  srand(time(NULL));
-  for (IDX_TYPE i = 0; i < last; ++i)
-  {
-    IDX_TYPE randval = IDX_TYPE(rand() % RAJA::stripIndexType(last));
-    if (i < randval)
-    {
+  srand( time(NULL) );
+  for (IDX_TYPE i = 0; i < last; ++i) {
+    IDX_TYPE randval = IDX_TYPE( rand() % RAJA::stripIndexType(last) );
+    if ( i < randval ) {
       seg_idx.push_back(i);
     }
   }
-  RAJA::TypedListSegment<IDX_TYPE> l1(&seg_idx[0], seg_idx.size(), working_res);
+  RAJA::TypedListSegment<IDX_TYPE> l1( &seg_idx[0], seg_idx.size(),
+                                       working_res );
   ForallReduceMinBasicTestImpl<IDX_TYPE, DATA_TYPE,
-                               RAJA::TypedListSegment<IDX_TYPE>, EXEC_POLICY,
-                               REDUCE_POLICY>(l1, seg_idx, working_res);
+                               RAJA::TypedListSegment<IDX_TYPE>,
+                               EXEC_POLICY, REDUCE_POLICY>(
+                                 l1, seg_idx, working_res);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallReduceMinBasicTest, ReduceMinBasicForall);
+REGISTER_TYPED_TEST_SUITE_P(ForallReduceMinBasicTest,
+                            ReduceMinBasicForall);
 
 #endif  // __TEST_FORALL_BASIC_REDUCEMIN_HPP__

@@ -12,11 +12,11 @@
 #include "tests/test-reducer-reset.hpp"
 
 #if defined(RAJA_ENABLE_HIP)
-using HipReducerResetTypes =
-    Test<camp::cartesian_product<HipReducerPolicyList,
+using HipReducerResetTypes = 
+  Test< camp::cartesian_product< HipReducerPolicyList,
                                  DataTypeList,
                                  HipResourceList,
-                                 HipUnitTestPolicyList>>::Types;
+                                 HipUnitTestPolicyList > >::Types;
 
 
 INSTANTIATE_TYPED_TEST_SUITE_P(HipResetTest,

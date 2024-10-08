@@ -23,27 +23,26 @@
 namespace RAJA
 {
 
-namespace internal
-{
+namespace internal {
 
 namespace expt
 {
 
 
-/*!
- * Provides architectural details for a given architecture and data type.
- */
-template <typename REGISTER_POLICY, typename T>
-struct RegisterTraits;
-/*
- * using element_type = T;
- * using register_policy = REGISTER_POLICY;
- * static constexpr camp::idx s_num_bits = X;
- * static constexpr camp::idx s_num_elem = Y;
- *
- */
-}  // namespace expt
-}  // namespace internal
+  /*!
+   * Provides architectural details for a given architecture and data type.
+   */
+  template<typename REGISTER_POLICY, typename T>
+  struct RegisterTraits;
+  /*
+   * using element_type = T;
+   * using register_policy = REGISTER_POLICY;
+   * static constexpr camp::idx s_num_bits = X;
+   * static constexpr camp::idx s_num_elem = Y;
+   *
+   */
+} //namespace expt
+} //namespace internal
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -55,8 +54,7 @@ namespace expt
 {
 
 #ifdef __AVX512F__
-struct avx512_register
-{};
+struct avx512_register {};
 
 #ifndef RAJA_TENSOR_REGISTER_TYPE
 #define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::avx512_register
@@ -65,8 +63,7 @@ struct avx512_register
 
 
 #ifdef __AVX2__
-struct avx2_register
-{};
+struct avx2_register {};
 
 #ifndef RAJA_TENSOR_REGISTER_TYPE
 #define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::avx2_register
@@ -75,8 +72,7 @@ struct avx2_register
 
 
 #ifdef __AVX__
-struct avx_register
-{};
+struct avx_register {};
 
 #ifndef RAJA_TENSOR_REGISTER_TYPE
 #define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::avx_register
@@ -89,8 +85,7 @@ struct avx_register
 /*!
  * A CUDA warp distributed vector register
  */
-struct cuda_warp_register
-{};
+struct cuda_warp_register {};
 
 #endif
 
@@ -101,14 +96,12 @@ struct cuda_warp_register
  * A HIP wavefront distributed vector register
  * On AMD GPUs this is rally just a vector register
  */
-struct hip_wave_register
-{};
+struct hip_wave_register {};
 
 #endif
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
-struct scalar_register
-{};
+struct scalar_register {};
 
 #ifndef RAJA_TENSOR_REGISTER_TYPE
 #define RAJA_TENSOR_REGISTER_TYPE RAJA::expt::scalar_register
@@ -116,12 +109,13 @@ struct scalar_register
 #endif
 
 
-// This sets the default SIMD register that will be used
-using default_register = RAJA_TENSOR_REGISTER_TYPE;
+  // This sets the default SIMD register that will be used
+  using default_register = RAJA_TENSOR_REGISTER_TYPE;
 
 
-}  // namespace expt
-}  // namespace RAJA
+} // namespace expt
+} // namespace RAJA
+
 
 
 //

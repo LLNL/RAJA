@@ -15,4 +15,4 @@
 constexpr int tile_dim_x = 16;
 constexpr int tile_dim_y = 16;
 
-#endif  // __RAJA_test_kernel_tile_size_HPP__
+#endif // __RAJA_test_kernel_tile_size_HPP__

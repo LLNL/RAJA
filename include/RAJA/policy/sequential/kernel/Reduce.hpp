@@ -34,12 +34,10 @@ template <template <typename...> class ReduceOperator,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>,
-    Types>
-{
+    statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>, Types> {
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data&& data)
+  static RAJA_INLINE void exec(Data &&data)
   {
     // since a sequential reduction is a NOP, and the single thread always
     // has the reduced value, this is just a passthrough to the enclosed

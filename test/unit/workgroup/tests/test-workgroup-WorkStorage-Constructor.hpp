@@ -20,26 +20,32 @@
 #include <cstddef>
 
 
-template <typename StoragePolicy, typename DispatchTyper, typename Allocator>
+template <typename StoragePolicy,
+          typename DispatchTyper,
+          typename Allocator
+          >
 void testWorkGroupWorkStorageConstructor()
 {
   bool success = true;
 
   static constexpr auto platform = RAJA::Platform::host;
-  using DispatchPolicy           = typename DispatchTyper::template type<>;
-  using Dispatcher_type = RAJA::detail::Dispatcher<platform, DispatchPolicy,
-                                                   void, void*, bool*, bool*>;
-  using WorkStorage_type =
-      RAJA::detail::WorkStorage<StoragePolicy, Allocator, Dispatcher_type>;
+  using DispatchPolicy = typename DispatchTyper::template type<>;
+  using Dispatcher_type = RAJA::detail::Dispatcher<
+      platform, DispatchPolicy, void, void*, bool*, bool*>;
+  using WorkStorage_type = RAJA::detail::WorkStorage<
+                                                      StoragePolicy,
+                                                      Allocator,
+                                                      Dispatcher_type
+                                                    >;
 
   {
-    auto test_empty = [&](WorkStorage_type& container)
-    {
+    auto test_empty = [&](WorkStorage_type& container) {
+
       ASSERT_EQ(container.size(), (size_t)(0));
       ASSERT_EQ(container.storage_size(), (size_t)0);
     };
 
-    WorkStorage_type container(Allocator {});
+    WorkStorage_type container(Allocator{});
 
     test_empty(container);
 
@@ -54,7 +60,7 @@ void testWorkGroupWorkStorageConstructor()
     test_empty(container2);
 
 
-    WorkStorage_type container3(Allocator {});
+    WorkStorage_type container3(Allocator{});
     container3 = std::move(container2);
 
     test_empty(container2);
@@ -67,20 +73,19 @@ void testWorkGroupWorkStorageConstructor()
 
 template <typename T>
 class WorkGroupBasicWorkStorageConstructorUnitTest : public ::testing::Test
-{};
+{
+};
 
 TYPED_TEST_SUITE_P(WorkGroupBasicWorkStorageConstructorUnitTest);
 
 
-TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest,
-             BasicWorkGroupWorkStorageConstructor)
+TYPED_TEST_P(WorkGroupBasicWorkStorageConstructorUnitTest, BasicWorkGroupWorkStorageConstructor)
 {
   using StoragePolicy = typename camp::at<TypeParam, camp::num<0>>::type;
   using DispatchTyper = typename camp::at<TypeParam, camp::num<1>>::type;
-  using Allocator     = typename camp::at<TypeParam, camp::num<2>>::type;
+  using Allocator = typename camp::at<TypeParam, camp::num<2>>::type;
 
-  testWorkGroupWorkStorageConstructor<StoragePolicy, DispatchTyper,
-                                      Allocator>();
+  testWorkGroupWorkStorageConstructor< StoragePolicy, DispatchTyper, Allocator >();
 }
 
 

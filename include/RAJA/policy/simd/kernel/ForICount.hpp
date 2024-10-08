@@ -42,31 +42,26 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <camp::idx_t ArgumentId,
-          typename ParamId,
-          typename... EnclosedStmts,
-          typename Types>
+template <camp::idx_t ArgumentId, typename ParamId,
+          typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::
-        ForICount<ArgumentId, ParamId, RAJA::simd_exec, EnclosedStmts...>,
-    Types>
-{
+    statement::ForICount<ArgumentId, ParamId, RAJA::simd_exec,
+                         EnclosedStmts...>, Types> {
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data&& data)
+  static RAJA_INLINE void exec(Data &&data)
   {
 
     // Set the argument type for this loop
     using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
-    auto iter     = get<ArgumentId>(data.segment_tuple);
-    auto begin    = std::begin(iter);
-    auto end      = std::end(iter);
+    auto iter = get<ArgumentId>(data.segment_tuple);
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
     auto distance = std::distance(begin, end);
 
     RAJA_SIMD
-    for (decltype(distance) i = 0; i < distance; ++i)
-    {
+    for (decltype(distance) i = 0; i < distance; ++i) {
 
       // Offsets and parameters need to be privatized
       data.template assign_offset<ArgumentId>(i);
@@ -74,11 +69,10 @@ struct StatementExecutor<
 
       // Privatize data for SIMD correctness reasons
       using RAJA::internal::thread_privatize;
-      auto privatizer    = thread_privatize(data);
+      auto privatizer = thread_privatize(data);
       auto& private_data = privatizer.get_priv();
 
-      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(
-          private_data);
+      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(private_data);
     }
   }
 };
@@ -87,4 +81,4 @@ struct StatementExecutor<
 }  // end namespace RAJA
 
 
-#endif
+#endif 

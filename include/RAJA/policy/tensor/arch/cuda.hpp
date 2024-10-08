@@ -21,11 +21,11 @@
 #ifndef RAJA_policy_tensor_arch_cuda_HPP
 #define RAJA_policy_tensor_arch_cuda_HPP
 
-#include <RAJA/policy/tensor/arch/cuda/traits.hpp>
-#include <RAJA/policy/tensor/arch/cuda/cuda_warp.hpp>
+#include<RAJA/policy/tensor/arch/cuda/traits.hpp>
+#include<RAJA/policy/tensor/arch/cuda/cuda_warp.hpp>
 
 
 #endif
 
 
-#endif  // RAJA_ENABLE_CUDA
+#endif // RAJA_ENABLE_CUDA

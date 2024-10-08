@@ -32,12 +32,12 @@ namespace detail
 {
 
 /*!
- * Populate and return a Dispatcher object
- */
-template <typename T, typename Dispatcher_T>
+* Populate and return a Dispatcher object
+*/
+template < typename T, typename Dispatcher_T >
 inline const Dispatcher_T* get_Dispatcher(omp_work const&)
 {
-  return get_Dispatcher<T, Dispatcher_T>(seq_work {});
+  return get_Dispatcher<T, Dispatcher_T>(seq_work{});
 }
 
 }  // namespace detail

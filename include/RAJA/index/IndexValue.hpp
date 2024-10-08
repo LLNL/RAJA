@@ -28,8 +28,8 @@
 namespace RAJA
 {
 
-struct IndexValueBase
-{};
+struct IndexValueBase {
+};
 
 /*!
  * \brief Strongly typed "integer" class.
@@ -44,17 +44,16 @@ struct IndexValueBase
  * Yes, this uses the curiously-recurring template pattern.
  */
 template <typename TYPE, typename VALUE = RAJA::Index_type>
-struct IndexValue : public IndexValueBase
-{
+struct IndexValue : public IndexValueBase {
 
   using value_type = VALUE;
 
   //! Default constructor initializes value to 0.
-  RAJA_INLINE constexpr IndexValue()                   = default;
-  constexpr RAJA_INLINE IndexValue(IndexValue const&)  = default;
-  constexpr RAJA_INLINE IndexValue(IndexValue&&)       = default;
-  RAJA_INLINE IndexValue& operator=(IndexValue const&) = default;
-  RAJA_INLINE IndexValue& operator=(IndexValue&&)      = default;
+  RAJA_INLINE constexpr IndexValue() = default;
+  constexpr RAJA_INLINE IndexValue(IndexValue const &) = default;
+  constexpr RAJA_INLINE IndexValue(IndexValue &&) = default;
+  RAJA_INLINE IndexValue &operator=(IndexValue const &) = default;
+  RAJA_INLINE IndexValue &operator=(IndexValue &&) = default;
 
   /*!
    * \brief Explicit constructor.
@@ -62,13 +61,14 @@ struct IndexValue : public IndexValueBase
    */
   RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit IndexValue(value_type v)
       : value(v)
-  {}
+  {
+  }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE value_type& operator*() { return value; }
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator*() { return value; }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE const value_type& operator*() const
+  RAJA_HOST_DEVICE RAJA_INLINE const value_type &operator*() const
   {
     return value;
   }
@@ -82,10 +82,10 @@ struct IndexValue : public IndexValueBase
   }
 
   //! preincrement stored index
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator++()
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator++()
   {
     value++;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   //! postdecrement -- returns a copy
@@ -97,10 +97,10 @@ struct IndexValue : public IndexValueBase
   }
 
   //! preincrement stored index
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator--()
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator--()
   {
     value--;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   //! addition to underlying index from an Index_type
@@ -163,52 +163,52 @@ struct IndexValue : public IndexValueBase
     return TYPE(value % a.value);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator+=(value_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(value_type x)
   {
     value += x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator+=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(TYPE x)
   {
     value += x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator-=(value_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(value_type x)
   {
     value -= x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator-=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(TYPE x)
   {
     value -= x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator*=(value_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(value_type x)
   {
     value *= x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator*=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(TYPE x)
   {
     value *= x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator/=(value_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(value_type x)
   {
     value /= x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator/=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(TYPE x)
   {
     value /= x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE bool operator<(value_type x) const
@@ -334,22 +334,18 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE
   return val;
 }
 
-namespace internal
-{
-template <typename FROM, typename Enable = void>
-struct StripIndexTypeT
-{
-  using type = FROM;
+namespace internal{
+template<typename FROM, typename Enable = void>
+struct StripIndexTypeT {
+    using type = FROM;
 };
 
-template <typename FROM>
-struct StripIndexTypeT<
-    FROM,
-    typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
+template<typename FROM>
+struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
 {
-  using type = typename FROM::value_type;
+    using type = typename FROM::value_type;
 };
-}  // namespace internal
+} // namespace internal
 
 /*!
  * \brief Strips a strongly typed index to its underlying type
@@ -357,7 +353,7 @@ struct StripIndexTypeT<
  *
  * \param FROM the original type
  */
-template <typename FROM>
+template<typename FROM>
 using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 
 /*!
@@ -366,11 +362,12 @@ using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
  *
  * \param FROM the original type
  */
-template <typename FROM>
-using make_signed_t =
-    typename std::conditional<std::is_floating_point<FROM>::value,
-                              std::common_type<FROM>,
-                              std::make_signed<FROM>>::type::type;
+template<typename FROM>
+using make_signed_t = typename std::conditional < 
+                                  std::is_floating_point<FROM>::value,
+                                    std::common_type<FROM>,
+                                    std::make_signed<FROM>
+                               >::type::type;
 
 }  // namespace RAJA
 
@@ -379,18 +376,19 @@ using make_signed_t =
  * \param TYPE the name of the type
  * \param NAME a string literal to identify this index type
  */
-#define RAJA_INDEX_VALUE(TYPE, NAME)                                           \
-  class TYPE : public ::RAJA::IndexValue<TYPE>                                 \
-  {                                                                            \
-    using parent = ::RAJA::IndexValue<TYPE>;                                   \
-                                                                               \
-  public:                                                                      \
-    using IndexValueType = TYPE;                                               \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}              \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v)           \
-        : parent::IndexValue(v)                                                \
-    {}                                                                         \
-    static inline std::string getName() { return NAME; }                       \
+#define RAJA_INDEX_VALUE(TYPE, NAME)                                 \
+  class TYPE : public ::RAJA::IndexValue<TYPE>                       \
+  {                                                                  \
+    using parent = ::RAJA::IndexValue<TYPE>;                         \
+                                                                     \
+  public:                                                            \
+    using IndexValueType = TYPE;                                     \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
+        : parent::IndexValue(v)                                      \
+    {                                                                \
+    }                                                                \
+    static inline std::string getName() { return NAME; }             \
   };
 
 /*!
@@ -399,17 +397,17 @@ using make_signed_t =
  * \param IDXT the index types value type
  * \param NAME a string literal to identify this index type
  */
-#define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                                   \
-  class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                           \
-  {                                                                            \
-  public:                                                                      \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                                        \
-        : RAJA::IndexValue<TYPE, IDXT>::IndexValue()                           \
-    {}                                                                         \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)                         \
-        : RAJA::IndexValue<TYPE, IDXT>::IndexValue(v)                          \
-    {}                                                                         \
-    static inline std::string getName() { return NAME; }                       \
+#define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                         \
+  class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                 \
+  {                                                                  \
+  public:                                                            \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                              \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue() {}               \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)               \
+        : RAJA::IndexValue<TYPE,IDXT>::IndexValue(v)                 \
+    {                                                                \
+    }                                                                \
+    static inline std::string getName() { return NAME; }             \
   };
 
 #endif

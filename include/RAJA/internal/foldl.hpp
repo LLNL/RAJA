@@ -44,16 +44,14 @@ template <typename Op, typename... Rest>
 struct foldl_impl;
 
 template <typename Op, typename Arg1>
-struct foldl_impl<Op, Arg1>
-{
+struct foldl_impl<Op, Arg1> {
   using Ret = Arg1;
 };
 
 #if RAJA_HAS_CXX17_IS_INVOCABLE
 
 template <typename Op, typename Arg1, typename Arg2>
-struct foldl_impl<Op, Arg1, Arg2>
-{
+struct foldl_impl<Op, Arg1, Arg2> {
   using Ret = typename std::invoke_result<Op, Arg1, Arg2>::type;
 };
 
@@ -62,22 +60,18 @@ template <typename Op,
           typename Arg2,
           typename Arg3,
           typename... Rest>
-struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>
-{
-  using Ret =
-      typename foldl_impl<Op,
-                          typename std::invoke_result<
-                              Op,
-                              typename std::invoke_result<Op, Arg1, Arg2>::type,
-                              Arg3>::type,
-                          Rest...>::Ret;
+struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
+  using Ret = typename foldl_impl<
+      Op,
+      typename std::invoke_result<Op, typename std::invoke_result<Op, Arg1, Arg2>::type,
+                                      Arg3>::type,
+      Rest...>::Ret;
 };
 
 #else
 
 template <typename Op, typename Arg1, typename Arg2>
-struct foldl_impl<Op, Arg1, Arg2>
-{
+struct foldl_impl<Op, Arg1, Arg2> {
   using Ret = typename std::result_of<Op(Arg1, Arg2)>::type;
 };
 
@@ -86,8 +80,7 @@ template <typename Op,
           typename Arg2,
           typename Arg3,
           typename... Rest>
-struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>
-{
+struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
   using Ret = typename foldl_impl<
       Op,
       typename std::result_of<Op(typename std::result_of<Op(Arg1, Arg2)>::type,
@@ -97,19 +90,20 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>
 
 #endif
 
-}  // namespace detail
+} // namespace detail
 
 template <typename Op, typename Arg1>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto
-foldl(Op&& RAJA_UNUSED_ARG(operation), Arg1&& arg) ->
-    typename detail::foldl_impl<Op, Arg1>::Ret
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(
+    Op&& RAJA_UNUSED_ARG(operation),
+    Arg1&& arg) -> typename detail::foldl_impl<Op, Arg1>::Ret
 {
   return camp::forward<Arg1>(arg);
 }
 
 template <typename Op, typename Arg1, typename Arg2>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto
-foldl(Op&& operation, Arg1&& arg1, Arg2&& arg2) ->
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
+                                                  Arg1&& arg1,
+                                                  Arg2&& arg2) ->
     typename detail::foldl_impl<Op, Arg1, Arg2>::Ret
 {
   return camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
@@ -121,8 +115,11 @@ template <typename Op,
           typename Arg2,
           typename Arg3,
           typename... Rest>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto
-foldl(Op&& operation, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3, Rest&&... rest) ->
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
+                                                  Arg1&& arg1,
+                                                  Arg2&& arg2,
+                                                  Arg3&& arg3,
+                                                  Rest&&... rest) ->
     typename detail::foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>::Ret
 {
   return foldl(camp::forward<Op>(operation),

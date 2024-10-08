@@ -18,30 +18,29 @@
 #include "RAJA_test-forall-execpol.hpp"
 
 // Sequential execution policy types
-using SequentialAsyncForallExecPols       = SequentialForallExecPols;
+using SequentialAsyncForallExecPols = SequentialForallExecPols;
 using SequentialAsyncForallReduceExecPols = SequentialForallReduceExecPols;
 using SequentialAsyncForallAtomicExecPols = SequentialForallAtomicExecPols;
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-using OpenMPAsyncForallExecPols       = OpenMPForallExecPols;
+using OpenMPAsyncForallExecPols = OpenMPForallExecPols;
 using OpenMPAsyncForallReduceExecPols = OpenMPForallReduceExecPols;
 using OpenMPAsyncForallAtomicExecPols = OpenMPForallAtomicExecPols;
 
 #endif  // RAJA_ENABLE_OPENMP
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetAsyncForallExecPols       = OpenMPTargetForallExecPols;
+using OpenMPTargetAsyncForallExecPols = OpenMPTargetForallExecPols;
 using OpenMPTargetAsyncForallReduceExecPols = OpenMPTargetForallReduceExecPols;
 using OpenMPTargetAsyncForallAtomicExecPols = OpenMPTargetForallAtomicExecPols;
 
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaAsyncForallExecPols =
-    camp::list<RAJA::cuda_exec<128, true>,
-               RAJA::cuda_exec<256, true>,
-               RAJA::cuda_exec_explicit<256, 2, true>>;
+using CudaAsyncForallExecPols = camp::list< RAJA::cuda_exec<128, true>,
+                                       RAJA::cuda_exec<256, true>,
+                                       RAJA::cuda_exec_explicit<256,2, true> >;
 
 using CudaAsyncForallReduceExecPols = CudaForallExecPols;
 
@@ -50,8 +49,8 @@ using CudaAsyncForallAtomicExecPols = CudaForallExecPols;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipAsyncForallExecPols =
-    camp::list<RAJA::hip_exec<128, true>, RAJA::hip_exec<256, true>>;
+using HipAsyncForallExecPols = camp::list< RAJA::hip_exec<128, true>,
+                                      RAJA::hip_exec<256, true>  >;
 
 using HipAsyncForallReduceExecPols = HipForallExecPols;
 

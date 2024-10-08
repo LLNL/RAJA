@@ -8,16 +8,16 @@
 
 #include <exception>
 
-class ExceptionPlugin : public RAJA::util::PluginStrategy
+class ExceptionPlugin :
+  public RAJA::util::PluginStrategy
 {
-public:
-  void preLaunch(const RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override
-  {
+  public:
+  void preLaunch(const RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override {
     throw std::runtime_error("preLaunch");
   }
 };
 
-extern "C" RAJA::util::PluginStrategy* getPlugin()
+extern "C" RAJA::util::PluginStrategy *getPlugin()
 {
   return new ExceptionPlugin;
 }

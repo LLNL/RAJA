@@ -6,12 +6,12 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for floating point numeric limits in
+/// Source file containing tests for floating point numeric limits in 
 /// RAJA operators
 ///
 
 #include "RAJA_test-base.hpp"
-#include "RAJA_unit-test-types.hpp"
+#include "RAJA_unit-test-types.hpp" 
 
 #define RAJA_CHECK_LIMITS
 #include "RAJA/util/Operators.hpp"
@@ -20,7 +20,8 @@
 
 template <typename T>
 class FloatLimitsUnitTest : public ::testing::Test
-{};
+{
+};
 
 TYPED_TEST_SUITE_P(FloatLimitsUnitTest);
 

@@ -11,9 +11,7 @@
 template <typename T>
 void allocRegionTestData(int N,
                          camp::resources::Resource work_res,
-                         T** work1,
-                         T** work2,
-                         T** work3,
+                         T** work1, T** work2, T** work3,
                          camp::resources::Resource host_res,
                          T** check)
 {
@@ -26,9 +24,7 @@ void allocRegionTestData(int N,
 
 template <typename T>
 void deallocRegionTestData(camp::resources::Resource work_res,
-                           T* work1,
-                           T* work2,
-                           T* work3,
+                           T* work1, T* work2, T* work3,
                            camp::resources::Resource host_res,
                            T* check)
 {

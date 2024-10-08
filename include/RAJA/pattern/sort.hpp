@@ -46,21 +46,23 @@ inline namespace policy_by_value_interface
 *
 ******************************************************************************
 */
-template <
-    typename ExecPolicy,
-    typename Res,
-    typename Container,
-    typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
+template <typename ExecPolicy,
+          typename Res,
+          typename Container,
+          typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
                       std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
-sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare {})
+sort(ExecPolicy&& p,
+     Res r,
+     Container&& c,
+     Compare comp = Compare{})
 {
   using std::begin;
-  using std::distance;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -69,35 +71,34 @@ sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare {})
 
   auto begin_it = begin(c);
   auto end_it   = end(c);
-  auto N        = distance(begin_it, end_it);
+  auto N = distance(begin_it, end_it);
 
-  if (N > 1)
-  {
-    return impl::sort::unstable(r, std::forward<ExecPolicy>(p), begin_it,
-                                end_it, comp);
-  }
-  else
-  {
+  if (N > 1) {
+    return impl::sort::unstable(r, std::forward<ExecPolicy>(p),
+                                begin_it, end_it, comp);
+  } else {
     return resources::EventProxy<Res>(r);
   }
 }
 ///
-template <
-    typename ExecPolicy,
-    typename Container,
-    typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>,
-    typename Res     = typename resources::get_resource<ExecPolicy>::type>
-concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    type_traits::is_execution_policy<ExecPolicy>,
-    type_traits::is_range<Container>,
-    concepts::negate<
-        std::is_constructible<camp::resources::Resource, Container>>>
-sort(ExecPolicy&& p, Container&& c, Compare comp = Compare {})
+template <typename ExecPolicy,
+          typename Container,
+          typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>,
+          typename Res = typename resources::get_resource<ExecPolicy>::type>
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
+sort(ExecPolicy&& p,
+     Container&& c,
+     Compare comp = Compare{})
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::sort(
-      std::forward<ExecPolicy>(p), r, std::forward<Container>(c), comp);
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<Container>(c),
+      comp);
 }
 
 /*!
@@ -112,21 +113,23 @@ sort(ExecPolicy&& p, Container&& c, Compare comp = Compare {})
 *
 ******************************************************************************
 */
-template <
-    typename ExecPolicy,
-    typename Res,
-    typename Container,
-    typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
+template <typename ExecPolicy,
+          typename Res,
+          typename Container,
+          typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
                       std::is_constructible<camp::resources::Resource, Res>,
                       type_traits::is_range<Container>>
-stable_sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare {})
+stable_sort(ExecPolicy&& p,
+            Res r,
+            Container&& c,
+            Compare comp = Compare{})
 {
   using std::begin;
-  using std::distance;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -135,35 +138,34 @@ stable_sort(ExecPolicy&& p, Res r, Container&& c, Compare comp = Compare {})
 
   auto begin_it = begin(c);
   auto end_it   = end(c);
-  auto N        = distance(begin_it, end_it);
+  auto N = distance(begin_it, end_it);
 
-  if (N > 1)
-  {
-    return impl::sort::stable(r, std::forward<ExecPolicy>(p), begin_it, end_it,
-                              comp);
-  }
-  else
-  {
+  if (N > 1) {
+    return impl::sort::stable(r, std::forward<ExecPolicy>(p),
+                              begin_it, end_it, comp);
+  } else {
     return resources::EventProxy<Res>(r);
   }
 }
 ///
-template <
-    typename ExecPolicy,
-    typename Container,
-    typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>,
-    typename Res     = typename resources::get_resource<ExecPolicy>::type>
-concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    type_traits::is_execution_policy<ExecPolicy>,
-    type_traits::is_range<Container>,
-    concepts::negate<
-        std::is_constructible<camp::resources::Resource, Container>>>
-stable_sort(ExecPolicy&& p, Container&& c, Compare comp = Compare {})
+template <typename ExecPolicy,
+          typename Container,
+          typename Compare = operators::less<RAJA::detail::ContainerVal<Container>>,
+          typename Res = typename resources::get_resource<ExecPolicy>::type>
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<Container>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, Container>>>
+stable_sort(ExecPolicy&& p,
+            Container&& c,
+            Compare comp = Compare{})
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::stable_sort(
-      std::forward<ExecPolicy>(p), r, std::forward<Container>(c), comp);
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<Container>(c),
+      comp);
 }
 
 /*!
@@ -183,8 +185,7 @@ template <typename ExecPolicy,
           typename Res,
           typename KeyContainer,
           typename ValContainer,
-          typename Compare =
-              operators::less<RAJA::detail::ContainerVal<KeyContainer>>>
+          typename Compare = operators::less<RAJA::detail::ContainerVal<KeyContainer>>>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
@@ -195,11 +196,11 @@ sort_pairs(ExecPolicy&& p,
            Res r,
            KeyContainer&& keys,
            ValContainer&& vals,
-           Compare comp = Compare {})
+           Compare comp = Compare{})
 {
   using std::begin;
-  using std::distance;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<KeyContainer>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -210,15 +211,12 @@ sort_pairs(ExecPolicy&& p,
 
   auto begin_key = begin(keys);
   auto end_key   = end(keys);
-  auto N         = distance(begin_key, end_key);
+  auto N = distance(begin_key, end_key);
 
-  if (N > 1)
-  {
-    return impl::sort::unstable_pairs(r, std::forward<ExecPolicy>(p), begin_key,
-                                      end_key, begin(vals), comp);
-  }
-  else
-  {
+  if (N > 1) {
+    return impl::sort::unstable_pairs(r, std::forward<ExecPolicy>(p),
+                                      begin_key, end_key, begin(vals), comp);
+  } else {
     return resources::EventProxy<Res>(r);
   }
 }
@@ -226,25 +224,25 @@ sort_pairs(ExecPolicy&& p,
 template <typename ExecPolicy,
           typename KeyContainer,
           typename ValContainer,
-          typename Compare =
-              operators::less<RAJA::detail::ContainerVal<KeyContainer>>,
+          typename Compare = operators::less<RAJA::detail::ContainerVal<KeyContainer>>,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
-concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    type_traits::is_execution_policy<ExecPolicy>,
-    type_traits::is_range<KeyContainer>,
-    concepts::negate<
-        std::is_constructible<camp::resources::Resource, KeyContainer>>,
-    type_traits::is_range<ValContainer>>
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<KeyContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, KeyContainer>>,
+                      type_traits::is_range<ValContainer>>
 sort_pairs(ExecPolicy&& p,
            KeyContainer&& keys,
            ValContainer&& vals,
-           Compare comp = Compare {})
+           Compare comp = Compare{})
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::sort_pairs(
-      std::forward<ExecPolicy>(p), r, std::forward<KeyContainer>(keys),
-      std::forward<ValContainer>(vals), comp);
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<KeyContainer>(keys),
+      std::forward<ValContainer>(vals),
+      comp);
 }
 
 /*!
@@ -264,8 +262,7 @@ template <typename ExecPolicy,
           typename Res,
           typename KeyContainer,
           typename ValContainer,
-          typename Compare =
-              operators::less<RAJA::detail::ContainerVal<KeyContainer>>>
+          typename Compare = operators::less<RAJA::detail::ContainerVal<KeyContainer>>>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>,
@@ -276,11 +273,11 @@ stable_sort_pairs(ExecPolicy&& p,
                   Res r,
                   KeyContainer&& keys,
                   ValContainer&& vals,
-                  Compare comp = Compare {})
+                  Compare comp = Compare{})
 {
   using std::begin;
-  using std::distance;
   using std::end;
+  using std::distance;
   using T = RAJA::detail::ContainerVal<KeyContainer>;
   static_assert(type_traits::is_binary_function<Compare, bool, T, T>::value,
                 "Compare must model BinaryFunction");
@@ -291,15 +288,12 @@ stable_sort_pairs(ExecPolicy&& p,
 
   auto begin_key = begin(keys);
   auto end_key   = end(keys);
-  auto N         = distance(begin_key, end_key);
+  auto N = distance(begin_key, end_key);
 
-  if (N > 1)
-  {
-    return impl::sort::stable_pairs(r, std::forward<ExecPolicy>(p), begin_key,
-                                    end_key, begin(vals), comp);
-  }
-  else
-  {
+  if (N > 1) {
+    return impl::sort::stable_pairs(r, std::forward<ExecPolicy>(p),
+                                    begin_key, end_key, begin(vals), comp);
+  } else {
     return resources::EventProxy<Res>(r);
   }
 }
@@ -307,28 +301,28 @@ stable_sort_pairs(ExecPolicy&& p,
 template <typename ExecPolicy,
           typename KeyContainer,
           typename ValContainer,
-          typename Compare =
-              operators::less<RAJA::detail::ContainerVal<KeyContainer>>,
+          typename Compare = operators::less<RAJA::detail::ContainerVal<KeyContainer>>,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
-concepts::enable_if_t<
-    resources::EventProxy<Res>,
-    type_traits::is_execution_policy<ExecPolicy>,
-    type_traits::is_range<KeyContainer>,
-    concepts::negate<
-        std::is_constructible<camp::resources::Resource, KeyContainer>>,
-    type_traits::is_range<ValContainer>>
+concepts::enable_if_t<resources::EventProxy<Res>,
+                      type_traits::is_execution_policy<ExecPolicy>,
+                      type_traits::is_range<KeyContainer>,
+                      concepts::negate<std::is_constructible<camp::resources::Resource, KeyContainer>>,
+                      type_traits::is_range<ValContainer>>
 stable_sort_pairs(ExecPolicy&& p,
                   KeyContainer&& keys,
                   ValContainer&& vals,
-                  Compare comp = Compare {})
+                  Compare comp = Compare{})
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::stable_sort_pairs(
-      std::forward<ExecPolicy>(p), r, std::forward<KeyContainer>(keys),
-      std::forward<ValContainer>(vals), comp);
+      std::forward<ExecPolicy>(p),
+      r,
+      std::forward<KeyContainer>(keys),
+      std::forward<ValContainer>(vals),
+      comp);
 }
 
-}  // namespace policy_by_value_interface
+}  // end inline namespace policy_by_value_interface
 
 // =============================================================================
 
@@ -338,12 +332,11 @@ stable_sort_pairs(ExecPolicy&& p,
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-template <typename ExecPolicy,
-          typename... Args,
+template <typename ExecPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
-sort(Args&&... args)
+sort(Args &&... args)
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::sort<ExecPolicy>(
@@ -354,10 +347,10 @@ template <typename ExecPolicy, typename Res, typename... Args>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-sort(Res r, Args&&... args)
+sort(Res r, Args &&... args)
 {
-  return ::RAJA::policy_by_value_interface::sort(ExecPolicy(), r,
-                                                 std::forward<Args>(args)...);
+  return ::RAJA::policy_by_value_interface::sort(
+      ExecPolicy(), r, std::forward<Args>(args)...);
 }
 
 /*!
@@ -366,12 +359,11 @@ sort(Res r, Args&&... args)
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-template <typename ExecPolicy,
-          typename... Args,
+template <typename ExecPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
-stable_sort(Args&&... args)
+stable_sort(Args &&... args)
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::stable_sort<ExecPolicy>(
@@ -382,7 +374,7 @@ template <typename ExecPolicy, typename Res, typename... Args>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-stable_sort(Res r, Args&&... args)
+stable_sort(Res r, Args &&... args)
 {
   return ::RAJA::policy_by_value_interface::stable_sort(
       ExecPolicy(), r, std::forward<Args>(args)...);
@@ -394,12 +386,11 @@ stable_sort(Res r, Args&&... args)
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-template <typename ExecPolicy,
-          typename... Args,
+template <typename ExecPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
-sort_pairs(Args&&... args)
+sort_pairs(Args &&... args)
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::sort_pairs<ExecPolicy>(
@@ -410,7 +401,7 @@ template <typename ExecPolicy, typename Res, typename... Args>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-sort_pairs(Res r, Args&&... args)
+sort_pairs(Res r, Args &&... args)
 {
   return ::RAJA::policy_by_value_interface::sort_pairs(
       ExecPolicy(), r, std::forward<Args>(args)...);
@@ -422,12 +413,11 @@ sort_pairs(Res r, Args&&... args)
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */
-template <typename ExecPolicy,
-          typename... Args,
+template <typename ExecPolicy, typename... Args,
           typename Res = typename resources::get_resource<ExecPolicy>::type>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>>
-stable_sort_pairs(Args&&... args)
+stable_sort_pairs(Args &&... args)
 {
   Res r = Res::get_default();
   return ::RAJA::policy_by_value_interface::stable_sort_pairs<ExecPolicy>(
@@ -438,7 +428,7 @@ template <typename ExecPolicy, typename Res, typename... Args>
 concepts::enable_if_t<resources::EventProxy<Res>,
                       type_traits::is_execution_policy<ExecPolicy>,
                       type_traits::is_resource<Res>>
-stable_sort_pairs(Res r, Args&&... args)
+stable_sort_pairs(Res r, Args &&... args)
 {
   return ::RAJA::policy_by_value_interface::stable_sort_pairs(
       ExecPolicy(), r, std::forward<Args>(args)...);

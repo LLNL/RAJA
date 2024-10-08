@@ -39,10 +39,10 @@ public:
 
   mutex() { omp_init_lock(&m_lock); }
 
-  mutex(const mutex&)            = delete;
-  mutex(mutex&&)                 = delete;
+  mutex(const mutex&) = delete;
+  mutex(mutex&&) = delete;
   mutex& operator=(const mutex&) = delete;
-  mutex& operator=(mutex&&)      = delete;
+  mutex& operator=(mutex&&) = delete;
 
   void lock() { omp_set_lock(&m_lock); }
 
@@ -68,10 +68,10 @@ class lock_guard
 public:
   explicit lock_guard(mutex_type& m) : m_mutex(m) { m_mutex.lock(); }
 
-  lock_guard(const lock_guard&)            = delete;
-  lock_guard(lock_guard&&)                 = delete;
+  lock_guard(const lock_guard&) = delete;
+  lock_guard(lock_guard&&) = delete;
   lock_guard& operator=(const lock_guard&) = delete;
-  lock_guard& operator=(lock_guard&&)      = delete;
+  lock_guard& operator=(lock_guard&&) = delete;
 
   ~lock_guard() { m_mutex.unlock(); }
 

@@ -19,7 +19,8 @@
 
 template <typename T>
 class IntegralLimitsUnitTest : public ::testing::Test
-{};
+{
+};
 
 TYPED_TEST_SUITE_P(IntegralLimitsUnitTest);
 
@@ -34,5 +35,5 @@ TYPED_TEST_P(IntegralLimitsUnitTest, IntegralLimits)
 REGISTER_TYPED_TEST_SUITE_P(IntegralLimitsUnitTest, IntegralLimits);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(IntegralLimitsUnitTests,
-                               IntegralLimitsUnitTest,
-                               UnitIntegralTypes);
+                              IntegralLimitsUnitTest,
+                              UnitIntegralTypes);

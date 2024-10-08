@@ -13,20 +13,18 @@
 
 #include "RAJA_unit-test-types.hpp"
 
-template <typename T>
-class RangeSegmentUnitTest : public ::testing::Test
-{};
+template<typename T>
+class RangeSegmentUnitTest : public ::testing::Test {};
 
 TYPED_TEST_SUITE(RangeSegmentUnitTest, UnitIndexTypes);
 
 
-template <typename T,
-          typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+template< typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
 void NegativeRangeSegConstructorsTest()
-{}
+{
+}
 
-template <typename T,
-          typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+template< typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
 void NegativeRangeSegConstructorsTest()
 {
   RAJA::TypedRangeSegment<T> r1(-10, 7);
@@ -76,13 +74,12 @@ TYPED_TEST(RangeSegmentUnitTest, Swaps)
   ASSERT_EQ(r2, r3);
 }
 
-template <typename T,
-          typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
+template< typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
 void NegativeRangeSegIteratorsTest()
-{}
+{
+}
 
-template <typename T,
-          typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+template< typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
 void NegativeRangeSegIteratorsTest()
 {
   RAJA::TypedRangeSegment<T> r3(-2, 100);
@@ -103,14 +100,13 @@ TYPED_TEST(RangeSegmentUnitTest, Iterators)
 }
 
 template <typename IDX_TYPE,
-          typename std::enable_if<std::is_unsigned<
-              RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+  typename std::enable_if<std::is_unsigned<RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
 void runNegativeIndexSliceTests()
-{}
+{
+}
 
 template <typename IDX_TYPE,
-          typename std::enable_if<std::is_signed<
-              RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
+  typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<IDX_TYPE>>::value>::type* = nullptr>
 void runNegativeIndexSliceTests()
 {
   auto r1 = RAJA::TypedRangeSegment<IDX_TYPE>(-4, 4);
@@ -132,15 +128,15 @@ void runNegativeIndexSliceTests()
 TYPED_TEST(RangeSegmentUnitTest, Slices)
 {
   auto r1 = RAJA::TypedRangeSegment<TypeParam>(0, 125);
-  auto s1 = r1.slice(10, 100);
+  auto s1 = r1.slice(10,100);
 
   ASSERT_EQ(TypeParam(10), *s1.begin());
   ASSERT_EQ(TypeParam(110), *(s1.end()));
   ASSERT_EQ(TypeParam(100), s1.size());
 
-
+ 
   auto r2 = RAJA::TypedRangeSegment<TypeParam>(0, 12);
-  auto s2 = r2.slice(1, 13);
+  auto s2 = r2.slice(1,13);
 
   ASSERT_EQ(TypeParam(1), *s2.begin());
   ASSERT_EQ(TypeParam(12), *(s2.end()));
@@ -148,7 +144,7 @@ TYPED_TEST(RangeSegmentUnitTest, Slices)
 
 
   auto r3 = RAJA::TypedRangeSegment<TypeParam>(1, 125);
-  auto s3 = r3.slice(10, 100);
+  auto s3 = r3.slice(10,100);
 
   ASSERT_EQ(TypeParam(11), *s3.begin());
   ASSERT_EQ(TypeParam(111), *(s3.end()));
@@ -164,7 +160,7 @@ TYPED_TEST(RangeSegmentUnitTest, Equality)
 
   ASSERT_EQ(r1, r2);
 
-  auto r3 = RAJA::TypedRangeSegment<TypeParam>(10, 15);
+  auto r3 = RAJA::TypedRangeSegment<TypeParam>(10,15);
 
   ASSERT_NE(r1, r3);
 }

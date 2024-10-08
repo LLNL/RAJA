@@ -38,8 +38,8 @@ namespace RAJA
 struct omp_parallel_collapse_exec
     : make_policy_pattern_t<RAJA::Policy::openmp,
                             RAJA::Pattern::forall,
-                            RAJA::policy::omp::For>
-{};
+                            RAJA::policy::omp::For> {
+};
 
 namespace internal
 {
@@ -48,15 +48,10 @@ namespace internal
 // Collapsing two loops
 /////////
 
-template <camp::idx_t Arg0,
-          camp::idx_t Arg1,
-          typename... EnclosedStmts,
-          typename Types>
+template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1>,
-                                             EnclosedStmts...>,
-                         Types>
-{
+                                             EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -76,17 +71,14 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
-#pragma omp parallel for private(i0, i1) firstprivate(privatizer)              \
+#pragma omp parallel for private(i0, i1) firstprivate(privatizer) \
     RAJA_COLLAPSE(2)
-    for (i0 = 0; i0 < l0; ++i0)
-    {
-      for (i1 = 0; i1 < l1; ++i1)
-      {
+    for (i0 = 0; i0 < l0; ++i0) {
+      for (i1 = 0; i1 < l1; ++i1) {
         auto& private_data = privatizer.get_priv();
         private_data.template assign_offset<Arg0>(i0);
         private_data.template assign_offset<Arg1>(i1);
-        execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(
-            private_data);
+        execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(private_data);
       }
     }
   }
@@ -100,9 +92,7 @@ template <camp::idx_t Arg0,
           typename Types>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2>,
-                                             EnclosedStmts...>,
-                         Types>
-{
+                                             EnclosedStmts...>, Types> {
 
 
   template <typename Data>
@@ -111,9 +101,9 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     const auto l0 = segment_length<Arg0>(data);
     const auto l1 = segment_length<Arg1>(data);
     const auto l2 = segment_length<Arg2>(data);
-    auto i0       = l0;
-    auto i1       = l1;
-    auto i2       = l2;
+    auto i0 = l0;
+    auto i1 = l1;
+    auto i2 = l2;
 
     // Set the argument types for this loop
     using NewTypes0 = setSegmentTypeFromData<Types, Arg0, Data>;
@@ -122,25 +112,24 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
-#pragma omp parallel for private(i0, i1, i2) firstprivate(privatizer)          \
+#pragma omp parallel for private(i0, i1, i2) firstprivate(privatizer) \
     RAJA_COLLAPSE(3)
-    for (i0 = 0; i0 < l0; ++i0)
-    {
-      for (i1 = 0; i1 < l1; ++i1)
-      {
-        for (i2 = 0; i2 < l2; ++i2)
-        {
+    for (i0 = 0; i0 < l0; ++i0) {
+      for (i1 = 0; i1 < l1; ++i1) {
+        for (i2 = 0; i2 < l2; ++i2) {
           auto& private_data = privatizer.get_priv();
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
           private_data.template assign_offset<Arg2>(i2);
-          execute_statement_list<camp::list<EnclosedStmts...>, NewTypes2>(
-              private_data);
+          execute_statement_list<camp::list<EnclosedStmts...>, NewTypes2>(private_data);
         }
       }
     }
   }
 };
+
+
+
 
 
 }  // namespace internal

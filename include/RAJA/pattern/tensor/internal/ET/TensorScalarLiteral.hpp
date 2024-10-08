@@ -33,71 +33,78 @@ namespace expt
 {
 
 
-namespace ET
-{
-
-
-template <typename T>
-class TensorScalarLiteral : public TensorExpressionBase<TensorScalarLiteral<T>>
-{
-public:
-  using self_type    = TensorScalarLiteral<T>;
-  using tensor_type  = RAJA::expt::ScalarRegister<T>;
-  using element_type = T;
-  using result_type  = T;
-  using index_type   = RAJA::Index_type;
-
-  static constexpr camp::idx_t s_num_dims = 0;
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr index_type getDimSize(index_type) const { return 0; }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  explicit constexpr TensorScalarLiteral(element_type const& value) noexcept
-      : m_value {value}
-  {}
-
-
-  template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE element_type eval(TILE_TYPE const&) const
+  namespace ET
   {
-    return m_value;
-  }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void print_ast() const { printf("ScalarLiteral(%e)", (double)m_value); }
-
-private:
-  element_type m_value;
-};
 
 
-/*
- * For arithmetic values, we need to wrap in a constant value ET node
- */
-template <typename RHS>
-struct NormalizeOperandHelper<
-    RHS,
+    template<typename T>
+    class TensorScalarLiteral :  public TensorExpressionBase<TensorScalarLiteral<T>> {
+      public:
+        using self_type = TensorScalarLiteral<T>;
+        using tensor_type = RAJA::expt::ScalarRegister<T>;
+        using element_type = T;
+        using result_type = T;
+        using index_type = RAJA::Index_type;
+
+        static constexpr camp::idx_t s_num_dims = 0;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        constexpr
+        index_type getDimSize(index_type ) const {
+          return 0;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        explicit
+        constexpr
+        TensorScalarLiteral(element_type const &value) noexcept :
+        m_value{value}
+        {}
+
+
+        template<typename TILE_TYPE>
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        element_type eval(TILE_TYPE const &) const {
+          return m_value;
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        void print_ast() const {
+          printf("ScalarLiteral(%e)", (double)m_value);
+        }
+
+      private:
+        element_type m_value;
+    };
+
+
+    /*
+     * For arithmetic values, we need to wrap in a constant value ET node
+     */
+    template<typename RHS>
+    struct NormalizeOperandHelper<RHS,
     typename std::enable_if<std::is_arithmetic<RHS>::value>::type>
-{
-  using return_type = TensorScalarLiteral<RHS>;
+    {
+        using return_type = TensorScalarLiteral<RHS>;
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static constexpr return_type normalize(RHS const& rhs)
-  {
-    return return_type(rhs);
-  }
-};
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        constexpr
+        return_type normalize(RHS const &rhs){
+          return return_type(rhs);
+        }
+    };
 
 
-}  // namespace ET
+  } // namespace ET
 
-}  // namespace expt
-}  // namespace internal
+  } // namespace internal
+} // namespace expt
 
 }  // namespace RAJA
 

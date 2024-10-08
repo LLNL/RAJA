@@ -11,13 +11,14 @@
 
 #include "tests/test-reducer-reset.hpp"
 
-using SequentialReducerResetTypes =
-    Test<camp::cartesian_product<SequentialReducerPolicyList,
+using SequentialReducerResetTypes = 
+  Test< camp::cartesian_product< SequentialReducerPolicyList,
                                  DataTypeList,
                                  HostResourceList,
-                                 SequentialUnitTestPolicyList>>::Types;
+                                 SequentialUnitTestPolicyList > >::Types;
 
 
 INSTANTIATE_TYPED_TEST_SUITE_P(SequentialResetTest,
                                ReducerResetUnitTest,
                                SequentialReducerResetTypes);
+

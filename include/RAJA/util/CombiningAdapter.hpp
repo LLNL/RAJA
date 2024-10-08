@@ -82,11 +82,11 @@ struct CombiningAdapter
 {
   using Layout = Layout_;
 
-  using IndexRange     = typename Layout::IndexRange;
+  using IndexRange = typename Layout::IndexRange;
   using StrippedIdxLin = typename Layout::StrippedIdxLin;
-  using IndexLinear    = typename Layout::IndexLinear;
-  using DimTuple       = typename Layout::DimTuple;
-  using DimArr         = typename Layout::DimArr;
+  using IndexLinear = typename Layout::IndexLinear;
+  using DimTuple = typename Layout::DimTuple;
+  using DimArr = typename Layout::DimArr;
 
   using RangeLinear = RAJA::TypedRangeSegment<IndexLinear>;
 
@@ -95,11 +95,10 @@ private:
   Layout m_layout;
 
   RAJA_SUPPRESS_HD_WARN
-  template <camp::idx_t... RangeInts>
+  template < camp::idx_t... RangeInts >
   RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index,
                                            camp::idx_seq<RangeInts...>)
-      -> decltype(m_lambda(
-          camp::val<camp::tuple_element_t<RangeInts, DimTuple>>()...))
+    -> decltype(m_lambda(camp::val<camp::tuple_element_t<RangeInts, DimTuple>>()...))
   {
     DimTuple indices;
     m_layout.toIndices(linear_index, camp::get<RangeInts>(indices)...);
@@ -107,11 +106,10 @@ private:
   }
   ///
   RAJA_SUPPRESS_HD_WARN
-  template <camp::idx_t... RangeInts>
+  template < camp::idx_t... RangeInts >
   RAJA_HOST_DEVICE inline auto call_helper(IndexLinear linear_index,
                                            camp::idx_seq<RangeInts...>) const
-      -> decltype(m_lambda(
-          camp::val<camp::tuple_element_t<RangeInts, DimTuple>>()...))
+    -> decltype(m_lambda(camp::val<camp::tuple_element_t<RangeInts, DimTuple>>()...))
   {
     DimTuple indices;
     m_layout.toIndices(linear_index, camp::get<RangeInts>(indices)...);
@@ -119,14 +117,16 @@ private:
   }
 
 public:
+
   /*!
    * Constructor from lambda and layout.
    */
-  template <typename C_Lambda, typename C_Layout>
+  template < typename C_Lambda, typename C_Layout >
   RAJA_HOST_DEVICE CombiningAdapter(C_Lambda&& lambda, C_Layout&& layout)
-      : m_lambda(std::forward<C_Lambda>(lambda)),
-        m_layout(std::forward<C_Layout>(layout))
-  {}
+      : m_lambda(std::forward<C_Lambda>(lambda))
+      , m_layout(std::forward<C_Layout>(layout))
+  {
+  }
 
   /*!
    * Call the lambda by converting the linear index to multidimensional indices.
@@ -134,13 +134,13 @@ public:
    * @return return value of lambda
    */
   RAJA_HOST_DEVICE RAJA_INLINE auto operator()(IndexLinear linear_index)
-      -> decltype(call_helper(linear_index, IndexRange()))
+    -> decltype(call_helper(linear_index, IndexRange()))
   {
     return call_helper(linear_index, IndexRange());
   }
   ///
   RAJA_HOST_DEVICE RAJA_INLINE auto operator()(IndexLinear linear_index) const
-      -> decltype(call_helper(linear_index, IndexRange()))
+    -> decltype(call_helper(linear_index, IndexRange()))
   {
     return call_helper(linear_index, IndexRange());
   }
@@ -207,9 +207,9 @@ public:
  *
  */
 template <typename Lambda, typename Layout>
-RAJA_HOST_DEVICE RAJA_INLINE auto
-make_CombiningAdapter_from_layout(Lambda&& lambda, Layout&& layout)
-// -> CombiningAdapter<camp::decay<Lambda>, camp::decay<Layout>>
+RAJA_HOST_DEVICE RAJA_INLINE
+auto make_CombiningAdapter_from_layout(Lambda&& lambda, Layout&& layout)
+  // -> CombiningAdapter<camp::decay<Lambda>, camp::decay<Layout>>
 {
   return CombiningAdapter<camp::decay<Lambda>, camp::decay<Layout>>(
       std::forward<Lambda>(lambda), std::forward<Layout>(layout));
@@ -217,54 +217,48 @@ make_CombiningAdapter_from_layout(Lambda&& lambda, Layout&& layout)
 ///
 RAJA_SUPPRESS_HD_WARN
 template <typename Lambda, typename... IdxTs>
-RAJA_INLINE auto
-make_CombiningAdapter(Lambda&& lambda,
-                      ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
-// -> decltype(make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
-//             camp::val<RAJA::TypedOffsetLayout<
-//                 typename std::common_type< strip_index_type_t<IdxTs>...
-//                 >::type, IdxTs...>>()))
+RAJA_INLINE
+auto make_CombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
+  // -> decltype(make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
+  //             camp::val<RAJA::TypedOffsetLayout<
+  //                 typename std::common_type< strip_index_type_t<IdxTs>... >::type,
+  //                 IdxTs...>>()))
 {
-  using std::begin;
-  using std::distance;
-  using std::end;
-  using IdxLin = typename std::common_type<strip_index_type_t<IdxTs>...>::type;
+  using std::begin; using std::end; using std::distance;
+  using IdxLin = typename std::common_type< strip_index_type_t<IdxTs>... >::type;
   using Layout = RAJA::Layout<sizeof...(IdxTs), IdxLin>;
   using OffsetLayout = RAJA::TypedOffsetLayout<IdxLin, camp::tuple<IdxTs...>>;
 
   Layout layout(static_cast<IdxLin>(distance(begin(segs), end(segs)))...);
   OffsetLayout offset_layout = OffsetLayout::from_layout_and_offsets(
-      {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs))
-                                          : static_cast<IdxLin>(0))...}},
-      std::move(layout));
+        {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs))
+                                            : static_cast<IdxLin>(0))...}},
+        std::move(layout));
   return make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
                                            std::move(offset_layout));
 }
 ///
 RAJA_SUPPRESS_HD_WARN
 template <typename Perm, typename Lambda, typename... IdxTs>
-RAJA_INLINE auto
-make_PermutedCombiningAdapter(Lambda&& lambda,
-                              ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
-// -> decltype(make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
-//             camp::val<RAJA::TypedOffsetLayout<
-//                 typename std::common_type< strip_index_type_t<IdxTs>...
-//                 >::type, IdxTs...>>()))
+RAJA_INLINE
+auto make_PermutedCombiningAdapter(Lambda&& lambda, ::RAJA::TypedRangeSegment<IdxTs> const&... segs)
+  // -> decltype(make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
+  //             camp::val<RAJA::TypedOffsetLayout<
+  //                 typename std::common_type< strip_index_type_t<IdxTs>... >::type,
+  //                 IdxTs...>>()))
 {
-  using std::begin;
-  using std::distance;
-  using std::end;
-  using IdxLin = typename std::common_type<strip_index_type_t<IdxTs>...>::type;
+  using std::begin; using std::end; using std::distance;
+  using IdxLin = typename std::common_type< strip_index_type_t<IdxTs>... >::type;
   using OffsetLayout = RAJA::TypedOffsetLayout<IdxLin, camp::tuple<IdxTs...>>;
 
   auto layout = make_permuted_layout<sizeof...(IdxTs), IdxLin>(
-      {{static_cast<IdxLin>(distance(begin(segs), end(segs)))...}},
-      RAJA::as_array<Perm>::get());
+              {{static_cast<IdxLin>(distance(begin(segs), end(segs)))...}},
+              RAJA::as_array<Perm>::get());
   OffsetLayout offset_layout = OffsetLayout::from_layout_and_offsets(
-      {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs))
-                                          : static_cast<IdxLin>(0))...}},
+        {{(distance(begin(segs), end(segs)) ? static_cast<IdxLin>(*begin(segs))
+                                            : static_cast<IdxLin>(0))...}},
 
-      std::move(layout));
+        std::move(layout));
   return make_CombiningAdapter_from_layout(std::forward<Lambda>(lambda),
                                            std::move(offset_layout));
 }

@@ -18,26 +18,30 @@
 // List of named_dims
 //
 using NamedDimensionTypeList =
-    camp::list<camp::integral_constant<RAJA::named_dim, RAJA::named_dim::x>,
-               camp::integral_constant<RAJA::named_dim, RAJA::named_dim::y>,
-               camp::integral_constant<RAJA::named_dim, RAJA::named_dim::z>>;
+    camp::list<
+                camp::integral_constant<RAJA::named_dim, RAJA::named_dim::x>,
+                camp::integral_constant<RAJA::named_dim, RAJA::named_dim::y>,
+                camp::integral_constant<RAJA::named_dim, RAJA::named_dim::z>
+              >;
 
 //
 // List of sizes
 //
 using SizeTypeList =
-    camp::list<camp::integral_constant<int, RAJA::named_usage::ignored>,
-               camp::integral_constant<int, RAJA::named_usage::unspecified>,
-               camp::integral_constant<int, 1>,
-               camp::integral_constant<int, 7>>;
+    camp::list<
+                camp::integral_constant<int, RAJA::named_usage::ignored>,
+                camp::integral_constant<int, RAJA::named_usage::unspecified>,
+                camp::integral_constant<int, 1>,
+                camp::integral_constant<int, 7>
+              >;
 
 //
 // Holder for indexing templates
 //
-template <template <RAJA::named_dim, int, int> class T>
+template < template < RAJA::named_dim, int, int > class T >
 struct indexing_holder
 {
-  template <RAJA::named_dim dim, int BLOCK_SIZE, int GRID_SIZE>
+  template < RAJA::named_dim dim, int BLOCK_SIZE, int GRID_SIZE >
   using type = T<dim, BLOCK_SIZE, GRID_SIZE>;
 };
 
@@ -45,13 +49,11 @@ struct indexing_holder
 // List of indexing holder types
 //
 #if defined(RAJA_ENABLE_CUDA)
-using CudaIndexingHolderList =
-    camp::list<indexing_holder<RAJA::cuda::IndexGlobal>>;
+using CudaIndexingHolderList = camp::list< indexing_holder<RAJA::cuda::IndexGlobal> >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipIndexingHolderList =
-    camp::list<indexing_holder<RAJA::hip::IndexGlobal>>;
+using HipIndexingHolderList = camp::list< indexing_holder<RAJA::hip::IndexGlobal> >;
 #endif
 
 #endif  // __TEST_INDEXING_UTILS_HPP__

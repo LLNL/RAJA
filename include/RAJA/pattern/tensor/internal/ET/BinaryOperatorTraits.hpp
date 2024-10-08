@@ -27,133 +27,159 @@ namespace expt
 {
 
 
-namespace ET
-{
-
-struct TensorOperatorAdd
-{
-
-  template <typename LEFT, typename RIGHT>
-  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const& left,
-                                                RIGHT const& right)
-      -> decltype(left + right)
+  namespace ET
   {
-    return left + right;
-  }
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static void print_ast() { printf("Add"); }
-};
+    struct TensorOperatorAdd
+    {
 
-struct TensorOperatorSubtract
-{
+      template<typename LEFT, typename RIGHT>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      auto eval(LEFT const &left, RIGHT const &right) ->
+        decltype(left + right)
+      {
+        return left + right;
+      }
 
-  template <typename LEFT, typename RIGHT>
-  RAJA_INLINE RAJA_HOST_DEVICE static auto eval(LEFT const& left,
-                                                RIGHT const& right)
-      -> decltype(left - right)
-  {
-    return left - right;
-  }
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      void print_ast(){
+        printf("Add");
+      }
+    };
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static void print_ast() { printf("Subtract"); }
-};
+    struct TensorOperatorSubtract
+    {
 
+      template<typename LEFT, typename RIGHT>
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      auto eval(LEFT const &left, RIGHT const &right) ->
+        decltype(left - right)
+      {
+        return left - right;
+      }
 
-template <typename OPERATOR, typename LEFT_OPERAND, typename RIGHT_OPERAND>
-class TensorBinaryOperator;
-
-template <typename LHS, typename RHS>
-using TensorAdd = TensorBinaryOperator<TensorOperatorAdd, LHS, RHS>;
-
-template <typename LHS, typename RHS>
-using TensorSubtract = TensorBinaryOperator<TensorOperatorSubtract, LHS, RHS>;
-
-
-/*!
- * Provides default operations for add, subtract and divide
- *
- * For the most part, this is just element wise operations between
- * compatible tensors.
- *
- * There are specializations that handle when one operand is a scalar
- */
-template <typename LHS_TYPE, typename RHS_TYPE, class ENABLE = void>
-struct OperatorTraits
-{
-
-  using result_type                       = typename LHS_TYPE::result_type;
-  static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static void print_ast() { printf("Elemental"); }
+      RAJA_INLINE
+      RAJA_HOST_DEVICE
+      static
+      void print_ast(){
+        printf("Subtract");
+      }
+    };
 
 
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static int getDimSize(int dim, LHS_TYPE const& lhs, RHS_TYPE const& rhs)
-  {
-    return dim == 0 ? lhs.getDimSize(0) : rhs.getDimSize(1);
-  }
-};
-
-/*!
- * Specialization when the left operand is a scalar
- */
-template <typename LHS_TYPE, typename RHS_TYPE>
-struct OperatorTraits<LHS_TYPE,
-                      RHS_TYPE,
-                      typename std::enable_if<LHS_TYPE::s_num_dims == 0>::type>
-{
-
-  using result_type                       = typename RHS_TYPE::result_type;
-  static constexpr camp::idx_t s_num_dims = RHS_TYPE::s_num_dims;
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static void print_ast() { printf("Scalar"); }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static int getDimSize(int dim, LHS_TYPE const&, RHS_TYPE const& rhs)
-  {
-    return rhs.getDimSize(dim);
-  }
-};
-
-/*!
- * Specialization when the right operand is a scalar
- */
-template <typename LHS_TYPE, typename RHS_TYPE>
-struct OperatorTraits<LHS_TYPE,
-                      RHS_TYPE,
-                      typename std::enable_if<RHS_TYPE::s_num_dims == 0>::type>
-{
-
-  using result_type                       = typename LHS_TYPE::result_type;
-  static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static void print_ast() { printf("Scalar"); }
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  static int getDimSize(int dim, LHS_TYPE const& lhs, RHS_TYPE const&)
-  {
-    return lhs.getDimSize(dim);
-  }
-};
 
 
-}  // namespace ET
 
-}  // namespace expt
-}  // namespace internal
+    template<typename OPERATOR, typename LEFT_OPERAND, typename RIGHT_OPERAND>
+    class TensorBinaryOperator;
+
+    template<typename LHS, typename RHS>
+    using TensorAdd = TensorBinaryOperator<TensorOperatorAdd, LHS, RHS>;
+
+    template<typename LHS, typename RHS>
+    using TensorSubtract = TensorBinaryOperator<TensorOperatorSubtract, LHS, RHS>;
+
+
+
+
+    /*!
+     * Provides default operations for add, subtract and divide
+     *
+     * For the most part, this is just element wise operations between
+     * compatible tensors.
+     *
+     * There are specializations that handle when one operand is a scalar
+     */
+    template<typename LHS_TYPE, typename RHS_TYPE, class ENABLE = void>
+    struct OperatorTraits {
+
+        using result_type = typename LHS_TYPE::result_type;
+        static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        void print_ast() {
+          printf("Elemental");
+        }
+
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        int getDimSize(int dim, LHS_TYPE const &lhs, RHS_TYPE const &rhs) {
+          return dim == 0 ? lhs.getDimSize(0) : rhs.getDimSize(1);
+        }
+
+    };
+
+    /*!
+     * Specialization when the left operand is a scalar
+     */
+    template<typename LHS_TYPE, typename RHS_TYPE>
+    struct OperatorTraits<LHS_TYPE, RHS_TYPE,
+    typename std::enable_if<LHS_TYPE::s_num_dims == 0>::type>
+    {
+
+        using result_type = typename RHS_TYPE::result_type;
+        static constexpr camp::idx_t s_num_dims = RHS_TYPE::s_num_dims;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        void print_ast() {
+          printf("Scalar");
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        int getDimSize(int dim, LHS_TYPE const &, RHS_TYPE const &rhs) {
+          return rhs.getDimSize(dim);
+        }
+
+    };
+
+    /*!
+     * Specialization when the right operand is a scalar
+     */
+    template<typename LHS_TYPE, typename RHS_TYPE>
+    struct OperatorTraits<LHS_TYPE, RHS_TYPE,
+    typename std::enable_if<RHS_TYPE::s_num_dims == 0>::type>
+    {
+
+        using result_type = typename LHS_TYPE::result_type;
+        static constexpr camp::idx_t s_num_dims = LHS_TYPE::s_num_dims;
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        void print_ast() {
+          printf("Scalar");
+        }
+
+        RAJA_INLINE
+        RAJA_HOST_DEVICE
+        static
+        int getDimSize(int dim, LHS_TYPE const &lhs, RHS_TYPE const &) {
+          return lhs.getDimSize(dim);
+        }
+
+
+
+    };
+
+
+  } // namespace ET
+
+  } // namespace internal
+} // namespace expt
 
 }  // namespace RAJA
 

@@ -17,8 +17,7 @@ TEST(SynchronizeTest, omp)
 
 #pragma omp parallel shared(test_val)
   {
-    if (omp_get_thread_num() == 0)
-    {
+    if (omp_get_thread_num() == 0) {
       test_val = 5.0;
     }
 

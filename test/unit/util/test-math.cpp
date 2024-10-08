@@ -13,7 +13,7 @@
 #include "RAJA_gtest.hpp"
 #include <type_traits>
 
-template <typename T>
+template < typename T >
 void test_log2()
 {
   ASSERT_EQ(RAJA::log2(T(257)), T(8));
@@ -24,8 +24,7 @@ void test_log2()
   ASSERT_EQ(RAJA::log2(T(2)), T(1));
   ASSERT_EQ(RAJA::log2(T(1)), T(0));
   ASSERT_EQ(RAJA::log2(T(0)), T(0));
-  if (std::is_signed<T>::value)
-  {
+  if (std::is_signed<T>::value) {
     ASSERT_EQ(RAJA::log2(T(-1)), T(0));
     ASSERT_EQ(RAJA::log2(T(-100)), T(0));
   }
@@ -38,7 +37,7 @@ TEST(math, log2)
 }
 
 
-template <typename T>
+template < typename T >
 void test_next_pow2()
 {
   ASSERT_EQ(RAJA::next_pow2(T(257)), T(512));
@@ -49,8 +48,7 @@ void test_next_pow2()
   ASSERT_EQ(RAJA::next_pow2(T(2)), T(2));
   ASSERT_EQ(RAJA::next_pow2(T(1)), T(1));
   ASSERT_EQ(RAJA::next_pow2(T(0)), T(0));
-  if (std::is_signed<T>::value)
-  {
+  if (std::is_signed<T>::value) {
     ASSERT_EQ(RAJA::next_pow2(T(-1)), T(0));
     ASSERT_EQ(RAJA::next_pow2(T(-100)), T(0));
   }
@@ -63,7 +61,7 @@ TEST(math, next_pow2)
 }
 
 
-template <typename T>
+template < typename T >
 void test_prev_pow2()
 {
   ASSERT_EQ(RAJA::prev_pow2(T(257)), T(256));
@@ -74,8 +72,7 @@ void test_prev_pow2()
   ASSERT_EQ(RAJA::prev_pow2(T(2)), T(2));
   ASSERT_EQ(RAJA::prev_pow2(T(1)), T(1));
   ASSERT_EQ(RAJA::prev_pow2(T(0)), T(0));
-  if (std::is_signed<T>::value)
-  {
+  if (std::is_signed<T>::value) {
     ASSERT_EQ(RAJA::prev_pow2(T(-1)), T(0));
     ASSERT_EQ(RAJA::prev_pow2(T(-100)), T(0));
   }
@@ -88,7 +85,7 @@ TEST(math, prev_pow2)
 }
 
 
-template <typename T>
+template < typename T >
 void test_power_of_2_mod()
 {
   ASSERT_EQ(RAJA::power_of_2_mod(T(257), T(256)), T(1));

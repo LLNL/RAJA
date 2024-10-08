@@ -33,7 +33,7 @@ namespace expt
 {
 struct tensor_stats
 {
-  static int indent;
+    static int indent;
 
   static camp::idx_t num_vector_copy;
   static camp::idx_t num_vector_copy_ctor;
@@ -77,9 +77,10 @@ struct tensor_stats
 
   static void resetVectorStats();
   static void printVectorStats();
+
 };
 
-}  // namespace expt
-}  // namespace RAJA
+} // namespace expt
+} // namespace RAJA
 
 #endif

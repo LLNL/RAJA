@@ -19,22 +19,17 @@
 #include <numeric>
 #include <vector>
 
-template <typename Perm, typename IndexType, typename Segment>
+template < typename Perm, typename IndexType, typename Segment >
 void test_PermutedCombiningAdapter_1D(Segment const& seg0)
 {
-  using std::begin;
-  using std::distance;
-  using std::end;
+  using std::begin; using std::end; using std::distance;
   auto seg0_begin = begin(seg0);
 
   size_t counters[1] = {0};
-  auto adapter       = RAJA::make_PermutedCombiningAdapter<Perm>(
-      [&](IndexType i0)
-      {
-        ASSERT_EQ(seg0_begin[counters[0]], i0);
-        counters[camp::seq_at<0, Perm>::value] += 1;
-      },
-      seg0);
+  auto adapter = RAJA::make_PermutedCombiningAdapter<Perm>([&](IndexType i0) {
+    ASSERT_EQ(seg0_begin[counters[0]], i0);
+    counters[camp::seq_at<0, Perm>::value] += 1;
+  }, seg0);
 
   ASSERT_EQ(adapter.size(), seg0.size());
 
@@ -43,13 +38,12 @@ void test_PermutedCombiningAdapter_1D(Segment const& seg0)
   ASSERT_EQ(distance(begin(range), end(range)), seg0.size());
 
   auto range_end = end(range);
-  for (auto idx = begin(range); idx != range_end; ++idx)
-  {
+  for (auto idx = begin(range); idx != range_end; ++idx) {
     adapter(*idx);
   }
 }
 
-template <typename Perm, typename IndexType>
+template < typename Perm, typename IndexType >
 void test_types_PermutedCombiningAdapter_1D(IndexType ibegin0, IndexType iend0)
 {
   RAJA::TypedRangeSegment<IndexType> rseg0(ibegin0, iend0);

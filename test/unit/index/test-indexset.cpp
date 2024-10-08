@@ -17,7 +17,7 @@
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests.
 //
-camp::resources::Resource host_res {camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host()};
 
 
 TEST(IndexSetUnitTest, Empty)
@@ -34,13 +34,13 @@ TEST(IndexSetUnitTest, Empty)
 
 TEST(IndexSetUnitTest, ConstructAndCompareSegments)
 {
-  using RangeSegType  = RAJA::TypedRangeSegment<int>;
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
   using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
   RIndexSetType isr;
   ASSERT_EQ((size_t)1, isr.getNumTypes());
   isr.push_back(RangeSegType(1, 3));
   isr.push_front(RangeSegType(0, 1));
-  ASSERT_EQ(2, isr.size());
+  ASSERT_EQ(2, isr.size()); 
   ASSERT_EQ(size_t(3), isr.getLength());
   const RangeSegType& rs0 = isr.getSegment<const RangeSegType>(0);
   const RangeSegType& rs1 = isr.getSegment<const RangeSegType>(1);
@@ -56,17 +56,17 @@ TEST(IndexSetUnitTest, ConstructAndCompareSegments)
   ASSERT_NE(isr.size(), isr2.size());
   ASSERT_EQ(isr.getLength(), isr2.getLength());
 
-  using ListSegType    = RAJA::TypedListSegment<int>;
+  using ListSegType = RAJA::TypedListSegment<int>; 
   using RLIndexSetType = RAJA::TypedIndexSet<RangeSegType, ListSegType>;
   RLIndexSetType isrl;
   ASSERT_EQ(size_t(2), isrl.getNumTypes());
-  int idx[] = {0, 2, 4, 5};
-  ListSegType lseg(idx, 4, host_res);
+  int idx[ ] = {0, 2, 4, 5};
+  ListSegType lseg(idx, 4, host_res); 
   isrl.push_back(lseg);
   isrl.push_back(RangeSegType(6, 8));
-  ASSERT_EQ(2, isrl.size());
+  ASSERT_EQ(2, isrl.size()); 
   ASSERT_EQ(size_t(6), isrl.getLength());
-  const ListSegType ls0   = isrl.getSegment<const ListSegType>(0);
+  const ListSegType ls0 = isrl.getSegment<const ListSegType>(0);
   const RangeSegType rs11 = isrl.getSegment<const RangeSegType>(1);
   ASSERT_EQ(4, ls0.size());
   ASSERT_EQ(2, rs11.size());
@@ -84,7 +84,7 @@ TEST(IndexSetUnitTest, ConstructAndCompareSegments)
 
 TEST(IndexSetUnitTest, Swap)
 {
-  using RangeSegType  = RAJA::TypedRangeSegment<int>;
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
   using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
   RIndexSetType iset1;
   RangeSegType range(0, 10);
@@ -109,7 +109,7 @@ TEST(IndexSetUnitTest, Swap)
 
 TEST(IndexSetUnitTest, Slice)
 {
-  using RangeSegType  = RAJA::TypedRangeSegment<int>;
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
   using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
   RIndexSetType iset1;
   RangeSegType range1(0, 2);
@@ -138,7 +138,7 @@ TEST(IndexSetUnitTest, Slice)
   ASSERT_EQ(8, *rs22.begin());
   ASSERT_EQ(10, *rs22.end());
 
-  int segs[]          = {0, 3};
+  int segs[ ] = {0, 3};
   RIndexSetType iset3 = iset1.createSlice(segs, 2);
   ASSERT_EQ(2, iset3.size());
   ASSERT_EQ(size_t(4), iset3.getLength());
@@ -165,19 +165,19 @@ TEST(IndexSetUnitTest, Slice)
 
 TEST(IndexSetUnitTest, ConditionalEvenIndices)
 {
-  using RangeSegType   = RAJA::TypedRangeSegment<int>;
-  using ListSegType    = RAJA::TypedListSegment<int>;
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
+  using ListSegType = RAJA::TypedListSegment<int>; 
   using RLIndexSetType = RAJA::TypedIndexSet<RangeSegType, ListSegType>;
   RLIndexSetType iset;
 
   iset.push_back(RangeSegType(0, 6));
-  int idx[] = {7, 8, 10, 11};
-  ListSegType lseg(idx, 4, host_res);
+  int idx[ ] = {7, 8, 10, 11};
+  ListSegType lseg(idx, 4, host_res); 
   iset.push_back(lseg);
   iset.push_back(RangeSegType(13, 17));
 
   RAJA::RAJAVec<int> ref_even_indices;
-  ref_even_indices.push_back(0);
+  ref_even_indices.push_back(0); 
   ref_even_indices.push_back(2);
   ref_even_indices.push_back(4);
   ref_even_indices.push_back(8);
@@ -186,18 +186,19 @@ TEST(IndexSetUnitTest, ConditionalEvenIndices)
   ref_even_indices.push_back(16);
 
   RAJA::RAJAVec<int> even_indices;
-  getIndicesConditional(even_indices, iset, [](int idx) { return !(idx % 2); });
+  getIndicesConditional(even_indices, iset, [] (int idx) {
+    return !(idx % 2);
+  });
 
   EXPECT_EQ(even_indices.size(), ref_even_indices.size());
-  for (size_t i = 0; i < ref_even_indices.size(); ++i)
-  {
+  for (size_t i = 0; i < ref_even_indices.size(); ++i) {
     EXPECT_EQ(even_indices[i], ref_even_indices[i]);
   }
 }
 
 TEST(IndexSetUnitTest, ConditionalLessThan100Indices)
 {
-  using RangeSegType  = RAJA::TypedRangeSegment<int>;
+  using RangeSegType = RAJA::TypedRangeSegment<int>;
   using RIndexSetType = RAJA::TypedIndexSet<RangeSegType>;
   RIndexSetType iset;
 
@@ -214,12 +215,12 @@ TEST(IndexSetUnitTest, ConditionalLessThan100Indices)
   ref_lt100_indices.push_back(99);
 
   RAJA::RAJAVec<int> lt100_indices;
-  getIndicesConditional(lt100_indices, iset,
-                        [](int idx) { return (idx < 100); });
+  getIndicesConditional(lt100_indices, iset, [] (int idx) {
+    return (idx < 100);
+  });
 
   EXPECT_EQ(lt100_indices.size(), ref_lt100_indices.size());
-  for (size_t i = 0; i < ref_lt100_indices.size(); ++i)
-  {
+  for (size_t i = 0; i < ref_lt100_indices.size(); ++i) {
     EXPECT_EQ(lt100_indices[i], ref_lt100_indices[i]);
   }
 }

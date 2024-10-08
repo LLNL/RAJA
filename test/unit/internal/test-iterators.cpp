@@ -14,13 +14,11 @@
 
 #include <limits>
 
-template <typename T>
-class NumericIteratorUnitTest : public ::testing::Test
-{};
+template<typename T>
+class NumericIteratorUnitTest : public ::testing::Test {};
 
-template <typename T>
-class StridedNumericIteratorUnitTest : public ::testing::Test
-{};
+template<typename T>
+class StridedNumericIteratorUnitTest : public ::testing::Test {};
 
 TYPED_TEST_SUITE(NumericIteratorUnitTest, UnitExpandedIntegralTypes);
 TYPED_TEST_SUITE(StridedNumericIteratorUnitTest, UnitExpandedIntegralTypes);
@@ -86,8 +84,7 @@ TYPED_TEST(StridedNumericIteratorUnitTest, simple)
 #if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
 TYPED_TEST(NumericIteratorUnitTest, overflow)
 {
-  if (std::is_unsigned<TypeParam>::value)
-  {
+  if (std::is_unsigned<TypeParam>::value) {
     ASSERT_ANY_THROW({
       TypeParam val = 10;
       RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
@@ -98,7 +95,7 @@ TYPED_TEST(NumericIteratorUnitTest, overflow)
       RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
       of_it += 11;
     });
-
+  
     ASSERT_ANY_THROW({
       TypeParam val = 10;
       RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
@@ -111,7 +108,7 @@ TYPED_TEST(NumericIteratorUnitTest, overflow)
       auto sum = of_it + 11;
       (void)sum;
     });
-
+  
     ASSERT_ANY_THROW({
       TypeParam val = 10;
       const RAJA::Iterators::numeric_iterator<TypeParam> of_it(val);
@@ -124,13 +121,12 @@ TYPED_TEST(NumericIteratorUnitTest, overflow)
       auto sum = 11 + of_it;
       (void)sum;
     });
-  }
+  } 
 }
 
 TYPED_TEST(StridedNumericIteratorUnitTest, overflow)
 {
-  if (std::is_unsigned<TypeParam>::value)
-  {
+  if (std::is_unsigned<TypeParam>::value){
     ASSERT_ANY_THROW({
       TypeParam val = 2;
       RAJA::Iterators::strided_numeric_iterator<TypeParam> of_it(val, 2);

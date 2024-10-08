@@ -17,13 +17,10 @@
 //
 TYPED_TEST_SUITE_P(KernelNestedLoopMultiLambdaParamTest);
 template <typename T>
-class KernelNestedLoopMultiLambdaParamTest : public ::testing::Test
-{};
+class KernelNestedLoopMultiLambdaParamTest : public ::testing::Test {};
 
-TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest,
-             NestedLoopMultiLambdaParamKernel)
-{
-  using WORKING_RES   = typename camp::at<TypeParam, camp::num<0>>::type;
+TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest, NestedLoopMultiLambdaParamKernel) {
+  using WORKING_RES = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POL_DATA = typename camp::at<TypeParam, camp::num<1>>::type;
 
   // Attain the loop depth type from execpol data.
@@ -33,8 +30,7 @@ TYPED_TEST_P(KernelNestedLoopMultiLambdaParamTest,
   using LOOP_POLS = typename EXEC_POL_DATA::type;
 
   // Build proper basic kernel exec policy type.
-  using EXEC_POLICY =
-      typename MultiLambdaParamNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
+  using EXEC_POLICY = typename MultiLambdaParamNestedLoopExec<LOOP_TYPE, LOOP_POLS>::type;
 
   constexpr bool USE_RES = false;
 

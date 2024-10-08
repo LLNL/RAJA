@@ -19,53 +19,42 @@
 #include <numeric>
 #include <vector>
 
-template <typename SegIndexType0,
-          typename SegIndexType1,
-          typename Segment0,
-          typename Segment1>
+template < typename SegIndexType0, typename SegIndexType1,
+           typename Segment0, typename Segment1 >
 void test_CombiningAdapter_2D(Segment0 const& seg0, Segment1 const& seg1)
 {
-  using std::begin;
-  using std::distance;
-  using std::end;
+  using std::begin; using std::end; using std::distance;
   auto seg0_begin = begin(seg0);
   auto seg1_begin = begin(seg1);
   size_t seg1_len = static_cast<size_t>(seg1.size());
 
   size_t counter0 = 0;
   size_t counter1 = 0;
-  auto adapter    = RAJA::make_CombiningAdapter(
-      [&](SegIndexType0 i0, SegIndexType1 i1)
-      {
-        ASSERT_EQ(seg0_begin[counter0], i0);
-        ASSERT_EQ(seg1_begin[counter1], i1);
-        counter1 += 1;
-        if (counter1 == seg1_len)
-        {
-          counter1 = 0;
-          counter0 += 1;
-        }
-      },
-      seg0, seg1);
+  auto adapter = RAJA::make_CombiningAdapter([&](SegIndexType0 i0, SegIndexType1 i1) {
+    ASSERT_EQ(seg0_begin[counter0], i0);
+    ASSERT_EQ(seg1_begin[counter1], i1);
+    counter1 += 1;
+    if (counter1 == seg1_len) {
+      counter1 = 0;
+      counter0 += 1;
+    }
+  }, seg0, seg1);
 
-  ASSERT_EQ(adapter.size(), seg0.size() * seg1.size());
+  ASSERT_EQ(adapter.size(), seg0.size()*seg1.size());
 
   auto range = adapter.getRange();
 
-  ASSERT_EQ(distance(begin(range), end(range)), seg0.size() * seg1.size());
+  ASSERT_EQ(distance(begin(range), end(range)), seg0.size()*seg1.size());
 
   auto range_end = end(range);
-  for (auto idx = begin(range); idx != range_end; ++idx)
-  {
+  for (auto idx = begin(range); idx != range_end; ++idx) {
     adapter(*idx);
   }
 }
 
-template <typename SegIndexType0, typename SegIndexType1>
-void test_types_CombiningAdapter_2D(SegIndexType0 ibegin0,
-                                    SegIndexType0 iend0,
-                                    SegIndexType1 ibegin1,
-                                    SegIndexType1 iend1)
+template < typename SegIndexType0, typename SegIndexType1 >
+void test_types_CombiningAdapter_2D(SegIndexType0 ibegin0, SegIndexType0 iend0,
+                                    SegIndexType1 ibegin1, SegIndexType1 iend1)
 {
   RAJA::TypedRangeSegment<SegIndexType0> rseg0(ibegin0, iend0);
   RAJA::TypedRangeSegment<SegIndexType1> rseg1(ibegin1, iend1);

@@ -16,25 +16,27 @@
 //
 // Data types
 //
-using DataTypeList = camp::list<int, float, double>;
+using DataTypeList = camp::list< int,
+                                 float,
+                                 double >;
 
-using SequentialReducerPolicyList = camp::list<RAJA::seq_reduce>;
+using SequentialReducerPolicyList = camp::list< RAJA::seq_reduce >;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPReducerPolicyList =
-    camp::list<RAJA::omp_reduce, RAJA::omp_reduce_ordered>;
+using OpenMPReducerPolicyList = camp::list< RAJA::omp_reduce,
+                                            RAJA::omp_reduce_ordered >;
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-using OpenMPTargetReducerPolicyList = camp::list<RAJA::omp_target_reduce>;
+using OpenMPTargetReducerPolicyList = camp::list< RAJA::omp_target_reduce >;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
-using CudaReducerPolicyList = camp::list<RAJA::cuda_reduce>;
+using CudaReducerPolicyList = camp::list< RAJA::cuda_reduce >;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-using HipReducerPolicyList = camp::list<RAJA::hip_reduce>;
+using HipReducerPolicyList = camp::list< RAJA::hip_reduce >;
 #endif
 
 #endif  // __TEST_REDUCER_UTILS_HPP__

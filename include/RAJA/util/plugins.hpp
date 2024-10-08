@@ -18,88 +18,103 @@
 #include "RAJA/util/KokkosPluginLoader.hpp"
 #endif
 
-namespace RAJA
-{
-namespace util
-{
+namespace RAJA {
+namespace util {
 
 template <typename T>
-RAJA_INLINE auto trigger_updates_before(T&& item) ->
-    typename std::remove_reference<T>::type
+RAJA_INLINE auto trigger_updates_before(T&& item)
+  -> typename std::remove_reference<T>::type
 {
   return item;
 }
 
 RAJA_INLINE
-void callPreCapturePlugins(const PluginContext& p)
+void
+callPreCapturePlugins(const PluginContext& p)
 {
-  for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
-       ++plugin)
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
   {
     (*plugin).get()->preCapture(p);
   }
 }
 
 RAJA_INLINE
-void callPostCapturePlugins(const PluginContext& p)
+void
+callPostCapturePlugins(const PluginContext& p)
 {
-  for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
-       ++plugin)
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
   {
     (*plugin).get()->postCapture(p);
   }
 }
 
 RAJA_INLINE
-void callPreLaunchPlugins(const PluginContext& p)
+void
+callPreLaunchPlugins(const PluginContext& p)
 {
-  for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
-       ++plugin)
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
   {
     (*plugin).get()->preLaunch(p);
   }
 }
 
 RAJA_INLINE
-void callPostLaunchPlugins(const PluginContext& p)
+void
+callPostLaunchPlugins(const PluginContext& p)
 {
-  for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
-       ++plugin)
+  for (auto plugin = PluginRegistry::begin();
+      plugin != PluginRegistry::end();
+      ++plugin)
   {
     (*plugin).get()->postLaunch(p);
   }
 }
 
 RAJA_INLINE
-void callInitPlugins(const PluginOptions p)
+void
+callInitPlugins(const PluginOptions p)
 {
-  for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
-       ++plugin)
+  for (auto plugin = PluginRegistry::begin(); 
+      plugin != PluginRegistry::end();
+      ++plugin)
   {
     (*plugin).get()->init(p);
   }
 }
 
 RAJA_INLINE
-void init_plugins(const std::string& path)
-{
+void
+init_plugins(const std::string& path)
+{   
   callInitPlugins(make_options(path));
 }
 
 RAJA_INLINE
-void init_plugins() { callInitPlugins(make_options("")); }
+void
+init_plugins()
+{   
+  callInitPlugins(make_options(""));
+}
 
 RAJA_INLINE
-void finalize_plugins()
-{
-  for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
-       ++plugin)
+void
+finalize_plugins()
+{   
+  for (auto plugin = PluginRegistry::begin(); 
+    plugin != PluginRegistry::end();
+    ++plugin)
   {
     (*plugin).get()->finalize();
   }
 }
 
-}  // namespace util
-}  // namespace RAJA
+} // closing brace for util namespace
+} // closing brace for RAJA namespace
 
 #endif

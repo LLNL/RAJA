@@ -37,13 +37,13 @@ namespace RAJA
  * \brief Generate an index set with aligned Range segments and List segments,
  *        as needed, from given array of indices.
  *
- *        Routine does no error-checking on argements and assumes
+ *        Routine does no error-checking on argements and assumes 
  *        RAJA::Index_type array contains valid indices.
  *
- *  \param iset reference to index set generated with aligned range segments
+ *  \param iset reference to index set generated with aligned range segments 
  *         and list segments. Method assumes index set is empty (no segments).
- *  \param work_res camp resource object that identifies the memory space in
- *         which list segment index data will live (passed to list segment
+ *  \param work_res camp resource object that identifies the memory space in 
+ *         which list segment index data will live (passed to list segment 
  *         ctor).
  *  \param indices_in pointer to start of input array of indices.
  *  \param length size of input index array.
@@ -79,36 +79,37 @@ void RAJASHAREDDLL_API buildIndexSetAligned(
  ******************************************************************************
  *
  * \brief Generate a lock-free "block" index set (planar division) containing
- *        range segments.
+ *        range segments. 
  *
- *        The method chunks a fastDim x midDim x slowDim mesh into blocks that
+ *        The method chunks a fastDim x midDim x slowDim mesh into blocks that 
  *        can be dependency-scheduled, removing need for lock constructs.
  *
  *  \param iset reference to index set generated with range segments.
- *         Method assumes index set is empty (no segments).
+ *         Method assumes index set is empty (no segments). 
  *  \param fastDim "fast" block dimension (see above).
  *  \param midDim  "mid" block dimension (see above).
  *  \param slowDim "slow" block dimension (see above).
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
-                                int fastDim,
-                                int midDim,
-                                int slowDim);
+void buildLockFreeBlockIndexset(
+    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+    int fastDim,
+    int midDim,
+    int slowDim);
 
 /*!
  ******************************************************************************
  *
  * \brief Generate a lock-free "color" index set containing range and list
  *        segments.
- *
- *        TThe domain-set is colored based on connectivity to the range-set.
- *        All elements in each segment are independent, and no two segments
+ * 
+ *        TThe domain-set is colored based on connectivity to the range-set. 
+ *        All elements in each segment are independent, and no two segments 
  *        can be executed in parallel.
  *
- * \param iset reference to index set generated. Method assumes index set
- *        is empty (no segments).
+ * \param iset reference to index set generated. Method assumes index set 
+ *        is empty (no segments). 
  * \param work_res camp resource object that identifies the memory space in
  *         which list segment index data will live (passed to list segment
  *         ctor).
@@ -122,7 +123,7 @@ void buildLockFreeColorIndexset(
     int numEntity,
     int numRangePerDomain,
     int numEntityRange,
-    RAJA::Index_type* elemPermutation  = nullptr,
+    RAJA::Index_type* elemPermutation = nullptr,
     RAJA::Index_type* ielemPermutation = nullptr);
 
 }  // namespace RAJA

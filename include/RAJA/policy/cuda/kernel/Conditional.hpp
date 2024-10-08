@@ -42,17 +42,18 @@ template <typename Data,
           typename Types>
 struct CudaStatementExecutor<Data,
                              statement::If<Conditional, EnclosedStmts...>,
-                             Types>
-{
+                             Types> {
 
-  using stmt_list_t      = StatementList<EnclosedStmts...>;
+  using stmt_list_t = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
 
 
-  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
+  static
+  inline
+  RAJA_DEVICE
+  void exec(Data &data, bool thread_active)
   {
-    if (Conditional::eval(data))
-    {
+    if (Conditional::eval(data)) {
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data, thread_active);
@@ -60,7 +61,10 @@ struct CudaStatementExecutor<Data,
   }
 
 
-  static inline LaunchDims calculateDimensions(Data const& data)
+
+  static
+  inline
+  LaunchDims calculateDimensions(Data const &data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }

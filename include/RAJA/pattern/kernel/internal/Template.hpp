@@ -39,8 +39,8 @@ struct SeqToType
 template <typename T, typename SEQ>
 struct ListOfNHelper;
 
-template <typename T, camp::idx_t... SEQ>
-struct ListOfNHelper<T, camp::idx_seq<SEQ...>>
+template <typename T, camp::idx_t ... SEQ>
+struct ListOfNHelper<T, camp::idx_seq<SEQ...> >
 {
   using type = camp::list<typename SeqToType<T, SEQ>::type...>;
 };
@@ -49,13 +49,13 @@ struct ListOfNHelper<T, camp::idx_seq<SEQ...>>
 template <typename T, typename SEQ>
 struct TupleOfNHelper;
 
-template <typename T, camp::idx_t... SEQ>
-struct TupleOfNHelper<T, camp::idx_seq<SEQ...>>
+template <typename T, camp::idx_t ... SEQ>
+struct TupleOfNHelper<T, camp::idx_seq<SEQ...> >
 {
   using type = camp::tuple<typename SeqToType<T, SEQ>::type...>;
 };
 
-}  // namespace detail
+} // namespace detail
 
 /*
  *  This creates a camp::list with N types, each one being T.
@@ -64,8 +64,7 @@ struct TupleOfNHelper<T, camp::idx_seq<SEQ...>>
  *
  */
 template <typename T, camp::idx_t N>
-using list_of_n =
-    typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
+using list_of_n = typename detail::ListOfNHelper<T, camp::make_idx_seq_t<N>>::type;
 
 
 /*
@@ -75,8 +74,8 @@ using list_of_n =
  *
  */
 template <typename T, camp::idx_t N>
-using tuple_of_n =
-    typename detail::TupleOfNHelper<T, camp::make_idx_seq_t<N>>::type;
+using tuple_of_n = typename detail::TupleOfNHelper<T, camp::make_idx_seq_t<N>>::type;
+
 
 
 }  // end namespace internal

@@ -6,8 +6,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for atomic ref constructors (and use of
-/// getPointer for verification)
+/// Source file containing tests for atomic ref constructors (and use of getPointer for verification)
 ///
 
 #include "RAJA/RAJA.hpp"
@@ -31,33 +30,38 @@ TYPED_TEST_SUITE_P(AtomicRefDefaultConstructorUnitTest);
 template <typename T>
 void DefaultPolConstructors()
 {
-  T* memaddr = nullptr;
+  T * memaddr = nullptr;
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T> test1(memaddr);
+  RAJA::AtomicRef<T> test1( memaddr );
 
-  ASSERT_EQ(test1.getPointer(), nullptr);
+  ASSERT_EQ( test1.getPointer(), nullptr );
 
   // ref constructor
-  RAJA::AtomicRef<T> const& reft1 = test1;
-  RAJA::AtomicRef<T> reftest1(reft1);
+  RAJA::AtomicRef<T> const & reft1 = test1;
+  RAJA::AtomicRef<T> reftest1( reft1 );
 
-  ASSERT_EQ(reftest1.getPointer(), nullptr);
+  ASSERT_EQ( reftest1.getPointer(), nullptr );
 }
 
-TYPED_TEST_P(AtomicRefDefaultConstructorUnitTest, DefaultPolConstructors)
+TYPED_TEST_P( AtomicRefDefaultConstructorUnitTest, DefaultPolConstructors )
 {
   DefaultPolConstructors<TypeParam>();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(AtomicRefDefaultConstructorUnitTest,
-                            DefaultPolConstructors);
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefDefaultConstructorUnitTest,
+                             DefaultPolConstructors
+                           );
 
-using default_types = ::testing::Types<int, float, double>;
+using default_types = ::testing::Types< int,
+                                      float,
+                                      double
+                                    >;
 
-INSTANTIATE_TYPED_TEST_SUITE_P(DefaultConstrUnitTest,
-                               AtomicRefDefaultConstructorUnitTest,
-                               default_types);
+INSTANTIATE_TYPED_TEST_SUITE_P( DefaultConstrUnitTest,
+                                AtomicRefDefaultConstructorUnitTest,
+                                default_types
+                              );
 
 // Basic Constructors with policies
 
@@ -65,33 +69,35 @@ template <typename T>
 class AtomicRefBasicConstructorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_SUITE_P(AtomicRefBasicConstructorUnitTest);
+TYPED_TEST_SUITE_P( AtomicRefBasicConstructorUnitTest );
 
-TYPED_TEST_P(AtomicRefBasicConstructorUnitTest, BasicConstructors)
+TYPED_TEST_P( AtomicRefBasicConstructorUnitTest, BasicConstructors )
 {
-  using NumericType  = typename std::tuple_element<0, TypeParam>::type;
+  using NumericType = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  NumericType* memaddr = nullptr;
+  NumericType * memaddr = nullptr;
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<NumericType, AtomicPolicy> test1(memaddr);
+  RAJA::AtomicRef<NumericType, AtomicPolicy> test1( memaddr );
 
-  ASSERT_EQ(test1.getPointer(), nullptr);
+  ASSERT_EQ( test1.getPointer(), nullptr );
 
   // ref constructor
-  RAJA::AtomicRef<NumericType, AtomicPolicy> const& reft1 = test1;
-  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1(reft1);
+  RAJA::AtomicRef<NumericType, AtomicPolicy> const & reft1 = test1;
+  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1( reft1 );
 
-  ASSERT_EQ(reftest1.getPointer(), nullptr);
+  ASSERT_EQ( reftest1.getPointer(), nullptr );
 }
 
-REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicConstructorUnitTest,
-                            BasicConstructors);
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicConstructorUnitTest,
+                             BasicConstructors
+                           );
 
-INSTANTIATE_TYPED_TEST_SUITE_P(BasicConstrUnitTest,
-                               AtomicRefBasicConstructorUnitTest,
-                               basic_types);
+INSTANTIATE_TYPED_TEST_SUITE_P( BasicConstrUnitTest,
+                                AtomicRefBasicConstructorUnitTest,
+                                basic_types
+                              );
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -103,40 +109,44 @@ class AtomicRefCUDAConstructorUnitTest : public ::testing::Test
 
 TYPED_TEST_SUITE_P(AtomicRefCUDAConstructorUnitTest);
 
-GPU_TYPED_TEST_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors)
+GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
 {
-  using NumericType  = typename std::tuple_element<0, TypeParam>::type;
+  using NumericType = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  NumericType* memaddr = nullptr;
-  NumericType* proxy   = nullptr;
-  cudaErrchk(cudaMallocManaged((void**)&proxy, sizeof(NumericType)));
+  NumericType * memaddr = nullptr;
+  NumericType * proxy = nullptr;
+  cudaErrchk(cudaMallocManaged((void **)&proxy, sizeof(NumericType)));
   proxy = memaddr;
   cudaErrchk(cudaDeviceSynchronize());
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<NumericType, AtomicPolicy> test0(memaddr);
-  RAJA::AtomicRef<NumericType, AtomicPolicy> test1(proxy);
+  RAJA::AtomicRef<NumericType, AtomicPolicy> test0( memaddr );
+  RAJA::AtomicRef<NumericType, AtomicPolicy> test1( proxy );
 
-  forone<test_cuda>([=] __device__() { test1.getPointer(); });
+  forone<test_cuda>( [=] __device__ () {test1.getPointer();} );
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ(test0.getPointer(), nullptr);
-  ASSERT_EQ(test1.getPointer(), nullptr);
+  ASSERT_EQ( test0.getPointer(), nullptr );
+  ASSERT_EQ( test1.getPointer(), nullptr );
 
   // ref constructor
-  RAJA::AtomicRef<NumericType, AtomicPolicy> const& reft1 = test1;
-  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1(reft1);
-  forone<test_cuda>([=] __device__() { reftest1.getPointer(); });
+  RAJA::AtomicRef<NumericType, AtomicPolicy> const & reft1 = test1;
+  RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1( reft1 );
+  forone<test_cuda>( [=] __device__ () {reftest1.getPointer();} );
   cudaErrchk(cudaDeviceSynchronize());
 
-  ASSERT_EQ(reftest1.getPointer(), nullptr);
+  ASSERT_EQ( reftest1.getPointer(), nullptr );
 
   cudaErrchk(cudaFree(proxy));
 }
 
-REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAConstructorUnitTest, CUDAConstructors);
+REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAConstructorUnitTest,
+                             CUDAConstructors
+                           );
 
-INSTANTIATE_TYPED_TEST_SUITE_P(CUDAConstrUnitTest,
-                               AtomicRefCUDAConstructorUnitTest,
-                               CUDA_types);
+INSTANTIATE_TYPED_TEST_SUITE_P( CUDAConstrUnitTest,
+                                AtomicRefCUDAConstructorUnitTest,
+                                CUDA_types
+                              );
 #endif
+

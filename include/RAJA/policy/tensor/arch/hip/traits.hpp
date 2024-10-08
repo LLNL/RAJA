@@ -21,29 +21,26 @@
 #ifndef RAJA_policy_tensor_arch_hip_traits_HPP
 #define RAJA_policy_tensor_arch_hip_traits_HPP
 
-namespace RAJA
-{
-namespace internal
-{
-namespace expt
-{
+namespace RAJA {
+namespace internal {
+namespace expt {
 
-template <typename T>
-struct RegisterTraits<RAJA::expt::hip_wave_register, T>
-{
-  using element_type                      = T;
-  using register_policy                   = RAJA::expt::hip_wave_register;
-  static constexpr camp::idx_t s_num_elem = 64;
-  static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
-  using int_element_type                  = int32_t;
-};
+  template<typename T>
+  struct RegisterTraits<RAJA::expt::hip_wave_register, T>{
+      using element_type = T;
+      using register_policy = RAJA::expt::hip_wave_register;
+      static constexpr camp::idx_t s_num_elem = 64;
+      static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
+      using int_element_type = int32_t;
+  };
 
-}  // namespace expt
-}  // namespace internal
-}  // namespace RAJA
+} // namespace internal
+} // namespace expt
+} // namespace RAJA
+
 
 
 #endif
 
 
-#endif  // RAJA_ENABLE_HIP
+#endif // RAJA_ENABLE_HIP

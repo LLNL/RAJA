@@ -30,7 +30,7 @@
 
 #include "RAJA/util/zip.hpp"
 
-#include "RAJA/util/sort.hpp"
+#include "RAJA/util/sort.hpp" 
 
 #include "RAJA/policy/sequential/policy.hpp"
 
@@ -50,8 +50,9 @@ namespace detail
 */
 struct UnstableSorter
 {
-  template <typename... Args>
-  RAJA_INLINE void operator()(Args&&... args) const
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args) const
   {
     RAJA::detail::intro_sort(std::forward<Args>(args)...);
   }
@@ -63,14 +64,15 @@ struct UnstableSorter
 */
 struct StableSorter
 {
-  template <typename... Args>
-  RAJA_INLINE void operator()(Args&&... args) const
+  template < typename... Args >
+  RAJA_INLINE
+  void operator()(Args&&... args) const
   {
     RAJA::detail::merge_sort(std::forward<Args>(args)...);
   }
 };
 
-}  // namespace detail
+} // namespace detail
 
 /*!
         \brief sort given range using comparison function
@@ -78,13 +80,14 @@ struct StableSorter
 template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_sequential_policy<ExecPolicy>>
-unstable(resources::Host host_res,
-         const ExecPolicy&,
-         Iter begin,
-         Iter end,
-         Compare comp)
+unstable(
+    resources::Host host_res,
+    const ExecPolicy&,
+    Iter begin,
+    Iter end,
+    Compare comp)
 {
-  detail::UnstableSorter {}(begin, end, comp);
+  detail::UnstableSorter{}(begin, end, comp);
 
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -95,13 +98,14 @@ unstable(resources::Host host_res,
 template <typename ExecPolicy, typename Iter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_sequential_policy<ExecPolicy>>
-stable(resources::Host host_res,
-       const ExecPolicy&,
-       Iter begin,
-       Iter end,
-       Compare comp)
+stable(
+    resources::Host host_res,
+    const ExecPolicy&,
+    Iter begin,
+    Iter end,
+    Compare comp)
 {
-  detail::StableSorter {}(begin, end, comp);
+  detail::StableSorter{}(begin, end, comp);
 
   return resources::EventProxy<resources::Host>(host_res);
 }
@@ -109,48 +113,43 @@ stable(resources::Host host_res,
 /*!
         \brief sort given range of pairs using comparison function on keys
 */
-template <typename ExecPolicy,
-          typename KeyIter,
-          typename ValIter,
-          typename Compare>
+template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_sequential_policy<ExecPolicy>>
-unstable_pairs(resources::Host host_res,
-               const ExecPolicy&,
-               KeyIter keys_begin,
-               KeyIter keys_end,
-               ValIter vals_begin,
-               Compare comp)
+unstable_pairs(
+    resources::Host host_res,
+    const ExecPolicy&,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    Compare comp)
 {
-  auto begin    = RAJA::zip(keys_begin, vals_begin);
-  auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
+  auto begin = RAJA::zip(keys_begin, vals_begin);
+  auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::UnstableSorter {}(begin, end, RAJA::compare_first<zip_ref>(comp));
+  detail::UnstableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 
   return resources::EventProxy<resources::Host>(host_res);
 }
 
 /*!
-        \brief stable sort given range of pairs using comparison function on
-   keys
+        \brief stable sort given range of pairs using comparison function on keys
 */
-template <typename ExecPolicy,
-          typename KeyIter,
-          typename ValIter,
-          typename Compare>
+template <typename ExecPolicy, typename KeyIter, typename ValIter, typename Compare>
 concepts::enable_if_t<resources::EventProxy<resources::Host>,
                       type_traits::is_sequential_policy<ExecPolicy>>
-stable_pairs(resources::Host host_res,
-             const ExecPolicy&,
-             KeyIter keys_begin,
-             KeyIter keys_end,
-             ValIter vals_begin,
-             Compare comp)
+stable_pairs(
+    resources::Host host_res,
+    const ExecPolicy&,
+    KeyIter keys_begin,
+    KeyIter keys_end,
+    ValIter vals_begin,
+    Compare comp)
 {
-  auto begin    = RAJA::zip(keys_begin, vals_begin);
-  auto end      = RAJA::zip(keys_end, vals_begin + (keys_end - keys_begin));
+  auto begin = RAJA::zip(keys_begin, vals_begin);
+  auto end = RAJA::zip(keys_end, vals_begin+(keys_end-keys_begin));
   using zip_ref = RAJA::detail::IterRef<camp::decay<decltype(begin)>>;
-  detail::StableSorter {}(begin, end, RAJA::compare_first<zip_ref>(comp));
+  detail::StableSorter{}(begin, end, RAJA::compare_first<zip_ref>(comp));
 
   return resources::EventProxy<resources::Host>(host_res);
 }

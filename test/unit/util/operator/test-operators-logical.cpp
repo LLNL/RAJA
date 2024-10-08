@@ -12,12 +12,11 @@
 #include "RAJA_test-base.hpp"
 #include "RAJA_unit-test-types.hpp"
 
-template <typename T>
-class OperatorsUnitTestLogical : public ::testing::Test
-{};
+template<typename T>
+class OperatorsUnitTestLogical : public ::testing::Test {};
 TYPED_TEST_SUITE(OperatorsUnitTestLogical, UnitIntFloatTypes);
 
-template <typename T>
+template<typename T>
 void logical_and_test()
 {
   using And = RAJA::operators::logical_and<T>;
@@ -29,22 +28,21 @@ void logical_and_test()
   T j0 = static_cast<T>(0);
   T j1 = static_cast<T>(1);
   T j2 = static_cast<T>(2);
-  ASSERT_FALSE(a(i0, j0));
-  ASSERT_FALSE(a(i0, j1));
-  ASSERT_FALSE(a(i1, j0));
-  ASSERT_TRUE(a(i1, j1));
-  ASSERT_TRUE(a(i2, j2));
-  if (std::is_signed<T>::value)
-  {
+  ASSERT_FALSE(a(i0,j0));
+  ASSERT_FALSE(a(i0,j1));
+  ASSERT_FALSE(a(i1,j0));
+  ASSERT_TRUE(a(i1,j1));
+  ASSERT_TRUE(a(i2,j2));
+  if (std::is_signed<T>::value) {
     i1 = static_cast<T>(-1);
     j1 = static_cast<T>(-1);
-    ASSERT_FALSE(a(i0, j1));
-    ASSERT_FALSE(a(i1, j0));
-    ASSERT_TRUE(a(i1, j1));
+    ASSERT_FALSE(a(i0,j1));
+    ASSERT_FALSE(a(i1,j0));
+    ASSERT_TRUE(a(i1,j1));
   }
 }
 
-template <typename T>
+template<typename T>
 void logical_or_test()
 {
   using Or = RAJA::operators::logical_or<T>;
@@ -56,22 +54,21 @@ void logical_or_test()
   T j0 = static_cast<T>(0);
   T j1 = static_cast<T>(1);
   T j2 = static_cast<T>(2);
-  ASSERT_FALSE(o(i0, j0));
-  ASSERT_TRUE(o(i0, j1));
-  ASSERT_TRUE(o(i1, j0));
-  ASSERT_TRUE(o(i1, j1));
-  ASSERT_TRUE(o(i2, j2));
-  if (std::is_signed<T>::value)
-  {
+  ASSERT_FALSE(o(i0,j0));
+  ASSERT_TRUE(o(i0,j1));
+  ASSERT_TRUE(o(i1,j0));
+  ASSERT_TRUE(o(i1,j1));
+  ASSERT_TRUE(o(i2,j2));
+  if (std::is_signed<T>::value) {
     i1 = static_cast<T>(-1);
     j1 = static_cast<T>(-1);
-    ASSERT_TRUE(o(i0, j1));
-    ASSERT_TRUE(o(i1, j0));
-    ASSERT_TRUE(o(i1, j1));
+    ASSERT_TRUE(o(i0,j1));
+    ASSERT_TRUE(o(i1,j0));
+    ASSERT_TRUE(o(i1,j1));
   }
 }
 
-template <typename T>
+template<typename T>
 void logical_not_test()
 {
   using Not = RAJA::operators::logical_not<T>;
@@ -81,15 +78,13 @@ void logical_not_test()
   T i1 = static_cast<T>(1);
   ASSERT_FALSE(n(i1));
   ASSERT_TRUE(n(i0));
-  if (std::is_signed<T>::value)
-  {
+  if (std::is_signed<T>::value) {
     i1 = static_cast<T>(-1);
     ASSERT_FALSE(n(i1));
   }
 }
 
-TYPED_TEST(OperatorsUnitTestLogical, logical)
-{
+TYPED_TEST(OperatorsUnitTestLogical, logical) {
   logical_and_test<TypeParam>();
   logical_or_test<TypeParam>();
   logical_not_test<TypeParam>();

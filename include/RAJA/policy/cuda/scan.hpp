@@ -49,34 +49,40 @@ template <typename IterationMapping,
           bool Async,
           typename InputIter,
           typename Function>
-RAJA_INLINE resources::EventProxy<resources::Cuda>
-inclusive_inplace(resources::Cuda cuda_res,
-                  ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                           IterationGetter,
-                                                           Concretizer,
-                                                           BLOCKS_PER_SM,
-                                                           Async>,
-                  InputIter begin,
-                  InputIter end,
-                  Function binary_op)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+inclusive_inplace(
+    resources::Cuda cuda_res,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
+    InputIter begin,
+    InputIter end,
+    Function binary_op)
 {
   cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage      = nullptr;
+  void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                              temp_storage_bytes, begin, begin,
-                                              binary_op, len, stream));
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                              temp_storage_bytes, begin, begin,
-                                              binary_op, len, stream));
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
@@ -97,35 +103,43 @@ template <typename IterationMapping,
           typename InputIter,
           typename Function,
           typename T>
-RAJA_INLINE resources::EventProxy<resources::Cuda>
-exclusive_inplace(resources::Cuda cuda_res,
-                  ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                           IterationGetter,
-                                                           Concretizer,
-                                                           BLOCKS_PER_SM,
-                                                           Async>,
-                  InputIter begin,
-                  InputIter end,
-                  Function binary_op,
-                  T init)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+exclusive_inplace(
+    resources::Cuda cuda_res,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
+    InputIter begin,
+    InputIter end,
+    Function binary_op,
+    T init)
 {
   cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage      = nullptr;
+  void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                              temp_storage_bytes, begin, begin,
-                                              binary_op, init, len, stream));
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                              temp_storage_bytes, begin, begin,
-                                              binary_op, init, len, stream));
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
@@ -146,33 +160,41 @@ template <typename IterationMapping,
           typename InputIter,
           typename OutputIter,
           typename Function>
-RAJA_INLINE resources::EventProxy<resources::Cuda>
-inclusive(resources::Cuda cuda_res,
-          ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                   IterationGetter,
-                                                   Concretizer,
-                                                   BLOCKS_PER_SM,
-                                                   Async>,
-          InputIter begin,
-          InputIter end,
-          OutputIter out,
-          Function binary_op)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+inclusive(
+    resources::Cuda cuda_res,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
+    InputIter begin,
+    InputIter end,
+    OutputIter out,
+    Function binary_op)
 {
   cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage      = nullptr;
+  void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
@@ -194,36 +216,44 @@ template <typename IterationMapping,
           typename OutputIter,
           typename Function,
           typename T>
-RAJA_INLINE resources::EventProxy<resources::Cuda>
-exclusive(resources::Cuda cuda_res,
-          ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                   IterationGetter,
-                                                   Concretizer,
-                                                   BLOCKS_PER_SM,
-                                                   Async>,
-          InputIter begin,
-          InputIter end,
-          OutputIter out,
-          Function binary_op,
-          T init)
+RAJA_INLINE
+resources::EventProxy<resources::Cuda>
+exclusive(
+    resources::Cuda cuda_res,
+    ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping, IterationGetter, Concretizer, BLOCKS_PER_SM, Async>,
+    InputIter begin,
+    InputIter end,
+    OutputIter out,
+    Function binary_op,
+    T init)
 {
   cudaStream_t stream = cuda_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage      = nullptr;
+  void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                              temp_storage_bytes, begin, out,
-                                              binary_op, init, len, stream));
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                              temp_storage_bytes, begin, out,
-                                              binary_op, init, len, stream));
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 

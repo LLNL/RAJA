@@ -55,26 +55,24 @@ namespace sequential
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable,
-          typename Func,
-          typename Resource,
-          typename ForallParam>
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Resource>,
-    expt::type_traits::is_ForallParamPack<ForallParam>,
-    concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+template <typename Iterable, typename Func, typename Resource, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<Resource>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+  >
 forall_impl(Resource res,
-            const seq_exec&,
-            Iterable&& iter,
-            Func&& body,
+            const seq_exec &,
+            Iterable &&iter,
+            Func &&body,
             ForallParam f_params)
 {
   expt::ParamMultiplexer::init<seq_exec>(f_params);
 
   RAJA_EXTRACT_BED_IT(iter);
 
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
-  {
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     expt::invoke_body(f_params, body, *(begin_it + i));
   }
 
@@ -82,24 +80,22 @@ forall_impl(Resource res,
   return resources::EventProxy<Resource>(res);
 }
 
-template <typename Iterable,
-          typename Func,
-          typename Resource,
-          typename ForallParam>
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Resource>,
-    expt::type_traits::is_ForallParamPack<ForallParam>,
-    expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+template <typename Iterable, typename Func, typename Resource, typename ForallParam>
+RAJA_INLINE
+concepts::enable_if_t<
+  resources::EventProxy<Resource>,
+  expt::type_traits::is_ForallParamPack<ForallParam>,
+  expt::type_traits::is_ForallParamPack_empty<ForallParam>
+  >
 forall_impl(Resource res,
-            const seq_exec&,
-            Iterable&& iter,
-            Func&& body,
+            const seq_exec &,
+            Iterable &&iter,
+            Func &&body,
             ForallParam)
 {
   RAJA_EXTRACT_BED_IT(iter);
 
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
-  {
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
   return resources::EventProxy<Resource>(res);

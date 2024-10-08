@@ -47,8 +47,7 @@ template <camp::idx_t ArgumentId,
           typename TilePolicy,
           typename ExecPolicy,
           typename... EnclosedStmts>
-struct TileTCount : public internal::Statement<ExecPolicy, EnclosedStmts...>
-{
+struct TileTCount : public internal::Statement<ExecPolicy, EnclosedStmts...> {
   static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "
                 "RAJA::Statement::Param< # >");
@@ -67,13 +66,9 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <camp::idx_t ArgumentId,
-          typename ParamId,
-          typename Data,
-          typename Types,
+template <camp::idx_t ArgumentId, typename ParamId, typename Data, typename Types,
           typename... EnclosedStmts>
-struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
-{
+struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
   using Base::Base;
@@ -84,14 +79,15 @@ struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
   {
     // Assign the tile's segment to the tuple
     camp::get<ArgumentId>(Base::data.segment_tuple) = si.s;
-
+    
     // Assign the tile's index
     Base::data.template assign_param<ParamId>(si.i);
-
+    
     // Execute enclosed statements
     Base::exec();
   }
 };
+
 
 
 /*!
@@ -106,16 +102,14 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>,
-    Types>
-{
+    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>, Types> {
 
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data& data)
+  static RAJA_INLINE void exec(Data &data)
   {
     // Get the segment we are going to tile
-    auto const& segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto const &segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Get the tiling policies chunk size
     auto chunk_size = TPol::chunk_size;
@@ -125,13 +119,12 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileTCountWrapper<ArgumentId, ParamId, Data, Types, EnclosedStmts...>
-        tile_wrapper(data);
+    TileTCountWrapper<ArgumentId, ParamId, Data, Types,
+                      EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r, EPol {}, tiled_iterable, tile_wrapper,
-                RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper, RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
