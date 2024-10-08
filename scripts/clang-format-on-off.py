@@ -19,8 +19,6 @@ def find_nested_template_declarations(inp : list[string], cutoff : int = 2) -> l
         num_closing_braces = 0
         num_paren_open = inp[ptr1].count('(')
         num_paren_close = inp[ptr1].count(')')
-        # stack for tracking bracket closure
-
         # bool for multiline template class invocation
         is_template_decl = (
                             (num_brackets > num_closing_brackets or
@@ -59,7 +57,6 @@ def add_clang_format_comments(inp : list[string], insertions: list[tuple[int,int
         if not done_inserting and i == insertions[current_insertion_idx][0]:
             out.append(clang_format_off)
         out.append(inp[i])
-        #print(i, insertions[current_insertion_idx][1] + 1)
         if not done_inserting and i == insertions[current_insertion_idx][1] + 1:
             out.append(clang_format_on)
             # we've handled one off-on pair, increment pointer in insertion array
