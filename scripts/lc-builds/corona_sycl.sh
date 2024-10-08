@@ -69,9 +69,6 @@ echo "   1) Load the ROCm module version matching the version in the compiler pa
 echo "      you passed to this script."
 echo
 echo "   2) Prefix the LD_LIBRARY_PATH environment variable with "
-echo "        SYCL_PATH/lib:SYCL_PATH/lib64"
-echo
-echo "      where SYCL_PATH is set to the compiler installation path you passed"
-echo "      to this script (using the proper command for your shell)."
+echo "        ${SYCL_PATH}/lib:${SYCL_PATH}/lib64"
 echo
 echo "***********************************************************************"

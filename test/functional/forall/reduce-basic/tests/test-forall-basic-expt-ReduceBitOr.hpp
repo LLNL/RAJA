@@ -20,6 +20,8 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
                                      const std::vector<IDX_TYPE>& seg_idx,
                                      camp::resources::Resource working_res)
 {
+  using REF_BITOR = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::bit_or>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -41,13 +43,15 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
   }
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  RAJA::ReduceBitOr<REDUCE_POLICY, DATA_TYPE> simpor(5);
+  DATA_TYPE simpor(5);
 
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-    simpor |= working_array[idx];
+  RAJA::forall<EXEC_POLICY>(seg,
+    RAJA::expt::Reduce<RAJA::operators::bit_or>(&simpor),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR & _simpor) {
+      _simpor |= working_array[idx];
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(simpor.get()), 13);
+  ASSERT_EQ(static_cast<DATA_TYPE>(simpor), 13);
 
  
   //
@@ -73,7 +77,7 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
     RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
     RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor2),
     RAJA::expt::KernelName("RAJA Reduce BitOr"),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &r1, DATA_TYPE &r2) {
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR &r1, REF_BITOR &r2) {
       r1 |= working_array[idx];
       r2 |= working_array[idx];
   });
@@ -87,7 +91,7 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
   for (int j = 0; j < nloops; ++j) {
     RAJA::forall<EXEC_POLICY>(seg,
       RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &r1) {
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR &r1) {
         r1 |= working_array[idx];
     });
   }
