@@ -55,27 +55,31 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
+    statement::
+        TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>,
+    Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types> {
+          Data,
+          statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+          Types>
+{
 
   using Base = SyclStatementExecutor<
       Data,
-      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>;
+      statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active){
+  static inline RAJA_DEVICE void
+  exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
+  {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     diff_t chunk_size = TPol::chunk_size;
@@ -84,7 +88,8 @@ struct SyclStatementExecutor<
     diff_t len = segment.end() - segment.begin();
 
     // Iterate through tiles
-    for (diff_t i = 0, t = 0; i < len; i += chunk_size, ++t) {
+    for (diff_t i = 0, t = 0; i < len; i += chunk_size, ++t)
+    {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -114,48 +119,49 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    sycl_group_012_direct<BlockDim>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_direct<BlockDim>,
+                          EnclosedStmts...>,
+    Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        sycl_group_012_direct<BlockDim>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_direct<BlockDim>,
+                          EnclosedStmts...>,
+          Types>
+{
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      sycl_group_012_direct<BlockDim>,
-                      EnclosedStmts...>,
-                      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_group_012_direct<BlockDim>,
+                                            EnclosedStmts...>,
+                            Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void
+  exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    //diff_t t = get_sycl_dim<BlockDim>(blockIdx);
+    // diff_t t = get_sycl_dim<BlockDim>(blockIdx);
     diff_t t = item.get_group(BlockDim);
     diff_t i = t * chunk_size;
 
     // check have a chunk
-    if (i < len) {
+    if (i < len)
+    {
 
       // Keep copy of original segment, so we can restore it
       segment_t orig_segment = segment;
@@ -187,51 +193,52 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    sycl_group_012_loop<BlockDim>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_loop<BlockDim>,
+                          EnclosedStmts...>,
+    Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        sycl_group_012_loop<BlockDim>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<ArgumentId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_group_012_loop<BlockDim>,
+                          EnclosedStmts...>,
+          Types>
+{
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      sycl_group_012_loop<BlockDim>,
-                      EnclosedStmts...>,
-                      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_group_012_loop<BlockDim>,
+                                            EnclosedStmts...>,
+                            Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void
+  exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
-    diff_t len = segment.end() - segment.begin();
-    diff_t t_init = item.get_group(BlockDim);
-    diff_t i_init = t_init * chunk_size;
+    diff_t len      = segment.end() - segment.begin();
+    diff_t t_init   = item.get_group(BlockDim);
+    diff_t i_init   = t_init * chunk_size;
     diff_t t_stride = item.get_group_range(BlockDim);
     diff_t i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
+    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride)
+    {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, chunk_size);
@@ -247,7 +254,6 @@ struct SyclStatementExecutor<
 };
 
 
-
 /*!
  * A specialized RAJA::kernel sycl_impl executor for statement::TileTCount
  * Assigns the tile segment to segment ArgumentId
@@ -258,49 +264,49 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts,
+          typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
-  Data,
-  statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::tile_fixed<chunk_size>,
-                        sycl_local_012_direct<ThreadDim>,
-                        EnclosedStmts ...>,
-                        Types>
-  : public SyclStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    sycl_local_012_direct<ThreadDim>,
-                    EnclosedStmts ...>,
-                    Types> {
-
-  using Base = SyclStatementExecutor<
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_local_012_direct<ThreadDim>,
+                          EnclosedStmts...>,
+    Types>
+    : public SyclStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
                           RAJA::tile_fixed<chunk_size>,
                           sycl_local_012_direct<ThreadDim>,
-                          EnclosedStmts ...>,
-                          Types>;
+                          EnclosedStmts...>,
+          Types>
+{
 
-  using typename Base::enclosed_stmts_t;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_local_012_direct<ThreadDim>,
+                                            EnclosedStmts...>,
+                            Types>;
+
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void
+  exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    //diff_t t = get_sycl_dim<ThreadDim>(threadIdx);
+    // diff_t t = get_sycl_dim<ThreadDim>(threadIdx);
     diff_t t = item.get_local_id(ThreadDim);
     diff_t i = t * chunk_size;
 
@@ -310,7 +316,7 @@ struct SyclStatementExecutor<
 
     // Assign our new tiled segment
     diff_t slice_size = have_work ? chunk_size : 0;
-    segment = orig_segment.slice(i, slice_size);
+    segment           = orig_segment.slice(i, slice_size);
     data.template assign_param<ParamId>(t);
 
     // execute enclosed statements
@@ -332,57 +338,58 @@ template <typename Data,
           typename ParamId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts,
+          typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
-  Data,
-  statement::TileTCount<ArgumentId, ParamId,
-                        RAJA::tile_fixed<chunk_size>,
-                        sycl_local_012_loop<ThreadDim>,
-                        EnclosedStmts ...>,
-                        Types>
-  : public SyclStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    sycl_local_012_loop<ThreadDim>,
-                    EnclosedStmts ...>,
-                    Types> {
-
-  using Base = SyclStatementExecutor<
+    statement::TileTCount<ArgumentId,
+                          ParamId,
+                          RAJA::tile_fixed<chunk_size>,
+                          sycl_local_012_loop<ThreadDim>,
+                          EnclosedStmts...>,
+    Types>
+    : public SyclStatementExecutor<
           Data,
           statement::Tile<ArgumentId,
                           RAJA::tile_fixed<chunk_size>,
                           sycl_local_012_loop<ThreadDim>,
-                          EnclosedStmts ...>,
-                          Types>;
+                          EnclosedStmts...>,
+          Types>
+{
 
-  using typename Base::enclosed_stmts_t;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::Tile<ArgumentId,
+                                            RAJA::tile_fixed<chunk_size>,
+                                            sycl_local_012_loop<ThreadDim>,
+                                            EnclosedStmts...>,
+                            Types>;
+
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void
+  exec(Data& data, cl::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
-    auto &segment = camp::get<ArgumentId>(data.segment_tuple);
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
 
     // Keep copy of original segment, so we can restore it
-    using segment_t = camp::decay<decltype(segment)>;
+    using segment_t        = camp::decay<decltype(segment)>;
     segment_t orig_segment = segment;
 
     // compute trip count
     diff_t len = segment_length<ArgumentId>(data);
-//    diff_t t_init = get_sycl_dim<ThreadDim>(threadIdx);
+    //    diff_t t_init = get_sycl_dim<ThreadDim>(threadIdx);
     diff_t t_init = item.get_local_id(ThreadDim);
     diff_t i_init = t_init * chunk_size;
-//    diff_t t_stride = get_sycl_dim<ThreadDim>(blockDim);
+    //    diff_t t_stride = get_sycl_dim<ThreadDim>(blockDim);
     diff_t t_stride = item.get_local_range(ThreadDim);
     diff_t i_stride = t_stride * chunk_size;
 
     // Iterate through grid stride of chunks
-    for(diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride) {
+    for (diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride)
+    {
       diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
@@ -391,7 +398,7 @@ struct SyclStatementExecutor<
 
       // Assign our new tiled segment
       diff_t slice_size = have_work ? chunk_size : 0;
-      segment = orig_segment.slice(i, slice_size);
+      segment           = orig_segment.slice(i, slice_size);
       data.template assign_param<ParamId>(t);
 
       // execute enclosed statements

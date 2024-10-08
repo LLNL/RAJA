@@ -53,11 +53,10 @@ template <typename IterationMapping,
           bool Async,
           typename InputIter,
           typename Function>
-RAJA_INLINE
-resources::EventProxy<resources::Hip>
-inclusive_inplace(
+RAJA_INLINE resources::EventProxy<resources::Hip> inclusive_inplace(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+    ::RAJA::policy::hip::
+        hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op)
@@ -66,23 +65,14 @@ inclusive_inplace(
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             len,
+  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, len,
                                              stream));
 #endif
 
@@ -92,20 +82,11 @@ inclusive_inplace(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             len,
+  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, len,
                                              stream));
 #endif
   // Free temporary storage
@@ -127,11 +108,10 @@ template <typename IterationMapping,
           typename InputIter,
           typename Function,
           typename T>
-RAJA_INLINE
-resources::EventProxy<resources::Hip>
-exclusive_inplace(
+RAJA_INLINE resources::EventProxy<resources::Hip> exclusive_inplace(
     resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+    ::RAJA::policy::hip::
+        hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
     InputIter begin,
     InputIter end,
     Function binary_op,
@@ -141,25 +121,14 @@ exclusive_inplace(
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      begin,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, init, len,
                                              stream));
 #endif
   // Allocate temporary storage
@@ -168,22 +137,11 @@ exclusive_inplace(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                              temp_storage_bytes,
-                                              begin,
-                                              begin,
-                                              init,
-                                              len,
-                                              binary_op,
-                                              stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      begin, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             begin,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, begin, binary_op, init, len,
                                              stream));
 #endif
   // Free temporary storage
@@ -205,38 +163,27 @@ template <typename IterationMapping,
           typename InputIter,
           typename OutputIter,
           typename Function>
-RAJA_INLINE
-resources::EventProxy<resources::Hip>
-inclusive(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-    InputIter begin,
-    InputIter end,
-    OutputIter out,
-    Function binary_op)
+RAJA_INLINE resources::EventProxy<resources::Hip>
+inclusive(resources::Hip hip_res,
+          ::RAJA::policy::hip::
+              hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+          InputIter begin,
+          InputIter end,
+          OutputIter out,
+          Function binary_op)
 {
   hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      out,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             out,
-                                             binary_op,
-                                             len,
-                                             stream));
+  hipErrchk(::cub::DeviceScan::InclusiveScan(
+      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
 #endif
   // Allocate temporary storage
   d_temp_storage =
@@ -244,21 +191,11 @@ inclusive(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::inclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      out,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::inclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             out,
-                                             binary_op,
-                                             len,
-                                             stream));
+  hipErrchk(::cub::DeviceScan::InclusiveScan(
+      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
@@ -280,40 +217,28 @@ template <typename IterationMapping,
           typename OutputIter,
           typename Function,
           typename T>
-RAJA_INLINE
-resources::EventProxy<resources::Hip>
-exclusive(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
-    InputIter begin,
-    InputIter end,
-    OutputIter out,
-    Function binary_op,
-    T init)
+RAJA_INLINE resources::EventProxy<resources::Hip>
+exclusive(resources::Hip hip_res,
+          ::RAJA::policy::hip::
+              hip_exec<IterationMapping, IterationGetter, Concretizer, Async>,
+          InputIter begin,
+          InputIter end,
+          OutputIter out,
+          Function binary_op,
+          T init)
 {
   hipStream_t stream = hip_res.get_stream();
 
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
-  void* d_temp_storage = nullptr;
+  void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      out,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             out,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, out, binary_op, init, len,
                                              stream));
 #endif
   // Allocate temporary storage
@@ -322,22 +247,11 @@ exclusive(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::exclusive_scan(d_temp_storage,
-                                      temp_storage_bytes,
-                                      begin,
-                                      out,
-                                      init,
-                                      len,
-                                      binary_op,
-                                      stream));
+  hipErrchk(::rocprim::exclusive_scan(d_temp_storage, temp_storage_bytes, begin,
+                                      out, init, len, binary_op, stream));
 #elif defined(__CUDACC__)
-  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
-                                             temp_storage_bytes,
-                                             begin,
-                                             out,
-                                             binary_op,
-                                             init,
-                                             len,
+  hipErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes,
+                                             begin, out, binary_op, init, len,
                                              stream));
 #endif
   // Free temporary storage

@@ -13,8 +13,9 @@
 
 #include "RAJA_unit-test-types.hpp"
 
-template<typename T>
-class IndexValueUnitTest : public ::testing::Test {};
+template <typename T>
+class IndexValueUnitTest : public ::testing::Test
+{};
 
 TYPED_TEST_SUITE(IndexValueUnitTest, UnitIndexTypes);
 
@@ -181,7 +182,7 @@ TYPED_TEST(IndexValueUnitTest, IndexTypeArith)
   ASSERT_EQ(StrongTypeIndex(8), a);
   ASSERT_EQ(RAJA::Index_type(2), b);
 
-  
+
   RAJA_INDEX_VALUE_T(TestType, TypeParam, "Test Type");
   TestType c(8);
   RAJA::Index_type d(2);

@@ -41,7 +41,7 @@ namespace RAJA
 ///
 enum named_usage : int
 {
-  ignored = -1,
+  ignored     = -1,
   unspecified = 0
 };
 
@@ -70,13 +70,19 @@ enum struct kernel_sync_requirement : int
 namespace iteration_mapping
 {
 
-struct DirectBase {};
-struct LoopBase {};
-struct ContiguousLoopBase : LoopBase {};
-struct StridedLoopBase : LoopBase {};
-struct UnsizedLoopBase {};
-struct SizedLoopBase {};
-template < size_t t_max_iterations >
+struct DirectBase
+{};
+struct LoopBase
+{};
+struct ContiguousLoopBase : LoopBase
+{};
+struct StridedLoopBase : LoopBase
+{};
+struct UnsizedLoopBase
+{};
+struct SizedLoopBase
+{};
+template <size_t t_max_iterations>
 struct SizedLoopSpecifyingBase : SizedLoopBase
 {
   static constexpr size_t max_iterations = t_max_iterations;
@@ -103,7 +109,8 @@ struct SizedLoopSpecifyingBase : SizedLoopBase
 ///   // 3 -> {3}
 ///   // 4 -> {}
 ///
-struct Direct : DirectBase {};
+struct Direct : DirectBase
+{};
 
 ///
 /// Contiguousloop assumes the loop has fewer iterations than indices and
@@ -130,10 +137,13 @@ struct Direct : DirectBase {};
 ///   // 1 -> {3, 4, 5}
 ///   // 2 -> {6, 7}
 ///
-template < size_t max_iterations >
-struct Contiguousloop : ContiguousLoopBase,
-    std::conditional_t<(max_iterations != named_usage::unspecified),
-                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
+template <size_t max_iterations>
+struct Contiguousloop
+    : ContiguousLoopBase,
+      std::conditional_t<(max_iterations != named_usage::unspecified),
+                         SizedLoopSpecifyingBase<max_iterations>,
+                         UnsizedLoopBase>
+{};
 
 ///
 /// StridedLoop assumes the loop has fewer iterations than indices and
@@ -160,18 +170,25 @@ struct Contiguousloop : ContiguousLoopBase,
 ///   // 1 -> {1, 4, 7}
 ///   // 2 -> {2, 5}
 ///
-template < size_t max_iterations >
-struct StridedLoop : StridedLoopBase,
-    std::conditional_t<(max_iterations != named_usage::unspecified),
-                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
+template <size_t max_iterations>
+struct StridedLoop
+    : StridedLoopBase,
+      std::conditional_t<(max_iterations != named_usage::unspecified),
+                         SizedLoopSpecifyingBase<max_iterations>,
+                         UnsizedLoopBase>
+{};
 
-} // namespace iteration_mapping
+}  // namespace iteration_mapping
 
 ///
 /// Enumeration used to indicate whether ListSegment object owns data
 /// representing its indices.
 ///
-enum IndexOwnership { Unowned, Owned };
+enum IndexOwnership
+{
+  Unowned,
+  Owned
+};
 
 ///
 /// Type use for all loop indexing in RAJA constructs.
@@ -189,8 +206,8 @@ const int UndefinedValue = -9999999;
 /// Template list of sizes
 ///
 template <Index_type... Sizes>
-struct SizeList {
-};
+struct SizeList
+{};
 
 
 ///
@@ -203,15 +220,15 @@ struct Fraction
 
   using inverse = Fraction<int_t, denominator, numerator>;
 
-  template < typename new_int_t >
-  using rebind = Fraction<new_int_t, new_int_t(numerator), new_int_t(denominator)>;
+  template <typename new_int_t>
+  using rebind =
+      Fraction<new_int_t, new_int_t(numerator), new_int_t(denominator)>;
 
   static constexpr int_t multiply(int_t val) noexcept
   {
     return (val / denominator) * numerator +
            (val % denominator) * numerator / denominator;
   }
-
 };
 
 
@@ -229,7 +246,7 @@ using Real_type = double;
 
 #elif defined(RAJA_USE_FLOAT)
 ///
-using Real_type = float;
+using Real_type         = float;
 
 #else
 #error RAJA Real_type is undefined!
@@ -254,7 +271,8 @@ using Complex_type = std::complex<Real_type>;
 // alignment attribute supported for versions > 12
 //
 #if __ICC >= 1300
-using TDRAReal_ptr = Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)));
+using TDRAReal_ptr =
+    Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)));
 
 using const_TDRAReal_ptr = const TDRAReal_ptr;
 #endif
@@ -262,7 +280,8 @@ using const_TDRAReal_ptr = const TDRAReal_ptr;
 #elif defined(RAJA_COMPILER_GNU)
 
 #elif defined(RAJA_COMPILER_CLANG)
-using TDRAReal_ptr = Real_type* RAJA_RESTRICT __attribute__((aligned(RAJA::DATA_ALIGN)));
+using TDRAReal_ptr =
+    Real_type* RAJA_RESTRICT __attribute__((aligned(RAJA::DATA_ALIGN)));
 
 using const_TDRAReal_ptr = const TDRAReal_ptr;
 
@@ -814,51 +833,51 @@ private:
  ******************************************************************************
  */
 #if defined(RAJA_USE_BARE_PTR)
-using Real_ptr = Real_type*;
+using Real_ptr       = Real_type*;
 using const_Real_ptr = const Real_type*;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = Complex_type*;
+using Complex_ptr       = Complex_type*;
 using const_Complex_ptr = const Complex_type*;
 #endif
 
-using UnalignedReal_ptr = Real_type*;
+using UnalignedReal_ptr       = Real_type*;
 using const_UnalignedReal_ptr = const Real_type*;
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
-using Real_ptr = Real_type* RAJA_RESTRICT;
-using const_Real_ptr = const Real_type* RAJA_RESTRICT;
+using Real_ptr          = Real_type* RAJA_RESTRICT;
+using const_Real_ptr    = const Real_type* RAJA_RESTRICT;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = Complex_type* RAJA_RESTRICT;
+using Complex_ptr       = Complex_type* RAJA_RESTRICT;
 using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
 #endif
 
-using UnalignedReal_ptr = Real_type* RAJA_RESTRICT;
+using UnalignedReal_ptr       = Real_type* RAJA_RESTRICT;
 using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
-using Real_ptr = TDRAReal_ptr;
-using const_Real_ptr = const_TDRAReal_ptr;
+using Real_ptr           = TDRAReal_ptr;
+using const_Real_ptr     = const_TDRAReal_ptr;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = Complex_type* RAJA_RESTRICT;
-using const_Complex_ptr = const Complex_type* RAJA_RESTRICT;
+using Complex_ptr        = Complex_type* RAJA_RESTRICT;
+using const_Complex_ptr  = const Complex_type* RAJA_RESTRICT;
 #endif
 
-using UnalignedReal_ptr = Real_type* RAJA_RESTRICT;
+using UnalignedReal_ptr       = Real_type* RAJA_RESTRICT;
 using const_UnalignedReal_ptr = const Real_type* RAJA_RESTRICT;
 
 #elif defined(RAJA_USE_PTR_CLASS)
-using Real_ptr = RestrictAlignedRealPtr;
-using const_Real_ptr = ConstRestrictAlignedRealPtr;
+using Real_ptr           = RestrictAlignedRealPtr;
+using const_Real_ptr     = ConstRestrictAlignedRealPtr;
 
 #if defined(RAJA_USE_COMPLEX)
-using Complex_ptr = RestrictComplexPtr;
-using const_Complex_ptr = ConstRestrictComplexPtr;
+using Complex_ptr        = RestrictComplexPtr;
+using const_Complex_ptr  = ConstRestrictComplexPtr;
 #endif
 
-using UnalignedReal_ptr = RestrictRealPtr;
+using UnalignedReal_ptr       = RestrictRealPtr;
 using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 
 #else
@@ -867,20 +886,21 @@ using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 #endif
 
 
-namespace detail {
+namespace detail
+{
 
 /*!
  * \brief Abstracts access to memory using normal memory accesses.
  */
 struct DefaultAccessor
 {
-  template < typename T >
+  template <typename T>
   static RAJA_HOST_DEVICE RAJA_INLINE T get(T* ptr, size_t i)
   {
     return ptr[i];
   }
 
-  template < typename T >
+  template <typename T>
   static RAJA_HOST_DEVICE RAJA_INLINE void set(T* ptr, size_t i, T val)
   {
     ptr[i] = val;
@@ -919,11 +939,11 @@ struct AsIntegerArray
                     sizeof(unsigned short) <= max_integer_type_size) ||
                    sizeof(unsigned char) < min_integer_type_size),
                   unsigned short,
-                  std::conditional_t<
-                      ((alignof(T) >= alignof(unsigned char) &&
-                        sizeof(unsigned char) <= max_integer_type_size)),
-                      unsigned char,
-                      void>>>>>;
+                  std::conditional_t<((alignof(T) >= alignof(unsigned char) &&
+                                       sizeof(unsigned char) <=
+                                           max_integer_type_size)),
+                                     unsigned char,
+                                     void>>>>>;
   static_assert(!std::is_same<integer_type, void>::value,
                 "could not find a compatible integer type");
   static_assert(sizeof(integer_type) >= min_integer_type_size,
@@ -965,28 +985,23 @@ template <typename T>
 struct ScopedAssignment
 {
   ScopedAssignment(T& val, T const& new_val)
-    : m_ref_to_val(val)
-    , m_prev_val(std::move(val))
+      : m_ref_to_val(val), m_prev_val(std::move(val))
   {
     m_ref_to_val = new_val;
   }
 
   ScopedAssignment(T& val, T&& new_val)
-    : m_ref_to_val(val)
-    , m_prev_val(std::move(val))
+      : m_ref_to_val(val), m_prev_val(std::move(val))
   {
     m_ref_to_val = std::move(new_val);
   }
 
-  ScopedAssignment(ScopedAssignment const&) = delete;
-  ScopedAssignment(ScopedAssignment &&) = delete;
+  ScopedAssignment(ScopedAssignment const&)            = delete;
+  ScopedAssignment(ScopedAssignment&&)                 = delete;
   ScopedAssignment& operator=(ScopedAssignment const&) = delete;
-  ScopedAssignment& operator=(ScopedAssignment &&) = delete;
+  ScopedAssignment& operator=(ScopedAssignment&&)      = delete;
 
-  ~ScopedAssignment()
-  {
-    m_ref_to_val = std::move(m_prev_val);
-  }
+  ~ScopedAssignment() { m_ref_to_val = std::move(m_prev_val); }
 
 private:
   T& m_ref_to_val;

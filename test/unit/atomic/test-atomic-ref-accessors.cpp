@@ -25,47 +25,44 @@ template <typename T>
 class AtomicRefBasicAccessorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_SUITE_P( AtomicRefBasicAccessorUnitTest );
+TYPED_TEST_SUITE_P(AtomicRefBasicAccessorUnitTest);
 
-TYPED_TEST_P( AtomicRefBasicAccessorUnitTest, BasicAccessors )
+TYPED_TEST_P(AtomicRefBasicAccessorUnitTest, BasicAccessors)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
   // should also work with CUDA
-  T theval = (T)0;
-  T * memaddr = &theval;
+  T theval   = (T)0;
+  T* memaddr = &theval;
   T result;
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
+  RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
 
   // test store method with op()
-  test1.store( (T)19 );
-  ASSERT_EQ( test1, (T)19 );
+  test1.store((T)19);
+  ASSERT_EQ(test1, (T)19);
 
   // test assignment operator
   test1 = (T)23;
-  ASSERT_EQ( test1, (T)23 );
+  ASSERT_EQ(test1, (T)23);
 
   // test load method
   test1 = (T)29;
-  ASSERT_EQ( test1.load(), (T)29 );
+  ASSERT_EQ(test1.load(), (T)29);
 
   // test ()
   result = (test1 = (T)31);
-  ASSERT_EQ( test1, (T)31 );
-  ASSERT_EQ( result, (T)31 );
+  ASSERT_EQ(test1, (T)31);
+  ASSERT_EQ(result, (T)31);
 }
 
-REGISTER_TYPED_TEST_SUITE_P( AtomicRefBasicAccessorUnitTest,
-                             BasicAccessors
-                           );
+REGISTER_TYPED_TEST_SUITE_P(AtomicRefBasicAccessorUnitTest, BasicAccessors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P( BasicAccessUnitTest,
-                                AtomicRefBasicAccessorUnitTest,
-                                basic_types
-                              );
+INSTANTIATE_TYPED_TEST_SUITE_P(BasicAccessUnitTest,
+                               AtomicRefBasicAccessorUnitTest,
+                               basic_types);
 
 // Pure CUDA test.
 #if defined(RAJA_ENABLE_CUDA)
@@ -75,48 +72,58 @@ template <typename T>
 class AtomicRefCUDAAccessorUnitTest : public ::testing::Test
 {};
 
-TYPED_TEST_SUITE_P( AtomicRefCUDAAccessorUnitTest );
+TYPED_TEST_SUITE_P(AtomicRefCUDAAccessorUnitTest);
 
-GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
+GPU_TYPED_TEST_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors)
 {
-  using T = typename std::tuple_element<0, TypeParam>::type;
+  using T            = typename std::tuple_element<0, TypeParam>::type;
   using AtomicPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  T * memaddr = nullptr;
-  T * result = nullptr;
-  cudaErrchk(cudaMallocManaged((void **)&memaddr, sizeof(T)));
-  cudaErrchk(cudaMallocManaged((void **)&result, sizeof(T)));
+  T* memaddr = nullptr;
+  T* result  = nullptr;
+  cudaErrchk(cudaMallocManaged((void**)&memaddr, sizeof(T)));
+  cudaErrchk(cudaMallocManaged((void**)&result, sizeof(T)));
   cudaErrchk(cudaDeviceSynchronize());
 
   // explicit constructor with memory address
-  RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
+  RAJA::AtomicRef<T, AtomicPolicy> test1(memaddr);
 
   // test store method with op()
-  forone<test_cuda>( [=] __device__ () {test1.store( (T)19 );} );
+  forone<test_cuda>([=] __device__() { test1.store((T)19); });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( test1, (T)19 );
+  ASSERT_EQ(test1, (T)19);
 
   // test assignment operator
-  forone<test_cuda>( [=] __device__ () {test1 = (T)23;} );
+  forone<test_cuda>([=] __device__() { test1 = (T)23; });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( test1, (T)23 );
+  ASSERT_EQ(test1, (T)23);
 
   // test load method
-  forone<test_cuda>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
+  forone<test_cuda>(
+      [=] __device__()
+      {
+        test1     = (T)29;
+        result[0] = test1.load();
+      });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)29 );
-  ASSERT_EQ( test1, (T)29 );
+  ASSERT_EQ(result[0], (T)29);
+  ASSERT_EQ(test1, (T)29);
 
   // test T()
-  forone<test_cuda>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
+  forone<test_cuda>(
+      [=] __device__()
+      {
+        test1     = (T)47;
+        result[0] = test1;
+      });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)47 );
-  ASSERT_EQ( test1, (T)47 );
+  ASSERT_EQ(result[0], (T)47);
+  ASSERT_EQ(test1, (T)47);
 
-  forone<test_cuda>( [=] __device__ () {result[0] = (test1 = (T)31);} );
+  forone<test_cuda>([=] __device__() { result[0] = (test1 = (T)31); });
   cudaErrchk(cudaDeviceSynchronize());
-  ASSERT_EQ( result[0], (T)31 );
-  ASSERT_EQ( test1, (T)31 );
+  ASSERT_EQ(result[0], (T)31);
+  ASSERT_EQ(test1, (T)31);
 
   cudaErrchk(cudaDeviceSynchronize());
 
@@ -124,14 +131,9 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
   cudaErrchk(cudaFree(result));
 }
 
-REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAAccessorUnitTest,
-                             CUDAAccessors
-                           );
+REGISTER_TYPED_TEST_SUITE_P(AtomicRefCUDAAccessorUnitTest, CUDAAccessors);
 
-INSTANTIATE_TYPED_TEST_SUITE_P( CUDAAccessUnitTest,
-                                AtomicRefCUDAAccessorUnitTest,
-                                CUDA_types
-                              );
+INSTANTIATE_TYPED_TEST_SUITE_P(CUDAAccessUnitTest,
+                               AtomicRefCUDAAccessorUnitTest,
+                               CUDA_types);
 #endif
-
-

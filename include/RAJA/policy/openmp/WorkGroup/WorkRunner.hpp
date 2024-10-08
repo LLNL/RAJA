@@ -38,23 +38,21 @@ namespace detail
 template <typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
-          typename ... Args>
-struct WorkRunner<
-        RAJA::omp_work,
-        RAJA::ordered,
-        DISPATCH_POLICY_T,
-        ALLOCATOR_T,
-        INDEX_T,
-        Args...>
-    : WorkRunnerForallOrdered<
-        RAJA::omp_parallel_for_exec,
-        RAJA::omp_work,
-        RAJA::ordered,
-        DISPATCH_POLICY_T,
-        ALLOCATOR_T,
-        INDEX_T,
-        Args...>
-{ };
+          typename... Args>
+struct WorkRunner<RAJA::omp_work,
+                  RAJA::ordered,
+                  DISPATCH_POLICY_T,
+                  ALLOCATOR_T,
+                  INDEX_T,
+                  Args...>
+    : WorkRunnerForallOrdered<RAJA::omp_parallel_for_exec,
+                              RAJA::omp_work,
+                              RAJA::ordered,
+                              DISPATCH_POLICY_T,
+                              ALLOCATOR_T,
+                              INDEX_T,
+                              Args...>
+{};
 
 /*!
  * Runs work in a storage container in reverse order
@@ -63,23 +61,21 @@ struct WorkRunner<
 template <typename DISPATCH_POLICY_T,
           typename ALLOCATOR_T,
           typename INDEX_T,
-          typename ... Args>
-struct WorkRunner<
-        RAJA::omp_work,
-        RAJA::reverse_ordered,
-        DISPATCH_POLICY_T,
-        ALLOCATOR_T,
-        INDEX_T,
-        Args...>
-    : WorkRunnerForallReverse<
-        RAJA::omp_parallel_for_exec,
-        RAJA::omp_work,
-        RAJA::reverse_ordered,
-        DISPATCH_POLICY_T,
-        ALLOCATOR_T,
-        INDEX_T,
-        Args...>
-{ };
+          typename... Args>
+struct WorkRunner<RAJA::omp_work,
+                  RAJA::reverse_ordered,
+                  DISPATCH_POLICY_T,
+                  ALLOCATOR_T,
+                  INDEX_T,
+                  Args...>
+    : WorkRunnerForallReverse<RAJA::omp_parallel_for_exec,
+                              RAJA::omp_work,
+                              RAJA::reverse_ordered,
+                              DISPATCH_POLICY_T,
+                              ALLOCATOR_T,
+                              INDEX_T,
+                              Args...>
+{};
 
 }  // namespace detail
 

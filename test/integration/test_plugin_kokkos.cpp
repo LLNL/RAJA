@@ -14,7 +14,7 @@ TEST(PluginTestKokkos, Exception)
 
   ASSERT_ANY_THROW({
     RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10),
-                               [=](int i) { a[i] = 0; });
+                                 [=](int i) { a[i] = 0; });
   });
 
   delete[] a;

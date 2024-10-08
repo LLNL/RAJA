@@ -41,9 +41,9 @@ namespace cuda
 
 // global function that creates the value on the device using the
 // factory and writes it into a pinned ptr
-template < typename Factory >
-__global__ void get_value_global(
-    typename Factory::value_type* ptr, Factory factory)
+template <typename Factory>
+__global__ void get_value_global(typename Factory::value_type* ptr,
+                                 Factory factory)
 {
   *ptr = factory();
 }
@@ -52,8 +52,9 @@ __global__ void get_value_global(
 inline void* get_cached_value_ptr(size_t nbytes)
 {
   static size_t cached_nbytes = 0;
-  static void* ptr = nullptr;
-  if (nbytes > cached_nbytes) {
+  static void* ptr            = nullptr;
+  if (nbytes > cached_nbytes)
+  {
     cached_nbytes = 0;
     cudaErrchk(cudaFreeHost(ptr));
     cudaErrchk(cudaMallocHost(&ptr, nbytes));
@@ -73,7 +74,7 @@ inline std::mutex& get_value_mutex()
 // get the device function pointer by calling a global function to
 // write it into a pinned ptr, beware different instantiates of this
 // function may run concurrently
-template < typename Factory >
+template <typename Factory>
 inline auto get_value(Factory&& factory)
 {
   using value_type = typename std::decay_t<Factory>::value_type;
@@ -81,8 +82,9 @@ inline auto get_value(Factory&& factory)
 
   auto res = ::camp::resources::Cuda::get_default();
   auto ptr = static_cast<value_type*>(get_cached_value_ptr(sizeof(value_type)));
-  auto func = reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
-  void *args[] = {(void*)&ptr, (void*)&factory};
+  auto func =
+      reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
+  void* args[] = {(void*)&ptr, (void*)&factory};
   cudaErrchk(cudaLaunchKernel(func, 1, 1, args, 0, res.get_stream()));
   cudaErrchk(cudaStreamSynchronize(res.get_stream()));
 
@@ -91,7 +93,7 @@ inline auto get_value(Factory&& factory)
 
 // get the device function pointer and store it so it can be used
 // multiple times
-template < typename Factory >
+template <typename Factory>
 inline auto get_cached_value(Factory&& factory)
 {
   static auto value = get_value(std::forward<Factory>(factory));
@@ -101,17 +103,20 @@ inline auto get_cached_value(Factory&& factory)
 }  // namespace cuda
 
 /*!
-* Populate and return a Dispatcher object that can be used in device code
-*/
-template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, size_t BLOCKS_PER_SM, bool Async >
-inline const Dispatcher_T* get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
+ * Populate and return a Dispatcher object that can be used in device code
+ */
+template <typename T,
+          typename Dispatcher_T,
+          size_t BLOCK_SIZE,
+          size_t BLOCKS_PER_SM,
+          bool Async>
+inline const Dispatcher_T*
+get_Dispatcher(cuda_work_explicit<BLOCK_SIZE, BLOCKS_PER_SM, Async> const&)
 {
-  static Dispatcher_T dispatcher{
-        Dispatcher_T::template makeDispatcher<T>(
-          [](auto&& factory) {
-            return cuda::get_cached_value(
-                std::forward<decltype(factory)>(factory));
-          }) };
+  static Dispatcher_T dispatcher {Dispatcher_T::template makeDispatcher<T>(
+      [](auto&& factory) {
+        return cuda::get_cached_value(std::forward<decltype(factory)>(factory));
+      })};
   return &dispatcher;
 }
 

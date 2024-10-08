@@ -88,7 +88,7 @@
 #endif
 
 #if defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/desul.hpp"
+#include "RAJA/policy/desul.hpp"
 #endif
 
 #include "RAJA/index/IndexSet.hpp"
@@ -197,11 +197,13 @@
 
 #include "RAJA/pattern/sort.hpp"
 
-namespace RAJA {
-namespace expt{}
+namespace RAJA
+{
+namespace expt
+{}
 //  // provide a RAJA::expt namespace for experimental work, but bring alias
 //  // it into RAJA so it doesn't affect user code
 //  using namespace expt;
-}
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

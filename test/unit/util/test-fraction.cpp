@@ -30,16 +30,17 @@ void testFractionMultiplyTypesValues()
             IntegerType(double(numerator) / double(denominator) * double(101)));
 
   // Test where naive algorithm causes overflow, when within precision of double
-  if /*constexpr*/ (sizeof(IntegerType) < sizeof(double)) {
+  if /*constexpr*/ (sizeof(IntegerType) < sizeof(double))
+  {
 
     static constexpr IntegerType max = std::numeric_limits<IntegerType>::max();
-    static constexpr IntegerType val = (numerator > denominator) ?
-        (max / numerator * denominator) : max;
+    static constexpr IntegerType val =
+        (numerator > denominator) ? (max / numerator * denominator) : max;
 
-    ASSERT_EQ(Frac::multiply(IntegerType(val)),
-              IntegerType(double(numerator) / double(denominator) * double(val)));
+    ASSERT_EQ(
+        Frac::multiply(IntegerType(val)),
+        IntegerType(double(numerator) / double(denominator) * double(val)));
   }
-
 }
 
 template <typename IntegerType>
@@ -54,8 +55,8 @@ void testFractionMultiplyTypes()
 }
 
 
-#define RAJA_FRACTION_RUN_TEST(test) \
-  test<int>(); \
+#define RAJA_FRACTION_RUN_TEST(test)                                           \
+  test<int>();                                                                 \
   test<size_t>();
 
 TEST(Fraction, basic_multiply_Fraction)

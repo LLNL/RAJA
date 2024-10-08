@@ -67,26 +67,30 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
 {
   std::array<IdxLin, Rank> strides;
   std::array<IdxLin, Rank> folded_strides;
-  for (size_t i = 0; i < Rank; ++i) {
+  for (size_t i = 0; i < Rank; ++i)
+  {
     // If the size of dimension i is zero, then the stride is zero
     folded_strides[i] = sizes[permutation[i]] ? 1 : 0;
-    for (size_t j = i + 1; j < Rank; ++j) {
+    for (size_t j = i + 1; j < Rank; ++j)
+    {
       folded_strides[i] *= sizes[permutation[j]] ? sizes[permutation[j]] : 1;
     }
   }
 
-  for (size_t i = 0; i < Rank; ++i) {
+  for (size_t i = 0; i < Rank; ++i)
+  {
     strides[permutation[i]] = folded_strides[i];
   }
 
 
   // return Layout<Rank, IdxLin>(sizes, strides);
-  auto ret  = Layout<Rank, IdxLin>();
-  for (size_t i = 0; i < Rank; ++i) {
-    ret.sizes[i] = sizes[i];
-    ret.strides[i] = strides[i];
+  auto ret = Layout<Rank, IdxLin>();
+  for (size_t i = 0; i < Rank; ++i)
+  {
+    ret.sizes[i]       = sizes[i];
+    ret.strides[i]     = strides[i];
     ret.inv_strides[i] = strides[i] ? strides[i] : 1;
-    ret.inv_mods[i] = sizes[i] ? sizes[i] : 1;
+    ret.inv_mods[i]    = sizes[i] ? sizes[i] : 1;
   }
   return ret;
 }
