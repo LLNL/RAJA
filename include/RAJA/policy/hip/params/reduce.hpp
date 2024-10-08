@@ -13,9 +13,9 @@ namespace expt {
 namespace detail {
 
   // Init
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  init(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
+  init(Reducer<OP, T, VOp>& red, RAJA::hip::detail::hipInfo& hi)
   {
     red.devicetarget = RAJA::hip::pinned_mempool_type::getInstance().template malloc<T>(1);
     red.device_mem.allocate(hi.gridDim.x * hi.gridDim.y * hi.gridDim.z);
@@ -23,22 +23,26 @@ namespace detail {
   }
 
   // Combine
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   RAJA_HOST_DEVICE
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  combine(Reducer<OP, T>& red)
+  combine(Reducer<OP, T, VOp>& red)
   {
-    RAJA::hip::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter>(red);
+    RAJA::hip::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter,OP>( red.devicetarget,
+                                                                            red.getVal(),
+                                                                            red.device_mem,
+                                                                            red.device_count);
   }
 
   // Resolve
-  template<typename EXEC_POL, typename OP, typename T>
+  template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
-  resolve(Reducer<OP, T>& red, RAJA::hip::detail::hipInfo& hi)
+  resolve(Reducer<OP, T, VOp>& red, RAJA::hip::detail::hipInfo& hi)
   {
     // complete reduction
     hi.res.wait();
-    *red.target = OP{}(*red.target, *red.devicetarget);
+
+    red.combineTarget(*red.devicetarget);
 
     // free memory
     RAJA::hip::device_zeroed_mempool_type::getInstance().free(red.device_count);
