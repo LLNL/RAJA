@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// clang-format off
 #define OP_GREATER RAJA::operators::greater<int>
 #define OP_LESS RAJA::operators::less<int>
 
@@ -49,6 +50,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 //constexpr int CUDA_BLOCK_SIZE = 16;
 #endif
+// clang-format on
 
 #if defined(RAJA_ENABLE_HIP)
 //constexpr int HIP_BLOCK_SIZE = 16;
@@ -410,6 +412,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
+// clang-format off
 template <typename Comparator, typename T>
 bool equivalent(T const& a, T const& b, Comparator comp)
 {

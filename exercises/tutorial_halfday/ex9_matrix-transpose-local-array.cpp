@@ -47,15 +47,19 @@ const int DIM = 2;
 //
 // Function for checking results
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 //
 // Function for printing results
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -205,6 +209,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if 0
   using SEQ_EXEC_POL =
+// clang-format off
     RAJA::KernelPolicy<
       // Fill in sequential outer loop tiling execution statements....
       // (sequential  outer row loop, sequential inner column loop)...
@@ -232,6 +237,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
   ///
   /// TODO...
   ///
@@ -272,6 +278,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if 0
   using OPENMP_EXEC_POL =
+// clang-format off
   RAJA::KernelPolicy<
     // Fill in the outer loop tiling execttion statements
     // (OpenMP outer row loop, sequential inner column loop)...
@@ -298,6 +305,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
    >;
 
+// clang-format on
   ///
   /// TODO...
   ///
@@ -340,6 +348,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if 0
   using CUDA_EXEC_POL =
+// clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       // Fill in the outer loop tiling execttion statements
@@ -372,6 +381,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
+// clang-format on
   ///
   /// TODO...
   ///
@@ -421,6 +431,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -439,9 +450,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {

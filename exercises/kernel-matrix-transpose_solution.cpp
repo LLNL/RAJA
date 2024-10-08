@@ -34,15 +34,19 @@ constexpr int DIM = 2;
 //
 // Function for checking results
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 //
 // Function for printing results
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -122,6 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // _raja_mattranspose_start
   using KERNEL_EXEC_POL = 
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec, 
         RAJA::statement::For<0, RAJA::seq_exec,
@@ -130,6 +135,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
   RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
     [=](int col, int row) {
       Atview(col, row) = Aview(row, col);
@@ -149,6 +155,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // one of the inner loops.
   //
   using KERNEL_EXEC_POL_OMP = 
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec, 
         RAJA::statement::For<0, RAJA::seq_exec,
@@ -157,6 +164,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       > 
     >; 
 
+// clang-format on
   RAJA::kernel<KERNEL_EXEC_POL_OMP>( RAJA::make_tuple(col_Range, row_Range), 
     [=](int col, int row) {
       Atview(col, row) = Aview(row, col);
@@ -174,6 +182,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   // _raja_mattranspose_cuda_start
   using KERNEL_EXEC_POL_CUDA = 
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
@@ -184,6 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
   RAJA::kernel<KERNEL_EXEC_POL_CUDA>( RAJA::make_tuple(col_Range, row_Range), 
     [=] RAJA_DEVICE (int col, int row) {
       Atview(col, row) = Aview(row, col);
@@ -210,6 +220,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -228,9 +239,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {

@@ -166,6 +166,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_omp_outer_start
   using EXEC_POL2 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<2, RAJA::omp_parallel_for_exec,    // k
         RAJA::statement::For<1, RAJA::seq_exec,              // j
@@ -176,6 +177,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL2>( 
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
@@ -186,6 +189,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 // _raja_tensorinit_omp_outer_end
+// clang-format on
 
   checkResult(a, a_ref, N_tot);
 
@@ -218,6 +222,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_omp_collapse_start
   using EXEC_POL3 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<2, 1, 0>,  // k, j, i
@@ -225,6 +230,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL3>( 
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
@@ -235,6 +242,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 // _raja_tensorinit_omp_collapse_end
+// clang-format on
 
   checkResult(a, a_ref, N_tot);
 
@@ -273,6 +281,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_cuda_start
   using EXEC_POL5 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<2, RAJA::cuda_thread_z_loop,      // k
@@ -285,6 +294,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL5>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
@@ -295,6 +306,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 // _raja_tensorinit_cuda_end
+// clang-format on
 
   checkResult(a, a_ref, N_tot);
 
@@ -317,6 +329,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_cuda_tiled_direct_start
   using EXEC_POL6 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernelFixed< i_block_sz * j_block_sz * k_block_sz,
         RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>,
@@ -335,6 +348,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL6>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
@@ -345,6 +360,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 // _raja_tensorinit_cuda_tiled_direct_end
+// clang-format on
 
   checkResult(a, a_ref, N_tot);
 
@@ -360,10 +376,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   static_assert(i_block_sz*j_block_sz*k_block_sz == block_size,
                 "Invalid block_size");
 
+// clang-format off
   dim3 nblocks(static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, i_block_sz)),
                static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, j_block_sz)),
                static_cast<size_t>(RAJA_DIVIDE_CEILING_INT(N, k_block_sz)));
 
+// clang-format on
   nested_init<i_block_sz, j_block_sz, k_block_sz>
     <<<nblocks, nthreads_per_block>>>(a, c, N);
   cudaErrchk( cudaGetLastError() );
@@ -395,6 +413,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_hip_start
   using EXEC_POL7 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::For<2, RAJA::hip_thread_z_loop,      // k
@@ -407,6 +426,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL7>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
@@ -417,6 +438,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 // _raja_tensorinit_hip_end
+// clang-format on
 
   hipErrchk(hipMemcpy( a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult(a, a_ref, N_tot);
@@ -439,6 +461,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 // _raja_tensorinit_hip_tiled_direct_start
   using EXEC_POL8 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernelFixed< i_block_sz * j_block_sz * k_block_sz,
         RAJA::statement::Tile<1, RAJA::tile_fixed<j_block_sz>,
@@ -457,6 +480,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL8>(
     RAJA::make_tuple( RAJA::TypedRangeSegment<int>(0, N),
                       RAJA::TypedRangeSegment<int>(0, N),
@@ -467,6 +492,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 // _raja_tensorinit_hip_tiled_direct_end
+// clang-format on
 
   hipErrchk(hipMemcpy( a, d_a, N_tot * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult(a, a_ref, N_tot);

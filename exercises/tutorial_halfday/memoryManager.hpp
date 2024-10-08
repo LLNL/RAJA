@@ -27,6 +27,7 @@
 namespace memoryManager
 {
 
+// clang-format off
 template <typename T>
 T *allocate(RAJA::Index_type size)
 {

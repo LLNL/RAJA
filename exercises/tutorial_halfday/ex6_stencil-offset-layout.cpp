@@ -322,6 +322,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //
 // For array printing, 'stride1dim' indicates which mesh dimenstride is 
+// clang-format off
 // stride-1 (0 indicates each row is stride-1, 
 //           1 indicates each column is stride-1).
 //

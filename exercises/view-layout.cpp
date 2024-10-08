@@ -479,12 +479,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(ao, 0, Ntot_ao * sizeof(int));
 
   // _raja_offlayout1D_start
+// clang-format off
   RAJA::OffsetLayout<1, int> offlayout_1D = 
     RAJA::make_offset_layout<1, int>( {{imin}}, {{imax}} ); 
 
+// clang-format on
+// clang-format off
   RAJA::View< int, RAJA::OffsetLayout<1, int> > aoview_1Doff(ao,
                                                              offlayout_1D);
 
+// clang-format on
   for (int i = imin; i < imax; ++i) {
     aoview_1Doff(i) = i;
   }
@@ -563,14 +567,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _raja_permofflayout2D_start
   std::array<RAJA::idx_t, 2> perm1D {{1, 0}};
+// clang-format off
   RAJA::OffsetLayout<2> permofflayout_2D =
     RAJA::make_permuted_offset_layout<2>( {{imin, jmin}}, 
                                           {{imax, jmax}},
                                           perm1D );
 
+// clang-format on
+// clang-format off
   RAJA::View< int, RAJA::OffsetLayout<2> > aoview_2Dpermoff(ao,
                                                             permofflayout_2D);
 
+// clang-format on
   iter = 0;
   for (int j = jmin; j < jmax; ++j) {
     for (int i = imin; i < imax; ++i) {
@@ -600,6 +608,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(T* C, T* Cref, int N)
 {
@@ -616,6 +625,8 @@ void checkResult(T* C, T* Cref, int N)
   }
 };
 
+// clang-format on
+// clang-format off
 template <typename T>
 void printValues(T* C, int N)
 {

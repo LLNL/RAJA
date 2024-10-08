@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// clang-format off
 #define OP_PLUS_INT RAJA::operators::plus<int>
 #define OP_MIN_INT RAJA::operators::minimum<int>
 #define OP_MAX_INT RAJA::operators::maximum<int>
 #define CHECK_INC_SCAN_RESULTS(X) checkInclusiveScanResult<X>(in, out, N);
 #define CHECK_EXC_SCAN_RESULTS(X) checkExclusiveScanResult<X>(in, out, N);
+// clang-format on
 
 #include <cstdlib>
 #include <iostream>
@@ -364,6 +366,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check inclusive scan result
 //
+// clang-format off
 template <typename Function, typename T>
 void checkInclusiveScanResult(const T* in, const T* out, int N)
 {

@@ -116,10 +116,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
 
   // _rajaseq_vector_add_start
+// clang-format off
   RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) {
     c[i] = a[i] + b[i]; 
   });
   // _rajaseq_vector_add_end
+// clang-format on
 
   checkResult(c, c_ref, N);
 //printArray(c, N);

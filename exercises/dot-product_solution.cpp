@@ -84,10 +84,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajaseq_dotprod_start
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
+// clang-format off
   RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
     seqdot += a[i] * b[i]; 
   });
 
+// clang-format on
   dot = seqdot.get();
   // _rajaseq_dotprod_end
 
@@ -132,11 +134,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_dotprod_start
   RAJA::ReduceSum<RAJA::cuda_reduce, double> cudot(0.0);
 
+// clang-format off
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     cudot += a[i] * b[i]; 
   });    
 
+// clang-format on
   dot = cudot.get();
   // _rajacuda_dotprod_end
 
@@ -164,11 +168,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajahip_dotprod_start
   RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);
 
+// clang-format off
   RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
     [=] RAJA_DEVICE (int i) {
     hpdot += d_a[i] * d_b[i];
   });
 
+// clang-format on
   dot = hpdot.get();
   // _rajahip_dotprod_end
 
@@ -193,11 +199,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajasycl_dotprod_start
   RAJA::ReduceSum<RAJA::sycl_reduce, double> hpdot(0.0);
 
+// clang-format off
   RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE, false>>(RAJA::RangeSegment(0, N),
     [=] RAJA_DEVICE (int i) {
     hpdot += a[i] * b[i];
   });
 
+// clang-format on
   dot = static_cast<double>(hpdot.get());
   // _rajasycl_dotprod_end
 

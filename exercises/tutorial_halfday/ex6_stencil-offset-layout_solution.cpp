@@ -208,9 +208,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // we don't need a permutation for this case.
   //
 
+// clang-format off
   RAJA::OffsetLayout<DIM> B_layout =
       RAJA::make_offset_layout<DIM>({{-1, -1}}, {{Nc_tot-1, Nr_tot-1}});
 
+// clang-format on
   RAJA::View<int, RAJA::OffsetLayout<DIM>> Bview(B, B_layout);
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, Nc_int, Nr_int);
 
@@ -329,6 +331,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 //
 // For array printing, 'stride1dim' indicates which mesh dimenstride is 
+// clang-format off
 // stride-1 (0 indicates each row is stride-1, 
 //           1 indicates each column is stride-1).
 //

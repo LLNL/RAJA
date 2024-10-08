@@ -127,12 +127,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA SIMD vector addition...\n";
 
+// clang-format off
   RAJA::forall<RAJA::simd_exec>(
     RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
       c[i] = a[i] + b[i]; 
     }
   );    
 
+// clang-format on
   checkResult(c, c_ref, N);
 //printArray(c, N);
 
@@ -200,11 +202,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( d_b, b, N * sizeof(int), cudaMemcpyHostToDevice ));
 
   // _rajacuda_vector_add_start
+// clang-format off
   RAJA::forall< RAJA::cuda_exec<CUDA_BLOCK_SIZE> >(RAJA::TypedRangeSegment<int>(0, N), 
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
   // _rajacuda_vector_add_end
+// clang-format on
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
 
@@ -223,11 +227,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // _rajacuda_explicit_vector_add_start
   const bool Asynchronous = true;
 
+// clang-format off
   RAJA::forall<RAJA::cuda_exec_explicit<CUDA_BLOCK_SIZE, 2, Asynchronous>>(RAJA::TypedRangeSegment<int>(0, N), 
     [=] RAJA_DEVICE (int i) { 
     d_c[i] = d_a[i] + d_b[i]; 
   });    
   // _rajacuda_explicit_vector_add_end
+// clang-format on
 
   cudaErrchk(cudaMemcpy( c, d_c, N * sizeof(int), cudaMemcpyDeviceToHost ));
 
@@ -250,11 +256,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
 
   // _rajahip_vector_add_start
+// clang-format off
   RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N),
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
   // _rajahip_vector_add_end
+// clang-format on
 
   hipErrchk(hipMemcpy( c, d_c, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -281,11 +289,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::sycl_res->memcpy(d_b, b, N * sizeof(int));
 
   // _rajasycl_vector_add_start
+// clang-format off
   RAJA::forall<RAJA::sycl_exec<SYCL_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N),
     [=] RAJA_DEVICE (int i) {
     d_c[i] = d_a[i] + d_b[i];
   });
   // _rajasycl_vector_add_end
+// clang-format on
 
   memoryManager::sycl_res->memcpy(c, d_c, N * sizeof(int));
 

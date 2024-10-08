@@ -86,6 +86,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   // _raja_kji_loops_start
+// clang-format off
   using KJI_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<2, RAJA::seq_exec,    // k
                           RAJA::statement::For<1, RAJA::seq_exec,  // j
@@ -96,6 +97,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                         > 
                       >;
 
+// clang-format on
   RAJA::kernel<KJI_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
   [=] (IIDX i, JIDX j, KIDX k) { 
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
@@ -123,6 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   // _raja_jik_loops_start
+// clang-format off
   using JIK_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<1, RAJA::seq_exec,    // j
                           RAJA::statement::For<0, RAJA::seq_exec,  // i
@@ -133,6 +136,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                         > 
                       >;
 
+// clang-format on
   RAJA::kernel<JIK_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
   [=] (IIDX i, JIDX j, KIDX k) { 
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));
@@ -161,6 +165,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << "...\n\n" << " (I, J, K)\n" << " ---------\n";
 
   // _raja_ikj_loops_start
+// clang-format off
   using IKJ_EXECPOL = RAJA::KernelPolicy<
                         RAJA::statement::For<0, RAJA::seq_exec,    // i
                           RAJA::statement::For<2, RAJA::seq_exec,  // k
@@ -171,6 +176,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                         > 
                       >;
 
+// clang-format on
   RAJA::kernel<IKJ_EXECPOL>( RAJA::make_tuple(IRange, JRange, KRange),
   [=] (IIDX i, JIDX j, KIDX k) {
      printf( " (%d, %d, %d) \n", (int)(*i), (int)(*j), (int)(*k));

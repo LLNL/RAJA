@@ -5,6 +5,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// clang-format off
 #define OP_GREATER RAJA::operators::greater<int>
 #define OP_LESS RAJA::operators::less<int>
 
@@ -49,6 +50,7 @@
 #if defined(RAJA_ENABLE_CUDA)
 constexpr int CUDA_BLOCK_SIZE = 16;
 #endif
+// clang-format on
 
 #if defined(RAJA_ENABLE_HIP)
 constexpr int HIP_BLOCK_SIZE = 16;
@@ -137,9 +139,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_seq_less_start
+// clang-format off
   RAJA::sort<RAJA::seq_exec>(RAJA::make_span(out, N),
                              RAJA::operators::less<int>{});
   // _sort_seq_less_end
+// clang-format on
 
   //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
@@ -153,9 +157,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_seq_less_start
+// clang-format off
   RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
                                     RAJA::operators::less<int>{});
   // _sort_stable_seq_less_end
+// clang-format on
 
   //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_LESS);
@@ -169,9 +175,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_seq_greater_start
+// clang-format off
   RAJA::stable_sort<RAJA::seq_exec>(RAJA::make_span(out, N),
                                     RAJA::operators::greater<int>{});
   // _sort_stable_seq_greater_end
+// clang-format on
 
   //checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_GREATER);
@@ -186,10 +194,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_pairs_seq_less_start
+// clang-format off
   RAJA::sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
                                    RAJA::make_span(out_vals, N),
                                    RAJA::operators::less<int>{});
   // _sort_pairs_seq_less_end
+// clang-format on
 
   //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_LESS);
@@ -204,10 +214,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_stable_pairs_seq_greater_start
+// clang-format off
   RAJA::stable_sort_pairs<RAJA::seq_exec>(RAJA::make_span(out, N),
                                           RAJA::make_span(out_vals, N),
                                           RAJA::operators::greater<int>{});
   // _sort_stable_pairs_seq_greater_end
+// clang-format on
 
   //checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
   CHECK_STABLE_SORT_PAIR_RESULT(OP_GREATER);
@@ -226,9 +238,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_omp_less_start
+// clang-format off
   RAJA::sort<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
                                           RAJA::operators::less<int>{});
   // _sort_omp_less_end
+// clang-format on
 
   //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_UNSTABLE_SORT_RESULT(OP_LESS);
@@ -243,10 +257,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_stable_pairs_omp_greater_start
+// clang-format off
   RAJA::stable_sort_pairs<RAJA::omp_parallel_for_exec>(RAJA::make_span(out, N),
                                                        RAJA::make_span(out_vals, N),
                                                        RAJA::operators::greater<int>{});
   // _sort_stable_pairs_omp_greater_end
+// clang-format on
 
   //checkStableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
   CHECK_STABLE_SORT_PAIR_RESULT(OP_GREATER);
@@ -269,10 +285,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in_vals, N, out_vals);
 
   // _sort_pairs_cuda_greater_start
+// clang-format off
   RAJA::sort_pairs<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
                                                      RAJA::make_span(out_vals, N),
                                                      RAJA::operators::greater<int>{});
   // _sort_pairs_cuda_greater_end
+// clang-format on
 
   //checkUnstableSortResult<RAJA::operators::greater<int>>(in, out, in_vals, out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_GREATER);
@@ -286,9 +304,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy_n(in, N, out);
 
   // _sort_stable_cuda_less_start
+// clang-format off
   RAJA::stable_sort<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::make_span(out, N),
                                                       RAJA::operators::less<int>{});
   // _sort_stable_cuda_less_end
+// clang-format on
 
   //checkStableSortResult<RAJA::operators::less<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_LESS);
@@ -316,10 +336,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice ));
 
+// clang-format off
   RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
                                                    RAJA::make_span(d_out_vals, N),
                                                    RAJA::operators::less<int>{});
 
+// clang-format on
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
   hipErrchk(hipMemcpy( out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -337,10 +359,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
 
   // _sort_stable_hip_greater_start
+// clang-format off
   RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
     RAJA::make_span(d_out, N),
     RAJA::operators::greater<int>{});
   // _sort_stable_hip_greater_end
+// clang-format on
 
   hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
 
@@ -371,6 +395,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
+// clang-format off
 template <typename Comparator, typename T>
 bool equivalent(T const& a, T const& b, Comparator comp)
 {

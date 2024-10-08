@@ -191,9 +191,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _offsetlayout_views_start
   const int DIM = 2;
 
+// clang-format off
   RAJA::OffsetLayout<DIM, int> layout =
       RAJA::make_offset_layout<DIM, int>({{-1, -1}}, {{N_r+1, N_c+1}});
 
+// clang-format on
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> inputView(input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> outputView(output, layout);
   // _offsetlayout_views_end
@@ -214,6 +216,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajaseq_start
   using NESTED_EXEC_POL1 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,    // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
@@ -222,6 +225,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       >  
     >;  
 
+// clang-format on
   RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row) {
 
@@ -249,6 +253,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajaomp_start
   using NESTED_EXEC_POL2 = 
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
@@ -256,6 +261,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       > 
     >;
 
+// clang-format on
   RAJA::kernel<NESTED_EXEC_POL2>(RAJA::make_tuple(col_range, row_range),
                                  [=](int col, int row) {
 
@@ -284,6 +290,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajacuda_start
   using NESTED_EXEC_POL3 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop, //row
@@ -294,6 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       >
     >;                                                     
 
+// clang-format on
   RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
                                  [=] RAJA_DEVICE(int col, int row) {
 
@@ -332,6 +340,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajahip_start
   using NESTED_EXEC_POL4 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop, //row
@@ -342,6 +351,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
   RAJA::kernel<NESTED_EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
                                  [=] RAJA_DEVICE(int col, int row) {
 

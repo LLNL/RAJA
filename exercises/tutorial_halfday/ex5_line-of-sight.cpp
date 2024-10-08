@@ -264,6 +264,7 @@ int checkResult(int* visible, int* visible_ref, int len)
 //
 // Function to print array.
 //
+// clang-format off
 template <typename T>
 void printArray(T* v, int len)
 {

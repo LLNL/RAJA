@@ -47,15 +47,19 @@ const int DIM = 2;
 //
 // Function for checking results
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 //
 // Function for printing results
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -202,6 +206,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using SEQ_EXEC_POL =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
@@ -231,6 +236,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
   RAJA::kernel_param<SEQ_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
 
     RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
@@ -258,6 +264,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using OPENMP_EXEC_POL =
+// clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                              RAJA::omp_parallel_for_exec,
@@ -286,6 +293,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
    >;
 
+// clang-format on
   RAJA::kernel_param<OPENMP_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
 
       RAJA::make_tuple((int)0, (int)0, RAJA_Tile),
@@ -315,6 +323,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using CUDA_EXEC_POL =
+// clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
@@ -349,6 +358,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
+// clang-format on
 
   RAJA::kernel_param<CUDA_EXEC_POL>( RAJA::make_tuple(col_Range, row_Range),
 
@@ -387,6 +397,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -405,9 +416,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {

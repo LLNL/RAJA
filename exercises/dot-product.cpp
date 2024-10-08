@@ -90,10 +90,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
+// clang-format off
   RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
     seqdot += a[i] * b[i]; 
   });
 
+// clang-format on
   dot = seqdot.get();
 
   std::cout << "\t (a, b) = " << dot << std::endl;

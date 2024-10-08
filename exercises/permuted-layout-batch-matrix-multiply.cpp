@@ -179,6 +179,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using INIT_POL = RAJA::seq_exec;
 #endif
 
+// clang-format off
   RAJA::forall<INIT_POL>(RAJA::TypedRangeSegment<int>(0, N), [=](int e) {
     for (int row = 0; row < N_r; ++row) {
       for (int col = 0; col < N_c; ++col) {
@@ -193,6 +194,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   });
 
+// clang-format on
 
 //----------------------------------------------------------------------------//
 
@@ -204,6 +206,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     // _permutedlayout_batchedmatmult_loop_start
+// clang-format off
     RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N),
       [=](int e) {
 
@@ -239,6 +242,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     // _permutedlayout_batchedmatmult_loop_end
+// clang-format on
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -260,6 +264,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     // _permutedlayout2_batchedmatmult_loop_start
+// clang-format off
     RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), 
       [=](int e) {
 
@@ -296,6 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     // _permutedlayout2_batchedmatmult_loop_end
+// clang-format on
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -320,6 +326,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     timer.start();
     // _permutedlayout_batchedmatmult_omp_start
+// clang-format off
     RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::TypedRangeSegment<int>(0, N), 
       [=](int e) {
 
@@ -356,6 +363,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     // _permutedlayout_batchedmatmult_omp_end
+// clang-format on
     timer.stop();
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
@@ -378,6 +386,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
+// clang-format off
     RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::TypedRangeSegment<int>(0, N), 
       [=](int e) {
 
@@ -414,6 +423,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     timer.stop();
+// clang-format on
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
     if (tMin < minRun) minRun = tMin;
@@ -439,6 +449,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
+// clang-format off
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
       [=] RAJA_DEVICE(int e) {
 
@@ -475,6 +486,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     timer.stop();
+// clang-format on
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
     if (tMin < minRun) minRun = tMin;
@@ -496,6 +508,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
+// clang-format off
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
       [=] RAJA_DEVICE(int e) {
 
@@ -532,6 +545,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     timer.stop();
+// clang-format on
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
     if (tMin < minRun) minRun = tMin;
@@ -564,6 +578,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
+// clang-format off
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
       [=] RAJA_DEVICE(int e) {
 
@@ -600,6 +615,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     timer.stop();
+// clang-format on
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
     if (tMin < minRun) minRun = tMin;
@@ -639,6 +655,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   for (int i = 0; i < NITER; ++i) {
 
     timer.start();
+// clang-format off
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::TypedRangeSegment<int>(0, N), 
       [=] RAJA_DEVICE(int e) {
 
@@ -675,6 +692,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
     );
     timer.stop();
+// clang-format on
 
     RAJA::Timer::ElapsedType tMin = timer.elapsed();
     if (tMin < minRun) minRun = tMin;
@@ -714,6 +732,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // check result
 //
+// clang-format off
 template <typename T>
 void checkResult(T C, int nMat, int nRows, int nCols)
 {

@@ -324,9 +324,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(areav, 0, Nvert*Nvert * sizeof(double));
 
 // _raja_vertexarea_cuda_start
+// clang-format off
   using EXEC_POL2 = RAJA::ExecPolicy<RAJA::seq_segit, 
                                      RAJA::cuda_exec<CUDA_BLOCK_SIZE>>;
 
+// clang-format on
   RAJA::forall<EXEC_POL2>(cuda_colorset, [=] RAJA_DEVICE (int ie) {
     int* iv = &(e2v_map[4*ie]);
     areav[ iv[0] ] += areae[ie] / 4.0 ;
@@ -383,9 +385,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA HIP index set vertex sum...\n";
 
 // _raja_vertexarea_hip_start
+// clang-format off
   using EXEC_POL3 = RAJA::ExecPolicy<RAJA::seq_segit,
                                      RAJA::hip_exec<HIP_BLOCK_SIZE>>;
 
+// clang-format on
   RAJA::forall<EXEC_POL3>(hip_colorset, [=] RAJA_DEVICE (int ie) {
     int* iv = &(d_e2v_map[4*ie]);
     d_areav[ iv[0] ] += d_areae[ie] / 4.0 ;

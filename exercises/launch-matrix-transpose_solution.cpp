@@ -34,15 +34,19 @@ constexpr int DIM = 2;
 //
 // Function for checking results
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 //
 // Function for printing results
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -124,6 +128,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_policy_seq = RAJA::LoopPolicy<RAJA::seq_exec>;
   using launch_policy_seq = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
 
+// clang-format off
   RAJA::launch<launch_policy_seq>(
     RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
@@ -138,6 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _raja_mattranspose_end
+// clang-format on
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -154,6 +160,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using loop_policy_omp = RAJA::LoopPolicy<RAJA::omp_for_exec>;
   using launch_policy_omp = RAJA::LaunchPolicy<RAJA::omp_launch_t>;
 
+// clang-format off
   RAJA::launch<launch_policy_omp>(
     RAJA::LaunchParams(), //LaunchParams may be empty when running on the host
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
@@ -168,6 +175,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
 
+// clang-format on
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
@@ -185,6 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const bool async = false; //execute asynchronously
   using launch_policy_cuda = RAJA::LaunchPolicy<RAJA::cuda_launch_t<async>>;
 
+// clang-format off
   RAJA::launch<launch_policy_cuda>
     (RAJA::LaunchParams(RAJA::Teams(1), RAJA::Threads(16,16)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
@@ -199,6 +208,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _raja_mattranspose_cuda_end
+// clang-format on
 
   checkResult<int>(Atview, N_c, N_r);
   //printResult<int>(Atview, N_c, N_r);
@@ -220,6 +230,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -238,9 +249,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {

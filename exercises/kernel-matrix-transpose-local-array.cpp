@@ -56,15 +56,19 @@ constexpr int DIM = 2;
 //
 // Function for checking results
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 //
 // Function for printing results
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -207,6 +211,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /*
   using SEQ_EXEC_POL_I =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
@@ -235,6 +240,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<SEQ_EXEC_POL_I>( 
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -251,6 +258,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
   */
+// clang-format on
   // _mattranspose_localarray_raja_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -271,6 +279,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /*
   using OPENMP_EXEC_1_POL =
+// clang-format off
   RAJA::KernelPolicy<
     //
     // (0) Execution policies for outer loops
@@ -315,6 +324,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
    >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<OPENMP_EXEC_1_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -333,6 +344,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
   */
+// clang-format on
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -344,6 +356,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using OPENMP_EXEC_2_POL =
+// clang-format off
   RAJA::KernelPolicy<
     //
     // (0) Execution policies for outer loops
@@ -385,6 +398,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<OPENMP_EXEC_2_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -403,6 +418,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_r, N_c);
 #endif
@@ -414,6 +430,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
   using CUDA_EXEC_POL =
+// clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       //
@@ -463,7 +480,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<CUDA_EXEC_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -482,6 +501,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
@@ -509,6 +529,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( d_At, At, N_r * N_c * sizeof(int), hipMemcpyHostToDevice ));
 
   using HIP_EXEC_POL =
+// clang-format off
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
       //
@@ -558,7 +579,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >
   >;
 
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<HIP_EXEC_POL>(
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -577,6 +600,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   hipErrchk(hipMemcpy( At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost ));
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -601,6 +625,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /*
   using SEQ_EXEC_POL_II =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::seq_exec,
@@ -624,6 +649,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<SEQ_EXEC_POL_II>( 
     RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N_c),
                      RAJA::TypedRangeSegment<int>(0, N_r)),
@@ -639,6 +666,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
   */
+// clang-format on
   // _mattranspose_localarray_raja_lambdaargs_end
 
   checkResult<int>(Atview, N_c, N_r);
@@ -653,6 +681,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -671,9 +700,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
