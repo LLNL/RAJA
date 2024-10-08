@@ -59,3 +59,8 @@ clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
     SPEC: " ~shared +openmp +tests +desul %clang@=14.0.6.gcc.10.3.1"
   extends: .job_on_ruby
+
+intel_2024_2_0:
+  variables:
+    SPEC: "${PROJECT_RUBY_VARIANTS} %intel@=2024.2.0 cxxflags==\"-march=native -finline-functions -fp-model=precise\" ${PROJECT_RUBY_DEPS}"
+  extends: .job_on_ruby
