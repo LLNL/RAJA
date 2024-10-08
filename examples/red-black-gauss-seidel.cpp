@@ -174,6 +174,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //  to generate RAJA ListSegments and populate a RAJA Static Index
 //  Set.
 
+// clang-format off
 RAJA::TypedIndexSet<RAJA::ListSegment> 
   gsColorPolicy(int N, camp::resources::Resource res)
 {

@@ -154,11 +154,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice )); 
   cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice )); 
 
+// clang-format off
   RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });
 
+// clang-format on
   cudaErrchk(cudaMemcpy( ta, a, N * sizeof(double), cudaMemcpyDeviceToHost ));
 
   cudaErrchk(cudaFree(a));
@@ -184,11 +186,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
 
+// clang-format off
   RAJA::forall<RAJA::hip_exec<256>>(RAJA::RangeSegment(0, N),
     [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });
 
+// clang-format on
   hipErrchk(hipMemcpy( ta, a, N * sizeof(double), hipMemcpyDeviceToHost ));
 
   hipErrchk(hipFree(a));

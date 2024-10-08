@@ -102,12 +102,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0.0;
 
+// clang-format off
   RAJA::forall<EXEC_POL1>(bins, [=](int i) {
       double x = (double(i) + 0.5) * dx;
       RAJA::atomicAdd<ATOMIC_POL1>(atomic_pi, 
                                    dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
+// clang-format on
 
   std::cout << "\tpi = " << std::setprecision(prec) 
             << *atomic_pi << std::endl;
@@ -140,12 +142,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0.0;
 
+// clang-format off
   RAJA::forall<EXEC_POL2>(bins, [=](int i) {
       double x = (double(i) + 0.5) * dx;
       RAJA::atomicAdd<ATOMIC_POL2>(atomic_pi, 
                                    dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
+// clang-format on
 
   std::cout << "\tpi = " << std::setprecision(prec)
             << *atomic_pi << std::endl;
@@ -180,11 +184,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   *atomic_pi = 0.0;
 
+// clang-format off
   RAJA::forall<EXEC_POL3>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) * dx;
       RAJA::atomicAdd<ATOMIC_POL3>(atomic_pi, dx / (1.0 + x * x));
   });
   *atomic_pi *= 4.0;
+// clang-format on
 
   std::cout << "\tpi = " << std::setprecision(prec)
             << *atomic_pi << std::endl;
@@ -219,11 +225,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   using ATOMIC_POL4 = RAJA::hip_atomic;
 
+// clang-format off
   RAJA::forall<EXEC_POL4>(bins, [=] RAJA_DEVICE (int i) {
       double x = (double(i) + 0.5) * dx;
       RAJA::atomicAdd<ATOMIC_POL4>(d_atomic_pi, dx / (1.0 + x * x));
   });
 
+// clang-format on
   hipErrchk(hipMemcpy( atomic_pi, d_atomic_pi, 1 * sizeof(double), hipMemcpyDeviceToHost ));
   *atomic_pi *= 4.0; 
   std::cout << "\tpi = " << std::setprecision(prec)

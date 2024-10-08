@@ -81,18 +81,22 @@ __global__ void matMultKernel(int N, double* C, double* A, double* B)
 template <typename T>
 void checkResult(T *C, int N);
 
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
+// clang-format on
 //
 // Functions for printing results
 //
 template <typename T>
 void printResult(T *C, int N);
 
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -193,6 +197,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   // _matmult_outerforall_start
+// clang-format off
   RAJA::forall<RAJA::seq_exec>( row_range, [=](int row) {
 
     for (int col = 0; col < N; ++col) {
@@ -207,6 +212,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _matmult_outerforall_end
+// clang-format on
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -230,6 +236,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   // _matmult_nestedforall_start
+// clang-format off
   RAJA::forall<RAJA::seq_exec>( row_range, [=](int row) {
 
     RAJA::forall<RAJA::seq_exec>( col_range, [=](int col) {
@@ -244,6 +251,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _matmult_nestedforall_end
+// clang-format on
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -283,6 +291,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_basickernel_start
   using EXEC_POL =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,    // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
@@ -291,6 +300,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL>(RAJA::make_tuple(col_range, row_range),
     [=](int col, int row) {
 
@@ -302,6 +313,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _matmult_basickernel_end
+// clang-format on
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -316,6 +328,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_ompkernel_start
   using EXEC_POL1 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
         RAJA::statement::For<0, RAJA::seq_exec,            // col
@@ -324,7 +337,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
   // _matmult_ompkernel_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel<EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
     [=](int col, int row) {
 
@@ -336,6 +351,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -354,6 +370,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // _matmult_ompkernel_swap_start
   using EXEC_POL2 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::seq_exec,                  // col
         RAJA::statement::For<1, RAJA::omp_parallel_for_exec,    // row
@@ -362,7 +379,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
   // _matmult_ompkernel_swap_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel<EXEC_POL2>( RAJA::make_tuple(col_range, row_range),
     [=](int col, int row) {
 
@@ -374,6 +393,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -389,6 +409,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // outer loop with a 'collapse(2) clause.
   //
   using EXEC_POL3 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
@@ -396,6 +417,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
     [=](int col, int row) {
 
@@ -407,6 +430,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   checkResult<double>(Cview, N);
+// clang-format on
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
 
@@ -430,6 +454,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   //
   using EXEC_POL4 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop,
@@ -440,6 +465,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
     [=] RAJA_DEVICE (int col, int row) {
 
@@ -451,6 +478,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   checkResult<double>(Cview, N);
+// clang-format on
 //printResult<double>(Cview, N);
 
 
@@ -470,6 +498,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // same as in this kernel and the one above.
   //
   using EXEC_POL5 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>, RAJA::cuda_block_y_loop,
@@ -484,6 +513,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
     [=] RAJA_DEVICE (int col, int row) {
 
@@ -495,6 +526,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   checkResult<double>(Cview, N);
+// clang-format on
 //printResult<double>(Cview, N);
 
 #endif // if RAJA_ENABLE_CUDA
@@ -530,6 +562,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   using EXEC_POL4 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop,
@@ -540,6 +573,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
     [=] RAJA_DEVICE (int col, int row) {
 
@@ -552,6 +587,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -573,6 +609,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // same as in this kernel and the one above.
   //
   using EXEC_POL5 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>,
@@ -589,6 +626,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel<EXEC_POL5>(RAJA::make_tuple(col_range, row_range),
     [=] RAJA_DEVICE (int col, int row) {
 
@@ -601,6 +640,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_HIP
@@ -633,6 +673,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // _matmult_3lambdakernel_seq_start
   using EXEC_POL6a =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,
         RAJA::statement::For<0, RAJA::seq_exec,
@@ -645,6 +686,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<EXEC_POL6a>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -667,6 +710,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
   // _matmult_3lambdakernel_seq_end
+// clang-format on
 
   checkResult<double>(Cview, N);
   //printResult<double>(Cview, N);
@@ -689,6 +733,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using RAJA::Params;
 
   using EXEC_POL6b =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,
         RAJA::statement::For<0, RAJA::seq_exec,
@@ -701,6 +746,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<EXEC_POL6b>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -723,6 +770,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
   // _matmult_3lambdakernel_args_seq_end
+// clang-format on
 
   checkResult<double>(Cview, N);
   //printResult<double>(Cview, N);
@@ -737,6 +785,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_ompcollapse_start
   using EXEC_POL7 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
                                 RAJA::ArgList<1, 0>,   // row, col
@@ -748,7 +797,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
   // _matmult_3lambdakernel_ompcollapse_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<EXEC_POL7>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -771,6 +822,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
@@ -785,6 +837,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_cuda_start
   using EXEC_POL8 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop,    // row
@@ -799,7 +852,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
   // _matmult_3lambdakernel_cuda_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<EXEC_POL8>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -822,6 +877,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -833,6 +889,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_cudatiled_start
   using EXEC_POL9a =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
@@ -853,7 +910,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
   // _matmult_3lambdakernel_cudatiled_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<EXEC_POL9a>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -876,6 +935,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -886,6 +946,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(C, 0, N*N * sizeof(double));
 
   using EXEC_POL9b =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<CUDA_BLOCK_SIZE>,
@@ -906,6 +967,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::kernel_param<EXEC_POL9b>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -928,6 +991,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -954,6 +1018,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using shmem_Lambda4 = RAJA::statement::Lambda<4, RAJA::Segs<0, 2>, RAJA::Offsets<0, 2>, RAJA::Params<2>>;
 
   using EXEC_POL10 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE*CUDA_BLOCK_SIZE,
         //Initalize thread private value
@@ -1010,8 +1075,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          >//Cuda kernel
         >;
 
+// clang-format on
     Shmem aShared, bShared, cShared;
 
+// clang-format off
     RAJA::kernel_param<EXEC_POL10>(
       RAJA::make_tuple(RAJA::TypedRangeSegment<int>(0, N),
                        RAJA::TypedRangeSegment<int>(0, N),
@@ -1053,6 +1120,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_CUDA
@@ -1095,6 +1163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_hip_start
   using EXEC_POL8 =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop,    // row
@@ -1110,7 +1179,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
   // _matmult_3lambdakernel_hip_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<EXEC_POL8>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -1133,6 +1204,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
+// clang-format on
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -1147,6 +1219,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _matmult_3lambdakernel_hiptiled_start
   using EXEC_POL9b =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<HIP_BLOCK_SIZE>,
@@ -1167,7 +1240,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
  // _matmult_3lambdakernel_hiptiled_end
+// clang-format on
 
+// clang-format off
   RAJA::kernel_param<EXEC_POL9b>(
     RAJA::make_tuple(col_range, row_range, dot_range),
 
@@ -1190,6 +1265,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
+// clang-format on
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -1240,6 +1316,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Functions to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(T* C, int N)
 {
@@ -1258,6 +1335,8 @@ void checkResult(T* C, int N)
   }
 };
 
+// clang-format on
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
 {
@@ -1276,9 +1355,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   }
 };
 
+// clang-format on
 //
 // Functions to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(T* C, int N)
 {

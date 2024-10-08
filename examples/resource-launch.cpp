@@ -34,6 +34,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using threads_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_loop>;
 
+// clang-format off
   RAJA::forall<RAJA::seq_exec>(def_host_res, n_range,
     [=, &def_cuda_res](int i){
 
@@ -59,6 +60,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   def_cuda_res.memcpy(h_array, d_array, sizeof(int) * N * M);
 
   int ec_count = 0;

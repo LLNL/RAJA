@@ -31,6 +31,7 @@ namespace memoryManager
   static camp::resources::Resource* sycl_res;
 #endif
 
+// clang-format off
 template <typename T>
 T *allocate(RAJA::Index_type size)
 {

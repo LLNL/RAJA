@@ -97,6 +97,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<2>> d_A_2DView(d_A_ptr, N, N);
   RAJA::View<int, RAJA::Layout<1>> d_A_1DView(d_A_ptr, NN);
 
+// clang-format off
   RAJA::launch<device_launch>
     (launch_params, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
      {
@@ -117,6 +118,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
      });
 
+// clang-format on
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running host version of teams_flatten example ...\n";
@@ -125,6 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int, RAJA::Layout<2>> h_A_2DView(h_A_ptr, N, N);
   RAJA::View<int, RAJA::Layout<1>> h_A_1DView(h_A_ptr, NN);
 
+// clang-format off
   RAJA::launch<host_launch>
     (launch_params, [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx)
     {
@@ -145,6 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
      });
 
+// clang-format on
   if ( device_kernel_sum.get() == host_kernel_sum.get() ) {
     std::cout << "\n\t result -- PASS\n";
   } else {

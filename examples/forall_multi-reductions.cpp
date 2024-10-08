@@ -36,6 +36,7 @@ struct Backend
   std::string name;
 };
 
+// clang-format off
 auto example_policies = camp::make_tuple(
 
       Backend<RAJA::seq_exec, RAJA::seq_multi_reduce>{"Sequential"}
@@ -54,6 +55,7 @@ auto example_policies = camp::make_tuple(
 
     );
 
+// clang-format on
 template < typename exec_policy, typename multi_reduce_policy >
 void example_code(RAJA::RangeSegment arange, int num_bins, int* bins, int* a)
 {
@@ -131,6 +133,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
 //----------------------------------------------------------------------------//
 
+// clang-format off
   RAJA::for_each_tuple(example_policies, [&](auto const& backend) {
 
     std::cout << "Running " << backend.name << " policies" << '\n';
@@ -154,6 +157,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
     std::cout << std::endl;
   });
 
+// clang-format on
 //----------------------------------------------------------------------------//
 
 //

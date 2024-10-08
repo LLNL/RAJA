@@ -184,10 +184,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment gridRange(0, NN);
   RAJA::RangeSegment jacobiRange(1, (N + 1));
 
+// clang-format off
   using jacobiSeqNestedPolicy = RAJA::KernelPolicy<
   RAJA::statement::For<1, RAJA::seq_exec,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >;
 
+// clang-format on
   printf("RAJA: Sequential Policy - Nested ForallN \n");
   resI2 = 1;
   iteration = 0;
@@ -257,10 +259,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    *  operation for the residual in a thread-safe manner.
    */
   
+// clang-format off
   using jacobiOmpNestedPolicy = RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
         RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+// clang-format on
   while (resI2 > tol * tol) {
     
     RAJA::kernel<jacobiOmpNestedPolicy>(RAJA::make_tuple(jacobiRange,jacobiRange),
@@ -315,6 +319,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("RAJA: CUDA Policy - Nested ForallN \n");
 
+// clang-format off
   using jacobiCUDANestedPolicy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       RAJA::statement::Tile<1, RAJA::tile_fixed<32>, RAJA::cuda_block_y_loop,
@@ -328,6 +333,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     > >;
   
+// clang-format on
   resI2 = 1;
   iteration = 0;
   memset(I, 0, NN * sizeof(double));
@@ -357,6 +363,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Compute residual and update Iold
     //
     RAJA::ReduceSum<RAJA::cuda_reduce, double> RAJA_resI2(0.0);
+// clang-format off
     RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       gridRange, [=] RAJA_DEVICE (RAJA::Index_type k) {
       
@@ -365,6 +372,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       });
 
+// clang-format on
     resI2 = RAJA_resI2;
 
     if (iteration > maxIter) {
@@ -392,6 +400,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("RAJA: HIP Policy - Nested ForallN \n");
 
+// clang-format off
   using jacobiHIPNestedPolicy = RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
       RAJA::statement::Tile<1, RAJA::tile_fixed<32>, RAJA::hip_block_y_loop,
@@ -405,6 +414,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     > >;
 
+// clang-format on
   resI2 = 1;
   iteration = 0;
   memset(I, 0, NN * sizeof(double));
@@ -439,6 +449,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     // Compute residual and update Iold
     //
     RAJA::ReduceSum<RAJA::hip_reduce, double> RAJA_resI2(0.0);
+// clang-format off
     RAJA::forall<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
       gridRange, [=] RAJA_DEVICE (RAJA::Index_type k) {
 
@@ -447,6 +458,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
       });
 
+// clang-format on
     resI2 = RAJA_resI2;
 
     if (iteration > maxIter) {
@@ -488,10 +500,12 @@ void computeErr(double *I, grid_s grid)
   RAJA::RangeSegment gridRange(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
+// clang-format off
   using jacobiSeqNestedPolicy = RAJA::KernelPolicy<
     RAJA::statement::For<1, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+// clang-format on
   RAJA::kernel<jacobiSeqNestedPolicy>(RAJA::make_tuple(gridRange,gridRange),
                        [=] (RAJA::Index_type ty, RAJA::Index_type tx ) {
 

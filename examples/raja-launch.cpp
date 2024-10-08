@@ -34,6 +34,7 @@
 /*
  * Define host/device launch policies
  */
+// clang-format off
 using launch_policy = RAJA::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
     RAJA::omp_launch_t
@@ -50,6 +51,7 @@ using launch_policy = RAJA::LaunchPolicy<
 #endif
     >;
 
+// clang-format on
 /*
  * Define team policies.
  * Up to 3 dimension are supported: x,y,z
@@ -150,6 +152,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::View<int, RAJA::Layout<2>> D(Ddat, N_tri, N_tri);
 
+// clang-format off
     RAJA::launch<launch_policy>
       (select_cpu_or_gpu,
        RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
@@ -175,6 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
        });  // outer lambda
 
+// clang-format on
     if (select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
       host_res.deallocate(Ddat);
     }

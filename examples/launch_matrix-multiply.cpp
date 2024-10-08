@@ -37,6 +37,7 @@
 /*
  * Define host/device launch policies
  */
+// clang-format off
 using launch_policy = RAJA::LaunchPolicy<
     RAJA::seq_launch_t
 #if defined(RAJA_ENABLE_CUDA)
@@ -49,6 +50,7 @@ using launch_policy = RAJA::LaunchPolicy<
 #endif
     >;
 
+// clang-format on
 using loop_policy = RAJA::seq_exec;
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -188,18 +190,22 @@ __global__ void sharedMatMultKernel(int N, double* C, double* A, double* B)
 template <typename T>
 void checkResult(T *C, int N);
 
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
+// clang-format on
 //
 // Functions for printing results
 //
 template <typename T>
 void printResult(T *C, int N);
 
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
+// clang-format on
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -314,6 +320,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //two for loops.
 
   // _matmult_basickernel_start
+// clang-format off
   RAJA::launch<launch_policy>(RAJA::ExecPlace::HOST,
    RAJA::LaunchParams(RAJA::Teams(NTeams,NTeams),
                          RAJA::Threads(THREAD_SZ,THREAD_SZ)),
@@ -332,6 +339,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
   // _matmult_basickernel_end
+// clang-format on
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -355,6 +363,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using omp_row_policy0 = RAJA::LoopPolicy<loop_policy>;
 
+// clang-format off
   RAJA::launch<omp_launch_policy>(RAJA::LaunchParams(),
        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
@@ -371,6 +380,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -387,6 +397,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   using global_thread_xy = RAJA::LoopPolicy<RAJA::omp_for_exec>;
 
+// clang-format off
    RAJA::launch<omp_launch_policy>(RAJA::ExecPlace::HOST,
                                          RAJA::LaunchParams(),
    [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
@@ -403,6 +414,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_OPENMP
@@ -425,6 +437,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
+// clang-format off
   RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(N),
                           RAJA::Threads(N)),
@@ -443,6 +456,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -461,6 +475,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
+// clang-format off
   RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(NTeams,NTeams),
                           RAJA::Threads(THREAD_SZ,THREAD_SZ)),
@@ -486,6 +501,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
    });
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -521,6 +537,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // and col = threadIdx.x in the kernel.
   //
   //
+// clang-format off
   RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(N),
                           RAJA::Threads(N)),
@@ -540,6 +557,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      });
   });
 
+// clang-format on
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -561,6 +579,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // The tiling capabilities in RAJA will also mask out of bounds iterations.
   //
+// clang-format off
   RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(NTeams,NTeams),
                           RAJA::Threads(THREAD_SZ,THREAD_SZ)),
@@ -586,6 +605,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         });
    });
 
+// clang-format on
   hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -610,6 +630,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // This example also uses the teamSync() method in the launch context
   // to add a barrier ensuring all threads have loaded/read from shared memory
   //
+// clang-format off
   RAJA::launch<launch_policy>(RAJA::ExecPlace::DEVICE,
     RAJA::LaunchParams(RAJA::Teams(NTeams,NTeams),
                           RAJA::Threads(THREAD_SZ,THREAD_SZ)),
@@ -672,6 +693,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
      });
   });  // kernel
 
+// clang-format on
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif
@@ -772,6 +794,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Functions to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(T* C, int N)
 {
@@ -790,6 +813,8 @@ void checkResult(T* C, int N)
   }
 };
 
+// clang-format on
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
 {
@@ -808,9 +833,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N)
   }
 };
 
+// clang-format on
 //
 // Functions to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(T* C, int N)
 {

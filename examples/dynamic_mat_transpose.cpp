@@ -59,6 +59,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format off
 using launch_policy = RAJA::LaunchPolicy<
 #if defined(RAJA_ENABLE_OPENMP)
     RAJA::omp_launch_t
@@ -79,6 +80,7 @@ using launch_policy = RAJA::LaunchPolicy<
 #endif
     >;
 
+// clang-format on
 /*
  * Define team policies.
  * Up to 3 dimension are supported: x,y,z
@@ -322,6 +324,7 @@ int main(int argc, char *argv[])
   // _dynamic_mattranspose_shared_mem_end
 
   // _dynamic_mattranspose_kernel_start
+// clang-format off
   RAJA::launch<launch_policy>
     (res, RAJA::LaunchParams(RAJA::Teams(outer_Dimc, outer_Dimr),
                              RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
@@ -378,6 +381,7 @@ int main(int argc, char *argv[])
       });
   });
   // _dynamic_mattranspose_kernel_end
+// clang-format on
 
 #if defined(RAJA_GPU_ACTIVE)
   if(select_cpu_or_gpu == RAJA::ExecPlace::DEVICE) {
@@ -414,6 +418,7 @@ int main(int argc, char *argv[])
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -432,6 +437,7 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //

@@ -149,6 +149,7 @@ int main(int argc, char *argv[])
   const int TEAM_SZ = 256;
   const int GRID_SZ = RAJA_DIVIDE_CEILING_INT(N,TEAM_SZ);
 
+// clang-format off
   RAJA::launch<launch_policy>
     (select_cpu_or_gpu,
      RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
@@ -170,6 +171,7 @@ int main(int argc, char *argv[])
        
     });
 
+// clang-format on
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
   std::cout << "\tmin = " << kernel_min.get() << std::endl;
   std::cout << "\tmax = " << kernel_max.get() << std::endl;

@@ -134,6 +134,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type seq_minloc2(-1);
   RAJA::Index_type seq_maxloc2(-1);
 
+// clang-format off
   RAJA::forall<EXEC_POL1>(host_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
@@ -164,6 +165,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   std::cout << "\tsum = " << seq_sum << std::endl;
   std::cout << "\tmin = " << seq_min << std::endl;
   std::cout << "\tmax = " << seq_max << std::endl;
@@ -198,6 +200,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type omp_minloc2(-1);
   RAJA::Index_type omp_maxloc2(-1);
 
+// clang-format off
   RAJA::forall<EXEC_POL2>(host_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
@@ -228,6 +231,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   std::cout << "\tsum = " << omp_sum << std::endl;
   std::cout << "\tmin = " << omp_min << std::endl;
   std::cout << "\tmax = " << omp_max << std::endl;
@@ -264,6 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type omp_t_minloc2(-1);
   RAJA::Index_type omp_t_maxloc2(-1);
 
+// clang-format off
   RAJA::forall<EXEC_POL3>(omp_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_min),
@@ -294,6 +299,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   std::cout << "\tsum = " << omp_t_sum << std::endl;
   std::cout << "\tmin = " << omp_t_min << std::endl;
   std::cout << "\tmax = " << omp_t_max << std::endl;
@@ -334,6 +340,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type cuda_minloc2(-1);
   RAJA::Index_type cuda_maxloc2(-1);
 
+// clang-format off
   RAJA::forall<EXEC_POL3>(cuda_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
@@ -364,6 +371,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   std::cout << "\tsum = " << cuda_sum << std::endl;
   std::cout << "\tmin = " << cuda_min << std::endl;
   std::cout << "\tmax = " << cuda_max << std::endl;
@@ -403,6 +411,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type hip_minloc2(-1);
   RAJA::Index_type hip_maxloc2(-1);
 
+// clang-format off
   RAJA::forall<EXEC_POL3>(hip_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&hip_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_min),
@@ -433,6 +442,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   std::cout << "\tsum = " << hip_sum << std::endl;
   std::cout << "\tmin = " << hip_min << std::endl;
   std::cout << "\tmax = " << hip_max << std::endl;
@@ -473,6 +483,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type sycl_minloc2(-1);
   RAJA::Index_type sycl_maxloc2(-1);
 
+// clang-format off
   RAJA::forall<EXEC_POL3>(sycl_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&sycl_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
@@ -503,6 +514,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   std::cout << "\tsum = " << sycl_sum << std::endl;
   std::cout << "\tmin = " << sycl_min << std::endl;
   std::cout << "\tmax = " << sycl_max << std::endl;

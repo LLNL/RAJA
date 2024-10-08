@@ -175,6 +175,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   const int Nthreads = 2;
   // __compute_grid_end
 
+// clang-format off
   RAJA::launch<launch_policy>(select_cpu_or_gpu,
     RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
                      RAJA::Threads(Nthreads,Nthreads)),
@@ -200,6 +201,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
    });
 
+// clang-format on
   //Equivalent C style loops
   if(select_cpu_or_gpu == RAJA::ExecPlace::HOST) {
     // _c_style_loops_start

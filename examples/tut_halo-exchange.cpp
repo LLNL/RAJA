@@ -56,18 +56,23 @@ const int num_neighbors = 26;
 //
 // Functions for checking and printing results
 //
+// clang-format off
 void checkResult(std::vector<double*> const& vars, std::vector<double*> const& vars_ref,
                  int var_size, int num_vars);
 void printResult(std::vector<double*> const& vars, int var_size, int num_vars);
+// clang-format on
 
 //
 // Functions for allocating and populating packing and unpacking lists
 //
+// clang-format off
 void create_pack_lists(std::vector<int*>& pack_index_lists, std::vector<int>& pack_index_list_lengths,
                        const int halo_width, const int* grid_dims);
 void create_unpack_lists(std::vector<int*>& unpack_index_lists, std::vector<int>& unpack_index_list_lengths,
+// clang-format on
                          const int halo_width, const int* grid_dims);
 void destroy_pack_lists(std::vector<int*>& pack_index_lists);
+// clang-format on
 void destroy_unpack_lists(std::vector<int*>& unpack_index_lists);
 
 
@@ -79,6 +84,7 @@ struct memory_manager_allocator
   memory_manager_allocator() = default;
 
   template < typename U >
+// clang-format off
   constexpr memory_manager_allocator(memory_manager_allocator<U> const&) noexcept
   { }
 
@@ -110,7 +116,9 @@ bool operator==(memory_manager_allocator<T> const&, memory_manager_allocator<U> 
 {
   return true;
 }
+// clang-format on
 
+// clang-format off
 template <typename T, typename U>
 bool operator!=(memory_manager_allocator<T> const& lhs, memory_manager_allocator<U> const& rhs)
 {
@@ -161,6 +169,8 @@ struct pinned_allocator
   }
 };
 
+// clang-format on
+// clang-format off
 template <typename T, typename U>
 bool operator==(pinned_allocator<T> const&, pinned_allocator<U> const&)
 {
@@ -1787,9 +1797,11 @@ struct Extent
   int k_max;
 };
 
+// clang-format on
 //
 // Function to generate index lists for packing.
 //
+// clang-format off
 void create_pack_lists(std::vector<int*>& pack_index_lists,
                        std::vector<int >& pack_index_list_lengths,
                        const int halo_width, const int* grid_dims)

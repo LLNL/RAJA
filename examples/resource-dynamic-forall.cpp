@@ -28,6 +28,7 @@
 void checkResult(int* res, int len);
 void printResult(int* res, int len);
 
+// clang-format off
 using policy_list = camp::list<RAJA::seq_exec
                                ,RAJA::simd_exec
 #if defined(RAJA_ENABLE_CUDA)
@@ -41,6 +42,7 @@ using policy_list = camp::list<RAJA::seq_exec
 #endif
                                >;
 
+// clang-format on
 
 int main(int argc, char *argv[])
 {

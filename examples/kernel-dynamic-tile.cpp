@@ -14,6 +14,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using namespace RAJA;
 
+// clang-format off
   kernel_param<
     KernelPolicy<
       statement::Tile<1, tile_dynamic<1>, seq_exec,
@@ -31,4 +32,5 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        std::cout << "Running index (" << i << "," << j << ") of " << x.size << "x" << y.size << " tile." << std::endl;
   });
 
+// clang-format on
 }

@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
 #endif
 
   //How the kernel executes now depends on how the resource is constructed (host or device)
+// clang-format off
   RAJA::launch<launch_policy>
     (res, RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
                                    RAJA::Threads(TEAM_SZ)),
@@ -176,6 +177,7 @@ int main(int argc, char *argv[])
          });
     });
 
+// clang-format on
 
   std::cout << "\tsum = " << kernel_sum.get() << std::endl;
   std::cout << "\tmin = " << kernel_min.get() << std::endl;

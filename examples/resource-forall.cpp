@@ -128,11 +128,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA omp_parallel_for_static_exec (default chunksize) vector addition...\n";
 
+// clang-format off
   RAJA::forall<RAJA::omp_parallel_for_static_exec< >>(host, RAJA::RangeSegment(0, N),
   [=] (int i) {
     c[i] = a[i] + b[i]; 
   });
 
+// clang-format on
   checkResult(c, N);
 
 //----------------------------------------------------------------------------//
@@ -141,11 +143,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA omp_for_dynamic_exec (chunksize = 16) vector addition...\n";
 
+// clang-format off
   RAJA::forall<RAJA::omp_parallel_for_dynamic_exec<16>>(host, RAJA::RangeSegment(0, N),
   [=] (int i) {
     c[i] = a[i] + b[i]; 
   });
 
+// clang-format on
   checkResult(c, N);
 #endif
 

@@ -29,6 +29,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment n_range(0, N);
 
   using TEST_POL =
+// clang-format off
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
         statement::For<0, cuda_block_x_loop,
@@ -39,6 +40,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+// clang-format on
+// clang-format off
   RAJA::forall<RAJA::seq_exec>(def_host_res, n_range,
     [=, &def_cuda_res](int i){
       RAJA::resources::Cuda res_cuda; 
@@ -58,6 +61,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
+// clang-format on
   def_cuda_res.memcpy(h_array, d_array, sizeof(int) * N * M);
 
   int ec_count = 0;

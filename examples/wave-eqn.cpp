@@ -123,17 +123,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   // Sequential policy
+// clang-format off
   using fdPolicy = RAJA::KernelPolicy<
     RAJA::statement::For<1, RAJA::seq_exec,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+// clang-format on
   // OpenMP policy
+// clang-format off
   //using fdPolicy = RAJA::KernelPolicy<
   //RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
   //  RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+// clang-format on
   // CUDA policy
   //using fdPolicy =
+// clang-format off
   //RAJA::KernelPolicy<
   //  RAJA::statement::CudaKernel<
   //      RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_y_direct,
@@ -148,6 +153,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //    >
   //  >;
 
+// clang-format on
 
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
@@ -191,10 +197,12 @@ void computeErr(double *P, double tf, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
+// clang-format off
   using initialPolicy = RAJA::KernelPolicy<
   RAJA::statement::For<1, RAJA::seq_exec ,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+// clang-format on
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
 
@@ -222,10 +230,12 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
+// clang-format off
   using initialPolicy = RAJA::KernelPolicy<
   RAJA::statement::For<1, RAJA::seq_exec,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >;
   
+// clang-format on
   RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
                        [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
                          
@@ -240,6 +250,7 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 
 
 
+// clang-format off
 template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {
