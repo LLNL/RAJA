@@ -103,7 +103,7 @@ namespace expt
       TensorIndex(TensorIndex<IDX, T, D> const &c) : m_index(*c), m_length(c.size()) {}
 
 
-      template<strip_index_type_t<IDX> IDX_VAL, strip_index_type_t<IDX> LEN_VAL>
+      template<value_type IDX_VAL, value_type LEN_VAL>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
