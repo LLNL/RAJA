@@ -35,12 +35,20 @@ module load cmake/3.23.1
 # times at a potential cost of slower 'forall' execution.
 ##
 
-source /usr/tce/packages/intel/intel-${COMP_VER}/setvars.sh
+COMPILER_BIN_DIR="/usr/tce/packages/intel/intel-${COMP_VER}/bin"
+
+if [[ ${COMP_VER} == 2024.2.1 ]]
+then
+  COMPILER_BIN_DIR="/collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/2024.2/bin"
+  source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh
+else
+  source /usr/tce/packages/intel/intel-${COMP_VER}/setvars.sh
+fi
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CXX_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icpx \
-  -DCMAKE_C_COMPILER=/usr/tce/packages/intel/intel-${COMP_VER}/bin/icx \
+  -DCMAKE_CXX_COMPILER=icpx \
+  -DCMAKE_C_COMPILER=icx \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/toss4/icpx_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
@@ -48,3 +56,20 @@ cmake \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
+
+if [[ ${COMP_VER} == 2024.2.1 ]]
+then
+
+echo
+echo "***********************************************************************"
+echo
+echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
+echo
+echo "To successfully build and run all tests, you may need to run the"
+echo "command to make sure your environment is set up properly:"
+echo
+echo "  source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh"
+echo
+echo "***********************************************************************"
+
+fi
