@@ -181,9 +181,9 @@ Next, we permute the striding order for the two-dimensional example:
    :language: C++
 
 Read from right to left, the permutation '{1, 0}' specifies that the first
-(zero) index 'i' is stride-1 and the second index (one) 'j' has stride equal
-to the extent of the first Layout dimension 'Nx'. This is evident in the
-for-loop ordering.
+(zero) index 'i' is stride-1, additionally captured in the 'RAJA::Layout',
+and the second index (one) 'j' has stride equal to the extent of the first
+Layout dimension 'Nx'. This is evident in the for-loop ordering.
 
 Here is the three-dimensional case, where we have reversed the striding order
 using the permutation '{2, 1, 0}':
@@ -192,6 +192,15 @@ using the permutation '{2, 1, 0}':
    :start-after: _perma_view3D_start
    :end-before: _perma_view3D_end
    :language: C++
+
+.. note:: As the index is now held by index 0 we adjust the Layout template
+          argument accordingly::
+
+            RAJA::Layout<3, int, 0>
+
+          As before index 0 will be marked to have unit stride making
+          multi-dimensional indexing more efficient by avoiding multiplication by
+          `1` when it is unnecessary.
 
 The data access remains stride-1 due to the for-loop reordering. For fun,
 here is another three-dimensional permutation:
