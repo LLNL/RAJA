@@ -57,6 +57,7 @@ cmake \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=ON \
   -DENABLE_CUDA=OFF \
+  -DENABLE_BENCHMARKS=ON \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

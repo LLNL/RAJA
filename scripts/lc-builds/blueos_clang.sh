@@ -38,6 +38,7 @@ cmake \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_BENCHMARKS=ON \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

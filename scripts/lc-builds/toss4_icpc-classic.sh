@@ -43,6 +43,7 @@ cmake \
   -C ../host-configs/lc-builds/toss4/icpc-classic_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
+  -DENABLE_BENCHMARKS=ON \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

@@ -39,6 +39,7 @@ cmake \
   -DRAJA_ENABLE_TARGET_OPENMP=On \
   -DBLT_OPENMP_COMPILE_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
   -DBLT_OPENMP_LINK_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
+  -DENABLE_BENCHMARKS=ON \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
