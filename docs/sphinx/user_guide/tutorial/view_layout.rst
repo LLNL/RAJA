@@ -181,7 +181,7 @@ Next, we permute the striding order for the two-dimensional example:
    :language: C++
 
 Read from right to left, the permutation '{1, 0}' specifies that the first
-(zero) index 'i' is stride-1, additionally captured in the 'RAJA::Layout',
+(zero) index 'i' is stride-1, additionally captured in the ``RAJA::Layout``,
 and the second index (one) 'j' has stride equal to the extent of the first
 Layout dimension 'Nx'. This is evident in the for-loop ordering.
 
