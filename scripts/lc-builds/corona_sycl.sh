@@ -55,7 +55,7 @@ cmake \
   -DBLT_CXX_STD=c++17 \
   -DENABLE_TESTS=On \
   -DENABLE_EXAMPLES=On \
-  -DENABLE_BENCHMARKS=ON \
+  -DENABLE_BENCHMARKS=On \
   "$@" \
   ..
 
