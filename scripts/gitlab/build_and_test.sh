@@ -31,10 +31,14 @@ debug_mode=${DEBUG_MODE:-false}
 
 # REGISTRY_TOKEN allows you to provide your own personal access token to the CI
 # registry. Be sure to set the token with at least read access to the registry.
-registry_token=${REGISTRY_TOKEN:-""}
+# Priority is given to REGISTRY_<SOMETHING>, otherwise defaulting to GitLab CI
+# registry and in last resort (typically personal use) to sensible defaults.
+ci_registry_token=${CI_JOB_TOKEN:-""}
 ci_registry_user=${CI_REGISTRY_USER:-"${USER}"}
 ci_registry_image=${CI_REGISTRY_IMAGE:-"czregistry.llnl.gov:5050/radiuss/raja"}
-ci_registry_token=${CI_JOB_TOKEN:-"${registry_token}"}
+registry_user=${REGISTRY_USER:-"${ci_registry_user}"}
+registry_image=${REGISTRY_IMAGE:-"${ci_registry_image}"}
+registry_token=${REGISTRY_TOKEN:-"${ci_registry_token}"}
 
 timed_message ()
 {
@@ -121,16 +125,16 @@ then
     timed_message "Spack setup and environment"
     ${uberenv_cmd} --setup-and-env-only --spec="${spec}" ${prefix_opt}
 
-    if [[ -n ${ci_registry_token} ]]
+    if [[ -n ${registry_token} ]]
     then
         timed_message "GitLab registry as Spack Buildcache"
-        ${spack_cmd} -D ${spack_env_path} mirror add --unsigned --oci-username ${ci_registry_user} --oci-password ${ci_registry_token} gitlab_ci oci://${ci_registry_image}
+        ${spack_cmd} -D ${spack_env_path} mirror add --unsigned --oci-username ${registry_user} --oci-password ${registry_token} gitlab_ci oci://${registry_image}
     fi
 
     timed_message "Spack build of dependencies"
     ${uberenv_cmd} --skip-setup-and-env --spec="${spec}" ${prefix_opt}
 
-    if [[ -n ${ci_registry_token} && ${debug_mode} == false ]]
+    if [[ -n ${registry_token} && ${debug_mode} == false ]]
     then
         timed_message "Push dependencies to buildcache"
         ${spack_cmd} -D ${spack_env_path} buildcache push --only dependencies gitlab_ci
