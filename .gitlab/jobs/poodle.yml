@@ -17,6 +17,18 @@
 # project. We keep ${PROJECT_<MACHINE>_VARIANTS} and ${PROJECT_<MACHINE>_DEPS}
 # when possible so that the comparison with the original job is easier.
 
+# Identical to shared job, but use OpenMP tasks and no vectorization
+clang_14_0_6:
+  variables:
+    SPEC: " ~shared +openmp +omptask ~vectorization +tests %clang@=14.0.6 ${PROJECT_POODLE_DEPS}"
+  extends: .job_on_poodle
+
+# Identical to shared job, but use OpenMP tasks and no vectorization
+gcc_10_3_1:
+  variables:
+    SPEC: " ~shared +openmp +omptask ~vectorization +tests %gcc@=10.3.1 ${PROJECT_POODLE_DEPS}"
+  extends: .job_on_poodle
+
 # Known issue currently under investigation
 # https://github.com/LLNL/RAJA/pull/1712#issuecomment-2292006843
 intel_2023_2_1:
@@ -24,18 +36,6 @@ intel_2023_2_1:
     SPEC: "${PROJECT_POODLE_VARIANTS} %intel@=2023.2.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
   allow_failure: true
-
-# Identical to shared job, but use OpenMP tasks and no vectorization
-clang_14_0_6:
-  variables:
-    SPEC: " ~shared +openmp +omptask +tests %clang@=14.0.6 ${PROJECT_POODLE_DEPS}"
-  extends: .job_on_poodle
-
-# Identical to shared job, but use OpenMP tasks and no vectorization
-gcc_10_3_1:
-  variables:
-    SPEC: " ~shared +openmp +omptask +tests %gcc@=10.3.1 ${PROJECT_POODLE_DEPS}"
-  extends: .job_on_poodle
 
 ############
 # Extra jobs
