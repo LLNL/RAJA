@@ -16,13 +16,13 @@
 /*
  *  EXERCISE #8: Tiled Matrix Transpose
  *
- *  In this exercise, you will use RAJA constructs to transpose a matrix 
+ *  In this exercise, you will use RAJA constructs to transpose a matrix
  *  using a loop tiling algorithm. An input matrix A of dimension N_r x N_c
  *  is provided. You will fill in the entries of the transpose matrix At.
  *
  *  This file contains a C-style variant of the sequential matrix transpose.
  *  You will complete implementations of multiple RAJA variants by filling
- *  in missing elements of RAJA kernel API execution policies as well as the 
+ *  in missing elements of RAJA kernel API execution policies as well as the
  *  RAJA kernel implementation for each. Variants you will complete include
  *  sequential, OpenMP, and CUDA execution.
  *
@@ -43,16 +43,20 @@ const int DIM = 2;
 //
 // Function for checking results
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
+// clang-format on
 //
 // Function for printing results
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c);
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+// clang-format on
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nExercise #8: RAJA Tiled Matrix Transpose...\n";
@@ -66,8 +70,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Allocate matrix data
   //
-  int *A = memoryManager::allocate<int>(N_r * N_c);
-  int *At = memoryManager::allocate<int>(N_r * N_c);
+  int* A  = memoryManager::allocate<int>(N_r * N_c);
+  int* At = memoryManager::allocate<int>(N_r * N_c);
 
   //
   // In the following implementations of tiled matrix transpose, we
@@ -81,8 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Construct a permuted layout for At so that the column index has stride 1
   //
   std::array<RAJA::idx_t, 2> perm {{1, 0}};
-  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout( {{N_c, N_r}}, 
-                                                            perm );
+  RAJA::Layout<2> perm_layout = RAJA::make_permuted_layout({{N_c, N_r}}, perm);
   RAJA::View<int, RAJA::Layout<DIM>> Atview(At, perm_layout);
 
   //
@@ -97,14 +100,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // Initialize matrix data
   //
-  for (int row = 0; row < N_r; ++row) {
-    for (int col = 0; col < N_c; ++col) {
+  for (int row = 0; row < N_r; ++row)
+  {
+    for (int col = 0; col < N_c; ++col)
+    {
       Aview(row, col) = col;
     }
   }
-  //printResult<int>(Aview, N_r, N_c);
+  // printResult<int>(Aview, N_r, N_c);
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
   std::cout << "\n Running C-version of tiled matrix transpose...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
@@ -112,8 +117,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
   // (0) Outer loops to iterate over tiles
   //
-  for (int by = 0; by < outer_Dimr; ++by) {
-    for (int bx = 0; bx < outer_Dimc; ++bx) {
+  for (int by = 0; by < outer_Dimr; ++by)
+  {
+    for (int bx = 0; bx < outer_Dimc; ++bx)
+    {
 
       //
       // (1) Loops to iterate over tile entries
@@ -121,29 +128,31 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //     Note: loops are ordered so that output matrix data access
       //           is stride-1.
       //
-      for (int trow = 0; trow < TILE_SZ; ++trow) {
-        for (int tcol = 0; tcol < TILE_SZ; ++tcol) {
+      for (int trow = 0; trow < TILE_SZ; ++trow)
+      {
+        for (int tcol = 0; tcol < TILE_SZ; ++tcol)
+        {
 
           int col = bx * TILE_SZ + tcol;  // Matrix column index
           int row = by * TILE_SZ + trow;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c) {
+          if (row < N_r && col < N_c)
+          {
             Atview(col, row) = Aview(row, col);
           }
         }
       }
-
     }
   }
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   //
-  // The following RAJA variants will use the RAJA::kernel method to 
+  // The following RAJA variants will use the RAJA::kernel method to
   // perform the matrix transpose operation.
   //
   // Here, we define RAJA range segments to establish the iteration spaces.
@@ -152,14 +161,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // global iteration number.
   //
 
-// Note: this needs to be turned on for other back-ends when working the 
+// Note: this needs to be turned on for other back-ends when working the
 //       exercises (sequential, CUDA, etc.)
 #if defined(RAJA_ENABLE_OPENMP)
   RAJA::RangeSegment row_Range(0, N_r);
   RAJA::RangeSegment col_Range(0, N_c);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
   std::cout << "\n Running RAJA sequential tiled matrix transpose ...\n";
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -170,6 +179,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 #if 0
   using KERNEL_EXEC_POL_SEQ =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
@@ -183,6 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 #endif
+  // clang-format on
 
   ///
   /// TODO...
@@ -199,7 +210,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running RAJA openmp tiled matrix transpose -  parallel top inner loop...\n";
+  std::cout << "\n Running RAJA openmp tiled matrix transpose -  parallel top "
+               "inner loop...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -209,6 +221,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 #if 0
   using KERNEL_EXEC_POL_OMP =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
@@ -222,6 +235,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 #endif
+  // clang-format on
 
   ///
   /// TODO...
@@ -238,9 +252,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running RAJA openmp tiled matrix transpose - collapsed inner loops...\n";
+  std::cout << "\n Running RAJA openmp tiled matrix transpose - collapsed "
+               "inner loops...\n";
 
   std::memset(At, 0, N_r * N_c * sizeof(int));
 
@@ -250,6 +265,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // to/from the tile.
   //
   using KERNEL_EXEC_POL_OMP2 =
+      // clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
                                RAJA::seq_exec,
@@ -263,13 +279,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       > // closes Tile 1
     >; // closes policy list
 
-  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(
-                        RAJA::make_tuple(col_Range, row_Range),
-                        [=](int col, int row) {
-
-    Atview(col, row) = Aview(row, col);
-
-  });
+  // clang-format on
+  RAJA::kernel<KERNEL_EXEC_POL_OMP2>(RAJA::make_tuple(col_Range, row_Range),
+                                     [=](int col, int row)
+                                     {
+                                       Atview(col, row) = Aview(row, col);
+                                     });
 
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
@@ -283,6 +298,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if 0
   using KERNEL_EXEC_POL_CUDA =
+// clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_SZ>,
@@ -298,6 +314,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       >
     >;
 #endif
+  // clang-format on
 
   ///
   /// TODO...
@@ -330,6 +347,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check result and report P/F.
 //
+// clang-format off
 template <typename T>
 void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {
@@ -348,9 +366,11 @@ void checkResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
   }
 };
 
+// clang-format on
 //
 // Function to print result.
 //
+// clang-format off
 template <typename T>
 void printResult(RAJA::View<T, RAJA::Layout<DIM>> Atview, int N_r, int N_c)
 {

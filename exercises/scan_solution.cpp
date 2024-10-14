@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+// clang-format off
 #define OP_PLUS_INT RAJA::operators::plus<int>
 #define OP_MIN_INT RAJA::operators::minimum<int>
 #define OP_MAX_INT RAJA::operators::maximum<int>
 #define CHECK_INC_SCAN_RESULTS(X) checkInclusiveScanResult<X>(in, out, N);
 #define CHECK_EXC_SCAN_RESULTS(X) checkExclusiveScanResult<X>(in, out, N);
+// clang-format on
 
 #include <cstdlib>
 #include <iostream>
@@ -40,11 +42,11 @@
   Specify the number of threads in a GPU thread block
 */
 #if defined(RAJA_ENABLE_CUDA)
-  constexpr int CUDA_BLOCK_SIZE = 16;
+constexpr int CUDA_BLOCK_SIZE = 16;
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-  constexpr int HIP_BLOCK_SIZE = 16;
+constexpr int HIP_BLOCK_SIZE = 16;
 #endif
 
 //
@@ -66,15 +68,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA scan example...\n";
 
   // _scan_array_init_start
-//
-// Define array length
-//
+  //
+  // Define array length
+  //
   constexpr int N = 20;
 
-//
-// Allocate and initialize vector data
-//
-  int* in = memoryManager::allocate<int>(N);
+  //
+  // Allocate and initialize vector data
+  //
+  int* in  = memoryManager::allocate<int>(N);
   int* out = memoryManager::allocate<int>(N);
 
   std::iota(in, in + N, -1);
@@ -85,11 +87,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // _scan_array_init_end
 
 
-
-//----------------------------------------------------------------------------//
-// Perform various sequential scans to illustrate inclusive/exclusive,
-// in-place, default scans with different operators
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform various sequential scans to illustrate inclusive/exclusive,
+  // in-place, default scans with different operators
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential inclusive_scan (default)...\n";
 
@@ -102,63 +103,71 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential inclusive_scan (plus)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_inclusive_seq_plus_start
+  // clang-format off
   RAJA::inclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
                                        RAJA::make_span(out, N),
                                        RAJA::operators::plus<int>{});
   // _scan_inclusive_seq_plus_end
+  // clang-format on
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential exclusive_scan (plus)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_exclusive_seq_plus_start
+  // clang-format off
   RAJA::exclusive_scan<RAJA::seq_exec>(RAJA::make_span(in, N),
                                        RAJA::make_span(out, N),
                                        RAJA::operators::plus<int>{});
   // _scan_exclusive_seq_plus_end
+  // clang-format on
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential inclusive_scan_inplace (minimum)...\n";
 
   // _scan_inclusive_inplace_seq_min_start
   std::copy_n(in, N, out);
 
+  // clang-format off
   RAJA::inclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
                                                RAJA::operators::minimum<int>{});
   // _scan_inclusive_inplace_seq_min_end
+  // clang-format on
 
   CHECK_INC_SCAN_RESULTS(OP_MIN_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running sequential exclusive_scan_inplace (maximum)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_seq_max_start
+  // clang-format off
   RAJA::exclusive_scan_inplace<RAJA::seq_exec>(RAJA::make_span(out, N),
                                                RAJA::operators::maximum<int>{});
   // _scan_exclusive_inplace_seq_max_end
+  // clang-format on
 
   CHECK_EXC_SCAN_RESULTS(OP_MAX_INT)
   printArray(out, N);
@@ -167,33 +176,37 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-//----------------------------------------------------------------------------//
-// Perform a couple of OpenMP scans...
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform a couple of OpenMP scans...
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running OpenMP inclusive_scan (plus)...\n";
 
   // _scan_inclusive_omp_plus_start
+  // clang-format off
   RAJA::inclusive_scan<RAJA::omp_parallel_for_exec>(RAJA::make_span(in, N),
                                                     RAJA::make_span(out, N),
                                                     RAJA::operators::plus<int>{});
   // _scan_inclusive_omp_plus_end
+  // clang-format on
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running OpenMP exclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_omp_plus_start
+  // clang-format off
   RAJA::exclusive_scan_inplace<RAJA::omp_parallel_for_exec>(
       RAJA::make_span(out, N),
       RAJA::operators::plus<int>{});
   // _scan_exclusive_inplace_omp_plus_end
+  // clang-format on
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -201,56 +214,62 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
-//----------------------------------------------------------------------------//
-// Perform a few CUDA scans...
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform a few CUDA scans...
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA inclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_inclusive_inplace_cuda_plus_start
+  // clang-format off
   RAJA::inclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       RAJA::make_span(out, N),
       RAJA::operators::plus<int>{});
   // _scan_inclusive_inplace_cuda_plus_end
+  // clang-format on
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA exclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_exclusive_inplace_cuda_plus_start
+  // clang-format off
   RAJA::exclusive_scan_inplace<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       RAJA::make_span(out, N),
       RAJA::operators::plus<int>{});
   // _scan_exclusive_inplace_cuda_plus_end
+  // clang-format on
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running CUDA exclusive_scan (plus)...\n";
 
   std::copy_n(in, N, out);
 
   // _scan_exclusive_cuda_plus_start
+  // clang-format off
   RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
       RAJA::make_span(in, N),
       RAJA::make_span(out, N),
       RAJA::operators::plus<int>{});
   // _scan_exclusive_cuda_plus_end
+  // clang-format on
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -258,48 +277,52 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 
 #if defined(RAJA_ENABLE_HIP)
 
-//----------------------------------------------------------------------------//
-// Perform a couple of HIP scans...
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // Perform a couple of HIP scans...
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running HIP inclusive_scan_inplace (plus)...\n";
 
   std::copy_n(in, N, out);
-  int* d_in = memoryManager::allocate_gpu<int>(N);
+  int* d_in  = memoryManager::allocate_gpu<int>(N);
   int* d_out = memoryManager::allocate_gpu<int>(N);
 
-  hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));
 
   // _scan_inclusive_inplace_hip_plus_start
+  // clang-format off
   RAJA::inclusive_scan_inplace<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
       RAJA::make_span(d_out, N),
       RAJA::operators::plus<int>{});
   // _scan_inclusive_inplace_hip_plus_end
+  // clang-format on
 
-  hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
   std::cout << "\n";
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running HIP exclusive_scan (plus)...\n";
 
-  hipErrchk(hipMemcpy( d_in, in, N * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_out, out, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_in, in, N * sizeof(int), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_out, out, N * sizeof(int), hipMemcpyHostToDevice));
 
+  // clang-format off
   RAJA::exclusive_scan<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
       RAJA::make_span(d_in, N),
       RAJA::make_span(d_out, N),
       RAJA::operators::plus<int>{});
 
-  hipErrchk(hipMemcpy( out, d_out, N * sizeof(int), hipMemcpyDeviceToHost ));
+  // clang-format on
+  hipErrchk(hipMemcpy(out, d_out, N * sizeof(int), hipMemcpyDeviceToHost));
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -310,11 +333,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
-//
-// Clean up.
-//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(in);
   memoryManager::deallocate(out);
 
@@ -327,6 +350,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 //
 // Function to check inclusive scan result
 //
+// clang-format off
 template <typename Function, typename T>
 void checkInclusiveScanResult(const T* in, const T* out, int N)
 {

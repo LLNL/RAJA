@@ -1,19 +1,20 @@
 #include "RAJA/RAJA.hpp"
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
   std::cout << "\n\nRAJA dynamic_tile example...\n\n";
 
-//Using policy = KernelPolicy<Tile<tile_dynamic<0>, seq_exec, …>>;
-//RAJA::kernel_param<policy>(
-// make_tuple(RangeSegment(0,N)),
-//  make_tuple(32),  // param 0 is referenced by tile_dynamic
-//  [=](int i, int tile_size){
-//
-//  });
+  // Using policy = KernelPolicy<Tile<tile_dynamic<0>, seq_exec, …>>;
+  // RAJA::kernel_param<policy>(
+  //  make_tuple(RangeSegment(0,N)),
+  //   make_tuple(32),  // param 0 is referenced by tile_dynamic
+  //   [=](int i, int tile_size){
+  //
+  //   });
 
   using namespace RAJA;
 
+  // clang-format off
   kernel_param<
     KernelPolicy<
       statement::Tile<1, tile_dynamic<1>, seq_exec,
@@ -31,4 +32,5 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        std::cout << "Running index (" << i << "," << j << ") of " << x.size << "x" << y.size << " tile." << std::endl;
   });
 
+  // clang-format on
 }

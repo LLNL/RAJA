@@ -15,7 +15,7 @@
  *  EXERCISE #2: Approximate pi using a Riemann sum
  *
  *  In this exercise, you will apprimate pi using the formula
- * 
+ *
  *    pi/4 = atan(1) = integral (1/1+x^2) dx, where integral is over the
  *    interval [0, 1].
  *
@@ -28,7 +28,7 @@
  *    - `forall` loop iteration template method
  *    - Index range segment
  *    - Sum reduction
- *    - Execution and reduction policies 
+ *    - Execution and reduction policies
  */
 
 /*
@@ -46,38 +46,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nExercise #2: Approximate pi using a Riemann sum...\n";
 
-//
-// Define number of subintervals (N) and size of each subinterval (dx) used in
-// Riemann integral sum to approximate pi.
-//
-  const int N = 512 * 512;
-  const double dx = 1.0 / double(N); 
+  //
+  // Define number of subintervals (N) and size of each subinterval (dx) used in
+  // Riemann integral sum to approximate pi.
+  //
+  const int N     = 512 * 512;
+  const double dx = 1.0 / double(N);
 
-// Set precision for printing pi
+  // Set precision for printing pi
   int prec = 16;
 
 
-//----------------------------------------------------------------------------//
-// C-style sequential variant establishes reference solution to compare with.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // C-style sequential variant establishes reference solution to compare with.
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running C-style sequential pi approximation...\n";
- 
+
   double c_pi = 0.0;
 
-  for (int i = 0; i < N; ++i) {
-      double x = (double(i) + 0.5) * dx;
-      c_pi += dx / (1.0 + x * x);
+  for (int i = 0; i < N; ++i)
+  {
+    double x = (double(i) + 0.5) * dx;
+    c_pi += dx / (1.0 + x * x);
   }
   c_pi *= 4.0;
 
-  std::cout << "\tpi = " << std::setprecision(prec) 
-            << c_pi << std::endl;
+  std::cout << "\tpi = " << std::setprecision(prec) << c_pi << std::endl;
 
 
-//----------------------------------------------------------------------------//
-// RAJA sequential variant.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // RAJA sequential variant.
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential pi approximation...\n";
 
@@ -85,7 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the pi approximation kernel using a RAJA::forall
-  ///           method with RAJA::seq_exec execution policy type and a 
+  ///           method with RAJA::seq_exec execution policy type and a
   ///           RAJA::ReduceSum object with RAJA::seq_reduce policy type
   ///           to accumulate the sum.
   ///
@@ -95,21 +95,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   using EXEC_POL1   = RAJA::seq_exec;
   using REDUCE_POL1 = RAJA::seq_reduce;
 
-  RAJA::ReduceSum< REDUCE_POL1, double > seq_pi(0.0);
+  RAJA::ReduceSum<REDUCE_POL1, double> seq_pi(0.0);
 
-  RAJA::forall< EXEC_POL1 >(RAJA::RangeSegment(0, N), [=](int i) {
-      double x = (double(i) + 0.5) * dx;
-      seq_pi += dx / (1.0 + x * x);
-  });
-  double seq_pi_val = seq_pi.get() * 4.0; 
+  RAJA::forall<EXEC_POL1>(RAJA::RangeSegment(0, N),
+                          [=](int i)
+                          {
+                            double x = (double(i) + 0.5) * dx;
+                            seq_pi += dx / (1.0 + x * x);
+                          });
+  double seq_pi_val = seq_pi.get() * 4.0;
 
-  std::cout << "\tpi = " << std::setprecision(prec) 
-            << seq_pi_val << std::endl;
+  std::cout << "\tpi = " << std::setprecision(prec) << seq_pi_val << std::endl;
 
 
-//----------------------------------------------------------------------------//
-// C-style OpenMP multithreading variant.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // C-style OpenMP multithreading variant.
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -117,22 +118,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   double c_pi_omp = 0.0;
 
-  #pragma omp parallel for reduction(+:c_pi_omp)
-  for (int i = 0; i < N; ++i) {
-      double x = (double(i) + 0.5) * dx;
-      c_pi_omp += dx / (1.0 + x * x);
+#pragma omp parallel for reduction(+ : c_pi_omp)
+  for (int i = 0; i < N; ++i)
+  {
+    double x = (double(i) + 0.5) * dx;
+    c_pi_omp += dx / (1.0 + x * x);
   }
   c_pi_omp *= 4.0;
 
-  std::cout << "\tpi = " << std::setprecision(prec)
-            << c_pi_omp << std::endl;
+  std::cout << "\tpi = " << std::setprecision(prec) << c_pi_omp << std::endl;
 
 #endif
 
 
-//----------------------------------------------------------------------------//
-// RAJA OpenMP multithreading variant.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // RAJA OpenMP multithreading variant.
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -142,23 +143,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the pi approximation kernel using a RAJA::forall
-  ///           method with RAJA::omp_parallel_for_exec execution policy type 
+  ///           method with RAJA::omp_parallel_for_exec execution policy type
   ///           and a RAJA::ReduceSum object with RAJA::omp_reduce policy type
   ///           to accumulate the sum.
-  /// 
+  ///
 
 
   double omp_pi_val = 0.0;
 
-  std::cout << "\tpi = " << std::setprecision(prec)
-            << omp_pi_val << std::endl;
+  std::cout << "\tpi = " << std::setprecision(prec) << omp_pi_val << std::endl;
 
 #endif
 
 
-//----------------------------------------------------------------------------//
-// RAJA CUDA variant.
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
+  // RAJA CUDA variant.
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -168,16 +168,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the pi approximation kernel using a RAJA::forall
-  ///           method with RAJA::cuda_exec execution policy type and a 
+  ///           method with RAJA::cuda_exec execution policy type and a
   ///           RAJA::ReduceSum object with RAJA::cuda_reduce policy type
   ///           to accumulate the sum.
-  /// 
+  ///
 
 
   double cuda_pi_val = 0.0;
 
-  std::cout << "\tpi = " << std::setprecision(prec)
-            << cuda_pi_val << std::endl;
+  std::cout << "\tpi = " << std::setprecision(prec) << cuda_pi_val << std::endl;
 
 #endif
 

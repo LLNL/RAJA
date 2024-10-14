@@ -14,9 +14,9 @@
 /*
  *  Vector Dot Product Exercise
  *
- *  Computes dot = (a,b), where a, b are vectors of 
+ *  Computes dot = (a,b), where a, b are vectors of
  *  doubles and dot is a scalar double. It illustrates how RAJA
- *  supports a portable parallel reduction opertion in a way that 
+ *  supports a portable parallel reduction opertion in a way that
  *  the code looks like it does in a sequential implementation.
  *
  *  RAJA features shown:
@@ -33,38 +33,40 @@
 //
 void checkResult(double compdot, double refdot);
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   std::cout << "\n\nExercise: vector dot product...\n";
 
-//
-// Define vector length
-//
+  //
+  // Define vector length
+  //
   constexpr int N = 1000000;
 
-//
-// Allocate and initialize vector data
-//
-  double *a = memoryManager::allocate<double>(N);
-  double *b = memoryManager::allocate<double>(N);
+  //
+  // Allocate and initialize vector data
+  //
+  double* a = memoryManager::allocate<double>(N);
+  double* b = memoryManager::allocate<double>(N);
 
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     a[i] = 1.0;
     b[i] = 1.0;
   }
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
-//
-// C-style dot product operation.
-//
+  //
+  // C-style dot product operation.
+  //
   std::cout << "\n Running C-version of dot product...\n";
 
   // _csytle_dotprod_start
   double dot = 0.0;
 
-  for (int i = 0; i < N; ++i) {
+  for (int i = 0; i < N; ++i)
+  {
     dot += a[i] * b[i];
   }
 
@@ -73,7 +75,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   double dot_ref = dot;
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential dot product...\n";
 
@@ -83,17 +85,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::seq_exec
-  ///           execution policy type and RAJA::seq_reduce. 
+  ///           execution policy type and RAJA::seq_reduce.
   ///
   /// NOTE: We've done this one for you to help you get started...
   ///
 
   RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
+  // clang-format off
   RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<int>(0, N), [=] (int i) { 
     seqdot += a[i] * b[i]; 
   });
 
+  // clang-format on
   dot = seqdot.get();
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -101,7 +105,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, dot_ref);
 
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP dot product...\n";
@@ -111,8 +115,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   ///
   /// TODO...
   ///
-  /// EXERCISE: Implement the dot product kernel using a RAJA::omp_parallel_for_exec
-  ///           execution policy type and RAJA::omp_reduce reduction policy type.
+  /// EXERCISE: Implement the dot product kernel using a
+  /// RAJA::omp_parallel_for_exec
+  ///           execution policy type and RAJA::omp_reduce reduction policy
+  ///           type.
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -121,11 +127,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
-//const int CUDA_BLOCK_SIZE = 256;
+  // const int CUDA_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA CUDA dot product...\n";
 
@@ -135,10 +141,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::cuda_exec
-  ///           execution policy type and RAJA::cuda_reduce reduction policy type.
-  ///      
+  ///           execution policy type and RAJA::cuda_reduce reduction policy
+  ///           type.
+  ///
   ///           NOTE: You will need to uncomment 'CUDA_BLOCK_SIZE' above.
-  ///                 if you want to use it here. 
+  ///                 if you want to use it here.
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -146,30 +153,31 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult(dot, dot_ref);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
 
-//const int HIP_BLOCK_SIZE = 256;
+  // const int HIP_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA HIP dot product...\n";
 
   dot = 0.0;
 
-  int *d_a = memoryManager::allocate_gpu<int>(N);
-  int *d_b = memoryManager::allocate_gpu<int>(N);
+  int* d_a = memoryManager::allocate_gpu<int>(N);
+  int* d_b = memoryManager::allocate_gpu<int>(N);
 
-  hipErrchk(hipMemcpy( d_a, a, N * sizeof(int), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_b, b, N * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy(d_a, a, N * sizeof(int), hipMemcpyHostToDevice));
+  hipErrchk(hipMemcpy(d_b, b, N * sizeof(int), hipMemcpyHostToDevice));
 
   ///
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::hip_exec
-  ///           execution policy type and RAJA::hip_reduce reduction policy type.
-  ///      
+  ///           execution policy type and RAJA::hip_reduce reduction policy
+  ///           type.
+  ///
   ///           NOTE: You will need to uncomment 'HIP_BLOCK_SIZE' above
-  ///                 if you want to use it here. 
+  ///                 if you want to use it here.
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -180,11 +188,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate_gpu(d_b);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_SYCL)
 
-//const int SYCL_BLOCK_SIZE = 256;
+  // const int SYCL_BLOCK_SIZE = 256;
 
   std::cout << "\n Running RAJA SYCL dot product...\n";
 
@@ -194,10 +202,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /// TODO...
   ///
   /// EXERCISE: Implement the dot product kernel using a RAJA::sycl_exec
-  ///           execution policy type and RAJA::sycl_reduce. 
+  ///           execution policy type and RAJA::sycl_reduce.
   ///
   ///           NOTE: You will need to uncomment 'SYCL_BLOCK_SIZE' above
-  ///                 if you want to use it here. 
+  ///                 if you want to use it here.
   ///
 
   std::cout << "\t (a, b) = " << dot << std::endl;
@@ -206,7 +214,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 
   memoryManager::deallocate(a);
@@ -222,10 +230,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 void checkResult(double compdot, double refdot)
 {
-  if ( compdot == refdot ) {
+  if (compdot == refdot)
+  {
     std::cout << "\n\t result -- PASS\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\n\t result -- FAIL\n";
   }
 }
-
