@@ -22,7 +22,7 @@
 
 #include <cstdint>
 
-#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
+#if defined(RAJA_COMPILER_MSVC) || ((defined(_WIN32) || defined(_WIN64)) && defined(__INTEL_COMPILER))
 #include <intrin.h>
 #endif
 
@@ -48,7 +48,7 @@ struct builtin_atomic {
 namespace detail {
 
 
-#if defined(RAJA_COMPILER_MSVC) || (defined(_WIN32) && defined(__INTEL_COMPILER))
+#if defined(RAJA_COMPILER_MSVC) || ((defined(_WIN32) || defined(_WIN64)) && defined(__INTEL_COMPILER))
 
 
 /*!
@@ -120,11 +120,14 @@ RAJA_INLINE long builtin_atomicOr(long *acc, long value)
   return _InterlockedOr(acc, value);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicOr(long long *acc, long long value)
 {
   return _InterlockedOr64(acc, value);
 }
 
+#endif
 
 /*!
  * Atomic load using atomic or
@@ -155,10 +158,14 @@ RAJA_INLINE long builtin_atomicExchange(long *acc, long value)
   return _InterlockedExchange(acc, value);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicExchange(long long *acc, long long value)
 {
   return _InterlockedExchange64(acc, value);
 }
+
+#endif
 
 
 /*!
@@ -190,10 +197,14 @@ RAJA_INLINE long builtin_atomicCAS(long *acc, long compare, long value)
   return _InterlockedCompareExchange(acc, value, compare);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicCAS(long long *acc, long long compare, long long value)
 {
   return _InterlockedCompareExchange64(acc, value, compare);
 }
+
+#endif
 
 
 /*!
@@ -214,10 +225,14 @@ RAJA_INLINE long builtin_atomicAdd(long *acc, long value)
   return _InterlockedExchangeAdd(acc, value);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicAdd(long long *acc, long long value)
 {
   return _InterlockedExchangeAdd64(acc, value);
 }
+
+#endif
 
 
 /*!
@@ -238,10 +253,14 @@ RAJA_INLINE long builtin_atomicSub(long *acc, long value)
   return _InterlockedExchangeAdd(acc, -value);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicSub(long long *acc, long long value)
 {
   return _InterlockedExchangeAdd64(acc, -value);
 }
+
+#endif
 
 
 /*!
@@ -262,10 +281,14 @@ RAJA_INLINE long builtin_atomicAnd(long *acc, long value)
   return _InterlockedAnd(acc, value);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicAnd(long long *acc, long long value)
 {
   return _InterlockedAnd64(acc, value);
 }
+
+#endif
 
 
 /*!
@@ -286,10 +309,14 @@ RAJA_INLINE long builtin_atomicXor(long *acc, long value)
   return _InterlockedXor(acc, value);
 }
 
+#if defined(_WIN64)
+
 RAJA_INLINE long long builtin_atomicXor(long long *acc, long long value)
 {
   return _InterlockedXor64(acc, value);
 }
+
+#endif
 
 
 #else  // RAJA_COMPILER_MSVC

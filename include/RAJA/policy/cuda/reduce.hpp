@@ -275,7 +275,10 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
 
 template <typename GlobalIterationGetter, typename OP, typename T>
-RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red)
+RAJA_DEVICE RAJA_INLINE void grid_reduce( T * device_target,
+                                          T val,
+                                          RAJA::detail::SoAPtr<T,RAJA::cuda::device_mempool_type> device_mem,
+                                          unsigned int* device_count)
 {
   using BlockIterationGetter = typename get_index_block<GlobalIterationGetter>::type;
   using ThreadIterationGetter = typename get_index_thread<GlobalIterationGetter>::type;
@@ -287,16 +290,16 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red
   const int blockId = BlockIterationGetter::index();
   const int threadId = ThreadIterationGetter::index();
 
-  T temp = block_reduce<ThreadIterationGetter, OP>(red.val, OP::identity());
+  T temp = block_reduce<ThreadIterationGetter, OP>(val, OP::identity());
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
   if (threadId == 0) {
-    red.device_mem.set(blockId, temp);
+    device_mem.set(blockId, temp);
     // ensure write visible to all threadblocks
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(red.device_count, wrap_around);
+    unsigned int old_count = ::atomicInc(device_count, wrap_around);
     lastBlock = (old_count == wrap_around);
   }
 
@@ -309,14 +312,14 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red
     __threadfence();
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
-      temp = OP{}(temp, red.device_mem.get(i));
+      temp = OP{}(temp, device_mem.get(i));
     }
 
     temp = block_reduce<ThreadIterationGetter, OP>(temp, OP::identity());
 
     // one thread returns value
     if (threadId == 0) {
-      *(red.devicetarget) = temp;
+      *device_target = temp;
     }
   }
 }

@@ -102,12 +102,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // 
   // Define RAJA View objects to simplify access to the matrix entries.
   // 
-  // Note: we use default Layout 
+  // Note: we use default Layout and specify unit stride
   //
   // _matmult_views_start
-  RAJA::View< double, RAJA::Layout<2, int> > Aview(A, N, N);
-  RAJA::View< double, RAJA::Layout<2, int> > Bview(B, N, N);
-  RAJA::View< double, RAJA::Layout<2, int> > Cview(C, N, N);
+  RAJA::View< double, RAJA::Layout<2, int, 1> > Aview(A, N, N);
+  RAJA::View< double, RAJA::Layout<2, int, 1> > Bview(B, N, N);
+  RAJA::View< double, RAJA::Layout<2, int, 1> > Cview(C, N, N);
   // _matmult_views_end
 
   // _cstyle_matmult_views_start
@@ -165,7 +165,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, Ntot * sizeof(int));
  
   // _default_view1D_start 
-  RAJA::View< int, RAJA::Layout<1, int> > view_1D(a, Ntot);
+  RAJA::View< int, RAJA::Layout<1, int, 0> > view_1D(a, Ntot);
 
   for (int i = 0; i < Ntot; ++i) {
     view_1D(i) = i;
@@ -182,7 +182,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, Ntot * sizeof(int));
  
   // _default_view2D_start
-  RAJA::View< int, RAJA::Layout<2, int> > view_2D(a, Nx, Ny);
+  RAJA::View< int, RAJA::Layout<2, int, 1> > view_2D(a, Nx, Ny);
 
   int iter{0};
   for (int i = 0; i < Nx; ++i) {
@@ -203,7 +203,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memset(a, 0, Ntot * sizeof(int));
 
   // _default_view3D_start    
-  RAJA::View< int, RAJA::Layout<3, int> > view_3D(a, Nx, Ny, Nz);
+  RAJA::View< int, RAJA::Layout<3, int, 2> > view_3D(a, Nx, Ny, Nz);
 
   iter = 0;
   for (int i = 0; i < Nx; ++i) {
@@ -235,9 +235,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _default_perm_view2D_start
   std::array<RAJA::idx_t, 2> defperm2 {{0, 1}};
-  RAJA::Layout< 2, int > defperm2_layout =
+  RAJA::Layout< 2, int> defperm2_layout =
     RAJA::make_permuted_layout( {{Nx, Ny}}, defperm2);
-  RAJA::View< int, RAJA::Layout<2, int> > defperm_view_2D(a, defperm2_layout);
+  RAJA::View< int, RAJA::Layout<2, int, 1> > defperm_view_2D(a, defperm2_layout);
 
   iter = 0;
   for (int i = 0; i < Nx; ++i) {
@@ -261,7 +261,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::array<RAJA::idx_t, 3> defperm3 {{0, 1, 2}};
   RAJA::Layout< 3, int > defperm3_layout =
     RAJA::make_permuted_layout( {{Nx, Ny, Nz}}, defperm3);
-  RAJA::View< int, RAJA::Layout<3, int> > defperm_view_3D(a, defperm3_layout);
+  RAJA::View< int, RAJA::Layout<3, int, 2> > defperm_view_3D(a, defperm3_layout);
 
   iter = 0;
   for (int i = 0; i < Nx; ++i) {
@@ -286,9 +286,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _perm_2D_start
   std::array<RAJA::idx_t, 2> perm2 {{1, 0}};
-  RAJA::Layout< 2, int > perm2_layout =
+  RAJA::Layout< 2, int> perm2_layout =
     RAJA::make_permuted_layout( {{Nx, Ny}}, perm2);
-  RAJA::View< int, RAJA::Layout<2, int> > perm_view_2D(a, perm2_layout);
+  RAJA::View< int, RAJA::Layout<2, int, 0> > perm_view_2D(a, perm2_layout);
 
   iter = 0;
   for (int j = 0; j < Ny; ++j) {
@@ -310,9 +310,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   // _perma_view3D_start
   std::array<RAJA::idx_t, 3> perm3a {{2, 1, 0}};
-  RAJA::Layout< 3, int > perm3a_layout =
+  RAJA::Layout< 3, int> perm3a_layout =
     RAJA::make_permuted_layout( {{Nx, Ny, Nz}}, perm3a);
-  RAJA::View< int, RAJA::Layout<3, int> > perm3a_view_3D(a, perm3a_layout);
+  RAJA::View< int, RAJA::Layout<3, int, 0> > perm3a_view_3D(a, perm3a_layout);
 
   iter = 0;
   for (int k = 0; k < Nz; ++k) {
@@ -338,7 +338,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::array<RAJA::idx_t, 3> perm3b {{1, 2, 0}};
   RAJA::Layout< 3, int > perm3b_layout =
     RAJA::make_permuted_layout( {{Nx, Ny, Nz}}, perm3b);
-  RAJA::View< int, RAJA::Layout<3, int> > perm3b_view_3D(a, perm3b_layout);
+  RAJA::View< int, RAJA::Layout<3, int, 0> > perm3b_view_3D(a, perm3b_layout);
 
   iter = 0;
   for (int j = 0; j < Ny; ++j) {

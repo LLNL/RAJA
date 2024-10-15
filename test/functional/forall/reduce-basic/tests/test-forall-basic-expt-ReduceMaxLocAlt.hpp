@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_FORALL_BASIC_REDUCEMAXLOC_HPP__
-#define __TEST_FORALL_BASIC_REDUCEMAXLOC_HPP__
+#ifndef __TEST_FORALL_BASIC_REDUCEMAXLOCALT_HPP__
+#define __TEST_FORALL_BASIC_REDUCEMAXLOCALT_HPP__
 
 #include <cstdlib>
 #include <ctime>
@@ -16,7 +16,7 @@
 template <typename IDX_TYPE, typename DATA_TYPE,
           typename SEG_TYPE,
           typename EXEC_POLICY, typename REDUCE_POLICY>
-void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
+void ForallReduceMaxLocAltBasicTestImpl(const SEG_TYPE& seg,
                                      const std::vector<IDX_TYPE>& seg_idx,
                                      camp::resources::Resource working_res)
 {
@@ -76,18 +76,39 @@ void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
   ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max);
   ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
 
-  max.set(max_init, maxloc_init);
-  ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), max_init);
-  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), maxloc_init);
+  VL_TYPE max2(max_init, maxloc_init);
 
-  DATA_TYPE factor = 2;
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&max2),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE RAJA_UNUSED_ARG(idx), VL_LAMBDA_TYPE &m2) {
+      m2.max( max );
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(max2.getVal()), static_cast<DATA_TYPE>(max.getVal()));
+  ASSERT_EQ(static_cast<IDX_TYPE>(max2.getLoc()), static_cast<IDX_TYPE>(max.getLoc()));
+
+  DATA_TYPE s_max = max_init;
+  IDX_TYPE s_maxloc = maxloc_init;
+
+  const int factor = 4;
+  RAJA::forall<EXEC_POLICY>(seg,
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&s_max, &s_maxloc),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &m) {
       m.maxloc( working_array[idx] * factor, idx);
   });
-  ASSERT_EQ(static_cast<DATA_TYPE>(max.getVal()), ref_max * factor);
-  ASSERT_EQ(static_cast<IDX_TYPE>(max.getLoc()), ref_maxloc);
+  ASSERT_EQ(static_cast<DATA_TYPE>(s_max), ref_max * factor);
+  ASSERT_EQ(static_cast<IDX_TYPE>(s_maxloc), ref_maxloc);
+
+  DATA_TYPE s_max2 = max_init;
+  IDX_TYPE s_maxloc2 = maxloc_init;
+
+  RAJA::forall<EXEC_POLICY>(seg,
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&s_max2, &s_maxloc2),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE RAJA_UNUSED_ARG(idx), VL_LAMBDA_TYPE &m2) {
+      m2.max(max2);
+  });
+  ASSERT_EQ(static_cast<DATA_TYPE>(s_max2), static_cast<DATA_TYPE>(max2.getVal()));
+  ASSERT_EQ(static_cast<IDX_TYPE>(s_maxloc2), static_cast<IDX_TYPE>(max2.getLoc()));
+
 
   deallocateForallTestData<DATA_TYPE>(working_res,
                                       working_array,
@@ -95,13 +116,13 @@ void ForallReduceMaxLocBasicTestImpl(const SEG_TYPE& seg,
                                       test_array);
 }
 
-TYPED_TEST_SUITE_P(ForallReduceMaxLocBasicTest);
+TYPED_TEST_SUITE_P(ForallReduceMaxLocAltBasicTest);
 template <typename T>
-class ForallReduceMaxLocBasicTest : public ::testing::Test
+class ForallReduceMaxLocAltBasicTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
+TYPED_TEST_P(ForallReduceMaxLocAltBasicTest, ReduceMaxLocAltBasicForall)
 {
   using IDX_TYPE      = typename camp::at<TypeParam, camp::num<0>>::type;
   using DATA_TYPE     = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -116,7 +137,7 @@ TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
 // Range segment tests
   RAJA::TypedRangeSegment<IDX_TYPE> r1( 0, 28 );
   RAJA::getIndices(seg_idx, r1);
-  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+  ForallReduceMaxLocAltBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeSegment<IDX_TYPE>,
                                   EXEC_POLICY, REDUCE_POLICY>(
                                     r1, seg_idx, working_res);
@@ -124,7 +145,7 @@ TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r2( 3, 642 );
   RAJA::getIndices(seg_idx, r2);
-  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+  ForallReduceMaxLocAltBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeSegment<IDX_TYPE>,
                                   EXEC_POLICY, REDUCE_POLICY>(
                                     r2, seg_idx, working_res);
@@ -132,7 +153,7 @@ TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
   seg_idx.clear();
   RAJA::TypedRangeSegment<IDX_TYPE> r3( 0, 2057 );
   RAJA::getIndices(seg_idx, r3);
-  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+  ForallReduceMaxLocAltBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeSegment<IDX_TYPE>,
                                   EXEC_POLICY, REDUCE_POLICY>(
                                     r3, seg_idx, working_res);
@@ -141,7 +162,7 @@ TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r4( 0, 188, 2 );
   RAJA::getIndices(seg_idx, r4);
-  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+  ForallReduceMaxLocAltBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeStrideSegment<IDX_TYPE>,
                                   EXEC_POLICY, REDUCE_POLICY>(
                                     r4, seg_idx, working_res);
@@ -149,7 +170,7 @@ TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
   seg_idx.clear();
   RAJA::TypedRangeStrideSegment<IDX_TYPE> r5( 3, 1029, 3 );
   RAJA::getIndices(seg_idx, r5);
-  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+  ForallReduceMaxLocAltBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedRangeStrideSegment<IDX_TYPE>,
                                   EXEC_POLICY, REDUCE_POLICY>(
                                     r5, seg_idx, working_res);
@@ -166,13 +187,13 @@ TYPED_TEST_P(ForallReduceMaxLocBasicTest, ReduceMaxLocBasicForall)
   }
   RAJA::TypedListSegment<IDX_TYPE> l1( &seg_idx[0], seg_idx.size(),
                                        working_res );
-  ForallReduceMaxLocBasicTestImpl<IDX_TYPE, DATA_TYPE,
+  ForallReduceMaxLocAltBasicTestImpl<IDX_TYPE, DATA_TYPE,
                                   RAJA::TypedListSegment<IDX_TYPE>,
                                   EXEC_POLICY, REDUCE_POLICY>(
                                     l1, seg_idx, working_res);
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxLocBasicTest,
-                            ReduceMaxLocBasicForall);
+REGISTER_TYPED_TEST_SUITE_P(ForallReduceMaxLocAltBasicTest,
+                            ReduceMaxLocAltBasicForall);
 
-#endif  // __TEST_FORALL_BASIC_REDUCEMAXLOC_HPP__
+#endif  // __TEST_FORALL_BASIC_REDUCEMAXLOCALT_HPP__

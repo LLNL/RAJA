@@ -276,7 +276,7 @@ namespace expt
     template<typename LAMBDA, typename... EXPECTED_ARGS>
     constexpr concepts::enable_if<has_empty_op<LAMBDA>> check_invocable(LAMBDA&&, const camp::list<EXPECTED_ARGS...>&) {
 #if !defined(RAJA_ENABLE_HIP)
-      static_assert(is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS."); 
+      static_assert(is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS. Ordering and types must match between RAJA::expt::Reduce() and ValOp arguments."); 
 #endif
     }
 
