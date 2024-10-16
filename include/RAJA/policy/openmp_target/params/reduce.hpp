@@ -26,7 +26,7 @@ namespace detail {
   // Resolve
   template<typename EXEC_POL, typename OP, typename T, typename VOp>
   camp::concepts::enable_if< type_traits::is_target_openmp_policy<EXEC_POL> >
-  resolve(Reducer<OP, T, I, VOp>& red) {
+  resolve(Reducer<OP, T, VOp>& red) {
     red.combineTarget(red.m_valop.val);
   }
 
