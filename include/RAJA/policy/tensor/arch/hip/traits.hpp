@@ -29,7 +29,8 @@ namespace expt {
   struct RegisterTraits<RAJA::expt::hip_wave_register, T>{
       using element_type = T;
       using register_policy = RAJA::expt::hip_wave_register;
-      static constexpr camp::idx_t s_num_elem = 64;
+      static constexpr camp::idx_t s_num_elem = policy::hip::device_constants.WARP_SIZE;
+
       static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
       using int_element_type = int32_t;
   };
