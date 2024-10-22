@@ -29,13 +29,12 @@ gcc_10_3_1:
     SPEC: " ~shared +openmp +omptask ~vectorization +tests %gcc@=10.3.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
 
-# Known issue currently under investigation
+# custom variant
 # https://github.com/LLNL/RAJA/pull/1712#issuecomment-2292006843
 intel_2023_2_1:
   variables:
-    SPEC: "${PROJECT_POODLE_VARIANTS} %intel@=2023.2.1 ${PROJECT_POODLE_DEPS}"
+    SPEC: "${PROJECT_POODLE_VARIANTS} +lowopttest cxxflags==-fp-model=precise %intel@=2023.2.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
-  allow_failure: true
 
 ############
 # Extra jobs

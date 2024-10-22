@@ -8,8 +8,8 @@
 set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
 ##set(COMMON_FLAGS "--gcc-toolchain=/usr/tce/packages/gcc/gcc-10.3.1")
-##set(COMMON_OPT_FLAGS "-march=native -finline-functions -fp-model=precise")
-set(COMMON_OPT_FLAGS "-march=native -finline-functions")
+set(COMMON_OPT_FLAGS "-march=native -finline-functions -fp-model=precise")
+#set(COMMON_OPT_FLAGS "-march=native -finline-functions")
 
 ##set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_FLAGS} -O3 ${COMMON_OPT_FLAGS}" CACHE STRING "")
 ##set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${COMMON_FLAGS} -O3 -g ${COMMON_OPT_FLAGS}" CACHE STRING "")
