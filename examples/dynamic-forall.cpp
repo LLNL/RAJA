@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
   RAJA::RangeSegment range(0, N); 
   
   //policy is chosen from the list
-  RAJA::expt::dynamic_forall<policy_list>(pol, range,
+  RAJA::dynamic_forall<policy_list>(pol, range,
     RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
       RAJA::expt::KernelName("RAJA dynamic forall"),
       [=] RAJA_HOST_DEVICE (int i, VAL_INT_SUM &_sum) {

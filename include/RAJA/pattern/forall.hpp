@@ -647,68 +647,29 @@ RAJA_INLINE camp::resources::EventProxy<Res> CallForallIcount::operator()(T cons
 // - Returns a generic event proxy only if a resource is provided
 //   avoids overhead of constructing a typed erased resource
 //
-namespace expt
+template<camp::idx_t IDX, typename POLICY_LIST>
+struct dynamic_helper
 {
-
-  template<camp::idx_t IDX, typename POLICY_LIST>
-  struct dynamic_helper
+  template<typename SEGMENT, typename... PARAMS>
+  static void invoke_forall(const int pol, SEGMENT const &seg, PARAMS&&... params)
   {
-    template<typename SEGMENT, typename... PARAMS>
-    static void invoke_forall(const int pol, SEGMENT const &seg, PARAMS&&... params)
-    {
-      if(IDX==pol){
-        using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
-        RAJA::forall<t_pol>(seg, params...);
-        return;
-      }
-      dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, params...);
-    }
-
-    template<typename SEGMENT, typename... PARAMS>
-    static resources::EventProxy<resources::Resource>
-    invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, PARAMS&&... params)
-    {
-
+    if(IDX==pol){
       using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
-      using resource_type = typename resources::get_resource<t_pol>::type;
-
-      if(IDX==pol){
-        RAJA::forall<t_pol>(r.get<resource_type>(), seg, params...);
-
-        //Return a generic event proxy from r,
-        //because forall returns a typed event proxy
-        return {r};
-      }
-
-      return dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(r, pol, seg, params...);
+      RAJA::forall<t_pol>(seg, params...);
+      return;
     }
+    dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(pol, seg, params...);
+  }
 
-  };
-
-  template<typename POLICY_LIST>
-  struct dynamic_helper<0, POLICY_LIST>
+  template<typename SEGMENT, typename... PARAMS>
+  static resources::EventProxy<resources::Resource>
+  invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, PARAMS&&... params)
   {
-    template<typename SEGMENT, typename... PARAMS>
-    static void
-    invoke_forall(const int pol, SEGMENT const &seg, PARAMS&&... params)
-    {
-      if(0==pol){
-        using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
-        RAJA::forall<t_pol>(seg, params...);
-        return;
-      }
-      RAJA_ABORT_OR_THROW("Policy enum not supported ");
-    }
 
-    template<typename SEGMENT, typename... PARAMS>
-    static resources::EventProxy<resources::Resource>
-    invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, PARAMS&&... params)
-    {
-      if(pol != 0) RAJA_ABORT_OR_THROW("Policy value out of range ");
+    using t_pol = typename camp::at<POLICY_LIST,camp::num<IDX>>::type;
+    using resource_type = typename resources::get_resource<t_pol>::type;
 
-      using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
-      using resource_type = typename resources::get_resource<t_pol>::type;
-
+    if(IDX==pol){
       RAJA::forall<t_pol>(r.get<resource_type>(), seg, params...);
 
       //Return a generic event proxy from r,
@@ -716,35 +677,69 @@ namespace expt
       return {r};
     }
 
-  };
-
-  template<typename POLICY_LIST, typename SEGMENT, typename... PARAMS>
-  void dynamic_forall(const int pol, SEGMENT const &seg, PARAMS&&... params)
-  {
-    constexpr int N = camp::size<POLICY_LIST>::value;
-    static_assert(N > 0, "RAJA policy list must not be empty");
-
-    if(pol > N-1)  {
-      RAJA_ABORT_OR_THROW("Policy enum not supported");
-    }
-    dynamic_helper<N-1, POLICY_LIST>::invoke_forall(pol, seg, params...);
+    return dynamic_helper<IDX-1, POLICY_LIST>::invoke_forall(r, pol, seg, params...);
   }
 
-  template<typename POLICY_LIST, typename SEGMENT, typename... PARAMS>
-  resources::EventProxy<resources::Resource>
-  dynamic_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, PARAMS&&... params)
+};
+
+template<typename POLICY_LIST>
+struct dynamic_helper<0, POLICY_LIST>
+{
+  template<typename SEGMENT, typename... PARAMS>
+  static void
+  invoke_forall(const int pol, SEGMENT const &seg, PARAMS&&... params)
   {
-    constexpr int N = camp::size<POLICY_LIST>::value;
-    static_assert(N > 0, "RAJA policy list must not be empty");
-
-    if(pol > N-1)  {
-      RAJA_ABORT_OR_THROW("Policy value out of range");
+    if(0==pol){
+      using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+      RAJA::forall<t_pol>(seg, params...);
+      return;
     }
-
-    return dynamic_helper<N-1, POLICY_LIST>::invoke_forall(r, pol, seg, params...);
+    RAJA_ABORT_OR_THROW("Policy enum not supported ");
   }
 
-}  // namespace expt
+  template<typename SEGMENT, typename... PARAMS>
+  static resources::EventProxy<resources::Resource>
+  invoke_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, PARAMS&&... params)
+  {
+    if(pol != 0) RAJA_ABORT_OR_THROW("Policy value out of range ");
+
+    using t_pol = typename camp::at<POLICY_LIST,camp::num<0>>::type;
+    using resource_type = typename resources::get_resource<t_pol>::type;
+
+    RAJA::forall<t_pol>(r.get<resource_type>(), seg, params...);
+
+    //Return a generic event proxy from r,
+    //because forall returns a typed event proxy
+    return {r};
+  }
+
+};
+
+template<typename POLICY_LIST, typename SEGMENT, typename... PARAMS>
+void dynamic_forall(const int pol, SEGMENT const &seg, PARAMS&&... params)
+{
+  constexpr int N = camp::size<POLICY_LIST>::value;
+  static_assert(N > 0, "RAJA policy list must not be empty");
+
+  if(pol > N-1)  {
+    RAJA_ABORT_OR_THROW("Policy enum not supported");
+  }
+  dynamic_helper<N-1, POLICY_LIST>::invoke_forall(pol, seg, params...);
+}
+
+template<typename POLICY_LIST, typename SEGMENT, typename... PARAMS>
+resources::EventProxy<resources::Resource>
+dynamic_forall(RAJA::resources::Resource r, const int pol, SEGMENT const &seg, PARAMS&&... params)
+{
+  constexpr int N = camp::size<POLICY_LIST>::value;
+  static_assert(N > 0, "RAJA policy list must not be empty");
+
+  if(pol > N-1)  {
+    RAJA_ABORT_OR_THROW("Policy value out of range");
+  }
+
+  return dynamic_helper<N-1, POLICY_LIST>::invoke_forall(r, pol, seg, params...);
+}
 
 
 }  // namespace RAJA
