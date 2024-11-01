@@ -154,6 +154,14 @@ endif ()
 
 set (raja_depends)
 
+if (DEFINED caliper_INCLUDE_DIR)
+  find_package(caliper REQUIRED
+    NO_DEFAULT_PATH
+    PATHS ${caliper_DIR}
+#    ${caliper_DIR}/share/cmake/caliper
+  )
+endif()
+
 if (RAJA_ENABLE_OPENMP)
   set (raja_depends
     openmp)
