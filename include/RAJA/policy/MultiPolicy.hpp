@@ -174,21 +174,21 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
     if (offset == size - index - 1) {
 
       util::PluginContext context{util::make_context<Policy>()};
-      util::callPreCapturePlugins(context);
+      auto r = resources::get_resource<Policy>::type::get_default();
+      util::callPreCapturePlugins(context, r);
 
       using RAJA::util::trigger_updates_before;
       auto body = trigger_updates_before(loop_body);
 
-      util::callPostCapturePlugins(context);
+      util::callPostCapturePlugins(context, r);
 
-      util::callPreLaunchPlugins(context);
+      util::callPreLaunchPlugins(context, r);
 
       using policy::multi::forall_impl;
       RAJA_FORCEINLINE_RECURSIVE
-      auto r = resources::get_resource<Policy>::type::get_default();
       forall_impl(r, _p, std::forward<Iterable>(iter), body);
 
-      util::callPostLaunchPlugins(context);
+      util::callPostLaunchPlugins(context, r);
     } else {
       NextInvoker::invoke(offset, std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
     }
@@ -205,22 +205,22 @@ struct policy_invoker<0, size, Policy, rest...> {
     if (offset == size - 1) {
 
       util::PluginContext context{util::make_context<Policy>()};
-      util::callPreCapturePlugins(context);
+      auto r = resources::get_resource<Policy>::type::get_default();
+      util::callPreCapturePlugins(context, r);
 
       using RAJA::util::trigger_updates_before;
       auto body = trigger_updates_before(loop_body);
 
-      util::callPostCapturePlugins(context);
+      util::callPostCapturePlugins(context, r);
 
-      util::callPreLaunchPlugins(context);
+      util::callPreLaunchPlugins(context, r);
 
       //std::cout <<"policy_invoker: No index\n";
       using policy::multi::forall_impl;
       RAJA_FORCEINLINE_RECURSIVE
-      auto r = resources::get_resource<Policy>::type::get_default();
       forall_impl(r, _p, std::forward<Iterable>(iter), body);
 
-      util::callPostLaunchPlugins(context);
+      util::callPostLaunchPlugins(context, r);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }

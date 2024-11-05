@@ -14,17 +14,17 @@ namespace util {
 
 PluginStrategy::PluginStrategy() = default;
 
-void PluginStrategy::init(const PluginOptions&) { }
+RAJASHAREDDLL_API void PluginStrategy::init(const PluginOptions& p) { }
 
-void PluginStrategy::preCapture(const PluginContext&) { }
+RAJASHAREDDLL_API void PluginStrategy::preCapture(const PluginContext&, const RAJA::resources::Resource&) { }
 
-void PluginStrategy::postCapture(const PluginContext&) { }
+RAJASHAREDDLL_API void PluginStrategy::postCapture(const PluginContext&, const RAJA::resources::Resource&) { }
 
-void PluginStrategy::preLaunch(const PluginContext&) { }
+RAJASHAREDDLL_API void PluginStrategy::preLaunch(const PluginContext&, const RAJA::resources::Resource&) { }
 
-void PluginStrategy::postLaunch(const PluginContext&) { }
+RAJASHAREDDLL_API void PluginStrategy::postLaunch(const PluginContext&, const RAJA::resources::Resource&) { }
 
-void PluginStrategy::finalize() { }
+RAJASHAREDDLL_API void PluginStrategy::finalize() { }
 
 }
 }

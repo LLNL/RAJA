@@ -125,7 +125,7 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(SegmentTuple &
                                          camp::decay<Bodies>...>;
 
 
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, resource);
 
   // Create the LoopData object, which contains our policy object,
   // our segments, loop bodies, and the tuple of loop indices
@@ -137,17 +137,17 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(SegmentTuple &
                             resource,
                             std::forward<Bodies>(bodies)...);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, resource);
 
   using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, resource);
 
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, resource);
 
   return resources::EventProxy<Resource>(resource);
 }

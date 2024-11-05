@@ -268,7 +268,8 @@ public:
     }
 
     util::PluginContext context{util::make_context<exec_policy>()};
-    util::callPreCapturePlugins(context);
+    // todo(bowen) do we want default resource here?
+    util::callPreCapturePlugins(context, resource_type::get_default());
 
     using RAJA::util::trigger_updates_before;
     auto body = trigger_updates_before(loop_body);
@@ -276,7 +277,7 @@ public:
     m_runner.enqueue(
         m_storage, std::forward<segment_T>(seg), std::move(body));
 
-    util::callPostCapturePlugins(context);
+    util::callPostCapturePlugins(context, resource_type::get_default());
   }
 
   inline workgroup_type instantiate();
@@ -497,12 +498,12 @@ WorkGroup<
                       Args... args)
 {
   util::PluginContext context{util::make_context<EXEC_POLICY_T>()};
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, r);
 
   // move any per run storage into worksite
   worksite_type site(r, m_runner.run(m_storage, r, std::forward<Args>(args)...));
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, r);
 
   return site;
 }

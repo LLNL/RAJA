@@ -11,6 +11,8 @@
 #include "RAJA/util/PluginContext.hpp"
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/Registry.hpp"
+#include "RAJA/util/resource.hpp"
+#include "camp/resource.hpp"
 
 namespace RAJA {
 namespace util {
@@ -22,15 +24,15 @@ class PluginStrategy
 
     virtual ~PluginStrategy() = default;
 
-    virtual RAJASHAREDDLL_API void init(const PluginOptions& p);
+    virtual RAJASHAREDDLL_API void init(const PluginOptions&);
 
-    virtual RAJASHAREDDLL_API void preCapture(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void preCapture(const PluginContext&, const resources::Resource&);
 
-    virtual RAJASHAREDDLL_API void postCapture(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void postCapture(const PluginContext&, const resources::Resource&);
 
-    virtual RAJASHAREDDLL_API void preLaunch(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void preLaunch(const PluginContext&, const resources::Resource&);
 
-    virtual RAJASHAREDDLL_API void postLaunch(const PluginContext& p);
+    virtual RAJASHAREDDLL_API void postLaunch(const PluginContext&, const resources::Resource&);
 
     virtual RAJASHAREDDLL_API void finalize();
 };
