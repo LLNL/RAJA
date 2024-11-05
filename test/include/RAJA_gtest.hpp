@@ -81,20 +81,22 @@
 #define GPU_TYPED_TEST_P(SuiteName, TestName)                                  \
   namespace GTEST_SUITE_NAMESPACE_(SuiteName)                                  \
   {                                                                            \
-    template <typename gtest_TypeParam_>                                       \
-    class TestName : public SuiteName<gtest_TypeParam_>                        \
-    {                                                                          \
-    private:                                                                   \
-      typedef SuiteName<gtest_TypeParam_> TestFixture;                         \
-      typedef gtest_TypeParam_ TypeParam;                                      \
+  template <typename gtest_TypeParam_>                                         \
+  class TestName : public SuiteName<gtest_TypeParam_>                          \
+  {                                                                            \
+  private:                                                                     \
+    typedef SuiteName<gtest_TypeParam_> TestFixture;                           \
+    typedef gtest_TypeParam_ TypeParam;                                        \
                                                                                \
-    public:                                                                    \
-      void TestBody() override;                                                \
-    };                                                                         \
-    static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =          \
-        GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).AddTestName(                \
-            __FILE__, __LINE__, GTEST_STRINGIFY_(SuiteName),                   \
-            GTEST_STRINGIFY_(TestName));                                       \
+  public:                                                                      \
+    void TestBody() override;                                                  \
+  };                                                                           \
+  static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =            \
+      GTEST_TYPED_TEST_SUITE_P_STATE_(SuiteName).AddTestName(                  \
+          __FILE__,                                                            \
+          __LINE__,                                                            \
+          GTEST_STRINGIFY_(SuiteName),                                         \
+          GTEST_STRINGIFY_(TestName));                                         \
   }                                                                            \
   template <typename gtest_TypeParam_>                                         \
   void GTEST_SUITE_NAMESPACE_(                                                 \

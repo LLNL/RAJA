@@ -79,9 +79,7 @@ forall_impl(resources::Omp omp_res,
   auto i = distance_it;
 
 #pragma omp target teams distribute parallel for num_teams(numteams)           \
-    schedule(static, 1) map(to                                                 \
-                            : body, begin_it) reduction(combine                \
-                                                        : f_params)
+    schedule(static, 1) map(to : body, begin_it) reduction(combine : f_params)
   for (i = 0; i < distance_it; ++i)
   {
     Body ib = body;
@@ -133,8 +131,7 @@ forall_impl(resources::Omp omp_res,
   auto i = distance_it;
 
 #pragma omp target teams distribute parallel for num_teams(numteams)           \
-    schedule(static, 1) map(to                                                 \
-                            : body, begin_it)
+    schedule(static, 1) map(to : body, begin_it)
   for (i = 0; i < distance_it; ++i)
   {
     Body ib = body;
@@ -167,8 +164,7 @@ forall_impl(resources::Omp omp_res,
   RAJA_EXTRACT_BED_IT(iter);
 
 #pragma omp target teams distribute parallel for schedule(static, 1)           \
-    firstprivate(body, begin_it) reduction(combine                             \
-                                           : f_params)
+    firstprivate(body, begin_it) reduction(combine : f_params)
   for (decltype(distance_it) i = 0; i < distance_it; ++i)
   {
     Body ib = body;

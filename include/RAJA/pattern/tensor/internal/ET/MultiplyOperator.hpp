@@ -1091,13 +1091,13 @@ struct MultiplyOperator<
    * Evaluate operands and perform element-wise multiply
    */
   template <typename TILE_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static block_literal
-  multiply(TILE_TYPE const& tile,
-           LEFT_OPERAND_TYPE const&,
-           RIGHT_OPERAND_TYPE const&)  //->
-                                       /// decltype(TensorMultiply<decltype(left.eval(tile)),
-                                       /// decltype(right.eval(tile))>(left.eval(tile),
-                                       /// right.eval(tile)))
+  RAJA_INLINE RAJA_HOST_DEVICE static block_literal multiply(
+      TILE_TYPE const& tile,
+      LEFT_OPERAND_TYPE const&,
+      RIGHT_OPERAND_TYPE const&)  //->
+                                  /// decltype(TensorMultiply<decltype(left.eval(tile)),
+                                  /// decltype(right.eval(tile))>(left.eval(tile),
+                                  /// right.eval(tile)))
   {
 
     /*
@@ -1126,15 +1126,16 @@ struct MultiplyOperator<
   }
 
   template <typename TILE_TYPE, typename ADD_TYPE>
-  RAJA_INLINE RAJA_HOST_DEVICE static block_literal
-  multiply_add(TILE_TYPE const& tile,
-               LEFT_OPERAND_TYPE const& left,
-               RIGHT_OPERAND_TYPE const& right,
-               ADD_TYPE const& add)  //->
-                                     // decltype(TensorMultiplyAdd<decltype(left.eval(tile)),
-                                     // decltype(right.eval(tile)),
-                                     // decltype(add.eval(tile))>(left.eval(tile),
-                                     // right.eval(tile), add.eval(tile)))
+  RAJA_INLINE RAJA_HOST_DEVICE static block_literal multiply_add(
+      TILE_TYPE const& tile,
+      LEFT_OPERAND_TYPE const& left,
+      RIGHT_OPERAND_TYPE const& right,
+      ADD_TYPE const&
+          add)  //->
+                // decltype(TensorMultiplyAdd<decltype(left.eval(tile)),
+                // decltype(right.eval(tile)),
+                // decltype(add.eval(tile))>(left.eval(tile),
+                // right.eval(tile), add.eval(tile)))
   {
     /*
      * First pass:  we want to return a BlockLiteral ET node with the

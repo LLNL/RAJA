@@ -45,23 +45,23 @@ using TensorMatrixTypes = ::testing::Types<
 #endif
 
 
-//#ifdef __AVX__
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    2,4, RAJA::expt::avx_register>,
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    2,8, RAJA::expt::avx_register>,
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    4,8, RAJA::expt::avx_register>,
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    8,8, RAJA::expt::avx_register>,
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    8,4, RAJA::expt::avx_register>,
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    4,2, RAJA::expt::avx_register>,
-//    RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
-//    8,2, RAJA::expt::avx_register>,
+// #ifdef __AVX__
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     2,4, RAJA::expt::avx_register>,
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     2,8, RAJA::expt::avx_register>,
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     4,8, RAJA::expt::avx_register>,
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     8,8, RAJA::expt::avx_register>,
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     8,4, RAJA::expt::avx_register>,
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     4,2, RAJA::expt::avx_register>,
+//     RAJA::expt::RectMatrixRegister<MatrixElementType, TensorMatrixLayoutType,
+//     8,2, RAJA::expt::avx_register>,
 //
-//#endif
+// #endif
 
 
 #ifdef __AVX2__

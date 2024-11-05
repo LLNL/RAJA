@@ -64,7 +64,8 @@ struct CompareExchangeWeakOtherOp : all_op
   {
     T expect = (T)0;
     while (!other.compare_exchange_weak(expect, (T)i))
-    {}
+    {
+    }
     return expect;
   }
   RAJA::AtomicRef<T, AtomicPolicy> other;
@@ -92,7 +93,8 @@ struct CompareExchangeStrongOtherOp : all_op
   {
     T expect = (T)0;
     while (!other.compare_exchange_strong(expect, (T)i))
-    {}
+    {
+    }
     return expect;
   }
   RAJA::AtomicRef<T, AtomicPolicy> other;

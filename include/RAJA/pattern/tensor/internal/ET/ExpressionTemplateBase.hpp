@@ -28,7 +28,7 @@
 #include "RAJA/pattern/tensor/internal/ET/BinaryOperatorTraits.hpp"
 
 
-//#define RAJA_DEBUG_PRINT_ET_AST
+// #define RAJA_DEBUG_PRINT_ET_AST
 
 namespace RAJA
 {

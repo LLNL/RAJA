@@ -161,9 +161,7 @@ void LaunchNestedDirectTestImpl(INDEX_TYPE M)
                                         RAJA::loop<THREAD_X_POLICY>(
                                             ctx, r1,
                                             [&](INDEX_TYPE RAJA_UNUSED_ARG(tx))
-                                            {
-                                              working_array[0]++;
-                                            });
+                                            { working_array[0]++; });
                                       });
                                 });
                           });

@@ -143,12 +143,9 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
     qu->submit(
           [&](cl::sycl::handler& h)
           {
-            h.parallel_for(launch_dims.fit_nd_range(qu),
-                           [=](cl::sycl::nd_item<3> item)
-                           {
-                             SyclKernelLauncher<Data, executor_t>(*m_data,
-                                                                  item);
-                           });
+            h.parallel_for(
+                launch_dims.fit_nd_range(qu), [=](cl::sycl::nd_item<3> item)
+                { SyclKernelLauncher<Data, executor_t>(*m_data, item); });
           })
         .wait();  // Need to wait to free memory
 
@@ -183,9 +180,7 @@ struct SyclLaunchHelper<true, sycl_launch<async0>, StmtList, Data, Types>
         {
           h.parallel_for(launch_dims.fit_nd_range(qu),
                          [=](cl::sycl::nd_item<3> item)
-                         {
-                           SyclKernelLauncher<Data, executor_t>(data, item);
-                         });
+                         { SyclKernelLauncher<Data, executor_t>(data, item); });
         });
 
     if (!async)

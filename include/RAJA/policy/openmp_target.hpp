@@ -30,7 +30,7 @@
 #include "RAJA/policy/openmp_target/kernel.hpp"
 #include "RAJA/policy/openmp_target/forall.hpp"
 #include "RAJA/policy/openmp_target/reduce.hpp"
-//#include "RAJA/policy/openmp_target/multi_reduce.hpp"
+// #include "RAJA/policy/openmp_target/multi_reduce.hpp"
 #include "RAJA/policy/openmp_target/WorkGroup.hpp"
 
 

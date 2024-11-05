@@ -24,7 +24,7 @@
 #include "RAJA/pattern/tensor/internal/MatrixMatrixMultiply.hpp"
 #include "RAJA/util/BitMask.hpp"
 
-//#define DEBUG_MATRIX_LOAD_STORE
+// #define DEBUG_MATRIX_LOAD_STORE
 
 
 namespace RAJA

@@ -29,13 +29,13 @@
 #include "RAJA/policy/sycl/forall.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sycl/reduce.hpp"
-//#include "RAJA/policy/sycl/multi_reduce.hpp"
-//#include "RAJA/policy/sycl/scan.hpp"
-//#include "RAJA/policy/sycl/sort.hpp"
+// #include "RAJA/policy/sycl/multi_reduce.hpp"
+// #include "RAJA/policy/sycl/scan.hpp"
+// #include "RAJA/policy/sycl/sort.hpp"
 #include "RAJA/policy/sycl/kernel.hpp"
-//#include "RAJA/policy/sycl/synchronize.hpp"
+// #include "RAJA/policy/sycl/synchronize.hpp"
 #include "RAJA/policy/sycl/launch.hpp"
-//#include "RAJA/policy/sycl/WorkGroup.hpp"
+// #include "RAJA/policy/sycl/WorkGroup.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_SYCL)
 

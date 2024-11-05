@@ -692,8 +692,8 @@ using CUDATypes = ::testing::Types<
                         RAJA::statement::For<0,
                                              RAJA::cuda_thread_x_direct,
                                              RAJA::statement::Lambda<1>>>,
-                    RAJA::statement::CudaSyncThreads>  // close shared memory
-                                                       // scope
+                    RAJA::statement::CudaSyncThreads>     // close shared memory
+                                                          // scope
                 >                                         // for 2
             >                                             // for 3
                                                        >  // CudaKernel
@@ -728,8 +728,8 @@ using CUDATypes = ::testing::Types<
                         RAJA::statement::For<0,
                                              RAJA::cuda_thread_x_direct,
                                              RAJA::statement::Lambda<1>>>,
-                    RAJA::statement::CudaSyncThreads>  // close shared memory
-                                                       // scope
+                    RAJA::statement::CudaSyncThreads>     // close shared memory
+                                                          // scope
                 >                                         // for 2
             >                                             // for 3
                                                        >  // CudaKernel
@@ -772,8 +772,8 @@ using HIPTypes = ::testing::Types<
                         RAJA::statement::For<0,
                                              RAJA::hip_thread_x_direct,
                                              RAJA::statement::Lambda<1>>>,
-                    RAJA::statement::HipSyncThreads>  // close shared memory
-                                                      // scope
+                    RAJA::statement::HipSyncThreads>     // close shared memory
+                                                         // scope
                 >                                        // for 2
             >                                            // for 3
                                                       >  // HipKernel
@@ -808,8 +808,8 @@ using HIPTypes = ::testing::Types<
                         RAJA::statement::For<0,
                                              RAJA::hip_thread_x_direct,
                                              RAJA::statement::Lambda<1>>>,
-                    RAJA::statement::HipSyncThreads>  // close shared memory
-                                                      // scope
+                    RAJA::statement::HipSyncThreads>     // close shared memory
+                                                         // scope
                 >                                        // for 2
             >                                            // for 3
                                                       >  // HipKernel
@@ -918,34 +918,24 @@ GPU_TYPED_TEST_P(MatMultiply, shmem)
 
       // Zero out thread local memory for storing dot products
       [=] RAJA_HOST_DEVICE(int tn, int tp, ThreadPriv& pVal)
-      {
-        pVal(tn, tp) = 0.0;
-      },
+      { pVal(tn, tp) = 0.0; },
 
       // Load tile of A
       [=] RAJA_HOST_DEVICE(int n, int m, int tn, int tm, Shmem& aShared)
-      {
-        aShared(tn, tm) = Aview(n, m);
-      },
+      { aShared(tn, tm) = Aview(n, m); },
 
       // Load tile of B
       [=] RAJA_HOST_DEVICE(int m, int p, int tm, int tp, Shmem& bShared)
-      {
-        bShared(tm, tp) = Bview(m, p);
-      },
+      { bShared(tm, tp) = Bview(m, p); },
 
       // Do partial update in shmem
       [=] RAJA_HOST_DEVICE(int tn, int tm, int tp, Shmem& aShared,
                            Shmem& bShared, ThreadPriv& pVal)
-      {
-        pVal(tn, tp) += aShared(tn, tm) * bShared(tm, tp);
-      },
+      { pVal(tn, tp) += aShared(tn, tm) * bShared(tm, tp); },
 
       // Write out complete result
       [=] RAJA_HOST_DEVICE(int n, int p, int tn, int tp, ThreadPriv& pVal)
-      {
-        Cview(n, p) = pVal(tn, tp);
-      });
+      { Cview(n, p) = pVal(tn, tp); });
 
   // copy result back to host (NOP on CPU)
   TypeParam::copy_d2h(N * P, C, d_C);
@@ -1069,10 +1059,11 @@ struct Policy_MatMultiply_cpu
                           RAJA::statement::For<
                               1,
                               RAJA::seq_exec,
-                              RAJA::statement::For<0,
-                                                   RAJA::seq_exec,
-                                                   shmem_Lambda3>>>>,  // sliding
-                                                                       // window
+                              RAJA::statement::For<
+                                  0,
+                                  RAJA::seq_exec,
+                                  shmem_Lambda3>>>>,  // sliding
+                                                      // window
 
                   // Write memory out to global matrix
                   RAJA::statement::For<

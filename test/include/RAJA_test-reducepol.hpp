@@ -29,7 +29,7 @@ using OpenMPReducePols =
 #endif
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-    using OpenMPTargetReducePols = camp::list<RAJA::omp_target_reduce>;
+using OpenMPTargetReducePols = camp::list<RAJA::omp_target_reduce>;
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)

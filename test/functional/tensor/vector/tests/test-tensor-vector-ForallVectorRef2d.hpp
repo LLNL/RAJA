@@ -110,12 +110,9 @@ ForallVectorRef2dImpl()
     C[i] = 0.0;
   }
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<index_t>(0, M),
-                               [=](index_t j)
-                               {
-                                 Z(all, j) =
-                                     3 + (X(all, j) * (5 / Y(all, j))) + 9;
-                               });
+  RAJA::forall<RAJA::seq_exec>(
+      RAJA::TypedRangeSegment<index_t>(0, M),
+      [=](index_t j) { Z(all, j) = 3 + (X(all, j) * (5 / Y(all, j))) + 9; });
 
   for (index_t i = 0; i < N * M; i++)
   {
@@ -131,12 +128,9 @@ ForallVectorRef2dImpl()
     C[i] = 0.0;
   }
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::TypedRangeSegment<index_t>(0, N),
-                               [=](index_t i)
-                               {
-                                 Z(i, all) =
-                                     3 + (X(i, all) * (5 / Y(i, all))) + 9;
-                               });
+  RAJA::forall<RAJA::seq_exec>(
+      RAJA::TypedRangeSegment<index_t>(0, N),
+      [=](index_t i) { Z(i, all) = 3 + (X(i, all) * (5 / Y(i, all))) + 9; });
 
   for (index_t i = 0; i < N * M; i++)
   {

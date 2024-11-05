@@ -176,11 +176,12 @@ struct MultiLambdaParamNestedLoopExec<DEPTH_3, POLICY_DATA>
               typename camp::at<POLICY_DATA, camp::num<2>>::type,
               RAJA::statement::Lambda<1>  // inner loop: dot += ...
               >,
-          RAJA::statement::Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>  // set
-                                                                         // C(row,
-                                                                         // col)
-                                                                         // =
-                                                                         // dot
+          RAJA::statement::
+              Lambda<2, RAJA::Segs<0, 1>, RAJA::Params<0>>  // set
+                                                            // C(row,
+                                                            // col)
+                                                            // =
+                                                            // dot
           >>>;
 };
 

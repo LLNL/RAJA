@@ -56,7 +56,7 @@ void KernelLocMax2DViewTupleTestImpl(const int xdim, const int ydim)
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * array_length);
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
-  //#pragma omp target data map(to:work_array[0:array_length])
+  // #pragma omp target data map(to:work_array[0:array_length])
 #endif
 
   RAJA::TypedRangeSegment<INDEX_TYPE> colrange(0, xdim);
