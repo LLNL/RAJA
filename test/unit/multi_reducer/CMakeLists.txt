@@ -37,9 +37,10 @@ if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
 endif()
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-  list(APPEND BACKENDS OpenMPTarget)
-endif()
+# Add this back in when OpenMP Target implementation exists for multi-reducer
+#if(RAJA_ENABLE_TARGET_OPENMP)
+#  list(APPEND BACKENDS OpenMPTarget)
+#endif()
 
 if(RAJA_ENABLE_CUDA)
   list(APPEND BACKENDS Cuda)
