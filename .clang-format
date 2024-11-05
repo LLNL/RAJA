@@ -31,7 +31,7 @@ BraceWrapping:
   AfterExternBlock: false
   BeforeCatch:     true
   BeforeElse:      true
-  BeforeLambdaBody: true 
+  BeforeLambdaBody: true
   IndentBraces:    false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
@@ -40,12 +40,13 @@ BraceWrapping:
 # Pointer alignment
 DerivePointerAlignment: false
 PointerAlignment: Left
+
+# Single line config
 AllowShortIfStatementsOnASingleLine : true
 AllowShortFunctionsOnASingleLine : true
 AllowShortLoopsOnASingleLine : false
 AllowAllArgumentsOnNextLine : true
 AllowAllParametersOfDeclarationOnNextLine : false
-AlignTrailingComments : true
 BinPackArguments : true
 BinPackParameters : false
 ConstructorInitializerAllOnOneLineOrOnePerLine : true

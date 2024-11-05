@@ -209,7 +209,7 @@ endmacro(raja_add_benchmark)
 ## raja_add_code_checks()
 ##
 ## Adds code checks for all source files recursively in the RAJA repository.
-## 
+##
 ## This creates the following parent build targets:
 ##  check - Runs a non file changing style check and CppCheck
 ##  style - In-place code formatting
@@ -232,7 +232,6 @@ macro(raja_add_code_checks)
   # another project
   if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
       # Create file globbing expressions that only include directories that contain source
-      # TODO(bowen) Add examples, exercises and benchmark to the list below
       set(_base_dirs "RAJA" "examples" "exercises" "benchmark" "include" "src" "test")
       set(_ext_expressions "*.cpp" "*.hpp" "*.inl"
                            "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh")
@@ -248,15 +247,6 @@ macro(raja_add_code_checks)
       set(_sources)
       file(GLOB_RECURSE _sources ${_glob_expressions})
 
-      # Filter out exclusions
-      #set(_exclude_expressions
-      #    "${PROJECT_SOURCE_DIR}/axom/sidre/examples/lulesh2/*"
-      #    "${PROJECT_SOURCE_DIR}/axom/slam/examples/lulesh2.0.3/*"
-      #    "${PROJECT_SOURCE_DIR}/axom/slam/examples/tinyHydro/*")
-      #foreach(_exp ${_exclude_expressions})
-      #    list(FILTER _sources EXCLUDE REGEX ${_exp})
-      #endforeach()
-#
       blt_add_code_checks(PREFIX          RAJA
                           SOURCES         ${_sources}
                           CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format
@@ -265,7 +255,7 @@ macro(raja_add_code_checks)
       # Set FOLDER property for code check targets
       foreach(_suffix clangformat_check clangformat_style clang_tidy_check clang_tidy_style)
           set(_tgt ${arg_PREFIX}_${_suffix})
-          if(TARGET ${_tgt}) 
+          if(TARGET ${_tgt})
               set_target_properties(${_tgt} PROPERTIES FOLDER "RAJA/code_checks")
           endif()
       endforeach()
