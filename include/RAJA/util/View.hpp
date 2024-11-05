@@ -19,6 +19,7 @@
 #define RAJA_VIEW_HPP
 
 #include <type_traits>
+#include <array>
 
 #include "RAJA/config.hpp"
 
@@ -81,14 +82,14 @@ RAJA_INLINE View<ValueType, IndexLayout<n_dims, IndexType, IndexTypes...> > make
 // select certain indices from a tuple, given a curated index sequence
 // returns linear index of layout(ar...)
 template <typename Lay, typename Tup, camp::idx_t... Idxs>
-RAJA_HOST_DEVICE RAJA_INLINE 
+RAJA_HOST_DEVICE RAJA_INLINE
 auto selecttuple( Lay lyout, Tup&& tup, camp::idx_seq<Idxs...> ) ->
   decltype(
             lyout(
               camp::get<Idxs>(std::forward<Tup>(tup))...
             )
           )
-{ 
+{
   return lyout(
                 camp::get<Idxs>(std::forward<Tup>(tup))...
               );
@@ -234,7 +235,7 @@ struct MultiView {
     {
       RAJA_ABORT_OR_THROW( "Negative index while accessing array of pointers.\n" );
     }
-    
+
     auto idx = stripIndexType( removenth<LayoutType, P2Pidx>( layout, camp::forward_as_tuple( ar... ) ) );
     return data[pidx][idx];
   }
@@ -296,6 +297,43 @@ RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy> make_atomic_view(
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);
 }
 
+struct layout_left{};
+struct layout_right{};
+
+template<typename LAYOUT>
+struct Reshape;
+
+template<>
+struct Reshape<layout_right>
+{
+  template<typename T, typename...Ts>
+  static auto get(T *ptr, Ts... s)
+  {
+    constexpr int N = sizeof...(Ts);
+    return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, N-1>>(ptr, s...);
+  }
+};
+
+template<>
+struct Reshape<layout_left>
+{
+  template<typename T, typename...Ts>
+  static auto get(T *ptr, Ts... s)
+  {
+  constexpr int N = sizeof...(Ts);
+
+  std::array<RAJA::idx_t, N> extent{s...};
+
+  ///Should be a away to do this at compile time...
+  std::array<RAJA::idx_t, N> reverse_indices_array;
+  for(int i = N-1, j=0; i>-1; --i, j++) {reverse_indices_array[j] = i; }
+  
+  auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_indices_array);  
+
+  return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, 0>>(ptr, reverse_layout);
+  }
+
+};
 
 }  // namespace RAJA
 
