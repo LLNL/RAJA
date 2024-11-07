@@ -20,13 +20,13 @@
 # Identical to shared job, but use OpenMP tasks and no vectorization
 clang_14_0_6:
   variables:
-    SPEC: " ~shared +openmp +omptask ~vectorization +tests %clang@=14.0.6 ${PROJECT_RUBY_DEPS}"
+    SPEC: " ~shared +mpi +openmp +omptask ~vectorization +tests %clang@=14.0.6 ${PROJECT_RUBY_DEPS}"
   extends: .job_on_ruby
 
 # Identical to shared job, but use OpenMP tasks and no vectorization
 gcc_10_3_1:
   variables:
-    SPEC: " ~shared +openmp +omptask ~vectorization +tests %gcc@=10.3.1 ${PROJECT_RUBY_DEPS}"
+    SPEC: " ~shared +mpi +openmp +omptask ~vectorization +tests %gcc@=10.3.1 ${PROJECT_RUBY_DEPS}"
   extends: .job_on_ruby
 
 # custom variant
@@ -45,16 +45,16 @@ intel_2023_2_1:
 
 clang_14_0_6_openmp_off:
   variables:
-    SPEC: " ~shared ~openmp +tests %clang@=14.0.6"
+    SPEC: " ~shared +mpi ~openmp +tests %clang@=14.0.6"
   extends: .job_on_ruby
 
 gcc_10_3_1_openmp_default:
   variables:
-    SPEC: " ~shared +tests %gcc@=10.3.1"
+    SPEC: " ~shared +mpi +tests %gcc@=10.3.1"
   extends: .job_on_ruby
 
 # OTHERS
 clang_14_0_6_gcc_10_3_1_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +desul %clang@=14.0.6.gcc.10.3.1"
+    SPEC: " ~shared +mpi +openmp +tests +desul %clang@=14.0.6.gcc.10.3.1"
   extends: .job_on_ruby

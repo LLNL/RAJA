@@ -39,10 +39,10 @@ cce_17_0_1:
 
 rocmcc_6_2_0_hip_desul_atomics:
   variables:
-    SPEC: "~shared +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@=6.2.0 ^hip@6.2.0"
+    SPEC: "~shared +mpi +rocm ~openmp +desul +tests amdgpu_target=gfx90a %rocmcc@=6.2.0 ^hip@6.2.0"
   extends: .job_on_tioga
 
 rocmcc_6_2_0_hip_openmp:
   variables:
-    SPEC: "~shared +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@=6.2.0 ^hip@6.2.0"
+    SPEC: "~shared +mpi +rocm +openmp +omptask +tests amdgpu_target=gfx90a %rocmcc@=6.2.0 ^hip@6.2.0"
   extends: .job_on_tioga
