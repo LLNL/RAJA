@@ -12,12 +12,10 @@
 #
 
 #
-# While we're adding SYCL tests, enable it for each test set like this.
-#
-# Eventually, remove this and enable in the top-level CMakeLists.txt file.
+# Eventually, enable SYCL tests when we know they work
 #
 if(RAJA_ENABLE_SYCL)
-  list(APPEND KERNEL_BACKENDS Sycl)
+  list(REMOVE_ITEM KERNEL_BACKENDS Sycl)
 endif()
 
 foreach( BACKEND ${KERNEL_BACKENDS} )
