@@ -11,27 +11,14 @@
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
-  endif()
-endif()
-
-#
-# Remove SYCL until kernel reduction support is added
-#
-if(RAJA_ENABLE_SYCL)
-  list(REMOVE_ITEM KERNEL_BACKENDS Sycl)
-endif()
-
 #
 # While we're adding SYCL tests, enable it for each test set like this.
 #
 # Eventually, remove this and enable in the top-level CMakeLists.txt file.
 #
-#if(RAJA_ENABLE_SYCL)
-#  list(APPEND KERNEL_BACKENDS Sycl)
-#endif()
+if(RAJA_ENABLE_SYCL)
+  list(APPEND KERNEL_BACKENDS Sycl)
+endif()
 
 foreach( BACKEND ${KERNEL_BACKENDS} )
   configure_file( test-kernel-nested-loop-segments.cpp.in

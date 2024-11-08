@@ -10,10 +10,11 @@
 #
 set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMinLoc ReduceMaxLoc)
 
+##
+## Do not create OpenMP Target tests for "traditional" RAJA reduction interface
+##
 if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM FORALL_BACKENDS OpenMPTarget)
-  endif()
+  list(REMOVE_ITEM FORALL_BACKENDS OpenMPTarget)
 endif()
 
 #
@@ -31,6 +32,7 @@ endif()
 #
 # Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
 #
+
 foreach( BACKEND ${FORALL_BACKENDS} )
   foreach( REDUCETYPE ${REDUCETYPES} )
     configure_file( test-forall-segment-multiple-reduce.cpp.in
