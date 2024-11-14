@@ -10,16 +10,6 @@ set(NESTED_LOOPTYPES Basic)
 set( USE_RESOURCE "-resource-" "-" )
 
 #
-# If building a subset of openmp target tests, remove the back-end from
-# from the list of tests to generate here.
-#
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
-  endif()
-endif()
-
-#
 # Generate kernel basic tests for each enabled RAJA back-end.
 #
 foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
@@ -68,30 +58,5 @@ foreach( NESTED_LOOP_BACKEND ${KERNEL_BACKENDS} )
     endforeach()
   endforeach()
 endforeach()
-
-unset( NESTED_LOOPTYPES )
-
-#
-# If building a subset of openmp target tests, add tests to build here.
-#
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-
-    set(NESTED_LOOP_BACKEND OpenMPTarget)
-    set(NESTED_LOOPTYPES Basic MultiLambdaParam)
-
-    set(RESOURCE "-")
-    foreach( NESTED_LOOP_TYPE ${NESTED_LOOPTYPES} )
-      configure_file( test-kernel-nested-loop.cpp.in
-                      test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
-      raja_add_test( NAME test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}
-                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.cpp )
-
-      target_include_directories(test-kernel-nested-loop-${NESTED_LOOP_TYPE}-${NESTED_LOOP_BACKEND}.exe
-                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-  endforeach()
-
-  endif()
-endif()
 
 unset( NESTED_LOOPTYPES )
