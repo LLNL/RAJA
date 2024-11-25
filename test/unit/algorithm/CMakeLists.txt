@@ -19,6 +19,9 @@ if(RAJA_ENABLE_HIP)
   list(APPEND SORT_BACKENDS Hip)
 endif()
 
+##
+## OpenMP Target back-end support missing for these tests
+##
 # if(RAJA_ENABLE_TARGET_OPENMP)
 #   list(APPEND SORT_BACKENDS OpenMPTarget)
 # endif()
