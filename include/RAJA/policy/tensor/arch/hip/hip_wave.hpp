@@ -780,7 +780,7 @@ namespace expt
 
         // Third: mask off everything but output_segment
         //        this is because all output segments are valid at this point
-        constexpr int log2_warp_size = RAJA::log2(RAJA::policy::hip::device_constants.WARP_SIZE);
+        static constexpr int log2_warp_size = RAJA::log2(RAJA::policy::hip::device_constants.WARP_SIZE);
         int our_output_segment = get_lane()>>(log2_warp_size-segbits);
         bool in_output_segment = our_output_segment == output_segment;
         if(!in_output_segment){
@@ -828,7 +828,7 @@ namespace expt
 
         // First: tree reduce values within each segment
         element_type x = m_value;
-        constexpr int log2_warp_size = RAJA::log2(RAJA::policy::hip::device_constants.WARP_SIZE);
+        static constexpr int log2_warp_size = RAJA::log2(RAJA::policy::hip::device_constants.WARP_SIZE);
         RAJA_UNROLL
         for(int i = 0;i < log2_warp_size-segbits; ++ i){
 

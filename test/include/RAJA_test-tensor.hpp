@@ -87,7 +87,7 @@ struct TensorTestHelper<RAJA::expt::hip_wave_register>
     void exec(BODY const &body){
       hipDeviceSynchronize();
 
-      constexpr int warp_size = RAJA::policy::hip::device_constants.WARP_SIZE;
+      static constexpr int warp_size = RAJA::policy::hip::device_constants.WARP_SIZE;
 
       RAJA::forall<RAJA::hip_exec<warp_size>>(RAJA::RangeSegment(0,warp_size),
       [=] RAJA_HOST_DEVICE (int ){
