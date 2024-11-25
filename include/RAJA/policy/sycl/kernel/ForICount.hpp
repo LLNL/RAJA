@@ -63,7 +63,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
     auto i = item.get_local_id(ThreadDim);
@@ -121,7 +121,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
     auto i0 = item.get_local_id(0);
@@ -181,7 +181,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -243,7 +243,7 @@ struct SyclStatementExecutor<
   using typename Base::diff_t;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // block stride loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -300,7 +300,7 @@ struct SyclStatementExecutor<
   using typename Base::diff_t;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -349,7 +349,7 @@ struct SyclStatementExecutor<
   using typename Base::diff_t;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -399,7 +399,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
 
