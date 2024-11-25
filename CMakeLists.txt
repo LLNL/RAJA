@@ -152,14 +152,18 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
     src/KokkosPluginLoader.cpp)
 endif ()
 
-set (raja_depends)
 
-if (DEFINED caliper_INCLUDE_DIR)
+if (DEFINED caliper_DIR)
+
+set (raja_depends
+    ${raja_depends}
+    caliper)
+
   find_package(caliper REQUIRED
     NO_DEFAULT_PATH
     PATHS ${caliper_DIR}
-#    ${caliper_DIR}/share/cmake/caliper
   )
+message(STATUS "Using Caliper from location =  ${caliper_DIR}")
 endif()
 
 if (RAJA_ENABLE_OPENMP)
