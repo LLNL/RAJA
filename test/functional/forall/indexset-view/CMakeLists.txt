@@ -10,17 +10,12 @@
 #
 set(INDEXSETTESTTYPES IndexSetView IcountIndexSetView)
 
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM FORALL_BACKENDS OpenMPTarget)
-  endif()
-endif() 
-
 #
 # Generate tests for each enabled RAJA back-end.
 #
 # Note: FORALL_BACKENDS is defined in ../CMakeLists.txt
 #
+
 foreach( BACKEND ${FORALL_BACKENDS} )
   foreach( INDEXSETTESTTYPE ${INDEXSETTESTTYPES} )
     configure_file( test-forall-indexset-view.cpp.in
