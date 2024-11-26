@@ -8,6 +8,8 @@
 #ifndef RAJA_plugin_context_HPP
 #define RAJA_plugin_context_HPP
 
+#include <string>
+
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/internal/get_platform.hpp"
 
@@ -18,7 +20,7 @@ class KokkosPluginLoader;
 
 struct PluginContext {
   public:
-    PluginContext(const Platform p) :
+   PluginContext(const Platform p, const std::string *name) :
       platform(p) {}
 
     Platform platform;
