@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   });
   // _rajaseq_vector_add_end
 
-  std::cout<<"Sum = "<<sum<<", expected sum: "<<N<<std::endl;
+  std::cout << "Sum = " << sum << ", expected sum: " << N << std::endl;
   checkResult(c, N);
 //printResult(c, N);
 
