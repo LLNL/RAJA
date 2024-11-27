@@ -16,7 +16,6 @@ public:
   void preLaunch(const RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override
   {
     start_time = std::chrono::steady_clock::now();
-    CALI_FUNC("KERNEL_NAME");
   }
 
   void postLaunch(const RAJA::util::PluginContext& p) override
