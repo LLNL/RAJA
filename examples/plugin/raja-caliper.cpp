@@ -105,7 +105,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   {
     RAJA::forall<RAJA::seq_exec>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA Reduce Seq Kernel"),
+       RAJA::expt::KernelName("RAJA Seq daxpy Kernel"),
        [=] (int i) {
         a[i] += b[i] * c;
       });
@@ -123,11 +123,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA SIMD daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
-
-  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+  RAJA::forall<RAJA::simd_exec>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
+     [=] (int i) {
     a[i] += b[i] * c;
   });
-
   checkResult(a, aref, N);
 //printResult(a, N);
 

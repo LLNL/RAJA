@@ -21,9 +21,10 @@ class KokkosPluginLoader;
 struct PluginContext {
   public:
    PluginContext(const Platform p, const std::string *name) :
-      platform(p) {}
+   platform(p), kernel_name(name) {}
 
-    Platform platform;
+  Platform platform;
+  const std::string *kernel_name;
 
   private:
     mutable uint64_t kID;
@@ -32,9 +33,9 @@ struct PluginContext {
 };
 
 template<typename Policy>
-PluginContext make_context()
+PluginContext make_context(const std::string *name=nullptr)
 {
-  return PluginContext{detail::get_platform<Policy>::value};
+  return PluginContext{detail::get_platform<Policy>::value, name};
 }
 
 } // closing brace for util namespace

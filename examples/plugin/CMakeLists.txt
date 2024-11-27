@@ -6,12 +6,12 @@
 ################################################################################
 
 raja_add_executable(
-  NAME plugin-example
-  SOURCES test-plugin.cpp counter-plugin.cpp)
+  NAME raja-caliper
+  SOURCES raja-caliper.cpp caliper-plugin.cpp)
 
 raja_add_executable(
-  NAME raja-caliper
-  SOURCES raja-caliper.cpp counter-plugin.cpp)
+  NAME plugin-example
+  SOURCES test-plugin.cpp counter-plugin.cpp)
 
 if (RAJA_ENABLE_RUNTIME_PLUGINS)
   raja_add_executable(

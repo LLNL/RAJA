@@ -521,10 +521,22 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
                 "Container does not model RandomAccessIterator");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+
+  auto kernel_name =  expt::get_kernel_name(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
+
   expt::check_forall_optional_args(loop_body, f_params);
 
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
+  //Need to handle the case in which we have no kernel name...
+  std::string kname;
+  if (std::is_same<decltype(kernel_name), RAJA::expt::detail::KernelName>::value == true){
+    std::cout<<" found a kernel name: "<<kernel_name.name<<" assigning it to kernel... " <<std::endl;
+    kname = kernel_name.name;
+  }else{
+    kname = "-1";
+  }
+
+  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>(&kname)};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;

@@ -36,7 +36,7 @@ namespace expt
     using Base = camp::tuple<Params...>;
     Base param_tup;
 
-    static constexpr size_t param_tup_sz = camp::tuple_size<Base>::value; 
+    static constexpr size_t param_tup_sz = camp::tuple_size<Base>::value;
     using params_seq = camp::make_idx_seq_t< param_tup_sz >;
 
   private:
@@ -59,7 +59,7 @@ namespace expt
     static constexpr void detail_combine(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params ) {
       CAMP_EXPAND(detail::combine<EXEC_POL>( camp::get<Seq>(f_params.param_tup) ));
     }
-    
+
     // Resolve
     template<typename EXEC_POL, camp::idx_t... Seq, typename ...Args>
     static constexpr void detail_resolve(EXEC_POL, camp::idx_seq<Seq...>, ForallParamPack& f_params, Args&& ...args) {
@@ -75,7 +75,7 @@ namespace expt
     static constexpr auto LAMBDA_ARG_TUP_T() { return camp::tuple_cat_pair(typename First::ARG_TUP_T(), LAMBDA_ARG_TUP_T<camp::nil, Second, Rest...>()); };
 
     using lambda_arg_tuple_t = decltype(LAMBDA_ARG_TUP_T<camp::nil, Params...>());
-    
+
     //Use the size of param_tup to generate the argument list.
     RAJA_HOST_DEVICE constexpr auto LAMBDA_ARG_TUP_V(camp::num<0>) { return camp::make_tuple(); }
     RAJA_HOST_DEVICE constexpr auto LAMBDA_ARG_TUP_V(camp::num<1>) { return camp::get<param_tup_sz - 1>(param_tup).get_lambda_arg_tup(); }
@@ -93,8 +93,8 @@ namespace expt
 
     template<typename... Ts>
     ForallParamPack(camp::tuple<Ts...>&& t) : param_tup(std::move(t)) {};
-  }; // struct ForallParamPack 
-  
+  }; // struct ForallParamPack
+
 
 
   //===========================================================================
@@ -151,7 +151,7 @@ namespace expt
     return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
   }
 
-  
+
 
   namespace detail {
     // Maybe we should do a lot of these with structs...
@@ -171,7 +171,7 @@ namespace expt
   template<typename... Args>
   constexpr auto make_forall_param_pack(Args&&... args){
     // We assume the last element of the pack is the lambda so we need to strip it from the list.
-    auto stripped_arg_tuple = detail::strip_last_elem( camp::forward_as_tuple(std::forward<Args>(args)...) ); 
+    auto stripped_arg_tuple = detail::strip_last_elem( camp::forward_as_tuple(std::forward<Args>(args)...) );
     return make_forall_param_pack_from_tuple(std::move(stripped_arg_tuple));
   }
   //===========================================================================
@@ -187,7 +187,26 @@ namespace expt
   template<typename... Args>
   constexpr auto&& get_lambda(Args&&... args){
     return camp::get<sizeof...(Args)-1>( camp::forward_as_tuple(std::forward<Args>(args)...) );
-  } 
+  }
+  //===========================================================================
+
+  //===========================================================================
+  //
+  //
+  // kernel_name should be the second to last argument in the param pack, just extract it...
+  //
+  //TODO fix this up, should be able to walk through the parameter pack to find the KernelName
+  //If none is found we need to provide a substitute
+  //
+  template<typename... Args, typename std::enable_if<sizeof...(Args) >= 2, bool>::type = true>
+  constexpr auto&& get_kernel_name(Args&&... args){
+    return camp::get<sizeof...(Args)-2>( camp::forward_as_tuple(std::forward<Args>(args)...) );
+  }
+
+  template<typename... Args, typename std::enable_if<sizeof...(Args) < 2, bool>::type = true>
+  constexpr auto&& get_kernel_name(Args&&... args){
+    return camp::get<0>( camp::forward_as_tuple(std::forward<Args>(args)...) );
+  }
   //===========================================================================
 
 
@@ -200,10 +219,10 @@ namespace expt
   //
   namespace detail {
 
-    // 
+    //
     //
     // Lambda traits Utilities
-    // 
+    //
     //
     template<class F>
     struct lambda_traits;
@@ -211,28 +230,28 @@ namespace expt
     template<class R, class C, class First, class... Rest>
     struct lambda_traits<R (C::*)(First, Rest...)>
     {  // non-const specialization
-      using arg_type = First; 
+      using arg_type = First;
     };
     template<class R, class C, class First, class... Rest>
     struct lambda_traits<R (C::*)(First, Rest...) const>
     {  // const specialization
-      using arg_type = First; 
+      using arg_type = First;
     };
 
     template<class T>
     typename lambda_traits<T>::arg_type* lambda_arg_helper(T);
 
 
-    // 
+    //
     //
     // List manipulation Utilities
-    // 
+    //
     //
     template<typename... Ts>
     constexpr auto list_remove_pointer(const camp::list<Ts...>&){
       return camp::list<camp::decay<typename std::remove_pointer<Ts>::type>...>{};
     }
-    
+
     template<typename... Ts>
     constexpr auto list_add_lvalue_ref(const camp::list<Ts...>&){
       return camp::list<typename std::add_lvalue_reference<Ts>::type...>{};
@@ -276,7 +295,7 @@ namespace expt
     template<typename LAMBDA, typename... EXPECTED_ARGS>
     constexpr concepts::enable_if<has_empty_op<LAMBDA>> check_invocable(LAMBDA&&, const camp::list<EXPECTED_ARGS...>&) {
 #if !defined(RAJA_ENABLE_HIP)
-      static_assert(is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS. Ordering and types must match between RAJA::expt::Reduce() and ValOp arguments."); 
+      static_assert(is_invocable<LAMBDA, typename get_lambda_index_type<LAMBDA>::type, EXPECTED_ARGS...>::value, "LAMBDA Not invocable w/ EXPECTED_ARGS. Ordering and types must match between RAJA::expt::Reduce() and ValOp arguments.");
 #endif
     }
 
@@ -284,7 +303,7 @@ namespace expt
 
 
   template<typename Lambda, typename ForallParams>
-  constexpr 
+  constexpr
   void
   check_forall_optional_args(Lambda&& l, ForallParams& fpp) {
 
@@ -299,7 +318,7 @@ namespace expt
     detail::check_invocable(std::forward<Lambda>(l), expected_arg_type_list{});
   }
   //===========================================================================
-  
+
 
 
   //===========================================================================
