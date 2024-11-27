@@ -152,6 +152,7 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
     src/KokkosPluginLoader.cpp)
 endif ()
 
+set (raja_depends)
 
 if (DEFINED caliper_DIR)
 
