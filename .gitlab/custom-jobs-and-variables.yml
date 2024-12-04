@@ -21,7 +21,7 @@ variables:
 # Project specific variants for ruby
   PROJECT_RUBY_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for ruby
-  PROJECT_RUBY_DEPS: ""
+  PROJECT_RUBY_DEPS:
 
 # Poodle
 # Arguments for top level allocation
@@ -31,7 +31,7 @@ variables:
 # Project specific variants for poodle
   PROJECT_POODLE_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for poodle
-  PROJECT_POODLE_DEPS: ""
+  PROJECT_POODLE_DEPS:
 
 # Corona
 # Arguments for top level allocation
@@ -41,7 +41,7 @@ variables:
 # Project specific variants for corona
   PROJECT_CORONA_VARIANTS: "~shared ~openmp +vectorization +tests"
 # Project specific deps for corona
-  PROJECT_CORONA_DEPS: "^blt@develop "
+  PROJECT_CORONA_DEPS:
 
 # Tioga
 # Arguments for top level allocation
@@ -51,7 +51,7 @@ variables:
 # Project specific variants for corona
   PROJECT_TIOGA_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for corona
-  PROJECT_TIOGA_DEPS: "^blt@develop "
+  PROJECT_TIOGA_DEPS:
 
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
@@ -60,7 +60,7 @@ variables:
 # Project specific variants for lassen
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +vectorization +tests cuda_arch=70"
 # Project specific deps for lassen
-  PROJECT_LASSEN_DEPS: "^blt@develop "
+  PROJECT_LASSEN_DEPS:
 
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the

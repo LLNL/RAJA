@@ -590,6 +590,25 @@ template <typename POLICY_LIST,
           typename CONTEXT,
           typename SEGMENT,
           typename BODY>
+RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const &ctx,
+                                       SEGMENT const &segment0,
+                                       SEGMENT const &segment1,
+                                       SEGMENT const &segment2,
+                                       BODY const &body)
+{
+
+  LoopExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(ctx,
+                                                       segment0,
+                                                       segment1,
+                                                       segment2,
+                                                       body);
+}
+
+RAJA_SUPPRESS_HD_WARN
+template <typename POLICY_LIST,
+          typename CONTEXT,
+          typename SEGMENT,
+          typename BODY>
 RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const &ctx,
                                        SEGMENT const &segment0,
                                        SEGMENT const &segment1,

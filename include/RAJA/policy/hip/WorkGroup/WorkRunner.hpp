@@ -291,7 +291,7 @@ struct WorkRunner<
       //
       // TODO: Privatize the loop_body, using make_launch_body to setup reductions
       //
-      // LOOP_BODY body = RAJA::hip::make_launch_body(
+      // LOOP_BODY body = RAJA::hip::make_launch_body(func,
       //     gridSize, blockSize, shmem, stream, std::forward<LoopBody>(loop_body));
 
       storage.template emplace<holder>(

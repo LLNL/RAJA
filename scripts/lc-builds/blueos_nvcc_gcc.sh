@@ -35,7 +35,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.20.2
+module load cmake/3.23.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -47,6 +47,7 @@ cmake \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER} \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER}/bin/nvcc \
   -DCMAKE_CUDA_ARCHITECTURES=${COMP_ARCH} \
+  -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

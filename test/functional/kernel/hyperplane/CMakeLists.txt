@@ -13,7 +13,7 @@ set(TESTTYPES 2D 3D)
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TEST_TYPE ${TESTTYPES} )
     # Removing Sycl backend, implementation of Hyperplane does not exist
-    if( NOT ((BACKEND STREQUAL "Sycl")) )
+    if( NOT ((BACKEND STREQUAL "Sycl")) AND NOT ((BACKEND STREQUAL "OpenMPTarget")) )
       configure_file( test-kernel-hyperplane-${TEST_TYPE}.cpp.in
                       test-kernel-hyperplane-${TEST_TYPE}-${BACKEND}.cpp )
       raja_add_test( NAME test-kernel-hyperplane-${TEST_TYPE}-${BACKEND}

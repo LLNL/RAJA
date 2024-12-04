@@ -15,8 +15,8 @@ include(CMakeDependentOption)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 2024)
-set(RAJA_VERSION_MINOR 02)
-set(RAJA_VERSION_PATCHLEVEL 2)
+set(RAJA_VERSION_MINOR 07)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -44,11 +44,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 
 include(cmake/SetupRajaOptions.cmake)
 
-if (ENABLE_HIP)
-  cmake_minimum_required(VERSION 3.23)
-else()
-  cmake_minimum_required(VERSION 3.20)
-endif()
+cmake_minimum_required(VERSION 3.23)
 
 # Detect C++ standard and add appropriate flag _before_ loading BLT
 set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
@@ -126,7 +122,7 @@ if (RAJA_ENABLE_CUDA)
     message(STATUS "CUDA compute architecture set to RAJA default 35 since it was not specified")
     set(CMAKE_CUDA_ARCHITECTURES "35" CACHE STRING "Set CMAKE_CUDA_ARCHITECTURES to RAJA minimum supported" FORCE)
   endif()
-  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}") 
+  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}")
   if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
       set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
@@ -224,6 +220,7 @@ if (RAJA_ENABLE_SYCL)
     ${raja_depends}
     sycl)
 endif ()
+
 
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)

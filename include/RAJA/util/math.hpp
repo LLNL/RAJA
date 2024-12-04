@@ -59,7 +59,7 @@ constexpr T log2(T n) noexcept
 */
 template < typename T,
            std::enable_if_t<std::is_integral<T>::value>* = nullptr >
-RAJA_HOST_DEVICE
+RAJA_HOST_DEVICE RAJA_INLINE
 constexpr T next_pow2(T n) noexcept
 {
   --n;
@@ -81,7 +81,7 @@ constexpr T next_pow2(T n) noexcept
 */
 template < typename T,
            std::enable_if_t<std::is_integral<T>::value>* = nullptr >
-RAJA_HOST_DEVICE
+RAJA_HOST_DEVICE RAJA_INLINE
 constexpr T prev_pow2(T n) noexcept
 {
   if ( n < 0 ) return 0;
@@ -96,6 +96,7 @@ constexpr T prev_pow2(T n) noexcept
 */
 template < typename L, typename R,
            std::enable_if_t<std::is_integral<L>::value && std::is_integral<R>::value>* = nullptr >
+RAJA_HOST_DEVICE RAJA_INLINE
 constexpr auto power_of_2_mod(L lhs, R rhs) noexcept
 {
   return lhs & (rhs-R(1));

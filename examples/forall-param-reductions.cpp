@@ -67,6 +67,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }
 
 //
+// Set a[0] to a different value. Total sum should be 2.
+//
+  a[0] = 3;
+
+//
 // Set min and max loc values
 //
   constexpr int minloc_ref = N / 2;
@@ -80,7 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Note: with this data initialization scheme, the following results will
 //       be observed for all reduction kernels below:
 //
-//  - the sum will be zero
+//  - the sum will be two
 //  - the min will be -100
 //  - the max will be 100
 //  - the min loc will be N/2
@@ -99,7 +104,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 // Define ValLoc Type
 //
 
-  using VALLOC_INT = RAJA::expt::ValLoc<int>;
+  using VALLOC_INT = RAJA::expt::ValLoc<int, RAJA::Index_type>;
+
+//
+// Define ValOp Types
+//
+
+  using VALOP_INT_SUM = RAJA::expt::ValOp<int, RAJA::operators::plus>;
+  using VALOP_INT_MIN = RAJA::expt::ValOp<int, RAJA::operators::minimum>;
+  using VALOP_INT_MAX = RAJA::expt::ValOp<int, RAJA::operators::maximum>;
+  using VALOPLOC_INT_MIN = RAJA::expt::ValLocOp<int, RAJA::Index_type, RAJA::operators::minimum>;
+  using VALOPLOC_INT_MAX = RAJA::expt::ValLocOp<int, RAJA::Index_type, RAJA::operators::maximum>;
+
 //----------------------------------------------------------------------------//
 
   std::cout << "\n Running RAJA sequential reductions...\n";
@@ -113,26 +129,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT seq_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT seq_maxloc(std::numeric_limits<int>::min(), -1);
 
+  int seq_min2 = std::numeric_limits<int>::max();
+  int seq_max2 = std::numeric_limits<int>::min();
+  RAJA::Index_type seq_minloc2(-1);
+  RAJA::Index_type seq_maxloc2(-1);
+
   RAJA::forall<EXEC_POL1>(host_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&seq_min2, &seq_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&seq_max2, &seq_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce Seq Kernel"),
-    [=](int i, int &_seq_sum, int &_seq_min, int &_seq_max, VALLOC_INT &_seq_minloc, VALLOC_INT &_seq_maxloc) {
+    [=](int i,
+        VALOP_INT_SUM &_seq_sum,
+        VALOP_INT_MIN &_seq_min,
+        VALOP_INT_MAX &_seq_max,
+        VALOPLOC_INT_MIN &_seq_minloc,
+        VALOPLOC_INT_MAX &_seq_maxloc,
+        VALOPLOC_INT_MIN &_seq_minloc2,
+        VALOPLOC_INT_MAX &_seq_maxloc2) {
       _seq_sum += a[i];
 
-      _seq_min = RAJA_MIN(a[i], _seq_min);
-      _seq_max = RAJA_MAX(a[i], _seq_max);
+      _seq_min.min(a[i]);
+      _seq_max.max(a[i]);
 
-      _seq_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _seq_minloc);
-      _seq_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _seq_maxloc);
-      //_seq_minloc.min(a[i], i);
-      //_seq_maxloc.max(a[i], i);
-      // Note : RAJA::expt::ValLoc<T> objects provide min() and max() methods
-      //        that are equivalent to the assignments with RAJA_MIN and RAJA_MAX
-      //        above.
+      _seq_minloc.minloc(a[i], i);
+      _seq_maxloc.maxloc(a[i], i);
+
+      _seq_minloc2.minloc(a[i], i);
+      _seq_maxloc2.maxloc(a[i], i);
     }
   );
 
@@ -143,6 +171,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << seq_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << seq_maxloc.getVal() << " , "
                                << seq_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin2, loc2 = "  << seq_min2 << " , "
+                                  << seq_minloc2 << std::endl;
+  std::cout << "\tmax2, loc2 = "  << seq_max2 << " , "
+                                  << seq_maxloc2 << std::endl;
   // _reductions_raja_seq_end
 
 
@@ -161,23 +193,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT omp_maxloc(std::numeric_limits<int>::min(), -1);
 
+  int omp_min2 = std::numeric_limits<int>::max();
+  int omp_max2 = std::numeric_limits<int>::min();
+  RAJA::Index_type omp_minloc2(-1);
+  RAJA::Index_type omp_maxloc2(-1);
+
   RAJA::forall<EXEC_POL2>(host_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&omp_min2, &omp_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&omp_max2, &omp_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce OpenMP Kernel"),
-    [=](int i, int &_omp_sum, int &_omp_min, int &_omp_max, VALLOC_INT &_omp_minloc, VALLOC_INT &_omp_maxloc) {
+    [=](int i,
+        VALOP_INT_SUM &_omp_sum,
+        VALOP_INT_MIN &_omp_min,
+        VALOP_INT_MAX &_omp_max,
+        VALOPLOC_INT_MIN &_omp_minloc,
+        VALOPLOC_INT_MAX &_omp_maxloc,
+        VALOPLOC_INT_MIN &_omp_minloc2,
+        VALOPLOC_INT_MAX &_omp_maxloc2) {
       _omp_sum += a[i];
 
-      _omp_min = RAJA_MIN(a[i], _omp_min);
-      _omp_max = RAJA_MAX(a[i], _omp_max);
+      _omp_min.min(a[i]);
+      _omp_max.max(a[i]);
 
-      _omp_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _omp_minloc);
-      _omp_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _omp_maxloc);
-      //_omp_minloc.min(a[i], i);
-      //_omp_maxloc.max(a[i], i);
+      _omp_minloc.minloc(a[i], i);
+      _omp_maxloc.maxloc(a[i], i);
+
+      _omp_minloc2.minloc(a[i], i);
+      _omp_maxloc2.maxloc(a[i], i);
     }
   );
 
@@ -188,6 +235,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << omp_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << omp_maxloc.getVal() << " , "
                                << omp_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin2, loc2 = "  << omp_min2 << " , "
+                                  << omp_minloc2 << std::endl;
+  std::cout << "\tmax2, loc2 = "  << omp_max2 << " , "
+                                  << omp_maxloc2 << std::endl;
 
 #endif
 
@@ -208,23 +259,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT omp_t_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT omp_t_maxloc(std::numeric_limits<int>::min(), -1);
 
+  int omp_t_min2 = std::numeric_limits<int>::max();
+  int omp_t_max2 = std::numeric_limits<int>::min();
+  RAJA::Index_type omp_t_minloc2(-1);
+  RAJA::Index_type omp_t_maxloc2(-1);
+
   RAJA::forall<EXEC_POL3>(omp_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&omp_t_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_t_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&omp_t_min2, &omp_t_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&omp_t_max2, &omp_t_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce Target OpenMP Kernel"),
-    [=](int i, int &_omp_t_sum, int &_omp_t_min, int &_omp_t_max, VALLOC_INT &_omp_t_minloc, VALLOC_INT &_omp_t_maxloc) {
+    [=](int i,
+        VALOP_INT_SUM &_omp_t_sum,
+        VALOP_INT_MIN &_omp_t_min,
+        VALOP_INT_MAX &_omp_t_max,
+        VALOPLOC_INT_MIN &_omp_t_minloc,
+        VALOPLOC_INT_MAX &_omp_t_maxloc,
+        VALOPLOC_INT_MIN &_omp_t_minloc2,
+        VALOPLOC_INT_MAX &_omp_t_maxloc2) {
       _omp_t_sum += a[i];
 
-      _omp_t_min = RAJA_MIN(a[i], _omp_t_min);
-      _omp_t_max = RAJA_MAX(a[i], _omp_t_max);
+      _omp_t_min.min(a[i]);
+      _omp_t_max.max(a[i]);
 
-      _omp_t_minloc = RAJA_MIN(VALLOC_INT(a[i], i), _omp_t_minloc);
-      _omp_t_maxloc = RAJA_MAX(VALLOC_INT(a[i], i), _omp_t_maxloc);
-      //_omp_t_minloc.min(a[i], i);
-      //_omp_t_maxloc.max(a[i], i);
+      _omp_t_minloc.minloc(a[i], i);
+      _omp_t_maxloc.maxloc(a[i], i);
+
+      _omp_t_minloc2.minloc(a[i], i);
+      _omp_t_maxloc2.maxloc(a[i], i);
     }
   );
 
@@ -235,6 +301,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << omp_t_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << omp_t_maxloc.getVal() << " , "
                                << omp_t_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin2, loc2 = "  << omp_t_min2 << " , "
+                                  << omp_t_minloc2 << std::endl;
+  std::cout << "\tmax2, loc2 = "  << omp_t_max2 << " , "
+                                  << omp_t_maxloc2 << std::endl;
 
 #endif
 
@@ -259,23 +329,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT cuda_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT cuda_maxloc(std::numeric_limits<int>::min(), -1);
 
+  int cuda_min2 = std::numeric_limits<int>::max();
+  int cuda_max2 = std::numeric_limits<int>::min();
+  RAJA::Index_type cuda_minloc2(-1);
+  RAJA::Index_type cuda_maxloc2(-1);
+
   RAJA::forall<EXEC_POL3>(cuda_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&cuda_min2, &cuda_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&cuda_max2, &cuda_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce CUDA Kernel"),
-    [=] RAJA_DEVICE (int i, int &_cuda_sum, int &_cuda_min, int &_cuda_max, VALLOC_INT &_cuda_minloc, VALLOC_INT &_cuda_maxloc) {
+    [=] RAJA_DEVICE ( int i,
+                      VALOP_INT_SUM &_cuda_sum,
+                      VALOP_INT_MIN &_cuda_min,
+                      VALOP_INT_MAX &_cuda_max,
+                      VALOPLOC_INT_MIN &_cuda_minloc,
+                      VALOPLOC_INT_MAX &_cuda_maxloc,
+                      VALOPLOC_INT_MIN &_cuda_minloc2,
+                      VALOPLOC_INT_MAX &_cuda_maxloc2) {
       _cuda_sum += d_a[i];
 
-      _cuda_min = RAJA_MIN(d_a[i], _cuda_min);
-      _cuda_max = RAJA_MAX(d_a[i], _cuda_max);
+      _cuda_min.min(d_a[i]);
+      _cuda_max.max(d_a[i]);
 
-      _cuda_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _cuda_minloc);
-      _cuda_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _cuda_maxloc);
-      //_cuda_minloc.min(a[i], i);
-      //_cuda_maxloc.max(a[i], i);
+      _cuda_minloc.minloc(a[i], i);
+      _cuda_maxloc.maxloc(a[i], i);
+
+      _cuda_minloc2.minloc(a[i], i);
+      _cuda_maxloc2.maxloc(a[i], i);
     }
   );
 
@@ -286,6 +371,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << cuda_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << cuda_maxloc.getVal() << " , "
                                << cuda_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin2, loc2 = "  << cuda_min2 << " , "
+                                  << cuda_minloc2 << std::endl;
+  std::cout << "\tmax2, loc2 = "  << cuda_max2 << " , "
+                                  << cuda_maxloc2 << std::endl;
   cuda_res.deallocate(d_a);
 #endif
 
@@ -309,23 +398,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT hip_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT hip_maxloc(std::numeric_limits<int>::min(), -1);
 
-  RAJA::forall<EXEC_POL3>(arange,
+  int hip_min2 = std::numeric_limits<int>::max();
+  int hip_max2 = std::numeric_limits<int>::min();
+  RAJA::Index_type hip_minloc2(-1);
+  RAJA::Index_type hip_maxloc2(-1);
+
+  RAJA::forall<EXEC_POL3>(hip_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&hip_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&hip_min2, &hip_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&hip_max2, &hip_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce HIP Kernel"),
-    [=] RAJA_DEVICE (int i, int &_hip_sum, int &_hip_min, int &_hip_max, VALLOC_INT &_hip_minloc, VALLOC_INT &_hip_maxloc) {
+    [=] RAJA_DEVICE ( int i,
+                      VALOP_INT_SUM &_hip_sum,
+                      VALOP_INT_MIN &_hip_min,
+                      VALOP_INT_MAX &_hip_max,
+                      VALOPLOC_INT_MIN &_hip_minloc,
+                      VALOPLOC_INT_MAX &_hip_maxloc,
+                      VALOPLOC_INT_MIN &_hip_minloc2,
+                      VALOPLOC_INT_MAX &_hip_maxloc2) {
       _hip_sum += d_a[i];
 
-      _hip_min = RAJA_MIN(d_a[i], _hip_min);
-      _hip_max = RAJA_MAX(d_a[i], _hip_max);
+      _hip_min.min(d_a[i]);
+      _hip_max.max(d_a[i]);
 
-      _hip_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _hip_minloc);
-      _hip_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _hip_maxloc);
-      //_hip_minloc.min(d_a[i], i);
-      //_hip_maxloc.max(d_a[i], i);
+      _hip_minloc.minloc(d_a[i], i);
+      _hip_maxloc.maxloc(d_a[i], i);
+
+      _hip_minloc2.minloc(d_a[i], i);
+      _hip_maxloc2.maxloc(d_a[i], i);
     }
   );
 
@@ -336,6 +440,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << hip_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << hip_maxloc.getVal() << " , "
                                << hip_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin2, loc2 = "  << hip_min2 << " , "
+                                  << hip_minloc2 << std::endl;
+  std::cout << "\tmax2, loc2 = "  << hip_max2 << " , "
+                                  << hip_maxloc2 << std::endl;
 
   hip_res.deallocate(d_a);
 #endif
@@ -360,23 +468,38 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   VALLOC_INT sycl_minloc(std::numeric_limits<int>::max(), -1);
   VALLOC_INT sycl_maxloc(std::numeric_limits<int>::min(), -1);
 
+  int sycl_min2 = std::numeric_limits<int>::max();
+  int sycl_max2 = std::numeric_limits<int>::min();
+  RAJA::Index_type sycl_minloc2(-1);
+  RAJA::Index_type sycl_maxloc2(-1);
+
   RAJA::forall<EXEC_POL3>(sycl_res, arange,
     RAJA::expt::Reduce<RAJA::operators::plus>(&sycl_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&sycl_min2, &sycl_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&sycl_max2, &sycl_maxloc2),
     RAJA::expt::KernelName("RAJA Reduce SYCL Kernel"),
-    [=] RAJA_DEVICE (int i, int &_sycl_sum, int &_sycl_min, int &_sycl_max, VALLOC_INT &_sycl_minloc, VALLOC_INT &_sycl_maxloc) {
+    [=] RAJA_DEVICE ( int i,
+                      VALOP_INT_SUM &_sycl_sum,
+                      VALOP_INT_MIN &_sycl_min,
+                      VALOP_INT_MAX &_sycl_max,
+                      VALOPLOC_INT_MIN &_sycl_minloc,
+                      VALOPLOC_INT_MAX &_sycl_maxloc,
+                      VALOPLOC_INT_MIN &_sycl_minloc2,
+                      VALOPLOC_INT_MAX &_sycl_maxloc2) {
       _sycl_sum += d_a[i];
 
-      _sycl_min = RAJA_MIN(d_a[i], _sycl_min);
-      _sycl_max = RAJA_MAX(d_a[i], _sycl_max);
+      _sycl_min.min(d_a[i]);
+      _sycl_max.max(d_a[i]);
 
-      _sycl_minloc = RAJA_MIN(VALLOC_INT(d_a[i], i), _sycl_minloc);
-      _sycl_maxloc = RAJA_MAX(VALLOC_INT(d_a[i], i), _sycl_maxloc);
-      //_sycl_minloc.min(d_a[i], i);
-      //_sycl_maxloc.max(d_a[i], i);
+      _sycl_minloc.minloc(d_a[i], i);
+      _sycl_maxloc.maxloc(d_a[i], i);
+
+      _sycl_minloc2.minloc(d_a[i], i);
+      _sycl_maxloc2.maxloc(d_a[i], i);
     }
   );
 
@@ -387,6 +510,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                                << sycl_minloc.getLoc() << std::endl;
   std::cout << "\tmax, loc = " << sycl_maxloc.getVal() << " , "
                                << sycl_maxloc.getLoc() << std::endl;
+  std::cout << "\tmin2, loc2 = "  << sycl_min2 << " , "
+                                  << sycl_minloc2 << std::endl;
+  std::cout << "\tmax2, loc2 = "  << sycl_max2 << " , "
+                                  << sycl_maxloc2 << std::endl;
 
   sycl_res.deallocate(d_a);
 #endif

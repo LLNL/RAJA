@@ -206,15 +206,15 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   const int numThreads = ThreadIterationGetter::size();
   const int threadId = ThreadIterationGetter::index();
 
-  const int warpId = threadId % RAJA::policy::cuda::WARP_SIZE;
-  const int warpNum = threadId / RAJA::policy::cuda::WARP_SIZE;
+  const int warpId = threadId % RAJA::policy::cuda::device_constants.WARP_SIZE;
+  const int warpNum = threadId / RAJA::policy::cuda::device_constants.WARP_SIZE;
 
   T temp = val;
 
-  if (numThreads % RAJA::policy::cuda::WARP_SIZE == 0) {
+  if (numThreads % RAJA::policy::cuda::device_constants.WARP_SIZE == 0) {
 
     // reduce each warp
-    for (int i = 1; i < RAJA::policy::cuda::WARP_SIZE; i *= 2) {
+    for (int i = 1; i < RAJA::policy::cuda::device_constants.WARP_SIZE; i *= 2) {
       T rhs = RAJA::cuda::impl::shfl_xor_sync(temp, i);
       temp = Combiner{}(temp, rhs);
     }
@@ -222,7 +222,7 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   } else {
 
     // reduce each warp
-    for (int i = 1; i < RAJA::policy::cuda::WARP_SIZE; i *= 2) {
+    for (int i = 1; i < RAJA::policy::cuda::device_constants.WARP_SIZE; i *= 2) {
       int srcLane = threadId ^ i;
       T rhs = RAJA::cuda::impl::shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
@@ -232,18 +232,18 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     }
   }
 
-  static_assert(RAJA::policy::cuda::MAX_WARPS <= RAJA::policy::cuda::WARP_SIZE,
+  static_assert(RAJA::policy::cuda::device_constants.MAX_WARPS <= RAJA::policy::cuda::device_constants.WARP_SIZE,
                "Max Warps must be less than or equal to Warp Size for this algorithm to work");
 
   // reduce per warp values
-  if (numThreads > RAJA::policy::cuda::WARP_SIZE) {
+  if (numThreads > RAJA::policy::cuda::device_constants.WARP_SIZE) {
 
     // Need to separate declaration and initialization for clang-cuda
-    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, RAJA::policy::cuda::MAX_WARPS>)];
+    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, RAJA::policy::cuda::device_constants.MAX_WARPS>)];
 
     // Partial placement new: Should call new(tmpsd) here but recasting memory
     // to avoid calling constructor/destructor in shared memory.
-    RAJA::detail::SoAArray<T, RAJA::policy::cuda::MAX_WARPS> * sd = reinterpret_cast<RAJA::detail::SoAArray<T, RAJA::policy::cuda::MAX_WARPS> *>(tmpsd);
+    RAJA::detail::SoAArray<T, RAJA::policy::cuda::device_constants.MAX_WARPS> * sd = reinterpret_cast<RAJA::detail::SoAArray<T, RAJA::policy::cuda::device_constants.MAX_WARPS> *>(tmpsd);
 
     // write per warp values to shared memory
     if (warpId == 0) {
@@ -255,13 +255,13 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
     if (warpNum == 0) {
 
       // read per warp values
-      if (warpId * RAJA::policy::cuda::WARP_SIZE < numThreads) {
+      if (warpId * RAJA::policy::cuda::device_constants.WARP_SIZE < numThreads) {
         temp = sd->get(warpId);
       } else {
         temp = identity;
       }
 
-      for (int i = 1; i < RAJA::policy::cuda::MAX_WARPS; i *= 2) {
+      for (int i = 1; i < RAJA::policy::cuda::device_constants.MAX_WARPS; i *= 2) {
         T rhs = RAJA::cuda::impl::shfl_xor_sync(temp, i);
         temp = Combiner{}(temp, rhs);
       }
@@ -275,7 +275,10 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 
 
 template <typename GlobalIterationGetter, typename OP, typename T>
-RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red)
+RAJA_DEVICE RAJA_INLINE void grid_reduce( T * device_target,
+                                          T val,
+                                          RAJA::detail::SoAPtr<T,RAJA::cuda::device_mempool_type> device_mem,
+                                          unsigned int* device_count)
 {
   using BlockIterationGetter = typename get_index_block<GlobalIterationGetter>::type;
   using ThreadIterationGetter = typename get_index_thread<GlobalIterationGetter>::type;
@@ -287,16 +290,16 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red
   const int blockId = BlockIterationGetter::index();
   const int threadId = ThreadIterationGetter::index();
 
-  T temp = block_reduce<ThreadIterationGetter, OP>(red.val, OP::identity());
+  T temp = block_reduce<ThreadIterationGetter, OP>(val, OP::identity());
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
   if (threadId == 0) {
-    red.device_mem.set(blockId, temp);
+    device_mem.set(blockId, temp);
     // ensure write visible to all threadblocks
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
-    unsigned int old_count = ::atomicInc(red.device_count, wrap_around);
+    unsigned int old_count = ::atomicInc(device_count, wrap_around);
     lastBlock = (old_count == wrap_around);
   }
 
@@ -309,14 +312,14 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(RAJA::expt::detail::Reducer<OP, T>& red
     __threadfence();
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
-      temp = OP{}(temp, red.device_mem.get(i));
+      temp = OP{}(temp, device_mem.get(i));
     }
 
     temp = block_reduce<ThreadIterationGetter, OP>(temp, OP::identity());
 
     // one thread returns value
     if (threadId == 0) {
-      *(red.devicetarget) = temp;
+      *device_target = temp;
     }
   }
 }
@@ -887,8 +890,8 @@ class Reduce
       : 1;
   static constexpr size_t atomic_stride = (tuning::atomic_stride > 0)
       ? tuning::atomic_stride
-      : ((policy::cuda::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE > sizeof(T))
-        ? RAJA_DIVIDE_CEILING_INT(policy::cuda::ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE, sizeof(T))
+      : ((policy::cuda::device_constants.ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE > sizeof(T))
+        ? RAJA_DIVIDE_CEILING_INT(policy::cuda::device_constants.ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE, sizeof(T))
         : 1);
 
   using Accessor = std::conditional_t<(tuning::comm_mode == block_communication_mode::block_fence),

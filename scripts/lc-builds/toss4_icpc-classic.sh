@@ -43,6 +43,7 @@ cmake \
   -C ../host-configs/lc-builds/toss4/icpc-classic_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
   -DENABLE_OPENMP=On \
+  -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
@@ -55,6 +56,6 @@ echo
 echo "  Please note that you may need to add some intel openmp libraries to your"
 echo "  LD_LIBRARY_PATH to run with openmp."
 echo
-echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel/intel-${COMP_VER}/compiler/lib/intel64_lin"
+echo "    LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/tce/packages/intel-classic/intel-classic-${COMP_VER}/compiler/lib/intel64_lin"
 echo
 echo "***********************************************************************"

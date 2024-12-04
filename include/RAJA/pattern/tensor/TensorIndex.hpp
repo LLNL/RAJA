@@ -29,7 +29,7 @@ namespace expt
 {
 
 
-  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, IDX INDEX_VALUE, strip_index_type_t<IDX> LENGTH_VALUE>
+  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, strip_index_type_t<IDX> INDEX_VALUE, strip_index_type_t<IDX> LENGTH_VALUE>
   struct StaticTensorIndexInner;
 
   template<typename INNER_TYPE>
@@ -56,8 +56,8 @@ namespace expt
       RAJA_HOST_DEVICE
       static
       constexpr
-      StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,index_type(-1),value_type(-1)>> static_all(){
-        return StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,index_type(-1),value_type(-1)>>();
+      StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,value_type(-1),value_type(-1)>> static_all(){
+        return StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,value_type(-1),value_type(-1)>>();
       }
 
       RAJA_INLINE
@@ -103,7 +103,7 @@ namespace expt
       TensorIndex(TensorIndex<IDX, T, D> const &c) : m_index(*c), m_length(c.size()) {}
 
 
-      template<IDX IDX_VAL, strip_index_type_t<IDX> LEN_VAL>
+      template<value_type IDX_VAL, value_type LEN_VAL>
       RAJA_INLINE
       RAJA_HOST_DEVICE
       constexpr
@@ -156,7 +156,7 @@ namespace expt
   };
 
 
-  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, IDX INDEX_VALUE, strip_index_type_t<IDX> LENGTH_VALUE>
+  template<typename IDX, typename TENSOR_TYPE, camp::idx_t DIM, strip_index_type_t<IDX> INDEX_VALUE, strip_index_type_t<IDX> LENGTH_VALUE>
   struct StaticTensorIndex<StaticTensorIndexInner<IDX,TENSOR_TYPE,DIM,INDEX_VALUE,LENGTH_VALUE>> {
 
       using base_type  = TensorIndex<IDX,TENSOR_TYPE,DIM>;

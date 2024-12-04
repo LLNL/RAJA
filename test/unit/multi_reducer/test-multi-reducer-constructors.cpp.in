@@ -1,0 +1,30 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA multi-reducer constructors and initialization.
+///
+
+#include "test-multi-reducer-constructors.hpp"
+
+using @BACKEND@MultiReducerConstructorTypes =
+  Test< camp::cartesian_product< @BACKEND@MultiReducerPolicyList,
+                                 DataTypeList > >::Types;
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@BasicTest,
+                               MultiReducerBasicConstructorUnitTest,
+                               @BACKEND@MultiReducerConstructorTypes);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@InitTest,
+                               MultiReducerSingleInitConstructorUnitTest,
+                               @BACKEND@MultiReducerConstructorTypes);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@InitTest,
+                               MultiReducerContainerInitConstructorUnitTest,
+                               @BACKEND@MultiReducerConstructorTypes);
+
+

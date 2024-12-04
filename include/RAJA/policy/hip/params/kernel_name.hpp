@@ -3,6 +3,7 @@
 
 #if defined(RAJA_HIP_ACTIVE)
 
+#include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/pattern/params/kernel_name.hpp"
 
 #if defined(RAJA_ENABLE_ROCTX)
