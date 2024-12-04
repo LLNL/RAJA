@@ -21,6 +21,8 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
                                            const std::vector<IDX_TYPE>& seg_idx,
                                            camp::resources::Resource working_res)
 {
+  using REF_MIN = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::minimum>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -60,12 +62,12 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
      "LaunchMinBasicTest",
      RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
      RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_mininit, DATA_TYPE &_min) {
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_mininit, REF_MIN &_min) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
-          _mininit = RAJA_MIN(working_array[idx], _mininit);
-          _min     = RAJA_MIN(working_array[idx], _min);
+          _mininit.min(working_array[idx]);
+          _min.min(working_array[idx]);
 
     });
 
@@ -82,11 +84,11 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_min) {
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_min) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
-          _min = RAJA_MIN(working_array[idx] * factor, _min);
+          _min.min(working_array[idx] * factor);
     });
 
   });
@@ -98,10 +100,10 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_min) {
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_min) {
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
-          _min = RAJA_MIN(working_array[idx] * factor, _min);
+          _min.min(working_array[idx] * factor);
       });
   });
 

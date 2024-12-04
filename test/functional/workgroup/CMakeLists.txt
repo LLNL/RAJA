@@ -39,16 +39,6 @@ if(RAJA_ENABLE_OPENMP)
   list(APPEND BACKENDS OpenMP)
 endif()
 
-#
-# If building a subset of openmp target tests, do not add the back-end to
-# the list of tests to generate here.
-#
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(NOT RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(APPEND BACKENDS OpenMPTarget)
-  endif() 
-endif()
-
 if(RAJA_ENABLE_CUDA)
   list(APPEND BACKENDS Cuda)
 endif()
@@ -56,6 +46,10 @@ endif()
 if(RAJA_ENABLE_HIP)
   list(APPEND BACKENDS Hip)
 endif()
+
+##
+## Do not create OpenMP Target or SYCL tests for workgroup, since not supported yet 
+##
 
 
 set(DISPATCHERS IndirectFunction IndirectVirtual Direct)
@@ -66,20 +60,6 @@ buildfunctionalworkgrouptest(Ordered "${Ordered_SUBTESTS}" "${DISPATCHERS}" "${B
 
 set(Unordered_SUBTESTS Single MultipleReuse)
 buildfunctionalworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${DISPATCHERS}" "${BACKENDS}")
-
-unset(BACKENDS)
-
-#
-# If building a subset of openmp target tests, add tests to build here.
-#
-if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-
-    set(BACKENDS OpenMPTarget)
-    buildfunctionalworkgrouptest(Unordered "${Unordered_SUBTESTS}" "${DISPATCHERS}" "${BACKENDS}")
-
-  endif()
-endif()
 
 unset(DISPATCHERS)
 unset(BACKENDS)

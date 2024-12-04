@@ -71,8 +71,8 @@ More details about RAJA configuration options are located in the RAJA User Guide
 We also maintain a [**RAJA Template Project**](https://github.com/LLNL/RAJA-project-template) that shows how to use RAJA in a CMake project, either as a Git
 submodule or as an installed library.
 
-User Documentation
--------------------
+User Documentation and Tutorials
+--------------------------------
 
 The RAJA User Guide is the best place to start learning about RAJA and how to
 use it.
@@ -80,6 +80,8 @@ use it.
 The most recent version of the User Guide (RAJA develop branch): https://raja.readthedocs.io
 
 To access docs for other RAJA released versions: https://readthedocs.org/projects/raja/
+
+We maintain a repository for the RAJA portaility suite tutorial material: https://github.com/LLNL/raja-suite-tutorial
 
 To cite RAJA, please use the following references:
 
@@ -94,7 +96,10 @@ The [**RAJA Performance Suite**](https://github.com/LLNL/RAJAPerf) contains
 a collection of loop kernels implemented in multiple RAJA and non-RAJA
 variants. We use it to monitor and assess RAJA performance on different
 platforms using a variety of compilers. Many major compiler vendors use the
-Suite to improve their support of abstractions like RAJA. 
+Suite to improve their support of abstractions like RAJA. **The RAJA
+Performance Suite is an excellent source of examples of RAJA usage where you
+can compare RAJA and non-RAJA variants of a variety of different kernels and
+RAJA back-ends.**
 
 The [**RAJA Proxies**](https://github.com/LLNL/RAJAProxies) repository 
 contains RAJA versions of several important HPC proxy applications.

@@ -88,18 +88,18 @@ extern "C" {
  *      RAJA 'statement' concepts
  *
  *  Note that calls to the checkResult() method after each variant is run
- *  are turned off so the example code runs much faster. If you want 
+ *  are turned off so the example code runs much faster. If you want
  *  to verify the results are correct, define the 'DEBUG_LTIMES' macro
  *  below or turn on checking for individual variants.
  */
 
 
 
-
 using namespace RAJA;
+using namespace RAJA::expt;
 
 //
-// Index value types for strongly-typed indices must be defined outside 
+// Index value types for strongly-typed indices must be defined outside
 // function scope for RAJA CUDA variants to work.
 //
 // These types provide strongly-typed index values so if something is wrong
@@ -116,7 +116,7 @@ RAJA_INDEX_VALUE_T(IZ, int, "IZ");
 //
 template <typename PHIVIEW_T, typename LVIEW_T, typename PSIVIEW_T>
 void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
-                 const int num_m, 
+                 const int num_m,
                  const int num_d,
                  const int num_g,
                  const int num_z);
@@ -142,7 +142,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const long num_z = 32 + (rand()/RAND_MAX);
 #else
   const int num_iter = 10 + (rand()/RAND_MAX);
-  const int num_z = 32*65536 + (rand()/RAND_MAX);
+  const int num_z = 32*657 + (rand()/RAND_MAX);
 
 #endif
 
@@ -231,14 +231,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // View types and Views/Layouts for indexing into arrays
-  // 
-  // L(m, d) : 1 -> d is stride-1 dimension 
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
   using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
 
-  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
   using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
 
-  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
   using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
@@ -255,7 +255,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  timer.start(); 
+  timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
     for (IG g(0); g < num_g; ++g) {
@@ -268,7 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   }
 
-  timer.stop(); 
+  timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
   std::cout << "  C-version of LTimes run time (with Views) (sec.): "
@@ -291,14 +291,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // View types and Views/Layouts for indexing into arrays
-  // 
-  // L(m, d) : 1 -> d is stride-1 dimension 
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
   using LView = TypedView<double, Layout<2, int, 0>, IM, ID>;
 
-  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
   using PsiView = TypedView<double, Layout<3, int, 0>, ID, IG, IZ>;
 
-  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
   using PhiView = TypedView<double, Layout<3, int, 0>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{1, 0}};
@@ -313,11 +313,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using EXECPOL = 
+  using EXECPOL =
     RAJA::KernelPolicy<
-      statement::For<2, loop_exec,  // g
-        statement::For<3, loop_exec,  // z
-         statement::For<0, loop_exec,  // m
+      statement::For<2, seq_exec,  // g
+        statement::For<3, seq_exec,  // z
+         statement::For<0, seq_exec,  // m
            statement::For<1, simd_exec,  // d
                statement::Lambda<0>
              >
@@ -388,9 +388,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using EXECPOL =
     RAJA::KernelPolicy<
-      statement::For<2, loop_exec,  // g
-        statement::For<3, loop_exec,  // z
-           statement::For<0, loop_exec,  // m
+      statement::For<2, seq_exec,  // g
+        statement::For<3, seq_exec,  // z
+           statement::For<0, seq_exec,  // m
              statement::For<1, simd_exec,  // d
                statement::Lambda<0, Segs<0, 1, 2, 3>>
              >
@@ -462,10 +462,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
-  using pol_g = RAJA::LoopPolicy<RAJA::loop_exec>;
-  using pol_z = RAJA::LoopPolicy<RAJA::loop_exec>;
-  using pol_m = RAJA::LoopPolicy<RAJA::loop_exec>;
-  using pol_d = RAJA::LoopPolicy<RAJA::loop_exec>;
+  using pol_g = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using pol_z = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using pol_m = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using pol_d = RAJA::LoopPolicy<RAJA::seq_exec>;
 
 
 
@@ -535,14 +535,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using vector_t = RAJA::VectorRegister<double>;
-  using VecIZ = RAJA::VectorIndex<IZ, vector_t>;
+  using vector_t = RAJA::expt::VectorRegister<double>;
+  using VecIZ = RAJA::expt::VectorIndex<IZ, vector_t>;
 
   using EXECPOL =
     RAJA::KernelPolicy<
-      statement::For<2, loop_exec,  // g
-        statement::For<0, loop_exec,  // m
-          statement::For<1, loop_exec,  // d
+      statement::For<2, seq_exec,  // g
+        statement::For<0, seq_exec,  // m
+          statement::For<1, seq_exec,  // d
 
              statement::Lambda<0>
            >
@@ -552,7 +552,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
-  RAJA::tensor_stats::resetVectorStats();
+  RAJA::expt::tensor_stats::resetVectorStats();
 #endif
 
 
@@ -622,9 +622,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-  using matrix_t = RAJA::SquareMatrixRegister<double, ColMajorLayout, RAJA::scalar_register>;
-  //using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
-//  using matrix_t = RAJA::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8>;
+  using matrix_t = RAJA::expt::SquareMatrixRegister<double, ColMajorLayout, RAJA::expt::scalar_register>;
+  //using matrix_t = RAJA::expt::SquareMatrixRegister<double, RowMajorLayout>;
+//  using matrix_t = RAJA::expt::RectMatrixRegister<double, RAJA::ColMajorLayout, 8,8>;
 
 
 
@@ -633,9 +633,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 	printf("Num registers/matrix = %d\n", (int)matrix_t::s_num_registers);
 
-  using RowM = RAJA::RowIndex<IM, matrix_t>;
-  using ColD = RAJA::ColIndex<ID, matrix_t>;
-  using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+  using RowM = RAJA::expt::RowIndex<IM, matrix_t>;
+  using ColD = RAJA::expt::ColIndex<ID, matrix_t>;
+  using ColZ = RAJA::expt::ColIndex<IZ, matrix_t>;
 
 
 #ifdef RAJA_ENABLE_VECTOR_STATS
@@ -648,7 +648,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int iter = 0;iter < num_iter;++ iter){
 
-  RAJA::forall<loop_exec>(RAJA::TypedRangeSegment<IG>(0, num_g),
+  RAJA::forall<seq_exec>(RAJA::TypedRangeSegment<IG>(0, num_g),
     [=](IG g)
     {
 
@@ -718,19 +718,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   PhiView phi(phi_data,
               RAJA::make_permuted_layout({{num_m, num_g, num_z}}, phi_perm));
 
-    using matrix_t = RAJA::SquareMatrixRegister<double, RowMajorLayout>;
+  using matrix_t = RAJA::expt::SquareMatrixRegister<double, RowMajorLayout>;
 
 
     std::cout << "matrix size: " << matrix_t::s_dim_elem(0) <<
         "x" << matrix_t::s_dim_elem(1) << std::endl;
 
-    using RowM = RAJA::RowIndex<IM, matrix_t>;
-    using ColD = RAJA::ColIndex<ID, matrix_t>;
-    using ColZ = RAJA::ColIndex<IZ, matrix_t>;
+    using RowM = RAJA::expt::RowIndex<IM, matrix_t>;
+    using ColD = RAJA::expt::ColIndex<ID, matrix_t>;
+    using ColZ = RAJA::expt::ColIndex<IZ, matrix_t>;
 
 
   #ifdef RAJA_ENABLE_VECTOR_STATS
-    RAJA::tensor_stats::resetVectorStats();
+    RAJA::expt::tensor_stats::resetVectorStats();
   #endif
 
     RAJA::Timer timer;
@@ -738,7 +738,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     for (int iter = 0;iter < num_iter;++ iter){
 
-    RAJA::forall<loop_exec>(RAJA::TypedRangeSegment<IG>(0, num_g),
+    RAJA::forall<seq_exec>(RAJA::TypedRangeSegment<IG>(0, num_g),
       [=](IG g)
       {
 
@@ -820,13 +820,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<0,1,2>,
 
       // Tile outer m,d loops
-      statement::Tile<0, tile_fixed<tile_m>, loop_exec,  // m
-        statement::Tile<1, tile_fixed<tile_d>, loop_exec,  // d
+      statement::Tile<0, tile_fixed<tile_m>, seq_exec,  // m
+        statement::Tile<1, tile_fixed<tile_d>, seq_exec,  // d
 
 
             // Load L(m,d) for m,d tile into shmem
-            statement::For<0, loop_exec,  // m
-              statement::For<1, loop_exec,  // d
+            statement::For<0, seq_exec,  // m
+              statement::For<1, seq_exec,  // d
                 statement::Lambda<0, Segs<0, 1>,
                                      Params<0>,
                                      Offsets<0, 1>>
@@ -834,13 +834,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             >,
 
             // Run inner g, z loops with z loop tiled
-            statement::For<2, loop_exec,  // g
-              statement::Tile<3, tile_fixed<tile_z>, loop_exec,  // z
+            statement::For<2, seq_exec,  // g
+              statement::Tile<3, tile_fixed<tile_z>, seq_exec,  // z
 
 
                   // Load psi into shmem
-                  statement::For<1, loop_exec,  // d
-                    statement::For<3, loop_exec,  // z
+                  statement::For<1, seq_exec,  // d
+                    statement::For<3, seq_exec,  // z
                       statement::Lambda<1, Segs<1, 2, 3>,
                                            Params<1>,
                                            Offsets<1, 2, 3>>
@@ -848,25 +848,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                   >,
 
                   // Compute phi
-                  statement::For<0, loop_exec,  // m
+                  statement::For<0, seq_exec,  // m
 
                     // Load phi into shmem
-                    statement::For<3, loop_exec,  // z
+                    statement::For<3, seq_exec,  // z
                       statement::Lambda<2, Segs<0, 2, 3>,
                                            Params<2>,
                                            Offsets<0, 2, 3>>
                     >,
 
                     // Compute phi in shmem
-                    statement::For<1, loop_exec,  // d
-                      statement::For<3, loop_exec,  // z
+                    statement::For<1, seq_exec,  // d
+                      statement::For<3, seq_exec,  // z
                         statement::Lambda<3, Params<0, 1, 2>,
                                              Offsets<0, 1, 2, 3>>
                       >
                     >,
 
                     // Store phi
-                    statement:: For<3, loop_exec,  // z
+                    statement:: For<3, seq_exec,  // z
                       statement::Lambda<4, Segs<0, 2, 3>,
                                            Params<2>,
                                            Offsets<0, 2, 3>>
@@ -992,14 +992,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // View types and Views/Layouts for indexing into arrays
-  // 
-  // L(m, d) : 1 -> d is stride-1 dimension 
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
   using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
-  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
   using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
-  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
   using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
@@ -1019,9 +1019,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using EXECPOL =
     RAJA::KernelPolicy<
       statement::For<0, omp_parallel_for_exec,  // m
-        statement::For<1, loop_exec,  // d 
-          statement::For<2, loop_exec,  // g 
-            statement::For<3, simd_exec,  // z 
+        statement::For<1, seq_exec,  // d
+          statement::For<2, seq_exec,  // g
+            statement::For<3, simd_exec,  // z
               statement::Lambda<0>
             >
           >
@@ -1037,7 +1037,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       statement::Collapse<omp_parallel_collapse_exec,
                           RAJA::ArgList<0, 2, 3>,   // m, g, z
-        statement::For<1, loop_exec,  // d 
+        statement::For<1, seq_exec,  // d
           statement::Lambda<0>
         >
       >
@@ -1096,14 +1096,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // View types and Views/Layouts for indexing into arrays
-  // 
-  // L(m, d) : 1 -> d is stride-1 dimension 
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
   using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
-  // psi(d, g, z) : 2 -> z is stride-1 dimension 
+  // psi(d, g, z) : 2 -> z is stride-1 dimension
   using PsiView = TypedView<double, Layout<3, int, 2>, ID, IG, IZ>;
 
-  // phi(m, g, z) : 2 -> z is stride-1 dimension 
+  // phi(m, g, z) : 2 -> z is stride-1 dimension
   using PhiView = TypedView<double, Layout<3, int, 2>, IM, IG, IZ>;
 
   std::array<RAJA::idx_t, 2> L_perm {{0, 1}};
@@ -1120,7 +1120,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using EXECPOL =
     RAJA::KernelPolicy<
-      statement::CudaKernelAsync<    
+      statement::CudaKernelAsync<
         statement::For<0, cuda_block_x_loop,  // m
           statement::For<2, cuda_block_y_loop,  // g
             statement::For<3, cuda_thread_x_loop,  // z
@@ -1130,9 +1130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             >
           >
         >
-      >         
-    >;          
-                 
+      >
+    >;
+
   auto segments = RAJA::make_tuple(RAJA::TypedRangeSegment<IM>(0, num_m),
                                    RAJA::TypedRangeSegment<ID>(0, num_d),
                                    RAJA::TypedRangeSegment<IG>(0, num_g),
@@ -1165,9 +1165,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk( cudaFree( dphi_data ) );
 
   // Reset data in Views to CPU data
-  L.set_data(L_data); 
-  psi.set_data(psi_data); 
-  phi.set_data(phi_data); 
+  L.set_data(L_data);
+  psi.set_data(psi_data);
+  phi.set_data(phi_data);
 
 #if defined(DEBUG_LTIMES)
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
@@ -1201,10 +1201,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<true, 512> >;
-  using pol_g = RAJA::LoopPolicy<RAJA::loop_exec, cuda_block_x_loop>;
-  using pol_z = RAJA::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
-  using pol_m = RAJA::LoopPolicy<RAJA::loop_exec, cuda_thread_x_loop>;
-  using pol_d = RAJA::LoopPolicy<RAJA::loop_exec, RAJA::loop_exec>;
+  using pol_g = RAJA::LoopPolicy<RAJA::seq_exec, cuda_block_x_loop>;
+  using pol_z = RAJA::LoopPolicy<RAJA::seq_exec, cuda_thread_y_loop>;
+  using pol_m = RAJA::LoopPolicy<RAJA::seq_exec, cuda_thread_x_loop>;
+  using pol_d = RAJA::LoopPolicy<RAJA::seq_exec, RAJA::seq_exec>;
 
 
   //
@@ -1325,22 +1325,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using matrix_layout = RowMajorLayout;
 
-  using L_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
-  using L_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 8, 4, RAJA::cuda_warp_register>;
+  using L_matrix_host_t = RAJA::expt::SquareMatrixRegister<double, matrix_layout>;
+  using L_matrix_device_t = RAJA::expt::RectMatrixRegister<double, matrix_layout, 8, 4, RAJA::expt::cuda_warp_register>;
   using L_matrix_hd_t = RAJA::LaunchPolicy<L_matrix_host_t, L_matrix_device_t>;
 
-  using phi_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
-  using phi_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 8, 8, RAJA::cuda_warp_register>;
+  using phi_matrix_host_t = RAJA::expt::SquareMatrixRegister<double, matrix_layout>;
+  using phi_matrix_device_t = RAJA::expt::RectMatrixRegister<double, matrix_layout, 8, 8, RAJA::expt::cuda_warp_register>;
   using phi_matrix_hd_t = RAJA::LaunchPolicy<L_matrix_host_t, phi_matrix_device_t>;
 
-  using psi_matrix_host_t = RAJA::SquareMatrixRegister<double, matrix_layout>;
-  using psi_matrix_device_t = RAJA::RectMatrixRegister<double, matrix_layout, 4, 8, RAJA::cuda_warp_register>;
+  using psi_matrix_host_t = RAJA::expt::SquareMatrixRegister<double, matrix_layout>;
+  using psi_matrix_device_t = RAJA::expt::RectMatrixRegister<double, matrix_layout, 4, 8, RAJA::expt::cuda_warp_register>;
   using psi_matrix_hd_t = RAJA::LaunchPolicy<L_matrix_host_t, psi_matrix_device_t>;
 
 
   using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<true , 1024> >;
-  using pol_g = RAJA::LoopPolicy<RAJA::loop_exec, cuda_block_x_direct>;
-  using pol_z = RAJA::LoopPolicy<RAJA::loop_exec, cuda_thread_y_loop>;
+  using pol_g = RAJA::LoopPolicy<RAJA::seq_exec, cuda_block_x_direct>;
+  using pol_z = RAJA::LoopPolicy<RAJA::seq_exec, cuda_thread_y_loop>;
 
 
   //
@@ -1388,16 +1388,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
       using L_matrix_t = RAJA_GET_POLICY(L_matrix_hd_t);
-      using L_RowM = RAJA::RowIndex<IM, L_matrix_t>;
-      using L_ColD = RAJA::ColIndex<ID, L_matrix_t>;
+      using L_RowM = RAJA::expt::RowIndex<IM, L_matrix_t>;
+      using L_ColD = RAJA::expt::ColIndex<ID, L_matrix_t>;
 
       using psi_matrix_t = RAJA_GET_POLICY(psi_matrix_hd_t);
-      using psi_RowD = RAJA::RowIndex<ID, psi_matrix_t>;
-      using psi_ColZ = RAJA::ColIndex<IZ, psi_matrix_t>;
+      using psi_RowD = RAJA::expt::RowIndex<ID, psi_matrix_t>;
+      using psi_ColZ = RAJA::expt::ColIndex<IZ, psi_matrix_t>;
 
       using phi_matrix_t = RAJA_GET_POLICY(phi_matrix_hd_t);
-      using phi_RowM = RAJA::RowIndex<IM, phi_matrix_t>;
-      using phi_ColZ = RAJA::ColIndex<IZ, phi_matrix_t>;
+      using phi_RowM = RAJA::expt::RowIndex<IM, phi_matrix_t>;
+      using phi_ColZ = RAJA::expt::ColIndex<IZ, phi_matrix_t>;
 
 
       RAJA::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
@@ -1468,8 +1468,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //
   // View types and Views/Layouts for indexing into arrays
-  // 
-  // L(m, d) : 1 -> d is stride-1 dimension 
+  //
+  // L(m, d) : 1 -> d is stride-1 dimension
   using LView = TypedView<double, Layout<2, int, 1>, IM, ID>;
 
   // psi(d, g, z) : 2 -> z is stride-1 dimension
@@ -1530,11 +1530,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       statement::CudaKernelAsync<
         statement::InitLocalMem<cuda_shared_mem, ParamList<0,1>,
-          // Tile outer m,d loops 
+          // Tile outer m,d loops
           statement::Tile<0, tile_fixed<tile_m>, seq_exec,  // m
             statement::Tile<1, tile_fixed<tile_d>, seq_exec,  // d
 
-              // Load L for m,d tile into shmem 
+              // Load L for m,d tile into shmem
               statement::For<1, cuda_thread_x_loop,  // d
                 statement::For<0, cuda_thread_y_direct,   // m
                   statement::Lambda<0, Segs<0,1>, Params<0>, Offsets<0,1>>
@@ -1571,7 +1571,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       > // d
                     >  // m
                   >,  // z
-                  
+
                   // finish tile over directions
                   statement::CudaSyncThreads,
 
@@ -1582,7 +1582,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                     >
                   >,
                   statement::CudaSyncThreads
-                
+
                 >  // Tile z
               >  // g
 
@@ -1594,7 +1594,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     >;  // KernelPolicy
 
 
-  
+
 
 
   RAJA::Timer timer;
@@ -1671,9 +1671,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           cudaMemcpyDeviceToHost ) );
 
   // Reset data in Views to CPU data
-  L.set_data(L_data); 
-  psi.set_data(psi_data); 
-  phi.set_data(phi_data); 
+  L.set_data(L_data);
+  psi.set_data(psi_data);
+  phi.set_data(phi_data);
   checkResult(phi, L, psi, num_m, num_d, num_g, num_z);
 #endif
 
@@ -1874,11 +1874,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::KernelPolicy<
       statement::HipKernelAsync<
         statement::InitLocalMem<hip_shared_mem, ParamList<0,1>,
-          // Tile outer m,d loops 
+          // Tile outer m,d loops
           statement::Tile<0, tile_fixed<tile_m>, seq_exec,  // m
             statement::Tile<1, tile_fixed<tile_d>, seq_exec,  // d
 
-              // Load L for m,d tile into shmem 
+              // Load L for m,d tile into shmem
               statement::For<1, hip_thread_x_loop,  // d
                 statement::For<0, hip_thread_y_direct,   // m
                   statement::Lambda<0, Segs<0,1>, Params<0>, Offsets<0,1>>
@@ -1915,7 +1915,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                       > // d
                     >  // m
                   >,  // z
-                  
+
                   // finish tile over directions
                   statement::HipSyncThreads,
 
@@ -1926,7 +1926,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                     >
                   >,
                   statement::HipSyncThreads
-                
+
                 >  // Tile z
               >  // g
 
@@ -1983,7 +1983,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     },
 
     // Lambda<3> Compute thread-local phi value
-    [=] RAJA_DEVICE (IM RAJA_UNUSED_ARG(m), ID RAJA_UNUSED_ARG(d), 
+    [=] RAJA_DEVICE (IM RAJA_UNUSED_ARG(m), ID RAJA_UNUSED_ARG(d),
                      IG RAJA_UNUSED_ARG(g), IZ RAJA_UNUSED_ARG(z),
                      shmem_L_t& sh_L, shmem_psi_t& sh_psi, double& phi_local,
                      IM tm, ID td, IG tg, IZ tz) {
@@ -2040,7 +2040,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 template <typename PHIVIEW_T, typename LVIEW_T, typename PSIVIEW_T>
 void checkResult(PHIVIEW_T& phi, LVIEW_T& L, PSIVIEW_T& psi,
-                 const int num_m, 
+                 const int num_m,
                  const int num_d,
                  const int num_g,
                  const int num_z)

@@ -11,6 +11,16 @@ if (RAJA_ENABLE_CUDA)
     SOURCES host-device-lambda-benchmark.cpp)
 endif()
 
+if (RAJA_ENABLE_DESUL)
+raja_add_benchmark(
+  NAME benchmark-atomic
+  SOURCES benchmark-atomic.cpp)
+endif()
+
 raja_add_benchmark(
   NAME ltimes
   SOURCES ltimes.cpp)
+
+raja_add_benchmark(
+  NAME raja_view_blur
+  SOURCES raja_view_blur.cpp)

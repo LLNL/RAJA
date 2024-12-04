@@ -95,7 +95,7 @@ Memory Operations
 -------------------
 
 The example discussed in this section illustrates most of the memory
-operations that can be performed with 
+operations that can be performed with RAJA resource objects.
 A common use case for a resource is to manage arrays in the appropriate 
 memory space to use in a kernel. Consider the following code example::
 

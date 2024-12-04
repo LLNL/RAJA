@@ -35,7 +35,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} >/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.20.2
+module load cmake/3.23.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -50,6 +50,7 @@ cmake \
   -DBLT_CLANG_CUDA_ARCH=${CUDA_ARCH} \
   -DENABLE_CUDA=On \
   -DCUDA_ARCH=${CUDA_ARCH} \
+  -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

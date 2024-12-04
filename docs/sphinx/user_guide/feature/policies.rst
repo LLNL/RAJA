@@ -593,7 +593,7 @@ GPU Policies for SYCL
 	  x dimension for CUDA and HIP.
 
           Similarly, ``RAJA::kernel`` uses a three-dimensional work-group
-          configuration. SYCL imension 2 always exists and should be used as
+          configuration. SYCL dimension 2 always exists and should be used as
           one would use the x dimension in CUDA and HIP.  
 
 ======================================== ============= ==============================
@@ -849,6 +849,73 @@ sycl_reduce                                       any SYCL      Reduction in a S
 .. note:: RAJA reductions used with SIMD execution policies are not
           guaranteed to generate correct results. So they should not be used
           for kernels containing reductions.
+
+.. _multi-reducepolicy-label:
+
+-------------------------
+MultiReduction Policies
+-------------------------
+
+Each RAJA multi-reduction object must be defined with a 'multi-reduction policy'
+type. Multi-reduction policy types are distinct from loop execution policy types.
+It is important to note the following constraints about RAJA multi-reduction usage:
+
+.. note:: To guarantee correctness, a **multi-reduction policy must be compatible
+          with the loop execution policy** used. For example, a CUDA
+          multi-reduction policy must be used when the execution policy is a
+          CUDA policy, an OpenMP multi-reduction policy must be used when the
+          execution policy is an OpenMP policy, and so on.
+
+The following table summarizes RAJA multi-reduction policy types:
+
+============================================================= ============= ==========================================
+MultiReduction Policy                                         Loop Policies Brief description
+                                                              to Use With
+============================================================= ============= ==========================================
+seq_multi_reduce                                              seq_exec,     Non-parallel (sequential) multi-reduction.
+omp_multi_reduce                                              any OpenMP    OpenMP parallel multi-reduction.
+                                                              policy
+omp_multi_reduce_ordered                                      any OpenMP    OpenMP parallel multi-reduction with result
+                                                              policy        guaranteed to be reproducible.
+cuda/hip_multi_reduce_atomic                                  any CUDA/HIP  Parallel multi-reduction in a CUDA/HIP kernel.
+                                                              policy        Multi-reduction may use atomic operations
+                                                                            leading to run to run variability in the
+                                                                            results.
+                                                                            (device synchronization will occur when
+                                                                            reduction value is finalized)
+cuda/hip_multi_reduce_atomic_low_performance_low_overhead     any CUDA/HIP  Same as above, but multi-reduction uses
+                                                              policy        a low overhead algorithm with a minimal
+                                                                            set of resources. This minimally effects
+                                                                            the performance of loops containing the
+                                                                            multi-reducer though it may cause the
+                                                                            multi-reducer itself to perform poorly if
+                                                                            it is used.
+cuda/hip_multi_reduce_atomic_block_then_atomic_grid_host_init any CUDA/HIP  The multi-reduction uses atomics into shared
+                                                              policy        memory and global memory. Atomics into
+                                                                            shared memory are used each time a value
+                                                                            is combined into the multi-reducer and at
+                                                                            the end of the life of the block the shared
+                                                                            values are combined into global memory with
+                                                                            atomics. If there is not enough shared memory
+                                                                            available this will fall back to using atomics into
+                                                                            global memory only, which may have a
+                                                                            performance penalty.
+                                                                            The memory for global atomics is
+                                                                            initialized on the host.
+cuda/hip_multi_reduce_atomic_global_host_init                 any CUDA/HIP  The multi-reduction uses atomics into global
+                                                              policy        global memory only. Atomics into
+                                                                            global memory are used each time a value
+                                                                            is combined into the multi-reducer.
+                                                                            The memory for global atomics is
+                                                                            initialized on the host.
+cuda/hip_multi_reduce_atomic_global_no_replication_host_init  any CUDA/HIP  Same as above, but uses minimal memory
+                                                                            by not replicating global atomics.
+
+============================================================= ============= ==========================================
+
+.. note:: RAJA multi-reductions used with SIMD execution policies are not
+          guaranteed to generate correct results. So they should not be used
+          for kernels containing multi-reductions.
 
 .. _atomicpolicy-label:
 

@@ -273,7 +273,7 @@ struct CudaStatementExecutor<
 
   using mask_t = Mask;
 
-  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::WARP_SIZE,
+  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::device_constants.WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
 
   static inline RAJA_DEVICE
@@ -332,7 +332,7 @@ struct CudaStatementExecutor<
 
   using mask_t = Mask;
 
-  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::WARP_SIZE,
+  static_assert(mask_t::max_masked_size <= RAJA::policy::cuda::device_constants.WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
 
   static inline RAJA_DEVICE

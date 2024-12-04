@@ -12,8 +12,8 @@
 Continuous Integration (CI) Testing Maintenance Tasks
 *****************************************************
 
-In :ref:`ci-label`, we described RAJA CI workflows. This section describes 
-how to perform common RAJA CI testing maintenance tasks.
+In :ref:`ci-label`, we described RAJA CI testing workflows. This section
+describes how to perform common RAJA CI testing maintenance tasks.
 
 .. _gitlab_ci_tasks-label:
 
@@ -29,12 +29,18 @@ for a project, mirroring a GitHub to GitLab, etc. Please refer to `LC GitLab CI 
 Changing build and test configurations
 --------------------------------------
 
-The build for each test we run is defined by a Spack spec in one of two places,
-depending on whether it is *shared* with other projects or it is specific to 
-RAJA. The details are described in :ref:`gitlab_ci_pipelines-label`.
+The configurations that are tested in RAJA are defined by a Spack spec in one 
+of two places, depending on whether it is *shared* with other projects or
+it is specific to RAJA. The details are described
+in :ref:`gitlab_ci_pipelines-label`. Each spec contains information (compiler
+and version, build variants, etc.) that must be consistent with the 
+build specs defined in the `RADIUSS Spack Configs
+<https://github.com/LLNL/radiuss-spack-configs>`_ project, which also includes
+the RAJA Spack package. The RADIUSS Spack Configs project is included as a
+RAJA submodule in the ``RAJA/scripts`` directory.
 
-Remove a configuration
-^^^^^^^^^^^^^^^^^^^^^^
+Removing a configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To remove a RAJA-specific test configuration, simply delete the entry for it in
 the ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file where it is defined. Here,
@@ -47,20 +53,25 @@ there, remove the job entry, and create a pull request.
 
 .. important:: The RADIUSS Spack Configs project is used by several other
    projects.  When changing a shared configuration file, please make sure the
-   change is OK with those other projects.
+   change is OK with those other projects. Typically, shared configurations
+   are only changed when it makes sense to update compilers for all projects,
+   such as when system default compiler versions change.
 
-Add a configuration
-^^^^^^^^^^^^^^^^^^^
+Adding a configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 To add a RAJA-specific test configuration, add an entry for it to the
 ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file, where ``MACHINE`` is the name of the
 LC platform where it will be run. When adding a test configuration, it is
 important to note two items that must be specified properly:
 
-  * A unique **job label**, which identifies it in the machine configuration
-    file and also on a web page for a GitLab CI pipeline
-  * A build **Spack spec**, which identifies the compiler and version,
-    compiler flags, build options, etc.
+  * Each jobs must have a unique **job label**, which identifies it in the 
+    machine configuration file and also on a web page for a GitLab CI pipeline
+  * The **Spack spec** name identifies the compiler and version,
+    compiler flags, build options, etc. must match an existing spec in
+    the `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-configs>`_
+    project. Also, the build options must be consistent with the variants
+    defined in the RAJA package in that project.
 
 For example, an entry for a build using the clang 12.0.1 compiler with CUDA 
 11.5.0 on the LC lassen machine would be something like this:
@@ -82,7 +93,9 @@ there, add the job entry, and create a pull request.
 
 .. important:: The RADIUSS Spack Configs project is used by several other
    projects. When changing a shared configuration file, please make sure the
-   change is OK with those other projects.
+   change is OK with those other projects. Typically, shared configurations
+   are only changed when it makes sense to update compilers for all projects,
+   such as when system default compiler versions change.
 
 Modifying a configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -90,7 +103,7 @@ Modifying a configuration
 To change an existing configuration, change the relevant information in the
 configuration in the appropriate ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file. Make
 sure to also modify the job label as needed, so it is descriptive of the
-configuration (and remains unique!!).
+configuration is unique with respect to the others that are being run.
 
 To modify a shared configuration, it must be changed in the appropriate
 ``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
@@ -102,12 +115,12 @@ there, modify the job entry, and create a pull request.
    appropriate system type in the `RADIUSS Spack Configs
    <https://github.com/LLNL/radiuss-spack-configs>`_ repo.
 
-   If the desired entry is not there, but exists in a newer version of the RADIUSS
-   Spack Configs project, update the RAJA submodule to use the newer version. If
-   the information does not exist in any version of the RADIUSS Spack Configs
-   project, create a branch there, add the needed spec info, and create a pull
-   request. Then, when that PR is merged, update the RAJA submodule for the
-   RADIUSS Spack Configs project to the new version.
+   If the desired entry is not there, but exists in a newer version of the 
+   RADIUSS Spack Configs project, update the RAJA submodule to use the newer
+   version. If the information does not exist in any version of the RADIUSS
+   Spack Configs project, create a branch there, add the needed spec info,
+   and create a pull request. Then, when that PR is merged, update the RAJA
+   submodule for the RADIUSS Spack Configs project to the new version.
 
 Changing run parameters
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -150,30 +163,151 @@ annotate the job for this. For example:
     allow_failure: true
 
 .. important:: When a shared job needs to be modified for RAJA specifically, we
-   call that "overriding": The job label must be kept the same as in the
-   ``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the `RADIUSS Spack Configs
-   <https://github.com/LLNL/radiuss-spack-confgs>`_, and the RAJA-specific job
-   can be adapted. If you override a shared job, please add a comment to
-   describe the change in the ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file where
-   the job is overridden.
+   call that "overriding". The job label must be kept the same as for the 
+   shared job in the ``gitlab/radiuss-jobs/<MACHINE>.yml`` file in the 
+   `RADIUSS Spack Configs <https://github.com/LLNL/radiuss-spack-confgs>`_,
+   and the RAJA-specific job can be adapted. If you override a shared job,
+   please add a comment to describe the change in the
+   ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file where the job is overridden.
 
-==============
-Azure CI Tasks
-==============
 
-The tasks in this section apply to RAJA Azure Pipelines CI.
+Building the Intel clang + SYCL HIP compiler for use in CI
+----------------------------------------------------------
+
+To run CI tests for the RAJA SYCL back-end on GitLab, we use the corona 
+system and a custom Intel Clang compiler that we build ourselves to support
+SYCL for AMD GPUs. This compiler lives in the ``/usr/workspace/raja-dev/``
+folder so that it can be accessed by the service user account that we use to
+run our GitLab CI. Since the Intel compiler does not
+do releases in the typical sense (they simply update their repo *every night*), 
+it may become necessary to periodically build a new version of the compiler to 
+ensure that we are using the most up-to-date version available. The steps for 
+building, installing, and running are shown here.
+
+Building the Compiler
+^^^^^^^^^^^^^^^^^^^^^
+
+.. important:: Because Intel updates their compiler repo daily, it is possible
+   that the head of the SYCL branch will fail to build. In the event that it
+   does not build, try checking out an earlier commit. On the Intel/LLVM GitHub
+    page, one can see which of their commits builds by checking the status
+    badge next to each commit. Look for a commit that passes. 
+
+#. Load the module of the version of GCC headers that you want to use. For example, we typically use the system default, which on corona is gcc/10.3.1-magic::
+
+    module load gcc/10.3.1-magic
+
+#. Load the module of the version of ROCm that you want to use. For example::
+
+    module load rocm/5.7.1 
+
+#. Clone the SYCL branch of Intel's LLVM compiler::
+
+    git clone https://github.com/intel/llvm -b sycl
+
+#. cd into the LLVM folder:: 
+    
+    cd llvm
+
+   In the event that the head of the sycl branch does not build, run
+   ``git checkout <git sha>`` to checkout a version that does build.
+
+#. Build the compiler. 
+
+   Note that in this example, we are using rocm5.7.1, but one can change the
+   version they wish to use simply by changing the paths in the configure step
+
+   a. Configure
+
+     .. code-block:: bash 
+
+        srun -n1 /usr/bin/python3 buildbot/configure.py --hip -o buildrocm5.7.1 \
+        --cmake-gen "Unix Makefiles" \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_INCLUDE_DIR=/opt/rocm-5.7.1/include \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_LIB_DIR=/opt/rocm-5.7.1/lib \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_LIB_DIR=/opt/rocm-5.7.1/lib \
+        --cmake-opt=-DUR_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
+        --cmake-opt=-DUR_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
+        --cmake-opt=-DUR_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
+        --cmake-opt=-DUR_HIP_LIB_DIR=/opt/rocm-5.7.1/lib
+
+   b. Build
+
+     .. code-block:: bash
+
+      srun -n1 /usr/bin/python3 buildbot/compile.py -o buildrocm5.7.1
+
+#. Test the compiler
+
+   Follow the steps in the `Using the compiler`_ section to test the installation
+
+#. Install
+
+  a. The build step will install the compiler in the folder ``buildrocm<version>/install``. Copy this folder to the ``/usr/workspace/raja-dev/`` directory using the naming scheme ``clang_sycl_<git sha>_hip_gcc<version>_rocm<version>``
+
+  #. Set the permissions of the folder, and everything in it to 750::
+
+      chmod 750 /usr/workspace/raja-dev/<foldername>/ -R  
+
+  #. Change the group of the folder and everything in it to raja-dev::
+
+      chgrp raja-dev /usr/workspace/raja-dev/<foldername>/ -R  
+
+
+Using the compiler
+^^^^^^^^^^^^^^^^^^
+
+#. Load the version of rocm that you used when building the compiler, for example::
+
+    module load rocm/5.7.1
+
+#. Navigate to the root of your local RAJA checkout space::
+
+    cd /path/to/raja
+
+#. Run the test config script::
+
+    ./scripts/lc-builds/corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1
+
+   Note that at the time of writing, the newest compiler we had built was at ``clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1``
+
+#. cd into the generated build directory::
+
+    cd {build directory}
+
+#. Build the code and run the RAJA tests::
+
+    make -j
+    make test
+
+
+============================================
+Azure Pipelines and GitHub Actions CI Tasks
+============================================
+
+The tasks in this section apply to RAJA Azure Pipelines and GitHub Actions
+CI testing that was described in :ref:`azure_ci-label`
 
 Changing Builds/Container Images
 --------------------------------
 
 The builds we run in Azure are defined in the `RAJA/azure-pipelines.yml <https://github.com/LLNL/RAJA/blob/develop/azure-pipelines.yml>`_ file.
+
+The builds we run in GitHub Actions are defined in the `RAJA/.github/workflows/build.yml <https://github.com/LLNL/RAJA/blob/develop/.github/workflows/build.yml>`_ file.
   
 Linux/Docker
 ^^^^^^^^^^^^
 
-To update or add a new compiler / job to Azure CI we need to edit both ``azure-pipelines.yml`` and ``Dockerfile``.
+To update or add a new compiler / job to Azure Pipelines or GitHub Actions CI, 
+we need to edit either the ``RAJA/azure-pipelines.yml`` file or the
+``RAJA/.github/workflows/build.yml`` file and the ``RAJA/Dockerfile``, if
+changes are needed there.
 
-If we want to add a new Azure pipeline to build with ``compilerX``, then in ``azure-pipelines.yml`` we can add the job like so::
+If we want to add a new Azure pipeline to build with ``compilerX``, then in the
+``RAJA/azure-pipelines.yml`` file we can add the job like so::
 
   -job: Docker
     ...
@@ -183,39 +317,71 @@ If we want to add a new Azure pipeline to build with ``compilerX``, then in ``az
         compilerX: 
           docker_target: compilerX
 
-Here, ``compilerX:`` defines the name of a job in Azure. ``docker_target: compilerX`` defines a variable ``docker_target``, which is used to determine what part of the ``Dockerfile`` to run.
+Here, ``compilerX`` defines the name of a job in Azure. ``docker_target: compilerX`` defines a variable ``docker_target``, which is used to determine which 
+entry in the ``Dockerfile`` file to use, where the name after ``docker_target``
+is the shorthand name of job in the ``Dockerfile`` file following the word 
+``AS``.
 
-In the ``Dockerfile`` we will want to add our section that defines the commands for the ``compilerX`` job.::
+Similarly, for GitHub Actions, we add the name of the job to the job list in
+the ``RAJA/.github/workflows/build.yaml`` file::
 
-  FROM ghcr.io/rse-ops/compilerX-ubuntu-20.04:compilerX-XXX AS compilerX
+  jobs:
+  build_docker:
+    strategy:
+      matrix:
+        target: [..., compilerX]
+
+In the ``RAJA/Dockerfile`` file, we add a section that defines the commands for the ``compilerX`` job, such as::
+
+  FROM ghcr.io/llnl/radiuss:compilerX-ubuntu-22.04 AS compilerX
   ENV GTEST_COLOR=1
   COPY . /home/raja/workspace
   WORKDIR /home/raja/workspace/build
   RUN cmake -DCMAKE_CXX_COMPILER=compilerX ... && \
       make -j 6 && \
       ctest -T test --output-on-failure && \
-      cd .. && rm -rf build
+      make clean
 
-Each of our docker builds is built up on a base image maintained by RSE-Ops, a table of available base containers can be found `here <https://rse-ops.github.io/docker-images/>`_. We are also able to add target names to each build with ``AS ...``. This target name correlates to the ``docker_target: ...`` defined in ``azure-pipelines.yml``.
+Each of our docker builds is built up on a base image maintained in the
+`RADIUSS Docker Project <https://github.com/LLNL/radiuss-docker>`_.
 
-The base containers are shared across multiple projects and are regularly rebuilt. If bugs are fixed in the base containers the changes will be automatically propagated to all projects using them in their Docker builds.
+The base container images are shared by multiple projects and are rebuilt
+regularly. If bugs are fixed in the base images, the changes will be
+automatically propagated to all projects using them in their Docker builds.
 
-Check `here <https://rse-ops.github.io/docker-images/>`_ for a list of all currently available RSE-Ops containers. Please see the `RSE-Ops Containers Project <https://github.com/rse-ops/docker-images>`_ on GitHub to get new containers built that aren't yet available.
+Check `RADIUSS Docker Project <https://github.com/LLNL/radiuss-docker>`_ for a
+list of currently available images.
 
 Windows / MacOS
 ^^^^^^^^^^^^^^^
 
-We run our Windows / MacOS builds directly on the Azure virtual machine instances. In order to update the Windows / MacOS instance we can change the ``pool`` under ``-job: Windows`` or ``-job: Mac``::
+We run our Windows and MacOS builds directly on the provided Azure machine 
+instances. To change the versions, change the ``pool`` under ``-job: Windows``
+or ``-job: Mac`` in the ``RAJA/azure-pipelines.yml`` file::
   
   -job: Windows
     ...
     pool:
       vmImage: 'windows-2019'
     ...
+
   -job: Mac
     ...
     pool:
       vmImage: 'macOS-latest'
+
+Similarly, in GitHub Actions, we run our Windows and MacOS builds directly on
+the provided machine instances. To change the versions, change the
+appropriate lines in the ``RAJA/.github/workflows/build.yml`` file::
+
+  build_mac:
+    runs-on: macos-latest
+  ...
+
+  build_windows:
+    runs-on: windows-latest
+  ...
+   
 
 Changing Build/Run Parameters
 -----------------------------
@@ -223,38 +389,28 @@ Changing Build/Run Parameters
 Linux/Docker
 ^^^^^^^^^^^^
 
-We can edit the build and run configurations of each docker build, in the ``RUN`` command. Such as adding CMake options or changing the parallel build value of ``make -j N`` for adjusting throughput.
+We can edit the build and run configurations of each Docker build, by editing 
+the appropriate line containing the ``RUN`` command in the ``RAJA/Dockerfile``
+file. For example, we can change CMake options or change the parallel build
+value of ``make -j N`` for adjusting throughput.
 
-Each base image is built using `spack <https://github.com/spack/spack>`_. For the most part the container environments are set up to run our CMake and build commands out of the box. However, there are a few exceptions where we need to ``spack load`` specific modules into the path.
+Each base image is built using `spack <https://github.com/spack/spack>`_.
+For the most part the container environments are set up to run our CMake and
+build commands out of the box. However, there are a few exceptions where we
+may need to load compiler specific environment variables, such as for
+the Intel LLVM compiler. For example, this may appear as::
 
-  * **Clang** requires us to load LLVM for OpenMP runtime libraries.::
+  RUN /bin/bash -c "source /opt/intel/oneapi/setvars.sh 2>&1 > /dev/null && \
+    cmake ..."
 
-      . /opt/spack/share/spack/setup-env.sh && spack load llvm
-
-    **CUDA** for the cuda runtime.::
-
-      . /opt/spack/share/spack/setup-env.sh && spack load cuda
-
-    **HIP** for the hip runtime and llvm-amdgpu runtime libraries.::
-
-      . /opt/spack/share/spack/setup-env.sh && spack load hip llvm-amdgpu
-
-    **SYCL** requires us to run setupvars.sh::
-
-      source /opt/view/setvars.sh 
+In these cases, it is important to include the double quotes in the correct
+locations.
 
 Windows / MacOS
 ^^^^^^^^^^^^^^^
 
-Windows and MacOS build / run parameters can be configured directly in ``azure-pipelines.yml``. CMake options can be configured with ``CMAKE_EXTRA_FLAGS`` for each job. The ``-j`` value can also be edited directly in the Azure ``script`` definitions for each job.
-
-The commands executed to configure, build, and test RAJA for each 
-pipeline in Azure are located in the `RAJA/Dockerfile <https://github.com/LLNL/RAJA/blob/develop/Dockerfile>`_ file. 
-Each pipeline section begins with a line that ends with ``AS ...`` 
-where the ellipses in the name of a build-test pipeline. The name label
-matches an entry in the Docker test matrix in the 
-``RAJA/azure-pipelines.yml`` file mentioned above.
-
+Windows and MacOS build / run parameters can be configured directly in the
+``RAJA/azure-pipelines.yml`` or ``RAJA/.github/workflows/build.yml`` file. CMake options can be configured with ``CMAKE_EXTRA_FLAGS`` for each job. The ``-j`` value can also be edited directly in these files for each job.
 
 .. _rajaperf_ci_tasks-label:
 
@@ -287,6 +443,6 @@ the `RAJAPerf/.uberenv_config.json
 which point at the relevant RAJA submodule locations. That is the paths contain
 ``tpl/RAJA/...``.
 
-Apart from this minor difference, all CI maintenance and development tasks for
+Apart from these minor differences, all CI maintenance and development tasks for
 the RAJA Performance Suite follow the same pattern that is described in 
 :ref:`ci_tasks-label`.

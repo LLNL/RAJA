@@ -28,7 +28,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.20.2
+module load cmake/3.23.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -36,6 +36,7 @@ cmake \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/blueos/gcc_X.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

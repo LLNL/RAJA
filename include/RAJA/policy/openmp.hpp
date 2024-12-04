@@ -37,6 +37,7 @@
 #include "RAJA/policy/openmp/kernel.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/openmp/reduce.hpp"
+#include "RAJA/policy/openmp/multi_reduce.hpp"
 #include "RAJA/policy/openmp/region.hpp"
 #include "RAJA/policy/openmp/scan.hpp"
 #include "RAJA/policy/openmp/sort.hpp"
