@@ -324,8 +324,9 @@ struct DeviceConstants
 // values for HIP warp size and max block size.
 //
 #if defined(__HIP_PLATFORM_AMD__)
-constexpr DeviceConstants device_constants(64, 1024, 64); // MI300A
-// constexpr DeviceConstants device_constants(64, 1024, 128); // MI250X
+constexpr DeviceConstants device_constants(RAJA_HIP_WAVESIZE, 1024, 64); // MI300A
+// constexpr DeviceConstants device_constants(RAJA_HIP_WAVESIZE, 1024, 128); // MI250X
+
 #elif defined(__HIP_PLATFORM_NVIDIA__)
 constexpr DeviceConstants device_constants(32, 1024, 32); // V100
 #endif
