@@ -13,7 +13,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *   Time-Domain Finite Difference 
+ *   Time-Domain Finite Difference
  *   Acoustic Wave Equation Solver
  *
  * ------[Details]----------------------
@@ -26,7 +26,7 @@
  * The scheme uses a second order central difference discretization
  * for time and a fourth order central difference discretization for space.
  * Periodic boundary conditions are assumed on the grid [-1,1] x [-1, 1].
- * 
+ *
  * NOTE: The x and y dimensions are discretized identically.
  * ----[RAJA Concepts]-------------------
  * - RAJA kernels are portable and a single implemenation can run
@@ -34,7 +34,7 @@
  *
  * RAJA MaxReduction - RAJA's implementation for computing a maximum value
  *    (MinReduction computes the min)
-*/
+ */
 
 //
 //  ---[Constant Values]-------
@@ -42,7 +42,7 @@
 //  PI - Value of pi
 //
 
-const int sr = 2;
+const int sr    = 2;
 const double PI = 3.14159265359;
 
 //
@@ -51,7 +51,8 @@ const double PI = 3.14159265359;
 //  h - Spacing between grid points
 //  n - Number of grid points
 //
-struct grid_s {
+struct grid_s
+{
   double ox, dx;
   int nx;
 };
@@ -66,16 +67,17 @@ struct grid_s {
 //
 
 template <typename T, typename fdNestedPolicy>
-void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx);
+void wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx);
 double waveSol(double t, double x, double y);
-void setIC(double *P1, double *P2, double t0, double t1, grid_s grid);
-void computeErr(double *P, double tf, grid_s grid);
+void setIC(double* P1, double* P2, double t0, double t1, grid_s grid);
+void computeErr(double* P, double tf, grid_s grid);
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout<<"Time-Domain Finite Difference Acoustic Wave Equation Solver"<<std::endl;
-         
+  std::cout << "Time-Domain Finite Difference Acoustic Wave Equation Solver"
+            << std::endl;
+
   //
   // Wave speed squared
   //
@@ -97,14 +99,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
   //
-  //Solution is propagated until time T
+  // Solution is propagated until time T
   //
   double T = 0.82;
 
 
   int entries = grid.nx * grid.nx;
-  double *P1 = memoryManager::allocate<double>(entries);
-  double *P2 = memoryManager::allocate<double>(entries);
+  double* P1  = memoryManager::allocate<double>(entries);
+  double* P2  = memoryManager::allocate<double>(entries);
 
   //
   //----[Time stepping parameters]----
@@ -123,17 +125,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //
 
   // Sequential policy
+  // clang-format off
   using fdPolicy = RAJA::KernelPolicy<
     RAJA::statement::For<1, RAJA::seq_exec,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+  // clang-format on
   // OpenMP policy
+  // clang-format off
   //using fdPolicy = RAJA::KernelPolicy<
   //RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
   //  RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
+  // clang-format on
   // CUDA policy
-  //using fdPolicy =
+  // using fdPolicy =
+  // clang-format off
   //RAJA::KernelPolicy<
   //  RAJA::statement::CudaKernel<
   //      RAJA::statement::Tile<1, RAJA::tile_fixed<16>, RAJA::cuda_block_y_direct,
@@ -148,18 +155,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //    >
   //  >;
 
+  // clang-format on
 
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
-  for (int k = 0; k < nt; ++k) {
+  for (int k = 0; k < nt; ++k)
+  {
 
     wave<double, fdPolicy>(P1, P2, fdBounds, ct, grid.nx);
 
     time += dt;
 
-    double *Temp = P2;
-    P2 = P1;
-    P1 = Temp;
+    double* Temp = P2;
+    P2           = P1;
+    P1           = Temp;
   }
 #if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
@@ -185,29 +194,32 @@ double waveSol(double t, double x, double y)
 //
 //  Error is computed via ||P_{approx}(:) - P_{analytic}(:)||_{inf}
 //
-void computeErr(double *P, double tf, grid_s grid)
+void computeErr(double* P, double tf, grid_s grid)
 {
 
   RAJA::RangeSegment fdBounds(0, grid.nx);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
+  // clang-format off
   using initialPolicy = RAJA::KernelPolicy<
   RAJA::statement::For<1, RAJA::seq_exec ,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0> > > >;
 
-  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
-                       [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
+  // clang-format on
+  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
+                              [=](RAJA::Index_type tx, RAJA::Index_type ty)
+                              {
+                                int id   = tx + grid.nx * ty;
+                                double x = grid.ox + tx * grid.dx;
+                                double y = grid.ox + ty * grid.dx;
+                                double myErr =
+                                    std::abs(P[id] - waveSol(tf, x, y));
 
-      int id = tx + grid.nx * ty;
-      double x = grid.ox + tx * grid.dx;
-      double y = grid.ox + ty * grid.dx;
-      double myErr = std::abs(P[id] - waveSol(tf, x, y));
-
-      //
-      // tMax.max() is used to store the maximum value
-      //
-      tMax.max(myErr);
-    });
+                                //
+                                // tMax.max() is used to store the maximum value
+                                //
+                                tMax.max(myErr);
+                              });
 
   double lInfErr = tMax;
   printf("Max Error = %lg, dx = %f \n", lInfErr, grid.dx);
@@ -217,29 +229,31 @@ void computeErr(double *P, double tf, grid_s grid)
 //
 // Function to set intial condition
 //
-void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
+void setIC(double* P1, double* P2, double t0, double t1, grid_s grid)
 {
 
   RAJA::RangeSegment fdBounds(0, grid.nx);
 
+  // clang-format off
   using initialPolicy = RAJA::KernelPolicy<
   RAJA::statement::For<1, RAJA::seq_exec,
     RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>> > >;
-  
-  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds,fdBounds),
-                       [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
-                         
-      int id = tx + ty * grid.nx;
-      double x = grid.ox + tx * grid.dx;
-      double y = grid.ox + ty * grid.dx;
-      
-      P1[id] = waveSol(t0, x, y);
-      P2[id] = waveSol(t1, x, y);
-    });
+
+  // clang-format on
+  RAJA::kernel<initialPolicy>(RAJA::make_tuple(fdBounds, fdBounds),
+                              [=](RAJA::Index_type tx, RAJA::Index_type ty)
+                              {
+                                int id   = tx + ty * grid.nx;
+                                double x = grid.ox + tx * grid.dx;
+                                double y = grid.ox + ty * grid.dx;
+
+                                P1[id] = waveSol(t0, x, y);
+                                P2[id] = waveSol(t1, x, y);
+                              });
 }
 
 
-
+// clang-format off
 template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {

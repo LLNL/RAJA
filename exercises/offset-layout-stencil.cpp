@@ -16,21 +16,21 @@
 /*
  *  Offset Layout Stencil Exercise
  *
- *  This exercise applies a five-point stencil to the interior cells of a 
+ *  This exercise applies a five-point stencil to the interior cells of a
  *  lattice and stores the resulting sums in a second lattice of equal size.
- *  You can think of the lattice as representing the centers of cells on a 
- *  two-dimensional Cartesian mesh. 
+ *  You can think of the lattice as representing the centers of cells on a
+ *  two-dimensional Cartesian mesh.
  *
- *  The five-point stencil accumulates values of a cell and its four neighbors. 
- *  Assuming the cells of a lattice may be accessed through a row/col fashion, 
+ *  The five-point stencil accumulates values of a cell and its four neighbors.
+ *  Assuming the cells of a lattice may be accessed through a row/col fashion,
  *  the stencil may be expressed as the following sum:
- * 
+ *
  *  output(row, col) = input(row, col) +
  *                     input(row - 1, col) + input(row + 1, col) +
  *                     input(row, col - 1) + input(row, col + 1)
  *
  *  We assume a lattice has N_r x N_c interior nodes and a padded edge of zeros
- *  for a lattice of size (N_r + 2) x (N_c + 2).  
+ *  for a lattice of size (N_r + 2) x (N_c + 2).
  *
  *  In the case of N_r = N_c = 3, the input lattice values are:
  *
@@ -60,8 +60,8 @@
  *  | 0 | 0 | 0 | 0 | 0 |
  *  ---------------------
  *
- * In this exercise, we use RAJA::OffsetLayout and RAJA::View objects to 
- * simplify the indexing to perform the stencil calculation. For the 
+ * In this exercise, we use RAJA::OffsetLayout and RAJA::View objects to
+ * simplify the indexing to perform the stencil calculation. For the
  * purposes of discussion, we enumerate the lattice in the following manner:
  *
  *  --------------------------------------------------
@@ -81,12 +81,12 @@
  *
  *  RAJA features shown:
  *    - RAJA::kernel kernel execution method and execution policies
- *    - RAJA::View 
+ *    - RAJA::View
  *    - RAJA::Layout
  *
  * For the CUDA implementation, we use unified memory to hold the lattice data.
  * For HIP, we use explicit host-device memory and manually copy data between
- * the two. 
+ * the two.
  */
 
 /*
@@ -111,101 +111,105 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n\nFive-point stencil example...\n";
 
-// _stencil_define_start
-//
-// Define num of interior cells in row/cols in a lattice
-//
+  // _stencil_define_start
+  //
+  // Define num of interior cells in row/cols in a lattice
+  //
   constexpr int N_r = 5;
   constexpr int N_c = 4;
 
-//
-// Define total num of cells in rows/cols in a lattice
-//
+  //
+  // Define total num of cells in rows/cols in a lattice
+  //
   constexpr int totCellsInRow = N_r + 2;
   constexpr int totCellsInCol = N_c + 2;
 
-//
-// Define total num of cells in a lattice
-//
+  //
+  // Define total num of cells in a lattice
+  //
   constexpr int totCells = totCellsInRow * totCellsInCol;
-// _stencil_define_end
+  // _stencil_define_end
 
-//
-// Allocate and initialize lattice
-//
-  int* input = memoryManager::allocate<int>(totCells * sizeof(int));
-  int* output = memoryManager::allocate<int>(totCells * sizeof(int));
+  //
+  // Allocate and initialize lattice
+  //
+  int* input      = memoryManager::allocate<int>(totCells * sizeof(int));
+  int* output     = memoryManager::allocate<int>(totCells * sizeof(int));
   int* output_ref = memoryManager::allocate<int>(totCells * sizeof(int));
 
   std::memset(input, 0, totCells * sizeof(int));
   std::memset(output, 0, totCells * sizeof(int));
   std::memset(output_ref, 0, totCells * sizeof(int));
 
-//
-// C-Style intialization
-//
-// _stencil_input_init_start
-  for (int row = 1; row <= N_r; ++row) {
-    for (int col = 1; col <= N_c; ++col) {
-      int id = col + totCellsInCol * row;
+  //
+  // C-Style intialization
+  //
+  // _stencil_input_init_start
+  for (int row = 1; row <= N_r; ++row)
+  {
+    for (int col = 1; col <= N_c; ++col)
+    {
+      int id    = col + totCellsInCol * row;
       input[id] = 1;
     }
   }
-// _stencil_input_init_end
+  // _stencil_input_init_end
 
-  std::cout << "\ninput lattice:\n"; 
+  std::cout << "\ninput lattice:\n";
   printLattice(input, totCellsInRow, totCellsInCol);
 
-//
-// Generate reference solution
-//
-// _stencil_output_ref_start
-  for (int row = 1; row <= N_r; ++row) {
-    for (int col = 1; col <= N_c; ++col) {
+  //
+  // Generate reference solution
+  //
+  // _stencil_output_ref_start
+  for (int row = 1; row <= N_r; ++row)
+  {
+    for (int col = 1; col <= N_c; ++col)
+    {
 
-      int id = col + totCellsInCol * row;
-      output_ref[id] = input[id] + input[id + 1]
-                        + input[id - 1]
-                        + input[id + totCellsInCol]
-                        + input[id - totCellsInCol];
+      int id         = col + totCellsInCol * row;
+      output_ref[id] = input[id] + input[id + 1] + input[id - 1] +
+                       input[id + totCellsInCol] + input[id - totCellsInCol];
     }
   }
-// _stencil_output_ref_end
+  // _stencil_output_ref_end
 
-  std::cout << "\noutput reference lattice:\n"; 
+  std::cout << "\noutput reference lattice:\n";
   printLattice(output_ref, totCellsInRow, totCellsInCol);
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
-//
-// The following code illustrates pairing an offset layout and a RAJA view
-// object to simplify multidimensional indexing.
-// An offset layout is constructed by using the make_offset_layout method.
-// The first argument of the layout is an array object with the coordinates of
-// the bottom left corner of the lattice, and the second argument is an array
-// object of the coordinates of the top right corner plus 1.
-// The example uses double braces to initiate the array object and its
-// subobjects.
-//
+  //
+  // The following code illustrates pairing an offset layout and a RAJA view
+  // object to simplify multidimensional indexing.
+  // An offset layout is constructed by using the make_offset_layout method.
+  // The first argument of the layout is an array object with the coordinates of
+  // the bottom left corner of the lattice, and the second argument is an array
+  // object of the coordinates of the top right corner plus 1.
+  // The example uses double braces to initiate the array object and its
+  // subobjects.
+  //
   // _offsetlayout_views_start
   const int DIM = 2;
 
+  // clang-format off
   RAJA::OffsetLayout<DIM, int> layout =
       RAJA::make_offset_layout<DIM, int>({{-1, -1}}, {{N_r+1, N_c+1}});
 
+  // clang-format on
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> inputView(input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> outputView(output, layout);
   // _offsetlayout_views_end
 
-//
-// Create range segments used in kernels
-//
+  //
+  // Create range segments used in kernels
+  //
   // _offsetlayout_ranges_start
   RAJA::TypedRangeSegment<int> col_range(0, N_c);
   RAJA::TypedRangeSegment<int> row_range(0, N_r);
   // _offsetlayout_ranges_end
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
   std::cout << "\n Running five-point stencil (RAJA-Kernel sequential)...\n";
 
@@ -213,32 +217,33 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajaseq_start
   using NESTED_EXEC_POL1 =
+      // clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::For<1, RAJA::seq_exec,    // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0>
         >
       >  
-    >;  
+    >;
 
+  // clang-format on
   RAJA::kernel<NESTED_EXEC_POL1>(RAJA::make_tuple(col_range, row_range),
-                                 [=](int col, int row) {
-
+                                 [=](int col, int row)
+                                 {
                                    outputView(row, col) =
-                                       inputView(row, col)
-                                       + inputView(row - 1, col)
-                                       + inputView(row + 1, col)
-                                       + inputView(row, col - 1)
-                                       + inputView(row, col + 1);
-
+                                       inputView(row, col) +
+                                       inputView(row - 1, col) +
+                                       inputView(row + 1, col) +
+                                       inputView(row, col - 1) +
+                                       inputView(row, col + 1);
                                  });
   // _offsetlayout_rajaseq_end
 
-  std::cout << "\noutput lattice:\n"; 
+  std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -256,12 +261,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///           earlier tutorial section.
   ///
 
-  std::cout << "\noutput lattice:\n"; 
+  std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -271,6 +276,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // _offsetlayout_rajacuda_start
   using NESTED_EXEC_POL3 =
+      // clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
         RAJA::statement::For<1, RAJA::cuda_block_x_loop, //row
@@ -279,27 +285,27 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
           >
         >
       >
-    >;                                                     
+    >;
 
+  // clang-format on
   RAJA::kernel<NESTED_EXEC_POL3>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row) {
-
+                                 [=] RAJA_DEVICE(int col, int row)
+                                 {
                                    outputView(row, col) =
-                                       inputView(row, col)
-                                       + inputView(row - 1, col)
-                                       + inputView(row + 1, col)
-                                       + inputView(row, col - 1)
-                                       + inputView(row, col + 1);
-
+                                       inputView(row, col) +
+                                       inputView(row - 1, col) +
+                                       inputView(row + 1, col) +
+                                       inputView(row, col - 1) +
+                                       inputView(row, col + 1);
                                  });
   // _offsetlayout_rajacuda_end
 
-  std::cout << "\noutput lattice:\n"; 
+  std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
 
@@ -309,13 +315,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* d_input  = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
   int* d_output = memoryManager::allocate_gpu<int>(totCells * sizeof(int));
 
-  hipErrchk(hipMemcpy( d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice ));
+  hipErrchk(
+      hipMemcpy(d_input, input, totCells * sizeof(int), hipMemcpyHostToDevice));
 
-  RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_inputView (d_input, layout);
+  RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_inputView(d_input, layout);
   RAJA::View<int, RAJA::OffsetLayout<DIM, int>> d_outputView(d_output, layout);
 
   // _offsetlayout_rajahip_start
   using NESTED_EXEC_POL4 =
+      // clang-format off
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
         RAJA::statement::For<1, RAJA::hip_block_x_loop, //row
@@ -326,21 +334,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       >
     >;
 
+  // clang-format on
   RAJA::kernel<NESTED_EXEC_POL4>(RAJA::make_tuple(col_range, row_range),
-                                 [=] RAJA_DEVICE(int col, int row) {
-
+                                 [=] RAJA_DEVICE(int col, int row)
+                                 {
                                    d_outputView(row, col) =
-                                         d_inputView(row, col)
-                                       + d_inputView(row - 1, col)
-                                       + d_inputView(row + 1, col)
-                                       + d_inputView(row, col - 1)
-                                       + d_inputView(row, col + 1);
+                                       d_inputView(row, col) +
+                                       d_inputView(row - 1, col) +
+                                       d_inputView(row + 1, col) +
+                                       d_inputView(row, col - 1) +
+                                       d_inputView(row, col + 1);
                                  });
   // _offsetlayout_rajahip_end
 
-  hipErrchk(hipMemcpy( output, d_output, totCells * sizeof(int), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy(output, d_output, totCells * sizeof(int),
+                      hipMemcpyDeviceToHost));
 
-  std::cout << "\noutput lattice:\n"; 
+  std::cout << "\noutput lattice:\n";
   printLattice(output, totCellsInRow, totCellsInCol);
   checkResult(output, output_ref, totCells);
 
@@ -348,11 +358,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   memoryManager::deallocate_gpu(d_output);
 #endif
 
-//----------------------------------------------------------------------------//
+  //----------------------------------------------------------------------------//
 
-//
-// Clean up.
-//
+  //
+  // Clean up.
+  //
   memoryManager::deallocate(input);
   memoryManager::deallocate(output);
   memoryManager::deallocate(output_ref);
@@ -367,8 +377,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 void printLattice(int* lattice, int totCellsInRow, int totCellsInCol)
 {
   std::cout << std::endl;
-  for (int row = 0; row < totCellsInRow; ++row) {
-    for (int col = 0; col < totCellsInCol; ++col) {
+  for (int row = 0; row < totCellsInRow; ++row)
+  {
+    for (int col = 0; col < totCellsInCol; ++col)
+    {
 
       const int id = col + totCellsInCol * row;
       std::cout << lattice[id] << " ";
@@ -386,14 +398,18 @@ void checkResult(int* compLattice, int* refLattice, int totCells)
   bool correct = true;
 
   int i = 0;
-  while ( correct && (i < totCells) ) {
+  while (correct && (i < totCells))
+  {
     correct = (compLattice[i] == refLattice[i]);
     i++;
   }
 
-  if ( correct ) {
+  if (correct)
+  {
     std::cout << "\n\t result -- PASS\n";
-  } else {
+  }
+  else
+  {
     std::cout << "\n\t result -- FAIL\n";
   }
 }
