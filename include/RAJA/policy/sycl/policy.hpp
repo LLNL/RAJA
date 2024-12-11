@@ -39,7 +39,7 @@ struct uint3 {
   unsigned long x, y, z;
 };
 
-using sycl_dim_t = cl::sycl::range<1>;
+using sycl_dim_t = ::sycl::range<1>;
 
 using sycl_dim_3_t = uint3;
 

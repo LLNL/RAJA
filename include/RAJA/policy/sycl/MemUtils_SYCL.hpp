@@ -50,7 +50,7 @@ namespace detail
 struct syclInfo {
   sycl_dim_t gridDim{0};
   sycl_dim_t blockDim{0};
-  cl::sycl::queue qu = cl::sycl::queue();
+  ::sycl::queue qu = ::sycl::queue();
   bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   syclInfo* thread_states = nullptr;
@@ -62,7 +62,7 @@ extern syclInfo g_status;
 
 extern syclInfo tl_status;
 
-extern std::unordered_map<cl::sycl::queue, bool> g_queue_info_map;
+extern std::unordered_map<::sycl::queue, bool> g_queue_info_map;
 
 }  // namespace detail
 
