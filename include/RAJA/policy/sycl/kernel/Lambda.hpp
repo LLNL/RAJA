@@ -46,7 +46,7 @@ template <typename Data, camp::idx_t LambdaIndex, typename... Args, typename Typ
 struct SyclStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>, Types> {
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Only execute the lambda if it hasn't been masked off
     if(thread_active){

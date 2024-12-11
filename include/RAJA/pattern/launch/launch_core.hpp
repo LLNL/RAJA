@@ -162,7 +162,7 @@ public:
   void *shared_mem_ptr;
 
 #if defined(RAJA_ENABLE_SYCL)
-  mutable cl::sycl::nd_item<3> *itm;
+  mutable ::sycl::nd_item<3> *itm;
 #endif
 
   RAJA_HOST_DEVICE LaunchContext()
