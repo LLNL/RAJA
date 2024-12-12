@@ -193,6 +193,42 @@ likely the develop branch.
                **username/feature/<name-of-feature>** for a new feature, 
                **username/bugfix/<issue-fixed>** for a bugfix, etc.
 
+-----------------------------------
+Style
+-----------------------------------
+RAJA enforces style within the src and include directories using clang-format,
+major version 14.  Formatting will be enforced on pull requests through CI, and it
+is up to the contributor to guarantee that their code is in compliance with the
+clang-format settings specified within .clang-format.  To make this easy,
+RAJA has provided two options for applying clang-format:
+
+
+
+#. The CMake build target `style`
+    *  If a clang-format executable with major version 14 is available in the PATH
+       when running CMake, RAJA's build system should find that executable and set 
+       CLANGFORMAT_EXECUTABLE to that executable's path.  
+    *  If an invalid version exists in the PATH, or no clang-format version is 
+       specified in the path, the CLANGFORMAT_EXECUTABLE variable must be set by the 
+       user in order to properly configure the make `style` target.  This can be done by 
+       passing `-DCLANGFORMAT_EXECUTABLE=<path to clang-format 14>` to `cmake` during 
+       build configuration.
+    *  If an invalid version of `clang-format` is supplied, the following error will be 
+       emitted at build config time:
+       ``  blt_add_clangformat_target: clang-format '14'' is required, found <incorrect version>.``
+       ``    Disabling 'style' build target.``  
+    *  If no `CLANGFORMAT_EXECUTABLE` is supplied, `cmake` will print the warning 
+       ``Failed to locate CMakeFormat executable``.
+        
+#. Git hooks
+    * Run `scripts/setup-hooks.sh`.  This script will install a `pre-commit` git hook 
+      script that applies clang-format to any changes staged with git.  If a clang-format
+      executable with major version 14 is available in the PATH, this executable will be used.
+      If not, the user must set the environment variable `RAJA_CLANG_FORMAT` to a valid 
+      clang-format executable.  If the script cannot find a valid clang-format installation
+      from either the PATH or from the environment variable `RAJA_CLANG_FORMAT`, the 
+      script will print a warning and exit, allowing the commit to continue.
+
 .. _prfromfork-label:
 
 ===========================================================
