@@ -63,13 +63,13 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       RAJA_FT_BEGIN;
 
-      q->submit([&](cl::sycl::handler& h) {
+      q->submit([&](::sycl::handler& h) {
 
         auto s_vec = ::sycl::local_accessor<char, 1> (params.shared_mem_size, h);
 
         h.parallel_for
-          (cl::sycl::nd_range<3>(gridSize, blockSize),
-           [=] (cl::sycl::nd_item<3> itm) {
+          (::sycl::nd_range<3>(gridSize, blockSize),
+           [=] (::sycl::nd_item<3> itm) {
 
             LaunchContext ctx;
             ctx.itm = &itm;
@@ -136,14 +136,14 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
       auto reduction = ::sycl::reduction(res, launch_reducers, combiner);
 
-      q->submit([&](cl::sycl::handler& h) {
+      q->submit([&](::sycl::handler& h) {
 
        auto s_vec = ::sycl::local_accessor<char, 1> (launch_params.shared_mem_size, h);
 
         h.parallel_for
-          (cl::sycl::nd_range<3>(gridSize, blockSize),
+          (::sycl::nd_range<3>(gridSize, blockSize),
            reduction,
-           [=] (cl::sycl::nd_item<3> itm, auto & red) {
+           [=] (::sycl::nd_item<3> itm, auto & red) {
 
             LaunchContext ctx;
             ctx.itm = &itm;
@@ -211,16 +211,16 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       //
       using LOOP_BODY = camp::decay<BODY_IN>;
       LOOP_BODY* lbody;
-      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+      lbody = (LOOP_BODY*) ::sycl::malloc_device(sizeof(LOOP_BODY), *q);
       q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
 
-      q->submit([&](cl::sycl::handler& h) {
+      q->submit([&](::sycl::handler& h) {
 
         auto s_vec = ::sycl::local_accessor<char, 1> (params.shared_mem_size, h);
 
         h.parallel_for
-          (cl::sycl::nd_range<3>(gridSize, blockSize),
-           [=] (cl::sycl::nd_item<3> itm) {
+          (::sycl::nd_range<3>(gridSize, blockSize),
+           [=] (::sycl::nd_item<3> itm) {
 
             LaunchContext ctx;
             ctx.itm = &itm;
@@ -234,7 +234,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       }).wait(); // Need to wait for completion to free memory
 
-      cl::sycl::free(lbody, *q);
+      ::sycl::free(lbody, *q);
 
       RAJA_FT_END;
 
@@ -290,21 +290,21 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
       //
       using LOOP_BODY = camp::decay<BODY_IN>;
       LOOP_BODY* lbody;
-      lbody = (LOOP_BODY*) cl::sycl::malloc_device(sizeof(LOOP_BODY), *q);
+      lbody = (LOOP_BODY*) ::sycl::malloc_device(sizeof(LOOP_BODY), *q);
       q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
 
       ReduceParams* res = ::sycl::malloc_shared<ReduceParams>(1,*q);
       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
       auto reduction = ::sycl::reduction(res, launch_reducers, combiner);
 
-      q->submit([&](cl::sycl::handler& h) {
+      q->submit([&](::sycl::handler& h) {
 
        auto s_vec = ::sycl::local_accessor<char, 1> (launch_params.shared_mem_size, h);
 
         h.parallel_for
-          (cl::sycl::nd_range<3>(gridSize, blockSize),
+          (::sycl::nd_range<3>(gridSize, blockSize),
            reduction,
-           [=] (cl::sycl::nd_item<3> itm, auto & red) {
+           [=] (::sycl::nd_item<3> itm, auto & red) {
 
             LaunchContext ctx;
             ctx.itm = &itm;
@@ -325,7 +325,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>> {
 
       RAJA::expt::ParamMultiplexer::combine<EXEC_POL>( launch_reducers, *res );
       ::sycl::free(res, *q);
-      cl::sycl::free(lbody, *q);
+      ::sycl::free(lbody, *q);
 
       RAJA_FT_END;
     }
