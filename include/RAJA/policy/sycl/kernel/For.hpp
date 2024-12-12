@@ -59,7 +59,7 @@ struct SyclStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_global_id(Dim);
@@ -124,7 +124,7 @@ struct SyclStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_group(Dim);
@@ -187,7 +187,7 @@ struct SyclStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i0 = item.get_group(Dim);
@@ -253,7 +253,7 @@ struct SyclStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_local_id(Dim);
@@ -317,7 +317,7 @@ struct SyclStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i0 = item.get_local_id(Dim);
@@ -393,7 +393,7 @@ struct SyclStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item)
+  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_global_id(0);
@@ -454,7 +454,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
 
     using idx_type = camp::decay<decltype(camp::get<ArgumentId>(data.offset_tuple))>;

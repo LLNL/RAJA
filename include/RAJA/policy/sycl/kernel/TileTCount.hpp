@@ -70,7 +70,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active){
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active){
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 
@@ -141,7 +141,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -214,7 +214,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -289,7 +289,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -363,7 +363,7 @@ struct SyclStatementExecutor<
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
