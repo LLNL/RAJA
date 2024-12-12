@@ -206,8 +206,8 @@ resources::EventProxy<resources::Sycl> forall_impl(resources::Sycl &sycl_res,
     }).wait(); // Need to wait for completion to free memory
 
     // Free our device memory
-    cl::sycl::free(lbody, *q);
-    cl::sycl::free(beg, *q);
+    ::sycl::free(lbody, *q);
+    ::sycl::free(beg, *q);
 
     RAJA_FT_END;
   }

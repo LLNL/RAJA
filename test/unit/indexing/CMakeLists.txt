@@ -25,5 +25,5 @@ foreach( INDEXING_BACKEND ${INDEXING_BACKENDS} )
                  SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-indexing-global-${INDEXING_BACKEND}.cpp )
 
   target_include_directories(test-indexing-global-${INDEXING_BACKEND}.exe
-                               PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()

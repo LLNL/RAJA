@@ -51,7 +51,7 @@ struct SyclStatementExecutor<Data,
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     if (Conditional::eval(data)) {
 

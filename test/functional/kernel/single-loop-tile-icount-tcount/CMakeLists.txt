@@ -16,20 +16,27 @@ set(TILESIZES 8 32)
 # 
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
+
+##
+## Disable OpenMP Target tests, which cause front-end crash in LLVM based compilers
+##
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)   
+    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
+  endif() 
+endif()
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
-  # using omp target crashes the compiler with this one 
-  if( NOT ((BACKEND STREQUAL "OpenMPTarget")) )
-    foreach( TESTTYPE ${TESTTYPES} )
-      foreach( TILESIZE ${TILESIZES} )
-        configure_file( test-kernel-single-loop-tile-count.cpp.in
-                        test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
-        raja_add_test( NAME test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}
-                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
-        target_include_directories(test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.exe
-                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-      endforeach()
+  foreach( TESTTYPE ${TESTTYPES} )
+    foreach( TILESIZE ${TILESIZES} )
+      configure_file( test-kernel-single-loop-tile-count.cpp.in
+                      test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
+      raja_add_test( NAME test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}
+                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
+      target_include_directories(test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.exe
+                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
-  endif()
+  endforeach()
 endforeach()
 
 unset( TILESIZES )

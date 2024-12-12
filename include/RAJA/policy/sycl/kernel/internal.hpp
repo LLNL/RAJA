@@ -86,7 +86,7 @@ struct LaunchDims {
     return result;
   }
 
-  cl::sycl::nd_range<3> fit_nd_range(::sycl::queue* q) {
+  ::sycl::nd_range<3> fit_nd_range(::sycl::queue* q) {
 
     sycl_dim_3_t launch_global;
 
@@ -95,9 +95,9 @@ struct LaunchDims {
     launch_local.y = std::max(launch_local.y, local.y);
     launch_local.z = std::max(launch_local.z, local.z);
 
-    cl::sycl::device dev = q->get_device();
+    ::sycl::device dev = q->get_device();
 
-    auto max_work_group_size = dev.get_info< ::cl::sycl::info::device::max_work_group_size>();
+    auto max_work_group_size = dev.get_info< ::sycl::info::device::max_work_group_size>();
 
     if(launch_local.x > max_work_group_size) {
       launch_local.x = max_work_group_size;
@@ -160,10 +160,10 @@ struct LaunchDims {
       launch_global.z = ((launch_global.z / launch_local.z) + 1) * launch_local.z; 
     }
 
-    cl::sycl::range<3> ret_th = {launch_local.x, launch_local.y, launch_local.z};
-    cl::sycl::range<3> ret_gl = {launch_global.x, launch_global.y, launch_global.z};
+    ::sycl::range<3> ret_th = {launch_local.x, launch_local.y, launch_local.z};
+    ::sycl::range<3> ret_gl = {launch_global.x, launch_global.y, launch_global.z};
 
-    return cl::sycl::nd_range<3>(ret_gl, ret_th);
+    return ::sycl::nd_range<3>(ret_gl, ret_th);
   }
 };
 
@@ -176,7 +176,7 @@ struct SyclStatementListExecutorHelper {
   using cur_stmt_t = camp::at_v<StmtList, cur_stmt>;
 
   template <typename Data>
-  inline static RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  inline static RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Execute stmt
     cur_stmt_t::exec(data, item, thread_active);
@@ -203,7 +203,7 @@ template <camp::idx_t num_stmts, typename StmtList>
 struct SyclStatementListExecutorHelper<num_stmts, num_stmts, StmtList> {
 
   template <typename Data>
-  inline static RAJA_DEVICE void exec(Data &, cl::sycl::nd_item<3> item, bool)
+  inline static RAJA_DEVICE void exec(Data &, ::sycl::nd_item<3> item, bool)
   {
     // nop terminator
   }
@@ -233,7 +233,7 @@ struct SyclStatementListExecutor<Data, StatementList<Stmts...>, Types> {
   static
   inline
   RAJA_DEVICE
-  void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
   {
     // Execute statements in order with helper class
     SyclStatementListExecutorHelper<0, num_stmts, enclosed_stmts_t>::exec(data, item, thread_active);
