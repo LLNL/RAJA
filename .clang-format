@@ -1,27 +1,84 @@
-BasedOnStyle : google
+BasedOnStyle : LLVM
+# Indent formatting
 IndentWidth : 2
-BreakBeforeBraces : Linux
+Language: Cpp
+UseTab: Never
 KeepEmptyLinesAtTheStartOfBlocks : true
 MaxEmptyLinesToKeep : 2
 AccessModifierOffset : -2
-UseTab: Never
+# This must be off so that include order in RAJA is preserved
+SortIncludes: false
+
+# Alignment of consecutive declarations, assignments etc
+AlignConsecutiveAssignments : true
+AlignConsecutiveDeclarations : false
+AlignConsecutiveMacros : true
+AlignTrailingComments : true
+
+# Control curly brace placement
+BreakBeforeBraces : Custom
+BraceWrapping:
+  AfterCaseLabel:  true
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: false
+  AfterStruct:     true
+  AfterUnion:      true
+  AfterExternBlock: false
+  BeforeCatch:     true
+  BeforeElse:      true
+  BeforeLambdaBody: false
+  IndentBraces:    false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+# Pointer alignment
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+# Single line config
 AllowShortIfStatementsOnASingleLine : true
-ConstructorInitializerAllOnOneLineOrOnePerLine : true
 AllowShortFunctionsOnASingleLine : true
 AllowShortLoopsOnASingleLine : false
-BinPackParameters : false
+AllowShortLambdasOnASingleLine : None
+PackConstructorInitializers : CurrentLine
+AllowAllArgumentsOnNextLine : true
 AllowAllParametersOfDeclarationOnNextLine : false
-AlignTrailingComments : true
+BinPackArguments : true
+BinPackParameters : false
+ConstructorInitializerAllOnOneLineOrOnePerLine : true
 ColumnLimit : 80
-PenaltyBreakBeforeFirstCallParameter : 100
-PenaltyReturnTypeOnItsOwnLine : 65000
-PenaltyBreakString : 10
 
-# These improve formatting results but require clang 3.6/7 or higher
-BreakBeforeBinaryOperators : None
-AlignAfterOpenBracket: true
-BinPackArguments : false
+AlignAfterOpenBracket: Align
 AlignOperands : true
 AlwaysBreakTemplateDeclarations : true
-Cpp11BracedListStyle : true
+AlwaysBreakAfterDefinitionReturnType : None
+PenaltyReturnTypeOnItsOwnLine : 10000
+BreakBeforeBinaryOperators : None
 
+# Indents
+IndentCaseLabels: true
+
+# Lambda body
+LambdaBodyIndentation : Signature
+
+SeparateDefinitionBlocks : Always
+
+# Space before/after settings
+SpaceAfterTemplateKeyword: false
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInConditionalStatement: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
