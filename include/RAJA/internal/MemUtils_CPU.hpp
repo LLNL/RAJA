@@ -27,7 +27,7 @@
 
 #include "RAJA/util/types.hpp"
 
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || \
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) ||                \
     defined(__MINGW32__) || defined(__BORLANDC__)
 #define RAJA_PLATFORM_WINDOWS
 #include <malloc.h>
@@ -44,7 +44,7 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #if defined(RAJA_HAVE_POSIX_MEMALIGN)
   // posix_memalign available
   void* ret = nullptr;
-  int err = posix_memalign(&ret, alignment, size);
+  int err   = posix_memalign(&ret, alignment, size);
   return err ? nullptr : ret;
 #elif defined(RAJA_HAVE_ALIGNED_ALLOC)
   return std::aligned_alloc(alignment, size);
@@ -53,26 +53,24 @@ inline void* allocate_aligned(size_t alignment, size_t size)
 #elif defined(RAJA_PLATFORM_WINDOWS)
   return _aligned_malloc(size, alignment);
 #else
-  char *mem = (char *)malloc(size + alignment + sizeof(void *));
+  char* mem = (char*)malloc(size + alignment + sizeof(void*));
   if (nullptr == mem) return nullptr;
-  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *)) &
-                         ~(alignment - 1));
+  void** ptr = (void**)((std::uintptr_t)(mem + alignment + sizeof(void*)) &
+                        ~(alignment - 1));
   // Store the original address one position behind what we give the user.
   ptr[-1] = mem;
   return ptr;
 #endif
 }
 
-
 ///
 /// Portable aligned memory allocation
 ///
-template <typename T>
+template<typename T>
 inline T* allocate_aligned_type(size_t alignment, size_t size)
 {
   return reinterpret_cast<T*>(allocate_aligned(alignment, size));
 }
-
 
 ///
 /// Portable aligned memory free - required for Windows
@@ -97,25 +95,23 @@ inline void free_aligned(void* ptr)
 ///
 struct FreeAligned
 {
-  void operator()(void* ptr)
-  {
-    free_aligned(ptr);
-  }
+  void operator()(void* ptr) { free_aligned(ptr); }
 };
 
 ///
 /// Deleter function object for memory allocated with allocate_aligned_type
 /// that calls the destructor for the fist size objects in the storage.
 ///
-template < typename T, typename index_type >
+template<typename T, typename index_type>
 struct FreeAlignedType : FreeAligned
 {
   index_type size = 0;
 
   void operator()(T* ptr)
   {
-    for ( index_type i = size; i > 0; --i ) {
-      ptr[i-1].~T();
+    for (index_type i = size; i > 0; --i)
+    {
+      ptr[i - 1].~T();
     }
     FreeAligned::operator()(ptr);
   }
