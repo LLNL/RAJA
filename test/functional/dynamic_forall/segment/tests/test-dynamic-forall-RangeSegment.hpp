@@ -40,7 +40,7 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last, const 
 
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-    RAJA::expt::dynamic_forall<POLICY_LIST>(pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    RAJA::dynamic_forall<POLICY_LIST>(pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
       working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
     });
 
@@ -50,7 +50,7 @@ void DynamicForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last, const 
 
     working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
 
-    RAJA::expt::dynamic_forall<POLICY_LIST>(pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+    RAJA::dynamic_forall<POLICY_LIST>(pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
       (void) idx;
       working_array[0]++;
     });
