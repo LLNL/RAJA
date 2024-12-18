@@ -194,23 +194,22 @@ likely the develop branch.
                **username/bugfix/<issue-fixed>** for a bugfix, etc.
 
 -----------------------------------
-Style
+Code Formatting
 -----------------------------------
 RAJA enforces style within the ``src`` and ``include`` directories using clang-format,
 major version 14.  Formatting will be enforced on pull requests through CI.
-The contributor must guarantee that their code is in compliance with the
+Each contributor must guarantee that their code is in compliance with the
 clang-format settings specified within ``.clang-format``.  To make this easy,
 RAJA has provided two options for applying clang-format:
 
 * The CMake build target ``style``
 
   *  If a ``clang-format`` executable with major version 14 is available in the ``PATH``
-     when running CMake, RAJA's build system should find that executable and set 
+     when running CMake, RAJA's build system will find that executable and set 
      the CMake variable ``CLANGFORMAT_EXECUTABLE`` to that executable's path.  
-  *  If an invalid version exists in the ``PATH``, or no ``clang-format`` version is 
-     specified in the path, the ``CLANGFORMAT_EXECUTABLE`` variable must be set by the 
-     user.  This can be done by passing ``-DCLANGFORMAT_EXECUTABLE=<path to clang-format 14>`` 
-     to ``cmake`` during build configuration.  For example on Linux, this would look like
+  *  Alternatively, the ``CLANGFORMAT_EXECUTABLE`` CMake variable can be set by the user 
+     to the path of a clang-format 14 executable.  For example, on Linux, this would look 
+     like
 
     .. code-block:: bash
 
