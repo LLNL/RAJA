@@ -93,7 +93,7 @@ namespace internal
  * SYCL global function for launching SyclKernel policies.
  */
 template <typename Data, typename Exec>
-void SyclKernelLauncher(Data data, cl::sycl::nd_item<3> item)
+void SyclKernelLauncher(Data data, ::sycl::nd_item<3> item)
 {
 
   using data_t = camp::decay<Data>;
@@ -128,7 +128,7 @@ struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
   static void launch(Data &&data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
-                     cl::sycl::queue* qu)
+                     ::sycl::queue* qu)
   {
 
     //
@@ -136,20 +136,20 @@ struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
     // Kernel body is nontrivially copyable, create space on device and copy to
     // Workaround until "is_device_copyable" is supported
     //
-    data_t* m_data = (data_t*) cl::sycl::malloc_device(sizeof(data_t), *qu);
+    data_t* m_data = (data_t*) ::sycl::malloc_device(sizeof(data_t), *qu);
     qu->memcpy(m_data, &data, sizeof(data_t)).wait();
 
-    qu->submit([&](cl::sycl::handler& h) {
+    qu->submit([&](::sycl::handler& h) {
  
       h.parallel_for(launch_dims.fit_nd_range(qu),
-                     [=] (cl::sycl::nd_item<3> item) {
+                     [=] (::sycl::nd_item<3> item) {
         
         SyclKernelLauncher<Data, executor_t>(*m_data, item);
 
       });
     }).wait(); // Need to wait to free memory
 
-    cl::sycl::free(m_data, *qu);
+    ::sycl::free(m_data, *qu);
 
   }
 };
@@ -172,13 +172,13 @@ struct SyclLaunchHelper<true,sycl_launch<async0>,StmtList,Data,Types>
   static void launch(Data &&data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
-                     cl::sycl::queue* qu)
+                     ::sycl::queue* qu)
   {
 
-    qu->submit([&](cl::sycl::handler& h) {
+    qu->submit([&](::sycl::handler& h) {
  
       h.parallel_for(launch_dims.fit_nd_range(qu),
-                     [=] (cl::sycl::nd_item<3> item) {
+                     [=] (::sycl::nd_item<3> item) {
 
         SyclKernelLauncher<Data, executor_t>(data, item);
 
