@@ -80,11 +80,11 @@ using OpenMPKernelExecPols = camp::list<
 using OpenMPTargetKernelExecPols =
 camp::list< 
 
-  RAJA::KernelPolicy<
-     RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
-       RAJA::statement::Lambda<0, RAJA::Segs<0>>
-     >
-  >,
+//RAJA::KernelPolicy<
+//   RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<4>,
+//     RAJA::statement::Lambda<0, RAJA::Segs<0>>
+//   >
+//>,
 
   RAJA::KernelPolicy<
      RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec_nt,
