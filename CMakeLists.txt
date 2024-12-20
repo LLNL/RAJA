@@ -184,6 +184,7 @@ endif()
 
 if(RAJA_ENABLE_HIP)
   message(STATUS "HIP version: ${hip_VERSION}")
+  set(RAJA_HIP_WAVESIZE "64" CACHE STRING "Set the wave size for GPU architecture. E.g. MI200/MI300 this is 64.")
   if("${hip_VERSION}" VERSION_LESS "3.5")
     message(FATAL_ERROR "Trying to use HIP/ROCm version ${hip_VERSION}. RAJA requires HIP/ROCm version 3.5 or newer. ")
   endif()
