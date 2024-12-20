@@ -76,7 +76,7 @@ void deallocate(T *&ptr)
     hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #elif defined(RAJA_ENABLE_SYCL)
       auto qu = sycl_res->get<camp::resources::Sycl>().get_queue();
-      ptr = cl::sycl::malloc_device<T>(size, *qu);
+      ptr = ::sycl::malloc_device<T>(size, *qu);
 #endif
     return ptr;
   }
