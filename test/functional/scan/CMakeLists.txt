@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-# list(APPEND SCAN_BACKENDS Sequential)
+list(APPEND SCAN_BACKENDS Sequential)
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND SCAN_BACKENDS OpenMP)
@@ -24,7 +24,7 @@ if(RAJA_ENABLE_SYCL)
 endif()
 
 
-set(SCAN_TYPES ExclusiveInplace Exclusive  Inclusive InclusiveInplace)
+set(SCAN_TYPES Exclusive ExclusiveInplace Inclusive InclusiveInplace)
 
 #
 # Generate scan tests for each enabled RAJA back-end.

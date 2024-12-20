@@ -24,17 +24,6 @@
 
 #if defined(RAJA_ENABLE_SYCL)
 
-
-#include <iterator>
-
-// #include <numeric>
-
-// #include <type_traits>
-
-#include "RAJA/pattern/detail/algorithm.hpp"
-
-// #include "RAJA/policy/sycl/MemUtils_SYCL.hpp"
-
 #include "RAJA/policy/sycl/policy.hpp"
 
 namespace RAJA
