@@ -40,7 +40,7 @@ constexpr int HIP_BLOCK_SIZE = 256;
 //
 //Function for checking results
 //
-void checkResult(int *ptr, int N, int M, int K);
+void checkResult(int *ptr, int K, int N, int M);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -110,7 +110,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // check result
 //
-void checkResult(int *ptr, int N, int M, int K)
+void checkResult(int *ptr, int K, int N, int M)
 {
 
   bool status = true;
@@ -119,7 +119,7 @@ void checkResult(int *ptr, int N, int M, int K)
     for(int n = 0; n < N; ++n) {
       for(int m = 0; m < M; ++m) {
         const int idx = m + M * (n + N * k);
-        if (std::abs(ptr[idx] - idx) > 1.0e-12) {
+        if (std::abs(ptr[idx] - idx) > 0) {
           status = false;
         }
       }
