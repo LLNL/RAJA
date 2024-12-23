@@ -310,7 +310,9 @@ struct Reshape<layout_right>
   static auto get(T *ptr, Ts... s)
   {
     constexpr int N = sizeof...(Ts);
-    return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, N-1>>(ptr, s...);
+    using view_t = RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, N-1>>;
+
+    return view_t(ptr, s...);
   }
 };
 
@@ -327,8 +329,8 @@ struct Reshape<layout_left>
   ///Should be a away to do this at compile time...
   std::array<RAJA::idx_t, N> reverse_indices_array;
   for(int i = N-1, j=0; i>-1; --i, j++) {reverse_indices_array[j] = i; }
-  
-  auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_indices_array);  
+
+  auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_indices_array);
 
   return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, 0>>(ptr, reverse_layout);
   }
