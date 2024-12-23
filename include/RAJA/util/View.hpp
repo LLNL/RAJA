@@ -316,6 +316,11 @@ struct Reshape<layout_right>
   }
 };
 
+template<std::size_t... Is>
+constexpr std::array<RAJA::idx_t, sizeof...(Is)> make_reverse_array(std::index_sequence<Is...>) {
+  return std::array<RAJA::idx_t, sizeof...(Is)>{sizeof...(Is) - 1U - Is ...};
+}
+
 template<>
 struct Reshape<layout_left>
 {
@@ -326,11 +331,9 @@ struct Reshape<layout_left>
 
   std::array<RAJA::idx_t, N> extent{s...};
 
-  ///Should be a away to do this at compile time...
-  std::array<RAJA::idx_t, N> reverse_indices_array;
-  for(int i = N-1, j=0; i>-1; --i, j++) {reverse_indices_array[j] = i; }
+  constexpr auto reverse_array = make_reverse_array(std::make_index_sequence<N>{});
 
-  auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_indices_array);
+  auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_array);
 
   return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, 0>>(ptr, reverse_layout);
   }
