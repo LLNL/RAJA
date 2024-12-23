@@ -54,6 +54,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Allocate memory for pointer
   int *Rptr = memoryManager::allocate<int>(K * N * M);
   int *Lptr = memoryManager::allocate<int>(K * N * M);
+  int *Cptr = memoryManager::allocate<int>(K * N * M);
 
 //----------------------------------------------------------------------------//
 //
@@ -90,12 +91,39 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for(int k = 0; k < K; ++k) {
 
         const int idx = k + K * (n + N * m);
-        Lview(k,m,n) = idx;
+        Lview(k,n,m) = idx;
       }
     }
   }
 
   checkResult(Lptr, K, N, M);
+
+
+//----------------------------------------------------------------------------//
+//
+// Initialize memory using custom ordering, left most value of the index sequence
+// is assumed to have unit stride, while the right most has the longest stride
+//
+//----------------------------------------------------------------------------//
+  std::cout << "\n\nInitialize array with custom indexing...\n";
+
+  using custom_seq = std::index_sequence<1U,0U,2U>;
+
+  auto Cview = RAJA::Reshape<custom_seq>::get(Cptr, K, N, M);
+
+  //Note the loop ordering has change from above
+  for(int k = 0; k < K; ++k) {
+    for(int m = 0; m < M; ++m) {
+      for(int n = 0; n < N; ++n) {
+
+        const int idx = n + N * (m + M * k);
+        Cview(k,n,m) = idx;
+      }
+    }
+  }
+
+  checkResult(Cptr, K, N, M);
+
 
 //
 // Clean up.
