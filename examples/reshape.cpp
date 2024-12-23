@@ -52,8 +52,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int M = 2;
 
   // Allocate memory for pointer
-  int *Right_ptr = memoryManager::allocate<int>(K * N * M);
-  int *Left_ptr = memoryManager::allocate<int>(K * N * M );
+  int *Rptr = memoryManager::allocate<int>(K * N * M);
+  int *Lptr = memoryManager::allocate<int>(K * N * M);
 
 //----------------------------------------------------------------------------//
 //
@@ -61,7 +61,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with right most indexing...\n";
-  auto Rview = RAJA::Reshape<RAJA::layout_right>::get(Right_ptr, K, N, M);
+  auto Rview = RAJA::Reshape<RAJA::layout_right>::get(Rptr, K, N, M);
 
   for(int k = 0; k < K; ++k) {
     for(int n = 0; n < N; ++n) {
@@ -72,7 +72,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   }
 
-  checkResult(Right_ptr, K, N, M);
+  checkResult(Rptr, K, N, M);
 
 
 //----------------------------------------------------------------------------//
@@ -82,7 +82,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with left most indexing...\n";
 
-  auto Lview = RAJA::Reshape<RAJA::layout_left>::get(Left_ptr, K, N, M);
+  auto Lview = RAJA::Reshape<RAJA::layout_left>::get(Lptr, K, N, M);
 
   //Note the loop ordering has change from above
   for(int m = 0; m < M; ++m) {
@@ -95,13 +95,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   }
 
-  checkResult(Right_ptr, K, N, M);
+  checkResult(Lptr, K, N, M);
 
 //
 // Clean up.
 //
-  memoryManager::deallocate(Right_ptr);
-  memoryManager::deallocate(Left_ptr);
+  memoryManager::deallocate(Rptr);
+  memoryManager::deallocate(Lptr);
 
   std::cout << "\n DONE!...\n";
   return 0;
