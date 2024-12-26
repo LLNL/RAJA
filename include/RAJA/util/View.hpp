@@ -311,8 +311,8 @@ constexpr auto get_last_index(T last)
   return last;
 }
 
-template <typename T, typename... Args>
-constexpr auto get_last_index(T, Args... args)
+template <typename T0, typename T1, typename... Args>
+constexpr auto get_last_index(T0, T1, Args... args)
 {
   return get_last_index(args...);
 }
