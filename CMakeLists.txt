@@ -169,6 +169,7 @@ endif()
 
 if (RAJA_ENABLE_OPENMP)
   set (raja_depends
+    ${raja_depends}
     openmp)
 endif()
 
