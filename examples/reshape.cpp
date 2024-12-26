@@ -148,7 +148,7 @@ void checkResult(int *ptr, int K, int N, int M)
     for(int n = 0; n < N; ++n) {
       for(int m = 0; m < M; ++m) {
         const int idx = m + M * (n + N * k);
-        if (std::abs(ptr[idx] - idx) > 0) {
+        if (ptr[idx] != idx) {
           status = false;
         }
       }
