@@ -306,10 +306,16 @@ struct Reshape;
 template<typename LAYOUT>
 struct Reshape;
 
-template<std::size_t Id, std::size_t...Ids>
-constexpr auto get_first_index()
+template<typename T>
+constexpr auto get_last_index(T last)
 {
-  return Id;
+  return last;
+}
+
+template<typename T, typename... Args>
+constexpr auto get_last_index(T , Args... args)
+{
+  return get_last_index(args...);
 }
 
 template<std::size_t...Is>
@@ -324,7 +330,7 @@ struct Reshape<std::index_sequence<Is...>>
     auto custom_layout =
       RAJA::make_permuted_layout(extent, std::array<RAJA::idx_t, N>{Is...});
 
-    constexpr auto unit_stride = get_first_index<Is...>();
+    constexpr auto unit_stride = get_last_index(Is...);
 
     return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, unit_stride>>
       (ptr, custom_layout);
@@ -363,7 +369,7 @@ struct Reshape<layout_left>
 
     auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_array);
 
-    return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, 0>>(ptr, reverse_layout);
+    return RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, 0U>>(ptr, reverse_layout);
   }
 
 };

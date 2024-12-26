@@ -101,22 +101,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 //----------------------------------------------------------------------------//
 //
-// Initialize memory using custom ordering, left most value of the index sequence
-// is assumed to have unit stride, while the right most has the longest stride
+// Initialize memory using custom ordering, longest stride starts at the left,
+// right most is assumed to have unit stride.
 //
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with custom indexing...\n";
 
-  using custom_seq = std::index_sequence<1U,0U,2U>;
+  using custom_seq = std::index_sequence<2U,0U,1U>;
+
 
   auto Cview = RAJA::Reshape<custom_seq>::get(Cptr, K, N, M);
 
   //Note the loop ordering has change from above
-  for(int k = 0; k < K; ++k) {
-    for(int m = 0; m < M; ++m) {
+  for(int m = 0; m < M; ++m) {
+    for(int k = 0; k < K; ++k) {
       for(int n = 0; n < N; ++n) {
 
-        const int idx = n + N * (m + M * k);
+        const int idx = n + N * (k + K * m);
         Cview(k,n,m) = idx;
       }
     }
