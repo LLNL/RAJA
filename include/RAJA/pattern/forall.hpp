@@ -57,7 +57,6 @@
 #include <functional>
 #include <iterator>
 #include <type_traits>
-#include <typeinfo>
 
 #include "RAJA/internal/Iterators.hpp"
 
