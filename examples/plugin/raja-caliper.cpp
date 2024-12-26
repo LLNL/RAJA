@@ -116,7 +116,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     RAJA::forall<RAJA::seq_exec>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA Seq daxpy Kernel"),
+       RAJA::expt::KernelName("CALI: RAJA Seq daxpy Kernel"),
        [=] (int i) {
         a[i] += b[i] * c;
       });
@@ -141,7 +141,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     RAJA::forall<RAJA::simd_exec>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
+       RAJA::expt::KernelName("CALI: RAJA SIMD daxpy Kernel"),
        [=] (int i) {
          a[i] += b[i] * c;
        });
