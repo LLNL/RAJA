@@ -11,6 +11,7 @@
 #include <caliper/cali.h>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/util/Timer.hpp"
 
 /*
  *  Daxpy Example
@@ -35,6 +36,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
   CALI_CXX_MARK_FUNCTION;
   std::cout << "\n\nRAJA daxpy example...\n";
+
+//
+  auto timer = RAJA::Timer();
+
 
 //
 // Define vector length
@@ -73,10 +78,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
   {
-    CALI_CXX_MARK_SCOPE("Running C-version");
+    timer.start();
+    CALI_CXX_MARK_SCOPE("CALI: C-version elapsed time");
     for (int i = 0; i < N; ++i) {
       a[i] += b[i] * c;
     }
+    timer.stop();
+    RAJA::Timer::ElapsedType etime = timer.elapsed();
+    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
   }
 
   std::memcpy( aref, a, N* sizeof(double) );
@@ -102,13 +111,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  {
+ {
+    timer.reset();
+    timer.start();
     RAJA::forall<RAJA::seq_exec>
       (RAJA::RangeSegment(0, N),
        RAJA::expt::KernelName("RAJA Seq daxpy Kernel"),
        [=] (int i) {
         a[i] += b[i] * c;
       });
+    timer.stop();
+    RAJA::Timer::ElapsedType etime = timer.elapsed();
+    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
   }
 
   checkResult(a, aref, N);
@@ -121,15 +135,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA SIMD version.
 //
   std::cout << "\n Running RAJA SIMD daxpy...\n";
-
   std::memcpy( a, a0, N * sizeof(double) );
-  RAJA::forall<RAJA::simd_exec>
-    (RAJA::RangeSegment(0, N),
-     RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
-     [=] (int i) {
-    a[i] += b[i] * c;
-  });
-  checkResult(a, aref, N);
+  {
+    timer.reset();
+    timer.start();
+    RAJA::forall<RAJA::simd_exec>
+      (RAJA::RangeSegment(0, N),
+       RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
+       [=] (int i) {
+         a[i] += b[i] * c;
+       });
+    timer.stop();
+    RAJA::Timer::ElapsedType etime = timer.elapsed();
+    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
+    checkResult(a, aref, N);
+  }
 //printResult(a, N);
 
 
