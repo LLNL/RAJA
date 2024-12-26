@@ -57,6 +57,7 @@
 #include <functional>
 #include <iterator>
 #include <type_traits>
+#include <typeinfo>
 
 #include "RAJA/internal/Iterators.hpp"
 
@@ -509,6 +510,25 @@ forall_Icount(ExecutionPolicy&& p,
  ******************************************************************************
  */
 
+template<typename T>
+struct get_kernel_name
+{
+  template<typename U>
+  static std::string get(U &)
+  {
+    return std::string(); //return empty string
+  }
+};
+
+template<>
+struct get_kernel_name<RAJA::expt::detail::KernelName>
+{
+  static std::string get(const RAJA::expt::detail::KernelName &kernel_name)
+  {
+    return kernel_name.name;
+  }
+};
+
 template <typename ExecutionPolicy, typename Res, typename Container, typename... Params>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
@@ -527,14 +547,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
 
   expt::check_forall_optional_args(loop_body, f_params);
 
-  //Need to handle the case in which we have no kernel name...
-  std::string kname;
-  if (std::is_same<decltype(kernel_name), RAJA::expt::detail::KernelName>::value == true){
-    std::cout<<" found a kernel name: "<<kernel_name.name<<" assigning it to kernel... " <<std::endl;
-    kname = kernel_name.name;
-  }else{
-    kname = "-1";
-  }
+  std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>(&kname)};
   util::callPreCapturePlugins(context);

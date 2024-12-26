@@ -34,7 +34,6 @@ void printResult(double* v, int len);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-  CALI_CXX_MARK_FUNCTION;
   std::cout << "\n\nRAJA daxpy example...\n";
 
 //
@@ -110,7 +109,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
-
+#if 1
  {
     timer.reset();
     timer.start();
@@ -124,7 +123,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::Timer::ElapsedType etime = timer.elapsed();
     std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
   }
-
+#endif
   checkResult(a, aref, N);
 //printResult(a, N);
 

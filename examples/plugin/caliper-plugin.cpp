@@ -15,12 +15,12 @@ class CaliperPlugin : public RAJA::util::PluginStrategy
 public:
   void preLaunch(const RAJA::util::PluginContext&p) override
   {
-    CALI_MARK_BEGIN(p.kernel_name->c_str());
+    if(!p.kernel_name->empty()) CALI_MARK_BEGIN(p.kernel_name->c_str());
   }
 
   void postLaunch(const RAJA::util::PluginContext& p) override
   {
-    CALI_MARK_END(p.kernel_name->c_str());
+    if(!p.kernel_name->empty()) CALI_MARK_END(p.kernel_name->c_str());
   }
 
 private:
