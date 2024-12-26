@@ -1,3 +1,4 @@
+
 /*!
  ******************************************************************************
  *
@@ -312,9 +313,9 @@ constexpr auto get_last_index(T last)
 }
 
 template <typename T0, typename T1, typename... Args>
-constexpr auto get_last_index(T0, T1, Args... args)
+constexpr auto get_last_index(T0, T1 t1, Args... args)
 {
-  return get_last_index(args...);
+  return get_last_index(t1, args...);
 }
 }  // namespace detail
 
