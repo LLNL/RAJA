@@ -5,9 +5,11 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ################################################################################
 
-raja_add_executable(
-  NAME raja-caliper
-  SOURCES raja-caliper.cpp caliper-plugin.cpp)
+if(RAJA_ENABLE_CALIPER)
+  raja_add_executable(
+    NAME raja-caliper
+    SOURCES raja-caliper.cpp caliper-plugin.cpp)
+endif()
 
 raja_add_executable(
   NAME plugin-example
@@ -17,7 +19,7 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
   raja_add_executable(
     NAME plugin-example-dynamic
     SOURCES test-plugin-dynamic.cpp)
-    
+
   raja_add_plugin_library(NAME timer_plugin
                           SHARED TRUE
                           SOURCES timer-plugin.cpp)

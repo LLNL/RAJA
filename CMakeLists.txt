@@ -154,12 +154,10 @@ endif ()
 
 set (raja_depends)
 
-if (DEFINED caliper_DIR)
-
+if (RAJA_ENABLE_CALIPER)
 set (raja_depends
     ${raja_depends}
     caliper)
-
   find_package(caliper REQUIRED
     NO_DEFAULT_PATH
     PATHS ${caliper_DIR}
