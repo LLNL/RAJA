@@ -17,9 +17,6 @@
  *  RAJA Caliper integration with launch
  */
 
-using launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
-using loop_policy   = RAJA::LoopPolicy<RAJA::seq_exec>;
-
 //
 // Functions for checking and printing results
 //
@@ -38,6 +35,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Define vector length
 //
   const int N = 1000000;
+
+//
+// Define compute grid
+//
+  const int Nthreads = 256;
+  const int Nteams   = (N-1)/Nthreads + 1;
 
 //
 // Allocate and initialize vector data.
@@ -71,6 +74,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
   {
+    timer.reset();
     timer.start();
     CALI_CXX_MARK_SCOPE("CALI: C-version elapsed time");
     for (int i = 0; i < N; ++i) {
@@ -92,19 +96,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
  {
+   using seq_launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+   using seq_loop_policy   = RAJA::LoopPolicy<RAJA::seq_exec>;
+
    timer.reset();
    timer.start();
-    RAJA::launch<launch_policy>
-      (RAJA::LaunchParams(RAJA::Teams(), RAJA::Threads()),
-       RAJA::expt::KernelName("CALI: launch kernel"),
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+   RAJA::launch<seq_launch_policy>
+     (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
+      RAJA::expt::KernelName("CALI: launch kernel"),
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-         RAJA::loop<loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
-         {
-           a[i] += b[i] * c;
-         });
+        RAJA::loop<seq_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
+        {
+          a[i] += b[i] * c;
+        });
 
-       });
+    });
     timer.stop();
     RAJA::Timer::ElapsedType etime = timer.elapsed();
     std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
@@ -119,6 +126,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA CUDA parallel GPU version (256 threads per thread block).
 //
   std::cout << "\n Running RAJA CUDA daxpy...\n";
+  using cuda_launch_policy = RAJA::LaunchPolicy<RAJA::cuda_launch_t>;
+  using cuda_loop_policy   = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
 
   a = 0; b = 0;
   cudaErrchk(cudaMalloc( (void**)&a, N * sizeof(double) ));
@@ -127,10 +136,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice ));
   cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice ));
 
-  //RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, N),
-  //[=] RAJA_DEVICE (int i) {
-  //a[i] += b[i] * c;
-  //});
+   RAJA::launch<cuda_launch_policy>
+     (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
+      RAJA::expt::KernelName("CALI: launch Cuda kernel"),
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+
+        RAJA::loop<cuda_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
+        {
+          a[i] += b[i] * c;
+        });
+
+    });
 
   cudaErrchk(cudaMemcpy( ta, a, N * sizeof(double), cudaMemcpyDeviceToHost ));
 
@@ -149,6 +165,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA HIP parallel GPU version (256 threads per thread block).
 //
   std::cout << "\n Running RAJA HIP daxpy...\n";
+  using hip_launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+  using hip_loop_policy   = RAJA::LoopPolicy<RAJA::seq_exec>;
 
   a = 0; b = 0;
   hipErrchk(hipMalloc( (void**)&a, N * sizeof(double) ));
@@ -157,10 +175,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
 
-  //RAJA::forall<RAJA::hip_exec<256>>(RAJA::RangeSegment(0, N),
-  //[=] RAJA_DEVICE (int i) {
-  //a[i] += b[i] * c;
-  //});
+   RAJA::launch<hip_launch_policy>
+     (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
+      RAJA::expt::KernelName("CALI: launch Cuda kernel"),
+      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+
+        RAJA::loop<hip_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
+        {
+          a[i] += b[i] * c;
+        });
+
+    });
 
   hipErrchk(hipMemcpy( ta, a, N * sizeof(double), hipMemcpyDeviceToHost ));
 

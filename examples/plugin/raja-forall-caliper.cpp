@@ -157,7 +157,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::memcpy( a, a0, N * sizeof(double) );
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+  RAJA::forall<RAJA::omp_parallel_for_exec>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("CALI: RAJA OpenMP daxpy Kernel"),
+     [=] (int i) {
     a[i] += b[i] * c;
   });
 
@@ -180,7 +183,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice ));
   cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice ));
 
-  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, N),
+  RAJA::forall<RAJA::cuda_exec<256>>
+    (RAJA::RangeSegment(0, N),
+    RAJA::expt::KernelName("CALI: RAJA CUDA daxpy Kernel"),
     [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });
@@ -210,7 +215,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
 
-  RAJA::forall<RAJA::hip_exec<256>>(RAJA::RangeSegment(0, N),
+  RAJA::forall<RAJA::hip_exec<256>>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("CALI: RAJA HIP daxpy Kernel"),
     [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });

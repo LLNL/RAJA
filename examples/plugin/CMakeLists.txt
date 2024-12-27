@@ -7,8 +7,8 @@
 
 if(RAJA_ENABLE_CALIPER)
   raja_add_executable(
-    NAME raja-caliper
-    SOURCES raja-caliper.cpp caliper-plugin.cpp)
+    NAME raja-forall-caliper
+    SOURCES raja-forall-caliper.cpp caliper-plugin.cpp)
   raja_add_executable(
     NAME raja-launch-caliper
     SOURCES raja-launch-caliper.cpp caliper-plugin.cpp)
