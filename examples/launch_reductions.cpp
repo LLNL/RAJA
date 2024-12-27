@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     (select_cpu_or_gpu,
      RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
                         RAJA::Threads(TEAM_SZ)),
-     "Launch Reductions",
+     RAJA::expt::KernelName("Launch Reductions"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) 
      {
 

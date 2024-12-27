@@ -151,7 +151,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type seq_maxloc2(-1);
 
   RAJA::launch<LAUNCH_POL1>
-    (host_res, RAJA::LaunchParams(), "SeqReductionKernel",
+    (host_res, RAJA::LaunchParams(),
     RAJA::expt::Reduce<RAJA::operators::plus   >(&seq_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
@@ -159,6 +159,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&seq_min2, &seq_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&seq_max2, &seq_maxloc2),
+    RAJA::expt::KernelName("SeqReductionKernel"),
      [=] RAJA_HOST_DEVICE ( RAJA::LaunchContext ctx,
                             VALOP_INT_SUM &_seq_sum,
                             VALOP_INT_MIN &_seq_min,
@@ -218,7 +219,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type omp_maxloc2(-1);
 
   RAJA::launch<LAUNCH_POL2>
-    (host_res, RAJA::LaunchParams(), "OmpReductionKernel",
+    (host_res, RAJA::LaunchParams(),
     RAJA::expt::Reduce<RAJA::operators::plus   >(&omp_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&omp_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_max),
@@ -226,6 +227,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&omp_min2, &omp_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&omp_max2, &omp_maxloc2),
+    RAJA::expt::KernelName("OmpReductionKernel"),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            VALOP_INT_SUM &_omp_sum,
                            VALOP_INT_MIN &_omp_min,
