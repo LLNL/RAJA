@@ -215,6 +215,8 @@ public:
   }
 };
 
+//-----------
+
 template <typename LAUNCH_POLICY>
 struct LaunchExecute;
 
@@ -257,14 +259,15 @@ void launch(LaunchParams const &launch_params, const char *kernel_name, ReducePa
 template <typename LAUNCH_POLICY, typename ... ReduceParams>
 void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_args)
 {
-
-  const char *kernel_name = nullptr;
+  std::cout<<"-----RAJA launch!----"<<std::endl;
+  const char *kernel_name_ptr = nullptr;
 
   //Get reducers
   auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
 
   //get kernel name
-  std::string kname;
+  auto kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
+  std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
   auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
 
@@ -284,7 +287,7 @@ void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_
 
   using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body, reducers);
+  launch_t::exec(Res::get_default(), launch_params, kernel_name_ptr, p_body, reducers);
 
   util::callPostLaunchPlugins(context);
 }
