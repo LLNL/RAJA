@@ -226,7 +226,7 @@ void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_
   auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
 
   //get kernel name
-  auto kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
+  auto&& kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
   std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
   auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
@@ -318,7 +318,7 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   //Get reducers
   auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
 
-  auto kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
+  auto&& kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
   std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
   auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);

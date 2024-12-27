@@ -541,7 +541,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
 
-  auto kernel_name =  expt::get_kernel_name(std::forward<Params>(params)...);
+  auto&& kernel_name =  expt::get_kernel_name(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
 
   expt::check_forall_optional_args(loop_body, f_params);

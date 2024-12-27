@@ -20,7 +20,7 @@ class KokkosPluginLoader;
 
 struct PluginContext {
   public:
-   PluginContext(const Platform p, const std::string *name) :
+   PluginContext(const Platform p, const std::string *name = nullptr) :
    platform(p), kernel_name(name) {}
 
   Platform platform;
