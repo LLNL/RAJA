@@ -300,7 +300,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&cuda_min2, &cuda_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&cuda_max2, &cuda_maxloc2),
-    RAJA::KernelName( "CUDAReductionKernel"),
+    RAJA::expt::KernelName( "CUDAReductionKernel"),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            VALOP_INT_SUM &_cuda_sum,
                            VALOP_INT_MIN &_cuda_min,
