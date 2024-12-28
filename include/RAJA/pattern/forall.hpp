@@ -520,7 +520,7 @@ struct get_kernel_name
 };
 
 template<>
-struct get_kernel_name<RAJA::expt::detail::KernelName>
+struct get_kernel_name<RAJA::expt::detail::KernelName&&>
 {
   static std::string get(const RAJA::expt::detail::KernelName &kernel_name)
   {
