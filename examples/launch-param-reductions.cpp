@@ -293,7 +293,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<LAUNCH_POL3>
     (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(CUDA_BLOCK_SIZE)),
-     "CUDAReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus   >(&cuda_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
@@ -301,6 +300,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&cuda_min2, &cuda_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&cuda_max2, &cuda_maxloc2),
+    RAJA::KernelName( "CUDAReductionKernel"),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            VALOP_INT_SUM &_cuda_sum,
                            VALOP_INT_MIN &_cuda_min,
@@ -370,7 +370,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<LAUNCH_POL3>
     (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(HIP_BLOCK_SIZE)),
-     "HipReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus   >(&hip_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&hip_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_max),
@@ -378,6 +377,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&hip_min2, &hip_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&hip_max2, &hip_maxloc2),
+    RAJA::expt::KernelName( "HipReductionKernel"),
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            VALOP_INT_SUM &_hip_sum,
                            VALOP_INT_MIN &_hip_min,
@@ -444,7 +444,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<LAUNCH_POL4>
     (device_res, RAJA::LaunchParams(RAJA::Teams(NUMBER_OF_TEAMS), RAJA::Threads(SYCL_BLOCK_SIZE)),
-     "SyclReductionKernel",
     RAJA::expt::Reduce<RAJA::operators::plus   >(&sycl_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&sycl_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_max),
@@ -452,6 +451,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&sycl_min2, &sycl_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&sycl_max2, &sycl_maxloc2),
+    RAJA::expt::KernelName( "SyclReductionKernel",
      [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx,
                            VALOP_INT_SUM &_sycl_sum,
                            VALOP_INT_MIN &_sycl_min,
