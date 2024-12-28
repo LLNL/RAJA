@@ -126,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA CUDA parallel GPU version (256 threads per thread block).
 //
   std::cout << "\n Running RAJA CUDA daxpy...\n";
-  using cuda_launch_policy = RAJA::LaunchPolicy<RAJA::cuda_launch_t>;
+  using cuda_launch_policy = RAJA::LaunchPolicy<RAJA::cuda_launch_t<false>>;
   using cuda_loop_policy   = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
 
   a = 0; b = 0;
@@ -165,8 +165,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // RAJA HIP parallel GPU version (256 threads per thread block).
 //
   std::cout << "\n Running RAJA HIP daxpy...\n";
-  using hip_launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
-  using hip_loop_policy   = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>;
+  using hip_loop_policy   = RAJA::LoopPolicy<RAJA::hip_global_thread_x>
 
   a = 0; b = 0;
   hipErrchk(hipMalloc( (void**)&a, N * sizeof(double) ));
