@@ -78,7 +78,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memcpy( a, a0, N * sizeof(double) );
   {
     timer.start();
-    CALI_CXX_MARK_SCOPE("CALI: C-version elapsed time");
+    CALI_CXX_MARK_SCOPE(" C-version elapsed time");
     for (int i = 0; i < N; ++i) {
       a[i] += b[i] * c;
     }
@@ -112,12 +112,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
  {
     timer.reset();
     timer.start();
-    RAJA::forall<RAJA::seq_exec>
-      (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("CALI: RAJA Seq daxpy Kernel"),
-       [=] (int i) {
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),     
+      RAJA::expt::KernelName("RAJA Seq daxpy Kernel"), [=] (int i) {
+
         a[i] += b[i] * c;
-      });
+
+    });
     timer.stop();
     RAJA::Timer::ElapsedType etime = timer.elapsed();
     std::cout << "RAJA-Seq elapsed time : " << etime << " seconds" << std::endl;
@@ -138,7 +138,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     RAJA::forall<RAJA::simd_exec>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("CALI: RAJA SIMD daxpy Kernel"),
+       RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
        [=] (int i) {
          a[i] += b[i] * c;
        });
@@ -161,7 +161,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     RAJA::forall<RAJA::omp_parallel_for_exec>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("CALI: RAJA OpenMP daxpy Kernel"),
+       RAJA::expt::KernelName("RAJA OpenMP daxpy Kernel"),
        [=] (int i) {
          a[i] += b[i] * c;
        });
@@ -193,7 +193,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     RAJA::forall<RAJA::cuda_exec<256>>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("CALI: RAJA CUDA daxpy Kernel"),
+       RAJA::expt::KernelName("RAJA CUDA daxpy Kernel"),
        [=] RAJA_DEVICE (int i) {
          a[i] += b[i] * c;
        });
@@ -232,7 +232,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     timer.start();
     RAJA::forall<RAJA::hip_exec<256>>
       (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("CALI: RAJA HIP daxpy Kernel"),
+       RAJA::expt::KernelName("RAJA HIP daxpy Kernel"),
        [=] RAJA_DEVICE (int i) {
          a[i] += b[i] * c;
        });
