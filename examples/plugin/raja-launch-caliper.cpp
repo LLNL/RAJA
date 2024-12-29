@@ -166,7 +166,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::cout << "\n Running RAJA HIP daxpy...\n";
   using hip_launch_policy = RAJA::LaunchPolicy<RAJA::hip_launch_t<false>>;
-  using hip_loop_policy   = RAJA::LoopPolicy<RAJA::hip_global_thread_x>
+  using hip_loop_policy   = RAJA::LoopPolicy<RAJA::hip_global_thread_x>;
 
   a = 0; b = 0;
   hipErrchk(hipMalloc( (void**)&a, N * sizeof(double) ));
