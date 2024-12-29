@@ -78,7 +78,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memcpy( a, a0, N * sizeof(double) );
   {
     timer.start();
-    CALI_CXX_MARK_SCOPE(" C-version elapsed time");
+    CALI_CXX_MARK_SCOPE("C-version elapsed time");
     for (int i = 0; i < N; ++i) {
       a[i] += b[i] * c;
     }
