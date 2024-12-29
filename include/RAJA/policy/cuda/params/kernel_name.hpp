@@ -16,7 +16,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
   init(KernelName& kn, const RAJA::cuda::detail::cudaInfo &)
   {
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
     nvtxRangePush(kn.name);
 #else
     RAJA_UNUSED_VAR(kn);
@@ -34,7 +34,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_cuda_policy<EXEC_POL> >
   resolve(KernelName&, const RAJA::cuda::detail::cudaInfo &)
   {
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
+#if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
     nvtxRangePop();
 #endif
   }

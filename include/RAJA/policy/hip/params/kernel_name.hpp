@@ -20,7 +20,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
   init(KernelName& kn, const RAJA::hip::detail::hipInfo &)
   {
-#if defined(RAJA_ENABLE_ROCTX)
+#if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
     roctxRangePush(kn.name);
 #else
     RAJA_UNUSED_VAR(kn);
@@ -38,7 +38,7 @@ namespace detail {
   camp::concepts::enable_if< type_traits::is_hip_policy<EXEC_POL> >
   resolve(KernelName&, const RAJA::hip::detail::hipInfo &)
   {
-#if defined(RAJA_ENABLE_ROCTX)
+#if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
     roctxRangePop();
 #endif
   }
