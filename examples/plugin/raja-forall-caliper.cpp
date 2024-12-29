@@ -120,7 +120,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       });
     timer.stop();
     RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
+    std::cout << "RAJA-Seq elapsed time : " << etime << " seconds" << std::endl;
   }
   checkResult(a, aref, N);
 //printResult(a, N);
@@ -144,7 +144,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
        });
     timer.stop();
     RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
+    std::cout << "RAJA-SIMD elapsed time : " << etime << " seconds" << std::endl;
     checkResult(a, aref, N);
   }
 //printResult(a, N);
@@ -156,14 +156,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
-
-  RAJA::forall<RAJA::omp_parallel_for_exec>
-    (RAJA::RangeSegment(0, N),
-     RAJA::expt::KernelName("CALI: RAJA OpenMP daxpy Kernel"),
-     [=] (int i) {
-    a[i] += b[i] * c;
-  });
-
+  {
+    timer.reset();
+    timer.start();
+    RAJA::forall<RAJA::omp_parallel_for_exec>
+      (RAJA::RangeSegment(0, N),
+       RAJA::expt::KernelName("CALI: RAJA OpenMP daxpy Kernel"),
+       [=] (int i) {
+         a[i] += b[i] * c;
+       });
+    timer.stop();
+    RAJA::Timer::ElapsedType etime = timer.elapsed();
+    std::cout << "RAJA-OMP elapsed time : " << etime << " seconds" << std::endl;
+  }
   checkResult(a, aref, N);
 //printResult(a, N);
 #endif
@@ -183,12 +188,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice ));
   cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice ));
 
-  RAJA::forall<RAJA::cuda_exec<256>>
-    (RAJA::RangeSegment(0, N),
-    RAJA::expt::KernelName("CALI: RAJA CUDA daxpy Kernel"),
-    [=] RAJA_DEVICE (int i) {
-    a[i] += b[i] * c;
-  });
+  {
+    timer.reset();
+    timer.start();
+    RAJA::forall<RAJA::cuda_exec<256>>
+      (RAJA::RangeSegment(0, N),
+       RAJA::expt::KernelName("CALI: RAJA CUDA daxpy Kernel"),
+       [=] RAJA_DEVICE (int i) {
+         a[i] += b[i] * c;
+       });
+    timer.stop();
+    RAJA::Timer::ElapsedType etime = timer.elapsed();
+    std::cout << "RAJA-CUDA elapsed time : " << etime << " seconds" << std::endl;
+  }
 
   cudaErrchk(cudaMemcpy( ta, a, N * sizeof(double), cudaMemcpyDeviceToHost ));
 
@@ -215,12 +227,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
 
-  RAJA::forall<RAJA::hip_exec<256>>
-    (RAJA::RangeSegment(0, N),
-     RAJA::expt::KernelName("CALI: RAJA HIP daxpy Kernel"),
-    [=] RAJA_DEVICE (int i) {
-    a[i] += b[i] * c;
-  });
+  {
+    timer.reset();
+    timer.start();
+    RAJA::forall<RAJA::hip_exec<256>>
+      (RAJA::RangeSegment(0, N),
+       RAJA::expt::KernelName("CALI: RAJA HIP daxpy Kernel"),
+       [=] RAJA_DEVICE (int i) {
+         a[i] += b[i] * c;
+       });
+    timer.stop();
+    RAJA::Timer::ElapsedType etime = timer.elapsed();
+    std::cout << "RAJA-HIP elapsed time : " << etime << " seconds" << std::endl;
+  }
 
   hipErrchk(hipMemcpy( ta, a, N * sizeof(double), hipMemcpyDeviceToHost ));
 
