@@ -32,7 +32,7 @@ namespace internal
 
 /*
  * Executor for work sharing inside CudaKernel.
- * Provides an unchecked mapping.
+ * Provides a direct unchecked mapping.
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  * Meets all sync requirements
@@ -47,20 +47,20 @@ template <typename Data,
 struct CudaStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                         RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : CudaStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                       RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = CudaStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                     RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 

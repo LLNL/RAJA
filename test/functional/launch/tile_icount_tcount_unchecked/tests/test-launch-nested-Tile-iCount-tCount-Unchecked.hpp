@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_UNCHECKED_HPP__
-#define __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_UNCHECKED_HPP__
+#ifndef __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_DIRECT_UNCHECKED_HPP__
+#define __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_DIRECT_UNCHECKED_HPP__
 
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
           typename THREAD_X_POLICY, typename TEAM_X_POLICY>
-void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
+void LaunchNestedTileDirectUncheckedTestImpl(INDEX_TYPE M)
 {
 
   constexpr int threads_x   = 4;
@@ -99,14 +99,14 @@ void LaunchNestedTileUncheckedTestImpl(INDEX_TYPE M)
 }
 
 
-TYPED_TEST_SUITE_P(LaunchNestedTileUncheckedTest);
+TYPED_TEST_SUITE_P(LaunchNestedTileDirectUncheckedTest);
 template <typename T>
-class LaunchNestedTileUncheckedTest : public ::testing::Test
+class LaunchNestedTileDirectUncheckedTest : public ::testing::Test
 {
 };
 
 
-TYPED_TEST_P(LaunchNestedTileUncheckedTest, RangeSegmentTeams)
+TYPED_TEST_P(LaunchNestedTileDirectUncheckedTest, RangeSegmentTeams)
 {
 
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -118,23 +118,23 @@ TYPED_TEST_P(LaunchNestedTileUncheckedTest, RangeSegmentTeams)
 
 
   // test zero-length range segment
-  LaunchNestedTileUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+  LaunchNestedTileDirectUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                            THREAD_X_POLICY, TEAM_X_POLICY>
     (INDEX_TYPE(0));
 
-  //Keep at one since we are doing a unchecked thread test
-  LaunchNestedTileUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+  //Keep at one since we are doing a direct unchecked thread test
+  LaunchNestedTileDirectUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                                  THREAD_X_POLICY, TEAM_X_POLICY>
     (INDEX_TYPE(1));
 
-    LaunchNestedTileUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+    LaunchNestedTileDirectUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                                  THREAD_X_POLICY, TEAM_X_POLICY>
     (INDEX_TYPE(2));
 
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileUncheckedTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileDirectUncheckedTest,
                             RangeSegmentTeams);
 
-#endif  // __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_UNCHECKED_HPP__
+#endif  // __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_DIRECT_UNCHECKED_HPP__

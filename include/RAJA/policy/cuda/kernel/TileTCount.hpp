@@ -60,14 +60,14 @@ struct CudaStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public CudaStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                        RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -75,7 +75,7 @@ struct CudaStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                      RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 

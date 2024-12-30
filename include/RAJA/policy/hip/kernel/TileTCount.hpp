@@ -60,14 +60,14 @@ struct HipStatementExecutor<
     Data,
     statement::TileTCount<ArgumentId, ParamId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
     : public HipStatementExecutor<
         Data,
         statement::Tile<ArgumentId,
                         RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                        RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                         EnclosedStmts...>,
                         Types> {
 
@@ -75,7 +75,7 @@ struct HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                       EnclosedStmts...>,
                       Types>;
 

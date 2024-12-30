@@ -10,13 +10,13 @@
 #
 #
 
-foreach( BACKEND ${LAUNCH_UNCHECKED_BACKENDS} )
-    configure_file( test-launch-nested-tile-icount-tcount-unchecked.cpp.in
-                    test-launch-nested-Tile-iCount-tCount-Unchecked-${BACKEND}.cpp )
-    raja_add_test( NAME test-launch-nested-Tile-iCount-tCount-Unchecked-${BACKEND}
-                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-launch-nested-Tile-iCount-tCount-Unchecked-${BACKEND}.cpp )
+foreach( BACKEND ${LAUNCH_DIRECT_UNCHECKED_BACKENDS} )
+    configure_file( test-launch-nested-tile-icount-tcount-direct-unchecked.cpp.in
+                    test-launch-nested-Tile-iCount-tCount-DirectUnchecked-${BACKEND}.cpp )
+    raja_add_test( NAME test-launch-nested-Tile-iCount-tCount-DirectUnchecked-${BACKEND}
+                   SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-launch-nested-Tile-iCount-tCount-DirectUnchecked-${BACKEND}.cpp )
 
-    target_include_directories(test-launch-nested-Tile-iCount-tCount-Unchecked-${BACKEND}.exe
+    target_include_directories(test-launch-nested-Tile-iCount-tCount-DirectUnchecked-${BACKEND}.exe
                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 endforeach()
 

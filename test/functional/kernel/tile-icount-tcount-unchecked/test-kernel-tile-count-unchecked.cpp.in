@@ -18,7 +18,7 @@
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
-#include "test-kernel-tile-@TESTTYPE@-unchecked.hpp"
+#include "test-kernel-tile-@TESTTYPE@-direct-unchecked.hpp"
 
 //
 // Note that a separate test file/executable is generated for each tile size
@@ -42,8 +42,8 @@ using CudaKernelForICountExecPols = camp::list<
 
   RAJA::KernelPolicy< 
     RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_unchecked,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_unchecked,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_direct_unchecked,
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct_unchecked,
           RAJA::statement::Lambda<0>
         >
       >
@@ -56,8 +56,8 @@ using CudaKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_unchecked,
-        RAJA::statement::For<0, RAJA::cuda_thread_x_unchecked,
+      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_direct_unchecked,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_direct_unchecked,
           RAJA::statement::Lambda<0>
         >
       >
@@ -77,8 +77,8 @@ using HipKernelForICountExecPols = camp::list<
 
   RAJA::KernelPolicy< 
     RAJA::statement::HipKernel<
-      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_unchecked,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_unchecked,
+      RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_direct_unchecked,
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct_unchecked,
           RAJA::statement::Lambda<0>
         >
       >
@@ -91,8 +91,8 @@ using HipKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
-      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_unchecked,
-        RAJA::statement::For<0, RAJA::hip_thread_x_unchecked,
+      RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_direct_unchecked,
+        RAJA::statement::For<0, RAJA::hip_thread_x_direct_unchecked,
           RAJA::statement::Lambda<0>
         >
       >
@@ -115,5 +115,5 @@ using @BACKEND@KernelTile@TESTTYPE@Types =
 // Instantiate parameterized tests
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               KernelTile@TESTTYPE@UncheckedTest,
+                               KernelTile@TESTTYPE@DirectUncheckedTest,
                                @BACKEND@KernelTile@TESTTYPE@Types);

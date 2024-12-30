@@ -70,7 +70,7 @@ enum struct kernel_sync_requirement : int
 namespace iteration_mapping
 {
 
-struct UncheckedBase {};
+struct DirectUncheckedBase {};
 struct DirectBase {};
 struct LoopBase {};
 struct ContiguousLoopBase : LoopBase {};
@@ -84,8 +84,9 @@ struct SizedLoopSpecifyingBase : SizedLoopBase
 };
 
 ///
-/// Unchecked assumes the loop has the same number of iterations and indices and
-/// maps directly without bounds checking from an iteration to an index.
+/// DirectUnchecked assumes the loop has the same number of iterations and
+/// indices and maps directly without bounds checking from an iteration to an
+/// index.
 ///
 /// For example a loop with 4 iterations mapping indices from a range of size 4.
 ///   int iterations = 4;
@@ -99,7 +100,7 @@ struct SizedLoopSpecifyingBase : SizedLoopBase
 ///   // 2 -> {2}
 ///   // 3 -> {3}
 ///
-struct Unchecked : UncheckedBase {};
+struct DirectUnchecked : DirectUncheckedBase {};
 
 ///
 /// Direct assumes the loop has enough iterations for all of the indices and

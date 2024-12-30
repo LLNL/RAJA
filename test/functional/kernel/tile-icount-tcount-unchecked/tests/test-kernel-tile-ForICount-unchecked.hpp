@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_TILE_FORICOUNT_UNCHECKED_HPP__
-#define __TEST_KERNEL_TILE_FORICOUNT_UNCHECKED_HPP__
+#ifndef __TEST_KERNEL_TILE_FORICOUNT_DIRECT_UNCHECKED_HPP__
+#define __TEST_KERNEL_TILE_FORICOUNT_DIRECT_UNCHECKED_HPP__
 
 //
 // Value struct for manipulating tile sizes in parameterized tests.
@@ -18,7 +18,7 @@ struct Value {
 
 
 template <typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY>
-void KernelTileForICountUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
+void KernelTileForICountDirectUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 {
 
   RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE> trip_count(0);
@@ -55,14 +55,14 @@ void KernelTileForICountUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 }
 
 
-TYPED_TEST_SUITE_P(KernelTileForICountUncheckedTest);
+TYPED_TEST_SUITE_P(KernelTileForICountDirectUncheckedTest);
 template <typename T>
-class KernelTileForICountUncheckedTest : public ::testing::Test
+class KernelTileForICountDirectUncheckedTest : public ::testing::Test
 {
 };
 
 
-TYPED_TEST_P(KernelTileForICountUncheckedTest, ForICountTileKernel)
+TYPED_TEST_P(KernelTileForICountDirectUncheckedTest, ForICountTileKernel)
 {
   using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -70,16 +70,16 @@ TYPED_TEST_P(KernelTileForICountUncheckedTest, ForICountTileKernel)
 
   IDX_TYPE tsize = camp::at_v<TypeParam, 3>::value;
 
-  KernelTileForICountUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+  KernelTileForICountDirectUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
     IDX_TYPE(0), tsize);
-  KernelTileForICountUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+  KernelTileForICountDirectUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
     IDX_TYPE(tsize), tsize);
-  KernelTileForICountUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+  KernelTileForICountDirectUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
     IDX_TYPE(13*tsize), tsize);
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelTileForICountUncheckedTest,
+REGISTER_TYPED_TEST_SUITE_P(KernelTileForICountDirectUncheckedTest,
                             ForICountTileKernel);
 
-#endif  // __TEST_KERNEL_TILE_FORICOUNT_UNCHECKED_HPP__
+#endif  // __TEST_KERNEL_TILE_FORICOUNT_DIRECT_UNCHECKED_HPP__

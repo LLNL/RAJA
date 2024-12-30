@@ -8,14 +8,14 @@
 #
 # List of segment types for generating test files.
 #
-set(NESTEDTYPES Unchecked)
+set(NESTEDTYPES DirectUnchecked)
 
 #
 # Generate tests for each enabled RAJA back-end.
 #
 #
 
-foreach( BACKEND ${LAUNCH_UNCHECKED_BACKENDS} )
+foreach( BACKEND ${LAUNCH_DIRECT_UNCHECKED_BACKENDS} )
   foreach( NESTEDTYPES ${NESTEDTYPES} )
     configure_file( test-launch-nested.cpp.in
                     test-launch-nested-${NESTEDTYPES}-${BACKEND}.cpp )

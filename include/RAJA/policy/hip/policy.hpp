@@ -1462,8 +1462,8 @@ using hip_multi_reduce_atomic_low_performance_low_overhead =
 using policy::hip::hip_block_reduce;
 using policy::hip::hip_warp_reduce;
 
-using hip_warp_unchecked = RAJA::policy::hip::hip_indexer<
-    iteration_mapping::Unchecked,
+using hip_warp_direct_unchecked = RAJA::policy::hip::hip_indexer<
+    iteration_mapping::DirectUnchecked,
     kernel_sync_requirement::none,
     hip::thread_x<RAJA::policy::hip::device_constants.WARP_SIZE>>;
 using hip_warp_direct = RAJA::policy::hip::hip_indexer<
@@ -1490,8 +1490,8 @@ using policy::hip::hip_launch_t;
 
 // policies usable with kernel and launch
 template < typename ... indexers >
-using hip_indexer_unchecked = policy::hip::hip_indexer<
-    iteration_mapping::Unchecked,
+using hip_indexer_direct_unchecked = policy::hip::hip_indexer<
+    iteration_mapping::DirectUnchecked,
     kernel_sync_requirement::none,
     indexers...>;
 
@@ -1514,8 +1514,8 @@ using hip_indexer_syncable_loop = policy::hip::hip_indexer<
     indexers...>;
 
 template < typename ... indexers >
-using hip_flatten_indexer_unchecked = policy::hip::hip_flatten_indexer<
-    iteration_mapping::Unchecked,
+using hip_flatten_indexer_direct_unchecked = policy::hip::hip_flatten_indexer<
+    iteration_mapping::DirectUnchecked,
     kernel_sync_requirement::none,
     indexers...>;
 
@@ -1585,11 +1585,11 @@ using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
  * For example, a segment of size 1000 will only fit into 1000 threads, blocks, or global threads, and
  * triggers a runtime error in some cases.
  */
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_POLICIES(, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_POLICIES(, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_POLICIES(, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_POLICIES(, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_POLICIES(, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_POLICIES(, direct_unchecked)
 
 /*!
  * Maps segment indices to HIP threads, blocks, or global threads.
@@ -1636,11 +1636,11 @@ RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_POLICIES(, syncable_loop)
  * Reshapes multiple physical threads, blocks, or global threads into a 1D
  * iteration space
  */
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_POLICIES(flatten_, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_POLICIES(flatten_, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_POLICIES(flatten_, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_POLICIES(flatten_, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_POLICIES(flatten_, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_POLICIES(flatten_, direct_unchecked)
 
 /*
  * Maps segment indices to flattened HIP threads, blocks, or global threads.
@@ -1788,11 +1788,11 @@ RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_POLICIES(flatten_, loop)
  * This is the lowest overhead mapping, but requires that there are the same
  * number of physical threads as the map requests.
  */
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_SIZE_POLICIES(, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_SIZE_POLICIES(, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_SIZE_POLICIES(, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_SIZE_POLICIES(, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_SIZE_POLICIES(, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_SIZE_POLICIES(, direct_unchecked)
 
 /*!
  * Maps segment indices to HIP threads, blocks, or global threads.
@@ -1824,11 +1824,11 @@ RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_SIZE_POLICIES(, loop)
  * Reshapes multiple physical threads, blocks, or global threads into a 1D
  * iteration space.
  */
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_SIZE_POLICIES(flatten_, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_THREAD_SIZE_POLICIES(flatten_, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_SIZE_POLICIES(flatten_, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_BLOCK_SIZE_POLICIES(flatten_, direct_unchecked)
 
-RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_SIZE_POLICIES(flatten_, unchecked)
+RAJA_INTERNAL_HIP_ALIAS_INDEXER_GLOBAL_SIZE_POLICIES(flatten_, direct_unchecked)
 
 /*
  * Maps segment indices to flattened HIP threads, blocks, or global threads.

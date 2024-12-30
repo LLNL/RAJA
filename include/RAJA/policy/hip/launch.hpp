@@ -358,7 +358,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>> {
    HIP generic loop implementations
 */
 template <typename SEGMENT, typename IndexMapper>
-struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
                    SEGMENT> {
@@ -378,7 +378,7 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unche
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1>,
@@ -401,7 +401,7 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unche
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1,
@@ -623,7 +623,7 @@ struct LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Strid
    HIP generic loop_icount implementations
 */
 template <typename SEGMENT, typename IndexMapper>
-struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {
@@ -642,7 +642,7 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
   }
 };
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1>,
@@ -667,7 +667,7 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1,
@@ -894,18 +894,18 @@ struct LoopICountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
    HIP generic flattened loop implementations
 */
 template<typename SEGMENT, kernel_sync_requirement sync, typename IndexMapper0>
-struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                           sync,
                                                           IndexMapper0>,
                    SEGMENT>
-    :  LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+    :  LoopExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   sync,
                                                   IndexMapper0>,
                    SEGMENT>
 {};
 
 template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                           kernel_sync_requirement::none,
                                                           IndexMapper0,
                                                           IndexMapper1>,
@@ -931,7 +931,7 @@ struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mappin
 };
 
 template<typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::Unchecked,
+struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                           kernel_sync_requirement::none,
                                                           IndexMapper0,
                                                           IndexMapper1,
@@ -1114,7 +1114,7 @@ struct LoopExecute<RAJA::policy::hip::hip_flatten_indexer<RAJA::iteration_mappin
    HIP generic tile implementations
 */
 template <typename SEGMENT, typename IndexMapper>
-struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper>,
                    SEGMENT> {
@@ -1135,7 +1135,7 @@ struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unche
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1>,
@@ -1161,7 +1161,7 @@ struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unche
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                   kernel_sync_requirement::none,
                                                   IndexMapper0,
                                                   IndexMapper1,
@@ -1394,7 +1394,7 @@ struct TileExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Strid
    HIP generic tile_tcount implementations
 */
 template <typename SEGMENT, typename IndexMapper>
-struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper>,
                          SEGMENT> {
@@ -1416,7 +1416,7 @@ struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1>
-struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1>,
@@ -1446,7 +1446,7 @@ struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping:
 };
 
 template <typename SEGMENT, typename IndexMapper0, typename IndexMapper1, typename IndexMapper2>
-struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::Unchecked,
+struct TileTCountExecute<RAJA::policy::hip::hip_indexer<RAJA::iteration_mapping::DirectUnchecked,
                                                         kernel_sync_requirement::none,
                                                         IndexMapper0,
                                                         IndexMapper1,

@@ -95,8 +95,8 @@ using CudaKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::cuda_block_x_unchecked,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::cuda_block_y_unchecked,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::cuda_block_x_direct_unchecked,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::cuda_block_y_direct_unchecked,
 
             RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
 
@@ -132,8 +132,8 @@ using HipKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::hip_block_x_unchecked,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::hip_block_y_unchecked,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::hip_block_x_direct_unchecked,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::hip_block_y_direct_unchecked,
 
             RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2>,
 

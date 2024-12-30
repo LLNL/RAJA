@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_LAUNCH_NESTED_UNCHECKED_HPP__
-#define __TEST_LAUNCH_NESTED_UNCHECKED_HPP__
+#ifndef __TEST_LAUNCH_NESTED_DIRECT_UNCHECKED_HPP__
+#define __TEST_LAUNCH_NESTED_DIRECT_UNCHECKED_HPP__
 
 #include <numeric>
 
 template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
           typename THREAD_X_POLICY, typename THREAD_Y_POLICY, typename THREAD_Z_POLICY,
           typename TEAM_X_POLICY, typename TEAM_Y_POLICY, typename TEAM_Z_POLICY>
-void LaunchNestedUncheckedTestImpl(INDEX_TYPE M)
+void LaunchNestedDirectUncheckedTestImpl(INDEX_TYPE M)
 {
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, 2*M);
@@ -108,14 +108,14 @@ void LaunchNestedUncheckedTestImpl(INDEX_TYPE M)
 }
 
 
-TYPED_TEST_SUITE_P(LaunchNestedUncheckedTest);
+TYPED_TEST_SUITE_P(LaunchNestedDirectUncheckedTest);
 template <typename T>
-class LaunchNestedUncheckedTest : public ::testing::Test
+class LaunchNestedDirectUncheckedTest : public ::testing::Test
 {
 };
 
 
-TYPED_TEST_P(LaunchNestedUncheckedTest, RangeSegmentTeams)
+TYPED_TEST_P(LaunchNestedDirectUncheckedTest, RangeSegmentTeams)
 {
 
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
@@ -133,13 +133,13 @@ TYPED_TEST_P(LaunchNestedUncheckedTest, RangeSegmentTeams)
 
 
   // test zero-length range segment
-  LaunchNestedUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+  LaunchNestedDirectUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                            THREAD_X_POLICY, THREAD_Y_POLICY, THREAD_Z_POLICY,
                            TEAM_X_POLICY, TEAM_Y_POLICY, TEAM_Z_POLICY>
     (INDEX_TYPE(0));
 
-  //Keep at one since we are doing a unchecked thread test
-  LaunchNestedUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
+  //Keep at one since we are doing a direct unchecked thread test
+  LaunchNestedDirectUncheckedTestImpl<INDEX_TYPE, WORKING_RES, LAUNCH_POLICY,
                            THREAD_X_POLICY, THREAD_Y_POLICY, THREAD_Z_POLICY,
                            TEAM_X_POLICY, TEAM_Y_POLICY, TEAM_Z_POLICY>
     (INDEX_TYPE(1));
@@ -147,7 +147,7 @@ TYPED_TEST_P(LaunchNestedUncheckedTest, RangeSegmentTeams)
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(LaunchNestedUncheckedTest,
+REGISTER_TYPED_TEST_SUITE_P(LaunchNestedDirectUncheckedTest,
                             RangeSegmentTeams);
 
-#endif  // __TEST_LAUNCH_NESTED_UNCHECKED_HPP__
+#endif  // __TEST_LAUNCH_NESTED_DIRECT_UNCHECKED_HPP__

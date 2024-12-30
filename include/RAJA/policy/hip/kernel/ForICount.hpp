@@ -32,7 +32,7 @@ namespace internal
 
 /*
  * Executor for work sharing inside HipKernel.
- * Provides an unchecked mapping.
+ * Provides a direct unchecked mapping.
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  * Meets all sync requirements
@@ -47,20 +47,20 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::ForICount<ArgumentId, ParamId,
-                         RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                         RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                          EnclosedStmts...>,
     Types>
     : HipStatementExecutor<
         Data,
         statement::For<ArgumentId,
-                       RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                       RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                        EnclosedStmts...>,
         Types> {
 
   using Base = HipStatementExecutor<
       Data,
       statement::For<ArgumentId,
-                     RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                     RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                      EnclosedStmts...>,
       Types>;
 

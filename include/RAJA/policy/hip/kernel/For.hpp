@@ -45,7 +45,7 @@ template <typename Data,
 struct HipStatementExecutor<
     Data,
     statement::For<ArgumentId,
-                   RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                   RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                    EnclosedStmts...>,
     Types> {
 
@@ -60,7 +60,7 @@ struct HipStatementExecutor<
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
   using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
-      RAJA::policy::hip::hip_indexer<iteration_mapping::Unchecked, sync, IndexMapper>>;
+      RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)

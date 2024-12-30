@@ -58,7 +58,7 @@ struct CudaStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>,
+                    RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
                     EnclosedStmts...>,
                     Types>
   {
@@ -69,7 +69,7 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::Unchecked, sync, IndexMapper>>;
+  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>>;
 
   static inline RAJA_DEVICE
   void exec(Data &data, bool thread_active)
@@ -116,8 +116,8 @@ struct CudaStatementExecutor<
     // restrict to first tile
     segment = segment.slice(0, static_cast<diff_t>(chunk_size));
 
-    // NOTE: We do not detect improper uses of unchecked policies under tiling.
-    // This happens when using an unchecked policy on a tiled range that is not
+    // NOTE: We do not detect improper uses of direct_unchecked policies under tiling.
+    // This happens when using a direct unchecked policy on a tiled range that is not
     // evenly divisible by chunk_size.
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);

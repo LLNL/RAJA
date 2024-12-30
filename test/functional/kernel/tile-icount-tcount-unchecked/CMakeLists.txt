@@ -16,16 +16,16 @@ set(TILESIZES 8 32)
 # 
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
-foreach( BACKEND ${KERNEL_UNCHECKED_BACKENDS} )
+foreach( BACKEND ${KERNEL_DIRECT_UNCHECKED_BACKENDS} )
   # using omp target crashes the compiler with this one 
   if( NOT ((BACKEND STREQUAL "OpenMPTarget")) )
     foreach( TESTTYPE ${TESTTYPES} )
       foreach( TILESIZE ${TILESIZES} )
-        configure_file( test-kernel-tile-count-unchecked.cpp.in
-                        test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-unchecked.cpp )
-        raja_add_test( NAME test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-unchecked
-                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-unchecked.cpp )
-        target_include_directories(test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-unchecked.exe
+        configure_file( test-kernel-tile-count-direct-unchecked.cpp.in
+                        test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct-unchecked.cpp )
+        raja_add_test( NAME test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct-unchecked
+                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct-unchecked.cpp )
+        target_include_directories(test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct-unchecked.exe
                                   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
       endforeach()
     endforeach()
