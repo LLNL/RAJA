@@ -19,6 +19,7 @@
 #define RAJA_scan_sycl_HPP
 
 #include <cstddef>
+#include <iterator>
 #include "RAJA/config.hpp"
 #include "camp/resource/sycl.hpp"
 
@@ -199,10 +200,9 @@ inclusive(
     OutputIter out,
     Function binary_op)
 {
-  // ::sycl::joint_inclusive_scan()
-    using std::distance;
-    std::copy(begin, end, out);
-    return inclusive_inplace(sycl_res, exec, out, out + distance(begin, end), binary_op);
+    using valueT = typename std::remove_reference<decltype(*out)>::type;
+    sycl_res.memcpy(out, begin, std::distance(begin, end) * sizeof(valueT));
+    return inclusive_inplace(sycl_res, exec, out, out + std::distance(begin, end), binary_op);
 }
 
 template <size_t BLOCK_SIZE,
@@ -222,9 +222,9 @@ exclusive(
     Function binary_op,
     TT initVal)
 {
-    using std::distance;
-    std::copy(begin, end, out);
-    return exclusive_inplace(sycl_res, exec, out, out + distance(begin, end), binary_op, initVal);
+    using valueT = typename std::remove_reference<decltype(*out)>::type;
+    sycl_res.memcpy(out, begin, std::distance(begin, end) * sizeof(valueT));
+    return exclusive_inplace(sycl_res, exec, out, out + std::distance(begin, end), binary_op, initVal);
 }
 
 }  // namespace scan
