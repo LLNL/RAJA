@@ -21,7 +21,6 @@ set(RAJA_HOST_CONFIG_LOADED On CACHE BOOL "")
 
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
-set(GCC_HOME "/usr/projects/hpcsoft/tce/24-07/cos3-aarch64-cc90/compilers/gcc/12.3.0")
 set(CMAKE_C_COMPILER   "${GCC_HOME}/bin/gcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "${GCC_HOME}/bin/g++" CACHE PATH "")
 set(BLT_CXX_STD "c++17" CACHE STRING "")
@@ -29,12 +28,9 @@ set(BLT_CXX_STD "c++17" CACHE STRING "")
 #------------------------------------------------------------------------------
 # CUDA support
 #------------------------------------------------------------------------------
-
-set(CUDA_TOOLKIT_ROOT_DIR "/opt/nvidia/hpc_sdk/Linux_aarch64/24.7/cuda/12.5" CACHE PATH "")
 set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc" CACHE PATH "")
 set(CMAKE_CUDA_HOST_COMPILER "${CMAKE_CXX_COMPILER}" CACHE PATH "")
 
-set(CMAKE_CUDA_ARCHITECTURES "90" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS "-restrict --expt-extended-lambda -G" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_RELEASE "-O3 ${HOST_OPT_FLAGS}" CACHE STRING "")
 set(CMAKE_CUDA_FLAGS_DEBUG "-g -G -O0" CACHE STRING "")
