@@ -229,24 +229,24 @@ void launch(LaunchParams const &launch_params, const char *kernel_name, ReducePa
   auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
 
   //Take the first policy as we assume the second policy is not user defined.
-  //We rely on the user to pair launch and loop policies correctly.
+  //We rely on the user to pair launch and loop policies core_protly.
   util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
-  util::callPreCapturePlugins(context);
+  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
+  util::callPreCapturePlugins(context, Res::get_default());
 
   using RAJA::util::trigger_updates_before;
   auto p_body = trigger_updates_before(launch_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, Res::get_default());
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, Res::get_default());
 
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
 
-  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
 
   launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body, reducers);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, Res::get_default());
 }
 
 
@@ -264,23 +264,25 @@ void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_
 
   //Take the first policy as we assume the second policy is not user defined.
   //We rely on the user to pair launch and loop policies correctly.
-  util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
-  util::callPreCapturePlugins(context);
-
+  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
   using RAJA::util::trigger_updates_before;
+
+  util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>()};
+
+  util::callPreCapturePlugins(context, Res::get_default());
+
   auto p_body = trigger_updates_before(launch_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, Res::get_default());
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, Res::get_default());
 
   using launch_t = LaunchExecute<typename LAUNCH_POLICY::host_policy_t>;
 
-  using Res = typename resources::get_resource<typename LAUNCH_POLICY::host_policy_t>::type;
 
   launch_t::exec(Res::get_default(), launch_params, kernel_name, p_body, reducers);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, Res::get_default());
 }
 
 //=================================================
@@ -420,27 +422,27 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
 #endif
 
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, res);
 
   using RAJA::util::trigger_updates_before;
   auto p_body = trigger_updates_before(launch_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, res);
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, res);
 
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name, p_body, reducers);
-      util::callPostLaunchPlugins(context);
+      util::callPostLaunchPlugins(context, res);
       return e_proxy;
     }
 #if defined(RAJA_GPU_ACTIVE)
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name,  p_body, reducers);
-      util::callPostLaunchPlugins(context);
+      util::callPostLaunchPlugins(context, res);
       return e_proxy;
     }
 #endif
@@ -488,27 +490,27 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>()};
 #endif
 
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, res);
 
   using RAJA::util::trigger_updates_before;
   auto p_body = trigger_updates_before(launch_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, res);
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, res);
 
   switch (place) {
     case ExecPlace::HOST: {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name, p_body, reducers);
-      util::callPostLaunchPlugins(context);
+      util::callPostLaunchPlugins(context, res);
       return e_proxy;
     }
 #if defined(RAJA_GPU_ACTIVE)
     case ExecPlace::DEVICE: {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, kernel_name, p_body, reducers);
-      util::callPostLaunchPlugins(context);
+      util::callPostLaunchPlugins(context, res);
       return e_proxy;
     }
 #endif

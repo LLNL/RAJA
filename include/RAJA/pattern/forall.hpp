@@ -309,14 +309,14 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
   //expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, r);
 
   using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, r);
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, r);
 
   RAJA::resources::EventProxy<Res> e = wrap::forall_Icount(
       r,
@@ -325,7 +325,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
       std::move(body),
       f_params);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, r);
   return e;
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody,
@@ -364,14 +364,14 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, r);
 
   using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, r);
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, r);
 
   resources::EventProxy<Res> e = wrap::forall(
       r,
@@ -380,7 +380,7 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
       std::move(body),
       f_params);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, r);
   return e;
 }
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody,
@@ -457,14 +457,14 @@ forall_Icount(ExecutionPolicy&& p,
   //expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, r);
 
   using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, r);
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, r);
 
   resources::EventProxy<Res> e = wrap::forall_Icount(
       r,
@@ -474,7 +474,7 @@ forall_Icount(ExecutionPolicy&& p,
       std::move(body),
       f_params);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, r);
   return e;
 }
 template <typename ExecutionPolicy,
@@ -525,14 +525,14 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>()};
-  util::callPreCapturePlugins(context);
+  util::callPreCapturePlugins(context, r);
 
   using RAJA::util::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
-  util::callPostCapturePlugins(context);
+  util::callPostCapturePlugins(context, r);
 
-  util::callPreLaunchPlugins(context);
+  util::callPreLaunchPlugins(context, r);
 
   resources::EventProxy<Res> e =  wrap::forall(
       r,
@@ -541,7 +541,7 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
       std::move(body),
       f_params);
 
-  util::callPostLaunchPlugins(context);
+  util::callPostLaunchPlugins(context, r);
   return e;
 }
 

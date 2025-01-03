@@ -30,49 +30,49 @@ RAJA_INLINE auto trigger_updates_before(T&& item)
 
 RAJA_INLINE
 void
-callPreCapturePlugins(const PluginContext& p)
+callPreCapturePlugins(const PluginContext& p, const resources::Resource& resource)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).get()->preCapture(p);
+    (*plugin).get()->preCapture(p, resource);
   }
 }
 
 RAJA_INLINE
 void
-callPostCapturePlugins(const PluginContext& p)
+callPostCapturePlugins(const PluginContext& p, const resources::Resource& resource)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).get()->postCapture(p);
+    (*plugin).get()->postCapture(p, resource);
   }
 }
 
 RAJA_INLINE
 void
-callPreLaunchPlugins(const PluginContext& p)
+callPreLaunchPlugins(const PluginContext& p, const resources::Resource& resource)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).get()->preLaunch(p);
+    (*plugin).get()->preLaunch(p, resource);
   }
 }
 
 RAJA_INLINE
 void
-callPostLaunchPlugins(const PluginContext& p)
+callPostLaunchPlugins(const PluginContext& p, const resources::Resource& resource)
 {
   for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
-    (*plugin).get()->postLaunch(p);
+    (*plugin).get()->postLaunch(p, resource);
   }
 }
 
@@ -80,7 +80,7 @@ RAJA_INLINE
 void
 callInitPlugins(const PluginOptions p)
 {
-  for (auto plugin = PluginRegistry::begin(); 
+  for (auto plugin = PluginRegistry::begin();
       plugin != PluginRegistry::end();
       ++plugin)
   {
@@ -91,22 +91,22 @@ callInitPlugins(const PluginOptions p)
 RAJA_INLINE
 void
 init_plugins(const std::string& path)
-{   
+{
   callInitPlugins(make_options(path));
 }
 
 RAJA_INLINE
 void
 init_plugins()
-{   
+{
   callInitPlugins(make_options(""));
 }
 
 RAJA_INLINE
 void
 finalize_plugins()
-{   
-  for (auto plugin = PluginRegistry::begin(); 
+{
+  for (auto plugin = PluginRegistry::begin();
     plugin != PluginRegistry::end();
     ++plugin)
   {
