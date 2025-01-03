@@ -46,7 +46,8 @@ inclusive_inplace(
 {
     ::sycl::queue* sycl_queue = sycl_res.get_queue();
  
-    using valueT = typename std::remove_reference<decltype(*begin)>::type;
+    // using valueT = typename std::remove_reference<decltype(*begin)>::type;
+    using valueT = typename std::iterator_traits<InputIter>::value_type;
 
      // Calculate the size of the input range
     size_t size = std::distance(begin, end);
@@ -114,7 +115,9 @@ exclusive_inplace(
 {
     ::sycl::queue* sycl_queue = sycl_res.get_queue();
     
-    using valueT = typename std::remove_reference<decltype(*begin)>::type;
+    // using valueT = typename std::remove_reference<decltype(*begin)>::type;
+    using valueT = typename std::iterator_traits<InputIter>::value_type;
+
 
      // Calculate the size of the input range
     size_t size = std::distance(begin, end);
@@ -200,7 +203,8 @@ inclusive(
     OutputIter out,
     Function binary_op)
 {
-    using valueT = typename std::remove_reference<decltype(*out)>::type;
+    // using valueT = typename std::remove_reference<decltype(*out)>::type;
+    using valueT = typename std::iterator_traits<OutputIter>::value_type;
     sycl_res.memcpy(out, begin, std::distance(begin, end) * sizeof(valueT));
     return inclusive_inplace(sycl_res, exec, out, out + std::distance(begin, end), binary_op);
 }
@@ -222,7 +226,9 @@ exclusive(
     Function binary_op,
     TT initVal)
 {
-    using valueT = typename std::remove_reference<decltype(*out)>::type;
+    // using valueT = typename std::remove_reference<decltype(*out)>::type;
+    using valueT = typename std::iterator_traits<OutputIter>::value_type;
+
     sycl_res.memcpy(out, begin, std::distance(begin, end) * sizeof(valueT));
     return exclusive_inplace(sycl_res, exec, out, out + std::distance(begin, end), binary_op, initVal);
 }
