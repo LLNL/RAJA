@@ -29,7 +29,6 @@
 #include <thread>
 #include <mutex>
 
-
 namespace RAJA
 {
 
@@ -41,9 +40,9 @@ namespace hip
 
 // global function that creates the value on the device using the
 // factory and writes it into a pinned ptr
-template < typename Factory >
-__global__ void get_value_global(
-    typename Factory::value_type* ptr, Factory factory)
+template<typename Factory>
+__global__ void get_value_global(typename Factory::value_type* ptr,
+                                 Factory factory)
 {
   *ptr = factory();
 }
@@ -52,8 +51,9 @@ __global__ void get_value_global(
 inline void* get_cached_value_ptr(size_t nbytes)
 {
   static size_t cached_nbytes = 0;
-  static void* ptr = nullptr;
-  if (nbytes > cached_nbytes) {
+  static void* ptr            = nullptr;
+  if (nbytes > cached_nbytes)
+  {
     cached_nbytes = 0;
     hipErrchk(hipHostFree(ptr));
     hipErrchk(hipHostMalloc(&ptr, nbytes));
@@ -73,7 +73,7 @@ inline std::mutex& get_value_mutex()
 // get the device function pointer by calling a global function to
 // write it into a pinned ptr, beware different instantiates of this
 // function may run concurrently
-template < typename Factory >
+template<typename Factory>
 inline auto get_value(Factory&& factory)
 {
   using value_type = typename std::decay_t<Factory>::value_type;
@@ -81,8 +81,9 @@ inline auto get_value(Factory&& factory)
 
   auto res = ::camp::resources::Hip::get_default();
   auto ptr = static_cast<value_type*>(get_cached_value_ptr(sizeof(value_type)));
-  auto func = reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
-  void *args[] = {(void*)&ptr, (void*)&factory};
+  auto func =
+      reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
+  void* args[] = {(void*)&ptr, (void*)&factory};
   hipErrchk(hipLaunchKernel(func, 1, 1, args, 0, res.get_stream()));
   hipErrchk(hipStreamSynchronize(res.get_stream()));
 
@@ -91,7 +92,7 @@ inline auto get_value(Factory&& factory)
 
 // get the device function pointer and store it so it can be used
 // multiple times
-template < typename Factory >
+template<typename Factory>
 inline auto get_cached_value(Factory&& factory)
 {
   static auto value = get_value(std::forward<Factory>(factory));
@@ -101,17 +102,15 @@ inline auto get_cached_value(Factory&& factory)
 }  // namespace hip
 
 /*!
-* Populate and return a Dispatcher object that can be used in device code
-*/
-template < typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async >
+ * Populate and return a Dispatcher object that can be used in device code
+ */
+template<typename T, typename Dispatcher_T, size_t BLOCK_SIZE, bool Async>
 inline const Dispatcher_T* get_Dispatcher(hip_work<BLOCK_SIZE, Async> const&)
 {
-  static Dispatcher_T dispatcher{
-        Dispatcher_T::template makeDispatcher<T>(
-          [](auto&& factory) {
-            return hip::get_cached_value(
-                std::forward<decltype(factory)>(factory));
-          }) };
+  static Dispatcher_T dispatcher {
+      Dispatcher_T::template makeDispatcher<T>([](auto&& factory) {
+        return hip::get_cached_value(std::forward<decltype(factory)>(factory));
+      })};
   return &dispatcher;
 }
 

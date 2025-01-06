@@ -38,7 +38,7 @@ namespace Iterators
 // Containers
 
 #if defined(RAJA_ENABLE_ITERATOR_OVERFLOW_DEBUG)
-template <typename LType, typename RType>
+template<typename LType, typename RType>
 std::string overflow_msg(LType lhs, RType rhs)
 {
   return "Iterator Overflow detected between operation of :\n\ttype : " +
@@ -47,10 +47,11 @@ std::string overflow_msg(LType lhs, RType rhs)
          "\n";
 }
 
-template <typename Type, typename DifferenceType>
+template<typename Type, typename DifferenceType>
 RAJA_HOST_DEVICE bool is_addition_overflow(Type lhs, DifferenceType rhs)
 {
-  if (std::is_unsigned<Type>::value) {
+  if (std::is_unsigned<Type>::value)
+  {
     if ((rhs > 0) && (lhs > std::numeric_limits<Type>::max() - rhs))
       return true;
     if ((rhs < 0) && (lhs < std::numeric_limits<Type>::min() - rhs))
@@ -59,23 +60,27 @@ RAJA_HOST_DEVICE bool is_addition_overflow(Type lhs, DifferenceType rhs)
   return false;
 }
 
-template <typename Type, typename DifferenceType>
+template<typename Type, typename DifferenceType>
 RAJA_HOST_DEVICE bool is_subtraction_overflow(Type lhs,
                                               DifferenceType rhs,
                                               bool iterator_on_left = true)
 {
-  if (iterator_on_left) {
+  if (iterator_on_left)
+  {
 
-    if (std::is_unsigned<Type>::value) {
+    if (std::is_unsigned<Type>::value)
+    {
       if ((rhs > 0) && (lhs < std::numeric_limits<Type>::min() + rhs))
         return true;
       if ((rhs < 0) && (lhs > std::numeric_limits<Type>::max() + rhs))
         return true;
     }
+  }
+  else
+  {  // Special case where operation is : value(lhs) - iterator(rhs).
 
-  } else {  // Special case where operation is : value(lhs) - iterator(rhs).
-
-    if (std::is_unsigned<DifferenceType>::value) {
+    if (std::is_unsigned<DifferenceType>::value)
+    {
       if ((lhs > 0) && (rhs < std::numeric_limits<DifferenceType>::min() + lhs))
         return true;
       if ((lhs < 0)) return true;
@@ -84,14 +89,14 @@ RAJA_HOST_DEVICE bool is_subtraction_overflow(Type lhs,
   return false;
 }
 
-template <typename Type, typename DifferenceType>
+template<typename Type, typename DifferenceType>
 RAJA_HOST_DEVICE void check_is_addition_overflow(Type lhs, DifferenceType rhs)
 {
   if (is_addition_overflow(lhs, rhs))
     throw std::runtime_error(overflow_msg(lhs, rhs));
 }
 
-template <typename Type, typename DifferenceType>
+template<typename Type, typename DifferenceType>
 RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type lhs,
                                                     DifferenceType rhs)
 {
@@ -100,29 +105,28 @@ RAJA_HOST_DEVICE void check_is_subtraction_overflow(Type lhs,
 }
 #endif
 
-template <typename Type = Index_type,
-          typename DifferenceType = Type,
-          typename PointerType = Type*>
+template<typename Type           = Index_type,
+         typename DifferenceType = Type,
+         typename PointerType    = Type*>
 class numeric_iterator
 {
 public:
-  using value_type = Type;
+  using value_type          = Type;
   using stripped_value_type = strip_index_type_t<Type>;
-  using difference_type = DifferenceType;
-  using pointer = PointerType;
-  using reference = value_type&;
-  using iterator_category = std::random_access_iterator_tag;
+  using difference_type     = DifferenceType;
+  using pointer             = PointerType;
+  using reference           = value_type&;
+  using iterator_category   = std::random_access_iterator_tag;
 
-  constexpr numeric_iterator() noexcept = default;
-  constexpr numeric_iterator(const numeric_iterator&) noexcept = default;
-  constexpr numeric_iterator(numeric_iterator&&) noexcept = default;
+  constexpr numeric_iterator() noexcept                         = default;
+  constexpr numeric_iterator(const numeric_iterator&) noexcept  = default;
+  constexpr numeric_iterator(numeric_iterator&&) noexcept       = default;
   numeric_iterator& operator=(const numeric_iterator&) noexcept = default;
-  numeric_iterator& operator=(numeric_iterator&&) noexcept = default;
+  numeric_iterator& operator=(numeric_iterator&&) noexcept      = default;
 
   RAJA_HOST_DEVICE constexpr numeric_iterator(const stripped_value_type& rhs)
       : val(rhs)
-  {
-  }
+  {}
 
   RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return 1; }
 
@@ -130,22 +134,27 @@ public:
   {
     return val == rhs.val;
   }
+
   RAJA_HOST_DEVICE inline bool operator!=(const numeric_iterator& rhs) const
   {
     return val != rhs.val;
   }
+
   RAJA_HOST_DEVICE inline bool operator>(const numeric_iterator& rhs) const
   {
     return val > rhs.val;
   }
+
   RAJA_HOST_DEVICE inline bool operator<(const numeric_iterator& rhs) const
   {
     return val < rhs.val;
   }
+
   RAJA_HOST_DEVICE inline bool operator>=(const numeric_iterator& rhs) const
   {
     return val >= rhs.val;
   }
+
   RAJA_HOST_DEVICE inline bool operator<=(const numeric_iterator& rhs) const
   {
     return val <= rhs.val;
@@ -156,17 +165,20 @@ public:
     ++val;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator& operator--()
   {
     --val;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator operator++(int)
   {
     numeric_iterator tmp(*this);
     ++val;
     return tmp;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator operator--(int)
   {
     numeric_iterator tmp(*this);
@@ -183,6 +195,7 @@ public:
     val += rhs;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
       const difference_type& rhs)
   {
@@ -192,12 +205,14 @@ public:
     val -= rhs;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
       const numeric_iterator& rhs)
   {
     val += rhs.val;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
       const numeric_iterator& rhs)
   {
@@ -210,11 +225,13 @@ public:
   {
     return val + rhs.val;
   }
+
   RAJA_HOST_DEVICE inline stripped_value_type operator-(
       const numeric_iterator& rhs) const
   {
     return val - rhs.val;
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator operator+(
       const difference_type& rhs) const
   {
@@ -223,6 +240,7 @@ public:
 #endif
     return numeric_iterator(val + rhs);
   }
+
   RAJA_HOST_DEVICE inline numeric_iterator operator-(
       const difference_type& rhs) const
   {
@@ -231,6 +249,7 @@ public:
 #endif
     return numeric_iterator(val - rhs);
   }
+
   RAJA_HOST_DEVICE friend constexpr numeric_iterator operator+(
       difference_type lhs,
       const numeric_iterator& rhs)
@@ -243,6 +262,7 @@ public:
     return numeric_iterator(lhs + rhs.val);
 #endif
   }
+
   RAJA_HOST_DEVICE friend constexpr numeric_iterator operator-(
       difference_type lhs,
       const numeric_iterator& rhs)
@@ -260,10 +280,12 @@ public:
   {
     return value_type(val);
   }
+
   RAJA_HOST_DEVICE inline value_type operator->() const
   {
     return value_type(val);
   }
+
   RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
   {
     return value_type(val + rhs);
@@ -273,31 +295,35 @@ private:
   stripped_value_type val = 0;
 };
 
-template <typename Type = Index_type,
-          typename DifferenceType = Type,
-          typename PointerType = Type*>
+template<typename Type           = Index_type,
+         typename DifferenceType = Type,
+         typename PointerType    = Type*>
 class strided_numeric_iterator
 {
 public:
-  using value_type = Type;
+  using value_type          = Type;
   using stripped_value_type = strip_index_type_t<Type>;
-  using difference_type = DifferenceType;
-  using pointer = DifferenceType*;
-  using reference = DifferenceType&;
-  using iterator_category = std::random_access_iterator_tag;
+  using difference_type     = DifferenceType;
+  using pointer             = DifferenceType*;
+  using reference           = DifferenceType&;
+  using iterator_category   = std::random_access_iterator_tag;
 
   constexpr strided_numeric_iterator() noexcept = default;
-  constexpr strided_numeric_iterator(const strided_numeric_iterator&) noexcept = default;
-  constexpr strided_numeric_iterator(strided_numeric_iterator&&) noexcept = default;
-  strided_numeric_iterator& operator=(const strided_numeric_iterator&) noexcept = default;
-  strided_numeric_iterator& operator=(strided_numeric_iterator&&) noexcept = default;
+  constexpr strided_numeric_iterator(const strided_numeric_iterator&) noexcept =
+      default;
+  constexpr strided_numeric_iterator(strided_numeric_iterator&&) noexcept =
+      default;
+  strided_numeric_iterator& operator=(
+      const strided_numeric_iterator&) noexcept = default;
+  strided_numeric_iterator& operator=(strided_numeric_iterator&&) noexcept =
+      default;
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       stripped_value_type rhs,
       DifferenceType stride_ = DifferenceType(1))
-      : val(rhs), stride(stride_)
-  {
-  }
+      : val(rhs),
+        stride(stride_)
+  {}
 
   RAJA_HOST_DEVICE inline DifferenceType get_stride() const { return stride; }
 
@@ -306,6 +332,7 @@ public:
     val += stride;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator--()
   {
     val -= stride;
@@ -321,6 +348,7 @@ public:
     val += rhs * stride;
     return *this;
   }
+
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator-=(
       const difference_type& rhs)
   {
@@ -338,16 +366,18 @@ public:
             (static_cast<difference_type>(rhs.val))) /
            stride;
   }
+
   RAJA_HOST_DEVICE inline difference_type operator-(
       const strided_numeric_iterator& rhs) const
   {
     difference_type diff = (static_cast<difference_type>(val) -
                             (static_cast<difference_type>(rhs.val)));
 
-    return (diff % stride != difference_type{0})
-               ? (difference_type{1} + diff / stride)
+    return (diff % stride != difference_type {0})
+               ? (difference_type {1} + diff / stride)
                : diff / stride;
   }
+
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
   {
@@ -356,6 +386,7 @@ public:
 #endif
     return strided_numeric_iterator(val + rhs * stride, stride);
   }
+
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(
       const difference_type& rhs) const
   {
@@ -372,6 +403,7 @@ public:
   {
     return (val - rhs.val) / stride;
   }
+
   RAJA_HOST_DEVICE inline bool operator==(
       const strided_numeric_iterator& rhs) const
   {
@@ -383,31 +415,35 @@ public:
   {
     return val * stride > rhs.val * stride;
   }
+
   RAJA_HOST_DEVICE inline bool operator<(
       const strided_numeric_iterator& rhs) const
   {
     return val * stride < rhs.val * stride;
   }
+
   RAJA_HOST_DEVICE inline bool operator>=(
       const strided_numeric_iterator& rhs) const
   {
     return val * stride >= rhs.val * stride;
   }
+
   RAJA_HOST_DEVICE inline bool operator<=(
       const strided_numeric_iterator& rhs) const
   {
     return val * stride <= rhs.val * stride;
   }
 
-
   RAJA_HOST_DEVICE inline value_type operator*() const
   {
     return value_type(val);
   }
+
   RAJA_HOST_DEVICE inline value_type operator->() const
   {
     return value_type(val);
   }
+
   RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
   {
     return value_type(val + rhs * stride);
@@ -415,7 +451,7 @@ public:
 
 private:
   stripped_value_type val = 0;
-  DifferenceType stride = 1;
+  DifferenceType stride   = 1;
 };
 
 

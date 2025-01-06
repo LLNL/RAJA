@@ -24,7 +24,6 @@
 
 #include "RAJA/pattern/WorkGroup/Dispatcher.hpp"
 
-
 namespace RAJA
 {
 
@@ -32,12 +31,12 @@ namespace detail
 {
 
 /*!
-* Populate and return a Dispatcher object
-*/
-template < typename T, typename Dispatcher_T >
+ * Populate and return a Dispatcher object
+ */
+template<typename T, typename Dispatcher_T>
 inline const Dispatcher_T* get_Dispatcher(seq_work const&)
 {
-  static Dispatcher_T dispatcher{ Dispatcher_T::template makeDispatcher<T>() };
+  static Dispatcher_T dispatcher {Dispatcher_T::template makeDispatcher<T>()};
   return &dispatcher;
 }
 

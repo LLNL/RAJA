@@ -24,7 +24,6 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
-
 namespace RAJA
 {
 

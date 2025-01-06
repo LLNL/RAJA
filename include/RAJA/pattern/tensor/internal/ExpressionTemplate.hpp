@@ -31,5 +31,4 @@
 #include "RAJA/pattern/tensor/internal/ET/TensorTranspose.hpp"
 
 
-
 #endif

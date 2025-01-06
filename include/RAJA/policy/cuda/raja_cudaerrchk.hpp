@@ -43,18 +43,20 @@ namespace RAJA
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define cudaErrchk(ans)                            \
-  {                                                \
-    ::RAJA::cudaAssert((ans), __FILE__, __LINE__); \
+#define cudaErrchk(ans)                                                        \
+  {                                                                            \
+    ::RAJA::cudaAssert((ans), __FILE__, __LINE__);                             \
   }
 
 inline void cudaAssert(cudaError_t code,
-                       const char *file,
+                       const char* file,
                        int line,
                        bool abort = true)
 {
-  if (code != cudaSuccess) {
-    if (abort) {
+  if (code != cudaSuccess)
+  {
+    if (abort)
+    {
       std::string msg;
       msg += "CUDAassert: ";
       msg += cudaGetErrorString(code);
@@ -63,9 +65,11 @@ inline void cudaAssert(cudaError_t code,
       msg += ":";
       msg += std::to_string(line);
       throw std::runtime_error(msg);
-    } else {
-      fprintf(stderr, "CUDAassert: %s %s %d\n",
-              cudaGetErrorString(code), file, line);
+    }
+    else
+    {
+      fprintf(stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file,
+              line);
     }
   }
 }

@@ -30,7 +30,7 @@
 #include <thread>
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/openmp/atomic.hpp"
+#include "RAJA/policy/openmp/atomic.hpp"
 #endif
 
 #include "RAJA/policy/openmp/forall.hpp"
