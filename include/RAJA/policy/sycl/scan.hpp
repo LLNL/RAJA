@@ -94,7 +94,7 @@ inclusive_inplace(
         ii++;
     } while (  ii <= iterations);
 
-  sycl_res.wait();
+  if (!Async) { sycl_res.wait(); }
   return camp::resources::EventProxy<camp::resources::Sycl>(sycl_res);
 }
 
@@ -183,7 +183,7 @@ exclusive_inplace(
         ii++;
     } while (  ii <= iterations);
 
-  sycl_res.wait();
+  if(!Async) { sycl_res.wait(); }
   return camp::resources::EventProxy<camp::resources::Sycl>(sycl_res);
     return inclusive_inplace(sycl_res, exec, begin, end, binary_op);
 }
