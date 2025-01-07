@@ -26,11 +26,11 @@ namespace statement
 {
 
 
-template <typename ExecPolicy, typename ForList, typename... EnclosedStmts>
+template<typename ExecPolicy, typename ForList, typename... EnclosedStmts>
 struct Collapse : public internal::ForList,
                   public internal::CollapseBase,
-                  public internal::Statement<ExecPolicy, EnclosedStmts...> {
-};
+                  public internal::Statement<ExecPolicy, EnclosedStmts...>
+{};
 
 
 }  // namespace statement

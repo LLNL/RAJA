@@ -36,20 +36,20 @@ namespace statement
  * A RAJA::kernel statement that implements conditional control logic
  *
  */
-template <typename Condition, typename... EnclosedStmts>
-struct If : public internal::Statement<camp::nil, EnclosedStmts...> {
-};
-
+template<typename Condition, typename... EnclosedStmts>
+struct If : public internal::Statement<camp::nil, EnclosedStmts...>
+{};
 
 /*!
  * An expression that returns a compile time literal value.
  *
  */
-template <long value>
-struct Value {
+template<long value>
+struct Value
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const &)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static long eval(Data const&)
   {
     return value;
   }
@@ -59,11 +59,12 @@ struct Value {
  * An equality expression
  *
  */
-template <typename L, typename R>
-struct Equals {
+template<typename L, typename R>
+struct Equals
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) == R::eval(data);
   }
@@ -73,116 +74,117 @@ struct Equals {
  * A negated equality expression
  *
  */
-template <typename L, typename R>
-struct NotEquals {
+template<typename L, typename R>
+struct NotEquals
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) != R::eval(data);
   }
 };
 
-
 /*!
  * A logical OR expression
  *
  */
-template <typename L, typename R>
-struct Or {
+template<typename L, typename R>
+struct Or
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) || R::eval(data);
   }
 };
 
-
 /*!
  * A logical AND expression
  *
  */
-template <typename L, typename R>
-struct And {
+template<typename L, typename R>
+struct And
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) && R::eval(data);
   }
 };
 
-
 /*!
  * A less than expression
  *
  */
-template <typename L, typename R>
-struct LessThan {
+template<typename L, typename R>
+struct LessThan
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) < R::eval(data);
   }
 };
 
-
 /*!
  * A less or equals than expression
  *
  */
-template <typename L, typename R>
-struct LessThanEq {
+template<typename L, typename R>
+struct LessThanEq
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) <= R::eval(data);
   }
 };
 
-
 /*!
  * A greater than expression
  *
  */
-template <typename L, typename R>
-struct GreaterThan {
+template<typename L, typename R>
+struct GreaterThan
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) > R::eval(data);
   }
 };
 
-
 /*!
  * A greater or equals than expression
  *
  */
-template <typename L, typename R>
-struct GreaterThanEq {
+template<typename L, typename R>
+struct GreaterThanEq
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return L::eval(data) >= R::eval(data);
   }
 };
 
-
 /*!
  * A negation expression
  *
  */
-template <typename L>
-struct Not {
+template<typename L>
+struct Not
+{
 
-  template <typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const &data)
+  template<typename Data>
+  RAJA_HOST_DEVICE RAJA_INLINE static bool eval(Data const& data)
   {
     return !(L::eval(data));
   }
@@ -195,15 +197,17 @@ namespace internal
 {
 
 
-template <typename Condition, typename... EnclosedStmts, typename Types>
-struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types> {
+template<typename Condition, typename... EnclosedStmts, typename Types>
+struct StatementExecutor<statement::If<Condition, EnclosedStmts...>, Types>
+{
 
 
-  template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  template<typename Data>
+  static RAJA_INLINE void exec(Data&& data)
   {
 
-    if (Condition::eval(data)) {
+    if (Condition::eval(data))
+    {
       execute_statement_list<camp::list<EnclosedStmts...>, Types>(
           std::forward<Data>(data));
     }

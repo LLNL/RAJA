@@ -22,7 +22,6 @@
 #include "RAJA/policy/tensor/arch.hpp"
 
 
-
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -32,30 +31,29 @@
 //
 
 #ifdef __AVX512F__
-#include<RAJA/policy/tensor/arch/avx512.hpp>
+#include <RAJA/policy/tensor/arch/avx512.hpp>
 #endif
 
 
 #ifdef __AVX2__
-#include<RAJA/policy/tensor/arch/avx2.hpp>
+#include <RAJA/policy/tensor/arch/avx2.hpp>
 #endif
 
 
 #ifdef __AVX__
-#include<RAJA/policy/tensor/arch/avx.hpp>
+#include <RAJA/policy/tensor/arch/avx.hpp>
 #endif
 
 #ifdef RAJA_CUDA_ACTIVE
-#include<RAJA/policy/tensor/arch/cuda.hpp>
+#include <RAJA/policy/tensor/arch/cuda.hpp>
 #endif
 
 #ifdef RAJA_HIP_ACTIVE
-#include<RAJA/policy/tensor/arch/hip.hpp>
+#include <RAJA/policy/tensor/arch/hip.hpp>
 #endif
 
 // The scalar register is always supported (doesn't require any SIMD/SIMT)
-#include<RAJA/policy/tensor/arch/scalar.hpp>
-
+#include <RAJA/policy/tensor/arch/scalar.hpp>
 
 
 #endif

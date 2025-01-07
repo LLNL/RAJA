@@ -38,11 +38,13 @@ namespace statement
  * the enclosed statements on the thread which contains the reduced value.
  *
  */
-template <typename ReducePolicy,
-          template <typename...> class ReduceOperator,
-          typename ParamId,
-          typename... EnclosedStmts>
-struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...> {
+template<typename ReducePolicy,
+         template<typename...>
+         class ReduceOperator,
+         typename ParamId,
+         typename... EnclosedStmts>
+struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...>
+{
 
   static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "

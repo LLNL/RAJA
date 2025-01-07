@@ -22,7 +22,6 @@
 
 #include "RAJA/policy/sycl/MemUtils_SYCL.hpp"
 
-
 namespace RAJA
 {
 
@@ -49,8 +48,8 @@ syclInfo tl_status;
 #endif
 
 //! State of raja sycl queue synchronization for sycl reducer objects
-std::unordered_map<cl::sycl::queue, bool> g_queue_info_map{
-    {cl::sycl::queue(), true}};
+std::unordered_map<::sycl::queue, bool> g_queue_info_map {
+    {::sycl::queue(), true}};
 
 }  // namespace detail
 

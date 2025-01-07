@@ -35,7 +35,6 @@
 
 #include "RAJA/policy/cuda/policy.hpp"
 
-
 namespace RAJA
 {
 
@@ -59,15 +58,9 @@ namespace impl
  */
 struct AccessorDeviceScopeUseDeviceFence : RAJA::detail::DefaultAccessor
 {
-  static RAJA_DEVICE RAJA_INLINE void fence_acquire()
-  {
-    __threadfence();
-  }
+  static RAJA_DEVICE RAJA_INLINE void fence_acquire() { __threadfence(); }
 
-  static RAJA_DEVICE RAJA_INLINE void fence_release()
-  {
-    __threadfence();
-  }
+  static RAJA_DEVICE RAJA_INLINE void fence_release() { __threadfence(); }
 };
 
 /*!
@@ -96,48 +89,46 @@ struct AccessorDeviceScopeUseBlockFence
   static constexpr size_t min_atomic_int_type_size = sizeof(unsigned int);
   static constexpr size_t max_atomic_int_type_size = sizeof(unsigned long long);
 
-  template < typename T >
+  template<typename T>
   static RAJA_DEVICE RAJA_INLINE T get(T* in_ptr, size_t idx)
   {
-    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
-    auto ptr = const_cast<integer_type*>(reinterpret_cast<const integer_type*>(in_ptr + idx));
+    auto ptr = const_cast<integer_type*>(
+        reinterpret_cast<const integer_type*>(in_ptr + idx));
 
-    for (size_t i = 0; i < u.array_size(); ++i) {
+    for (size_t i = 0; i < u.array_size(); ++i)
+    {
       u.array[i] = atomicAdd(&ptr[i], integer_type(0));
     }
 
     return u.get_value();
   }
 
-  template < typename T >
+  template<typename T>
   static RAJA_DEVICE RAJA_INLINE void set(T* in_ptr, size_t idx, T val)
   {
-    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
     u.set_value(val);
     auto ptr = reinterpret_cast<integer_type*>(in_ptr + idx);
 
-    for (size_t i = 0; i < u.array_size(); ++i) {
+    for (size_t i = 0; i < u.array_size(); ++i)
+    {
       atomicExch(&ptr[i], u.array[i]);
     }
   }
 
-  static RAJA_DEVICE RAJA_INLINE void fence_acquire()
-  {
-    __threadfence();
-  }
+  static RAJA_DEVICE RAJA_INLINE void fence_acquire() { __threadfence(); }
 
-  static RAJA_DEVICE RAJA_INLINE void fence_release()
-  {
-    __threadfence();
-  }
+  static RAJA_DEVICE RAJA_INLINE void fence_release() { __threadfence(); }
 };
-
 
 // cuda 8 only has shfl primitives for 32 bits while cuda 9 has 32 and 64 bits
 constexpr size_t min_shfl_int_type_size = sizeof(unsigned int);
@@ -157,13 +148,16 @@ constexpr size_t max_shfl_int_type_size = sizeof(unsigned int);
  *
  ******************************************************************************
  */
-template <typename T>
+template<typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
-  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
-  for (size_t i = 0; i < u.array_size(); ++i) {
+  for (size_t i = 0; i < u.array_size(); ++i)
+  {
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
     u.array[i] = ::__shfl_xor_sync(0xffffffffu, u.array[i], laneMask);
 #else
@@ -173,13 +167,16 @@ RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
   return u.get_value();
 }
 
-template <typename T>
+template<typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
-  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
-  for (size_t i = 0; i < u.array_size(); ++i) {
+  for (size_t i = 0; i < u.array_size(); ++i)
+  {
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
     u.array[i] = ::__shfl_sync(0xffffffffu, u.array[i], srcLane);
 #else
@@ -191,49 +188,56 @@ RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE unsigned int shfl_xor_sync<unsigned int>(unsigned int var, int laneMask)
+template<>
+RAJA_DEVICE RAJA_INLINE unsigned int shfl_xor_sync<unsigned int>(
+    unsigned int var,
+    int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE long shfl_xor_sync<long>(long var, int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE unsigned long shfl_xor_sync<unsigned long>(unsigned long var, int laneMask)
+template<>
+RAJA_DEVICE RAJA_INLINE unsigned long shfl_xor_sync<unsigned long>(
+    unsigned long var,
+    int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE long long shfl_xor_sync<long long>(long long var, int laneMask)
+template<>
+RAJA_DEVICE RAJA_INLINE long long shfl_xor_sync<long long>(long long var,
+                                                           int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE unsigned long long shfl_xor_sync<unsigned long long>(unsigned long long var, int laneMask)
+template<>
+RAJA_DEVICE RAJA_INLINE unsigned long long shfl_xor_sync<unsigned long long>(
+    unsigned long long var,
+    int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE double shfl_xor_sync<double>(double var, int laneMask)
 {
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
@@ -241,13 +245,13 @@ RAJA_DEVICE RAJA_INLINE double shfl_xor_sync<double>(double var, int laneMask)
 
 #else
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
 {
   return ::__shfl_xor(var, laneMask);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
 {
   return ::__shfl_xor(var, laneMask);
@@ -258,49 +262,55 @@ RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
 
 #if defined(CUDART_VERSION) && CUDART_VERSION >= 9000
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE unsigned int shfl_sync<unsigned int>(unsigned int var, int srcLane)
+template<>
+RAJA_DEVICE RAJA_INLINE unsigned int shfl_sync<unsigned int>(unsigned int var,
+                                                             int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE long shfl_sync<long>(long var, int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE unsigned long shfl_sync<unsigned long>(unsigned long var, int srcLane)
+template<>
+RAJA_DEVICE RAJA_INLINE unsigned long shfl_sync<unsigned long>(
+    unsigned long var,
+    int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE long long shfl_sync<long long>(long long var, int srcLane)
+template<>
+RAJA_DEVICE RAJA_INLINE long long shfl_sync<long long>(long long var,
+                                                       int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
-RAJA_DEVICE RAJA_INLINE unsigned long long shfl_sync<unsigned long long>(unsigned long long var, int srcLane)
+template<>
+RAJA_DEVICE RAJA_INLINE unsigned long long shfl_sync<unsigned long long>(
+    unsigned long long var,
+    int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE double shfl_sync<double>(double var, int srcLane)
 {
   return ::__shfl_sync(0xffffffffu, var, srcLane);
@@ -308,13 +318,13 @@ RAJA_DEVICE RAJA_INLINE double shfl_sync<double>(double var, int srcLane)
 
 #else
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
 {
   return ::__shfl(var, srcLane);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 {
   return ::__shfl(var, srcLane);
@@ -324,7 +334,7 @@ RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 
 
 //! reduce values in block into thread 0
-template <typename Combiner, typename T>
+template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -334,23 +344,28 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 
   T temp = val;
 
-  if (numThreads % policy::cuda::device_constants.WARP_SIZE == 0) {
+  if (numThreads % policy::cuda::device_constants.WARP_SIZE == 0)
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
+    {
       T rhs = shfl_xor_sync(temp, i);
-      Combiner{}(temp, rhs);
+      Combiner {}(temp, rhs);
     }
-
-  } else {
+  }
+  else
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
+    {
       int srcLane = threadId ^ i;
-      T rhs = shfl_sync(temp, srcLane);
+      T rhs       = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
-      if (srcLane < numThreads) {
-        Combiner{}(temp, rhs);
+      if (srcLane < numThreads)
+      {
+        Combiner {}(temp, rhs);
       }
     }
   }
@@ -365,22 +380,22 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
  * This does a butterfly pattern leaving each lane with the full reduction
  *
  */
-template <typename Combiner, typename T>
+template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
 {
   T temp = val;
 
-  for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2) {
+  for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
+  {
     T rhs = __shfl_xor_sync(0xffffffff, temp, i);
-    Combiner{}(temp, rhs);
+    Combiner {}(temp, rhs);
   }
 
   return temp;
 }
 
-
 //! reduce values in block into thread 0
-template <typename Combiner, typename T>
+template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -388,65 +403,81 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
 
-  int warpId = threadId % policy::cuda::device_constants.WARP_SIZE;
+  int warpId  = threadId % policy::cuda::device_constants.WARP_SIZE;
   int warpNum = threadId / policy::cuda::device_constants.WARP_SIZE;
 
   T temp = val;
 
-  if (numThreads % policy::cuda::device_constants.WARP_SIZE == 0) {
+  if (numThreads % policy::cuda::device_constants.WARP_SIZE == 0)
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
+    {
       T rhs = shfl_xor_sync(temp, i);
-      Combiner{}(temp, rhs);
+      Combiner {}(temp, rhs);
     }
-
-  } else {
+  }
+  else
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::cuda::device_constants.WARP_SIZE; i *= 2)
+    {
       int srcLane = threadId ^ i;
-      T rhs = shfl_sync(temp, srcLane);
+      T rhs       = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
-      if (srcLane < numThreads) {
-        Combiner{}(temp, rhs);
+      if (srcLane < numThreads)
+      {
+        Combiner {}(temp, rhs);
       }
     }
   }
 
   // reduce per warp values
-  if (numThreads > policy::cuda::device_constants.WARP_SIZE) {
+  if (numThreads > policy::cuda::device_constants.WARP_SIZE)
+  {
 
-    static_assert(policy::cuda::device_constants.MAX_WARPS <= policy::cuda::device_constants.WARP_SIZE,
-        "This algorithms assumes a warp of WARP_SIZE threads can reduce MAX_WARPS values");
+    static_assert(policy::cuda::device_constants.MAX_WARPS <=
+                      policy::cuda::device_constants.WARP_SIZE,
+                  "This algorithms assumes a warp of WARP_SIZE threads can "
+                  "reduce MAX_WARPS values");
 
     // Need to separate declaration and initialization for clang-cuda
-    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::cuda::device_constants.MAX_WARPS>)];
+    __shared__ unsigned char tmpsd[sizeof(
+        RAJA::detail::SoAArray<T, policy::cuda::device_constants.MAX_WARPS>)];
 
     // Partial placement new: Should call new(tmpsd) here but recasting memory
     // to avoid calling constructor/destructor in shared memory.
     RAJA::detail::SoAArray<T, policy::cuda::device_constants.MAX_WARPS>* sd =
-      reinterpret_cast<RAJA::detail::SoAArray<T, policy::cuda::device_constants.MAX_WARPS> *>(tmpsd);
+        reinterpret_cast<RAJA::detail::SoAArray<
+            T, policy::cuda::device_constants.MAX_WARPS>*>(tmpsd);
 
     // write per warp values to shared memory
-    if (warpId == 0) {
+    if (warpId == 0)
+    {
       sd->set(warpNum, temp);
     }
 
     __syncthreads();
 
-    if (warpNum == 0) {
+    if (warpNum == 0)
+    {
 
       // read per warp values
-      if (warpId * policy::cuda::device_constants.WARP_SIZE < numThreads) {
+      if (warpId * policy::cuda::device_constants.WARP_SIZE < numThreads)
+      {
         temp = sd->get(warpId);
-      } else {
+      }
+      else
+      {
         temp = identity;
       }
 
-      for (int i = 1; i < policy::cuda::device_constants.MAX_WARPS; i *= 2) {
+      for (int i = 1; i < policy::cuda::device_constants.MAX_WARPS; i *= 2)
+      {
         T rhs = shfl_xor_sync(temp, i);
-        Combiner{}(temp, rhs);
+        Combiner {}(temp, rhs);
       }
     }
 

@@ -34,7 +34,7 @@ void DynamicForallResourceRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last
 
   std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
-  RAJA::expt::dynamic_forall<POLICY_LIST>(working_res, pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
+  RAJA::dynamic_forall<POLICY_LIST>(working_res, pol, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
     working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
   });
 
