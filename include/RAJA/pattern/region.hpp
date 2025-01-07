@@ -26,13 +26,13 @@
 namespace RAJA
 {
 
-template <typename ExecutionPolicy, typename LoopBody>
+template<typename ExecutionPolicy, typename LoopBody>
 void region(LoopBody&& loop_body)
 {
   region_impl(ExecutionPolicy(), loop_body);
 }
 
-template <typename ExecutionPolicy, typename OuterBody, typename InnerBody>
+template<typename ExecutionPolicy, typename OuterBody, typename InnerBody>
 void region(OuterBody&& outer_body, InnerBody&& inner_body)
 {
   region_impl(ExecutionPolicy(), outer_body, inner_body);

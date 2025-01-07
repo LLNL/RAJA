@@ -34,8 +34,8 @@ namespace sequential
  *
  */
 
-template <typename Func>
-RAJA_INLINE void region_impl(const seq_region &, Func &&body)
+template<typename Func>
+RAJA_INLINE void region_impl(const seq_region&, Func&& body)
 {
   body();
 }

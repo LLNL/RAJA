@@ -41,7 +41,7 @@ project(RAJA LANGUAGES CXX C
   VERSION ${RAJA_LOADED})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
-
+set(BLT_REQUIRED_CLANGFORMAT_VERSION  "14" CACHE STRING "")
 include(cmake/SetupRajaOptions.cmake)
 
 cmake_minimum_required(VERSION 3.23)
@@ -135,6 +135,9 @@ endif()
 include(cmake/SetupCompilers.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
+
+# Configure `style` target for enforcing code style
+raja_add_code_checks()
 
 set (raja_sources
   src/AlignedRangeIndexSetBuilders.cpp

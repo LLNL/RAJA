@@ -36,35 +36,29 @@ namespace internal
 {
 
 
-template <typename Data,
-          typename Conditional,
-          typename... EnclosedStmts,
-          typename Types>
+template<typename Data,
+         typename Conditional,
+         typename... EnclosedStmts,
+         typename Types>
 struct HipStatementExecutor<Data,
-                             statement::If<Conditional, EnclosedStmts...>,
-                             Types> {
+                            statement::If<Conditional, EnclosedStmts...>,
+                            Types>
+{
 
-  using stmt_list_t = StatementList<EnclosedStmts...>;
+  using stmt_list_t      = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
-
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
-    if (Conditional::eval(data)) {
+    if (Conditional::eval(data))
+    {
 
       // execute enclosed statements
       enclosed_stmts_t::exec(data, thread_active);
     }
   }
 
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const& data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }
