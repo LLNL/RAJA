@@ -71,6 +71,13 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug  -DENABLE_OPENMP
     ctest -T test --output-on-failure && \
     make clean
 
+FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_style
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN cmake -DENABLE_CLANGFORMAT=ON .. && \
+    make style
+    
 FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
