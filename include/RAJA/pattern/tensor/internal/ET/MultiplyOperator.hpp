@@ -1136,11 +1136,12 @@ struct MultiplyOperator<
       TILE_TYPE const& tile,
       LEFT_OPERAND_TYPE const& left,
       RIGHT_OPERAND_TYPE const& right,
-      ADD_TYPE const& add)  //->
-                            // decltype(TensorMultiplyAdd<decltype(left.eval(tile)),
-                            // decltype(right.eval(tile)),
-                            // decltype(add.eval(tile))>(left.eval(tile),
-                            // right.eval(tile), add.eval(tile)))
+      ADD_TYPE const&
+          add)  //->
+                // decltype(TensorMultiplyAdd<decltype(left.eval(tile)),
+                // decltype(right.eval(tile)),
+                // decltype(add.eval(tile))>(left.eval(tile),
+                // right.eval(tile), add.eval(tile)))
   {
     /*
      * First pass:  we want to return a BlockLiteral ET node with the
