@@ -75,7 +75,8 @@ FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_style
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace
 WORKDIR /home/raja/workspace/build
-RUN cmake -DENABLE_CLANGFORMAT=ON .. && \
+RUN clang-format --version \
+    cmake -DENABLE_CLANGFORMAT=ON ../ \
     make style
     
 FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
