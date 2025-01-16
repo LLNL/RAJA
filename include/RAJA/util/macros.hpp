@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,16 +33,16 @@
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
-  || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) \
-  || (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
+#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) ||                   \
+    (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) ||           \
+    (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
 #define RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE
 #endif
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#define RAJA_HOST __host__
+#define RAJA_DEVICE      __device__
+#define RAJA_HOST        __host__
 
 #if defined(RAJA_ENABLE_CLANG_CUDA)
 #define RAJA_SUPPRESS_HD_WARN
@@ -52,8 +52,8 @@
 
 #elif defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
 #define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#define RAJA_HOST __host__
+#define RAJA_DEVICE      __device__
+#define RAJA_HOST        __host__
 #define RAJA_SUPPRESS_HD_WARN
 
 #define RAJA_USE_HIP_INTRINSICS
@@ -114,10 +114,9 @@
  * \endcode
  *******************************************************************************
  */
-template <typename... T>
-RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
-{
-}
+template<typename... T>
+RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept
+{}
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)
@@ -133,7 +132,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
  */
 #define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
 
-#define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
+#define RAJA_DIVIDE_CEILING_INT(dividend, divisor)                             \
   (((dividend) + (divisor)-1) / (divisor))
 
 /*!
@@ -141,27 +140,26 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
  * Used in forall and launch
  */
 #if defined(RAJA_ENABLE_OPENMP)
-#define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
-      _Pragma(" omp declare reduction( combine \
+#define RAJA_OMP_DECLARE_REDUCTION_COMBINE                                     \
+  _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")\
-        //initializer(omp_priv = omp_in) ")
+        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")  // initializer(omp_priv = omp_in) ")
 #endif
 
 
 RAJA_HOST_DEVICE
-inline void RAJA_ABORT_OR_THROW(const char *str)
+inline void RAJA_ABORT_OR_THROW(const char* str)
 {
 #if defined(__SYCL_DEVICE_ONLY__)
-  //segfault here ran into linking problems
-  *((volatile char *)0) = 0;  // write to address 0
+  // segfault here ran into linking problems
+  *((volatile char*)0) = 0;  // write to address 0
 #else
-  printf ( "%s\n", str );
+  printf("%s\n", str);
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   // seg faulting here instead of calling std::abort for omp target
-  *((volatile char *)0) = 0;  // write to address 0
+  *((volatile char*)0) = 0;  // write to address 0
 #elif defined(__CUDA_ARCH__)
-  asm ("trap;");
+  asm("trap;");
 
 #elif defined(__HIP_DEVICE_COMPILE__)
   abort();
@@ -169,10 +167,11 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #else
 #ifdef RAJA_COMPILER_MSVC
   fflush(stdout);
-  char *value;
+  char* value;
   size_t len;
   bool no_except = false;
-  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr){
+  if (_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr)
+  {
     no_except = true;
     free(value);
   }
@@ -182,9 +181,12 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 #endif
 
   fflush(stdout);
-  if (no_except) {
+  if (no_except)
+  {
     std::abort();
-  } else {
+  }
+  else
+  {
     throw std::runtime_error(str);
   }
 #endif
@@ -202,7 +204,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
  */
 
 #if (__cplusplus >= 201402L)
-#define RAJA_HAS_CXX14 1
+#define RAJA_HAS_CXX14                    1
 #define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
 #elif defined(__has_cpp_attribute)
 #if __has_cpp_attribute(deprecated)
@@ -212,7 +214,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 
 #if defined(RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED)
 // When using a C++14 compiler, use the standard-specified deprecated attribute
-#define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
+#define RAJA_DEPRECATE(Msg)       [[deprecated(Msg)]]
 #define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
 
 #elif defined(_MSC_VER)

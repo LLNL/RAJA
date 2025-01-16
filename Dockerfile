@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,6 +71,15 @@ RUN cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Debug  -DENABLE_OPENMP
     ctest -T test --output-on-failure && \
     make clean
 
+FROM ghcr.io/llnl/radiuss:clang-14-ubuntu-22.04 AS clang14_style
+USER root
+ENV GTEST_COLOR=1
+COPY . /home/raja/workspace
+WORKDIR /home/raja/workspace/build
+RUN clang-format --version && \
+    cmake -DENABLE_CLANGFORMAT=ON ../ && \
+    make check
+    
 FROM ghcr.io/llnl/radiuss:clang-15-ubuntu-22.04 AS clang15
 ENV GTEST_COLOR=1
 COPY . /home/raja/workspace

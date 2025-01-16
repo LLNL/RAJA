@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,7 @@ option(RAJA_ENABLE_FORCEINLINE_RECURSIVE "Enable Forceinline recursive (only sup
 option(RAJA_DEPRECATED_TESTS "Test deprecated features" Off)
 option(RAJA_ENABLE_BOUNDS_CHECK "Enable bounds checking in RAJA::Views/Layouts" Off)
 option(RAJA_TEST_EXHAUSTIVE "Build RAJA exhaustive tests" Off)
-option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests" On)
+option(RAJA_TEST_OPENMP_TARGET_SUBSET "Build subset of RAJA OpenMP target tests when it is enabled" On)
 option(RAJA_ENABLE_RUNTIME_PLUGINS "Enable support for loading plugins at runtime" Off)
 option(RAJA_ALLOW_INCONSISTENT_OPTIONS "Enable inconsistent values for ENABLE_X and RAJA_ENABLE_X options" Off)
 
