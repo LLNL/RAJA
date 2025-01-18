@@ -47,9 +47,13 @@ cmake \
   -C ../host-configs/lc-builds/blueos/clangcuda_X.cmake \
   -DENABLE_OPENMP=Off \
   -DENABLE_CLANG_CUDA=On \
+  -DENABLE_CLANGFORMAT=On \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCLANGFORMAT_EXECUTABLE=/usr/tce/packages/clang/clang-14.0.4/bin/clang-format \
   -DBLT_CLANG_CUDA_ARCH=${CUDA_ARCH} \
   -DENABLE_CUDA=On \
   -DCUDA_ARCH=${CUDA_ARCH} \
+  -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCH} \
   -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
