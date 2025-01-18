@@ -68,7 +68,7 @@ struct Reducer : public ForallParamBase
 {
   using op         = Op;
   using value_type = T;  // This is a basic data type
-
+  //using VOp = ValOp<T, Op>;
   Reducer() = default;
 
   // Basic data type constructor
