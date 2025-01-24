@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,31 +11,33 @@
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/internal/get_platform.hpp"
 
-namespace RAJA {
-namespace util {
+namespace RAJA
+{
+namespace util
+{
 
 class KokkosPluginLoader;
 
-struct PluginContext {
-  public:
-    PluginContext(const Platform p) :
-      platform(p) {}
+struct PluginContext
+{
+public:
+  PluginContext(const Platform p) : platform(p) {}
 
-    Platform platform;
+  Platform platform;
 
-  private:
-    mutable uint64_t kID;
+private:
+  mutable uint64_t kID;
 
-    friend class KokkosPluginLoader;
+  friend class KokkosPluginLoader;
 };
 
 template<typename Policy>
 PluginContext make_context()
 {
-  return PluginContext{detail::get_platform<Policy>::value};
+  return PluginContext {detail::get_platform<Policy>::value};
 }
 
-} // closing brace for util namespace
-} // closing brace for RAJA namespace
+}  // namespace util
+}  // namespace RAJA
 
 #endif

@@ -44,6 +44,8 @@ jobs:
         docker_target: gcc12_desul
       clang15_desul:
         docker_target: clang15_desul
+      clang14_style:
+        docker_target: clang14_style
   pool:
     vmImage: 'ubuntu-latest'
   variables:

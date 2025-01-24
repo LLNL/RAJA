@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,38 +36,36 @@ namespace internal
 {
 
 
-template <typename Data,
-          camp::idx_t HpArgumentId,
-          camp::idx_t... Args,
-          typename... EnclosedStmts,
-          typename Types>
-struct HipStatementExecutor<Data,
-                             statement::Hyperplane<HpArgumentId,
-                                                   seq_exec,
-                                                   ArgList<Args...>,
-                                                   EnclosedStmts...>,
-                            Types> {
+template<typename Data,
+         camp::idx_t HpArgumentId,
+         camp::idx_t... Args,
+         typename... EnclosedStmts,
+         typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::
+        Hyperplane<HpArgumentId, seq_exec, ArgList<Args...>, EnclosedStmts...>,
+    Types>
+{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
   // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, HpArgumentId, Data>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+  using enclosed_stmts_t =
+      HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // compute Manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    int hp_len = segment_length<HpArgumentId>(data) +
-                 foldl(RAJA::operators::plus<int>(),
-                               segment_length<Args>(data)...);
+    int hp_len =
+        segment_length<HpArgumentId>(data) +
+        foldl(RAJA::operators::plus<int>(), segment_length<Args>(data)...);
 
     int h_args = foldl(RAJA::operators::plus<idx_t>(),
-        camp::get<Args>(data.offset_tuple)...);
+                       camp::get<Args>(data.offset_tuple)...);
 
     // get length of i dimension
     auto i_len = segment_length<HpArgumentId>(data);
@@ -79,7 +77,8 @@ struct HipStatementExecutor<Data,
      * We reject the iterations that lie outside of the specified rectangular
      * region we are sweeping.
      */
-    for (int h = 0; h < hp_len; ++h) {
+    for (int h = 0; h < hp_len; ++h)
+    {
 
       // compute actual iterate for HpArgumentId
       // as:  i0 = h - (i1 + i2 + i3 + ...)
@@ -92,17 +91,11 @@ struct HipStatementExecutor<Data,
     }
   }
 
-
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const& data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }
 };
-
-
 
 
 }  // end namespace internal

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
+#  and RAJA project contributors. See the RAJA/LICENSE file for details.
+#
+#  SPDX-License-Identifier: (BSD-3-Clause)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# List of file extensions to format
+file_extensions=("cpp" "h" "c" "hpp")
+__clang_format_executable=""
+# Check if clang-format exists
+if command -v "$RAJA_CLANG_FORMAT" &> /dev/null; then
+  __clang_format_executable="$RAJA_CLANG_FORMAT"
+elif command -v clang-format &> /dev/null; then
+  __clang_format_executable=clang-format
+else
+  echo "Warning: clang-format and the environment variable RAJA_CLANG_FORMAT are not available.
+        Please set RAJA_CLANG_FORMAT to enable the automatic file formatting git hook."
+  exit 0
+fi
+
+# Check the major version of the provided clang-format
+VERSION_STRING=$($__clang_format_executable --version)
+MAJOR_VERSION=$(echo "$VERSION_STRING" | grep -oP '\d+' | head -1)
+
+if [ "$MAJOR_VERSION" != "14" ]; then
+  echo "Warning: RAJA_CLANG_FORMAT not set to a valid version number."
+  exit 0
+else
+  echo "Using clang-format at $RAJA_CLANG_FORMAT"
+fi
+
+# Convert file extensions array to regex pattern
+IFS="|"
+file_extensions_pattern="\.(${file_extensions[*]})$"
+unset IFS
+
+RAJA_DIR="$(git rev-parse --show-toplevel)"
+
+# Function to format files
+format_file() {
+  local loc_file="$1"
+  "$__clang_format_executable" -i "$loc_file"
+  git add "$loc_file"
+}
+
+# Find and format staged files with the specified extensions
+for file in $(git diff --cached --name-only --diff-filter=ACM | grep -E "$file_extensions_pattern"); do
+  if [[ -f "$RAJA_DIR/$file" ]]; then
+    echo "Formatting $RAJA_DIR/$file"
+    format_file "$RAJA_DIR/$file"
+  fi
+done
+
+exit 0

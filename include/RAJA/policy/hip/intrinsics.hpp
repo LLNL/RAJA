@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,6 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/hip/policy.hpp"
-
 
 namespace RAJA
 {
@@ -59,15 +58,9 @@ namespace impl
  */
 struct AccessorDeviceScopeUseDeviceFence : RAJA::detail::DefaultAccessor
 {
-  static RAJA_DEVICE RAJA_INLINE void fence_acquire()
-  {
-    __threadfence();
-  }
+  static RAJA_DEVICE RAJA_INLINE void fence_acquire() { __threadfence(); }
 
-  static RAJA_DEVICE RAJA_INLINE void fence_release()
-  {
-    __threadfence();
-  }
+  static RAJA_DEVICE RAJA_INLINE void fence_release() { __threadfence(); }
 };
 
 /*!
@@ -96,18 +89,23 @@ struct AccessorDeviceScopeUseBlockFence
   static constexpr size_t min_atomic_int_type_size = sizeof(unsigned int);
   static constexpr size_t max_atomic_int_type_size = sizeof(unsigned long long);
 
-  template < typename T >
+  template<typename T>
   static RAJA_DEVICE RAJA_INLINE T get(T* in_ptr, size_t idx)
   {
-    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
-    auto ptr = const_cast<integer_type*>(reinterpret_cast<const integer_type*>(in_ptr + idx));
+    auto ptr = const_cast<integer_type*>(
+        reinterpret_cast<const integer_type*>(in_ptr + idx));
 
-    for (size_t i = 0; i < u.array_size(); ++i) {
-#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_load)
-      u.array[i] = __hip_atomic_load(&ptr[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+    for (size_t i = 0; i < u.array_size(); ++i)
+    {
+#if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
+    RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_load)
+      u.array[i] = __hip_atomic_load(&ptr[i], __ATOMIC_RELAXED,
+                                     __HIP_MEMORY_SCOPE_AGENT);
 #else
       u.array[i] = atomicAdd(&ptr[i], integer_type(0));
 #endif
@@ -116,19 +114,23 @@ struct AccessorDeviceScopeUseBlockFence
     return u.get_value();
   }
 
-  template < typename T >
+  template<typename T>
   static RAJA_DEVICE RAJA_INLINE void set(T* in_ptr, size_t idx, T val)
   {
-    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size, max_atomic_int_type_size>;
+    using ArrayType = RAJA::detail::AsIntegerArray<T, min_atomic_int_type_size,
+                                                   max_atomic_int_type_size>;
     using integer_type = typename ArrayType::integer_type;
 
     ArrayType u;
     u.set_value(val);
     auto ptr = reinterpret_cast<integer_type*>(in_ptr + idx);
 
-    for (size_t i = 0; i < u.array_size(); ++i) {
-#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_store)
-      __hip_atomic_store(&ptr[i], u.array[i], __ATOMIC_RELAXED, __HIP_MEMORY_SCOPE_AGENT);
+    for (size_t i = 0; i < u.array_size(); ++i)
+    {
+#if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
+    RAJA_INTERNAL_CLANG_HAS_BUILTIN(__hip_atomic_store)
+      __hip_atomic_store(&ptr[i], u.array[i], __ATOMIC_RELAXED,
+                         __HIP_MEMORY_SCOPE_AGENT);
 #else
       atomicExch(&ptr[i], u.array[i]);
 #endif
@@ -137,7 +139,8 @@ struct AccessorDeviceScopeUseBlockFence
 
   static RAJA_DEVICE RAJA_INLINE void fence_acquire()
   {
-#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_fence)
+#if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
+    RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_fence)
     __builtin_amdgcn_fence(__ATOMIC_ACQUIRE, "workgroup");
 #else
     __threadfence();
@@ -146,17 +149,18 @@ struct AccessorDeviceScopeUseBlockFence
 
   static RAJA_DEVICE RAJA_INLINE void fence_release()
   {
-#if defined(RAJA_USE_HIP_INTRINSICS) && RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_fence) && \
-                                        RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_s_waitcnt)
+#if defined(RAJA_USE_HIP_INTRINSICS) &&                                        \
+    RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_fence) &&                 \
+    RAJA_INTERNAL_CLANG_HAS_BUILTIN(__builtin_amdgcn_s_waitcnt)
     __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup");
     // Wait until all vmem operations complete (s_waitcnt vmcnt(0))
-    __builtin_amdgcn_s_waitcnt(/*vmcnt*/ 0 | (/*exp_cnt*/ 0x7 << 4) | (/*lgkmcnt*/ 0xf << 8));
+    __builtin_amdgcn_s_waitcnt(/*vmcnt*/ 0 | (/*exp_cnt*/ 0x7 << 4) |
+                               (/*lgkmcnt*/ 0xf << 8));
 #else
     __threadfence();
 #endif
   }
 };
-
 
 // hip only has shfl primitives for 32 bits
 constexpr size_t min_shfl_int_type_size = sizeof(unsigned int);
@@ -172,58 +176,62 @@ constexpr size_t max_shfl_int_type_size = sizeof(unsigned int);
  *
  ******************************************************************************
  */
-template <typename T>
+template<typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
-  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
-  for (size_t i = 0; i < u.array_size(); ++i) {
+  for (size_t i = 0; i < u.array_size(); ++i)
+  {
     u.array[i] = ::__shfl_xor(u.array[i], laneMask);
   }
   return u.get_value();
 }
 
-template <typename T>
+template<typename T>
 RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
-  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u;
+  RAJA::detail::AsIntegerArray<T, min_shfl_int_type_size,
+                               max_shfl_int_type_size>
+      u;
   u.set_value(var);
 
-  for (size_t i = 0; i < u.array_size(); ++i) {
+  for (size_t i = 0; i < u.array_size(); ++i)
+  {
     u.array[i] = ::__shfl(u.array[i], srcLane);
   }
   return u.get_value();
 }
 
-
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE int shfl_xor_sync<int>(int var, int laneMask)
 {
   return ::__shfl_xor(var, laneMask);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE float shfl_xor_sync<float>(float var, int laneMask)
 {
   return ::__shfl_xor(var, laneMask);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE int shfl_sync<int>(int var, int srcLane)
 {
   return ::__shfl(var, srcLane);
 }
 
-template <>
+template<>
 RAJA_DEVICE RAJA_INLINE float shfl_sync<float>(float var, int srcLane)
 {
   return ::__shfl(var, srcLane);
 }
 
-
 //! reduce values in block into thread 0
-template <typename Combiner, typename T>
+template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -233,23 +241,28 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
 
   T temp = val;
 
-  if (numThreads % policy::hip::device_constants.WARP_SIZE == 0) {
+  if (numThreads % policy::hip::device_constants.WARP_SIZE == 0)
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
+    {
       T rhs = shfl_xor_sync(temp, i);
-      Combiner{}(temp, rhs);
+      Combiner {}(temp, rhs);
     }
-
-  } else {
+  }
+  else
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
+    {
       int srcLane = threadId ^ i;
-      T rhs = shfl_sync(temp, srcLane);
+      T rhs       = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
-      if (srcLane < numThreads) {
-        Combiner{}(temp, rhs);
+      if (srcLane < numThreads)
+      {
+        Combiner {}(temp, rhs);
       }
     }
   }
@@ -264,22 +277,22 @@ RAJA_DEVICE RAJA_INLINE T warp_reduce(T val, T RAJA_UNUSED_ARG(identity))
  * This does a butterfly pattern leaving each lane with the full reduction
  *
  */
-template <typename Combiner, typename T>
+template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
 {
   T temp = val;
 
-  for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
+  for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
+  {
     T rhs = shfl_xor_sync(temp, i);
-    Combiner{}(temp, rhs);
+    Combiner {}(temp, rhs);
   }
 
   return temp;
 }
 
-
 //! reduce values in block into thread 0
-template <typename Combiner, typename T>
+template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -287,61 +300,77 @@ RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
                  (blockDim.x * blockDim.y) * threadIdx.z;
 
-  int warpId = threadId % policy::hip::device_constants.WARP_SIZE;
+  int warpId  = threadId % policy::hip::device_constants.WARP_SIZE;
   int warpNum = threadId / policy::hip::device_constants.WARP_SIZE;
 
   T temp = val;
 
-  if (numThreads % policy::hip::device_constants.WARP_SIZE == 0) {
+  if (numThreads % policy::hip::device_constants.WARP_SIZE == 0)
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
+    {
       T rhs = shfl_xor_sync(temp, i);
-      Combiner{}(temp, rhs);
+      Combiner {}(temp, rhs);
     }
-
-  } else {
+  }
+  else
+  {
 
     // reduce each warp
-    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2) {
+    for (int i = 1; i < policy::hip::device_constants.WARP_SIZE; i *= 2)
+    {
       int srcLane = threadId ^ i;
-      T rhs = shfl_sync(temp, srcLane);
+      T rhs       = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
-      if (srcLane < numThreads) {
-        Combiner{}(temp, rhs);
+      if (srcLane < numThreads)
+      {
+        Combiner {}(temp, rhs);
       }
     }
   }
 
   // reduce per warp values
-  if (numThreads > policy::hip::device_constants.WARP_SIZE) {
+  if (numThreads > policy::hip::device_constants.WARP_SIZE)
+  {
 
-    static_assert(policy::hip::device_constants.MAX_WARPS <= policy::hip::device_constants.WARP_SIZE,
-        "This algorithms assumes a warp of WARP_SIZE threads can reduce MAX_WARPS values");
+    static_assert(policy::hip::device_constants.MAX_WARPS <=
+                      policy::hip::device_constants.WARP_SIZE,
+                  "This algorithms assumes a warp of WARP_SIZE threads can "
+                  "reduce MAX_WARPS values");
 
-    __shared__ unsigned char tmpsd[sizeof(RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>)];
+    __shared__ unsigned char tmpsd[sizeof(
+        RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>)];
     RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS>* sd =
-      reinterpret_cast<RAJA::detail::SoAArray<T, policy::hip::device_constants.MAX_WARPS> *>(tmpsd);
+        reinterpret_cast<RAJA::detail::SoAArray<
+            T, policy::hip::device_constants.MAX_WARPS>*>(tmpsd);
 
     // write per warp values to shared memory
-    if (warpId == 0) {
+    if (warpId == 0)
+    {
       sd->set(warpNum, temp);
     }
 
     __syncthreads();
 
-    if (warpNum == 0) {
+    if (warpNum == 0)
+    {
 
       // read per warp values
-      if (warpId * policy::hip::device_constants.WARP_SIZE < numThreads) {
+      if (warpId * policy::hip::device_constants.WARP_SIZE < numThreads)
+      {
         temp = sd->get(warpId);
-      } else {
+      }
+      else
+      {
         temp = identity;
       }
 
-      for (int i = 1; i < policy::hip::device_constants.MAX_WARPS; i *= 2) {
+      for (int i = 1; i < policy::hip::device_constants.MAX_WARPS; i *= 2)
+      {
         T rhs = shfl_xor_sync(temp, i);
-        Combiner{}(temp, rhs);
+        Combiner {}(temp, rhs);
       }
     }
 

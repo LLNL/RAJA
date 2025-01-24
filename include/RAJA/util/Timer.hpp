@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,7 +51,7 @@ public:
   using ElapsedType = double;
 
 private:
-  using TimeType = timeval;
+  using TimeType     = timeval;
   using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
@@ -104,14 +104,13 @@ public:
   using ElapsedType = double;
 
 private:
-  using ClockType = std::chrono::steady_clock;
-  using TimeType = ClockType::time_point;
+  using ClockType    = std::chrono::steady_clock;
+  using TimeType     = ClockType::time_point;
   using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
   ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), telapsed(0)
-  {
-  }
+  {}
 
   void start() { tstart = ClockType::now(); }
 
@@ -174,7 +173,7 @@ public:
 
   void reset()
   {
-    stime_elapsed = 0;
+    stime_elapsed  = 0;
     nstime_elapsed = 0;
   }
 
@@ -200,6 +199,7 @@ using TimerBase = GettimeTimer;
 #elif defined(RAJA_USE_CLOCK)
 
 #include <time.h>
+
 namespace RAJA
 {
 
@@ -266,9 +266,11 @@ public:
 
 #if defined(RAJA_USE_CALIPER)
   void start(const char* name) { cali::Annotation(name).begin(); }
+
   void stop(const char* name) { cali::Annotation(name).end(); }
 #else
   void start(const char*) { start(); }
+
   void stop(const char*) { stop(); }
 #endif
 };
