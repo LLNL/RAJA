@@ -39,6 +39,8 @@ void ForallRangeSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 
     std::iota(test_array, test_array + RAJA::stripIndexType(N), rbegin);
 
+    working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
+
     RAJA::forall<EXEC_POLICY>(r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
       working_array[RAJA::stripIndexType(idx - rbegin)] = idx;
     });
