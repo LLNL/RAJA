@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1136,11 +1136,12 @@ struct MultiplyOperator<
       TILE_TYPE const& tile,
       LEFT_OPERAND_TYPE const& left,
       RIGHT_OPERAND_TYPE const& right,
-      ADD_TYPE const& add)  //->
-                            // decltype(TensorMultiplyAdd<decltype(left.eval(tile)),
-                            // decltype(right.eval(tile)),
-                            // decltype(add.eval(tile))>(left.eval(tile),
-                            // right.eval(tile), add.eval(tile)))
+      ADD_TYPE const&
+          add)  //->
+                // decltype(TensorMultiplyAdd<decltype(left.eval(tile)),
+                // decltype(right.eval(tile)),
+                // decltype(add.eval(tile))>(left.eval(tile),
+                // right.eval(tile), add.eval(tile)))
   {
     /*
      * First pass:  we want to return a BlockLiteral ET node with the
