@@ -42,18 +42,20 @@ namespace RAJA
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define hipErrchk(ans)                            \
-  {                                                \
-    ::RAJA::hipAssert((ans), __FILE__, __LINE__); \
+#define hipErrchk(ans)                                                         \
+  {                                                                            \
+    ::RAJA::hipAssert((ans), __FILE__, __LINE__);                              \
   }
 
 inline void hipAssert(hipError_t code,
-                       const char *file,
-                       int line,
-                       bool abort = true)
+                      const char* file,
+                      int line,
+                      bool abort = true)
 {
-  if (code != hipSuccess) {
-    if (abort) {
+  if (code != hipSuccess)
+  {
+    if (abort)
+    {
       std::string msg;
       msg += "HIPassert: ";
       msg += hipGetErrorString(code);
@@ -62,9 +64,11 @@ inline void hipAssert(hipError_t code,
       msg += ":";
       msg += std::to_string(line);
       throw std::runtime_error(msg);
-    } else {
-      fprintf(stderr, "HIPassert: %s %s %d\n",
-              hipGetErrorString(code), file, line);
+    }
+    else
+    {
+      fprintf(stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file,
+              line);
     }
   }
 }

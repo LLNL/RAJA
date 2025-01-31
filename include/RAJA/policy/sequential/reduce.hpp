@@ -37,7 +37,7 @@ namespace RAJA
 
 namespace detail
 {
-template <typename T, typename Reduce>
+template<typename T, typename Reduce>
 class ReduceSeq
     : public reduce::detail::BaseCombinable<T, Reduce, ReduceSeq<T, Reduce>>
 {

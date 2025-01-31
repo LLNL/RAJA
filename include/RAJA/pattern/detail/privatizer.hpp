@@ -24,30 +24,30 @@ namespace internal
 // };
 // DefineTypeTraitFromConcept(has_privatizer, HasPrivatizer);
 
-template <typename T>
+template<typename T>
 class has_privatizer
 {
 private:
-  template <typename C>
+  template<typename C>
   static auto Test(void*)
-      -> decltype(camp::val<typename C::privatizer>(), camp::true_type{});
+      -> decltype(camp::val<typename C::privatizer>(), camp::true_type {});
 
-  template <typename>
+  template<typename>
   static camp::false_type Test(...);
 
 public:
   static bool const value = decltype(Test<T>(0))::value;
 };
 
-
 static_assert(!has_privatizer<int>::value, "if this fires, abandon all hope");
 
-struct GenericWrapperBase {
-};
+struct GenericWrapperBase
+{};
 
-template <typename T>
-struct Privatizer {
-  using value_type = camp::decay<T>;
+template<typename T>
+struct Privatizer
+{
+  using value_type     = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
   static_assert(!has_privatizer<T>::value,
@@ -58,7 +58,7 @@ struct Privatizer {
                 "a bug");
 
   RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+  RAJA_HOST_DEVICE Privatizer(const T& o) : priv {o} {}
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
@@ -81,19 +81,19 @@ struct Privatizer {
  * that does not belong here.
  *
  */
-template <typename T,
-          typename std::enable_if<!has_privatizer<T>::value>::type* = nullptr>
+template<typename T,
+         typename std::enable_if<!has_privatizer<T>::value>::type* = nullptr>
 RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
 {
-  return Privatizer<T>{item};
+  return Privatizer<T> {item};
 }
 
 RAJA_SUPPRESS_HD_WARN
-template <typename T,
-          typename std::enable_if<has_privatizer<T>::value>::type* = nullptr>
+template<typename T,
+         typename std::enable_if<has_privatizer<T>::value>::type* = nullptr>
 RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> typename T::privatizer
 {
-  return typename T::privatizer{item};
+  return typename T::privatizer {item};
 }
 
 }  // namespace internal

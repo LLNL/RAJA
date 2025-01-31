@@ -47,13 +47,13 @@ namespace RAJA
  * SYCL kernel launch policy where the user may specify the number of physical
  * work group and work items per group.
  */
-template <bool async0>
+template<bool async0>
 struct sycl_launch : public RAJA::make_policy_pattern_launch_platform_t<
-                            RAJA::Policy::sycl,
-                            RAJA::Pattern::forall,
-                            detail::get_launch<async0>::value,
-                            RAJA::Platform::sycl>{
-};
+                         RAJA::Policy::sycl,
+                         RAJA::Pattern::forall,
+                         detail::get_launch<async0>::value,
+                         RAJA::Platform::sycl>
+{};
 
 namespace statement
 {
@@ -61,30 +61,26 @@ namespace statement
 /*
  * ! RAJA::kernel statement that launches a SYCL kernel.
  */
-template <typename LaunchConfig, typename... EnclosedStmts>
+template<typename LaunchConfig, typename... EnclosedStmts>
 struct SyclKernelExt
-    : public internal::Statement<LaunchConfig, EnclosedStmts...> {
-};
+    : public internal::Statement<LaunchConfig, EnclosedStmts...>
+{};
 
 /*
  * A RAJA::kernel statement that launches a SYCL kernel.
  * The kernel launch is synchronous.
  */
-template <typename... EnclosedStmts>
-using SyclKernel =
-    SyclKernelExt<sycl_launch<false>,
-                  EnclosedStmts...>;
+template<typename... EnclosedStmts>
+using SyclKernel = SyclKernelExt<sycl_launch<false>, EnclosedStmts...>;
 
 /*!
  * A RAJA::kernel statement that launches a SYCL kernel.
  * The kernel launch is asynchronous.
  */
-template <typename... EnclosedStmts>
-using SyclKernelAsync =
-    SyclKernelExt<sycl_launch<true>,
-                  EnclosedStmts...>;
+template<typename... EnclosedStmts>
+using SyclKernelAsync = SyclKernelExt<sycl_launch<true>, EnclosedStmts...>;
 
-} // namespace statement
+}  // namespace statement
 
 namespace internal
 {
@@ -92,11 +88,11 @@ namespace internal
 /*!
  * SYCL global function for launching SyclKernel policies.
  */
-template <typename Data, typename Exec>
+template<typename Data, typename Exec>
 void SyclKernelLauncher(Data data, ::sycl::nd_item<3> item)
 {
 
-  using data_t = camp::decay<Data>;
+  using data_t        = camp::decay<Data>;
   data_t private_data = data;
 
   // execute the the object
@@ -107,7 +103,11 @@ void SyclKernelLauncher(Data data, ::sycl::nd_item<3> item)
  * Helper class that handles SYCL kernel launching, and computing
  * maximum number of threads/blocks
  */
-template<bool IsTriviallyCopyable, typename LaunchPolicy, typename StmtList, typename Data, typename Types>
+template<bool IsTriviallyCopyable,
+         typename LaunchPolicy,
+         typename StmtList,
+         typename Data,
+         typename Types>
 struct SyclLaunchHelper;
 
 /*!
@@ -116,16 +116,17 @@ struct SyclLaunchHelper;
  * determined at runtime using the SYCL occupancy calculator.
  */
 template<bool async0, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
+struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
 {
   using Self = SyclLaunchHelper;
 
   static constexpr bool async = async0;
 
-  using executor_t = internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
+  using executor_t =
+      internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
   using data_t = camp::decay<Data>;
 
-  static void launch(Data &&data,
+  static void launch(Data&& data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
                      ::sycl::queue* qu)
@@ -136,21 +137,17 @@ struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
     // Kernel body is nontrivially copyable, create space on device and copy to
     // Workaround until "is_device_copyable" is supported
     //
-    data_t* m_data = (data_t*) ::sycl::malloc_device(sizeof(data_t), *qu);
+    data_t* m_data = (data_t*)::sycl::malloc_device(sizeof(data_t), *qu);
     qu->memcpy(m_data, &data, sizeof(data_t)).wait();
 
     qu->submit([&](::sycl::handler& h) {
- 
-      h.parallel_for(launch_dims.fit_nd_range(qu),
-                     [=] (::sycl::nd_item<3> item) {
-        
-        SyclKernelLauncher<Data, executor_t>(*m_data, item);
-
-      });
-    }).wait(); // Need to wait to free memory
+        h.parallel_for(launch_dims.fit_nd_range(qu),
+                       [=](::sycl::nd_item<3> item) {
+                         SyclKernelLauncher<Data, executor_t>(*m_data, item);
+                       });
+      }).wait();  // Need to wait to free memory
 
     ::sycl::free(m_data, *qu);
-
   }
 };
 
@@ -160,73 +157,75 @@ struct SyclLaunchHelper<false,sycl_launch<async0>,StmtList,Data,Types>
  * determined at runtime using the SYCL occupancy calculator.
  */
 template<bool async0, typename StmtList, typename Data, typename Types>
-struct SyclLaunchHelper<true,sycl_launch<async0>,StmtList,Data,Types>
+struct SyclLaunchHelper<true, sycl_launch<async0>, StmtList, Data, Types>
 {
   using Self = SyclLaunchHelper;
 
   static constexpr bool async = async0;
 
-  using executor_t = internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
+  using executor_t =
+      internal::sycl_statement_list_executor_t<StmtList, Data, Types>;
   using data_t = camp::decay<Data>;
 
-  static void launch(Data &&data,
+  static void launch(Data&& data,
                      internal::LaunchDims launch_dims,
                      size_t shmem,
                      ::sycl::queue* qu)
   {
 
     qu->submit([&](::sycl::handler& h) {
- 
       h.parallel_for(launch_dims.fit_nd_range(qu),
-                     [=] (::sycl::nd_item<3> item) {
-
-        SyclKernelLauncher<Data, executor_t>(data, item);
-
-      });
+                     [=](::sycl::nd_item<3> item) {
+                       SyclKernelLauncher<Data, executor_t>(data, item);
+                     });
     });
 
-    if (!async) { qu->wait(); };
-
+    if (!async)
+    {
+      qu->wait();
+    };
   }
 };
 
 /*!
  * Specialization that launches SYCL kernels for RAJA::kernel from host code
  */
-template <typename LaunchConfig, typename... EnclosedStmts, typename Types>
+template<typename LaunchConfig, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::SyclKernelExt<LaunchConfig, EnclosedStmts...>, Types> {
+    statement::SyclKernelExt<LaunchConfig, EnclosedStmts...>,
+    Types>
+{
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using StatementType =
       statement::SyclKernelExt<LaunchConfig, EnclosedStmts...>;
 
-  template <typename Data>
-  static inline void exec(Data &&data)
+  template<typename Data>
+  static inline void exec(Data&& data)
   {
 
     using data_t = camp::decay<Data>;
-    using executor_t = sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
+    using executor_t =
+        sycl_statement_list_executor_t<stmt_list_t, data_t, Types>;
     using launch_t = SyclLaunchHelper<std::is_trivially_copyable<data_t>::value,
                                       LaunchConfig, stmt_list_t, data_t, Types>;
 
     camp::resources::Sycl res = data.get_resource();
-    ::sycl::queue* q = res.get_queue();;
+    ::sycl::queue* q          = res.get_queue();
+    ;
 
     //
     // Compute the requested kernel dimensions
     //
     LaunchDims launch_dims = executor_t::calculateDimensions(data);
-    
+
     int shmem = 0;
 
     //
     // Launch the kernels
     //
     launch_t::launch(std::move(data), launch_dims, shmem, q);
-
   }
-
 };
 
 
