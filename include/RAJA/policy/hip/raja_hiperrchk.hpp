@@ -24,10 +24,10 @@
 
 #if defined(RAJA_ENABLE_HIP)
 
+#include <hip/hip_runtime.h>
+
 #include <iostream>
 #include <string>
-
-#include <hip/hip_runtime.h>
 
 #include "RAJA/util/macros.hpp"
 
@@ -43,14 +43,14 @@ namespace RAJA
 ///////////////////////////////////////////////////////////////////////
 ///
 #define hipErrchk(ans)                            \
-  {                                                \
+  {                                               \
     ::RAJA::hipAssert((ans), __FILE__, __LINE__); \
   }
 
 inline void hipAssert(hipError_t code,
-                       const char *file,
-                       int line,
-                       bool abort = true)
+                      const char *file,
+                      int line,
+                      bool abort = true)
 {
   if (code != hipSuccess) {
     if (abort) {
@@ -63,8 +63,8 @@ inline void hipAssert(hipError_t code,
       msg += std::to_string(line);
       throw std::runtime_error(msg);
     } else {
-      fprintf(stderr, "HIPassert: %s %s %d\n",
-              hipGetErrorString(code), file, line);
+      fprintf(
+          stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file, line);
     }
   }
 }

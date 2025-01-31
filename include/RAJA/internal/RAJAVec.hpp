@@ -19,13 +19,12 @@
 #ifndef RAJAVec_HPP
 #define RAJAVec_HPP
 
-#include "RAJA/config.hpp"
-
 #include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <utility>
 
+#include "RAJA/config.hpp"
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
 namespace RAJA
@@ -57,8 +56,9 @@ class RAJAVec
       typename allocator_traits_type::propagate_on_container_copy_assignment;
   using propagate_on_container_move_assignment =
       typename allocator_traits_type::propagate_on_container_move_assignment;
-  using propagate_on_container_swap            =
+  using propagate_on_container_swap =
       typename allocator_traits_type::propagate_on_container_swap;
+
 public:
   using value_type = T;
   using allocator_type = Allocator;
@@ -86,7 +86,9 @@ public:
   ///
   RAJAVec(const RAJAVec& other)
       : m_data(nullptr),
-        m_allocator(allocator_traits_type::select_on_container_copy_construction(other.m_allocator)),
+        m_allocator(
+            allocator_traits_type::select_on_container_copy_construction(
+                other.m_allocator)),
         m_capacity(0),
         m_size(0)
   {
@@ -125,7 +127,8 @@ public:
   RAJAVec& operator=(RAJAVec&& rhs)
   {
     if (&rhs != this) {
-      move_assign_private(std::move(rhs), propagate_on_container_move_assignment{});
+      move_assign_private(std::move(rhs),
+                          propagate_on_container_move_assignment{});
     }
     return *this;
   }
@@ -150,25 +153,25 @@ public:
   ///
   /// Get a pointer to the beginning of the contiguous vector
   ///
-        pointer data()       { return m_data; }
+  pointer data() { return m_data; }
   ///
   const_pointer data() const { return m_data; }
 
   ///
   /// Get an iterator to the end.
   ///
-        iterator  end()       { return m_data + m_size; }
+  iterator end() { return m_data + m_size; }
   ///
-  const_iterator  end() const { return m_data + m_size; }
+  const_iterator end() const { return m_data + m_size; }
   ///
   const_iterator cend() const { return m_data + m_size; }
 
   ///
   /// Get an iterator to the beginning.
   ///
-        iterator  begin()       { return m_data; }
+  iterator begin() { return m_data; }
   ///
-  const_iterator  begin() const { return m_data; }
+  const_iterator begin() const { return m_data; }
   ///
   const_iterator cbegin() const { return m_data; }
 
@@ -200,18 +203,12 @@ public:
   ///
   /// Shrink the capacity of the vector to the current size.
   ///
-  void shrink_to_fit()
-  {
-    shrink_cap(m_size);
-  }
+  void shrink_to_fit() { shrink_cap(m_size); }
 
   ///
   /// Empty vector of all data.
   ///
-  void clear()
-  {
-    destroy_items_after(0);
-  }
+  void clear() { destroy_items_after(0); }
 
   ///
   /// Change the size of the vector,
@@ -248,23 +245,23 @@ public:
   ///
   /// Bracket operator accessor.
   ///
-        reference operator[](difference_type i)       { return m_data[i]; }
+  reference operator[](difference_type i) { return m_data[i]; }
   ///
   const_reference operator[](difference_type i) const { return m_data[i]; }
 
   ///
   /// Access the last item of the vector.
   ///
-        reference front()       { return m_data[0]; }
+  reference front() { return m_data[0]; }
   ///
   const_reference front() const { return m_data[0]; }
 
   ///
   /// Access the last item of the vector.
   ///
-        reference back()       { return m_data[m_size-1]; }
+  reference back() { return m_data[m_size - 1]; }
   ///
-  const_reference back() const { return m_data[m_size-1]; }
+  const_reference back() const { return m_data[m_size - 1]; }
 
   ///
   /// Add item to front end of vector. Note that this operation is unique to
@@ -272,28 +269,31 @@ public:
   ///
   void push_front(const_reference item) { emplace_front_private(item); }
   ///
-  void push_front(   value_type&& item) { emplace_front_private(std::move(item)); }
+  void push_front(value_type&& item) { emplace_front_private(std::move(item)); }
   ///
-  template < typename ... Os >
-  void emplace_front(Os&&... os) { emplace_front_private(std::forward<Os>(os)...); }
+  template <typename... Os>
+  void emplace_front(Os&&... os)
+  {
+    emplace_front_private(std::forward<Os>(os)...);
+  }
 
   ///
   /// Add item to back end of vector.
   ///
   void push_back(const_reference item) { emplace_back_private(item); }
   ///
-  void push_back(   value_type&& item) { emplace_back_private(std::move(item)); }
+  void push_back(value_type&& item) { emplace_back_private(std::move(item)); }
   ///
-  template < typename ... Os >
-  void emplace_back(Os&&... os) { emplace_back_private(std::forward<Os>(os)...); }
+  template <typename... Os>
+  void emplace_back(Os&&... os)
+  {
+    emplace_back_private(std::forward<Os>(os)...);
+  }
 
   ///
   /// Remove the last item of the vector.
   ///
-  void pop_back()
-  {
-    destroy_items_after(m_size-1);
-  }
+  void pop_back() { destroy_items_after(m_size - 1); }
 
 private:
   pointer m_data;
@@ -386,10 +386,10 @@ private:
   void swap_private(RAJAVec& other, std::true_type)
   {
     using std::swap;
-    swap(m_data,      other.m_data);
+    swap(m_data, other.m_data);
     swap(m_allocator, other.m_allocator);
-    swap(m_capacity,  other.m_capacity);
-    swap(m_size,      other.m_size);
+    swap(m_capacity, other.m_capacity);
+    swap(m_size, other.m_size);
   }
 
   ///
@@ -398,9 +398,9 @@ private:
   void swap_private(RAJAVec& other, std::false_type)
   {
     using std::swap;
-    swap(m_data,      other.m_data);
-    swap(m_capacity,  other.m_capacity);
-    swap(m_size,      other.m_size);
+    swap(m_data, other.m_data);
+    swap(m_capacity, other.m_capacity);
+    swap(m_size, other.m_size);
   }
 
   //
@@ -426,11 +426,13 @@ private:
   //
   // Construct items [m_size, new_size) from args.
   //
-  template < typename ... Os >
+  template <typename... Os>
   void construct_items_back(size_type new_size, Os&&... os)
   {
     for (; m_size < new_size; ++m_size) {
-      allocator_traits_type::construct(m_allocator, m_data+m_size, std::forward<Os>(os)...);
+      allocator_traits_type::construct(m_allocator,
+                                       m_data + m_size,
+                                       std::forward<Os>(os)...);
     }
   }
 
@@ -440,7 +442,9 @@ private:
   void copy_construct_items_back(size_type new_size, const_pointer o_data)
   {
     for (; m_size < new_size; ++m_size) {
-      allocator_traits_type::construct(m_allocator, m_data+m_size, o_data[m_size]);
+      allocator_traits_type::construct(m_allocator,
+                                       m_data + m_size,
+                                       o_data[m_size]);
     }
   }
 
@@ -450,7 +454,9 @@ private:
   void move_construct_items_back(size_type new_size, pointer o_data)
   {
     for (; m_size < new_size; ++m_size) {
-      allocator_traits_type::construct(m_allocator, m_data+m_size, std::move(o_data[m_size]));
+      allocator_traits_type::construct(m_allocator,
+                                       m_data + m_size,
+                                       std::move(o_data[m_size]));
     }
   }
 
@@ -460,38 +466,44 @@ private:
   void destroy_items_after(size_type new_end)
   {
     for (; m_size > new_end; --m_size) {
-      allocator_traits_type::destroy(m_allocator, m_data+m_size-1);
+      allocator_traits_type::destroy(m_allocator, m_data + m_size - 1);
     }
   }
 
   //
   // Add an item to the front, shifting all existing items back one.
   //
-  template < typename ... Os >
+  template <typename... Os>
   void emplace_front_private(Os&&... os)
   {
     reserve(m_size + 1);
 
     if (m_size > 0) {
       size_type i = m_size;
-      allocator_traits_type::construct(m_allocator, m_data+i, std::move(m_data[i - 1]));
+      allocator_traits_type::construct(m_allocator,
+                                       m_data + i,
+                                       std::move(m_data[i - 1]));
       for (--i; i > 0; --i) {
         m_data[i] = std::move(m_data[i - 1]);
       }
       allocator_traits_type::destroy(m_allocator, m_data);
     }
-    allocator_traits_type::construct(m_allocator, m_data, std::forward<Os>(os)...);
+    allocator_traits_type::construct(m_allocator,
+                                     m_data,
+                                     std::forward<Os>(os)...);
     m_size++;
   }
 
   //
   // Add an item to the back.
   //
-  template < typename ... Os >
+  template <typename... Os>
   void emplace_back_private(Os&&... os)
   {
     reserve(m_size + 1);
-    allocator_traits_type::construct(m_allocator, m_data+m_size, std::forward<Os>(os)...);
+    allocator_traits_type::construct(m_allocator,
+                                     m_data + m_size,
+                                     std::forward<Os>(os)...);
     m_size++;
   }
 
@@ -548,8 +560,10 @@ private:
 
     if (m_data) {
       for (size_type i = 0; i < m_size; ++i) {
-        allocator_traits_type::construct(m_allocator, tdata+i, std::move(m_data[i]));
-        allocator_traits_type::destroy(m_allocator, m_data+i);
+        allocator_traits_type::construct(m_allocator,
+                                         tdata + i,
+                                         std::move(m_data[i]));
+        allocator_traits_type::destroy(m_allocator, m_data + i);
       }
       allocator_traits_type::deallocate(m_allocator, m_data, m_capacity);
     }

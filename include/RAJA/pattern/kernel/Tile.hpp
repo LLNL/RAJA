@@ -18,18 +18,16 @@
 #ifndef RAJA_pattern_kernel_Tile_HPP
 #define RAJA_pattern_kernel_Tile_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
-#include "camp/camp.hpp"
-#include "camp/concepts.hpp"
-#include "camp/tuple.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
 namespace RAJA
 {
@@ -39,9 +37,7 @@ struct TileSize {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  constexpr TileSize(camp::idx_t size_) : size{size_}
-  {
-  }
+  constexpr TileSize(camp::idx_t size_) : size{size_} {}
 };
 
 namespace statement
@@ -75,7 +71,6 @@ struct tile_dynamic {
 };
 
 
-
 namespace internal
 {
 
@@ -84,7 +79,10 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  *
  */
-template <camp::idx_t ArgumentId, typename Data, typename Types, typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename Data,
+          typename Types,
+          typename... EnclosedStmts>
 struct TileWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
@@ -107,8 +105,7 @@ template <typename Iterable>
 struct IterableTiler {
   using value_type = camp::decay<Iterable>;
 
-  struct iterate
-  {
+  struct iterate {
     value_type s;
     Index_type i;
   };
@@ -222,7 +219,8 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::Tile<ArgumentId, tile_fixed<ChunkSize>, EPol, EnclosedStmts...>, Types> {
+    statement::Tile<ArgumentId, tile_fixed<ChunkSize>, EPol, EnclosedStmts...>,
+    Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
@@ -238,24 +236,29 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileWrapper<ArgumentId, Data, Types,
-                EnclosedStmts...> tile_wrapper(data);
+    TileWrapper<ArgumentId, Data, Types, EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper, RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r,
+                EPol{},
+                tiled_iterable,
+                tile_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
   }
 };
 
-template<camp::idx_t ArgumentId,
-  typename EPol,
-  typename... EnclosedStmts,
-  typename Types>
+template <camp::idx_t ArgumentId,
+          typename EPol,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    statement::Tile<ArgumentId, tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>, Types> {
+    statement::
+        Tile<ArgumentId, tile_dynamic<ArgumentId>, EPol, EnclosedStmts...>,
+    Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &data)
@@ -265,20 +268,24 @@ struct StatementExecutor<
 
     // Get the tiling policies chunk size
     auto chunk_size = camp::get<ArgumentId>(data.param_tuple);
-    static_assert(camp::concepts::metalib::is_same<TileSize, decltype(chunk_size)>::value,
-                  "Extracted parameter must be of type TileSize.");
+    static_assert(
+        camp::concepts::metalib::is_same<TileSize, decltype(chunk_size)>::value,
+        "Extracted parameter must be of type TileSize.");
 
     // Create a tile iterator
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size.size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileWrapper<ArgumentId, Data, Types,
-                EnclosedStmts...> tile_wrapper(data);
+    TileWrapper<ArgumentId, Data, Types, EnclosedStmts...> tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper, RAJA::expt::get_empty_forall_param_pack());
-    
+    forall_impl(r,
+                EPol{},
+                tiled_iterable,
+                tile_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
+
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;
   }

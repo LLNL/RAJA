@@ -19,10 +19,8 @@
 #define RAJA_pattern_atomic_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/policy/atomic_auto.hpp"
 #include "RAJA/policy/atomic_builtin.hpp"
-
 #include "RAJA/util/macros.hpp"
 
 namespace RAJA
@@ -317,22 +315,19 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr explicit AtomicRef(value_type *value_ptr)
-      : m_value_ptr(value_ptr) {}
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr AtomicRef(AtomicRef const &c)
-      : m_value_ptr(c.m_value_ptr) {}
-
-  AtomicRef& operator=(AtomicRef const&) = delete;
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  value_type * getPointer() const
+  constexpr explicit AtomicRef(value_type *value_ptr) : m_value_ptr(value_ptr)
   {
-    return m_value_ptr;
   }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr AtomicRef(AtomicRef const &c) : m_value_ptr(c.m_value_ptr) {}
+
+  AtomicRef &operator=(AtomicRef const &) = delete;
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  value_type *getPointer() const { return m_value_ptr; }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -351,17 +346,11 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  value_type load() const
-  {
-    return RAJA::atomicLoad<Policy>(m_value_ptr);
-  }
+  value_type load() const { return RAJA::atomicLoad<Policy>(m_value_ptr); }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  operator value_type() const
-  {
-    return RAJA::atomicLoad<Policy>(m_value_ptr);
-  }
+  operator value_type() const { return RAJA::atomicLoad<Policy>(m_value_ptr); }
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -379,7 +368,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  bool compare_exchange_strong(value_type& expect, value_type rhs) const
+  bool compare_exchange_strong(value_type &expect, value_type rhs) const
   {
     value_type compare = expect;
     value_type old = RAJA::atomicCAS<Policy>(m_value_ptr, compare, rhs);
@@ -393,7 +382,7 @@ public:
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  bool compare_exchange_weak(value_type& expect, value_type rhs) const
+  bool compare_exchange_weak(value_type &expect, value_type rhs) const
   {
     return this->compare_exchange_strong(expect, rhs);
   }

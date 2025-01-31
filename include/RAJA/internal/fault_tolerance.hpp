@@ -35,6 +35,7 @@
 #if defined(RAJA_REPORT_FT)
 
 #include <stdio.h>
+
 #include "cycle.h"
 
 #define RAJA_FT_BEGIN                          \
@@ -80,17 +81,20 @@
     do {                          \
       repeat = false;
 
-#define RAJA_FT_END        \
-  if (fault_type > 0) {    \
-    /* invalidate cache */ \
-    repeat = true;         \
-    fault_type = 0;        \
-  }                        \
-  }                        \
-  while (repeat == true)   \
-    ;                      \
-  }                        \
-  else { fault_type = 0; /* ignore for the simulation */ }
+#define RAJA_FT_END                                 \
+  if (fault_type > 0) {                             \
+    /* invalidate cache */                          \
+    repeat = true;                                  \
+    fault_type = 0;                                 \
+  }                                                 \
+  }                                                 \
+  while (repeat == true)                            \
+    ;                                               \
+  }                                                 \
+  else                                              \
+  {                                                 \
+    fault_type = 0; /* ignore for the simulation */ \
+  }
 
 #endif  // RAJA_REPORT_FT
 

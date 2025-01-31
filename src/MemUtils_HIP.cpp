@@ -21,7 +21,6 @@
 #if defined(RAJA_ENABLE_HIP)
 
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
-
 #include "RAJA/policy/hip/raja_hiperrchk.hpp"
 
 

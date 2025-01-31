@@ -18,10 +18,10 @@
 #ifndef RAJA_POLICYBASE_HPP
 #define RAJA_POLICYBASE_HPP
 
+#include <cstddef>
+
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/concepts.hpp"
-
-#include <cstddef>
 
 namespace RAJA
 {
@@ -93,8 +93,9 @@ template <typename PolicyType, RAJA::Policy P_>
 struct policy_is : camp::num<policy_of<camp::decay<PolicyType>>::value == P_> {
 };
 
-template <typename PolicyType, RAJA::Policy ... Ps_>
-struct policy_any_of : camp::num<camp::concepts::any_of<policy_is<PolicyType, Ps_>...>::value> {
+template <typename PolicyType, RAJA::Policy... Ps_>
+struct policy_any_of
+    : camp::num<camp::concepts::any_of<policy_is<PolicyType, Ps_>...>::value> {
 };
 
 template <typename PolicyType, RAJA::Pattern P_>
@@ -112,17 +113,18 @@ struct platform_is
 };
 
 template <typename PolicyType, typename Trait>
-struct policy_has_trait_impl
-    : camp::num<false> {
+struct policy_has_trait_impl : camp::num<false> {
 };
 ///
-template <typename Trait, Policy Policy_,
-                          Pattern Pattern_,
-                          Launch Launch_,
-                          Platform Platform_,
-                          typename... Traits>
+template <typename Trait,
+          Policy Policy_,
+          Pattern Pattern_,
+          Launch Launch_,
+          Platform Platform_,
+          typename... Traits>
 struct policy_has_trait_impl<
-      PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Traits...>, Trait>
+    PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Traits...>,
+    Trait>
     : camp::num<camp::concepts::any_of<std::is_same<Trait, Traits>...>::value> {
 };
 ///
@@ -159,10 +161,7 @@ template <Policy Policy_,
 using make_policy_pattern_launch_platform_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Args...>;
 
-template <Policy Policy_,
-          Pattern Pattern_,
-          Launch Launch_,
-          typename... Args>
+template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
 
@@ -230,7 +229,8 @@ struct is_reduce_policy : RAJA::pattern_is<Pol, RAJA::Pattern::reduce> {
 };
 
 template <typename Pol>
-struct is_multi_reduce_policy : RAJA::pattern_is<Pol, RAJA::Pattern::multi_reduce> {
+struct is_multi_reduce_policy
+    : RAJA::pattern_is<Pol, RAJA::Pattern::multi_reduce> {
 };
 
 }  // end namespace type_traits

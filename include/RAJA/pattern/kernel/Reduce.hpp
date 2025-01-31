@@ -18,11 +18,10 @@
 #ifndef RAJA_pattern_kernel_Reduce_HPP
 #define RAJA_pattern_kernel_Reduce_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
@@ -39,7 +38,8 @@ namespace statement
  *
  */
 template <typename ReducePolicy,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts>
 struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...> {

@@ -18,16 +18,13 @@
 #ifndef RAJA_MultiPolicy_HPP
 #define RAJA_MultiPolicy_HPP
 
-#include "RAJA/config.hpp"
-
 #include <tuple>
 
-#include "RAJA/policy/PolicyBase.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/internal/get_platform.hpp"
-#include "RAJA/util/plugins.hpp"
-
+#include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/util/plugins.hpp"
 #include "RAJA/util/resource.hpp"
 
 
@@ -97,10 +94,11 @@ template <typename Res,
           typename Body,
           typename Selector,
           typename... Policies>
-RAJA_INLINE resources::EventProxy<Res> forall_impl(Res r,
-                                  MultiPolicy<Selector, Policies...> p,
-                                  Iterable &&iter,
-                                  Body &&body)
+RAJA_INLINE resources::EventProxy<Res> forall_impl(
+    Res r,
+    MultiPolicy<Selector, Policies...> p,
+    Iterable &&iter,
+    Body &&body)
 {
   p.invoke(iter, body);
   return resources::EventProxy<Res>(r);
@@ -153,8 +151,9 @@ RAJA_DEPRECATE("In the next RAJA Release, MultiPolicy will be deprecated.")
 auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
-  return detail::make_multi_policy(
-      camp::make_idx_seq_t<sizeof...(Policies)>{}, s, policies);
+  return detail::make_multi_policy(camp::make_idx_seq_t<sizeof...(Policies)>{},
+                                   s,
+                                   policies);
 }
 
 namespace detail
@@ -190,7 +189,9 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
 
       util::callPostLaunchPlugins(context);
     } else {
-      NextInvoker::invoke(offset, std::forward<Iterable>(iter), std::forward<LoopBody>(loop_body));
+      NextInvoker::invoke(offset,
+                          std::forward<Iterable>(iter),
+                          std::forward<LoopBody>(loop_body));
     }
   }
 };
@@ -214,7 +215,7 @@ struct policy_invoker<0, size, Policy, rest...> {
 
       util::callPreLaunchPlugins(context);
 
-      //std::cout <<"policy_invoker: No index\n";
+      // std::cout <<"policy_invoker: No index\n";
       using policy::multi::forall_impl;
       RAJA_FORCEINLINE_RECURSIVE
       auto r = resources::get_resource<Policy>::type::get_default();
@@ -234,7 +235,8 @@ namespace type_traits
 
 template <typename T>
 struct is_multi_policy
-    : ::RAJA::type_traits::SpecializationOf<RAJA::MultiPolicy, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::MultiPolicy,
+                                            typename std::decay<T>::type> {
 };
 }  // namespace type_traits
 

@@ -22,11 +22,10 @@
 #ifndef RAJA_util_TypeConvert_HPP
 #define RAJA_util_TypeConvert_HPP
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/macros.hpp"
-
 #include <string.h>
+
+#include "RAJA/config.hpp"
+#include "RAJA/util/macros.hpp"
 
 
 namespace RAJA

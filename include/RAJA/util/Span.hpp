@@ -88,16 +88,34 @@ struct Span {
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator cbegin() const { return m_begin; }
   RAJA_HOST_DEVICE RAJA_INLINE const_iterator cend() const { return m_end; }
 
-  RAJA_HOST_DEVICE RAJA_INLINE friend iterator begin(Span& s) { return s.begin(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend iterator begin(Span& s)
+  {
+    return s.begin();
+  }
   RAJA_HOST_DEVICE RAJA_INLINE friend iterator end(Span& s) { return s.end(); }
-  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator begin(const Span& s) { return s.begin(); }
-  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator end(const Span& s) { return s.end(); }
-  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator cbegin(const Span& s) { return s.cbegin(); }
-  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator cend(const Span& s) { return s.cend(); }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator begin(const Span& s)
+  {
+    return s.begin();
+  }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator end(const Span& s)
+  {
+    return s.end();
+  }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator cbegin(const Span& s)
+  {
+    return s.cbegin();
+  }
+  RAJA_HOST_DEVICE RAJA_INLINE friend const_iterator cend(const Span& s)
+  {
+    return s.cend();
+  }
 
   RAJA_HOST_DEVICE RAJA_INLINE reference front() const { return *begin(); }
-  RAJA_HOST_DEVICE RAJA_INLINE reference back() const { return *(end()-1); }
-  RAJA_HOST_DEVICE RAJA_INLINE reference operator[](size_type i) const { return data()[i]; }
+  RAJA_HOST_DEVICE RAJA_INLINE reference back() const { return *(end() - 1); }
+  RAJA_HOST_DEVICE RAJA_INLINE reference operator[](size_type i) const
+  {
+    return data()[i];
+  }
   RAJA_HOST_DEVICE RAJA_INLINE iterator data() const { return m_begin; }
 
   RAJA_HOST_DEVICE RAJA_INLINE size_type size() const
@@ -157,21 +175,21 @@ private:
  *
  */
 template <typename IterType, typename IndexType>
-RAJA_HOST_DEVICE RAJA_INLINE Span<IterType, IndexType> make_span(
-    IterType begin,
-    IndexType size)
+RAJA_HOST_DEVICE RAJA_INLINE Span<IterType, IndexType> make_span(IterType begin,
+                                                                 IndexType size)
 {
   return Span<IterType, IndexType>(begin, size);
 }
 
 template <typename Iter>
-RAJA_INLINE auto make_span(Iter &iterable)
+RAJA_INLINE auto make_span(Iter& iterable)
 {
   using std::begin;
-  using std::end;
   using std::distance;
-  return Span<typename Iter::iterator, decltype(distance(begin(iterable), end(iterable)))>
-    (begin(iterable), end(iterable));
+  using std::end;
+  return Span<typename Iter::iterator,
+              decltype(distance(begin(iterable), end(iterable)))>(
+      begin(iterable), end(iterable));
 }
 
 }  // end namespace RAJA

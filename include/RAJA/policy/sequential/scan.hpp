@@ -18,17 +18,14 @@
 #ifndef RAJA_scan_sequential_HPP
 #define RAJA_scan_sequential_HPP
 
-#include "RAJA/config.hpp"
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
 
-#include "RAJA/util/macros.hpp"
-
-#include "RAJA/util/concepts.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/util/concepts.hpp"
+#include "RAJA/util/macros.hpp"
 
 namespace RAJA
 {
@@ -41,15 +38,13 @@ namespace scan
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_sequential_policy<ExecPolicy>>
-inclusive_inplace(
-    resources::Host host_res,
-    const ExecPolicy &,
-    Iter begin,
-    Iter end,
-    BinFn f)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                                  type_traits::is_sequential_policy<ExecPolicy>>
+inclusive_inplace(resources::Host host_res,
+                  const ExecPolicy &,
+                  Iter begin,
+                  Iter end,
+                  BinFn f)
 {
   using ValueT = typename std::remove_reference<decltype(*begin)>::type;
   ValueT agg = *begin;
@@ -67,16 +62,14 @@ inclusive_inplace(
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_sequential_policy<ExecPolicy>>
-exclusive_inplace(
-    resources::Host host_res,
-    const ExecPolicy &,
-    Iter begin,
-    Iter end,
-    BinFn f,
-    T v)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                                  type_traits::is_sequential_policy<ExecPolicy>>
+exclusive_inplace(resources::Host host_res,
+                  const ExecPolicy &,
+                  Iter begin,
+                  Iter end,
+                  BinFn f,
+                  T v)
 {
   using std::distance;
   const auto n = distance(begin, end);
@@ -99,16 +92,14 @@ exclusive_inplace(
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_sequential_policy<ExecPolicy>>
-inclusive(
-    resources::Host host_res,
-    const ExecPolicy &,
-    const Iter begin,
-    const Iter end,
-    OutIter out,
-    BinFn f)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                                  type_traits::is_sequential_policy<ExecPolicy>>
+inclusive(resources::Host host_res,
+          const ExecPolicy &,
+          const Iter begin,
+          const Iter end,
+          OutIter out,
+          BinFn f)
 {
   using ValueT = typename std::remove_reference<decltype(*out)>::type;
   ValueT agg = *begin;
@@ -131,17 +122,15 @@ template <typename ExecPolicy,
           typename OutIter,
           typename BinFn,
           typename T>
-RAJA_INLINE
-concepts::enable_if_t<resources::EventProxy<resources::Host>,
-                      type_traits::is_sequential_policy<ExecPolicy>>
-exclusive(
-    resources::Host host_res,
-    const ExecPolicy &,
-    const Iter begin,
-    const Iter end,
-    OutIter out,
-    BinFn f,
-    T v)
+RAJA_INLINE concepts::enable_if_t<resources::EventProxy<resources::Host>,
+                                  type_traits::is_sequential_policy<ExecPolicy>>
+exclusive(resources::Host host_res,
+          const ExecPolicy &,
+          const Iter begin,
+          const Iter end,
+          OutIter out,
+          BinFn f,
+          T v)
 {
   using ValueT = typename std::remove_reference<decltype(*out)>::type;
   ValueT agg = v;

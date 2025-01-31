@@ -60,11 +60,11 @@ public:
   using used_value_type = typename used_type::value_type;
 
   MemoryArena(void* ptr, size_t size)
-    : m_allocation{ ptr, static_cast<char*>(ptr)+size },
-      m_free_space(),
-      m_used_space()
+      : m_allocation{ptr, static_cast<char*>(ptr) + size},
+        m_free_space(),
+        m_used_space()
   {
-     m_free_space[ptr] = static_cast<char*>(ptr)+size ;
+    m_free_space[ptr] = static_cast<char*>(ptr) + size;
     if (m_allocation.begin == nullptr) {
       fprintf(stderr, "Attempt to create MemoryArena with no memory");
       std::abort();

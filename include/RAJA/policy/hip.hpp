@@ -30,16 +30,16 @@
 #include "RAJA/policy/hip/atomic.hpp"
 #endif
 
+#include "RAJA/policy/hip/WorkGroup.hpp"
 #include "RAJA/policy/hip/forall.hpp"
+#include "RAJA/policy/hip/kernel.hpp"
+#include "RAJA/policy/hip/launch.hpp"
+#include "RAJA/policy/hip/multi_reduce.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 #include "RAJA/policy/hip/reduce.hpp"
-#include "RAJA/policy/hip/multi_reduce.hpp"
 #include "RAJA/policy/hip/scan.hpp"
 #include "RAJA/policy/hip/sort.hpp"
-#include "RAJA/policy/hip/kernel.hpp"
 #include "RAJA/policy/hip/synchronize.hpp"
-#include "RAJA/policy/hip/launch.hpp"
-#include "RAJA/policy/hip/WorkGroup.hpp"
 
 
 #endif  // closing endif for if defined(RAJA_HIP_ACTIVE)

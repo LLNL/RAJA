@@ -19,11 +19,10 @@
 #define RAJA_policy_atomic_auto_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/util/macros.hpp"
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/sequential/atomic.hpp"
+#include "RAJA/policy/sequential/atomic.hpp"
 #endif
 
 /*!
@@ -106,9 +105,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(auto_atomic, T *acc)
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(auto_atomic,
-                                         T *acc,
-                                         T compare)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicInc(auto_atomic, T *acc, T compare)
 {
   return atomicInc(RAJA_AUTO_ATOMIC, acc, compare);
 }
@@ -120,9 +117,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(auto_atomic, T *acc)
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(auto_atomic,
-                                         T *acc,
-                                         T compare)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicDec(auto_atomic, T *acc, T compare)
 {
   return atomicDec(RAJA_AUTO_ATOMIC, acc, compare);
 }
@@ -146,9 +141,7 @@ RAJA_INLINE RAJA_HOST_DEVICE T atomicXor(auto_atomic, T *acc, T value)
 }
 
 template <typename T>
-RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(auto_atomic,
-                                              T *acc,
-                                              T value)
+RAJA_INLINE RAJA_HOST_DEVICE T atomicExchange(auto_atomic, T *acc, T value)
 {
   return atomicExchange(RAJA_AUTO_ATOMIC, acc, value);
 }

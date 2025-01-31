@@ -5,8 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/pattern/tensor/stats.hpp"
 #include <stdio.h>
+
+#include "RAJA/pattern/tensor/stats.hpp"
 
 int RAJA::tensor_stats::indent = 0;
 
@@ -49,7 +50,8 @@ camp::idx_t RAJA::tensor_stats::num_matrix_mm_multacc_row_row = 0;
 camp::idx_t RAJA::tensor_stats::num_matrix_mm_mult_col_col = 0;
 camp::idx_t RAJA::tensor_stats::num_matrix_mm_multacc_col_col = 0;
 
-void RAJA::tensor_stats::resetVectorStats(){
+void RAJA::tensor_stats::resetVectorStats()
+{
   num_vector_copy = 0;
   num_vector_copy_ctor = 0;
   num_vector_broadcast_ctor = 0;
@@ -88,9 +90,13 @@ void RAJA::tensor_stats::resetVectorStats(){
   num_matrix_mm_multacc_col_col = 0;
 }
 
-#define PRINT_STAT(STAT) if(STAT){printf("  %-32s   %ld\n", #STAT, STAT);}
+#define PRINT_STAT(STAT)                    \
+  if (STAT) {                               \
+    printf("  %-32s   %ld\n", #STAT, STAT); \
+  }
 
-void RAJA::tensor_stats::printVectorStats(){
+void RAJA::tensor_stats::printVectorStats()
+{
 
   printf("RAJA SIMD Register Statistics:\n");
 
@@ -129,5 +135,4 @@ void RAJA::tensor_stats::printVectorStats(){
   PRINT_STAT(num_matrix_mm_multacc_row_row);
   PRINT_STAT(num_matrix_mm_mult_col_col);
   PRINT_STAT(num_matrix_mm_multacc_col_col);
-
 }

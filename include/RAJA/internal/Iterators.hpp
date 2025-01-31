@@ -287,10 +287,14 @@ public:
   using iterator_category = std::random_access_iterator_tag;
 
   constexpr strided_numeric_iterator() noexcept = default;
-  constexpr strided_numeric_iterator(const strided_numeric_iterator&) noexcept = default;
-  constexpr strided_numeric_iterator(strided_numeric_iterator&&) noexcept = default;
-  strided_numeric_iterator& operator=(const strided_numeric_iterator&) noexcept = default;
-  strided_numeric_iterator& operator=(strided_numeric_iterator&&) noexcept = default;
+  constexpr strided_numeric_iterator(const strided_numeric_iterator&) noexcept =
+      default;
+  constexpr strided_numeric_iterator(strided_numeric_iterator&&) noexcept =
+      default;
+  strided_numeric_iterator& operator=(
+      const strided_numeric_iterator&) noexcept = default;
+  strided_numeric_iterator& operator=(strided_numeric_iterator&&) noexcept =
+      default;
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       stripped_value_type rhs,

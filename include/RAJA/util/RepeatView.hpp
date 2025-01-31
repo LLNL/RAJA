@@ -19,8 +19,8 @@
 #define RAJA_REPEATVIEW_HPP
 
 #include <cstddef>
-#include <utility>
 #include <type_traits>
+#include <utility>
 
 #include "RAJA/util/macros.hpp"
 
@@ -50,11 +50,9 @@ namespace RAJA
  *   unbounded extents
  *
  */
-template < typename T >
-struct RepeatView
-{
-  struct iterator
-  {
+template <typename T>
+struct RepeatView {
+  struct iterator {
     using difference_type = std::ptrdiff_t;
     using value_type = T;
     using reference = value_type const&;
@@ -62,44 +60,99 @@ struct RepeatView
     iterator() = default;
 
     constexpr iterator(const T* base, size_t index)
-      : m_value(base), m_index(index)
-    { }
+        : m_value(base), m_index(index)
+    {
+    }
 
     constexpr reference operator*() const noexcept { return *m_value; }
-    constexpr reference operator[](difference_type index) const noexcept { return *(*this + index); }
+    constexpr reference operator[](difference_type index) const noexcept
+    {
+      return *(*this + index);
+    }
 
-    constexpr iterator& operator++() { ++m_index; return *this; }
-    constexpr iterator operator++(int) { auto tmp = *this; ++(*this); return tmp; }
+    constexpr iterator& operator++()
+    {
+      ++m_index;
+      return *this;
+    }
+    constexpr iterator operator++(int)
+    {
+      auto tmp = *this;
+      ++(*this);
+      return tmp;
+    }
 
-    constexpr iterator& operator--() { --m_index; return *this; }
-    constexpr iterator operator--(int) { auto tmp = *this; --(*this); return tmp; }
+    constexpr iterator& operator--()
+    {
+      --m_index;
+      return *this;
+    }
+    constexpr iterator operator--(int)
+    {
+      auto tmp = *this;
+      --(*this);
+      return tmp;
+    }
 
-    constexpr iterator& operator+=(difference_type rhs) { m_index += rhs; return *this; }
-    constexpr iterator& operator-=(difference_type rhs) { m_index -= rhs; return *this; }
+    constexpr iterator& operator+=(difference_type rhs)
+    {
+      m_index += rhs;
+      return *this;
+    }
+    constexpr iterator& operator-=(difference_type rhs)
+    {
+      m_index -= rhs;
+      return *this;
+    }
 
     friend constexpr iterator operator+(iterator lhs, difference_type rhs)
-    { lhs += rhs; return lhs; }
+    {
+      lhs += rhs;
+      return lhs;
+    }
     friend constexpr iterator operator+(difference_type lhs, iterator rhs)
-    { rhs += lhs; return rhs; }
+    {
+      rhs += lhs;
+      return rhs;
+    }
 
     friend constexpr iterator operator-(iterator lhs, difference_type rhs)
-    { lhs -= rhs; return lhs; }
-    friend constexpr difference_type operator-(iterator const& lhs, iterator const& rhs)
-    { return static_cast<difference_type>(lhs.m_index) - static_cast<difference_type>(rhs.m_index); }
+    {
+      lhs -= rhs;
+      return lhs;
+    }
+    friend constexpr difference_type operator-(iterator const& lhs,
+                                               iterator const& rhs)
+    {
+      return static_cast<difference_type>(lhs.m_index) -
+             static_cast<difference_type>(rhs.m_index);
+    }
 
     friend constexpr bool operator==(iterator const& lhs, iterator const& rhs)
-    { return lhs.m_index == rhs.m_index; }
+    {
+      return lhs.m_index == rhs.m_index;
+    }
     friend constexpr bool operator!=(iterator const& lhs, iterator const& rhs)
-    { return !(lhs == rhs); }
+    {
+      return !(lhs == rhs);
+    }
 
     friend constexpr bool operator<(iterator const& lhs, iterator const& rhs)
-    { return lhs.m_index < rhs.m_index; }
+    {
+      return lhs.m_index < rhs.m_index;
+    }
     friend constexpr bool operator<=(iterator const& lhs, iterator const& rhs)
-    { return !(rhs < lhs); }
+    {
+      return !(rhs < lhs);
+    }
     friend constexpr bool operator>(iterator const& lhs, iterator const& rhs)
-    { return rhs < lhs; }
+    {
+      return rhs < lhs;
+    }
     friend constexpr bool operator>=(iterator const& lhs, iterator const& rhs)
-    { return !(lhs < rhs); }
+    {
+      return !(lhs < rhs);
+    }
 
   private:
     const T* m_value = nullptr;
@@ -109,16 +162,21 @@ struct RepeatView
   RepeatView() = delete;
 
   constexpr RepeatView(T const& value, size_t bound)
-    : m_bound(bound), m_value(value)
-  { }
+      : m_bound(bound), m_value(value)
+  {
+  }
 
   constexpr RepeatView(T&& value, size_t bound)
-    : m_bound(bound), m_value(std::move(value))
-  { }
+      : m_bound(bound), m_value(std::move(value))
+  {
+  }
 
   constexpr T const& front() const { return m_value; }
   constexpr T const& back() const { return m_value; }
-  constexpr T const& operator[](size_t RAJA_UNUSED_ARG(index)) const { return m_value; }
+  constexpr T const& operator[](size_t RAJA_UNUSED_ARG(index)) const
+  {
+    return m_value;
+  }
 
   constexpr iterator begin() const { return iterator(&m_value, 0); }
   constexpr iterator cbegin() const { return iterator(&m_value, 0); }

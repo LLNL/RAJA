@@ -28,19 +28,19 @@
 #include <cuda_runtime.h>
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/cuda/atomic.hpp"
+#include "RAJA/policy/cuda/atomic.hpp"
 #endif
 
+#include "RAJA/policy/cuda/WorkGroup.hpp"
 #include "RAJA/policy/cuda/forall.hpp"
+#include "RAJA/policy/cuda/kernel.hpp"
+#include "RAJA/policy/cuda/launch.hpp"
+#include "RAJA/policy/cuda/multi_reduce.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
-#include "RAJA/policy/cuda/multi_reduce.hpp"
 #include "RAJA/policy/cuda/scan.hpp"
 #include "RAJA/policy/cuda/sort.hpp"
-#include "RAJA/policy/cuda/kernel.hpp"
 #include "RAJA/policy/cuda/synchronize.hpp"
-#include "RAJA/policy/cuda/launch.hpp"
-#include "RAJA/policy/cuda/WorkGroup.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

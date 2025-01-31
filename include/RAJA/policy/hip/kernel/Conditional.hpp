@@ -18,17 +18,14 @@
 #ifndef RAJA_policy_hip_kernel_Conditional_HPP
 #define RAJA_policy_hip_kernel_Conditional_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/kernel/Conditional.hpp"
+#include "RAJA/policy/hip/kernel/internal.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#include "RAJA/pattern/kernel/Conditional.hpp"
-
-#include "RAJA/policy/hip/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -41,17 +38,14 @@ template <typename Data,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<Data,
-                             statement::If<Conditional, EnclosedStmts...>,
-                             Types> {
+                            statement::If<Conditional, EnclosedStmts...>,
+                            Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, Types>;
 
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     if (Conditional::eval(data)) {
 
@@ -61,10 +55,7 @@ struct HipStatementExecutor<Data,
   }
 
 
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }

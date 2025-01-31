@@ -18,13 +18,12 @@
 #ifndef RAJA_pattern_kernel_ForICount_HPP
 #define RAJA_pattern_kernel_ForICount_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
-#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/Param.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -44,8 +43,8 @@ template <camp::idx_t ArgumentId,
           typename ExecPolicy = camp::nil,
           typename... EnclosedStmts>
 struct ForICount : public internal::ForList,
-             public internal::ForTraitBase<ArgumentId, ExecPolicy>,
-             public internal::Statement<ExecPolicy, EnclosedStmts...> {
+                   public internal::ForTraitBase<ArgumentId, ExecPolicy>,
+                   public internal::Statement<ExecPolicy, EnclosedStmts...> {
 
   static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "
@@ -64,7 +63,10 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <camp::idx_t ArgumentId, typename ParamId, typename Data, typename Types,
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Data,
+          typename Types,
           typename... EnclosedStmts>
 struct ForICountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
@@ -93,7 +95,8 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::ForICount<ArgumentId, ParamId, ExecPolicy, EnclosedStmts...>, Types> {
+    statement::ForICount<ArgumentId, ParamId, ExecPolicy, EnclosedStmts...>,
+    Types> {
 
 
   template <typename Data>
@@ -104,15 +107,19 @@ struct StatementExecutor<
     using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
     // Create a wrapper, just in case forall_impl needs to thread_privatize
-    ForICountWrapper<ArgumentId, ParamId, Data, NewTypes,
-                     EnclosedStmts...> for_wrapper(data);
+    ForICountWrapper<ArgumentId, ParamId, Data, NewTypes, EnclosedStmts...>
+        for_wrapper(data);
 
     auto len = segment_length<ArgumentId>(data);
     using len_t = decltype(len);
 
     auto r = resources::get_resource<ExecPolicy>::type::get_default();
 
-    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper, RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r,
+                ExecPolicy{},
+                TypedRangeSegment<len_t>(0, len),
+                for_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
   }
 };
 

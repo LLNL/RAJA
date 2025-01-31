@@ -26,14 +26,15 @@
 
 #include <omp.h>
 
-#include "RAJA/policy/openmp_target/policy.hpp"
-#include "RAJA/policy/openmp_target/kernel.hpp"
 #include "RAJA/policy/openmp_target/forall.hpp"
+#include "RAJA/policy/openmp_target/kernel.hpp"
+#include "RAJA/policy/openmp_target/policy.hpp"
 #include "RAJA/policy/openmp_target/reduce.hpp"
 //#include "RAJA/policy/openmp_target/multi_reduce.hpp"
 #include "RAJA/policy/openmp_target/WorkGroup.hpp"
 
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_TARGET_OPENMP)
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) &&
+        // defined(RAJA_ENABLE_TARGET_OPENMP)
 
 #endif  // closing endif for header file include guard

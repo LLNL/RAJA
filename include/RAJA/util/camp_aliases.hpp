@@ -25,11 +25,10 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
-
 #include "camp/defines.hpp"
 #include "camp/list/list.hpp"
-#include "camp/tuple.hpp"
 #include "camp/resource.hpp"
+#include "camp/tuple.hpp"
 
 namespace RAJA
 {

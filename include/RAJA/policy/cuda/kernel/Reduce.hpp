@@ -20,7 +20,6 @@
 #define RAJA_policy_cuda_kernel_Reduce_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/policy/cuda/kernel/internal.hpp"
 
 
@@ -35,7 +34,8 @@ namespace internal
 // Executor that handles reductions across a single CUDA thread block
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
@@ -73,7 +73,7 @@ struct CudaStatementExecutor<Data,
 
     // execute enclosed statements, and mask off everyone but thread 0
     thread_active = threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0;
-    if(thread_active){
+    if (thread_active) {
       // Only update to new value on root thread
       data.template assign_param<ParamId>(new_value);
     }
@@ -94,7 +94,8 @@ struct CudaStatementExecutor<Data,
 // Executor that handles reductions across a single CUDA thread warp
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
@@ -125,13 +126,12 @@ struct CudaStatementExecutor<Data,
     // Call warp reduction routine
     using combiner_t =
         RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
-    value_t new_value =
-        RAJA::cuda::impl::warp_reduce<combiner_t>(value, ident);
+    value_t new_value = RAJA::cuda::impl::warp_reduce<combiner_t>(value, ident);
     data.template assign_param<ParamId>(new_value);
 
     // execute enclosed statements, and mask off everyone but lane 0
     thread_active = threadIdx.x == 0;
-    if(thread_active){
+    if (thread_active) {
       // Only update to new value on root thread
       data.template assign_param<ParamId>(new_value);
     }
@@ -146,7 +146,6 @@ struct CudaStatementExecutor<Data,
     return enclosed_dims;
   }
 };
-
 
 
 }  // namespace internal

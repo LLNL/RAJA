@@ -18,18 +18,16 @@
 #ifndef RAJA_pattern_kernel_TileTCount_HPP
 #define RAJA_pattern_kernel_TileTCount_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
-#include "camp/camp.hpp"
-#include "camp/concepts.hpp"
-#include "camp/tuple.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
 namespace RAJA
 {
@@ -66,9 +64,13 @@ namespace internal
  * Assigns the tile segment to segment ArgumentId
  * Assigns the tile index to param ParamId
  */
-template <camp::idx_t ArgumentId, typename ParamId, typename Data, typename Types,
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename Data,
+          typename Types,
           typename... EnclosedStmts>
-struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
+struct TileTCountWrapper
+    : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
   using Base::Base;
@@ -79,15 +81,14 @@ struct TileTCountWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> 
   {
     // Assign the tile's segment to the tuple
     camp::get<ArgumentId>(Base::data.segment_tuple) = si.s;
-    
+
     // Assign the tile's index
     Base::data.template assign_param<ParamId>(si.i);
-    
+
     // Execute enclosed statements
     Base::exec();
   }
 };
-
 
 
 /*!
@@ -102,7 +103,8 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>, Types> {
+    statement::TileTCount<ArgumentId, ParamId, TPol, EPol, EnclosedStmts...>,
+    Types> {
 
 
   template <typename Data>
@@ -119,12 +121,16 @@ struct StatementExecutor<
     IterableTiler<decltype(segment)> tiled_iterable(segment, chunk_size);
 
     // Wrap in case forall_impl needs to thread_privatize
-    TileTCountWrapper<ArgumentId, ParamId, Data, Types,
-                      EnclosedStmts...> tile_wrapper(data);
+    TileTCountWrapper<ArgumentId, ParamId, Data, Types, EnclosedStmts...>
+        tile_wrapper(data);
 
     // Loop over tiles, executing enclosed statement list
     auto r = resources::get_resource<EPol>::type::get_default();
-    forall_impl(r, EPol{}, tiled_iterable, tile_wrapper, RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r,
+                EPol{},
+                tiled_iterable,
+                tile_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
 
     // Set range back to original values
     camp::get<ArgumentId>(data.segment_tuple) = tiled_iterable.it;

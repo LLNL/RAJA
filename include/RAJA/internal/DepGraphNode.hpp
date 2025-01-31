@@ -19,13 +19,12 @@
 #ifndef RAJA_DepGraphNode_HPP
 #define RAJA_DepGraphNode_HPP
 
-#include "RAJA/config.hpp"
-
 #include <atomic>
 #include <cstdlib>
 #include <iosfwd>
 #include <thread>
 
+#include "RAJA/config.hpp"
 #include "RAJA/util/types.hpp"
 
 namespace RAJA

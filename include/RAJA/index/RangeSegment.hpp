@@ -18,15 +18,12 @@
 #ifndef RAJA_RangeSegment_HPP
 #define RAJA_RangeSegment_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 
-#include "RAJA/internal/Iterators.hpp"
-
-#include "RAJA/util/concepts.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
+#include "RAJA/internal/Iterators.hpp"
+#include "RAJA/util/concepts.hpp"
 
 namespace RAJA
 {
@@ -50,10 +47,10 @@ namespace RAJA
  *
  * NOTE: TypedRangeSegment::iterator is a RandomAccessIterator
  *
- * NOTE: TypedRangeSegment supports negative indices; e.g., an interval of 
+ * NOTE: TypedRangeSegment supports negative indices; e.g., an interval of
  *       indices [-5, 3).
  *
- * NOTE: Proper handling of indices strides requires that StorageT is a 
+ * NOTE: Proper handling of indices strides requires that StorageT is a
  *       signed type.
  *
  * Usage:
@@ -92,15 +89,18 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
+template <typename StorageT,
+          typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeSegment {
 
-  // 
+  //
   // Static asserts to provide some useful error messages during compilation
   // for incorrect usage.
-  // 
-  static_assert(std::is_signed<DiffT>::value, "TypedRangeSegment DiffT requires signed type.");
-  static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeSegment Type must be non floating point.");
+  //
+  static_assert(std::is_signed<DiffT>::value,
+                "TypedRangeSegment DiffT requires signed type.");
+  static_assert(!std::is_floating_point<StorageT>::value,
+                "TypedRangeSegment Type must be non floating point.");
 
   //@{
   //!   @name Types used in implementation based on template parameters.
@@ -117,18 +117,18 @@ struct TypedRangeSegment {
   //@}
 
   //@{
-  //!   @name Constructors, destructor, and copy assignment. 
+  //!   @name Constructors, destructor, and copy assignment.
 
   /*!
    * \brief Construct a range segment repreenting the interval [begin, end)
-   * 
+   *
    * \param begin start value (inclusive) for the range
    * \param end end value (exclusive) for the range
    */
   using StripStorageT = strip_index_type_t<StorageT>;
-  RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin, StripStorageT end)
-      : m_begin(iterator(begin)), 
-        m_end(begin > end ? m_begin : iterator(end))
+  RAJA_HOST_DEVICE constexpr TypedRangeSegment(StripStorageT begin,
+                                               StripStorageT end)
+      : m_begin(iterator(begin)), m_end(begin > end ? m_begin : iterator(end))
   {
   }
 
@@ -187,7 +187,7 @@ struct TypedRangeSegment {
    * \brief Compare this segment to another for inequality
    *
    * \return true if begin or end does not match, else false
-   */ 
+   */
   RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeSegment const& o) const
   {
     return !(operator==(o));
@@ -198,9 +198,9 @@ struct TypedRangeSegment {
   /*!
    * \brief Get a new TypedRangeSegment instance representing a slice of
    *        existing segment
-   * 
-   * \param begin start iterate of new range 
-   * \param length maximum length of new range 
+   *
+   * \param begin start iterate of new range
+   * \param length maximum length of new range
    * \return TypedRangeSegment representing the interval
    *         [ *begin() + begin, min( *begin() + begin + length, *end() ) )
    *
@@ -213,7 +213,7 @@ struct TypedRangeSegment {
    *     auto r = RAJA::TypedRangeSegment<int>(-4, 4);
    *
    *     // s repreents the subinterval  [-3, 2)
-   *     auto s = r.slice(1, 5); 
+   *     auto s = r.slice(1, 5);
    *
    *   \endverbatim
    */
@@ -247,8 +247,8 @@ private:
 /*!
  ******************************************************************************
  *
- * \class TypedRangeStrideSegment 
- * 
+ * \class TypedRangeStrideSegment
+ *
  * \brief  Segment class representing a strided range of typed indices
  *
  * \tparam StorageT underlying data type for the segment indices (required)
@@ -264,9 +264,9 @@ private:
  *
  * NOTE: TypedRangeStrideSegment::iterator is a RandomAccessIterator
  *
- * NOTE: TypedRangeStrideSegment allows for positive or negative strides and 
- *       indices. This allows for forward (stride > 0) or backward (stride < 0) 
- *       traversal of the iteration space. A stride of zero is undefined and 
+ * NOTE: TypedRangeStrideSegment allows for positive or negative strides and
+ *       indices. This allows for forward (stride > 0) or backward (stride < 0)
+ *       traversal of the iteration space. A stride of zero is undefined and
  *       will cause divide-by-zero errors.
  *
  * As with RangeSegment, the iteration space is inclusive of begin() and
@@ -275,7 +275,7 @@ private:
  * For positive strides, begin() > end() implies size()==0
  * For negative strides, begin() < end() implies size()==0
  *
- * NOTE: Proper handling of negative strides and indices requires that 
+ * NOTE: Proper handling of negative strides and indices requires that
  *       StorageT is a signed type.
  *
  * Usage:
@@ -321,15 +321,18 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT, typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
+template <typename StorageT,
+          typename DiffT = make_signed_t<strip_index_type_t<StorageT>>>
 struct TypedRangeStrideSegment {
 
   //
   // Static asserts to provide some useful error messages during compilation
   // for incorrect usage.
   //
-  static_assert(std::is_signed<DiffT>::value, "TypedRangeStrideSegment DiffT requires signed type.");
-  static_assert(!std::is_floating_point<StorageT>::value, "TypedRangeStrideSegment Type must be non floating point.");
+  static_assert(std::is_signed<DiffT>::value,
+                "TypedRangeStrideSegment DiffT requires signed type.");
+  static_assert(!std::is_floating_point<StorageT>::value,
+                "TypedRangeStrideSegment Type must be non floating point.");
 
   //@{
   //!   @name Types used in implementation based on template parameters.
@@ -349,7 +352,7 @@ struct TypedRangeStrideSegment {
   //!   @name Constructors, destructor, and copy assignment.
 
   /*!
-   * \brief Construct a range segment for the interval [begin, end) with 
+   * \brief Construct a range segment for the interval [begin, end) with
    *        given stride
    *
    * \param begin start value (inclusive) for the range
@@ -408,8 +411,8 @@ struct TypedRangeStrideSegment {
 
   /*!
    * \brief Get size of this segment
-   * 
-   * The size is the number of iterates in the 
+   *
+   * The size is the number of iterates in the
    * interval [begin, end) when striding over it
    */
   RAJA_HOST_DEVICE DiffT size() const { return m_size; }
@@ -435,7 +438,8 @@ struct TypedRangeStrideSegment {
    *
    * \return true if begin, end, or size does not match, else false
    */
-  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TypedRangeStrideSegment const& o) const
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(
+      TypedRangeStrideSegment const& o) const
   {
     return !(operator==(o));
   }
@@ -450,7 +454,7 @@ struct TypedRangeStrideSegment {
    * \param length maximum length of new range
    *
    * \return TypedRangeStrideSegment representing the interval
-   *         [ *begin() + begin * stride, 
+   *         [ *begin() + begin * stride,
    *           min( *begin() + (begin + length) * stride, *end() )
    *
    * Here's an example of a slice operation on a range segment with a negative
@@ -466,7 +470,7 @@ struct TypedRangeStrideSegment {
    *     //       5 indices in r starting at the 6th entry
    *     auto s = r.slice(6, 6);
    *
-   *   \endverbatim 
+   *   \endverbatim
    */
   RAJA_HOST_DEVICE TypedRangeStrideSegment slice(StorageT begin,
                                                  DiffT length) const
@@ -549,7 +553,7 @@ RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
 }
 
 /*!
- * \brief Function to make a TypedRangeStride Segment for the interval 
+ * \brief Function to make a TypedRangeStride Segment for the interval
  *        [begin, end) with given stride
  *
  *  \return a newly constructed TypedRangeStrideSegment where
@@ -566,8 +570,11 @@ RAJA_HOST_DEVICE TypedRangeStrideSegment<Common> make_strided_range(
     EndT&& end,
     StrideT&& stride)
 {
-  static_assert(std::is_signed<StrideT>::value, "make_strided_segment : stride must be signed.");
-  static_assert(std::is_same<make_signed_t<EndT>, StrideT>::value, "make_stride_segment : stride and end must be of similar types.");
+  static_assert(std::is_signed<StrideT>::value,
+                "make_strided_segment : stride must be signed.");
+  static_assert(std::is_same<make_signed_t<EndT>, StrideT>::value,
+                "make_stride_segment : stride and end must be of similar "
+                "types.");
   return {begin, end, stride};
 }
 

@@ -27,12 +27,10 @@
 #include <cassert>
 #include <climits>
 
-#include "camp/camp.hpp"
-
 #include "RAJA/pattern/kernel.hpp"
-
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "camp/camp.hpp"
 
 
 namespace RAJA
@@ -60,15 +58,11 @@ namespace internal
 template <typename Data, typename Types>
 struct CudaStatementExecutor<Data, statement::CudaSyncThreads, Types> {
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &, bool) { __syncthreads(); }
+  static inline RAJA_DEVICE void exec(Data &, bool) { __syncthreads(); }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  static inline LaunchDims calculateDimensions(
+      Data const &RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }
@@ -77,18 +71,22 @@ struct CudaStatementExecutor<Data, statement::CudaSyncThreads, Types> {
 template <typename Data, typename Types>
 struct CudaStatementExecutor<Data, statement::CudaSyncWarp, Types> {
 
-  static
-  inline
-  RAJA_DEVICE
+  static inline RAJA_DEVICE
 #if CUDART_VERSION >= 9000
-  void exec(Data &, bool) { __syncwarp(); }
+      void
+      exec(Data &, bool)
+  {
+    __syncwarp();
+  }
 #else
-  void exec(Data &, bool) {  }
+      void
+      exec(Data &, bool)
+  {
+  }
 #endif
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  static inline LaunchDims calculateDimensions(
+      Data const &RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }

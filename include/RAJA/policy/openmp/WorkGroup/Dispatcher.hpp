@@ -19,9 +19,7 @@
 #define RAJA_openmp_WorkGroup_Dispatcher_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/policy/openmp/policy.hpp"
-
 #include "RAJA/policy/sequential/WorkGroup/Dispatcher.hpp"
 
 
@@ -32,9 +30,9 @@ namespace detail
 {
 
 /*!
-* Populate and return a Dispatcher object
-*/
-template < typename T, typename Dispatcher_T >
+ * Populate and return a Dispatcher object
+ */
+template <typename T, typename Dispatcher_T>
 inline const Dispatcher_T* get_Dispatcher(omp_work const&)
 {
   return get_Dispatcher<T, Dispatcher_T>(seq_work{});

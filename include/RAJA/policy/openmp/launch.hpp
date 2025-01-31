@@ -28,45 +28,54 @@ template <>
 struct LaunchExecute<RAJA::omp_launch_t> {
 
   template <typename BODY, typename ReduceParams>
-  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
-                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
-                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *, BODY const &body, ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
+  static concepts::enable_if_t<
+      resources::EventProxy<resources::Resource>,
+      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res,
+       LaunchParams const &params,
+       const char *,
+       BODY const &body,
+       ReduceParams &RAJA_UNUSED_ARG(launch_reducers))
   {
     RAJA::region<RAJA::omp_parallel_region>([&]() {
+      LaunchContext ctx;
 
-        LaunchContext ctx;
+      using RAJA::internal::thread_privatize;
+      auto loop_body = thread_privatize(body);
 
-        using RAJA::internal::thread_privatize;
-        auto loop_body = thread_privatize(body);
+      ctx.shared_mem_ptr = (char *)malloc(params.shared_mem_size);
 
-        ctx.shared_mem_ptr = (char*) malloc(params.shared_mem_size);
+      loop_body.get_priv()(ctx);
 
-        loop_body.get_priv()(ctx);
-
-        free(ctx.shared_mem_ptr);
-        ctx.shared_mem_ptr = nullptr;
+      free(ctx.shared_mem_ptr);
+      ctx.shared_mem_ptr = nullptr;
     });
 
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename ReduceParams, typename BODY>
-    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
-                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
-                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
-  exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
-       const char *RAJA_UNUSED_ARG(kernel_name),  BODY const &body, ReduceParams &f_params)
+  template <typename ReduceParams, typename BODY>
+  static concepts::enable_if_t<
+      resources::EventProxy<resources::Resource>,
+      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+      concepts::negate<
+          RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+  exec(RAJA::resources::Resource res,
+       LaunchParams const &launch_params,
+       const char *RAJA_UNUSED_ARG(kernel_name),
+       BODY const &body,
+       ReduceParams &f_params)
   {
 
     using EXEC_POL = RAJA::omp_launch_t;
 
     expt::ParamMultiplexer::init<EXEC_POL>(f_params);
 
-    //reducer object must be named f_params as expected by macro below
+    // reducer object must be named f_params as expected by macro below
     RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
-   #pragma omp parallel reduction(combine : f_params)
+#pragma omp parallel reduction(combine : f_params)
     {
 
       LaunchContext ctx;
@@ -74,7 +83,7 @@ struct LaunchExecute<RAJA::omp_launch_t> {
       using RAJA::internal::thread_privatize;
       auto loop_body = thread_privatize(body);
 
-      ctx.shared_mem_ptr = (char*) malloc(launch_params.shared_mem_size);
+      ctx.shared_mem_ptr = (char *)malloc(launch_params.shared_mem_size);
 
       expt::invoke_body(f_params, loop_body.get_priv(), ctx);
 
@@ -86,7 +95,6 @@ struct LaunchExecute<RAJA::omp_launch_t> {
 
     return resources::EventProxy<resources::Resource>(res);
   }
-
 };
 
 
@@ -248,9 +256,9 @@ struct LoopICountExecute<omp_for_exec, SEGMENT> {
     int len = segment.end() - segment.begin();
 
 #pragma omp for
-      for (int i = 0; i < len; i++) {
-        body(*(segment.begin() + i), i);
-      }
+    for (int i = 0; i < len; i++) {
+      body(*(segment.begin() + i), i);
+    }
   }
 
   template <typename BODY>
@@ -265,15 +273,12 @@ struct LoopICountExecute<omp_for_exec, SEGMENT> {
     const int len0 = segment0.end() - segment0.begin();
 
 #pragma omp for
-      for (int j = 0; j < len1; j++) {
-        for (int i = 0; i < len0; i++) {
+    for (int j = 0; j < len1; j++) {
+      for (int i = 0; i < len0; i++) {
 
-          body(*(segment0.begin() + i),
-               *(segment1.begin() + j),
-               i,
-               j);
-        }
+        body(*(segment0.begin() + i), *(segment1.begin() + j), i, j);
       }
+    }
   }
 
   template <typename BODY>
@@ -290,18 +295,18 @@ struct LoopICountExecute<omp_for_exec, SEGMENT> {
     const int len0 = segment0.end() - segment0.begin();
 
 #pragma omp for
-      for (int k = 0; k < len2; k++) {
-        for (int j = 0; j < len1; j++) {
-          for (int i = 0; i < len0; i++) {
-            body(*(segment0.begin() + i),
-                 *(segment1.begin() + j),
-                 *(segment2.begin() + k),
-                 i,
-                 j,
-                 k);
-          }
+    for (int k = 0; k < len2; k++) {
+      for (int j = 0; j < len1; j++) {
+        for (int i = 0; i < len0; i++) {
+          body(*(segment0.begin() + i),
+               *(segment1.begin() + j),
+               *(segment2.begin() + k),
+               i,
+               j,
+               k);
         }
       }
+    }
   }
 };
 

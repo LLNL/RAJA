@@ -18,17 +18,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
 #include <iostream>
 
-#include "RAJA/index/IndexSetBuilders.hpp"
-
 #include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/internal/ThreadUtils_CPU.hpp"
-
 #include "camp/resource.hpp"
 
 namespace RAJA
@@ -38,15 +34,14 @@ namespace RAJA
  ******************************************************************************
  *
  * Generate a lock-free "block" index set (planar division) containing
- * range segments. 
+ * range segments.
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(
-    RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
-    int fastDim,
-    int midDim,
-    int slowDim)
+void buildLockFreeBlockIndexset(RAJA::TypedIndexSet<RAJA::RangeSegment>& iset,
+                                int fastDim,
+                                int midDim,
+                                int slowDim)
 {
   constexpr int PROFITABLE_ENTITY_THRESHOLD_BLOCK = 100;
 
@@ -315,8 +310,8 @@ void buildLockFreeColorIndexset(
         iset.push_back(
             RAJA::RangeSegment(workset[begin], workset[end - 1] + 1));
       } else {
-        iset.push_back(RAJA::ListSegment(&workset[begin], end - begin,
-                                         work_res));
+        iset.push_back(
+            RAJA::ListSegment(&workset[begin], end - begin, work_res));
         // printf("segment %d\n", i) ;
         // for (int j=begin; j<end; ++j) {
         //    printf("%d\n", workset[j]) ;

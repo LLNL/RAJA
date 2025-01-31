@@ -18,17 +18,15 @@
 #ifndef RAJA_foldl_HPP
 #define RAJA_foldl_HPP
 
-#include "RAJA/config.hpp"
-
 #include <cstdint>
 #include <functional>
 #include <iostream>
 #include <type_traits>
 #include <utility>
 
-#include "camp/camp.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
+#include "camp/camp.hpp"
 
 
 namespace RAJA
@@ -61,11 +59,13 @@ template <typename Op,
           typename Arg3,
           typename... Rest>
 struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
-  using Ret = typename foldl_impl<
-      Op,
-      typename std::invoke_result<Op, typename std::invoke_result<Op, Arg1, Arg2>::type,
-                                      Arg3>::type,
-      Rest...>::Ret;
+  using Ret =
+      typename foldl_impl<Op,
+                          typename std::invoke_result<
+                              Op,
+                              typename std::invoke_result<Op, Arg1, Arg2>::type,
+                              Arg3>::type,
+                          Rest...>::Ret;
 };
 
 #else
@@ -90,7 +90,7 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
 
 #endif
 
-} // namespace detail
+}  // namespace detail
 
 template <typename Op, typename Arg1>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(

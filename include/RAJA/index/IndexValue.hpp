@@ -18,10 +18,9 @@
 #ifndef RAJA_INDEXVALUE_HPP
 #define RAJA_INDEXVALUE_HPP
 
-#include "RAJA/config.hpp"
-
 #include <string>
 
+#include "RAJA/config.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -334,18 +333,21 @@ constexpr RAJA_HOST_DEVICE RAJA_INLINE
   return val;
 }
 
-namespace internal{
-template<typename FROM, typename Enable = void>
+namespace internal
+{
+template <typename FROM, typename Enable = void>
 struct StripIndexTypeT {
-    using type = FROM;
+  using type = FROM;
 };
 
-template<typename FROM>
-struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueBase, FROM>::value>::type>
-{
-    using type = typename FROM::value_type;
+template <typename FROM>
+struct StripIndexTypeT<
+    FROM,
+    typename std::enable_if<
+        std::is_base_of<IndexValueBase, FROM>::value>::type> {
+  using type = typename FROM::value_type;
 };
-} // namespace internal
+}  // namespace internal
 
 /*!
  * \brief Strips a strongly typed index to its underlying type
@@ -353,7 +355,7 @@ struct StripIndexTypeT<FROM, typename std::enable_if<std::is_base_of<IndexValueB
  *
  * \param FROM the original type
  */
-template<typename FROM>
+template <typename FROM>
 using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
 
 /*!
@@ -362,12 +364,11 @@ using strip_index_type_t = typename internal::StripIndexTypeT<FROM>::type;
  *
  * \param FROM the original type
  */
-template<typename FROM>
-using make_signed_t = typename std::conditional < 
-                                  std::is_floating_point<FROM>::value,
-                                    std::common_type<FROM>,
-                                    std::make_signed<FROM>
-                               >::type::type;
+template <typename FROM>
+using make_signed_t =
+    typename std::conditional<std::is_floating_point<FROM>::value,
+                              std::common_type<FROM>,
+                              std::make_signed<FROM> >::type::type;
 
 }  // namespace RAJA
 
@@ -397,17 +398,19 @@ using make_signed_t = typename std::conditional <
  * \param IDXT the index types value type
  * \param NAME a string literal to identify this index type
  */
-#define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)                         \
-  class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>                 \
-  {                                                                  \
-  public:                                                            \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                              \
-        : RAJA::IndexValue<TYPE,IDXT>::IndexValue() {}               \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)               \
-        : RAJA::IndexValue<TYPE,IDXT>::IndexValue(v)                 \
-    {                                                                \
-    }                                                                \
-    static inline std::string getName() { return NAME; }             \
+#define RAJA_INDEX_VALUE_T(TYPE, IDXT, NAME)             \
+  class TYPE : public ::RAJA::IndexValue<TYPE, IDXT>     \
+  {                                                      \
+  public:                                                \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE()                  \
+        : RAJA::IndexValue<TYPE, IDXT>::IndexValue()     \
+    {                                                    \
+    }                                                    \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(IDXT v)   \
+        : RAJA::IndexValue<TYPE, IDXT>::IndexValue(v)    \
+    {                                                    \
+    }                                                    \
+    static inline std::string getName() { return NAME; } \
   };
 
 #endif

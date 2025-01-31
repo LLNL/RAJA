@@ -19,7 +19,6 @@
 #define RAJA_reduce_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/macros.hpp"
 
@@ -205,7 +204,7 @@ class ReduceSum;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceBitOr;
- 
+
 
 /*!
  ******************************************************************************
@@ -231,7 +230,7 @@ class ReduceBitOr;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceBitAnd;
-} //namespace RAJA
+}  // namespace RAJA
 
 
 #endif  // closing endif for header file include guard

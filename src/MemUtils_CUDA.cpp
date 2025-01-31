@@ -21,7 +21,6 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 

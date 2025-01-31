@@ -26,18 +26,14 @@
 #ifndef RAJA_forall_simd_HPP
 #define RAJA_forall_simd_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iterator>
 #include <type_traits>
 
-#include "RAJA/util/types.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
-
 #include "RAJA/pattern/params/forall.hpp"
+#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -48,12 +44,10 @@ namespace simd
 
 
 template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<resources::Host>,
-  expt::type_traits::is_ForallParamPack<ForallParam>,
-  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-  >
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    expt::type_traits::is_ForallParamPack<ForallParam>,
+    concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(RAJA::resources::Host host_res,
             const simd_exec &,
             Iterable &&iter,
@@ -75,12 +69,10 @@ forall_impl(RAJA::resources::Host host_res,
 }
 
 template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<resources::Host>,
-  expt::type_traits::is_ForallParamPack<ForallParam>,
-  expt::type_traits::is_ForallParamPack_empty<ForallParam>
-  >
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    expt::type_traits::is_ForallParamPack<ForallParam>,
+    expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(RAJA::resources::Host host_res,
             const simd_exec &,
             Iterable &&iter,

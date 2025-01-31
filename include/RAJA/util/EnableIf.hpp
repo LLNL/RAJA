@@ -20,14 +20,12 @@
 #ifndef RAJA_util_EnableIf_HPP
 #define RAJA_util_EnableIf_HPP
 
-#include "RAJA/config.hpp"
-
 #include <type_traits>
 
+#include "RAJA/config.hpp"
+#include "RAJA/util/concepts.hpp"
 #include "camp/list.hpp"
 #include "camp/type_traits.hpp"
-
-#include "RAJA/util/concepts.hpp"
 
 
 namespace RAJA
@@ -41,14 +39,16 @@ struct is_any_of;
 
 template <typename T, typename... Types>
 struct is_any_of<T, ::camp::list<Types...>>
-  : ::RAJA::concepts::any_of<::camp::is_same<T, Types>...>
-{};
+    : ::RAJA::concepts::any_of<::camp::is_same<T, Types>...> {
+};
 
 template <typename T, typename TypeList>
 using enable_if_is_any_of = std::enable_if_t<is_any_of<T, TypeList>::value, T>;
 
 template <typename T, typename TypeList>
-using enable_if_is_none_of = std::enable_if_t<::RAJA::concepts::negate<is_any_of<T, TypeList>>::value, T>;
+using enable_if_is_none_of =
+    std::enable_if_t<::RAJA::concepts::negate<is_any_of<T, TypeList>>::value,
+                     T>;
 
 
 }  // namespace util

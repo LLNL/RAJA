@@ -34,7 +34,8 @@ template <template <typename...> class ReduceOperator,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>, Types> {
+    statement::Reduce<seq_reduce, ReduceOperator, ParamId, EnclosedStmts...>,
+    Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)

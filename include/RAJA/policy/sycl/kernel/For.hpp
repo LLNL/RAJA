@@ -19,7 +19,6 @@
 #define RAJA_policy_sycl_kernel_For_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/policy/sycl/kernel/internal.hpp"
 
 
@@ -45,7 +44,9 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_global_012<Dim, Local_Size>, EnclosedStmts...>,
+    statement::For<ArgumentId,
+                   RAJA::sycl_global_012<Dim, Local_Size>,
+                   EnclosedStmts...>,
     Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -58,22 +59,21 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_global_id(Dim);
 
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
+    // Assign the x thread to the argument
+    data.template assign_offset<ArgumentId>(i);
 
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, item, thread_active && (i<len));
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, item, thread_active && (i < len));
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
 
@@ -108,10 +108,11 @@ template <typename Data,
           int Dim,
           typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::sycl_group_012_direct<Dim>, EnclosedStmts...>,
-    Types> {
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_group_012_direct<Dim>,
+                                            EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -123,22 +124,21 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_group(Dim);
 
-      // Assign the x thread to the argument
-      data.template assign_offset<ArgumentId>(i);
+    // Assign the x thread to the argument
+    data.template assign_offset<ArgumentId>(i);
 
-      // execute enclosed statements
-      enclosed_stmts_t::exec(data, item, thread_active && (i<len));
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, item, thread_active && (i < len));
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
 
@@ -171,10 +171,11 @@ template <typename Data,
           int Dim,
           typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::sycl_group_012_loop<Dim>, EnclosedStmts...>,
-    Types> {
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_group_012_loop<Dim>,
+                                            EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -186,14 +187,15 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i0 = item.get_group(Dim);
     auto i_stride = item.get_group_range(Dim);
 
-    for(auto i = i0;i < len;i += i_stride){
+    for (auto i = i0; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -203,9 +205,7 @@ struct SyclStatementExecutor<
     }
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
 
@@ -213,7 +213,7 @@ struct SyclStatementExecutor<
     LaunchDims dims;
     if (Dim == 0) {
       dims.group.x = len;
-    } 
+    }
     if (Dim == 1) {
       dims.group.y = len;
     }
@@ -237,10 +237,11 @@ template <typename Data,
           int Dim,
           typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::sycl_local_012_direct<Dim>, EnclosedStmts...>,
-    Types> {
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_local_012_direct<Dim>,
+                                            EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -252,8 +253,9 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_local_id(Dim);
@@ -262,13 +264,10 @@ struct SyclStatementExecutor<
     data.template assign_offset<ArgumentId>(i);
 
     // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, item, thread_active && (i<len));
-
+    enclosed_stmts_t::exec(data, item, thread_active && (i < len));
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
 
@@ -301,10 +300,11 @@ template <typename Data,
           int Dim,
           typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::For<ArgumentId, RAJA::sycl_local_012_loop<Dim>, EnclosedStmts...>,
-    Types> {
+struct SyclStatementExecutor<Data,
+                             statement::For<ArgumentId,
+                                            RAJA::sycl_local_012_loop<Dim>,
+                                            EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -316,15 +316,16 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i0 = item.get_local_id(Dim);
     auto i_stride = item.get_local_range(Dim);
     auto i = i0;
 
-    for(; i < len;i += i_stride){
+    for (; i < len; i += i_stride) {
 
       // Assign the x thread to the argument
       data.template assign_offset<ArgumentId>(i);
@@ -333,8 +334,7 @@ struct SyclStatementExecutor<
       enclosed_stmts_t::exec(data, item, thread_active);
     }
     // do we need one more masked iteration?
-    if(i - i0 < len)
-    {
+    if (i - i0 < len) {
       // execute enclosed statements one more time, but masking them off
       // this is because there's at least one thread that isn't masked off
       // that is still executing the above loop
@@ -342,9 +342,7 @@ struct SyclStatementExecutor<
     }
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
 
@@ -392,8 +390,7 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item)
+  static inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item)
   {
     auto len = segment_length<ArgumentId>(data);
     auto i = item.get_global_id(0);
@@ -409,9 +406,7 @@ struct SyclStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     auto len = segment_length<ArgumentId>(data);
 
@@ -451,17 +446,17 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
 
-    using idx_type = camp::decay<decltype(camp::get<ArgumentId>(data.offset_tuple))>;
+    using idx_type =
+        camp::decay<decltype(camp::get<ArgumentId>(data.offset_tuple))>;
 
     idx_type len = segment_length<ArgumentId>(data);
 
-    for(idx_type i = 0;i < len;++ i){
+    for (idx_type i = 0; i < len; ++i) {
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
 
@@ -470,9 +465,7 @@ struct SyclStatementExecutor<
     }
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }
@@ -483,4 +476,4 @@ struct SyclStatementExecutor<
 }  // end namespace RAJA
 
 
-#endif 
+#endif

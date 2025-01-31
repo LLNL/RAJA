@@ -19,12 +19,11 @@
 #define RAJA_pattern_kernel_Param_HPP
 
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/pattern/kernel/internal.hpp"
-
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -34,7 +33,7 @@ namespace internal
 struct ParamBase {
 };
 
-}// end namespace internal
+}  // end namespace internal
 
 namespace statement
 {

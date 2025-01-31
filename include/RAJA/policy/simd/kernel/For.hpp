@@ -18,13 +18,12 @@
 #ifndef RAJA_policy_simd_kernel_For_HPP
 #define RAJA_policy_simd_kernel_For_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
-#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/policy/simd/policy.hpp"
 
 namespace RAJA
@@ -44,7 +43,7 @@ struct TypeIsLambda {
   static const bool value = false;
 };
 
-template <camp::idx_t BodyIdx, typename ... Args>
+template <camp::idx_t BodyIdx, typename... Args>
 struct TypeIsLambda<RAJA::statement::Lambda<BodyIdx, Args...>> {
   static const bool value = true;
 };
@@ -98,7 +97,8 @@ struct Invoke_all_Lambda<Types, Statement, StatementRest...> {
  */
 template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Types>
 struct StatementExecutor<
-    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>, Types> {
+    statement::For<ArgumentId, RAJA::simd_exec, EnclosedStmts...>,
+    Types> {
 
   template <typename Data>
   static RAJA_INLINE void exec(Data &&data)
@@ -118,12 +118,13 @@ struct StatementExecutor<
       // Privatize data for SIMD correctness reasons
       using RAJA::internal::thread_privatize;
       auto privatizer = thread_privatize(data);
-      auto& private_data = privatizer.get_priv();
+      auto &private_data = privatizer.get_priv();
 
       // Assign offset on privatized data
       private_data.template assign_offset<ArgumentId>(i);
 
-      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(private_data);
+      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(
+          private_data);
     }
   }
 };

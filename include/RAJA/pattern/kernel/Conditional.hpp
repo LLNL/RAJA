@@ -19,12 +19,11 @@
 #define RAJA_pattern_kernel_Conditional_HPP
 
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/pattern/kernel/internal.hpp"
-
 #include <iostream>
 #include <type_traits>
+
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {

@@ -21,17 +21,17 @@
 #define RAJA_sequential_HPP
 
 #if !defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/sequential/atomic.hpp"
+#include "RAJA/policy/sequential/atomic.hpp"
 #endif
 
+#include "RAJA/policy/sequential/WorkGroup.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
 #include "RAJA/policy/sequential/kernel.hpp"
+#include "RAJA/policy/sequential/launch.hpp"
+#include "RAJA/policy/sequential/multi_reduce.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/sequential/reduce.hpp"
-#include "RAJA/policy/sequential/multi_reduce.hpp"
 #include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/sequential/sort.hpp"
-#include "RAJA/policy/sequential/launch.hpp"
-#include "RAJA/policy/sequential/WorkGroup.hpp"
 
 #endif  // closing endif for header file include guard

@@ -8,34 +8,35 @@
 #ifndef RAJA_plugin_context_HPP
 #define RAJA_plugin_context_HPP
 
-#include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/internal/get_platform.hpp"
+#include "RAJA/policy/PolicyBase.hpp"
 
-namespace RAJA {
-namespace util {
+namespace RAJA
+{
+namespace util
+{
 
 class KokkosPluginLoader;
 
 struct PluginContext {
-  public:
-    PluginContext(const Platform p) :
-      platform(p) {}
+public:
+  PluginContext(const Platform p) : platform(p) {}
 
-    Platform platform;
+  Platform platform;
 
-  private:
-    mutable uint64_t kID;
+private:
+  mutable uint64_t kID;
 
-    friend class KokkosPluginLoader;
+  friend class KokkosPluginLoader;
 };
 
-template<typename Policy>
+template <typename Policy>
 PluginContext make_context()
 {
   return PluginContext{detail::get_platform<Policy>::value};
 }
 
-} // closing brace for util namespace
-} // closing brace for RAJA namespace
+}  // namespace util
+}  // namespace RAJA
 
 #endif

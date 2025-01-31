@@ -19,12 +19,11 @@
 #ifndef RAJA_MemUtils_CPU_HPP
 #define RAJA_MemUtils_CPU_HPP
 
-#include "RAJA/config.hpp"
-
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
 
+#include "RAJA/config.hpp"
 #include "RAJA/util/types.hpp"
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || \
@@ -95,27 +94,22 @@ inline void free_aligned(void* ptr)
 ///
 /// Deleter function object for memory allocated with allocate_aligned
 ///
-struct FreeAligned
-{
-  void operator()(void* ptr)
-  {
-    free_aligned(ptr);
-  }
+struct FreeAligned {
+  void operator()(void* ptr) { free_aligned(ptr); }
 };
 
 ///
 /// Deleter function object for memory allocated with allocate_aligned_type
 /// that calls the destructor for the fist size objects in the storage.
 ///
-template < typename T, typename index_type >
-struct FreeAlignedType : FreeAligned
-{
+template <typename T, typename index_type>
+struct FreeAlignedType : FreeAligned {
   index_type size = 0;
 
   void operator()(T* ptr)
   {
-    for ( index_type i = size; i > 0; --i ) {
-      ptr[i-1].~T();
+    for (index_type i = size; i > 0; --i) {
+      ptr[i - 1].~T();
     }
     FreeAligned::operator()(ptr);
   }

@@ -27,12 +27,10 @@
 #include <cassert>
 #include <climits>
 
-#include "camp/camp.hpp"
-
 #include "RAJA/pattern/kernel.hpp"
-
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "camp/camp.hpp"
 
 
 namespace RAJA
@@ -60,15 +58,11 @@ namespace internal
 template <typename Data, typename Types>
 struct HipStatementExecutor<Data, statement::HipSyncThreads, Types> {
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &, bool) { __syncthreads(); }
+  static inline RAJA_DEVICE void exec(Data &, bool) { __syncthreads(); }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  static inline LaunchDims calculateDimensions(
+      Data const &RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }
@@ -77,15 +71,15 @@ struct HipStatementExecutor<Data, statement::HipSyncThreads, Types> {
 template <typename Data, typename Types>
 struct HipStatementExecutor<Data, statement::HipSyncWarp, Types> {
 
-  static
-  inline
-  RAJA_DEVICE
-  //not currently supported
-  void exec(Data &, bool) {  }
+  static inline RAJA_DEVICE
+      // not currently supported
+      void
+      exec(Data &, bool)
+  {
+  }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  static inline LaunchDims calculateDimensions(
+      Data const &RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }

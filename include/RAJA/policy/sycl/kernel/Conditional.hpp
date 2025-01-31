@@ -18,17 +18,14 @@
 #ifndef RAJA_policy_sycl_kernel_Conditional_HPP
 #define RAJA_policy_sycl_kernel_Conditional_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/config.hpp"
+#include "RAJA/pattern/kernel/Conditional.hpp"
+#include "RAJA/policy/sycl/kernel/internal.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#include "RAJA/pattern/kernel/Conditional.hpp"
-
-#include "RAJA/policy/sycl/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -48,10 +45,9 @@ struct SyclStatementExecutor<Data,
   using enclosed_stmts_t = SyclStatementListExecutor<Data, stmt_list_t, Types>;
 
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     if (Conditional::eval(data)) {
 
@@ -61,10 +57,7 @@ struct SyclStatementExecutor<Data,
   }
 
 
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }

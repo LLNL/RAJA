@@ -19,18 +19,14 @@
 #ifndef RAJA_util_static_layout_HPP
 #define RAJA_util_static_layout_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <limits>
 
+#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
-
 #include "RAJA/internal/foldl.hpp"
-
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
-
 
 
 namespace RAJA
@@ -40,7 +36,11 @@ namespace detail
 {
 
 
-template <typename IdxLin, typename Range, typename Sizes, typename Strides, typename DimTypeList=void>
+template <typename IdxLin,
+          typename Range,
+          typename Sizes,
+          typename Strides,
+          typename DimTypeList = void>
 struct StaticLayoutBase_impl;
 
 
@@ -58,9 +58,9 @@ struct StaticLayoutBase_impl<IdxLin,
   using sizes = camp::int_seq<IdxLin, Sizes...>;
   using strides = camp::int_seq<IdxLin, Strides...>;
 
-  static constexpr camp::idx_t stride_one_dim =
-      RAJA::max<camp::idx_t>(
-          (camp::seq_at<RangeInts, strides>::value == 1 ? camp::idx_t(RangeInts) : -1)...);
+  static constexpr camp::idx_t stride_one_dim = RAJA::max<camp::idx_t>(
+      (camp::seq_at<RangeInts, strides>::value == 1 ? camp::idx_t(RangeInts)
+                                                    : -1)...);
 
   static constexpr size_t n_dims = sizeof...(Sizes);
 
@@ -72,9 +72,9 @@ struct StaticLayoutBase_impl<IdxLin,
   RAJA_INLINE static void print()
   {
     camp::sink(printf("StaticLayout: arg%d: size=%d, stride=%d\n",
-                               (int)RangeInts,
-                               (int)Sizes,
-                               (int)Strides)...);
+                      (int)RangeInts,
+                      (int)Sizes,
+                      (int)Strides)...);
   }
 
 
@@ -95,7 +95,8 @@ struct StaticLayoutBase_impl<IdxLin,
 
 
   template <typename... Indices>
-  static RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin s_oper(Indices... indices)
+  static RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin s_oper(
+      Indices... indices)
   {
     // dot product of strides and indices
     return RAJA::sum<IdxLin>((IdxLin(indices * Strides))...);
@@ -108,8 +109,7 @@ struct StaticLayoutBase_impl<IdxLin,
       RAJA::product<IdxLin>((Sizes == IdxLin(0) ? IdxLin(1) : Sizes)...);
 
   // Multiply together all of the sizes
-  static constexpr IdxLin s_size_noproj =
-      RAJA::product<IdxLin>(Sizes...);
+  static constexpr IdxLin s_size_noproj = RAJA::product<IdxLin>(Sizes...);
 
   /*!
    * Computes a size of the layout's space with projections as size 1.
@@ -137,30 +137,23 @@ struct StaticLayoutBase_impl<IdxLin,
   }
 
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_stride() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_stride() const
+  {
     return camp::seq_at<DIM, strides>::value;
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_size() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_size() const
+  {
     return camp::seq_at<DIM, sizes>::value;
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_begin() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_begin() const
+  {
     return 0;
   }
-
 };
 
 template <typename IdxLin, IdxLin N, IdxLin Idx, IdxLin... Sizes>
@@ -189,7 +182,10 @@ struct StrideCalculatorIdx<IdxLin, N, N, Sizes...> {
 template <typename IdxLin, typename Range, typename Perm, typename Sizes>
 struct StrideCalculator;
 
-template <typename IdxLin, IdxLin ... Range, camp::idx_t... Perm, IdxLin... Sizes>
+template <typename IdxLin,
+          IdxLin... Range,
+          camp::idx_t... Perm,
+          IdxLin... Sizes>
 struct StrideCalculator<IdxLin,
                         camp::int_seq<IdxLin, Range...>,
                         camp::idx_seq<Perm...>,
@@ -202,12 +198,18 @@ struct StrideCalculator<IdxLin,
   using perm = camp::idx_seq<Perm...>;
   using inv_perm = invert_permutation<perm>;
 
-  using strides_unperm =
-      camp::int_seq<IdxLin, StrideCalculatorIdx<IdxLin, N, Range, camp::seq_at<Perm, sizes>::value...>::stride...>;
+  using strides_unperm = camp::int_seq<
+      IdxLin,
+      StrideCalculatorIdx<IdxLin,
+                          N,
+                          Range,
+                          camp::seq_at<Perm, sizes>::value...>::stride...>;
 
-  using strides = camp::int_seq<IdxLin, camp::seq_at<camp::seq_at<Range, inv_perm>::value, strides_unperm>::value...>;
+  using strides =
+      camp::int_seq<IdxLin,
+                    camp::seq_at<camp::seq_at<Range, inv_perm>::value,
+                                 strides_unperm>::value...>;
 };
-
 
 
 template <typename IdxLin,
@@ -223,15 +225,14 @@ struct StaticLayoutBase_impl<IdxLin,
 
 
   using IndexLinear = IdxLin;
-  using ranges      = camp::int_seq<IdxLin, RangeInts...>;
-  using sizes       = camp::int_seq<IdxLin, Sizes...>;
-  using strides     = camp::int_seq<IdxLin, Strides...>;  
+  using ranges = camp::int_seq<IdxLin, RangeInts...>;
+  using sizes = camp::int_seq<IdxLin, Sizes...>;
+  using strides = camp::int_seq<IdxLin, Strides...>;
 
-  using InnerLayout = StaticLayoutBase_impl<IdxLin,ranges,sizes,strides,void>;
+  using InnerLayout =
+      StaticLayoutBase_impl<IdxLin, ranges, sizes, strides, void>;
 
-  static
-  constexpr
-  camp::idx_t stride_one_dim = InnerLayout::stride_one_dim;
+  static constexpr camp::idx_t stride_one_dim = InnerLayout::stride_one_dim;
 
   static constexpr IndexLinear n_dims = sizeof...(DimTypes);
   /*!
@@ -261,47 +262,40 @@ struct StaticLayoutBase_impl<IdxLin,
     return s_size_noproj;
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_stride() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_stride() const
+  {
     return InnerLayout{}.get_dim_stride();
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_size() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_size() const
+  {
     return camp::seq_at<DIM, sizes>::value;
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_begin() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_begin() const
+  {
     return 0;
   }
 
 
   RAJA_INLINE
   static void print() { InnerLayout::print(); }
-
 };
 
 
-
-
-
-template <typename Perm, typename IdxLin, typename Sizes, typename Indexes, typename TypeList>
-struct StaticLayoutMaker
-{
-  using strides = typename detail::StrideCalculator<IdxLin, Indexes, Perm, Sizes>::strides;
-  using type = StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides,TypeList>;
+template <typename Perm,
+          typename IdxLin,
+          typename Sizes,
+          typename Indexes,
+          typename TypeList>
+struct StaticLayoutMaker {
+  using strides =
+      typename detail::StrideCalculator<IdxLin, Indexes, Perm, Sizes>::strides;
+  using type = StaticLayoutBase_impl<IdxLin, Indexes, Sizes, strides, TypeList>;
 };
-
 
 
 }  // namespace detail
@@ -313,20 +307,21 @@ using StaticLayoutT = typename detail::StaticLayoutMaker<
     IdxLin,
     camp::int_seq<IdxLin, Sizes...>,
     camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
-    void
-    >::type;
+    void>::type;
 
 template <typename Perm, camp::idx_t... Sizes>
 using StaticLayout = StaticLayoutT<Perm, camp::idx_t, Sizes...>;
 
-template <typename Perm, typename IdxLin, typename TypeList, camp::idx_t... Sizes>
+template <typename Perm,
+          typename IdxLin,
+          typename TypeList,
+          camp::idx_t... Sizes>
 using TypedStaticLayout = typename detail::StaticLayoutMaker<
     Perm,
     IdxLin,
     camp::int_seq<IdxLin, Sizes...>,
     camp::make_int_seq_t<IdxLin, sizeof...(Sizes)>,
-    TypeList
-    >::type;
+    TypeList>::type;
 
 }  // namespace RAJA
 

@@ -19,8 +19,8 @@
 #define RAJA_pattern_launch_sequential_HPP
 
 #include "RAJA/pattern/launch/launch_core.hpp"
-#include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/pattern/params/forall.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 namespace RAJA
 {
@@ -28,8 +28,8 @@ namespace RAJA
 template <>
 struct LaunchExecute<RAJA::null_launch_t> {
   template <typename BODY>
-  static void exec(LaunchContext const& RAJA_UNUSED_ARG(ctx),
-                   BODY const& RAJA_UNUSED_ARG(body))
+  static void exec(LaunchContext const &RAJA_UNUSED_ARG(ctx),
+                   BODY const &RAJA_UNUSED_ARG(body))
   {
     RAJA_ABORT_OR_THROW("NULL Launch");
   }
@@ -40,11 +40,15 @@ template <>
 struct LaunchExecute<RAJA::seq_launch_t> {
 
   template <typename BODY, typename ReduceParams>
-  static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
-                               RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
-                               RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
-  exec(RAJA::resources::Resource res, LaunchParams const &params, const char *RAJA_UNUSED_ARG(kernel_name),
-       BODY const &body, ReduceParams &RAJA_UNUSED_ARG(ReduceParams))
+  static concepts::enable_if_t<
+      resources::EventProxy<resources::Resource>,
+      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
+  exec(RAJA::resources::Resource res,
+       LaunchParams const &params,
+       const char *RAJA_UNUSED_ARG(kernel_name),
+       BODY const &body,
+       ReduceParams &RAJA_UNUSED_ARG(ReduceParams))
   {
 
     LaunchContext ctx;
@@ -60,12 +64,17 @@ struct LaunchExecute<RAJA::seq_launch_t> {
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename BODY, typename ReduceParams>
-    static concepts::enable_if_t<resources::EventProxy<resources::Resource>,
-                                 RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
-                                 concepts::negate<RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
-  exec(RAJA::resources::Resource res, LaunchParams const &launch_params,
-       const char *RAJA_UNUSED_ARG(kernel_name), BODY const &body, ReduceParams &launch_reducers)
+  template <typename BODY, typename ReduceParams>
+  static concepts::enable_if_t<
+      resources::EventProxy<resources::Resource>,
+      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
+      concepts::negate<
+          RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+  exec(RAJA::resources::Resource res,
+       LaunchParams const &launch_params,
+       const char *RAJA_UNUSED_ARG(kernel_name),
+       BODY const &body,
+       ReduceParams &launch_reducers)
   {
     expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
 
@@ -82,7 +91,6 @@ struct LaunchExecute<RAJA::seq_launch_t> {
 
     return resources::EventProxy<resources::Resource>(res);
   }
-
 };
 
 
@@ -91,9 +99,8 @@ struct LoopExecute<seq_exec, SEGMENT> {
 
   RAJA_SUPPRESS_HD_WARN
   template <typename BODY>
-  static RAJA_INLINE RAJA_HOST_DEVICE void exec(
-      SEGMENT const &segment,
-      BODY const &body)
+  static RAJA_INLINE RAJA_HOST_DEVICE void exec(SEGMENT const &segment,
+                                                BODY const &body)
   {
 
     const int len = segment.end() - segment.begin();
@@ -160,7 +167,6 @@ struct LoopExecute<seq_exec, SEGMENT> {
       }
     }
   }
-
 };
 
 
@@ -179,7 +185,7 @@ struct LoopICountExecute<seq_exec, SEGMENT> {
     }
   }
 
-    template <typename BODY>
+  template <typename BODY>
   static RAJA_INLINE RAJA_HOST_DEVICE void exec(
       LaunchContext const RAJA_UNUSED_ARG(&ctx),
       SEGMENT const &segment0,
@@ -218,15 +224,17 @@ struct LoopICountExecute<seq_exec, SEGMENT> {
         for (int i = 0; i < len0; i++) {
           body(*(segment0.begin() + i),
                *(segment1.begin() + j),
-               *(segment2.begin() + k), i, j, k);
+               *(segment2.begin() + k),
+               i,
+               j,
+               k);
         }
       }
     }
   }
-
 };
 
-//Tile Execute + variants
+// Tile Execute + variants
 
 template <typename SEGMENT>
 struct TileExecute<seq_exec, SEGMENT> {
@@ -241,12 +249,10 @@ struct TileExecute<seq_exec, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
 
-    for (int tx = 0; tx < len; tx += tile_size)
-    {
+    for (int tx = 0; tx < len; tx += tile_size) {
       body(segment.slice(tx, tile_size));
     }
   }
-
 };
 
 template <typename SEGMENT>
@@ -262,12 +268,10 @@ struct TileTCountExecute<seq_exec, SEGMENT> {
 
     const int len = segment.end() - segment.begin();
 
-    for (int tx = 0, bx=0; tx < len; tx += tile_size, bx++)
-    {
+    for (int tx = 0, bx = 0; tx < len; tx += tile_size, bx++) {
       body(segment.slice(tx, tile_size), bx);
     }
   }
-
 };
 
 }  // namespace RAJA

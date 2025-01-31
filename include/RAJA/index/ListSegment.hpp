@@ -18,18 +18,16 @@
 #ifndef RAJA_ListSegment_HPP
 #define RAJA_ListSegment_HPP
 
-#include "RAJA/config.hpp"
-
 #include <memory>
 #include <type_traits>
 #include <utility>
 
-#include "camp/resource.hpp"
-
+#include "RAJA/config.hpp"
+#include "RAJA/util/Span.hpp"
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/Span.hpp"
 #include "RAJA/util/types.hpp"
+#include "camp/resource.hpp"
 
 namespace RAJA
 {
@@ -85,7 +83,6 @@ template <typename StorageT>
 class TypedListSegment
 {
 public:
-
   //@{
   //!   @name Types used in implementation based on template parameter.
 
@@ -111,7 +108,7 @@ public:
    * \param values array of indices defining iteration space of segment
    * \param length number of indices
    * \param resource camp resource defining memory space where index data live
-   * \param owned optional enum value indicating whether segment owns indices 
+   * \param owned optional enum value indicating whether segment owns indices
    * (Owned or Unowned). Default is Owned.
    *
    * If 'Unowned' is passed as last argument, the segment will not own its
@@ -121,7 +118,7 @@ public:
                    Index_type length,
                    camp::resources::Resource resource,
                    IndexOwnership owned = Owned)
-    : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(0)
+      : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(0)
   {
     initIndexData(values, length, resource, owned);
   }
@@ -141,7 +138,10 @@ public:
   template <typename Container>
   TypedListSegment(const Container& container,
                    camp::resources::Resource resource)
-    : m_resource(nullptr), m_owned(Unowned), m_data(nullptr), m_size(container.size())
+      : m_resource(nullptr),
+        m_owned(Unowned),
+        m_data(nullptr),
+        m_size(container.size())
   {
     if (m_size > 0) {
 
@@ -164,7 +164,6 @@ public:
       m_owned = Owned;
 
       host_res.deallocate(tmp);
-
     }
   }
 
@@ -175,8 +174,10 @@ public:
   //  As this may be called from a lambda in a
   //  RAJA method we perform a shallow copy
   RAJA_HOST_DEVICE TypedListSegment(const TypedListSegment& other)
-    : m_resource(nullptr),
-      m_owned(Unowned), m_data(other.m_data), m_size(other.m_size)
+      : m_resource(nullptr),
+        m_owned(Unowned),
+        m_data(other.m_data),
+        m_size(other.m_size)
   {
   }
 
@@ -192,7 +193,7 @@ public:
     m_size = other.m_size;
   }
 
-    //! move assignment for list segment
+  //! move assignment for list segment
   //  As this may be called from a lambda in a
   //  RAJA method we perform a shallow copy
   RAJA_HOST_DEVICE TypedListSegment& operator=(TypedListSegment&& rhs)
@@ -211,8 +212,10 @@ public:
 
   //! Move constructor for list segment
   RAJA_HOST_DEVICE TypedListSegment(TypedListSegment&& rhs)
-    : m_resource(rhs.m_resource),
-      m_owned(rhs.m_owned), m_data(rhs.m_data), m_size(rhs.m_size)
+      : m_resource(rhs.m_resource),
+        m_owned(rhs.m_owned),
+        m_data(rhs.m_data),
+        m_size(rhs.m_size)
   {
     rhs.m_owned = Unowned;
     rhs.m_resource = nullptr;
@@ -221,10 +224,7 @@ public:
   }
 
   //! List segment destructor
-  RAJA_HOST_DEVICE ~TypedListSegment()
-  {
-    clear();
-  }
+  RAJA_HOST_DEVICE ~TypedListSegment() { clear(); }
 
   //! Clear method to be called
   RAJA_HOST_DEVICE void clear()
@@ -357,20 +357,20 @@ private:
     m_owned = container_own;
     if (m_owned == Owned) {
 
-        m_resource = new camp::resources::Resource(resource_);
+      m_resource = new camp::resources::Resource(resource_);
 
-        camp::resources::Resource host_res{camp::resources::Host()};
+      camp::resources::Resource host_res{camp::resources::Host()};
 
-        value_type* tmp = host_res.allocate<value_type>(m_size);
+      value_type* tmp = host_res.allocate<value_type>(m_size);
 
-        for (Index_type i = 0; i < m_size; ++i) {
-          tmp[i] = container[i];
-        }
+      for (Index_type i = 0; i < m_size; ++i) {
+        tmp[i] = container[i];
+      }
 
-        m_data = m_resource->allocate<value_type>(m_size);
-        m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
+      m_data = m_resource->allocate<value_type>(m_size);
+      m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
 
-        host_res.deallocate(tmp);
+      host_res.deallocate(tmp);
 
       return;
     }
@@ -382,7 +382,7 @@ private:
 
 
   // Copy of camp resource passed to ctor
-  camp::resources::Resource *m_resource;
+  camp::resources::Resource* m_resource;
 
   // Ownership flag to guide data copying/management
   IndexOwnership m_owned;

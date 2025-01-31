@@ -1,12 +1,12 @@
- /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file for SYCL tiled executors.
- *
- ******************************************************************************
- */
+/*!
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file for SYCL tiled executors.
+*
+******************************************************************************
+*/
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -27,15 +27,13 @@
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/pattern/kernel/Tile.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
-
-#include "RAJA/util/macros.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/pattern/kernel/Tile.hpp"
-#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -54,14 +52,17 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
-{
+    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
   using enclosed_stmts_t = SyclStatementListExecutor<Data, stmt_list_t, Types>;
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active){
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
+  {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
 
@@ -89,9 +90,7 @@ struct SyclStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
 
     // privatize data, so we can mess with the segments
@@ -124,14 +123,12 @@ template <typename Data,
           int BlockDim,
           typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    sycl_group_012_direct<BlockDim>,
-                    EnclosedStmts...>,
-                    Types>
-  {
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_group_012_direct<BlockDim>,
+                                             EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -139,7 +136,9 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -148,8 +147,10 @@ struct SyclStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    //diff_t i = get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
-    diff_t i = item.get_group(BlockDim) * chunk_size;//get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
+    // diff_t i = get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
+    diff_t i =
+        item.get_group(BlockDim) *
+        chunk_size;  // get_sycl_dim<BlockDim>(blockIdx) * chunk_size; // TODO
 
     // check have chunk
     if (i < len) {
@@ -169,9 +170,7 @@ struct SyclStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
 
     // Compute how many blocks
@@ -217,13 +216,12 @@ template <typename Data,
           int BlockDim,
           typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-    Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    sycl_group_012_loop<BlockDim>,
-                    EnclosedStmts...>, Types>
-  {
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_group_012_loop<BlockDim>,
+                                             EnclosedStmts...>,
+                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -231,7 +229,9 @@ struct SyclStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -242,8 +242,8 @@ struct SyclStatementExecutor<
 
     // compute trip count
     diff_t len = segment.end() - segment.begin();
-    diff_t i_init = item.get_group(BlockDim) * chunk_size; // TODO
-    diff_t i_stride = item.get_group_range(BlockDim) * chunk_size; // TODO
+    diff_t i_init = item.get_group(BlockDim) * chunk_size;          // TODO
+    diff_t i_stride = item.get_group_range(BlockDim) * chunk_size;  // TODO
 
     // Iterate through grid stride of chunks
     for (diff_t i = i_init; i < len; i += i_stride) {
@@ -260,9 +260,7 @@ struct SyclStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
 
     // Compute how many blocks
@@ -274,7 +272,6 @@ struct SyclStatementExecutor<
 
     LaunchDims dims;
     set_sycl_dim<BlockDim>(dims.group, num_blocks);
-
 
 
     // privatize data, so we can mess with the segments
@@ -296,7 +293,6 @@ struct SyclStatementExecutor<
 };
 
 
-
 /*!
  * A specialized RAJA::kernel sycl_impl executor for statement::Tile
  * Assigns the tile segment to segment ArgumentId
@@ -306,22 +302,24 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts,
+          typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-  Data,
-  statement::Tile<ArgumentId,
-                  RAJA::tile_fixed<chunk_size>,
-                  sycl_local_012_direct<ThreadDim>,
-                  EnclosedStmts ...>, Types>{
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_local_012_direct<ThreadDim>,
+                                             EnclosedStmts...>,
+                             Types> {
 
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
+  using stmt_list_t = StatementList<EnclosedStmts...>;
 
   using enclosed_stmts_t = SyclStatementListExecutor<Data, stmt_list_t, Types>;
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -350,15 +348,13 @@ struct SyclStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
 
     // Compute how many blocks
     diff_t len = segment_length<ArgumentId>(data);
     diff_t num_threads = len / chunk_size;
-    if(num_threads * chunk_size < len){
+    if (num_threads * chunk_size < len) {
       num_threads++;
     }
 
@@ -378,9 +374,9 @@ struct SyclStatementExecutor<
 
 
     LaunchDims enclosed_dims =
-      enclosed_stmts_t::calculateDimensions(private_data);
+        enclosed_stmts_t::calculateDimensions(private_data);
 
-    return(dims.max(enclosed_dims));
+    return (dims.max(enclosed_dims));
   }
 };
 
@@ -394,22 +390,24 @@ template <typename Data,
           camp::idx_t ArgumentId,
           camp::idx_t chunk_size,
           int ThreadDim,
-          typename ... EnclosedStmts,
+          typename... EnclosedStmts,
           typename Types>
-struct SyclStatementExecutor<
-  Data,
-  statement::Tile<ArgumentId,
-                  RAJA::tile_fixed<chunk_size>,
-                  sycl_local_012_loop<ThreadDim>,
-                  EnclosedStmts ...>, Types>{
+struct SyclStatementExecutor<Data,
+                             statement::Tile<ArgumentId,
+                                             RAJA::tile_fixed<chunk_size>,
+                                             sycl_local_012_loop<ThreadDim>,
+                                             EnclosedStmts...>,
+                             Types> {
 
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
+  using stmt_list_t = StatementList<EnclosedStmts...>;
 
   using enclosed_stmts_t = SyclStatementListExecutor<Data, stmt_list_t, Types>;
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  static inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -444,15 +442,13 @@ struct SyclStatementExecutor<
   }
 
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
 
     // Compute how many blocks
     diff_t len = segment_length<ArgumentId>(data);
     diff_t num_threads = len / chunk_size;
-    if(num_threads * chunk_size < len){
+    if (num_threads * chunk_size < len) {
       num_threads++;
     }
     num_threads = std::max(num_threads, (diff_t)1);
@@ -473,13 +469,11 @@ struct SyclStatementExecutor<
 
 
     LaunchDims enclosed_dims =
-      enclosed_stmts_t::calculateDimensions(private_data);
+        enclosed_stmts_t::calculateDimensions(private_data);
 
-    return(dims.max(enclosed_dims));
+    return (dims.max(enclosed_dims));
   }
 };
-
-
 
 
 }  // end namespace internal

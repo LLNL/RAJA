@@ -23,14 +23,11 @@
 #if defined(RAJA_ENABLE_OPENMP)
 
 #include "RAJA/pattern/detail/privatizer.hpp"
-
 #include "RAJA/pattern/kernel/Collapse.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
-
+#include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/openmp/policy.hpp"
 
 namespace RAJA
 {
@@ -48,10 +45,14 @@ namespace internal
 // Collapsing two loops
 /////////
 
-template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts, typename Types>
+template <camp::idx_t Arg0,
+          camp::idx_t Arg1,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1>,
-                                             EnclosedStmts...>, Types> {
+                                             EnclosedStmts...>,
+                         Types> {
 
 
   template <typename Data>
@@ -78,7 +79,8 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
         auto& private_data = privatizer.get_priv();
         private_data.template assign_offset<Arg0>(i0);
         private_data.template assign_offset<Arg1>(i1);
-        execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(private_data);
+        execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(
+            private_data);
       }
     }
   }
@@ -92,7 +94,8 @@ template <camp::idx_t Arg0,
           typename Types>
 struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
                                              ArgList<Arg0, Arg1, Arg2>,
-                                             EnclosedStmts...>, Types> {
+                                             EnclosedStmts...>,
+                         Types> {
 
 
   template <typename Data>
@@ -121,15 +124,13 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
           private_data.template assign_offset<Arg0>(i0);
           private_data.template assign_offset<Arg1>(i1);
           private_data.template assign_offset<Arg2>(i2);
-          execute_statement_list<camp::list<EnclosedStmts...>, NewTypes2>(private_data);
+          execute_statement_list<camp::list<EnclosedStmts...>, NewTypes2>(
+              private_data);
         }
       }
     }
   }
 };
-
-
-
 
 
 }  // namespace internal

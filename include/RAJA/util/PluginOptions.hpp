@@ -10,22 +10,23 @@
 
 #include <string>
 
-namespace RAJA {
-namespace util {
-
-struct PluginOptions
+namespace RAJA
 {
-    PluginOptions(const std::string& newstr) : str(newstr) {};
-    
-    std::string str;
+namespace util
+{
+
+struct PluginOptions {
+  PluginOptions(const std::string& newstr) : str(newstr){};
+
+  std::string str;
 };
 
 inline PluginOptions make_options(const std::string& newstr)
 {
-    return PluginOptions{newstr};
+  return PluginOptions{newstr};
 }
 
-} // namespace util
-} // namespace RAJA
+}  // namespace util
+}  // namespace RAJA
 
 #endif

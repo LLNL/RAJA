@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -204,3 +204,62 @@ macro(raja_add_benchmark)
     NUM_OMP_THREADS ${arg_NUM_OMP_THREADS}
     COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_benchmark)
+
+##------------------------------------------------------------------------------
+## raja_add_code_checks()
+##
+## Adds code checks for all source files recursively in the RAJA repository.
+##
+## This creates the following parent build targets:
+##  check - Runs a non file changing style check and CppCheck
+##  style - In-place code formatting
+##
+## Creates various child build targets that follow this pattern:
+##  raja_<check|style>
+##  raja_<cppcheck|clangformat>_<check|style>
+##------------------------------------------------------------------------------
+macro(raja_add_code_checks)
+
+  set(options)
+  set(singleValueArgs)
+  set(multiValueArgs)
+
+  # Parse the arguments to the macro
+  cmake_parse_arguments(arg
+       "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  # Only do code checks if building raja by itself and not included in
+  # another project
+  if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+      # Create file globbing expressions that only include directories that contain source
+      # TODO(bowen) Add examples, exercises, test, and benchmark to the list below
+      set(_base_dirs "RAJA" "include" "src")
+      set(_ext_expressions "*.cpp" "*.hpp" "*.inl"
+                           "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh")
+
+      set(_glob_expressions)
+      foreach(_exp ${_ext_expressions})
+          foreach(_base_dir ${_base_dirs})
+              list(APPEND _glob_expressions "${PROJECT_SOURCE_DIR}/${_base_dir}/${_exp}")
+          endforeach()
+      endforeach()
+
+      # Glob for list of files to run code checks on
+      set(_sources)
+      file(GLOB_RECURSE _sources ${_glob_expressions})
+
+      blt_add_code_checks(PREFIX          RAJA
+                          SOURCES         ${_sources}
+                          CLANGFORMAT_CFG_FILE ${PROJECT_SOURCE_DIR}/.clang-format
+                          CPPCHECK_FLAGS  --enable=all --inconclusive)
+
+      # Set FOLDER property for code check targets
+      foreach(_suffix clangformat_check clangformat_style clang_tidy_check clang_tidy_style)
+          set(_tgt ${arg_PREFIX}_${_suffix})
+          if(TARGET ${_tgt})
+              set_target_properties(${_tgt} PROPERTIES FOLDER "RAJA/code_checks")
+          endif()
+      endforeach()
+  endif()
+
+endmacro(raja_add_code_checks)

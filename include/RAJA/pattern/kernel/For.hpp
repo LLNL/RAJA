@@ -18,11 +18,10 @@
 #ifndef RAJA_pattern_kernel_For_HPP
 #define RAJA_pattern_kernel_For_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
@@ -59,7 +58,10 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  *
  */
-template <camp::idx_t ArgumentId, typename Data, typename Types, typename... EnclosedStmts>
+template <camp::idx_t ArgumentId,
+          typename Data,
+          typename Types,
+          typename... EnclosedStmts>
 struct ForWrapper : public GenericWrapper<Data, Types, EnclosedStmts...> {
 
   using Base = GenericWrapper<Data, Types, EnclosedStmts...>;
@@ -85,7 +87,8 @@ template <camp::idx_t ArgumentId,
           typename... EnclosedStmts,
           typename Types>
 struct StatementExecutor<
-    statement::For<ArgumentId, ExecPolicy, EnclosedStmts...>, Types> {
+    statement::For<ArgumentId, ExecPolicy, EnclosedStmts...>,
+    Types> {
 
 
   template <typename Data>
@@ -103,7 +106,11 @@ struct StatementExecutor<
 
     auto r = data.res;
 
-    forall_impl(r, ExecPolicy{}, TypedRangeSegment<len_t>(0, len), for_wrapper, RAJA::expt::get_empty_forall_param_pack());
+    forall_impl(r,
+                ExecPolicy{},
+                TypedRangeSegment<len_t>(0, len),
+                for_wrapper,
+                RAJA::expt::get_empty_forall_param_pack());
   }
 };
 
@@ -112,11 +119,9 @@ struct StatementExecutor<
  *
  *
  */
-template <camp::idx_t ArgumentId,
-          typename... EnclosedStmts,
-          typename Types>
-struct StatementExecutor<
-    statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types> {
+template <camp::idx_t ArgumentId, typename... EnclosedStmts, typename Types>
+struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+                         Types> {
 
 
   template <typename Data>

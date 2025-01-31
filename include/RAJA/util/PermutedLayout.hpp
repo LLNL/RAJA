@@ -19,12 +19,10 @@
 #ifndef RAJA_PERMUTEDLAYOUT_HPP
 #define RAJA_PERMUTEDLAYOUT_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 
+#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
-
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
@@ -81,7 +79,7 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
 
 
   // return Layout<Rank, IdxLin>(sizes, strides);
-  auto ret  = Layout<Rank, IdxLin>();
+  auto ret = Layout<Rank, IdxLin>();
   for (size_t i = 0; i < Rank; ++i) {
     ret.sizes[i] = sizes[i];
     ret.strides[i] = strides[i];

@@ -24,11 +24,10 @@
 
 #if defined(RAJA_SYCL_ACTIVE)
 
-#include "RAJA/util/sycl_compat.hpp"
-
 #include "RAJA/policy/sycl/forall.hpp"
 #include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/policy/sycl/reduce.hpp"
+#include "RAJA/util/sycl_compat.hpp"
 //#include "RAJA/policy/sycl/multi_reduce.hpp"
 //#include "RAJA/policy/sycl/scan.hpp"
 //#include "RAJA/policy/sycl/sort.hpp"

@@ -27,16 +27,15 @@
 #define RAJA_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/util/Operators.hpp"
+#include "RAJA/util/Registry.hpp"
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/camp_aliases.hpp"
+#include "RAJA/util/for_each.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/types.hpp"
 #include "RAJA/util/math.hpp"
 #include "RAJA/util/plugins.hpp"
-#include "RAJA/util/Registry.hpp"
-#include "RAJA/util/for_each.hpp"
+#include "RAJA/util/types.hpp"
 
 
 //
@@ -88,7 +87,7 @@
 #endif
 
 #if defined(RAJA_ENABLE_DESUL_ATOMICS)
-    #include "RAJA/policy/desul.hpp"
+#include "RAJA/policy/desul.hpp"
 #endif
 
 #include "RAJA/index/IndexSet.hpp"
@@ -105,18 +104,17 @@
 //
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/region.hpp"
-
 #include "RAJA/policy/MultiPolicy.hpp"
 
 
 //
 // Multidimensional layouts and views
 //
+#include "RAJA/util/IndexLayout.hpp"
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/StaticLayout.hpp"
-#include "RAJA/util/IndexLayout.hpp"
 #include "RAJA/util/View.hpp"
 
 
@@ -158,14 +156,14 @@
 //
 // WorkPool, WorkGroup, WorkSite objects
 //
-#include "RAJA/policy/WorkGroup.hpp"
 #include "RAJA/pattern/WorkGroup.hpp"
+#include "RAJA/policy/WorkGroup.hpp"
 
 //
 // Reduction objects
 //
-#include "RAJA/pattern/reduce.hpp"
 #include "RAJA/pattern/multi_reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
 
 
 //
@@ -186,9 +184,8 @@
 //////////////////////////////////////////////////////////////////////
 //
 
-#include "RAJA/index/IndexSetUtils.hpp"
 #include "RAJA/index/IndexSetBuilders.hpp"
-
+#include "RAJA/index/IndexSetUtils.hpp"
 #include "RAJA/pattern/scan.hpp"
 
 #if defined(RAJA_ENABLE_RUNTIME_PLUGINS)
@@ -197,11 +194,14 @@
 
 #include "RAJA/pattern/sort.hpp"
 
-namespace RAJA {
-namespace expt{}
+namespace RAJA
+{
+namespace expt
+{
+}
 //  // provide a RAJA::expt namespace for experimental work, but bring alias
 //  // it into RAJA so it doesn't affect user code
 //  using namespace expt;
-}
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

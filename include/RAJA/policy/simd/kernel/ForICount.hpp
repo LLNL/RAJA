@@ -18,15 +18,14 @@
 #ifndef RAJA_policy_simd_kernel_ForICount_HPP
 #define RAJA_policy_simd_kernel_ForICount_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
-#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
-#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
 #include "RAJA/policy/simd/kernel/For.hpp"
+#include "RAJA/policy/simd/policy.hpp"
 
 namespace RAJA
 {
@@ -42,14 +41,17 @@ namespace internal
  * Assigns the loop index to offset ArgumentId
  * Assigns the loop index to param ParamId
  */
-template <camp::idx_t ArgumentId, typename ParamId,
-          typename... EnclosedStmts, typename Types>
+template <camp::idx_t ArgumentId,
+          typename ParamId,
+          typename... EnclosedStmts,
+          typename Types>
 struct StatementExecutor<
-    statement::ForICount<ArgumentId, ParamId, RAJA::simd_exec,
-                         EnclosedStmts...>, Types> {
+    statement::
+        ForICount<ArgumentId, ParamId, RAJA::simd_exec, EnclosedStmts...>,
+    Types> {
 
   template <typename Data>
-  static RAJA_INLINE void exec(Data &&data)
+  static RAJA_INLINE void exec(Data&& data)
   {
 
     // Set the argument type for this loop
@@ -72,7 +74,8 @@ struct StatementExecutor<
       auto privatizer = thread_privatize(data);
       auto& private_data = privatizer.get_priv();
 
-      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(private_data);
+      Invoke_all_Lambda<NewTypes, EnclosedStmts...>::lambda_special(
+          private_data);
     }
   }
 };
@@ -81,4 +84,4 @@ struct StatementExecutor<
 }  // end namespace RAJA
 
 
-#endif 
+#endif

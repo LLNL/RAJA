@@ -19,15 +19,11 @@
 #define RAJA_IndexSet_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
-
 #include "RAJA/policy/PolicyBase.hpp"
-
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/concepts.hpp"
 
@@ -91,7 +87,7 @@ public:
 
   //! Construct empty index set
 #if _MSC_VER < 1910
-   // this one instance of constexpr does not work on VS2012 or VS2015
+  // this one instance of constexpr does not work on VS2012 or VS2015
   RAJA_INLINE TypedIndexSet() : PARENT() {}
 #else
   RAJA_INLINE constexpr TypedIndexSet() : PARENT() {}
@@ -240,11 +236,11 @@ private:
     if (pend == PUSH_BACK) {
       for (Index_type i = 0; i < num; ++i) {
         segment_push_into(i, c, pend, pcopy);
-      } 
+      }
     } else {
-      for (Index_type i = num-1; i > -1; --i) {
+      for (Index_type i = num - 1; i > -1; --i) {
         segment_push_into(i, c, pend, pcopy);
-      } 
+      }
     }
   }
 
@@ -301,14 +297,18 @@ public:
   template <typename Tnew>
   RAJA_INLINE void push_back(Tnew &&val)
   {
-    push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)), PUSH_BACK, PUSH_COPY);
+    push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
+                  PUSH_BACK,
+                  PUSH_COPY);
   }
 
   //! Add copy of segment to front end of index set.
   template <typename Tnew>
   RAJA_INLINE void push_front(Tnew &&val)
   {
-    push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)), PUSH_FRONT, PUSH_COPY);
+    push_internal(new typename std::decay<Tnew>::type(std::forward<Tnew>(val)),
+                  PUSH_FRONT,
+                  PUSH_COPY);
   }
 
   //! Return total length -- sum of lengths of all segments
@@ -341,7 +341,7 @@ public:
   template <typename BODY, typename... ARGS>
   RAJA_HOST_DEVICE void segmentCall(size_t segid,
                                     BODY &&body,
-                                    ARGS &&... args) const
+                                    ARGS &&...args) const
   {
     if (getSegmentTypes()[segid] != T0_TypeId) {
       PARENT::segmentCall(segid,
@@ -762,12 +762,14 @@ namespace type_traits
 
 template <typename T>
 struct is_index_set
-    : ::RAJA::type_traits::SpecializationOf<RAJA::TypedIndexSet, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::TypedIndexSet,
+                                            typename std::decay<T>::type> {
 };
 
 template <typename T>
 struct is_indexset_policy
-    : ::RAJA::type_traits::SpecializationOf<RAJA::ExecPolicy, typename std::decay<T>::type> {
+    : ::RAJA::type_traits::SpecializationOf<RAJA::ExecPolicy,
+                                            typename std::decay<T>::type> {
 };
 }  // namespace type_traits
 

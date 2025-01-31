@@ -15,10 +15,10 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/internal/DepGraphNode.hpp"
+
 #include <iostream>
 #include <string>
-
-#include "RAJA/internal/DepGraphNode.hpp"
 
 namespace RAJA
 {

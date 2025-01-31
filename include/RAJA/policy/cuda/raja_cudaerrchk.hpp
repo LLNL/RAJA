@@ -24,11 +24,11 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
-#include <iostream>
-#include <string>
-
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+#include <iostream>
+#include <string>
 
 #include "RAJA/util/macros.hpp"
 
@@ -64,8 +64,11 @@ inline void cudaAssert(cudaError_t code,
       msg += std::to_string(line);
       throw std::runtime_error(msg);
     } else {
-      fprintf(stderr, "CUDAassert: %s %s %d\n",
-              cudaGetErrorString(code), file, line);
+      fprintf(stderr,
+              "CUDAassert: %s %s %d\n",
+              cudaGetErrorString(code),
+              file,
+              line);
     }
   }
 }

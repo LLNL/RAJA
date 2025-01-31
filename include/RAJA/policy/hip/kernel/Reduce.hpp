@@ -20,7 +20,6 @@
 #define RAJA_policy_hip_kernel_Reduce_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/policy/hip/kernel/internal.hpp"
 
 
@@ -35,16 +34,17 @@ namespace internal
 // Executor that handles reductions across a single HIP thread block
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<Data,
-                             statement::Reduce<RAJA::hip_block_reduce,
-                                               ReduceOperator,
-                                               ParamId,
-                                               EnclosedStmts...>,
-                           Types> {
+                            statement::Reduce<RAJA::hip_block_reduce,
+                                              ReduceOperator,
+                                              ParamId,
+                                              EnclosedStmts...>,
+                            Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -67,13 +67,12 @@ struct HipStatementExecutor<Data,
     // reduction objects
     using combiner_t =
         RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
-    value_t new_value =
-        RAJA::hip::impl::block_reduce<combiner_t>(value, ident);
+    value_t new_value = RAJA::hip::impl::block_reduce<combiner_t>(value, ident);
 
 
     // execute enclosed statements, and mask off everyone but thread 0
     thread_active = threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0;
-    if(thread_active){
+    if (thread_active) {
       // Only update to new value on root thread
       data.template assign_param<ParamId>(new_value);
     }
@@ -94,15 +93,16 @@ struct HipStatementExecutor<Data,
 // Executor that handles reductions across a single HIP thread warp
 //
 template <typename Data,
-          template <typename...> class ReduceOperator,
+          template <typename...>
+          class ReduceOperator,
           typename ParamId,
           typename... EnclosedStmts,
           typename Types>
 struct HipStatementExecutor<Data,
-                             statement::Reduce<RAJA::hip_warp_reduce,
-                                               ReduceOperator,
-                                               ParamId,
-                                               EnclosedStmts...>,
+                            statement::Reduce<RAJA::hip_warp_reduce,
+                                              ReduceOperator,
+                                              ParamId,
+                                              EnclosedStmts...>,
                             Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
@@ -125,13 +125,12 @@ struct HipStatementExecutor<Data,
     // Call warp reduction routine
     using combiner_t =
         RAJA::reduce::detail::op_adapter<value_t, ReduceOperator>;
-    value_t new_value =
-        RAJA::hip::impl::warp_reduce<combiner_t>(value, ident);
+    value_t new_value = RAJA::hip::impl::warp_reduce<combiner_t>(value, ident);
     data.template assign_param<ParamId>(new_value);
 
     // execute enclosed statements, and mask off everyone but lane 0
     thread_active = threadIdx.x == 0;
-    if(thread_active){
+    if (thread_active) {
       // Only update to new value on root thread
       data.template assign_param<ParamId>(new_value);
     }
@@ -146,7 +145,6 @@ struct HipStatementExecutor<Data,
     return enclosed_dims;
   }
 };
-
 
 
 }  // namespace internal

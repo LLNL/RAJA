@@ -18,17 +18,14 @@
 #ifndef RAJA_policy_hip_kernel_Hyperplane_HPP
 #define RAJA_policy_hip_kernel_Hyperplane_HPP
 
-#include "RAJA/config.hpp"
-
 #include <iostream>
 #include <type_traits>
 
-#include "camp/camp.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/kernel/Hyperplane.hpp"
-
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
+#include "camp/camp.hpp"
 
 namespace RAJA
 {
@@ -41,33 +38,30 @@ template <typename Data,
           camp::idx_t... Args,
           typename... EnclosedStmts,
           typename Types>
-struct HipStatementExecutor<Data,
-                             statement::Hyperplane<HpArgumentId,
-                                                   seq_exec,
-                                                   ArgList<Args...>,
-                                                   EnclosedStmts...>,
-                            Types> {
+struct HipStatementExecutor<
+    Data,
+    statement::
+        Hyperplane<HpArgumentId, seq_exec, ArgList<Args...>, EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
   // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, HpArgumentId, Data>;
 
-  using enclosed_stmts_t = HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+  using enclosed_stmts_t =
+      HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // compute Manhattan distance of iteration space to determine
     // as:  hp_len = l0 + l1 + l2 + ...
-    int hp_len = segment_length<HpArgumentId>(data) +
-                 foldl(RAJA::operators::plus<int>(),
-                               segment_length<Args>(data)...);
+    int hp_len =
+        segment_length<HpArgumentId>(data) +
+        foldl(RAJA::operators::plus<int>(), segment_length<Args>(data)...);
 
     int h_args = foldl(RAJA::operators::plus<idx_t>(),
-        camp::get<Args>(data.offset_tuple)...);
+                       camp::get<Args>(data.offset_tuple)...);
 
     // get length of i dimension
     auto i_len = segment_length<HpArgumentId>(data);
@@ -93,16 +87,11 @@ struct HipStatementExecutor<Data,
   }
 
 
-
-  static
-  inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     return enclosed_stmts_t::calculateDimensions(data);
   }
 };
-
-
 
 
 }  // end namespace internal

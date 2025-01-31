@@ -23,19 +23,17 @@
 
 #if defined(RAJA_ENABLE_SYCL)
 
-#include "RAJA/util/sycl_compat.hpp"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <type_traits>
 #include <unordered_map>
 
+#include "RAJA/policy/sycl/policy.hpp"
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/mutex.hpp"
+#include "RAJA/util/sycl_compat.hpp"
 #include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/sycl/policy.hpp"
 
 namespace RAJA
 {
@@ -146,4 +144,3 @@ using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 #endif  // closing endif for RAJA_ENABLE_SYCL
 
 #endif  // closing endif for header file include guard
-

@@ -22,14 +22,10 @@
 #define RAJA_sequential_multi_reduce_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/internal/MemUtils_CPU.hpp"
-
 #include "RAJA/pattern/detail/multi_reduce.hpp"
 #include "RAJA/pattern/multi_reduce.hpp"
-
 #include "RAJA/policy/sequential/policy.hpp"
-
 #include "RAJA/util/types.hpp"
 
 namespace RAJA
@@ -47,7 +43,7 @@ namespace detail
  *
  **************************************************************************
  */
-template < typename T, typename t_MultiReduceOp, typename tuning >
+template <typename T, typename t_MultiReduceOp, typename tuning>
 struct MultiReduceDataSeq;
 
 /*!
@@ -59,37 +55,40 @@ struct MultiReduceDataSeq;
  *
  **************************************************************************
  */
-template < typename T, typename t_MultiReduceOp >
-struct MultiReduceDataSeq<T, t_MultiReduceOp,
+template <typename T, typename t_MultiReduceOp>
+struct MultiReduceDataSeq<
+    T,
+    t_MultiReduceOp,
     RAJA::sequential::MultiReduceTuning<
-      RAJA::sequential::multi_reduce_algorithm::left_fold>>
-{
+        RAJA::sequential::multi_reduce_algorithm::left_fold>> {
   using value_type = T;
   using MultiReduceOp = t_MultiReduceOp;
 
   MultiReduceDataSeq() = delete;
 
-  template < typename Container,
-             std::enable_if_t<!std::is_same<Container, MultiReduceDataSeq>::value>* = nullptr >
+  template <typename Container,
+            std::enable_if_t<
+                !std::is_same<Container, MultiReduceDataSeq>::value>* = nullptr>
   MultiReduceDataSeq(Container const& container, T identity)
-      : m_parent(nullptr)
-      , m_num_bins(container.size())
-      , m_identity(identity)
-      , m_data(nullptr)
+      : m_parent(nullptr),
+        m_num_bins(container.size()),
+        m_identity(identity),
+        m_data(nullptr)
   {
     m_data = create_data(container, m_num_bins);
   }
 
-  MultiReduceDataSeq(MultiReduceDataSeq const &other)
-      : m_parent(other.m_parent ? other.m_parent : &other)
-      , m_num_bins(other.m_num_bins)
-      , m_identity(other.m_identity)
-      , m_data(other.m_data)
-  { }
+  MultiReduceDataSeq(MultiReduceDataSeq const& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_num_bins(other.m_num_bins),
+        m_identity(other.m_identity),
+        m_data(other.m_data)
+  {
+  }
 
-  MultiReduceDataSeq(MultiReduceDataSeq &&) = delete;
+  MultiReduceDataSeq(MultiReduceDataSeq&&) = delete;
   MultiReduceDataSeq& operator=(MultiReduceDataSeq const&) = delete;
-  MultiReduceDataSeq& operator=(MultiReduceDataSeq &&) = delete;
+  MultiReduceDataSeq& operator=(MultiReduceDataSeq&&) = delete;
 
   ~MultiReduceDataSeq()
   {
@@ -100,7 +99,7 @@ struct MultiReduceDataSeq<T, t_MultiReduceOp,
     }
   }
 
-  template < typename Container >
+  template <typename Container>
   void reset(Container const& container, T identity)
   {
     m_identity = identity;
@@ -122,27 +121,27 @@ struct MultiReduceDataSeq<T, t_MultiReduceOp,
 
   T identity() const { return m_identity; }
 
-  void combine(size_t bin, T const &val) { MultiReduceOp{}(m_data[bin], val); }
+  void combine(size_t bin, T const& val) { MultiReduceOp{}(m_data[bin], val); }
 
   T get(size_t bin) const { return m_data[bin]; }
 
 private:
-  MultiReduceDataSeq const *m_parent;
+  MultiReduceDataSeq const* m_parent;
   size_t m_num_bins;
   T m_identity;
   T* m_data;
 
-  template < typename Container >
+  template <typename Container>
   static T* create_data(Container const& container, size_t num_bins)
   {
     if (num_bins == size_t(0)) {
       return nullptr;
     }
 
-    auto data = static_cast<T*>(malloc(num_bins*sizeof(T)));
+    auto data = static_cast<T*>(malloc(num_bins * sizeof(T)));
     size_t bin = 0;
     for (auto const& value : container) {
-      new(&data[bin]) T(value);
+      new (&data[bin]) T(value);
       ++bin;
     }
     return data;
@@ -164,7 +163,8 @@ private:
 
 }  // namespace detail
 
-RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::sequential::seq_multi_reduce_policy, detail::MultiReduceDataSeq)
+RAJA_DECLARE_ALL_MULTI_REDUCERS(policy::sequential::seq_multi_reduce_policy,
+                                detail::MultiReduceDataSeq)
 
 }  // namespace RAJA
 

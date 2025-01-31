@@ -20,7 +20,6 @@
 #define RAJA_policy_sycl_kernel_ForICount_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/policy/sycl/kernel/internal.hpp"
 
 
@@ -29,7 +28,6 @@ namespace RAJA
 
 namespace internal
 {
-
 
 
 /*
@@ -46,24 +44,31 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::sycl_local_012_direct<ThreadDim>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::sycl_local_012_direct<ThreadDim>,
+                         EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::sycl_local_012_direct<ThreadDim>, EnclosedStmts...>, Types> {
+          Data,
+          statement::For<ArgumentId,
+                         RAJA::sycl_local_012_direct<ThreadDim>,
+                         EnclosedStmts...>,
+          Types> {
 
   using Base = SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::sycl_local_012_direct<ThreadDim>, EnclosedStmts...>,
-        Types>;
+      Data,
+      statement::For<ArgumentId,
+                     RAJA::sycl_local_012_direct<ThreadDim>,
+                     EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
     auto i = item.get_local_id(ThreadDim);
@@ -73,12 +78,9 @@ struct SyclStatementExecutor<
     data.template assign_param<ParamId>(i);
 
     // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, item, thread_active && (i<len));
-
+    enclosed_stmts_t::exec(data, item, thread_active && (i < len));
   }
 };
-
-
 
 
 /*
@@ -89,39 +91,44 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts,
+          typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
-  Data,
-  statement::ForICount<ArgumentId, ParamId,
-                       RAJA::sycl_local_masked_direct<Mask>,
-                       EnclosedStmts ...>, Types >
-  : public SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_local_masked_direct<Mask>,
-                   EnclosedStmts ...>, Types > {
-
-  using Base = SyclStatementExecutor<
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::sycl_local_masked_direct<Mask>,
+                         EnclosedStmts...>,
+    Types>
+    : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId, RAJA::sycl_local_masked_direct<Mask>,
-                         EnclosedStmts ...>, Types >;
+          statement::For<ArgumentId,
+                         RAJA::sycl_local_masked_direct<Mask>,
+                         EnclosedStmts...>,
+          Types> {
+
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::For<ArgumentId,
+                                           RAJA::sycl_local_masked_direct<Mask>,
+                                           EnclosedStmts...>,
+                            Types>;
 
   using typename Base::diff_t;
 
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
+  using stmt_list_t = StatementList<EnclosedStmts...>;
 
   // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
   using enclosed_stmts_t =
-          SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
+      SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
     auto i0 = item.get_local_id(0);
@@ -132,13 +139,9 @@ struct SyclStatementExecutor<
     data.template assign_param<ParamId>(i);
 
     // execute enclosed statements if in bounds
-    enclosed_stmts_t::exec(data, item, thread_active && (i<len));
+    enclosed_stmts_t::exec(data, item, thread_active && (i < len));
   }
-
 };
-
-
-
 
 
 /*
@@ -149,45 +152,50 @@ template <typename Data,
           camp::idx_t ArgumentId,
           typename ParamId,
           typename Mask,
-          typename ... EnclosedStmts,
+          typename... EnclosedStmts,
           typename Types>
 struct SyclStatementExecutor<
-  Data,
-  statement::ForICount<ArgumentId, ParamId,
-                       RAJA::sycl_local_masked_loop<Mask>,
-                       EnclosedStmts ...>, Types >
-  : public SyclStatementExecutor<
     Data,
-    statement::For<ArgumentId, RAJA::sycl_local_masked_loop<Mask>,
-                   EnclosedStmts ...>, Types > {
-
-  using Base = SyclStatementExecutor<
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::sycl_local_masked_loop<Mask>,
+                         EnclosedStmts...>,
+    Types>
+    : public SyclStatementExecutor<
           Data,
-          statement::For<ArgumentId, RAJA::sycl_local_masked_loop<Mask>,
-                         EnclosedStmts ...>, Types >;
+          statement::For<ArgumentId,
+                         RAJA::sycl_local_masked_loop<Mask>,
+                         EnclosedStmts...>,
+          Types> {
+
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::For<ArgumentId,
+                                           RAJA::sycl_local_masked_loop<Mask>,
+                                           EnclosedStmts...>,
+                            Types>;
 
   using typename Base::diff_t;
 
-  using stmt_list_t = StatementList<EnclosedStmts ...>;
+  using stmt_list_t = StatementList<EnclosedStmts...>;
 
   // Set the argument type for this loop
   using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
   using enclosed_stmts_t =
-          SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
+      SyclStatementListExecutor<Data, stmt_list_t, NewTypes>;
 
   using mask_t = Mask;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // masked size strided loop
     diff_t len = segment_length<ArgumentId>(data);
     auto i0 = item.get_local_id(0);
     diff_t i_init = mask_t::maskValue(i0);
-    diff_t i_stride = (diff_t) mask_t::max_masked_size;
+    diff_t i_stride = (diff_t)mask_t::max_masked_size;
 
     // Iterate through grid stride of chunks
     for (diff_t ii = 0; ii < len; ii += i_stride) {
@@ -205,11 +213,7 @@ struct SyclStatementExecutor<
       enclosed_stmts_t::exec(data, item, thread_active && have_work);
     }
   }
-
 };
-
-
-
 
 
 /*
@@ -227,23 +231,31 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::sycl_local_012_loop<ThreadDim>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::sycl_local_012_loop<ThreadDim>,
+                         EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::sycl_local_012_loop<ThreadDim>, EnclosedStmts...>,
-        Types> {
+          Data,
+          statement::For<ArgumentId,
+                         RAJA::sycl_local_012_loop<ThreadDim>,
+                         EnclosedStmts...>,
+          Types> {
 
-  using Base = SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::sycl_local_012_loop<ThreadDim>, EnclosedStmts...>,
-        Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::For<ArgumentId,
+                                           RAJA::sycl_local_012_loop<ThreadDim>,
+                                           EnclosedStmts...>,
+                            Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // block stride loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -269,7 +281,6 @@ struct SyclStatementExecutor<
 };
 
 
-
 /*
  * Executor for group work sharing inside SyclKernel.
  * Provides a direct mapping of each block in 012.
@@ -284,23 +295,31 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::sycl_group_012_direct<BlockDim>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::sycl_group_012_direct<BlockDim>,
+                         EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::sycl_group_012_direct<BlockDim>, EnclosedStmts...>,
-        Types> {
+          Data,
+          statement::For<ArgumentId,
+                         RAJA::sycl_group_012_direct<BlockDim>,
+                         EnclosedStmts...>,
+          Types> {
 
   using Base = SyclStatementExecutor<
       Data,
-      statement::For<ArgumentId, RAJA::sycl_group_012_direct<BlockDim>, EnclosedStmts...>,
+      statement::For<ArgumentId,
+                     RAJA::sycl_group_012_direct<BlockDim>,
+                     EnclosedStmts...>,
       Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -333,23 +352,31 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, RAJA::sycl_group_012_loop<BlockDim>, EnclosedStmts...>,
+    statement::ForICount<ArgumentId,
+                         ParamId,
+                         RAJA::sycl_group_012_loop<BlockDim>,
+                         EnclosedStmts...>,
     Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, RAJA::sycl_group_012_loop<BlockDim>, EnclosedStmts...>,
-        Types> {
+          Data,
+          statement::For<ArgumentId,
+                         RAJA::sycl_group_012_loop<BlockDim>,
+                         EnclosedStmts...>,
+          Types> {
 
-  using Base = SyclStatementExecutor<
-      Data,
-      statement::For<ArgumentId, RAJA::sycl_group_012_loop<BlockDim>, EnclosedStmts...>,
-      Types>;
+  using Base =
+      SyclStatementExecutor<Data,
+                            statement::For<ArgumentId,
+                                           RAJA::sycl_group_012_loop<BlockDim>,
+                                           EnclosedStmts...>,
+                            Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     // grid stride loop
     diff_t len = segment_length<ArgumentId>(data);
@@ -384,26 +411,28 @@ template <typename Data,
           typename Types>
 struct SyclStatementExecutor<
     Data,
-    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>, Types >
+    statement::ForICount<ArgumentId, ParamId, seq_exec, EnclosedStmts...>,
+    Types>
     : public SyclStatementExecutor<
-        Data,
-        statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types > {
+          Data,
+          statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+          Types> {
 
   using Base = SyclStatementExecutor<
       Data,
-      statement::For<ArgumentId, seq_exec, EnclosedStmts...>, Types >;
+      statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static
-  inline
-  RAJA_DEVICE
-  void exec(Data &data, ::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data,
+                                      ::sycl::nd_item<3> item,
+                                      bool thread_active)
   {
     diff_t len = segment_length<ArgumentId>(data);
 
-    for(diff_t i = 0;i < len;++ i){
+    for (diff_t i = 0; i < len; ++i) {
       // Assign i to the argument
       data.template assign_offset<ArgumentId>(i);
       data.template assign_param<ParamId>(i);
@@ -413,9 +442,6 @@ struct SyclStatementExecutor<
     }
   }
 };
-
-
-
 
 
 }  // namespace internal

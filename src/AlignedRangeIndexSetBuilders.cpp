@@ -18,15 +18,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
 #include <iostream>
 
-#include "RAJA/index/IndexSetBuilders.hpp"
-
 #include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
-
 #include "camp/resource.hpp"
 
 namespace RAJA
@@ -149,8 +146,8 @@ void buildIndexSetAligned(
         if (lookAhead == scanVal + 1) {
           if ((inrange == 0) && ((scanVal % range_align) == 0)) {
             if (sliceCount != 0) {
-              iset.push_back(ListSegment(&indices_in[dobegin], sliceCount,
-                                          work_res));
+              iset.push_back(
+                  ListSegment(&indices_in[dobegin], sliceCount, work_res));
             }
             inrange = 1;
             dobegin = scanVal;
@@ -185,8 +182,8 @@ void buildIndexSetAligned(
           iset.push_back(RangeSegment(dobegin, dobegin + sliceCount));
         } else {
           ++sliceCount;
-          iset.push_back(ListSegment(&indices_in[dobegin], sliceCount,
-                                      work_res));
+          iset.push_back(
+              ListSegment(&indices_in[dobegin], sliceCount, work_res));
         }
       } else if (scanVal != -1) {
         iset.push_back(ListSegment(&scanVal, 1, work_res));

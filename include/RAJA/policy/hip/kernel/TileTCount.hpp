@@ -27,15 +27,13 @@
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/pattern/kernel/Tile.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
-
-#include "RAJA/util/macros.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/pattern/kernel/Tile.hpp"
-#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -58,32 +56,40 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::
+            hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked,
+                                             sync,
+                                             IndexMapper>,
+              EnclosedStmts...>,
+          Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
-                      EnclosedStmts...>,
-                      Types>;
+      statement::Tile<
+          ArgumentId,
+          RAJA::tile_fixed<chunk_size>,
+          RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked,
+                                         sync,
+                                         IndexMapper>,
+          EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -125,32 +131,38 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::
+            hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::hip::
+                  hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+              EnclosedStmts...>,
+          Types> {
 
   using Base = HipStatementExecutor<
       Data,
       statement::Tile<ArgumentId,
                       RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+                      RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
+                                                     sync,
+                                                     IndexMapper>,
                       EnclosedStmts...>,
-                      Types>;
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -196,32 +208,44 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::hip_indexer<
+            iteration_mapping::StridedLoop<named_usage::unspecified>,
+            kernel_sync_requirement::sync,
+            IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::hip::hip_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::sync,
+                  IndexMapper>,
+              EnclosedStmts...>,
+          Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                      EnclosedStmts...>,
-                      Types>;
+      statement::Tile<
+          ArgumentId,
+          RAJA::tile_fixed<chunk_size>,
+          RAJA::policy::hip::hip_indexer<
+              iteration_mapping::StridedLoop<named_usage::unspecified>,
+              kernel_sync_requirement::sync,
+              IndexMapper>,
+          EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -239,7 +263,7 @@ struct HipStatementExecutor<
 
     // Iterate through in chunks
     // threads will have the same numbers of iterations
-    for(diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride) {
+    for (diff_t ii = 0, t = t_init; ii < len; ii += i_stride, t += t_stride) {
       const diff_t i = ii + i_init;
 
       // execute enclosed statements if any thread will
@@ -274,32 +298,44 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
+    statement::TileTCount<
+        ArgumentId,
+        ParamId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::hip_indexer<
+            iteration_mapping::StridedLoop<named_usage::unspecified>,
+            kernel_sync_requirement::none,
+            IndexMapper>,
+        EnclosedStmts...>,
+    Types>
     : public HipStatementExecutor<
-        Data,
-        statement::Tile<ArgumentId,
-                        RAJA::tile_fixed<chunk_size>,
-                        RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                        EnclosedStmts...>,
-                        Types> {
+          Data,
+          statement::Tile<
+              ArgumentId,
+              RAJA::tile_fixed<chunk_size>,
+              RAJA::policy::hip::hip_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::none,
+                  IndexMapper>,
+              EnclosedStmts...>,
+          Types> {
 
   using Base = HipStatementExecutor<
       Data,
-      statement::Tile<ArgumentId,
-                      RAJA::tile_fixed<chunk_size>,
-                      RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                      EnclosedStmts...>,
-                      Types>;
+      statement::Tile<
+          ArgumentId,
+          RAJA::tile_fixed<chunk_size>,
+          RAJA::policy::hip::hip_indexer<
+              iteration_mapping::StridedLoop<named_usage::unspecified>,
+              kernel_sync_requirement::none,
+              IndexMapper>,
+          EnclosedStmts...>,
+      Types>;
 
-  using typename Base::enclosed_stmts_t;
   using typename Base::diff_t;
+  using typename Base::enclosed_stmts_t;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -317,7 +353,7 @@ struct HipStatementExecutor<
 
     // Iterate through one at a time
     // threads will have the different numbers of iterations
-    for(diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
+    for (diff_t i = i_init, t = t_init; i < len; i += i_stride, t += t_stride) {
 
       // Assign our new tiled segment
       segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
@@ -346,14 +382,23 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>, Types>
-: HipStatementExecutor<Data, statement::TileTCount<ArgumentId, ParamId, TPol,
-    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
-                                   kernel_sync_requirement::none,
-                                   hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-    EnclosedStmts...>, Types>
-{
-
+    statement::
+        TileTCount<ArgumentId, ParamId, TPol, seq_exec, EnclosedStmts...>,
+    Types>
+    : HipStatementExecutor<
+          Data,
+          statement::TileTCount<
+              ArgumentId,
+              ParamId,
+              TPol,
+              RAJA::policy::hip::hip_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::none,
+                  hip::IndexGlobal<named_dim::x,
+                                   named_usage::ignored,
+                                   named_usage::ignored>>,
+              EnclosedStmts...>,
+          Types> {
 };
 
 }  // end namespace internal

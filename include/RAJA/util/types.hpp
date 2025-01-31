@@ -20,17 +20,16 @@
 #ifndef RAJA_Types_HPP
 #define RAJA_Types_HPP
 
-#include "RAJA/config.hpp"
-
 #include <cstddef>
+
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
 #endif
 
-#include "camp/helpers.hpp"
-
 #include "RAJA/util/macros.hpp"
+#include "camp/helpers.hpp"
 
 
 namespace RAJA
@@ -39,30 +38,17 @@ namespace RAJA
 ///
 /// Enum for named values with special usage.
 ///
-enum named_usage : int
-{
-  ignored = -1,
-  unspecified = 0
-};
+enum named_usage : int { ignored = -1, unspecified = 0 };
 
 ///
 /// Enum for named dimensions.
 ///
-enum struct named_dim : int
-{
-  x = 0,
-  y = 1,
-  z = 2
-};
+enum struct named_dim : int { x = 0, y = 1, z = 2 };
 
 ///
 /// Enum for synchronization requirements in some kernel constructs.
 ///
-enum struct kernel_sync_requirement : int
-{
-  none = 0,
-  sync = 1
-};
+enum struct kernel_sync_requirement : int { none = 0, sync = 1 };
 
 ///
 /// Classes used to indicate how to map iterations in a loop to indices.
@@ -70,16 +56,22 @@ enum struct kernel_sync_requirement : int
 namespace iteration_mapping
 {
 
-struct DirectUncheckedBase {};
-struct DirectBase {};
-struct LoopBase {};
-struct ContiguousLoopBase : LoopBase {};
-struct StridedLoopBase : LoopBase {};
-struct UnsizedLoopBase {};
-struct SizedLoopBase {};
-template < size_t t_max_iterations >
-struct SizedLoopSpecifyingBase : SizedLoopBase
-{
+struct DirectUncheckedBase {
+};
+struct DirectBase {
+};
+struct LoopBase {
+};
+struct ContiguousLoopBase : LoopBase {
+};
+struct StridedLoopBase : LoopBase {
+};
+struct UnsizedLoopBase {
+};
+struct SizedLoopBase {
+};
+template <size_t t_max_iterations>
+struct SizedLoopSpecifyingBase : SizedLoopBase {
   static constexpr size_t max_iterations = t_max_iterations;
 };
 
@@ -100,7 +92,8 @@ struct SizedLoopSpecifyingBase : SizedLoopBase
 ///   // 2 -> {2}
 ///   // 3 -> {3}
 ///
-struct DirectUnchecked : DirectUncheckedBase {};
+struct DirectUnchecked : DirectUncheckedBase {
+};
 
 ///
 /// Direct assumes the loop has enough iterations for all of the indices and
@@ -123,7 +116,8 @@ struct DirectUnchecked : DirectUncheckedBase {};
 ///   // 3 -> {3}
 ///   // 4 -> {safely-ignored}
 ///
-struct Direct : DirectBase {};
+struct Direct : DirectBase {
+};
 
 ///
 /// Contiguousloop assumes the loop has fewer iterations than indices and
@@ -150,10 +144,13 @@ struct Direct : DirectBase {};
 ///   // 1 -> {3, 4, 5}
 ///   // 2 -> {6, 7}
 ///
-template < size_t max_iterations >
-struct Contiguousloop : ContiguousLoopBase,
-    std::conditional_t<(max_iterations != named_usage::unspecified),
-                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
+template <size_t max_iterations>
+struct Contiguousloop
+    : ContiguousLoopBase,
+      std::conditional_t<(max_iterations != named_usage::unspecified),
+                         SizedLoopSpecifyingBase<max_iterations>,
+                         UnsizedLoopBase> {
+};
 
 ///
 /// StridedLoop assumes the loop has fewer iterations than indices and
@@ -180,12 +177,15 @@ struct Contiguousloop : ContiguousLoopBase,
 ///   // 1 -> {1, 4, 7}
 ///   // 2 -> {2, 5}
 ///
-template < size_t max_iterations >
-struct StridedLoop : StridedLoopBase,
-    std::conditional_t<(max_iterations != named_usage::unspecified),
-                       SizedLoopSpecifyingBase<max_iterations>, UnsizedLoopBase> {};
+template <size_t max_iterations>
+struct StridedLoop
+    : StridedLoopBase,
+      std::conditional_t<(max_iterations != named_usage::unspecified),
+                         SizedLoopSpecifyingBase<max_iterations>,
+                         UnsizedLoopBase> {
+};
 
-} // namespace iteration_mapping
+}  // namespace iteration_mapping
 
 ///
 /// Enumeration used to indicate whether ListSegment object owns data
@@ -217,21 +217,20 @@ struct SizeList {
 /// Compile time fraction for use with integral types
 ///
 template <typename int_t, int_t numerator, int_t denominator>
-struct Fraction
-{
+struct Fraction {
   static_assert(denominator != int_t(0), "denominator must not be zero");
 
   using inverse = Fraction<int_t, denominator, numerator>;
 
-  template < typename new_int_t >
-  using rebind = Fraction<new_int_t, new_int_t(numerator), new_int_t(denominator)>;
+  template <typename new_int_t>
+  using rebind =
+      Fraction<new_int_t, new_int_t(numerator), new_int_t(denominator)>;
 
   static constexpr int_t multiply(int_t val) noexcept
   {
     return (val / denominator) * numerator +
            (val % denominator) * numerator / denominator;
   }
-
 };
 
 
@@ -274,7 +273,8 @@ using Complex_type = std::complex<Real_type>;
 // alignment attribute supported for versions > 12
 //
 #if __ICC >= 1300
-using TDRAReal_ptr = Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)));
+using TDRAReal_ptr =
+    Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)));
 
 using const_TDRAReal_ptr = const TDRAReal_ptr;
 #endif
@@ -282,7 +282,8 @@ using const_TDRAReal_ptr = const TDRAReal_ptr;
 #elif defined(RAJA_COMPILER_GNU)
 
 #elif defined(RAJA_COMPILER_CLANG)
-using TDRAReal_ptr = Real_type* RAJA_RESTRICT __attribute__((aligned(RAJA::DATA_ALIGN)));
+using TDRAReal_ptr =
+    Real_type* RAJA_RESTRICT __attribute__((aligned(RAJA::DATA_ALIGN)));
 
 using const_TDRAReal_ptr = const TDRAReal_ptr;
 
@@ -887,20 +888,20 @@ using const_UnalignedReal_ptr = ConstRestrictRealPtr;
 #endif
 
 
-namespace detail {
+namespace detail
+{
 
 /*!
  * \brief Abstracts access to memory using normal memory accesses.
  */
-struct DefaultAccessor
-{
-  template < typename T >
+struct DefaultAccessor {
+  template <typename T>
   static RAJA_HOST_DEVICE RAJA_INLINE T get(T* ptr, size_t i)
   {
     return ptr[i];
   }
 
-  template < typename T >
+  template <typename T>
   static RAJA_HOST_DEVICE RAJA_INLINE void set(T* ptr, size_t i, T val)
   {
     ptr[i] = val;
@@ -915,8 +916,7 @@ struct DefaultAccessor
 template <typename T,
           size_t min_integer_type_size = 1,
           size_t max_integer_type_size = sizeof(unsigned long long)>
-struct AsIntegerArray
-{
+struct AsIntegerArray {
   static_assert(min_integer_type_size <= max_integer_type_size,
                 "incompatible min and max integer type size");
   using integer_type = std::conditional_t<
@@ -939,11 +939,11 @@ struct AsIntegerArray
                     sizeof(unsigned short) <= max_integer_type_size) ||
                    sizeof(unsigned char) < min_integer_type_size),
                   unsigned short,
-                  std::conditional_t<
-                      ((alignof(T) >= alignof(unsigned char) &&
-                        sizeof(unsigned char) <= max_integer_type_size)),
-                      unsigned char,
-                      void>>>>>;
+                  std::conditional_t<((alignof(T) >= alignof(unsigned char) &&
+                                       sizeof(unsigned char) <=
+                                           max_integer_type_size)),
+                                     unsigned char,
+                                     void>>>>>;
   static_assert(!std::is_same<integer_type, void>::value,
                 "could not find a compatible integer type");
   static_assert(sizeof(integer_type) >= min_integer_type_size,
@@ -982,31 +982,25 @@ struct AsIntegerArray
  * value at the end of the current scope.
  */
 template <typename T>
-struct ScopedAssignment
-{
+struct ScopedAssignment {
   ScopedAssignment(T& val, T const& new_val)
-    : m_ref_to_val(val)
-    , m_prev_val(std::move(val))
+      : m_ref_to_val(val), m_prev_val(std::move(val))
   {
     m_ref_to_val = new_val;
   }
 
   ScopedAssignment(T& val, T&& new_val)
-    : m_ref_to_val(val)
-    , m_prev_val(std::move(val))
+      : m_ref_to_val(val), m_prev_val(std::move(val))
   {
     m_ref_to_val = std::move(new_val);
   }
 
   ScopedAssignment(ScopedAssignment const&) = delete;
-  ScopedAssignment(ScopedAssignment &&) = delete;
+  ScopedAssignment(ScopedAssignment&&) = delete;
   ScopedAssignment& operator=(ScopedAssignment const&) = delete;
-  ScopedAssignment& operator=(ScopedAssignment &&) = delete;
+  ScopedAssignment& operator=(ScopedAssignment&&) = delete;
 
-  ~ScopedAssignment()
-  {
-    m_ref_to_val = std::move(m_prev_val);
-  }
+  ~ScopedAssignment() { m_ref_to_val = std::move(m_prev_val); }
 
 private:
   T& m_ref_to_val;

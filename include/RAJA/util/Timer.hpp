@@ -31,6 +31,7 @@
 #if defined(__bgq__) && (!defined(_LIBCPP_VERSION))
 
 #include <sys/time.h>
+
 #include <chrono>
 
 namespace RAJA

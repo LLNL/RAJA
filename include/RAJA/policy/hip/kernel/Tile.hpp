@@ -27,15 +27,13 @@
 #include <iostream>
 #include <type_traits>
 
+#include "RAJA/pattern/kernel/Tile.hpp"
+#include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/util/macros.hpp"
+#include "RAJA/util/types.hpp"
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
-
-#include "RAJA/util/macros.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/pattern/kernel/Tile.hpp"
-#include "RAJA/pattern/kernel/internal.hpp"
 
 namespace RAJA
 {
@@ -56,12 +54,13 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
-                    EnclosedStmts...>,
-                    Types>
-  {
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::
+            hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
+        EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -69,10 +68,11 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>>;
+  using DimensionCalculator = KernelDimensionCalculator<
+      RAJA::policy::hip::
+          hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>>;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -80,7 +80,8 @@ struct HipStatementExecutor<
     using segment_t = camp::decay<decltype(segment)>;
 
     // compute trip count
-    const diff_t i = IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+    const diff_t i =
+        IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
 
     // Keep copy of original segment, so we can restore it
     segment_t orig_segment = segment;
@@ -95,12 +96,12 @@ struct HipStatementExecutor<
     segment = orig_segment;
   }
 
-  static inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     // Compute how many chunks
     const diff_t full_len = segment_length<ArgumentId>(data);
-    const diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
+    const diff_t len =
+        RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
     DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
@@ -116,9 +117,9 @@ struct HipStatementExecutor<
     // restrict to first tile
     segment = segment.slice(0, static_cast<diff_t>(chunk_size));
 
-    // NOTE: We do not detect improper uses of direct_unchecked policies under tiling.
-    // This happens when using a direct unchecked policy on a tiled range that is not
-    // evenly divisible by chunk_size.
+    // NOTE: We do not detect improper uses of direct_unchecked policies under
+    // tiling. This happens when using a direct unchecked policy on a tiled
+    // range that is not evenly divisible by chunk_size.
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
@@ -142,10 +143,11 @@ struct HipStatementExecutor<
     Data,
     statement::Tile<ArgumentId,
                     RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>,
+                    RAJA::policy::hip::hip_indexer<iteration_mapping::Direct,
+                                                   sync,
+                                                   IndexMapper>,
                     EnclosedStmts...>,
-                    Types>
-  {
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -153,10 +155,11 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::Direct, sync, IndexMapper>>;
+  using DimensionCalculator = KernelDimensionCalculator<
+      RAJA::policy::hip::
+          hip_indexer<iteration_mapping::Direct, sync, IndexMapper>>;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -165,7 +168,8 @@ struct HipStatementExecutor<
 
     // compute trip count
     const diff_t len = segment.end() - segment.begin();
-    const diff_t i = IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+    const diff_t i =
+        IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
 
     // execute enclosed statements if any thread will
     // but mask off threads without work
@@ -184,12 +188,12 @@ struct HipStatementExecutor<
     segment = orig_segment;
   }
 
-  static inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     // Compute how many chunks
     const diff_t full_len = segment_length<ArgumentId>(data);
-    const diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
+    const diff_t len =
+        RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
     DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
@@ -225,11 +229,15 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>,
-                    EnclosedStmts...>, Types>
-  {
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::hip_indexer<
+            iteration_mapping::StridedLoop<named_usage::unspecified>,
+            kernel_sync_requirement::sync,
+            IndexMapper>,
+        EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -237,10 +245,13 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::sync, IndexMapper>>;
+  using DimensionCalculator =
+      KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
+          iteration_mapping::StridedLoop<named_usage::unspecified>,
+          kernel_sync_requirement::sync,
+          IndexMapper>>;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -251,8 +262,10 @@ struct HipStatementExecutor<
 
     // compute trip count
     const diff_t len = segment.end() - segment.begin();
-    const diff_t i_init = IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
-    const diff_t i_stride = IndexMapper::template size<diff_t>() * static_cast<diff_t>(chunk_size);
+    const diff_t i_init =
+        IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+    const diff_t i_stride =
+        IndexMapper::template size<diff_t>() * static_cast<diff_t>(chunk_size);
 
     // Iterate through in chunks
     // threads will have the same numbers of iterations
@@ -274,12 +287,12 @@ struct HipStatementExecutor<
     segment = orig_segment;
   }
 
-  static inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     // Compute how many chunks
     const diff_t full_len = segment_length<ArgumentId>(data);
-    const diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
+    const diff_t len =
+        RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
     DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
@@ -315,11 +328,15 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId,
-                    RAJA::tile_fixed<chunk_size>,
-                    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>,
-                    EnclosedStmts...>, Types>
-  {
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::hip::hip_indexer<
+            iteration_mapping::StridedLoop<named_usage::unspecified>,
+            kernel_sync_requirement::none,
+            IndexMapper>,
+        EnclosedStmts...>,
+    Types> {
 
   using stmt_list_t = StatementList<EnclosedStmts...>;
 
@@ -327,10 +344,13 @@ struct HipStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>, kernel_sync_requirement::none, IndexMapper>>;
+  using DimensionCalculator =
+      KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
+          iteration_mapping::StridedLoop<named_usage::unspecified>,
+          kernel_sync_requirement::none,
+          IndexMapper>>;
 
-  static inline RAJA_DEVICE
-  void exec(Data &data, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data &data, bool thread_active)
   {
     // Get the segment referenced by this Tile statement
     auto &segment = camp::get<ArgumentId>(data.segment_tuple);
@@ -341,8 +361,10 @@ struct HipStatementExecutor<
 
     // compute trip count
     const diff_t len = segment.end() - segment.begin();
-    const diff_t i_init = IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
-    const diff_t i_stride = IndexMapper::template size<diff_t>() * static_cast<diff_t>(chunk_size);
+    const diff_t i_init =
+        IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+    const diff_t i_stride =
+        IndexMapper::template size<diff_t>() * static_cast<diff_t>(chunk_size);
 
     // Iterate through one at a time
     // threads will have the different numbers of iterations
@@ -359,12 +381,12 @@ struct HipStatementExecutor<
     segment = orig_segment;
   }
 
-  static inline
-  LaunchDims calculateDimensions(Data const &data)
+  static inline LaunchDims calculateDimensions(Data const &data)
   {
     // Compute how many chunks
     const diff_t full_len = segment_length<ArgumentId>(data);
-    const diff_t len = RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
+    const diff_t len =
+        RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
     HipDims my_dims(0), my_min_dims(0);
     DimensionCalculator{}.set_dimensions(my_dims, my_min_dims, len);
@@ -400,14 +422,21 @@ template <typename Data,
           typename Types>
 struct HipStatementExecutor<
     Data,
-    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>, Types>
-: HipStatementExecutor<Data, statement::Tile<ArgumentId, TPol,
-    RAJA::policy::hip::hip_indexer<iteration_mapping::StridedLoop<named_usage::unspecified>,
-                                   kernel_sync_requirement::none,
-                                   hip::IndexGlobal<named_dim::x, named_usage::ignored, named_usage::ignored>>,
-    EnclosedStmts...>, Types>
-{
-
+    statement::Tile<ArgumentId, TPol, seq_exec, EnclosedStmts...>,
+    Types>
+    : HipStatementExecutor<
+          Data,
+          statement::Tile<
+              ArgumentId,
+              TPol,
+              RAJA::policy::hip::hip_indexer<
+                  iteration_mapping::StridedLoop<named_usage::unspecified>,
+                  kernel_sync_requirement::none,
+                  hip::IndexGlobal<named_dim::x,
+                                   named_usage::ignored,
+                                   named_usage::ignored>>,
+              EnclosedStmts...>,
+          Types> {
 };
 
 }  // end namespace internal

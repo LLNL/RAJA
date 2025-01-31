@@ -1,22 +1,24 @@
 #ifndef RAJA_get_platform_HPP
 #define RAJA_get_platform_HPP
 
-#include "RAJA/util/Operators.hpp"
 #include "RAJA/internal/foldl.hpp"
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/util/Operators.hpp"
 
 namespace RAJA
 {
 
-namespace policy {
-namespace multi {
+namespace policy
+{
+namespace multi
+{
 template <typename Selector, typename... Policies>
 class MultiPolicy;
 
 }
-}
+}  // namespace policy
 
-namespace detail 
+namespace detail
 {
 
 struct max_platform {
@@ -66,11 +68,11 @@ struct get_platform_from_list<> {
  * (not for MultiPolicy or nested::Policy)
  */
 template <typename T>
-struct get_platform<T,
-                    typename std::
-                        enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
-                                  && !RAJA::type_traits::is_indexset_policy<T>::
-                                         value>::type> {
+struct get_platform<
+    T,
+    typename std::enable_if<
+        std::is_base_of<RAJA::PolicyBase, T>::value &&
+        !RAJA::type_traits::is_indexset_policy<T>::value>::type> {
 
   static constexpr Platform value = T::platform;
 };
@@ -124,7 +126,7 @@ struct get_platform<RAJA::policy::multi::MultiPolicy<SELECTOR, POLICIES...>> {
   static constexpr Platform value = Platform::undefined;
 };
 
-} // closing brace for detail namespace
-} // closing brace for RAJA namespace
+}  // namespace detail
+}  // namespace RAJA
 
-#endif // RAJA_get_platform_HPP
+#endif  // RAJA_get_platform_HPP

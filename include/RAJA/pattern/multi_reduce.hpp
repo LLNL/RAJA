@@ -19,7 +19,6 @@
 #define RAJA_multi_reduce_HPP
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/macros.hpp"
 
@@ -156,7 +155,7 @@ struct MultiReduceSum;
  */
 template <typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceBitOr;
- 
+
 
 /*!
  ******************************************************************************
@@ -171,7 +170,8 @@ struct MultiReduceBitOr;
    Index_ptr bins = ...;
    Real_ptr bit_vals = ...;
 
-   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins, init_val);
+   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins,
+ init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_bits[bins[i]] &= (data[i]);
@@ -188,7 +188,7 @@ struct MultiReduceBitOr;
 template <typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceBitAnd;
 
-} //namespace RAJA
+}  // namespace RAJA
 
 
 #endif  // closing endif for header file include guard

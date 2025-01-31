@@ -19,17 +19,14 @@
 #ifndef RAJA_OFFSETLAYOUT_HPP
 #define RAJA_OFFSETLAYOUT_HPP
 
-#include "RAJA/config.hpp"
-
 #include <array>
 #include <limits>
 
-#include "camp/camp.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
-
 #include "RAJA/util/Permutations.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
+#include "camp/camp.hpp"
 
 namespace RAJA
 {
@@ -51,7 +48,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
-  IdxLin offsets[n_dims]={0}; //If not specified set to zero
+  IdxLin offsets[n_dims] = {0};  // If not specified set to zero
 
   constexpr RAJA_INLINE OffsetLayout_impl(
       std::array<IdxLin, sizeof...(RangeInts)> begin,
@@ -68,15 +65,18 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
 
   void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
   {
-    for(size_t i=0; i<n_dims; ++i) offsets[i] += shift[i];
+    for (size_t i = 0; i < n_dims; ++i)
+      offsets[i] += shift[i];
   }
 
-  template<camp::idx_t N, typename Idx>
+  template <camp::idx_t N, typename Idx>
   RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheckError(Idx idx) const
   {
     printf("Error at index %d, value %ld is not within bounds [%ld, %ld] \n",
-           static_cast<int>(N), static_cast<long int>(idx),
-           static_cast<long int>(offsets[N]), static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
+           static_cast<int>(N),
+           static_cast<long int>(idx),
+           static_cast<long int>(offsets[N]),
+           static_cast<long int>(offsets[N] + base_.sizes[N] - 1));
     RAJA_ABORT_OR_THROW("Out of bounds error \n");
   }
 
@@ -86,21 +86,21 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   }
 
   template <camp::idx_t N, typename Idx, typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx, Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void BoundsCheck(Idx idx,
+                                                Indices... indices) const
   {
-    if(!(offsets[N] <=idx && idx < offsets[N] + base_.sizes[N]))
-    {
+    if (!(offsets[N] <= idx && idx < offsets[N] + base_.sizes[N])) {
       BoundsCheckError<N>(idx);
     }
     RAJA_UNUSED_VAR(idx);
-    BoundsCheck<N+1>(indices...);
+    BoundsCheck<N + 1>(indices...);
   }
 
   template <typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
-      Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin
+  operator()(Indices... indices) const
   {
-#if defined (RAJA_BOUNDS_CHECK_INTERNAL)
+#if defined(RAJA_BOUNDS_CHECK_INTERNAL)
     BoundsCheck<0>(indices...);
 #endif
     return base_((indices - offsets[RangeInts])...);
@@ -108,7 +108,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
 
   template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              Indices &&... indices) const
+                                              Indices&&... indices) const
   {
     base_.toIndices(linear_index, std::forward<Indices>(indices)...);
     camp::sink((indices = (offsets[RangeInts] + indices))...);
@@ -140,27 +140,21 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
     return base_.size_noproj();
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_stride() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_stride() const
+  {
     return base_.get_dim_stride();
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_size() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_size() const
+  {
     return base_.get_dim_size();
   }
 
-  template<camp::idx_t DIM>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IndexLinear get_dim_begin() const {
+  template <camp::idx_t DIM>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IndexLinear get_dim_begin() const
+  {
     return offsets[DIM];
   }
 };
@@ -184,47 +178,47 @@ struct OffsetLayout
   }
 };
 
-//TypedOffsetLayout
+// TypedOffsetLayout
 template <typename IdxLin, typename DimTuple>
 struct TypedOffsetLayout;
 
 template <typename IdxLin, typename... DimTypes>
 struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
-: public OffsetLayout<sizeof...(DimTypes), strip_index_type_t<IdxLin>>
-{
-   using StrippedIdxLin = strip_index_type_t<IdxLin>;
-   using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
-   using Base = OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>;
-   using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
-   using DimTuple = camp::tuple<DimTypes...>;
-   using IndexLinear = IdxLin;
+    : public OffsetLayout<sizeof...(DimTypes), strip_index_type_t<IdxLin>> {
+  using StrippedIdxLin = strip_index_type_t<IdxLin>;
+  using Self = TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>;
+  using Base = OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>;
+  using DimArr = std::array<StrippedIdxLin, sizeof...(DimTypes)>;
+  using DimTuple = camp::tuple<DimTypes...>;
+  using IndexLinear = IdxLin;
 
-   // Pull in base coonstructors
- #if 0
+  // Pull in base coonstructors
+#if 0
    // This breaks with nvcc11
  using Base::Base;
- #else
-   using OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>::OffsetLayout;
- #endif
+#else
+  using OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>::OffsetLayout;
+#endif
 
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(DimTypes... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      DimTypes... indices) const
   {
     return IdxLin(Base::operator()(stripIndexType(indices)...));
   }
 
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              DimTypes &... indices) const
+                                              DimTypes&... indices) const
   {
     toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)>{},
                     std::forward<IdxLin>(linear_index),
-                    std::forward<DimTypes &>(indices)...);
+                    std::forward<DimTypes&>(indices)...);
   }
 
 private:
   template <typename... Indices, camp::idx_t... RangeInts>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(camp::idx_seq<RangeInts...>,
                                                     IdxLin linear_index,
-                                                    Indices &... indices) const
+                                                    Indices&... indices) const
   {
     StrippedIdxLin locals[sizeof...(DimTypes)];
     Base::toIndices(stripIndexType(linear_index), locals[RangeInts]...);

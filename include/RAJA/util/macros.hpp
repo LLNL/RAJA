@@ -18,11 +18,12 @@
 #ifndef RAJA_INTERNAL_MACROS_HPP
 #define RAJA_INTERNAL_MACROS_HPP
 
-#include "RAJA/config.hpp"
+#include <stdio.h>
 
 #include <cstdlib>
 #include <stdexcept>
-#include <stdio.h>
+
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_HIP_ACTIVE)
 #include <hip/hip_runtime.h>
@@ -33,9 +34,9 @@
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) \
-  || (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) \
-  || (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
+#if (defined(RAJA_ENABLE_CUDA) && defined(__CUDA_ARCH__)) ||         \
+    (defined(RAJA_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)) || \
+    (defined(RAJA_ENABLE_SYCL) && defined(__SYCL_DEVICE_ONLY__))
 #define RAJA_GPU_DEVICE_COMPILE_PASS_ACTIVE
 #endif
 
@@ -142,10 +143,10 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
  */
 #if defined(RAJA_ENABLE_OPENMP)
 #define RAJA_OMP_DECLARE_REDUCTION_COMBINE \
-      _Pragma(" omp declare reduction( combine \
+  _Pragma(                                 \
+      " omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")\
-        //initializer(omp_priv = omp_in) ")
+        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")  // initializer(omp_priv = omp_in) ")
 #endif
 
 
@@ -153,15 +154,15 @@ RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
 #if defined(__SYCL_DEVICE_ONLY__)
-  //segfault here ran into linking problems
+  // segfault here ran into linking problems
   *((volatile char *)0) = 0;  // write to address 0
 #else
-  printf ( "%s\n", str );
+  printf("%s\n", str);
 #if defined(RAJA_ENABLE_TARGET_OPENMP) && (_OPENMP >= 201511)
   // seg faulting here instead of calling std::abort for omp target
   *((volatile char *)0) = 0;  // write to address 0
 #elif defined(__CUDA_ARCH__)
-  asm ("trap;");
+  asm("trap;");
 
 #elif defined(__HIP_DEVICE_COMPILE__)
   abort();
@@ -172,7 +173,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   char *value;
   size_t len;
   bool no_except = false;
-  if(_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr){
+  if (_dupenv_s(&value, &len, "RAJA_NO_EXCEPT") == 0 && value != nullptr) {
     no_except = true;
     free(value);
   }

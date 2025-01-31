@@ -24,18 +24,12 @@
 #define RAJA_forall_sequential_HPP
 
 #include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/sequential/policy.hpp"
-
 #include "RAJA/internal/fault_tolerance.hpp"
-
 #include "RAJA/pattern/detail/forall.hpp"
-
-#include "RAJA/util/resource.hpp"
-
 #include "RAJA/pattern/params/forall.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/util/resource.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -55,13 +49,14 @@ namespace sequential
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename Func, typename Resource, typename ForallParam>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<Resource>,
-  expt::type_traits::is_ForallParamPack<ForallParam>,
-  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-  >
+template <typename Iterable,
+          typename Func,
+          typename Resource,
+          typename ForallParam>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Resource>,
+    expt::type_traits::is_ForallParamPack<ForallParam>,
+    concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(Resource res,
             const seq_exec &,
             Iterable &&iter,
@@ -80,13 +75,14 @@ forall_impl(Resource res,
   return resources::EventProxy<Resource>(res);
 }
 
-template <typename Iterable, typename Func, typename Resource, typename ForallParam>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<Resource>,
-  expt::type_traits::is_ForallParamPack<ForallParam>,
-  expt::type_traits::is_ForallParamPack_empty<ForallParam>
-  >
+template <typename Iterable,
+          typename Func,
+          typename Resource,
+          typename ForallParam>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<Resource>,
+    expt::type_traits::is_ForallParamPack<ForallParam>,
+    expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(Resource res,
             const seq_exec &,
             Iterable &&iter,

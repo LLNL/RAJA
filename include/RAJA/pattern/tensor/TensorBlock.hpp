@@ -20,12 +20,10 @@
 #define RAJA_pattern_tensor_TensorBlock_HPP
 
 #include "RAJA/config.hpp"
-
-#include "RAJA/util/macros.hpp"
-
-#include "camp/camp.hpp"
 #include "RAJA/pattern/tensor/TensorRegister.hpp"
 #include "RAJA/util/StaticLayout.hpp"
+#include "RAJA/util/macros.hpp"
+#include "camp/camp.hpp"
 
 namespace RAJA
 {
@@ -358,7 +356,6 @@ namespace ET{
 } // namespace internal
 } // namespace expt
 }  // namespace RAJA
-
 
 
 #endif
