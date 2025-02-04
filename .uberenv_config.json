@@ -5,9 +5,8 @@
 "package_source_dir" : "../..",
 "spack_url": "https://github.com/spack/spack.git",
 "spack_branch": "develop-2025-02-02",
-"spack_activate" : {},
 "spack_configs_path": "scripts/radiuss-spack-configs",
 "spack_packages_path": "scripts/radiuss-spack-configs/packages",
 "spack_concretizer": "clingo",
-"spack_setup_clingo": false
+"spack_setup_clingo": "false"
 }
