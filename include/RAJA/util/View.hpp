@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -140,15 +140,16 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth(Lay lyout, Tup&& tup)
 // the index into the array-of-pointers to be moved around in the MultiView
 // operator(); see the operator overload. Default of 0 means that the p2p index
 // is in the 0th position.
-template<typename ValueType,
-         typename LayoutType,
-         RAJA::Index_type P2Pidx      = 0,
-         typename PointerType         = ValueType**,
-         typename NonConstPointerType = camp::type::ptr::add<  // adds *
-             camp::type::ptr::add<camp::type::cv::rem<         // removes cv
-                 camp::type::ptr::rem<camp::type::ptr::rem<PointerType>  // removes
-                                                                         // *
-                                      >>>>>
+template<
+    typename ValueType,
+    typename LayoutType,
+    RAJA::Index_type P2Pidx      = 0,
+    typename PointerType         = ValueType**,
+    typename NonConstPointerType = camp::type::ptr::add<  // adds *
+        camp::type::ptr::add<camp::type::cv::rem<         // removes cv
+            camp::type::ptr::rem<camp::type::ptr::rem<PointerType>  // removes
+                                                                    // *
+                                 >>>>>
 struct MultiView
 {
   using value_type      = ValueType;
