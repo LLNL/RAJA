@@ -1781,15 +1781,12 @@ using cuda_launch_t =
 
 // policies usable with kernel and launch
 template<typename... indexers>
-<<<<<<< HEAD
 using cuda_indexer_direct_unchecked =
     policy::cuda::cuda_indexer<iteration_mapping::DirectUnchecked,
                                kernel_sync_requirement::none,
                                indexers...>;
 
 template<typename... indexers>
-=======
->>>>>>> develop
 using cuda_indexer_direct =
     policy::cuda::cuda_indexer<iteration_mapping::Direct,
                                kernel_sync_requirement::none,
@@ -1808,15 +1805,12 @@ using cuda_indexer_syncable_loop = policy::cuda::cuda_indexer<
     indexers...>;
 
 template<typename... indexers>
-<<<<<<< HEAD
 using cuda_flatten_indexer_direct_unchecked =
     policy::cuda::cuda_flatten_indexer<iteration_mapping::DirectUnchecked,
                                        kernel_sync_requirement::none,
                                        indexers...>;
 
 template<typename... indexers>
-=======
->>>>>>> develop
 using cuda_flatten_indexer_direct =
     policy::cuda::cuda_flatten_indexer<iteration_mapping::Direct,
                                        kernel_sync_requirement::none,

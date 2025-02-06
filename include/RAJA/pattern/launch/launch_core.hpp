@@ -695,7 +695,6 @@ template<typename POLICY_LIST,
          typename CONTEXT,
          typename SEGMENT,
          typename BODY>
-<<<<<<< HEAD
 RAJA_HOST_DEVICE RAJA_INLINE void loop_icount(CONTEXT const& ctx,
                                               SEGMENT const& segment0,
                                               SEGMENT const& segment1,
@@ -711,8 +710,6 @@ template<typename POLICY_LIST,
          typename CONTEXT,
          typename SEGMENT,
          typename BODY>
-=======
->>>>>>> develop
 RAJA_HOST_DEVICE RAJA_INLINE void loop(CONTEXT const& ctx,
                                        SEGMENT const& segment0,
                                        SEGMENT const& segment1,
@@ -795,7 +792,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
 
   TileExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
       ctx, tile_size0, tile_size1, segment0, segment1, body);
-<<<<<<< HEAD
 }
 
 template<typename POLICY_LIST,
@@ -813,8 +809,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
 
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
       ctx, tile_size0, tile_size1, segment0, segment1, body);
-=======
->>>>>>> develop
 }
 
 template<typename POLICY_LIST,
@@ -822,7 +816,6 @@ template<typename POLICY_LIST,
          typename TILE_T,
          typename SEGMENT,
          typename BODY>
-<<<<<<< HEAD
 RAJA_HOST_DEVICE RAJA_INLINE void tile(CONTEXT const& ctx,
                                        TILE_T tile_size0,
                                        TILE_T tile_size1,
@@ -850,23 +843,12 @@ RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
                                               SEGMENT const& segment0,
                                               SEGMENT const& segment1,
                                               SEGMENT const& segment2,
-=======
-RAJA_HOST_DEVICE RAJA_INLINE void tile_tcount(CONTEXT const& ctx,
-                                              TILE_T tile_size0,
-                                              TILE_T tile_size1,
-                                              SEGMENT const& segment0,
-                                              SEGMENT const& segment1,
->>>>>>> develop
                                               BODY const& body)
 {
 
   TileTCountExecute<loop_policy<POLICY_LIST>, SEGMENT>::exec(
-<<<<<<< HEAD
       ctx, tile_size0, tile_size1, tile_size2, segment0, segment1, segment2,
       body);
-=======
-      ctx, tile_size0, tile_size1, segment0, segment1, body);
->>>>>>> develop
 }
 
 }  // namespace expt
