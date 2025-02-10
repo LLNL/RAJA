@@ -85,13 +85,11 @@ struct CudaStatementExecutor<
   {
     const diff_t len = segment_length<ArgumentId>(data);
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator::set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
-    // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return dims.max(enclosed_dims);
+
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -162,13 +160,11 @@ struct CudaStatementExecutor<
   {
     diff_t len = segment_length<ArgumentId>(data);
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
-    // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return dims.max(enclosed_dims);
+
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -234,13 +230,11 @@ struct CudaStatementExecutor<
   {
     const diff_t len = segment_length<ArgumentId>(data);
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
-    // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return dims.max(enclosed_dims);
+
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -363,6 +357,8 @@ struct CudaStatementExecutor<Data,
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<cuda_warp_loop>;
+
   static_assert(mask_t::max_masked_size <=
                     RAJA::policy::cuda::device_constants.WARP_SIZE,
                 "BitMask is too large for CUDA warp size");
@@ -393,20 +389,13 @@ struct CudaStatementExecutor<Data,
 
   static inline LaunchDims calculateDimensions(Data const& data)
   {
-    // Get enclosed statements
-    LaunchDims dims = enclosed_stmts_t::calculateDimensions(data);
+    diff_t len = segment_length<ArgumentId>(data);
 
-    // we always get EXACTLY one warp by allocating one warp in the X
-    // dimension
-    const diff_t len = RAJA::policy::cuda::device_constants.WARP_SIZE;
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
-    // request one thread per element in the segment
-    set_cuda_dim<named_dim::x>(dims.dims.threads, len);
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
 
-    // since we are direct-mapping, we REQUIRE len
-    set_cuda_dim<named_dim::x>(dims.min_dims.threads, len);
-
-    return (dims);
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -440,6 +429,9 @@ struct CudaStatementExecutor<
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
+      cuda_thread_size_x_direct<mask_t::max_input_size>>;
+
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     const diff_t len = segment_length<ArgumentId>(data);
@@ -455,21 +447,13 @@ struct CudaStatementExecutor<
 
   static inline LaunchDims calculateDimensions(Data const& data)
   {
-    // Get enclosed statements
-    LaunchDims dims;
+    const diff_t len = segment_length<ArgumentId>(data);
 
-    // we need to allocate enough threads for the segment size, and the
-    // shifted off bits
-    const diff_t len = mask_t::max_input_size;
-
-    // request one thread per element in the segment
-    set_cuda_dim<named_dim::x>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_cuda_dim<named_dim::x>(dims.min_dims.threads, len);
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return (dims.max(enclosed_dims));
+
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -502,6 +486,9 @@ struct CudaStatementExecutor<Data,
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
+      cuda_thread_size_x_loop<mask_t::max_input_size>>;
+
   static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
   {
     // masked size strided loop
@@ -528,21 +515,13 @@ struct CudaStatementExecutor<Data,
 
   static inline LaunchDims calculateDimensions(Data const& data)
   {
-    // Get enclosed statements
-    LaunchDims dims;
+    diff_t len = segment_length<ArgumentId>(data);
 
-    // we need to allocate enough threads for the segment size, and the
-    // shifted off bits
-    const diff_t len = mask_t::max_input_size;
-
-    // request one thread per element in the segment
-    set_cuda_dim<named_dim::x>(dims.dims.threads, len);
-
-    // since we are direct-mapping, we REQUIRE len
-    set_cuda_dim<named_dim::x>(dims.min_dims.threads, len);
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return (dims.max(enclosed_dims));
+
+    return combine(dims, enclosed_dims);
   }
 };
 
