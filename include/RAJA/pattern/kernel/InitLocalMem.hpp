@@ -84,7 +84,8 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,
         Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
 
     // Initialize memory
-    auto local_mem = std::make_unique<varType[]>(camp::get<Pos>(data.param_tuple).size());
+    auto local_mem =
+        std::make_unique<varType[]>(camp::get<Pos>(data.param_tuple).size());
     camp::get<Pos>(data.param_tuple).set_data(local_mem.get());
 
     // Initialize others and execute
