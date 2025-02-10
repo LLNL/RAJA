@@ -46,19 +46,20 @@ namespace internal
 struct LaunchDims
 {
 
-  CudaDims dims;
-  CudaDims min_dims;
+  CudaDims active{0};
+  CudaDims dims{0};
+  CudaDims min_dims{0};
 
   LaunchDims()                             = default;
   LaunchDims(LaunchDims const&)            = default;
+  LaunchDims(LaunchDims &&)                = default;
   LaunchDims& operator=(LaunchDims const&) = default;
+  LaunchDims& operator=(LaunchDims &&)     = default;
 
   RAJA_INLINE
-  LaunchDims(CudaDims _dims) : dims {_dims}, min_dims {} {}
-
-  RAJA_INLINE
-  LaunchDims(CudaDims _dims, CudaDims _min_dims)
-      : dims {_dims},
+  LaunchDims(CudaDims _active, CudaDims _dims, CudaDims _min_dims)
+      : active {_active},
+        dims {_dims},
         min_dims {_min_dims}
   {}
 
@@ -67,6 +68,10 @@ struct LaunchDims
   {
     LaunchDims result;
 
+    result.active.blocks.x = std::max(c.active.blocks.x, active.blocks.x);
+    result.active.blocks.y = std::max(c.active.blocks.y, active.blocks.y);
+    result.active.blocks.z = std::max(c.active.blocks.z, active.blocks.z);
+
     result.dims.blocks.x = std::max(c.dims.blocks.x, dims.blocks.x);
     result.dims.blocks.y = std::max(c.dims.blocks.y, dims.blocks.y);
     result.dims.blocks.z = std::max(c.dims.blocks.z, dims.blocks.z);
@@ -74,6 +79,10 @@ struct LaunchDims
     result.min_dims.blocks.x = std::max(c.min_dims.blocks.x, min_dims.blocks.x);
     result.min_dims.blocks.y = std::max(c.min_dims.blocks.y, min_dims.blocks.y);
     result.min_dims.blocks.z = std::max(c.min_dims.blocks.z, min_dims.blocks.z);
+
+    result.active.threads.x = std::max(c.active.threads.x, active.threads.x);
+    result.active.threads.y = std::max(c.active.threads.y, active.threads.y);
+    result.active.threads.z = std::max(c.active.threads.z, active.threads.z);
 
     result.dims.threads.x = std::max(c.dims.threads.x, dims.threads.x);
     result.dims.threads.y = std::max(c.dims.threads.y, dims.threads.y);
@@ -90,10 +99,20 @@ struct LaunchDims
   }
 
   RAJA_INLINE
-  int num_blocks() const { return dims.num_blocks(); }
+  int num_blocks() const
+  {
+    return (active.blocks.x ? dims.blocks.x : 1) *
+           (active.blocks.y ? dims.blocks.y : 1) *
+           (active.blocks.z ? dims.blocks.z : 1);
+  }
 
   RAJA_INLINE
-  int num_threads() const { return dims.num_threads(); }
+  int num_threads() const
+  {
+    return (active.threads.x ? dims.threads.x : 1) *
+           (active.threads.y ? dims.threads.y : 1) *
+           (active.threads.z ? dims.threads.z : 1);
+  }
 
   RAJA_INLINE
   void clamp_to_min_blocks()
@@ -111,6 +130,12 @@ struct LaunchDims
     dims.threads.z = std::max(min_dims.threads.z, dims.threads.z);
   };
 };
+
+RAJA_INLINE
+LaunchDims combine(LaunchDims const &lhs, LaunchDims const &rhs)
+{
+  return lhs.max(rhs);
+}
 
 template<camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
 struct CudaStatementListExecutorHelper
