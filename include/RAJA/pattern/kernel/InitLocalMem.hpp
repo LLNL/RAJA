@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <type_traits>
+#include <memory>
 
 namespace RAJA
 {
@@ -83,15 +84,14 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,
         Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
 
     // Initialize memory
-    varType* ptr = new varType[camp::get<Pos>(data.param_tuple).size()];
-    camp::get<Pos>(data.param_tuple).set_data(ptr);
+    auto local_mem = std::make_unique<varType[]>(camp::get<Pos>(data.param_tuple).size());
+    camp::get<Pos>(data.param_tuple).set_data(local_mem.get());
 
     // Initialize others and execute
     exec_expanded<others...>(data);
 
     // Cleanup and return
     camp::get<Pos>(data.param_tuple).set_data(nullptr);
-    delete[] ptr;
   }
 
   template<typename Data>
