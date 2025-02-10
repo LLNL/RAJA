@@ -83,23 +83,15 @@ struct StatementExecutor<statement::InitLocalMem<RAJA::cpu_tile_mem,
         Pos, typename camp::decay<Data>::param_tuple_t>::value_type;
 
     // Initialize memory
-#ifdef RAJA_COMPILER_MSVC
-    // MSVC doesn't like taking a pointer to stack allocated data?!?!
     varType* ptr = new varType[camp::get<Pos>(data.param_tuple).size()];
     camp::get<Pos>(data.param_tuple).set_data(ptr);
-#else
-    varType Array[camp::get<Pos>(data.param_tuple).size()];
-    camp::get<Pos>(data.param_tuple).set_data(&Array[0]);
-#endif
 
     // Initialize others and execute
     exec_expanded<others...>(data);
 
     // Cleanup and return
     camp::get<Pos>(data.param_tuple).set_data(nullptr);
-#ifdef RAJA_COMPILER_MSVC
     delete[] ptr;
-#endif
   }
 
   template<typename Data>
