@@ -159,14 +159,11 @@ struct CudaStatementListExecutorHelper
   template<typename Data>
   inline static LaunchDims calculateDimensions(Data& data)
   {
-    // Compute this statements launch dimensions
     LaunchDims statement_dims = cur_stmt_t::calculateDimensions(data);
 
-    // call the next statement in the list
     LaunchDims next_dims = next_helper_t::calculateDimensions(data);
 
-    // Return the maximum of the two
-    return statement_dims.max(next_dims);
+    return combine(statement_dims, next_dims);
   }
 };
 
