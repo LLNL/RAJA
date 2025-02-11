@@ -46,19 +46,20 @@ namespace internal
 struct LaunchDims
 {
 
-  HipDims dims;
-  HipDims min_dims;
+  HipDims active{0};
+  HipDims dims{0};
+  HipDims min_dims{0};
 
   LaunchDims()                             = default;
   LaunchDims(LaunchDims const&)            = default;
+  LaunchDims(LaunchDims &&)                = default;
   LaunchDims& operator=(LaunchDims const&) = default;
+  LaunchDims& operator=(LaunchDims &&)     = default;
 
   RAJA_INLINE
-  LaunchDims(HipDims _dims) : dims {_dims}, min_dims {} {}
-
-  RAJA_INLINE
-  LaunchDims(HipDims _dims, HipDims _min_dims)
-      : dims {_dims},
+  LaunchDims(HipDims _active, HipDims _dims, HipDims _min_dims)
+      : active {_active},
+        dims {_dims},
         min_dims {_min_dims}
   {}
 
@@ -67,6 +68,10 @@ struct LaunchDims
   {
     LaunchDims result;
 
+    result.active.blocks.x = std::max(c.active.blocks.x, active.blocks.x);
+    result.active.blocks.y = std::max(c.active.blocks.y, active.blocks.y);
+    result.active.blocks.z = std::max(c.active.blocks.z, active.blocks.z);
+
     result.dims.blocks.x = std::max(c.dims.blocks.x, dims.blocks.x);
     result.dims.blocks.y = std::max(c.dims.blocks.y, dims.blocks.y);
     result.dims.blocks.z = std::max(c.dims.blocks.z, dims.blocks.z);
@@ -74,6 +79,10 @@ struct LaunchDims
     result.min_dims.blocks.x = std::max(c.min_dims.blocks.x, min_dims.blocks.x);
     result.min_dims.blocks.y = std::max(c.min_dims.blocks.y, min_dims.blocks.y);
     result.min_dims.blocks.z = std::max(c.min_dims.blocks.z, min_dims.blocks.z);
+
+    result.active.threads.x = std::max(c.active.threads.x, active.threads.x);
+    result.active.threads.y = std::max(c.active.threads.y, active.threads.y);
+    result.active.threads.z = std::max(c.active.threads.z, active.threads.z);
 
     result.dims.threads.x = std::max(c.dims.threads.x, dims.threads.x);
     result.dims.threads.y = std::max(c.dims.threads.y, dims.threads.y);
@@ -90,10 +99,20 @@ struct LaunchDims
   }
 
   RAJA_INLINE
-  int num_blocks() const { return dims.num_blocks(); }
+  int num_blocks() const
+  {
+    return (active.blocks.x ? dims.blocks.x : 1) *
+           (active.blocks.y ? dims.blocks.y : 1) *
+           (active.blocks.z ? dims.blocks.z : 1);
+  }
 
   RAJA_INLINE
-  int num_threads() const { return dims.num_threads(); }
+  int num_threads() const
+  {
+    return (active.threads.x ? dims.threads.x : 1) *
+           (active.threads.y ? dims.threads.y : 1) *
+           (active.threads.z ? dims.threads.z : 1);
+  }
 
   RAJA_INLINE
   void clamp_to_min_blocks()
@@ -111,6 +130,12 @@ struct LaunchDims
     dims.threads.z = std::max(min_dims.threads.z, dims.threads.z);
   };
 };
+
+RAJA_INLINE
+LaunchDims combine(LaunchDims const &lhs, LaunchDims const &rhs)
+{
+  return lhs.max(rhs);
+}
 
 template<camp::idx_t cur_stmt, camp::idx_t num_stmts, typename StmtList>
 struct HipStatementListExecutorHelper
@@ -134,14 +159,11 @@ struct HipStatementListExecutorHelper
   template<typename Data>
   inline static LaunchDims calculateDimensions(Data& data)
   {
-    // Compute this statements launch dimensions
     LaunchDims statement_dims = cur_stmt_t::calculateDimensions(data);
 
-    // call the next statement in the list
     LaunchDims next_dims = next_helper_t::calculateDimensions(data);
 
-    // Return the maximum of the two
-    return statement_dims.max(next_dims);
+    return combine(statement_dims, next_dims);
   }
 };
 
@@ -452,16 +474,16 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   using IndexMapper =
       hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
 
-  template<typename IdxT>
-  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
-                             HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT len)
+  template < typename IdxT >
+  static LaunchDims get_dimensions(IdxT len)
   {
     if (len > static_cast<IdxT>(1))
     {
       RAJA_ABORT_OR_THROW(
           "len exceeds the size of the directly mapped index space");
     }
+
+    return LaunchDims{};
   }
 };
 
@@ -476,12 +498,17 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
+    LaunchDims dims;
+
     // BEWARE: if calculated block_size is too high then the kernel launch will
     // fail
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(len));
-    set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(len));
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>(len));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(len));
+
+    return dims;
   }
 };
 
@@ -499,16 +526,23 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
+    constexpr auto zero = static_cast<IdxT>(0);
+
     if (len > static_cast<IdxT>(IndexMapper::block_size))
     {
       RAJA_ABORT_OR_THROW(
           "len exceeds the size of the directly mapped index space");
     }
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::block_size : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(IndexMapper::block_size));
+
+    return dims;
   }
 };
 
@@ -523,10 +557,15 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(len));
-    set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(len));
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>(len));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(len));
+
+    return dims;
   }
 };
 
@@ -544,16 +583,23 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
+    constexpr auto zero = static_cast<IdxT>(0);
+
     if (len > static_cast<IdxT>(IndexMapper::grid_size))
     {
       RAJA_ABORT_OR_THROW(
           "len exceeds the size of the directly mapped index space");
     }
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::grid_size : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(IndexMapper::grid_size));
+
+    return dims;
   }
 };
 
@@ -567,15 +613,15 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   using IndexMapper =
       hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
-  template<typename IdxT>
-  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
-                             HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT len)
+  template < typename IdxT >
+  static LaunchDims get_dimensions(IdxT len)
   {
     if (len > static_cast<IdxT>(0))
     {
       RAJA_ABORT_OR_THROW("must know one of block_size or grid_size");
     }
+
+    return LaunchDims{};
   }
 };
 
@@ -594,19 +640,24 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    // BEWARE: if calculated block_size is too high then the kernel launch will
-    // fail
-    set_hip_dim<dim>(dims.threads,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::grid_size)));
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::grid_size)));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    const IdxT block_size = RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>(block_size));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(block_size));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::grid_size : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(IndexMapper::grid_size));
+
+    return dims;
   }
 };
 
@@ -625,17 +676,23 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(dims.blocks,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::block_size)));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::block_size)));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    const IdxT grid_size = RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::block_size : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(IndexMapper::block_size));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>(grid_size));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(grid_size));
+
+    return dims;
   }
 };
 
@@ -659,20 +716,28 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
+    constexpr auto zero = static_cast<IdxT>(0);
+
     if (len > (static_cast<IdxT>(IndexMapper::block_size) *
                static_cast<IdxT>(IndexMapper::grid_size)))
     {
       RAJA_ABORT_OR_THROW(
           "len exceeds the size of the directly mapped index space");
     }
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::block_size : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(IndexMapper::block_size));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::grid_size : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(IndexMapper::grid_size));
+
+    return dims;
   }
 };
 
@@ -686,11 +751,11 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
   using IndexMapper =
       hip::IndexGlobal<dim, named_usage::ignored, named_usage::ignored>;
 
-  template<typename IdxT>
-  static void set_dimensions(HipDims& RAJA_UNUSED_ARG(dims),
-                             HipDims& RAJA_UNUSED_ARG(min_dims),
-                             IdxT RAJA_UNUSED_ARG(len))
-  {}
+  template < typename IdxT >
+  static LaunchDims get_dimensions(IdxT RAJA_UNUSED_ARG(len))
+  {
+    return LaunchDims{};
+  }
 };
 
 // specialization for strided loop thread policies
@@ -704,12 +769,17 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::unspecified, named_usage::ignored>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
+    LaunchDims dims;
+
     // BEWARE: if calculated block_size is too high then the kernel launch will
     // fail
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(len));
-    set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>(len));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(1));
+
+    return dims;
   }
 };
 
@@ -726,14 +796,18 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
 
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::ignored>;
 
-  template<typename IdxT>
-  static void set_dimensions(HipDims& dims,
-                             HipDims& min_dims,
-                             IdxT RAJA_UNUSED_ARG(len))
+  template < typename IdxT >
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::block_size : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(IndexMapper::block_size));
+
+    return dims;
   }
 };
 
@@ -748,10 +822,15 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::ignored, named_usage::unspecified>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(len));
-    set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>(len));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(1));
+
+    return dims;
   }
 };
 
@@ -768,14 +847,18 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
 
   using IndexMapper = hip::IndexGlobal<dim, named_usage::ignored, GRID_SIZE>;
 
-  template<typename IdxT>
-  static void set_dimensions(HipDims& dims,
-                             HipDims& min_dims,
-                             IdxT RAJA_UNUSED_ARG(len))
+  template < typename IdxT >
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::grid_size : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(IndexMapper::grid_size));
+
+    return dims;
   }
 };
 
@@ -790,15 +873,21 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::unspecified, named_usage::unspecified>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    if (len > static_cast<IdxT>(0))
-    {
-      set_hip_dim<dim>(dims.threads, static_cast<IdxT>(1));
-      set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(1));
-      set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-      set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
-    }
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? 1 : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(1));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? 1 : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(1));
+
+    return dims;
   }
 };
 
@@ -817,17 +906,24 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, named_usage::unspecified, GRID_SIZE>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    // BEWARE: if calculated block_size is too high then the kernel launch will
-    // fail
-    set_hip_dim<dim>(dims.threads,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::grid_size)));
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads, static_cast<IdxT>(1));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    // BEWARE: if calculated block_size is too high then the kernel launch will fail
+    const IdxT block_size = RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::grid_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>(block_size));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(1));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::grid_size : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(IndexMapper::grid_size));
+
+    return dims;
   }
 };
 
@@ -846,15 +942,23 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
       hip::IndexGlobal<dim, BLOCK_SIZE, named_usage::unspecified>;
 
   template<typename IdxT>
-  static void set_dimensions(HipDims& dims, HipDims& min_dims, IdxT len)
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(dims.blocks,
-                     RAJA_DIVIDE_CEILING_INT(
-                         len, static_cast<IdxT>(IndexMapper::block_size)));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks, static_cast<IdxT>(1));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    const IdxT grid_size = RAJA_DIVIDE_CEILING_INT(len, static_cast<IdxT>(IndexMapper::block_size));
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::block_size : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(IndexMapper::block_size));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>(grid_size));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(1));
+
+    return dims;
   }
 };
 
@@ -877,17 +981,22 @@ struct KernelDimensionCalculator<RAJA::policy::hip::hip_indexer<
 
   using IndexMapper = hip::IndexGlobal<dim, BLOCK_SIZE, GRID_SIZE>;
 
-  template<typename IdxT>
-  static void set_dimensions(HipDims& dims,
-                             HipDims& min_dims,
-                             IdxT RAJA_UNUSED_ARG(len))
+  template < typename IdxT >
+  static LaunchDims get_dimensions(IdxT len)
   {
-    set_hip_dim<dim>(dims.threads, static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(dims.blocks, static_cast<IdxT>(IndexMapper::grid_size));
-    set_hip_dim<dim>(min_dims.threads,
-                     static_cast<IdxT>(IndexMapper::block_size));
-    set_hip_dim<dim>(min_dims.blocks,
-                     static_cast<IdxT>(IndexMapper::grid_size));
+    constexpr auto zero = static_cast<IdxT>(0);
+
+    LaunchDims dims;
+
+    set_hip_dim<dim>(dims.  active.threads, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.threads, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::block_size : 0));
+    set_hip_dim<dim>(dims.min_dims.threads, static_cast<hip_dim_member_t>(IndexMapper::block_size));
+
+    set_hip_dim<dim>(dims.  active.blocks, static_cast<hip_dim_member_t>(true));
+    set_hip_dim<dim>(dims.    dims.blocks, static_cast<hip_dim_member_t>((len > zero) ? IndexMapper::grid_size : 0));
+    set_hip_dim<dim>(dims.min_dims.blocks, static_cast<hip_dim_member_t>(IndexMapper::grid_size));
+
+    return dims;
   }
 };
 

@@ -199,9 +199,7 @@ struct CudaStatementExecutor<
     const diff_t len =
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -216,7 +214,7 @@ struct CudaStatementExecutor<
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
-    return dims.max(enclosed_dims);
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -300,9 +298,7 @@ struct CudaStatementExecutor<
     const diff_t len =
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -317,7 +313,7 @@ struct CudaStatementExecutor<
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
-    return dims.max(enclosed_dims);
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -396,9 +392,7 @@ struct CudaStatementExecutor<
     const diff_t len =
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -413,7 +407,7 @@ struct CudaStatementExecutor<
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
-    return dims.max(enclosed_dims);
+    return combine(dims, enclosed_dims);
   }
 };
 
