@@ -99,19 +99,39 @@ struct LaunchDims
   }
 
   RAJA_INLINE
+  int blocks_are_active() const
+  {
+    return active.blocks.x || active.blocks.y || active.blocks.z;
+  }
+
+  RAJA_INLINE
+  int threads_are_active() const
+  {
+    return active.threads.x || active.threads.y || active.threads.z;
+  }
+
+  RAJA_INLINE
   int num_blocks() const
   {
-    return (active.blocks.x ? dims.blocks.x : 1) *
-           (active.blocks.y ? dims.blocks.y : 1) *
-           (active.blocks.z ? dims.blocks.z : 1);
+    if (blocks_are_active()) {
+      return (active.blocks.x ? dims.blocks.x : 1) *
+             (active.blocks.y ? dims.blocks.y : 1) *
+             (active.blocks.z ? dims.blocks.z : 1);
+    } else {
+      return 0;
+    }
   }
 
   RAJA_INLINE
   int num_threads() const
   {
-    return (active.threads.x ? dims.threads.x : 1) *
-           (active.threads.y ? dims.threads.y : 1) *
-           (active.threads.z ? dims.threads.z : 1);
+    if (threads_are_active()) {
+      return (active.threads.x ? dims.threads.x : 1) *
+             (active.threads.y ? dims.threads.y : 1) *
+             (active.threads.z ? dims.threads.z : 1);
+    } else {
+      return 0;
+    }
   }
 
   RAJA_INLINE

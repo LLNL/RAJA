@@ -509,9 +509,13 @@ struct StatementExecutor<
 
 
     // Only launch kernel if we have something to iterate over
-    int num_blocks  = launch_dims.num_blocks();
-    int num_threads = launch_dims.num_threads();
-    if (num_blocks > 0 || num_threads > 0)
+    bool active_threads = launch_dims.threads_are_active();
+    bool active_blocks  = launch_dims.blocks_are_active();
+    int  num_blocks     = launch_dims.num_blocks();
+    int  num_threads    = launch_dims.num_threads();
+    if ((active_threads || active_blocks) &&
+        (!active_blocks || num_blocks > 0) &&
+        (!active_threads || num_threads > 0))
     {
 
       //
