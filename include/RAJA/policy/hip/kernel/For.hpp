@@ -80,13 +80,11 @@ struct HipStatementExecutor<
   {
     const diff_t len = segment_length<ArgumentId>(data);
 
-    HipDims my_dims(0), my_min_dims(0);
-    DimensionCalculator::set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
-    // combine with enclosed statements
     LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
-    return dims.max(enclosed_dims);
+
+    return combine(dims, enclosed_dims);
   }
 };
 
