@@ -292,7 +292,8 @@ struct HipStatementExecutor<Data,
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<hip_warp_direct>;
+  using DimensionCalculator =
+      RAJA::internal::KernelDimensionCalculator<hip_warp_direct>;
 
   static_assert(mask_t::max_masked_size <=
                     RAJA::policy::hip::device_constants.WARP_SIZE,
@@ -352,7 +353,8 @@ struct HipStatementExecutor<Data,
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<hip_warp_loop>;
+  using DimensionCalculator =
+      RAJA::internal::KernelDimensionCalculator<hip_warp_loop>;
 
   static_assert(mask_t::max_masked_size <=
                     RAJA::policy::hip::device_constants.WARP_SIZE,

@@ -357,7 +357,8 @@ struct CudaStatementExecutor<Data,
 
   using diff_t = segment_diff_type<ArgumentId, Data>;
 
-  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<cuda_warp_loop>;
+  using DimensionCalculator =
+      RAJA::internal::KernelDimensionCalculator<cuda_warp_loop>;
 
   static_assert(mask_t::max_masked_size <=
                     RAJA::policy::cuda::device_constants.WARP_SIZE,
