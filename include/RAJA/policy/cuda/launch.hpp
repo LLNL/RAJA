@@ -714,7 +714,6 @@ struct LoopExecute<
   }
 };
 
-
 /*
    CUDA generic loop_icount implementations
 */

@@ -268,7 +268,7 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
                           "mapped index space");
     }
 
-    return LaunchDims{};
+    return LaunchDims {};
   }
 };
 
@@ -289,9 +289,11 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
 
     // BEWARE: if calculated block_size is too high then the kernel launch will
     // fail
-    set_cuda_dim<dim>(dims.  active.threads, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.threads, static_cast<cuda_dim_member_t>(len));
-    set_cuda_dim<dim>(dims.min_dims.threads, static_cast<cuda_dim_member_t>(len));
+    set_cuda_dim<dim>(dims.active.threads,
+                      static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.threads, static_cast<cuda_dim_member_t>(len));
+    set_cuda_dim<dim>(dims.min_dims.threads,
+                      static_cast<cuda_dim_member_t>(len));
 
     return dims;
   }
@@ -321,9 +323,12 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
 
     LaunchDims dims;
 
-    set_cuda_dim<dim>(dims.  active.threads, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.threads, static_cast<cuda_dim_member_t>(IndexMapper::block_size));
-    set_cuda_dim<dim>(dims.min_dims.threads, static_cast<cuda_dim_member_t>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.active.threads,
+                      static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.threads,
+                      static_cast<cuda_dim_member_t>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.min_dims.threads,
+                      static_cast<cuda_dim_member_t>(IndexMapper::block_size));
 
     return dims;
   }
@@ -344,9 +349,10 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
   {
     LaunchDims dims;
 
-    set_cuda_dim<dim>(dims.  active.blocks, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.blocks, static_cast<cuda_dim_member_t>(len));
-    set_cuda_dim<dim>(dims.min_dims.blocks, static_cast<cuda_dim_member_t>(len));
+    set_cuda_dim<dim>(dims.active.blocks, static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.blocks, static_cast<cuda_dim_member_t>(len));
+    set_cuda_dim<dim>(dims.min_dims.blocks,
+                      static_cast<cuda_dim_member_t>(len));
 
     return dims;
   }
@@ -376,9 +382,11 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
 
     LaunchDims dims;
 
-    set_cuda_dim<dim>(dims.  active.blocks, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.blocks, static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
-    set_cuda_dim<dim>(dims.min_dims.blocks, static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(dims.active.blocks, static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.blocks,
+                      static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(dims.min_dims.blocks,
+                      static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
 
     return dims;
   }
@@ -435,13 +443,18 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
 
     LaunchDims dims;
 
-    set_cuda_dim<dim>(dims.  active.threads, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.threads, static_cast<cuda_dim_member_t>(block_size));
-    set_cuda_dim<dim>(dims.min_dims.threads, static_cast<cuda_dim_member_t>(block_size));
+    set_cuda_dim<dim>(dims.active.threads,
+                      static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.threads,
+                      static_cast<cuda_dim_member_t>(block_size));
+    set_cuda_dim<dim>(dims.min_dims.threads,
+                      static_cast<cuda_dim_member_t>(block_size));
 
-    set_cuda_dim<dim>(dims.  active.blocks, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.blocks, static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
-    set_cuda_dim<dim>(dims.min_dims.blocks, static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(dims.active.blocks, static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.blocks,
+                      static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(dims.min_dims.blocks,
+                      static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
 
     return dims;
   }
@@ -474,13 +487,18 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
 
     LaunchDims dims;
 
-    set_cuda_dim<dim>(dims.  active.threads, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.threads, static_cast<cuda_dim_member_t>(IndexMapper::block_size));
-    set_cuda_dim<dim>(dims.min_dims.threads, static_cast<cuda_dim_member_t>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.active.threads,
+                      static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.threads,
+                      static_cast<cuda_dim_member_t>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.min_dims.threads,
+                      static_cast<cuda_dim_member_t>(IndexMapper::block_size));
 
-    set_cuda_dim<dim>(dims.  active.blocks, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.blocks, static_cast<cuda_dim_member_t>(grid_size));
-    set_cuda_dim<dim>(dims.min_dims.blocks, static_cast<cuda_dim_member_t>(grid_size));
+    set_cuda_dim<dim>(dims.active.blocks, static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.blocks,
+                      static_cast<cuda_dim_member_t>(grid_size));
+    set_cuda_dim<dim>(dims.min_dims.blocks,
+                      static_cast<cuda_dim_member_t>(grid_size));
 
     return dims;
   }
@@ -517,13 +535,18 @@ struct KernelDimensionCalculator<RAJA::policy::cuda::cuda_indexer<
 
     LaunchDims dims;
 
-    set_cuda_dim<dim>(dims.  active.threads, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.threads, static_cast<cuda_dim_member_t>(IndexMapper::block_size));
-    set_cuda_dim<dim>(dims.min_dims.threads, static_cast<cuda_dim_member_t>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.active.threads,
+                      static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.threads,
+                      static_cast<cuda_dim_member_t>(IndexMapper::block_size));
+    set_cuda_dim<dim>(dims.min_dims.threads,
+                      static_cast<cuda_dim_member_t>(IndexMapper::block_size));
 
-    set_cuda_dim<dim>(dims.  active.blocks, static_cast<cuda_dim_member_t>(true));
-    set_cuda_dim<dim>(dims.    dims.blocks, static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
-    set_cuda_dim<dim>(dims.min_dims.blocks, static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(dims.active.blocks, static_cast<cuda_dim_member_t>(true));
+    set_cuda_dim<dim>(dims.dims.blocks,
+                      static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
+    set_cuda_dim<dim>(dims.min_dims.blocks,
+                      static_cast<cuda_dim_member_t>(IndexMapper::grid_size));
 
     return dims;
   }
