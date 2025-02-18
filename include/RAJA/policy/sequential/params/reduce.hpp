@@ -12,7 +12,7 @@ namespace detail
 
 // Init
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
-camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> init(
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_init(
     Reducer<OP, T, VOp>& red)
 {
   red.m_valop.val = OP::identity();
@@ -20,7 +20,7 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> init(
 
 // Combine
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
-camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> combine(
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_combine(
     Reducer<OP, T, VOp>& out,
     const Reducer<OP, T, VOp>& in)
 {
@@ -29,7 +29,7 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> combine(
 
 // Resolve
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
-camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> resolve(
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_resolve(
     Reducer<OP, T, VOp>& red)
 {
   red.combineTarget(red.m_valop.val);
