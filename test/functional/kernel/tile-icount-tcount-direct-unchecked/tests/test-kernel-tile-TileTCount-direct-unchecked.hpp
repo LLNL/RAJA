@@ -1,12 +1,12 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_KERNEL_SINGLE_LOOP_TILETCOUNT_HPP_
-#define __TEST_KERNEL_SINGLE_LOOP_TILETCOUNT_HPP_
+#ifndef __TEST_KERNEL_TILE_TILETCOUNT_DIRECT_UNCHECKED_HPP_
+#define __TEST_KERNEL_TILE_TILETCOUNT_DIRECT_UNCHECKED_HPP_
 
 //
 // Value struct for manipulating tile sizes in parameterized tests.
@@ -18,7 +18,7 @@ struct Value {
 
 
 template <typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY>
-void KernelSingleLoopTileTCountTestImpl(IDX_TYPE N, IDX_TYPE tsize)
+void KernelTileTileTCountDirectUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 {
 
   IDX_TYPE NT = (N + tsize - 1) / tsize;
@@ -57,14 +57,14 @@ void KernelSingleLoopTileTCountTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 }
 
 
-TYPED_TEST_SUITE_P(KernelSingleLoopTileTCountTest);
+TYPED_TEST_SUITE_P(KernelTileTileTCountDirectUncheckedTest);
 template <typename T>
-class KernelSingleLoopTileTCountTest : public ::testing::Test
+class KernelTileTileTCountDirectUncheckedTest : public ::testing::Test
 {
 };
 
 
-TYPED_TEST_P(KernelSingleLoopTileTCountTest, TileTCountSingleLoopKernel)
+TYPED_TEST_P(KernelTileTileTCountDirectUncheckedTest, TileTCountTileKernel)
 {
   using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
@@ -72,14 +72,16 @@ TYPED_TEST_P(KernelSingleLoopTileTCountTest, TileTCountSingleLoopKernel)
 
   IDX_TYPE tsize = camp::at_v<TypeParam, 3>::value;
 
-  KernelSingleLoopTileTCountTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
-    IDX_TYPE(57), tsize);
-  KernelSingleLoopTileTCountTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
-    IDX_TYPE(1035), tsize);
+  KernelTileTileTCountDirectUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+    IDX_TYPE(0), tsize);
+  KernelTileTileTCountDirectUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+    IDX_TYPE(tsize), tsize);
+  KernelTileTileTCountDirectUncheckedTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY>(
+    IDX_TYPE(13*tsize), tsize);
 
 }
 
-REGISTER_TYPED_TEST_SUITE_P(KernelSingleLoopTileTCountTest,
-                            TileTCountSingleLoopKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelTileTileTCountDirectUncheckedTest,
+                            TileTCountTileKernel);
 
-#endif  // __TEST_KERNEL_SINGLE_LOOP_TILETCOUNT_HPP_
+#endif  // __TEST_KERNEL_TILE_TILETCOUNT_DIRECT_UNCHECKED_HPP_

@@ -31,6 +31,65 @@ namespace internal
 
 /*
  * Executor for work sharing inside HipKernel.
+ * Mapping without checking from IndexMapper to indices
+ * Assigns the loop index to offset ArgumentId
+ * Meets all sync requirements
+ */
+template<typename Data,
+         camp::idx_t ArgumentId,
+         typename IndexMapper,
+         kernel_sync_requirement sync,
+         typename... EnclosedStmts,
+         typename Types>
+struct HipStatementExecutor<
+    Data,
+    statement::For<
+        ArgumentId,
+        RAJA::policy::hip::
+            hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
+        EnclosedStmts...>,
+    Types>
+{
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  // Set the argument type for this loop
+  using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
+
+  using enclosed_stmts_t =
+      HipStatementListExecutor<Data, stmt_list_t, NewTypes>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  using DimensionCalculator = RAJA::internal::KernelDimensionCalculator<
+      RAJA::policy::hip::
+          hip_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>>;
+
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
+  {
+    const diff_t i = IndexMapper::template index<diff_t>();
+
+    // Assign the index to the argument
+    data.template assign_offset<ArgumentId>(i);
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active);
+  }
+
+  static inline LaunchDims calculateDimensions(Data const& data)
+  {
+    const diff_t len = segment_length<ArgumentId>(data);
+
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
+
+    LaunchDims enclosed_dims = enclosed_stmts_t::calculateDimensions(data);
+
+    return combine(dims, enclosed_dims);
+  }
+};
+
+/*
+ * Executor for work sharing inside HipKernel.
  * Mapping directly from IndexMapper to indices
  * Assigns the loop index to offset ArgumentId
  * Meets all sync requirements
