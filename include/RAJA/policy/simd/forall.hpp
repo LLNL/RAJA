@@ -58,7 +58,7 @@ forall_impl(RAJA::resources::Host host_res,
             Func&& loop_body,
             ForallParam f_params)
 {
-  expt::ParamMultiplexer::params_init(seq_exec {}, f_params);
+  expt::ParamMultiplexer::parampack_init(seq_exec {}, f_params);
 
   auto begin    = std::begin(iter);
   auto end      = std::end(iter);
@@ -69,7 +69,7 @@ forall_impl(RAJA::resources::Host host_res,
     expt::invoke_body(f_params, loop_body, *(begin + i));
   }
 
-  expt::ParamMultiplexer::params_resolve(seq_exec {}, f_params);
+  expt::ParamMultiplexer::parampack_resolve(seq_exec {}, f_params);
   return RAJA::resources::EventProxy<resources::Host>(host_res);
 }
 

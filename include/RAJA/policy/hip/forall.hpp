@@ -443,7 +443,7 @@ __launch_bounds__(BlockSize, 1) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -471,7 +471,7 @@ __global__ void forallp_hip_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 template<
@@ -559,7 +559,7 @@ __launch_bounds__(BlockSize, 1) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -590,7 +590,7 @@ __global__ void forallp_hip_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 }  // namespace impl
@@ -752,7 +752,7 @@ forall_impl(resources::Hip hip_res,
     launch_info.res      = hip_res;
 
     {
-      RAJA::expt::ParamMultiplexer::params_init(pol, f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params, launch_info);
 
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
@@ -769,7 +769,8 @@ forall_impl(resources::Hip hip_res,
       RAJA::hip::launch(func, dims.blocks, dims.threads, args, shmem, hip_res,
                         Async);
 
-      RAJA::expt::ParamMultiplexer::params_resolve(pol, f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params,
+                                                      launch_info);
     }
 
     RAJA_FT_END;

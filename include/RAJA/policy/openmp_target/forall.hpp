@@ -49,7 +49,7 @@ forall_impl(resources::Omp omp_res,
             ForallParam f_params)
 {
   using EXEC_POL = typename std::decay_t<decltype(p)>;
-  RAJA::expt::ParamMultiplexer::params_init(p, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
@@ -88,7 +88,7 @@ forall_impl(resources::Omp omp_res,
     RAJA::expt::invoke_body(f_params, ib, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::params_resolve(p, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 
@@ -157,7 +157,7 @@ forall_impl(resources::Omp omp_res,
             ForallParam f_params)
 {
   using EXEC_POL = typename std::decay_t<decltype(p)>;
-  RAJA::expt::ParamMultiplexer::params_init(p, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
@@ -174,7 +174,7 @@ forall_impl(resources::Omp omp_res,
     RAJA::expt::invoke_body(f_params, ib, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::params_resolve(p, f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 

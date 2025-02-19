@@ -43,10 +43,10 @@ struct ForallParamPack
 private:
   // Init
   template<typename EXEC_POL, camp::idx_t... Seq, typename... Args>
-  static constexpr void params_init(EXEC_POL const& pol,
-                                    camp::idx_seq<Seq...>,
-                                    ForallParamPack& f_params,
-                                    Args&&... args)
+  static constexpr void parampack_init(EXEC_POL const& pol,
+                                       camp::idx_seq<Seq...>,
+                                       ForallParamPack& f_params,
+                                       Args&&... args)
   {
     CAMP_EXPAND(param_init(pol, camp::get<Seq>(f_params.param_tup),
                            std::forward<Args>(args)...));
@@ -54,7 +54,7 @@ private:
 
   // Combine
   template<typename EXEC_POL, camp::idx_t... Seq>
-  RAJA_HOST_DEVICE static constexpr void params_combine(
+  RAJA_HOST_DEVICE static constexpr void parampack_combine(
       EXEC_POL const& pol,
       camp::idx_seq<Seq...>,
       ForallParamPack& out,
@@ -65,7 +65,7 @@ private:
   }
 
   template<typename EXEC_POL, camp::idx_t... Seq>
-  RAJA_HOST_DEVICE static constexpr void params_combine(
+  RAJA_HOST_DEVICE static constexpr void parampack_combine(
       EXEC_POL const& pol,
       camp::idx_seq<Seq...>,
       ForallParamPack& f_params)
@@ -75,10 +75,10 @@ private:
 
   // Resolve
   template<typename EXEC_POL, camp::idx_t... Seq, typename... Args>
-  static constexpr void params_resolve(EXEC_POL const& pol,
-                                       camp::idx_seq<Seq...>,
-                                       ForallParamPack& f_params,
-                                       Args&&... args)
+  static constexpr void parampack_resolve(EXEC_POL const& pol,
+                                          camp::idx_seq<Seq...>,
+                                          ForallParamPack& f_params,
+                                          Args&&... args)
   {
     CAMP_EXPAND(param_resolve(pol, camp::get<Seq>(f_params.param_tup),
                               std::forward<Args>(args)...));
@@ -155,23 +155,11 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr params_init(EXEC_POL const& pol,
-                                    ForallParamPack<Params...>& f_params,
-                                    Args&&... args)
-  {
-    FP::params_init(pol, typename FP::params_seq(), f_params,
-                    std::forward<Args>(args)...);
-  }
-
-  template<typename EXEC_POL,
-           typename... Params,
-           typename... Args,
-           typename FP = ForallParamPack<Params...>>
-  static void constexpr params_combine(EXEC_POL const& pol,
+  static void constexpr parampack_init(EXEC_POL const& pol,
                                        ForallParamPack<Params...>& f_params,
                                        Args&&... args)
   {
-    FP::params_combine(pol, typename FP::params_seq(), f_params,
+    FP::parampack_init(pol, typename FP::params_seq(), f_params,
                        std::forward<Args>(args)...);
   }
 
@@ -179,12 +167,24 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr params_resolve(EXEC_POL const& pol,
-                                       ForallParamPack<Params...>& f_params,
-                                       Args&&... args)
+  static void constexpr parampack_combine(EXEC_POL const& pol,
+                                          ForallParamPack<Params...>& f_params,
+                                          Args&&... args)
   {
-    FP::params_resolve(pol, typename FP::params_seq(), f_params,
-                       std::forward<Args>(args)...);
+    FP::parampack_combine(pol, typename FP::params_seq(), f_params,
+                          std::forward<Args>(args)...);
+  }
+
+  template<typename EXEC_POL,
+           typename... Params,
+           typename... Args,
+           typename FP = ForallParamPack<Params...>>
+  static void constexpr parampack_resolve(EXEC_POL const& pol,
+                                          ForallParamPack<Params...>& f_params,
+                                          Args&&... args)
+  {
+    FP::parampack_resolve(pol, typename FP::params_seq(), f_params,
+                          std::forward<Args>(args)...);
   }
 };
 

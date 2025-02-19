@@ -69,7 +69,7 @@ forall_impl(Resource res,
             Func&& body,
             ForallParam f_params)
 {
-  expt::ParamMultiplexer::params_init(pol, f_params);
+  expt::ParamMultiplexer::parampack_init(pol, f_params);
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -78,7 +78,7 @@ forall_impl(Resource res,
     expt::invoke_body(f_params, body, *(begin_it + i));
   }
 
-  expt::ParamMultiplexer::params_resolve(pol, f_params);
+  expt::ParamMultiplexer::parampack_resolve(pol, f_params);
   return resources::EventProxy<Resource>(res);
 }
 
