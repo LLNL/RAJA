@@ -445,7 +445,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -474,7 +474,7 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 template<
@@ -565,7 +565,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -597,7 +597,7 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 }  // namespace impl

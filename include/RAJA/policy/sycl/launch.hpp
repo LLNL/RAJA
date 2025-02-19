@@ -123,7 +123,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
     using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    EXEC_POL pol{};
+    EXEC_POL pol {};
     RAJA::expt::ParamMultiplexer::params_init(pol, launch_reducers);
 
     //
@@ -150,7 +150,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
 
       auto combiner = [](ReduceParams x, ReduceParams y) {
-        RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, x, y);
+        RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, x, y);
         return x;
       };
 
@@ -291,7 +291,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
     using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    EXEC_POL pol{};
+    EXEC_POL pol {};
     RAJA::expt::ParamMultiplexer::params_init(pol, launch_reducers);
 
     //
@@ -318,7 +318,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
 
       auto combiner = [](ReduceParams x, ReduceParams y) {
-        RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, x, y);
+        RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, x, y);
         return x;
       };
 

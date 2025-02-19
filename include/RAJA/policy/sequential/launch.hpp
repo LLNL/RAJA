@@ -77,7 +77,7 @@ struct LaunchExecute<RAJA::seq_launch_t>
        BODY const& body,
        ReduceParams& launch_reducers)
   {
-    expt::ParamMultiplexer::params_init(seq_exec{}, launch_reducers);
+    expt::ParamMultiplexer::params_init(seq_exec {}, launch_reducers);
 
     LaunchContext ctx;
     char* kernel_local_mem = new char[launch_params.shared_mem_size];
@@ -88,7 +88,7 @@ struct LaunchExecute<RAJA::seq_launch_t>
     delete[] kernel_local_mem;
     ctx.shared_mem_ptr = nullptr;
 
-    expt::ParamMultiplexer::params_resolve(seq_exec{}, launch_reducers);
+    expt::ParamMultiplexer::params_resolve(seq_exec {}, launch_reducers);
 
     return resources::EventProxy<resources::Resource>(res);
   }

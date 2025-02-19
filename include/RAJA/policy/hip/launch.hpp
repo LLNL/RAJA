@@ -61,8 +61,8 @@ __global__ void launch_new_reduce_global_fcn(BODY body_in,
   RAJA::expt::invoke_body(reduce_params, body, ctx);
 
   // Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::params_combine(RAJA::hip_flatten_global_xyz_direct{},
-      reduce_params);
+  RAJA::expt::ParamMultiplexer::params_combine(
+      RAJA::hip_flatten_global_xyz_direct {}, reduce_params);
 }
 
 template<bool async>
@@ -184,8 +184,8 @@ struct LaunchExecute<
       {
         using EXEC_POL =
             RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::params_init(EXEC_POL{}, launch_reducers,
-                                                     launch_info);
+        RAJA::expt::ParamMultiplexer::params_init(EXEC_POL {}, launch_reducers,
+                                                  launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -201,8 +201,8 @@ struct LaunchExecute<
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::params_resolve(EXEC_POL{}, launch_reducers,
-                                                        launch_info);
+        RAJA::expt::ParamMultiplexer::params_resolve(
+            EXEC_POL {}, launch_reducers, launch_info);
       }
 
       RAJA_FT_END;
@@ -247,8 +247,8 @@ __launch_bounds__(num_threads, 1) __global__
   RAJA::expt::invoke_body(reduce_params, body, ctx);
 
   // Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::params_combine(RAJA::hip_flatten_global_xyz_direct{},
-      reduce_params);
+  RAJA::expt::ParamMultiplexer::params_combine(
+      RAJA::hip_flatten_global_xyz_direct {}, reduce_params);
 }
 
 template<bool async, int nthreads>
@@ -371,8 +371,8 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
       {
         using EXEC_POL =
             RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::params_init(EXEC_POL{}, launch_reducers,
-                                                     launch_info);
+        RAJA::expt::ParamMultiplexer::params_init(EXEC_POL {}, launch_reducers,
+                                                  launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -388,8 +388,8 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::params_resolve(EXEC_POL{}, launch_reducers,
-                                                        launch_info);
+        RAJA::expt::ParamMultiplexer::params_resolve(
+            EXEC_POL {}, launch_reducers, launch_info);
       }
 
       RAJA_FT_END;

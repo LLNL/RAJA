@@ -443,7 +443,7 @@ __launch_bounds__(BlockSize, 1) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -471,7 +471,7 @@ __global__ void forallp_hip_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 template<
@@ -559,7 +559,7 @@ __launch_bounds__(BlockSize, 1) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -590,7 +590,7 @@ __global__ void forallp_hip_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, f_params);
 }
 
 }  // namespace impl
@@ -696,13 +696,14 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const& pol,
-    Iterable&& iter,
-    LoopBody&& loop_body,
-    ForallParam f_params)
+forall_impl(resources::Hip hip_res,
+            ::RAJA::policy::hip::hip_exec<IterationMapping,
+                                          IterationGetter,
+                                          Concretizer,
+                                          Async> const& pol,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam f_params)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;

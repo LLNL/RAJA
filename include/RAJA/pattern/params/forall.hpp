@@ -49,7 +49,7 @@ private:
                                     Args&&... args)
   {
     CAMP_EXPAND(param_init(pol, camp::get<Seq>(f_params.param_tup),
-                                std::forward<Args>(args)...));
+                           std::forward<Args>(args)...));
   }
 
   // Combine
@@ -61,7 +61,7 @@ private:
       const ForallParamPack& in)
   {
     CAMP_EXPAND(param_combine(pol, camp::get<Seq>(out.param_tup),
-                                   camp::get<Seq>(in.param_tup)));
+                              camp::get<Seq>(in.param_tup)));
   }
 
   template<typename EXEC_POL, camp::idx_t... Seq>
@@ -81,7 +81,7 @@ private:
                                        Args&&... args)
   {
     CAMP_EXPAND(param_resolve(pol, camp::get<Seq>(f_params.param_tup),
-                                   std::forward<Args>(args)...));
+                              std::forward<Args>(args)...));
   }
 
   // Used to construct the argument TYPES that will be invoked with the lambda.

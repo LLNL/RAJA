@@ -14,9 +14,8 @@ namespace detail
 
 // Init
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
-camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>> param_init(
-    EXEC_POL const&,
-    Reducer<OP, T, VOp>& red)
+camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>>
+param_init(EXEC_POL const&, Reducer<OP, T, VOp>& red)
 {
   red.m_valop.val = OP::identity();
 }
@@ -25,7 +24,8 @@ camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>> param_
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
 camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>>
 param_combine(EXEC_POL const&,
-    Reducer<OP, T, VOp>& out, const Reducer<OP, T, VOp>& in)
+              Reducer<OP, T, VOp>& out,
+              const Reducer<OP, T, VOp>& in)
 {
   out.m_valop.val = OP {}(out.m_valop.val, in.m_valop.val);
 }
@@ -33,8 +33,7 @@ param_combine(EXEC_POL const&,
 // Resolve
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
 camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>>
-param_resolve(EXEC_POL const&,
-    Reducer<OP, T, VOp>& red)
+param_resolve(EXEC_POL const&, Reducer<OP, T, VOp>& red)
 {
   red.combineTarget(red.m_valop.val);
 }

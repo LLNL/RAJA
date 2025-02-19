@@ -70,7 +70,7 @@ struct LaunchExecute<RAJA::omp_launch_t>
   {
 
     using EXEC_POL = RAJA::omp_launch_t;
-    EXEC_POL pol{};
+    EXEC_POL pol {};
 
     expt::ParamMultiplexer::params_init(pol, f_params);
 

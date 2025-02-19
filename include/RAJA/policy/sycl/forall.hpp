@@ -275,7 +275,7 @@ forall_impl(resources::Sycl& sycl_res,
     ::sycl::queue* q = sycl_res.get_queue();
 
     auto combiner = [](ForallParam x, ForallParam y) {
-      RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, x, y);
+      RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, x, y);
       return x;
     };
 
@@ -352,7 +352,7 @@ forall_impl(resources::Sycl& sycl_res,
     ::sycl::queue* q = sycl_res.get_queue();
 
     auto combiner = [](ForallParam x, ForallParam y) {
-      RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, x, y);
+      RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL {}, x, y);
       return x;
     };
 

@@ -24,8 +24,7 @@ camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>> param_init(
 // Combine
 template<typename EXEC_POL, typename T>
 camp::concepts::enable_if<type_traits::is_sycl_policy<EXEC_POL>> SYCL_EXTERNAL
-param_combine(EXEC_POL const&,
-    KernelName&, T)
+param_combine(EXEC_POL const&, KernelName&, T)
 {}
 
 // Resolve

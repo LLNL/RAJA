@@ -23,8 +23,7 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_init(
 template<typename EXEC_POL, typename T>
 RAJA_HOST_DEVICE camp::concepts::enable_if<
     std::is_same<EXEC_POL, RAJA::seq_exec>>
-param_combine(EXEC_POL const&,
-    KernelName&, T)
+param_combine(EXEC_POL const&, KernelName&, T)
 {}
 
 // Resolve
