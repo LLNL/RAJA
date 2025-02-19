@@ -445,7 +445,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
 }
 
 ///
@@ -474,7 +474,7 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
 }
 
 template<
@@ -565,7 +565,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
 }
 
 ///
@@ -597,7 +597,7 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::params_combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::params_combine(EXEC_POL{}, f_params);
 }
 
 }  // namespace impl
@@ -712,7 +712,7 @@ forall_impl(resources::Cuda cuda_res,
                                                      IterationGetter,
                                                      Concretizer,
                                                      BlocksPerSM,
-                                                     Async> const&,
+                                                     Async> const& pol,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -764,7 +764,7 @@ forall_impl(resources::Cuda cuda_res,
     launch_info.res      = cuda_res;
 
     {
-      RAJA::expt::ParamMultiplexer::params_init<EXEC_POL>(f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::params_init(pol, f_params, launch_info);
 
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
@@ -781,7 +781,7 @@ forall_impl(resources::Cuda cuda_res,
       RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res,
                          Async);
 
-      RAJA::expt::ParamMultiplexer::params_resolve<EXEC_POL>(f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::params_resolve(pol, f_params, launch_info);
     }
 
     RAJA_FT_END;

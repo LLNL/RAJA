@@ -61,7 +61,7 @@ __global__ void launch_new_reduce_global_fcn(BODY body_in,
   RAJA::expt::invoke_body(reduce_params, body, ctx);
 
   // Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::params_combine<RAJA::cuda_flatten_global_xyz_direct>(
+  RAJA::expt::ParamMultiplexer::params_combine(RAJA::cuda_flatten_global_xyz_direct{},
       reduce_params);
 }
 
@@ -186,7 +186,7 @@ struct LaunchExecute<
       {
         using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<
             async, named_usage::unspecified, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::params_init<EXEC_POL>(launch_reducers,
+        RAJA::expt::ParamMultiplexer::params_init(EXEC_POL{}, launch_reducers,
                                                      launch_info);
 
         //
@@ -203,7 +203,7 @@ struct LaunchExecute<
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
                            cuda_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::params_resolve<EXEC_POL>(launch_reducers,
+        RAJA::expt::ParamMultiplexer::params_resolve(EXEC_POL{}, launch_reducers,
                                                         launch_info);
       }
 
@@ -252,7 +252,7 @@ __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
   RAJA::expt::invoke_body(reduce_params, body, ctx);
 
   // Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::params_combine<RAJA::cuda_flatten_global_xyz_direct>(
+  RAJA::expt::ParamMultiplexer::params_combine(RAJA::cuda_flatten_global_xyz_direct{},
       reduce_params);
 }
 
@@ -375,10 +375,11 @@ struct LaunchExecute<
       launch_info.res          = cuda_res;
 
       {
+        // Use a generic block size policy here to match that used in params_combine
         using EXEC_POL =
-            RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads,
-                                                       BLOCKS_PER_SM>;
-        RAJA::expt::ParamMultiplexer::params_init<EXEC_POL>(launch_reducers,
+            RAJA::policy::cuda::cuda_launch_explicit_t<
+                async, named_usage::unspecified, named_usage::unspecified>;
+        RAJA::expt::ParamMultiplexer::params_init(EXEC_POL{}, launch_reducers,
                                                      launch_info);
 
         //
@@ -395,7 +396,7 @@ struct LaunchExecute<
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
                            cuda_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::params_resolve<EXEC_POL>(launch_reducers,
+        RAJA::expt::ParamMultiplexer::params_resolve(EXEC_POL{}, launch_reducers,
                                                         launch_info);
       }
 

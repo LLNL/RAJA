@@ -21,6 +21,7 @@ namespace detail
 // Init
 template<typename EXEC_POL>
 camp::concepts::enable_if<type_traits::is_hip_policy<EXEC_POL>> param_init(
+    EXEC_POL const&,
     KernelName& kn,
     const RAJA::hip::detail::hipInfo&)
 {
@@ -34,12 +35,14 @@ camp::concepts::enable_if<type_traits::is_hip_policy<EXEC_POL>> param_init(
 // Combine
 template<typename EXEC_POL>
 RAJA_HOST_DEVICE camp::concepts::enable_if<type_traits::is_hip_policy<EXEC_POL>>
-param_combine(KernelName&)
+param_combine(EXEC_POL const&,
+    KernelName&)
 {}
 
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<type_traits::is_hip_policy<EXEC_POL>> param_resolve(
+    EXEC_POL const&,
     KernelName&,
     const RAJA::hip::detail::hipInfo&)
 {

@@ -64,12 +64,12 @@ RAJA_INLINE concepts::enable_if_t<
     expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(Resource res,
-            const seq_exec&,
+            const seq_exec& pol,
             Iterable&& iter,
             Func&& body,
             ForallParam f_params)
 {
-  expt::ParamMultiplexer::params_init<seq_exec>(f_params);
+  expt::ParamMultiplexer::params_init(pol, f_params);
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -78,7 +78,7 @@ forall_impl(Resource res,
     expt::invoke_body(f_params, body, *(begin_it + i));
   }
 
-  expt::ParamMultiplexer::params_resolve<seq_exec>(f_params);
+  expt::ParamMultiplexer::params_resolve(pol, f_params);
   return resources::EventProxy<Resource>(res);
 }
 
