@@ -43,7 +43,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(ernel_name),
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -114,7 +114,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
