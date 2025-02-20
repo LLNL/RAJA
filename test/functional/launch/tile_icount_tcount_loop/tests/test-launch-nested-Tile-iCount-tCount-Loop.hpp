@@ -5,8 +5,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef __TEST_LAUNCH_NESTED_TILE_ICOUNT_LOOP_hpp__
-#define __TEST_LAUNCH_NESTED_TILE_ICOUNT_LOOP_hpp__
+#ifndef __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_LOOP_hpp__
+#define __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_LOOP_hpp__
 
 #include <numeric>
 
@@ -55,10 +55,12 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
                                      &check_iloop_array,
                                      &test_iloop_array);
 
-  if ( RAJA::stripIndexType(N) > 0 ) {
+  std::iota(test_ttile_array, test_ttile_array + data_len, 0);
+  std::iota(test_iloop_array, test_iloop_array + data_len, 0);
+  working_res.memset(working_ttile_array, 0, sizeof(INDEX_TYPE) * data_len);
+  working_res.memset(working_iloop_array, 0, sizeof(INDEX_TYPE) * data_len);
 
-    std::iota(test_ttile_array, test_ttile_array + RAJA::stripIndexType(N), 0);
-    std::iota(test_iloop_array, test_iloop_array + RAJA::stripIndexType(N), 0);
+  if ( RAJA::stripIndexType(N) > 0 ) {
 
     RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
@@ -78,10 +80,6 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
       }
     );
   } else { // zero-length segment
-
-    memset(static_cast<void*>(test_ttile_array), 0, sizeof(INDEX_TYPE) * data_len);
-
-    working_res.memcpy(working_ttile_array, test_ttile_array, sizeof(INDEX_TYPE) * data_len);
 
     RAJA::launch<LAUNCH_POLICY>(
       RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(blocks_x)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
@@ -105,6 +103,7 @@ void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 
   working_res.memcpy(check_ttile_array, working_ttile_array, sizeof(INDEX_TYPE) * data_len);
   working_res.memcpy(check_iloop_array, working_iloop_array, sizeof(INDEX_TYPE) * data_len);
+  working_res.wait();
 
   if (RAJA::stripIndexType(N) > 0) {
 
@@ -179,4 +178,4 @@ TYPED_TEST_P(LaunchNestedTileLoopTest, RangeSegmentTeams)
 REGISTER_TYPED_TEST_SUITE_P(LaunchNestedTileLoopTest,
                             RangeSegmentTeams);
 
-#endif  // __TEST_LAUNCH_NESTED_TILE_DIRECT_HPP__
+#endif  // __TEST_LAUNCH_NESTED_TILE_ICOUNT_TCOUNT_LOOP_hpp__
