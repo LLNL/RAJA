@@ -53,12 +53,12 @@ RAJA_INLINE concepts::enable_if_t<
     expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(RAJA::resources::Host host_res,
-            const simd_exec&,
+            const simd_exec& RAJA_UNUSED_ARG(pol),
             Iterable&& iter,
             Func&& loop_body,
             ForallParam f_params)
 {
-  expt::ParamMultiplexer::init<seq_exec>(f_params);
+  expt::ParamMultiplexer::parampack_init(seq_exec {}, f_params);
 
   auto begin    = std::begin(iter);
   auto end      = std::end(iter);
@@ -69,7 +69,7 @@ forall_impl(RAJA::resources::Host host_res,
     expt::invoke_body(f_params, loop_body, *(begin + i));
   }
 
-  expt::ParamMultiplexer::resolve<seq_exec>(f_params);
+  expt::ParamMultiplexer::parampack_resolve(seq_exec {}, f_params);
   return RAJA::resources::EventProxy<resources::Host>(host_res);
 }
 
