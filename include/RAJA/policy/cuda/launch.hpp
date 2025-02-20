@@ -147,7 +147,10 @@ struct LaunchExecute<
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
-    using BODY = camp::decay<BODY_IN>;
+    using BODY     = camp::decay<BODY_IN>;
+    using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<
+        async, named_usage::unspecified, named_usage::unspecified>;
+    EXEC_POL pol {};
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams>>);
@@ -184,10 +187,8 @@ struct LaunchExecute<
       launch_info.res          = cuda_res;
 
       {
-        using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<
-            async, named_usage::unspecified, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::parampack_init(
-            EXEC_POL {}, launch_reducers, launch_info);
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers,
+                                                     launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -203,8 +204,8 @@ struct LaunchExecute<
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
                            cuda_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::parampack_resolve(
-            EXEC_POL {}, launch_reducers, launch_info);
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
+                                                        launch_info);
       }
 
       RAJA_FT_END;
@@ -338,6 +339,11 @@ struct LaunchExecute<
        ReduceParams& launch_reducers)
   {
     using BODY = camp::decay<BODY_IN>;
+    // Use a generic block size policy here to match that used in
+    // parampack_combine
+    using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<
+        async, named_usage::unspecified, named_usage::unspecified>;
+    EXEC_POL pol {};
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM,
@@ -375,12 +381,8 @@ struct LaunchExecute<
       launch_info.res          = cuda_res;
 
       {
-        // Use a generic block size policy here to match that used in
-        // parampack_combine
-        using EXEC_POL = RAJA::policy::cuda::cuda_launch_explicit_t<
-            async, named_usage::unspecified, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::parampack_init(
-            EXEC_POL {}, launch_reducers, launch_info);
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers,
+                                                     launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -396,8 +398,8 @@ struct LaunchExecute<
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
                            cuda_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::parampack_resolve(
-            EXEC_POL {}, launch_reducers, launch_info);
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
+                                                        launch_info);
       }
 
       RAJA_FT_END;

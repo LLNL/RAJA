@@ -55,15 +55,12 @@ namespace sequential
 //////////////////////////////////////////////////////////////////////
 //
 
-template<typename Iterable,
-         typename Func,
-         typename Resource,
-         typename ForallParam>
+template<typename Iterable, typename Func, typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Resource>,
+    resources::EventProxy<resources::Host>,
     expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(Resource res,
+forall_impl(resources::Host host_res,
             const seq_exec& pol,
             Iterable&& iter,
             Func&& body,
@@ -79,18 +76,16 @@ forall_impl(Resource res,
   }
 
   expt::ParamMultiplexer::parampack_resolve(pol, f_params);
-  return resources::EventProxy<Resource>(res);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
-template<typename Iterable,
-         typename Func,
-         typename Resource,
-         typename ForallParam>
+template<typename Iterable, typename Func, typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Resource>,
+    resources::EventProxy<resources::Host>,
     expt::type_traits::is_ForallParamPack<ForallParam>,
     expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(Resource res,
+forall_impl(resources::Host host_res,
             const seq_exec&,
             Iterable&& iter,
             Func&& body,
@@ -102,7 +97,8 @@ forall_impl(Resource res,
   {
     body(*(begin_it + i));
   }
-  return resources::EventProxy<Resource>(res);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sequential

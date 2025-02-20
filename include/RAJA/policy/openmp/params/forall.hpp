@@ -33,7 +33,8 @@ forall_impl(const ExecPol& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -63,7 +64,8 @@ forall_impl(const ExecPol<ChunkSize>& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -93,7 +95,8 @@ forall_impl(const ExecPol<ChunkSize>& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -117,7 +120,8 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -140,7 +144,8 @@ RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
                                     Func&& loop_body,
                                     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -170,7 +175,8 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -197,7 +203,8 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -225,7 +232,8 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -252,7 +260,8 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -281,7 +290,8 @@ RAJA_INLINE void forall_impl_nowait(
     Func&& loop_body,
     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -312,7 +322,8 @@ RAJA_INLINE void forall_impl_nowait(
     Func&& loop_body,
     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 

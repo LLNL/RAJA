@@ -118,12 +118,12 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
+    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
+    EXEC_POL pol {};
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
-    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    EXEC_POL pol {};
     RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     //
@@ -287,12 +287,12 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
+    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
+    EXEC_POL pol {};
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
-    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    EXEC_POL pol {};
     RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     //

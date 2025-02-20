@@ -68,7 +68,6 @@ struct LaunchExecute<RAJA::omp_launch_t>
        BODY const& body,
        ReduceParams& f_params)
   {
-
     using EXEC_POL = RAJA::omp_launch_t;
     EXEC_POL pol {};
 

@@ -146,6 +146,9 @@ struct LaunchExecute<
        ReduceParams& launch_reducers)
   {
     using BODY = camp::decay<BODY_IN>;
+    using EXEC_POL =
+        RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
+    EXEC_POL pol {};
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams>>);
@@ -182,10 +185,9 @@ struct LaunchExecute<
       launch_info.res          = hip_res;
 
       {
-        using EXEC_POL =
-            RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::parampack_init(
-            EXEC_POL {}, launch_reducers, launch_info);
+
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers,
+                                                     launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -201,8 +203,8 @@ struct LaunchExecute<
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::parampack_resolve(
-            EXEC_POL {}, launch_reducers, launch_info);
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
+                                                        launch_info);
       }
 
       RAJA_FT_END;
@@ -332,6 +334,11 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
        ReduceParams& launch_reducers)
   {
     using BODY = camp::decay<BODY_IN>;
+    // Use a generic block size policy here to match that used in
+    // parampack_combine
+    using EXEC_POL =
+        RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
+    EXEC_POL pol {};
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn_fixed<BODY, nthreads,
@@ -369,10 +376,9 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
       launch_info.res          = hip_res;
 
       {
-        using EXEC_POL =
-            RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::parampack_init(
-            EXEC_POL {}, launch_reducers, launch_info);
+
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers,
+                                                     launch_info);
 
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
@@ -388,8 +394,8 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::parampack_resolve(
-            EXEC_POL {}, launch_reducers, launch_info);
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
+                                                        launch_info);
       }
 
       RAJA_FT_END;

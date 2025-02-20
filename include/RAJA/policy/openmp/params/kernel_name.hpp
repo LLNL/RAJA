@@ -14,22 +14,21 @@ namespace detail
 
 // Init
 template<typename EXEC_POL>
-camp::concepts::enable_if<type_traits::is_openmp_policy<EXEC_POL>> param_init(
-    EXEC_POL const&,
-    KernelName&)
+camp::concepts::enable_if<RAJA::type_traits::is_openmp_policy<EXEC_POL>>
+param_init(EXEC_POL const&, KernelName&)
 {
   // TODO: Define kernel naming
 }
 
 // Combine
 template<typename EXEC_POL, typename T>
-camp::concepts::enable_if<type_traits::is_openmp_policy<EXEC_POL>>
+camp::concepts::enable_if<RAJA::type_traits::is_openmp_policy<EXEC_POL>>
 param_combine(EXEC_POL const&, KernelName&, T& /*place holder argument*/)
 {}
 
 // Resolve
 template<typename EXEC_POL>
-camp::concepts::enable_if<type_traits::is_openmp_policy<EXEC_POL>>
+camp::concepts::enable_if<RAJA::type_traits::is_openmp_policy<EXEC_POL>>
 param_resolve(EXEC_POL const&, KernelName&)
 {
   // TODO: Define kernel naming
