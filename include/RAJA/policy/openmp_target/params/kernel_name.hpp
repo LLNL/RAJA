@@ -14,8 +14,8 @@ namespace detail
 
 // Init
 template<typename EXEC_POL>
-camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>> init(
-    KernelName&)
+camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>>
+param_init(EXEC_POL const&, KernelName&)
 {
   // TODO: Define kernel naming
 }
@@ -23,13 +23,13 @@ camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>> init(
 // Combine
 template<typename EXEC_POL, typename T>
 camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>>
-combine(KernelName&, T& /*place holder argument*/)
+param_combine(EXEC_POL const&, KernelName&, T& /*place holder argument*/)
 {}
 
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<type_traits::is_target_openmp_policy<EXEC_POL>>
-resolve(KernelName&)
+param_resolve(EXEC_POL const&, KernelName&)
 {
   // TODO: Define kernel naming
 }
