@@ -141,6 +141,9 @@ public:
 
   template<typename... Ts>
   ForallParamPack(camp::tuple<Ts...>&& t) : param_tup(std::move(t)) {};
+
+  template<typename... Ts>
+  ForallParamPack(const camp::tuple<Ts...>& t) : param_tup(t) {};
 };  // struct ForallParamPack
 
 //===========================================================================
@@ -222,6 +225,23 @@ constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple)
                 "Forall optional arguments do not derive ForallParamBase. "
                 "Please see Reducer, ReducerLoc and KernelName for examples.");
   return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
+}
+
+// pattern/param/forall.hpp contains a very similar function, but it requires
+// passing an rvalue and also strips out the final element from the tuple
+template<typename... Params>
+constexpr auto make_forall_param_pack_from_tuple( camp::tuple<Params...>& tuple) {
+  return RAJA::expt::ForallParamPack<camp::decay<Params>...> (tuple);
+}
+
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
+void resolve_params_helper(ParamTuple& params_tuple, const camp::idx_seq<Seq...>&) {
+  CAMP_EXPAND(RAJA::expt::detail::resolve<ExecPol>(camp::get<Seq>(params_tuple)));
+}
+
+template<typename ExecPol, typename... Params>
+void resolve_params(camp::tuple<Params...>& params_tuple) {
+  resolve_params_helper<ExecPol>(params_tuple, camp::make_idx_seq_t<sizeof...(Params)>());
 }
 
 namespace detail

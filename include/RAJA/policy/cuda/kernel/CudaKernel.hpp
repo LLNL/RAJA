@@ -35,6 +35,8 @@
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
@@ -645,6 +647,9 @@ struct StatementExecutor<
       {
         auto func = launch_t::get_func();
 
+      using EXEC_POL = RAJA::policy::cuda::
+              cuda_exec_explicit<LaunchConfig, void, void, 0, true>;
+
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
@@ -663,6 +668,7 @@ struct StatementExecutor<
         RAJA::cuda::launch(func, launch_dims.dims.blocks,
                            launch_dims.dims.threads, args, shmem, res,
                            launch_t::async);
+        RAJA::expt::resolve_params<EXEC_POL>(data.param_tuple);
       }
     }
   }

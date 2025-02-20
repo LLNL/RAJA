@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {
@@ -144,6 +145,8 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
     {
       for_wrapper(*(begin_it + i));
     }
+
+    expt::resolve_params<seq_exec>(data.param_tuple);
   }
 };
 

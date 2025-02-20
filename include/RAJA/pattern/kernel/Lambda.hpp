@@ -25,12 +25,14 @@
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
+#include "camp/helpers.hpp"
 #include "camp/tuple.hpp"
 
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/params/reducer.hpp"
 
 namespace RAJA
 {
@@ -233,11 +235,11 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_param_t, id>>
 {
   template<typename Data>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr static auto extract(Data&& data) ->
-      typename std::add_lvalue_reference<camp::tuple_element_t<
-          id,
-          typename camp::decay<Data>::param_tuple_t>>::type
+      typename std::add_lvalue_reference<
+          camp::tuple_element_t<id,
+                                typename camp::decay<Data>::arg_tuple_t>>::type
   {
-    return camp::get<id>(data.param_tuple);
+    return expt::detail::get_lambda_arg(camp::get<id>(data.param_tuple));
   }
 };
 
@@ -264,6 +266,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(
       LambdaArgSwitchboard<Types, targLists>::extract(data)...);
 }
 
+// 3 extra params
 /*!
  * A RAJA::kernel statement that invokes a lambda function
  * with user specified arguments.
@@ -284,6 +287,18 @@ struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>
   }
 };
 
+template<typename...>
+RAJA_HOST_DEVICE void print_pack()
+{}
+
+template<camp::idx_t first, camp::idx_t... rest>
+RAJA_HOST_DEVICE void print_pack()
+{
+  printf("%d ", first);
+  print_pack<rest...>();
+}
+
+// 2
 template<camp::idx_t LambdaIndex,
          typename Types,
          typename Data,
@@ -296,12 +311,16 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data&& data,
 
   using AllSegs   = Segs<SEGS...>;
   using AllParams = Params<PARAMS...>;
-
-  // invoke the expanded Lambda executor, passing in all segments and params
+  // printf("SEGS\n");
+  // print_pack<SEGS...>();
+  //   printf("\nPARAMS\n");
+  // print_pack<PARAMS...>();
+  //  invoke the expanded Lambda executor, passing in all segments and params
   StatementExecutor<statement::Lambda<LambdaIndex, AllSegs, AllParams>,
                     Types>::exec(std::forward<Data>(data));
 }
 
+// 1
 template<camp::idx_t LambdaIndex, typename Types>
 struct StatementExecutor<statement::Lambda<LambdaIndex>, Types>
 {

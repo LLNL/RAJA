@@ -142,9 +142,9 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
-
+  params = loop_data.param_tuple;
   util::callPostLaunchPlugins(context);
-
+    // todo loop data holds the correct values but params do not?
   return resources::EventProxy<Resource>(resource);
 }
 

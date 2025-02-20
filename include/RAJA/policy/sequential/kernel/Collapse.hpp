@@ -39,6 +39,7 @@ struct StatementExecutor<
   template<typename Data>
   static RAJA_INLINE void exec(Data& data)
   {
+    std::cout << "KEYWORD 2\n";
     // termination case: no more loops, just execute enclosed statements
     execute_statement_list<camp::list<EnclosedStmts...>, Types>(data);
   }
@@ -69,7 +70,10 @@ struct StatementExecutor<
         statement::Collapse<seq_exec, ArgList<ArgRest...>, EnclosedStmts...>,
         NewTypes>;
 
+    auto pack = make_forall_param_pack_from_tuple(data.param_tuple);
+    RAJA::expt::ParamMultiplexer::init<seq_exec>(pack);
     auto len0 = segment_length<Arg0>(data);
+    std::cout << "KEYWORD\n";
 
     for (auto i0 = 0; i0 < len0; ++i0)
     {
@@ -77,6 +81,7 @@ struct StatementExecutor<
 
       next_loop_t::exec(data);
     }
+    RAJA::expt::ParamMultiplexer::resolve<seq_exec>(pack);
   }
 };
 

@@ -46,7 +46,7 @@ template<typename ReducePolicy,
 struct Reduce : public internal::Statement<camp::nil, EnclosedStmts...>
 {
 
-  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+  static_assert(std::is_base_of<expt::detail::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "
                 "RAJA::Statement::Param< # >");
 

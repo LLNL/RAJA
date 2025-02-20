@@ -30,6 +30,7 @@
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
 #include "RAJA/pattern/kernel/internal/Template.hpp"
+#include "RAJA/pattern/params/params_base.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -122,6 +123,7 @@ struct LoopData
 
   // Tuple of parameters that are thread privatized
   using param_tuple_t = ParamTuple;
+  using arg_tuple_t = typename expt::detail::ParamToArgHelper<ParamTuple>::type;
   ParamTuple param_tuple;
 
   Resource res;
@@ -137,7 +139,7 @@ struct LoopData
   vector_sizes_t vector_sizes;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(SegmentTuple const& s,
-                                                  ParamTuple const& p,
+                                                  const ParamTuple& p,
                                                   Resource r,
                                                   Bodies const&... b)
       : segment_tuple(s),

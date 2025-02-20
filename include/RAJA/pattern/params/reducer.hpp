@@ -68,12 +68,12 @@ struct Reducer : public ForallParamBase
 {
   using op         = Op;
   using value_type = T;  // This is a basic data type
-  //using VOp = ValOp<T, Op>;
+  // using VOp = ValOp<T, Op>;
   Reducer() = default;
 
   // Basic data type constructor
   RAJA_HOST_DEVICE Reducer(value_type* target_in)
-      : m_valop(VOp {}),
+      : m_valop(VOp {*target_in}),
         target(target_in)
   {}
 
@@ -110,11 +110,14 @@ struct Reducer : public ForallParamBase
   // These are types and parameters extracted from this struct, and given to the
   // forall.
   using ARG_TUP_T = camp::tuple<VOp*>;
+  using ARG_T     = VOp;
 
   RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup()
   {
     return camp::make_tuple(&m_valop);
   }
+
+  RAJA_HOST_DEVICE ARG_T* get_lambda_arg() { return &m_valop; }
 
   using ARG_LIST_T                        = typename ARG_TUP_T::TList;
   static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value;

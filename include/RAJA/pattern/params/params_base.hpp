@@ -255,19 +255,69 @@ using ValLocOp = ValOp<ValLoc<T, IndexType>, Op>;
 namespace detail
 {
 
-struct ForallParamBase
+struct ParamBase
 {
-
   // Some of this can be made virtual in c++20, for now must be defined in each
   // child class if any arguments to the forall lambda are needed (e.g.
   // KernelName is excluded.)
   using ARG_TUP_T  = camp::tuple<>;
+  using ARG_T      = ParamBase;
   using ARG_LIST_T = typename ARG_TUP_T::TList;
 
   RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup() { return camp::make_tuple(); }
 
+  RAJA_HOST_DEVICE ARG_T* get_lambda_arg() { return this; }
+
   static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value;
 };
+
+struct ForallParamBase : public ParamBase
+{};
+
+// Convert a tuple of parameter types to their respective arg type,
+// EG Reduction<Double> -> Valop<Double>
+template<typename T>
+struct ParamToArgHelper
+{};
+
+template<typename ParamType, typename Enable = void>
+struct GetArgType
+{
+  using type = ParamType;
+};
+
+template<typename ParamType>
+struct GetArgType<
+    ParamType,
+    typename std::enable_if<std::is_base_of<ParamBase, ParamType>::value>::type>
+{
+  using type = typename ParamType::ARG_T;
+};
+
+template<typename... Params>
+struct ParamToArgHelper<camp::tuple<Params...>>
+{
+  using type = camp::tuple<typename GetArgType<Params>::type...>;
+  // using type = camp::tuple<typename Params::ARG_T...>;
+};
+
+template<typename T>
+RAJA_HOST_DEVICE typename std::enable_if<
+    std::is_base_of<ParamBase, T>::value,
+    typename std::add_lvalue_reference<typename T::ARG_T>::type>::type
+get_lambda_arg(T& Param)
+{
+  return *Param.get_lambda_arg();
+}
+
+template<typename T>
+RAJA_HOST_DEVICE
+    typename std::enable_if<!std::is_base_of<ParamBase, T>::value,
+                            typename std::add_lvalue_reference<T>::type>::type
+    get_lambda_arg(T& Param)
+{
+  return Param;
+}
 
 }  // namespace detail
 
