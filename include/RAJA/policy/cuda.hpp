@@ -41,6 +41,8 @@
 #include "RAJA/policy/cuda/synchronize.hpp"
 #include "RAJA/policy/cuda/launch.hpp"
 #include "RAJA/policy/cuda/WorkGroup.hpp"
+#include "RAJA/policy/cuda/params/reduce.hpp"
+#include "RAJA/policy/cuda/params/kernel_name.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

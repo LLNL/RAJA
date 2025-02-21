@@ -15,11 +15,11 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
 void LaunchNestedTileLoopTestImpl(INDEX_TYPE M)
 {
 
-  constexpr int tile_size   = 4;
+  constexpr INDEX_TYPE tile_size   = 4;
 
   //following grid will require loop policies
-  constexpr int threads_x   = 3;
-  constexpr int blocks_x    = 1;
+  constexpr INDEX_TYPE threads_x   = 3;
+  constexpr INDEX_TYPE blocks_x    = 1;
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, M*tile_size+1);
 

@@ -48,7 +48,8 @@ forall_impl(resources::Omp omp_res,
             Func&& loop_body,
             ForallParam f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -89,6 +90,7 @@ forall_impl(resources::Omp omp_res,
   }
 
   RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
+
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 
@@ -156,7 +158,8 @@ forall_impl(resources::Omp omp_res,
             Func&& loop_body,
             ForallParam f_params)
 {
-  using EXEC_POL = typename std::decay_t<decltype(p)>;
+  using EXEC_POL = camp::decay<decltype(p)>;
+
   RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
@@ -175,6 +178,7 @@ forall_impl(resources::Omp omp_res,
   }
 
   RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
+
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 

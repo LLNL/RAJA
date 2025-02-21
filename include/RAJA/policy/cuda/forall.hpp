@@ -627,7 +627,7 @@ forall_impl(resources::Cuda cuda_res,
                                                      IterationGetter,
                                                      Concretizer,
                                                      BlocksPerSM,
-                                                     Async> const&,
+                                                     Async> const& pol,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
@@ -636,8 +636,7 @@ forall_impl(resources::Cuda cuda_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<
-      IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
+  using EXEC_POL     = camp::decay<decltype(pol)>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
                                     LOOP_BODY, Iterator, ForallParam>;
   using DimensionCalculator =
@@ -721,8 +720,7 @@ forall_impl(resources::Cuda cuda_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<
-      IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
+  using EXEC_POL = camp::decay<decltype(pol)>;
   using UniqueMarker =
       ::camp::list<IterationMapping, IterationGetter, camp::num<BlocksPerSM>,
                    LOOP_BODY, Iterator, ForallParam>;

@@ -251,7 +251,7 @@ forall_impl(resources::Sycl& sycl_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = typename std::decay_t<decltype(pol)>;
+  using EXEC_POL = camp::decay<decltype(pol)>;
 
   //
   // Compute the requested iteration space size
@@ -329,7 +329,7 @@ forall_impl(resources::Sycl& sycl_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = RAJA::sycl_exec<BlockSize, Async>;
+  using EXEC_POL = camp::decay<decltype(pol)>;
 
   //
   // Compute the requested iteration space size
