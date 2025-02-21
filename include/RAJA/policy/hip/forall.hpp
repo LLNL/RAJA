@@ -614,13 +614,14 @@ RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const& pol,
-    Iterable&& iter,
-    LoopBody&& loop_body,
-    ForallParam)
+forall_impl(resources::Hip hip_res,
+            ::RAJA::policy::hip::hip_exec<IterationMapping,
+                                          IterationGetter,
+                                          Concretizer,
+                                          Async> const& pol,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
