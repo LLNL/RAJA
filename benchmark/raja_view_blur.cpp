@@ -111,7 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //launch to intialize the stream
   RAJA::forall<device_pol>
-    (RAJA::RangeSegment(0,1), [=] RAJA_HOST_DEVICE (int i) {
+    (RAJA::RangeSegment(0,1), [=] RAJA_HOST_DEVICE (int RAJA_UNUSED_ARG(i)) {
   });
 
   int * array      = def_host_res.allocate<int>(N * N);
