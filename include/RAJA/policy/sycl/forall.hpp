@@ -241,7 +241,7 @@ RAJA_INLINE concepts::enable_if_t<
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(resources::Sycl& sycl_res,
-            sycl_exec<BlockSize, Async>,
+            sycl_exec<BlockSize, Async> const& pol,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -251,7 +251,8 @@ forall_impl(resources::Sycl& sycl_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = RAJA::sycl_exec<BlockSize, Async>;
+  using EXEC_POL = camp::decay<decltype(pol)>;
+
   //
   // Compute the requested iteration space size
   //
@@ -259,7 +260,7 @@ forall_impl(resources::Sycl& sycl_res,
   Iterator end   = std::end(iter);
   IndexType len  = std::distance(begin, end);
 
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params);
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0)
@@ -274,19 +275,19 @@ forall_impl(resources::Sycl& sycl_res,
     ::sycl::queue* q = sycl_res.get_queue();
 
     auto combiner = [](ForallParam x, ForallParam y) {
-      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
+      RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, x, y);
       return x;
     };
 
     ForallParam* res = ::sycl::malloc_shared<ForallParam>(1, *q);
-    RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
+    RAJA::expt::ParamMultiplexer::parampack_init(pol, *res);
     auto reduction = ::sycl::reduction(res, f_params, combiner);
 
     q->submit([&](::sycl::handler& h) {
       h.parallel_for(::sycl::range<1>(len), reduction,
                      [=](::sycl::item<1> it, auto& red) {
                        ForallParam fp;
-                       RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+                       RAJA::expt::ParamMultiplexer::parampack_init(pol, fp);
                        IndexType ii = it.get_id(0);
                        if (ii < len)
                        {
@@ -297,10 +298,10 @@ forall_impl(resources::Sycl& sycl_res,
     });
 
     q->wait();
-    RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params, *res);
+    RAJA::expt::ParamMultiplexer::parampack_combine(pol, f_params, *res);
     ::sycl::free(res, *q);
   }
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params);
 
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
@@ -318,7 +319,7 @@ RAJA_INLINE concepts::enable_if_t<
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
 forall_impl(resources::Sycl& sycl_res,
-            sycl_exec<BlockSize, Async>,
+            sycl_exec<BlockSize, Async> const& pol,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -328,7 +329,8 @@ forall_impl(resources::Sycl& sycl_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = RAJA::sycl_exec<BlockSize, Async>;
+  using EXEC_POL = camp::decay<decltype(pol)>;
+
   //
   // Compute the requested iteration space size
   //
@@ -336,7 +338,7 @@ forall_impl(resources::Sycl& sycl_res,
   Iterator end   = std::end(iter);
   IndexType len  = std::distance(begin, end);
 
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params);
 
   // Only launch kernel if we have something to iterate over
   if (len > 0 && BlockSize > 0)
@@ -350,7 +352,7 @@ forall_impl(resources::Sycl& sycl_res,
     ::sycl::queue* q = sycl_res.get_queue();
 
     auto combiner = [](ForallParam x, ForallParam y) {
-      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
+      RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, x, y);
       return x;
     };
 
@@ -371,7 +373,7 @@ forall_impl(resources::Sycl& sycl_res,
     q->memcpy(beg, &begin, sizeof(Iterator)).wait();
 
     ForallParam* res = ::sycl::malloc_shared<ForallParam>(1, *q);
-    RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
+    RAJA::expt::ParamMultiplexer::parampack_init(pol, *res);
     auto reduction = ::sycl::reduction(res, f_params, combiner);
 
     q->submit([&](::sycl::handler& h) {
@@ -379,7 +381,7 @@ forall_impl(resources::Sycl& sycl_res,
                       [=](::sycl::item<1> it, auto& red) {
                         Index_type ii = it.get_id(0);
                         ForallParam fp;
-                        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+                        RAJA::expt::ParamMultiplexer::parampack_init(pol, fp);
                         if (ii < len)
                         {
                           RAJA::expt::invoke_body(fp, *lbody, (*beg)[ii]);
@@ -387,7 +389,7 @@ forall_impl(resources::Sycl& sycl_res,
                         red.combine(fp);
                       });
      }).wait();  // Need to wait for completion to free memory
-    RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params, *res);
+    RAJA::expt::ParamMultiplexer::parampack_combine(pol, f_params, *res);
     // Free our device memory
     ::sycl::free(res, *q);
     ::sycl::free(lbody, *q);
@@ -395,7 +397,7 @@ forall_impl(resources::Sycl& sycl_res,
 
     RAJA_FT_END;
   }
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params);
 
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }

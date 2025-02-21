@@ -33,8 +33,9 @@ forall_impl(const ExecPol& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -44,7 +45,7 @@ forall_impl(const ExecPol& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -63,8 +64,9 @@ forall_impl(const ExecPol<ChunkSize>& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -74,7 +76,7 @@ forall_impl(const ExecPol<ChunkSize>& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -93,8 +95,9 @@ forall_impl(const ExecPol<ChunkSize>& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -105,7 +108,7 @@ forall_impl(const ExecPol<ChunkSize>& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -117,8 +120,9 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -128,7 +132,7 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -140,8 +144,9 @@ RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
                                     Func&& loop_body,
                                     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -154,7 +159,7 @@ RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
     }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -170,8 +175,9 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -181,7 +187,7 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -197,8 +203,9 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -209,7 +216,7 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -225,8 +232,9 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -236,7 +244,7 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -252,8 +260,9 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -264,7 +273,7 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
     RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -281,8 +290,9 @@ RAJA_INLINE void forall_impl_nowait(
     Func&& loop_body,
     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -295,7 +305,7 @@ RAJA_INLINE void forall_impl_nowait(
     }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -312,8 +322,9 @@ RAJA_INLINE void forall_impl_nowait(
     Func&& loop_body,
     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
@@ -326,7 +337,7 @@ RAJA_INLINE void forall_impl_nowait(
     }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 }  //  namespace internal
