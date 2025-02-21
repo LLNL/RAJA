@@ -271,6 +271,7 @@ forall_impl(resources::Sycl& sycl_res,
     //
     sycl_dim_t blockSize {BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
+    RAJA_UNUSED_VAR(gridSize);
 
     ::sycl::queue* q = sycl_res.get_queue();
 
@@ -348,6 +349,7 @@ forall_impl(resources::Sycl& sycl_res,
     //
     sycl_dim_t blockSize {BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
+    RAJA_UNUSED_VAR(gridSize);
 
     ::sycl::queue* q = sycl_res.get_queue();
 
