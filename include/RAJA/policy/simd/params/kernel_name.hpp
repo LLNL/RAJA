@@ -28,9 +28,8 @@ param_combine(EXEC_POL const&, KernelName&, T)
 
 // Resolve
 template<typename EXEC_POL>
-camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::simd_exec>> param_resolve(
-    EXEC_POL const&,
-    KernelName&)
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::simd_exec>>
+param_resolve(EXEC_POL const&, KernelName&)
 {
   // TODO: Define kernel naming
 }
