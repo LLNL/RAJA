@@ -102,7 +102,7 @@ forall_impl(resources::Sycl& sycl_res,
             ForallParam)
 {
 
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using Iterator = camp::decay<decltype(std::begin(iter))>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
@@ -246,7 +246,7 @@ forall_impl(resources::Sycl& sycl_res,
             ForallParam f_params)
 
 {
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
+  using Iterator = camp::decay<decltype(std::begin(iter))>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
   using EXEC_POL = camp::decay<decltype(pol)>;
