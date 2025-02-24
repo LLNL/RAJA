@@ -102,7 +102,7 @@ struct AccessorDeviceScopeUseBlockFence
 
     for (size_t i = 0; i < u.array_size(); ++i)
     {
-      u.array[i] = atomicAdd(&ptr[i], integer_type(0));
+      u.array[i] = ::atomicAdd(&ptr[i], integer_type(0));
     }
 
     return u.get_value();
@@ -121,7 +121,7 @@ struct AccessorDeviceScopeUseBlockFence
 
     for (size_t i = 0; i < u.array_size(); ++i)
     {
-      atomicExch(&ptr[i], u.array[i]);
+      ::atomicExch(&ptr[i], u.array[i]);
     }
   }
 

@@ -40,6 +40,8 @@
 #include "RAJA/policy/hip/synchronize.hpp"
 #include "RAJA/policy/hip/launch.hpp"
 #include "RAJA/policy/hip/WorkGroup.hpp"
+#include "RAJA/policy/hip/params/reduce.hpp"
+#include "RAJA/policy/hip/params/kernel_name.hpp"
 
 
 #endif  // closing endif for if defined(RAJA_HIP_ACTIVE)
