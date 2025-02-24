@@ -103,7 +103,6 @@ forall_impl(resources::Sycl& sycl_res,
 {
 
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
-  using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
 
@@ -248,7 +247,6 @@ forall_impl(resources::Sycl& sycl_res,
 
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
-  using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
   using EXEC_POL = camp::decay<decltype(pol)>;
@@ -271,6 +269,7 @@ forall_impl(resources::Sycl& sycl_res,
     //
     sycl_dim_t blockSize {BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
+    RAJA_UNUSED_VAR(gridSize);
 
     ::sycl::queue* q = sycl_res.get_queue();
 
@@ -348,6 +347,7 @@ forall_impl(resources::Sycl& sycl_res,
     //
     sycl_dim_t blockSize {BlockSize};
     sycl_dim_t gridSize = impl::getGridDim(static_cast<size_t>(len), BlockSize);
+    RAJA_UNUSED_VAR(gridSize);
 
     ::sycl::queue* q = sycl_res.get_queue();
 

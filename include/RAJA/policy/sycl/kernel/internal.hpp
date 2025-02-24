@@ -124,7 +124,7 @@ struct LaunchDims
     // Prefer larger z -> y -> x
     if (launch_local.x * launch_local.y * launch_local.z > max_work_group_size)
     {
-      int remaining = 1;
+      unsigned long remaining = 1;
       // local z cannot be > max_wrk from above
       // if equal then remaining is 1, on handle <
       if (max_work_group_size > launch_local.z)
@@ -236,7 +236,7 @@ struct SyclStatementListExecutorHelper<num_stmts, num_stmts, StmtList>
 {
 
   template<typename Data>
-  inline static RAJA_DEVICE void exec(Data&, ::sycl::nd_item<3> item, bool)
+  inline static RAJA_DEVICE void exec(Data&, ::sycl::nd_item<3> RAJA_UNUSED_ARG(item), bool)
   {
     // nop terminator
   }
