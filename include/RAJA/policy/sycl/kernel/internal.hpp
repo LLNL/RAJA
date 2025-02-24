@@ -236,7 +236,7 @@ struct SyclStatementListExecutorHelper<num_stmts, num_stmts, StmtList>
 {
 
   template<typename Data>
-  inline static RAJA_DEVICE void exec(Data&, ::sycl::nd_item<3> RAJA_UNUSED_ARG(item), bool)
+  inline static RAJA_DEVICE void exec(Data&, ::sycl::nd_item<3> item, bool)
   {
     // nop terminator
   }

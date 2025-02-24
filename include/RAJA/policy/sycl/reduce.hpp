@@ -140,7 +140,7 @@ struct Reduce_Data
   Reduce_Data(const Reduce_Data&) = default;
 
   //! transfers from the host to the device -- exit() is called upon failure
-  RAJA_INLINE void hostToDevice(Offload_Info& RAJA_UNUSED_ARG(info))
+  RAJA_INLINE void hostToDevice(Offload_Info& info)
   {
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
 
@@ -159,7 +159,7 @@ struct Reduce_Data
   }
 
   //! transfers from the device to the host -- exit() is called upon failure
-  RAJA_INLINE void deviceToHost(Offload_Info& RAJA_UNUSED_ARG(info))
+  RAJA_INLINE void deviceToHost(Offload_Info& info)
   {
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
 
@@ -178,7 +178,7 @@ struct Reduce_Data
   }
 
   //! frees all data from the offload information passed
-  RAJA_INLINE void cleanup(Offload_Info& RAJA_UNUSED_ARG(info))
+  RAJA_INLINE void cleanup(Offload_Info& info)
   {
     ::sycl::queue* q = ::camp::resources::Sycl::get_default().get_queue();
 

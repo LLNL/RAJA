@@ -51,7 +51,7 @@ struct SyclStatementExecutor<Data,
 {
 
   static inline RAJA_DEVICE void exec(Data& data,
-                                      ::sycl::nd_item<3> RAJA_UNUSED_ARG(item),
+                                      ::sycl::nd_item<3> item,
                                       bool thread_active)
   {
     // Only execute the lambda if it hasn't been masked off
