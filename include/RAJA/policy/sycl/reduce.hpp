@@ -207,8 +207,8 @@ struct TargetReduce
   TargetReduce(const TargetReduce&) = default;
 
   explicit TargetReduce(T init_val)
-      : info(),
-        val(Reducer::identity(), Reducer::identity(), info),
+      : val(Reducer::identity(), Reducer::identity(), info),
+        info(),
         initVal(init_val),
         finalVal(Reducer::identity())
   {}
