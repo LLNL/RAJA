@@ -20,6 +20,53 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2025.03.0 -- Release date 2025-03-dd
+============================================
+
+This release contains new features, bug fixes, and vuild changes.
+
+Notable changes include:
+
+  * New features / API changes:
+    * Added improved support for perfectly nested loops in RAJA::launch.
+    * Refactored the new (experimental) RAJA reduction interface to have
+      consistent min/max/loc operator semantics and added type safety to
+      reduce erroneous usage. Changes are described in the RAJA User Guide.
+    * Added `RAJA_HIP_WAVESIZE` CMake option to set the wave size for HIP
+      builds. It defaults to 64 but can be set to 32, for example, to
+      build RAJA to run on Radeon gaming cards.
+    * Added support for new RAJA reduction interface to RAJA::dynamic_forall
+      and pulled dynamic_forall out of RAJA `expt` namespace.
+    * Make parameter interfaces (used for kernel names, reductions, etc.) more
+      concise and extensible. No changes to user code are required. User
+      documentation will be provided in the future to show how users can
+      make custom extensions.
+
+  * Build changes/improvements:
+     * Update BLT to MM.mm.pp release.
+     * Update camp submodule to v2025.03.0 release.
+     * Update desul submodule to 6114dd25b54782678c555c0c1d2197f13cc8d2a0
+       commit.
+     * Added clang-format CI check (clang 14) that must pass before a PR can
+       be merged -- noted here so external contributors are aware.
+
+  * Bug fixes/improvements:
+    * Resolve undefined behavior related to constructing
+      uniform_int_distribution with min > max. This was causing some Windows
+      tests to fail.
+    * Correct call to wrong global function when using a fixed CUDA policy
+      and reductions in `RAJA::launch` kernel -- potential performance issue.
+    * Fix memory leak in `RAJA::launch` OpenMP back-end.
+    * Add missing host-device decorations to some basic math utility functions.
+    * Fixed MSVC compilation failures with 64-bit intrinsics in x86 Windows
+      builds.
+    * Fix invalid C++ code related to use of dynamically-sized local array
+      in `initLocalMem` capability in `RAJA::kernel`.
+    * Fix issue when GPU kernel may be launched when it has no work to do. The
+      fix involves explicitly determining which thread/block/grid dimensions
+      have size <= 0.      
+ 
+
 Version 2024.07.0 -- Release date 2024-07-24
 ============================================
 
