@@ -209,7 +209,7 @@ namespace internal
  * CUDA global function for launching CudaKernel policies
  */
 template<typename Data, typename Exec>
-__global__ void CudaKernelLauncher(Data data)
+__global__ __attribute__((annotate("jit"))) void CudaKernelLauncher(Data data)
 {
 
   using data_t        = camp::decay<Data>;
@@ -226,7 +226,7 @@ __global__ void CudaKernelLauncher(Data data)
  * This launcher is used by the CudaKerelFixed policies.
  */
 template<int BlockSize, int BlocksPerSM, typename Data, typename Exec>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, BlocksPerSM) __global__ __attribute__((annotate("jit")))
     void CudaKernelLauncherFixed(Data data)
 {
 

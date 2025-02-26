@@ -378,7 +378,7 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size > 0),
                           size_t> BlockSize = IterationGetter::block_size>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, BlocksPerSM) __global__ __attribute__((annotate("jit", 3))) 
     void forall_cuda_kernel(LOOP_BODY loop_body,
                             const Iterator idx,
                             IndexType length)
@@ -405,7 +405,7 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size <= 0),
                           size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
+__global__ __attribute__((annotate("jit", 3)))  void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
                                    IndexType length)
 {
@@ -431,7 +431,7 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size > 0),
                           size_t> BlockSize = IterationGetter::block_size>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, BlocksPerSM) __global__ __attribute__((annotate("jit", 3))) 
     void forallp_cuda_kernel(LOOP_BODY loop_body,
                              const Iterator idx,
                              IndexType length,
@@ -461,7 +461,7 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size <= 0),
                           size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
+__global__ __attribute__((annotate("jit", 3)))  void forallp_cuda_kernel(LOOP_BODY loop_body,
                                     const Iterator idx,
                                     IndexType length,
                                     ForallParam f_params)
@@ -491,7 +491,7 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, BlocksPerSM) __global__ __attribute__((annotate("jit", 3))) 
     void forall_cuda_kernel(LOOP_BODY loop_body,
                             const Iterator idx,
                             IndexType length)
@@ -521,7 +521,7 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
+__global__ __attribute__((annotate("jit", 3)))  void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
                                    IndexType length)
 {
@@ -551,7 +551,7 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
+__launch_bounds__(BlockSize, BlocksPerSM) __global__ __attribute__((annotate("jit", 3))) 
     void forallp_cuda_kernel(LOOP_BODY loop_body,
                              const Iterator idx,
                              IndexType length,
@@ -584,7 +584,7 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
+__global__ __attribute__((annotate("jit", 3)))  void forallp_cuda_kernel(LOOP_BODY loop_body,
                                     const Iterator idx,
                                     IndexType length,
                                     ForallParam f_params)

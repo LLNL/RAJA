@@ -177,7 +177,7 @@ namespace internal
  * HIP global function for launching HipKernel policies
  */
 template<typename Data, typename Exec>
-__global__ void HipKernelLauncher(Data data)
+__global__ __attribute__((annotate("jit"))) void HipKernelLauncher(Data data)
 {
 
   using data_t        = camp::decay<Data>;
@@ -194,7 +194,7 @@ __global__ void HipKernelLauncher(Data data)
  * This launcher is used by the HipKerelFixed policies.
  */
 template<int BlockSize, typename Data, typename Exec>
-__launch_bounds__(BlockSize, 1) __global__
+__launch_bounds__(BlockSize, 1) __global__ __attribute__((annotate("jit")))
     void HipKernelLauncherFixed(Data data)
 {
 
