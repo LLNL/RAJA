@@ -445,7 +445,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -474,7 +474,7 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 template<
@@ -565,7 +565,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -597,7 +597,7 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 }  // namespace impl
@@ -627,7 +627,7 @@ forall_impl(resources::Cuda cuda_res,
                                                      IterationGetter,
                                                      Concretizer,
                                                      BlocksPerSM,
-                                                     Async> const&,
+                                                     Async> const& pol,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam)
@@ -636,8 +636,7 @@ forall_impl(resources::Cuda cuda_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<
-      IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
+  using EXEC_POL     = camp::decay<decltype(pol)>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
                                     LOOP_BODY, Iterator, ForallParam>;
   using DimensionCalculator =
@@ -712,7 +711,7 @@ forall_impl(resources::Cuda cuda_res,
                                                      IterationGetter,
                                                      Concretizer,
                                                      BlocksPerSM,
-                                                     Async> const&,
+                                                     Async> const& pol,
             Iterable&& iter,
             LoopBody&& loop_body,
             ForallParam f_params)
@@ -721,8 +720,7 @@ forall_impl(resources::Cuda cuda_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL = ::RAJA::policy::cuda::cuda_exec_explicit<
-      IterationMapping, IterationGetter, Concretizer, BlocksPerSM, Async>;
+  using EXEC_POL = camp::decay<decltype(pol)>;
   using UniqueMarker =
       ::camp::list<IterationMapping, IterationGetter, camp::num<BlocksPerSM>,
                    LOOP_BODY, Iterator, ForallParam>;
@@ -763,7 +761,7 @@ forall_impl(resources::Cuda cuda_res,
     launch_info.res      = cuda_res;
 
     {
-      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params, launch_info);
 
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
@@ -780,7 +778,8 @@ forall_impl(resources::Cuda cuda_res,
       RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res,
                          Async);
 
-      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params,
+                                                      launch_info);
     }
 
     RAJA_FT_END;

@@ -61,8 +61,8 @@ __global__ void launch_new_reduce_global_fcn(BODY body_in,
   RAJA::expt::invoke_body(reduce_params, body, ctx);
 
   // Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(
-      reduce_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(
+      RAJA::hip_flatten_global_xyz_direct {}, reduce_params);
 }
 
 template<bool async>
@@ -146,6 +146,9 @@ struct LaunchExecute<
        ReduceParams& launch_reducers)
   {
     using BODY = camp::decay<BODY_IN>;
+    using EXEC_POL =
+        RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
+    EXEC_POL pol {};
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams>>);
@@ -182,9 +185,8 @@ struct LaunchExecute<
       launch_info.res          = hip_res;
 
       {
-        using EXEC_POL =
-            RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers,
+
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers,
                                                      launch_info);
 
         //
@@ -201,7 +203,7 @@ struct LaunchExecute<
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers,
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
                                                         launch_info);
       }
 
@@ -247,8 +249,8 @@ __launch_bounds__(num_threads, 1) __global__
   RAJA::expt::invoke_body(reduce_params, body, ctx);
 
   // Using a flatten global policy as we may use all dimensions
-  RAJA::expt::ParamMultiplexer::combine<RAJA::hip_flatten_global_xyz_direct>(
-      reduce_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(
+      RAJA::hip_flatten_global_xyz_direct {}, reduce_params);
 }
 
 template<bool async, int nthreads>
@@ -332,6 +334,11 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
        ReduceParams& launch_reducers)
   {
     using BODY = camp::decay<BODY_IN>;
+    // Use a generic block size policy here to match that used in
+    // parampack_combine
+    using EXEC_POL =
+        RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
+    EXEC_POL pol {};
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn_fixed<BODY, nthreads,
@@ -369,9 +376,8 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
       launch_info.res          = hip_res;
 
       {
-        using EXEC_POL =
-            RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>;
-        RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers,
+
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers,
                                                      launch_info);
 
         //
@@ -388,7 +394,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async, kernel_name);
 
-        RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers,
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
                                                         launch_info);
       }
 
