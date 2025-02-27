@@ -53,6 +53,7 @@ struct CudaStatementExecutor<Data,
     // Only execute the lambda if it hasn't been masked off
     if (thread_active)
     {
+      //static_assert(std::is_same<StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>, int>::value, "foo");
       StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>::exec(
           data);
     }

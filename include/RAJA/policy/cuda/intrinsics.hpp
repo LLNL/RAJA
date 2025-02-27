@@ -395,6 +395,7 @@ RAJA_DEVICE RAJA_INLINE T warp_allreduce(T val)
 }
 
 //! reduce values in block into thread 0
+// todo(bowen): Why do we have a duplicate implementation here and in reduce.hpp
 template<typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {

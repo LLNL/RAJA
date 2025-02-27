@@ -315,6 +315,7 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(
     RAJA::detail::SoAPtr<T, RAJA::cuda::device_mempool_type> device_mem,
     unsigned int* device_count)
 {
+
   using BlockIterationGetter =
       typename get_index_block<GlobalIterationGetter>::type;
   using ThreadIterationGetter =
@@ -328,6 +329,7 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(
   const int threadId = ThreadIterationGetter::index();
 
   T temp = block_reduce<ThreadIterationGetter, OP>(val, OP::identity());
+  //printf("temp %d\n", temp);
 
   // one thread per block writes to device_mem
   bool lastBlock = false;

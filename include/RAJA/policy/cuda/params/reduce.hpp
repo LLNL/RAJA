@@ -36,6 +36,11 @@ RAJA_HOST_DEVICE camp::concepts::enable_if<
     type_traits::is_cuda_policy<EXEC_POL>>
 combine(Reducer<OP, T, VOp>& red)
 {
+    //printf("here 2\n");
+    //printf("threadIdx %d\n", threadIdx.x);
+    //printf("red %p\n", &red);
+    //printf("targ %d\n", red.devicetarget);
+    //printf(" val %d\n", red.getVal());
   RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter, OP>(
       red.devicetarget, red.getVal(), red.device_mem, red.device_count);
 }
@@ -46,12 +51,12 @@ camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> resolve(
     Reducer<OP, T, VOp>& red,
     RAJA::cuda::detail::cudaInfo& ci)
 {
-    std::cout << "HERE\n";
+
   // complete reduction
   ci.res.wait();
 
   red.combineTarget(*red.devicetarget);
-  std::cout << "VALUE = " << red.getVal() << std::endl;
+
   // free memory
   RAJA::cuda::device_zeroed_mempool_type::getInstance().free(red.device_count);
   red.device_count = nullptr;

@@ -25,7 +25,6 @@
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
-#include "camp/helpers.hpp"
 #include "camp/tuple.hpp"
 
 #include "RAJA/util/macros.hpp"

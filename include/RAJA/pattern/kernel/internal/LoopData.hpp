@@ -139,7 +139,7 @@ struct LoopData
   vector_sizes_t vector_sizes;
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr LoopData(SegmentTuple const& s,
-                                                  const ParamTuple& p,
+                                                  ParamTuple const& p,
                                                   Resource r,
                                                   Bodies const&... b)
       : segment_tuple(s),

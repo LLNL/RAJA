@@ -730,7 +730,6 @@ forall_impl(resources::Cuda cuda_res,
       impl::ForallDimensionCalculator<IterationMapping, IterationGetter,
                                       Concretizer, UniqueMarker>;
 
-  //
   // Compute the requested iteration space size
   //
   Iterator begin = std::begin(iter);

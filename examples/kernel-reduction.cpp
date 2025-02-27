@@ -1,6 +1,5 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/index/RangeSegment.hpp"
-#include "memoryManager.hpp"
 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -17,6 +16,17 @@ using EXEC_POL_CUDA =
        //>
       >
     >;
+
+using EXEC_POL_CUDA_2 =
+  RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
+        RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
+                                RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >;
 
 using EXEC_SEQ =
     RAJA::KernelPolicy<
@@ -37,18 +47,21 @@ using EXEC_SEQ =
   RAJA::TypedRangeSegment<int> row_range(0, N);
   RAJA::TypedRangeSegment<int> col_range(0, N);
 
+  RAJA::resources::Host host_res;
   RAJA::resources::Cuda cuda_res;
-  int *A = memoryManager::allocate<int>(N * N);
+  int* A = host_res.allocate<int>(N * N);
+  int *dA = cuda_res.allocate<int>(N * N);
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
       A[col + row * N] = -row;
     }
   }
+  A[0] = 1000;
+  cuda_res.memcpy(dA, A, sizeof(int) * N * N);
 
-  RAJA::View<int, RAJA::Layout<2>> Aview(A, N, N);
+  RAJA::View<int, RAJA::Layout<2>> Aview(dA, N, N);
   int cuda_min = 0;
   int cuda_max = -42;
-  A[0] = 1000;
   /*RAJA::kernel_param<EXEC_POL8>(
     // segments
     RAJA::make_tuple(col_range),//, row_range),
@@ -64,7 +77,7 @@ using EXEC_SEQ =
       printf("updated max to %d\n", _cuda_max.val);
     }
   );*/
-  auto res = RAJA::kernel_param<EXEC_SEQ>(
+  auto res = RAJA::kernel_param<EXEC_POL_CUDA>(
     // segments
     RAJA::make_tuple(col_range),//, row_range),
     // params
@@ -73,9 +86,23 @@ using EXEC_SEQ =
     // lambda 1
     [=] RAJA_HOST_DEVICE (int row, VALOP_INT_MIN &_cuda_min, VALOP_INT_MAX &_cuda_max) {
       _cuda_min = _cuda_min.min(Aview(row, 0));
-      _cuda_max = _cuda_max.max(Aview(row, 0));
+      _cuda_max = _cuda_max.max(Aview(row, 0));;
     }
   );
+
+
+  //RAJA::kernel_param<EXEC_POL_CUDA_2>(
+  //  // segments
+  //  RAJA::make_tuple(col_range, row_range),
+  //  // params
+  //  RAJA::make_tuple(RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
+  //  RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max)),
+  //  // lambda 1
+  //  [=] RAJA_HOST_DEVICE (int row, int col, VALOP_INT_MIN &_cuda_min, VALOP_INT_MAX &_cuda_max) {
+  //    _cuda_min = _cuda_min.min(Aview(row, col));
+  //    _cuda_max = _cuda_max.max(Aview(row, col));;
+  //  }
+  //);
 
   std::cout << "MIN VAL = " << cuda_min << std::endl;
   std::cout << "MAX VAL = " << cuda_max << std::endl;
