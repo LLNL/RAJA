@@ -37,11 +37,6 @@ RAJA_HOST_DEVICE camp::concepts::enable_if<
     RAJA::type_traits::is_cuda_policy<EXEC_POL>>
 param_combine(EXEC_POL const&, Reducer<OP, T, VOp>& red)
 {
-    //printf("here 2\n");
-    //printf("threadIdx %d\n", threadIdx.x);
-    //printf("red %p\n", &red);
-    //printf("targ %d\n", red.devicetarget);
-    //printf(" val %d\n", red.getVal());
   RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter, OP>(
       red.devicetarget, red.getVal(), red.device_mem, red.device_count);
 }

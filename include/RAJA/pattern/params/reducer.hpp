@@ -200,6 +200,9 @@ struct Reducer<Op<ValLoc<T, I>, ValLoc<T, I>, ValLoc<T, I>>,
   // These are types and parameters extracted from this struct, and given to the
   // forall.
   using ARG_TUP_T = camp::tuple<VOp*>;
+  using ARG_T     = VOp;
+
+  RAJA_HOST_DEVICE ARG_T* get_lambda_arg() { return &m_valop; }
 
   RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup()
   {

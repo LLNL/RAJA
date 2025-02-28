@@ -219,7 +219,10 @@ __global__ void CudaKernelLauncher(Data data, ReduceParams params)
 
   Exec::exec(private_data, true);
 
-  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(data.param_tuple);
+  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(private_data.param_tuple);
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+    params = private_data.param_tuple;
+  }
 }
 
 /*!
@@ -238,9 +241,12 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   data_t private_data = data;
 
   // execute the the object
-  Exec::exec(data, true);
+  Exec::exec(private_data, true);
 
-  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(data.param_tuple);
+  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(private_data.param_tuple);
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+    params = private_data.param_tuple;
+  }
 }
 
 /*!
@@ -276,7 +282,7 @@ template<typename Data, typename executor_t, typename ReduceParams>
 struct CudaKernelLauncherGetter<0, 0, Data, executor_t, ReduceParams>
 {
   using type =
-      camp::decay<decltype(&internal::CudaKernelLauncher<Data, executor_t>)>;
+      camp::decay<decltype(&internal::CudaKernelLauncher<Data, executor_t, ReduceParams>)>;
 
   static constexpr type get() noexcept
   {
@@ -320,7 +326,7 @@ struct CudaLaunchHelper<
   using executor_t =
       internal::cuda_statement_list_executor_t<StmtList, Data, Types>;
 
-  using ParamTuple_t = Data::param_tuple_t;
+  using ParamTuple_t = typename Data::param_tuple_t;
 
   using kernelGetter_t =
       CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,

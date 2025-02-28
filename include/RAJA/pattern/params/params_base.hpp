@@ -298,7 +298,6 @@ template<typename... Params>
 struct ParamToArgHelper<camp::tuple<Params...>>
 {
   using type = camp::tuple<typename GetArgType<Params>::type...>;
-  // using type = camp::tuple<typename Params::ARG_T...>;
 };
 
 template<typename T>

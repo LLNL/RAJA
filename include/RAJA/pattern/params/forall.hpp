@@ -25,7 +25,7 @@ void resolve_params_helper(ParamTuple& params_tuple,
                            const camp::idx_seq<Seq...>&,
                            Args&&... args)
 {
-  CAMP_EXPAND(RAJA::expt::detail::resolve<ExecPol>(
+  CAMP_EXPAND(param_resolve(ExecPol{},
       camp::get<Seq>(params_tuple), std::forward<Args>(args)...));
 }
 
@@ -45,7 +45,7 @@ void init_params_helper(ParamTuple& params_tuple,
                         const camp::idx_seq<Seq...>&,
                         Args&&... args)
 {
-  CAMP_EXPAND(RAJA::expt::detail::init<ExecPol>(camp::get<Seq>(params_tuple),
+  CAMP_EXPAND(param_init(ExecPol{}, camp::get<Seq>(params_tuple),
                                                 std::forward<Args>(args)...));
 }
 
@@ -65,7 +65,7 @@ RAJA_HOST_DEVICE void combine_params_helper(ParamTuple& params_tuple,
                                             const camp::idx_seq<Seq...>&,
                                             Args&&... args)
 {
-  CAMP_EXPAND(RAJA::expt::detail::combine<ExecPol>(
+  CAMP_EXPAND(param_combine(ExecPol{},
       camp::get<Seq>(params_tuple), std::forward<Args>(args)...));
 }
 

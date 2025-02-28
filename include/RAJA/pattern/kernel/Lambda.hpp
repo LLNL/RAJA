@@ -310,10 +310,7 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data&& data,
 
   using AllSegs   = Segs<SEGS...>;
   using AllParams = Params<PARAMS...>;
-  // printf("SEGS\n");
-  // print_pack<SEGS...>();
-  //   printf("\nPARAMS\n");
-  // print_pack<PARAMS...>();
+
   //  invoke the expanded Lambda executor, passing in all segments and params
   StatementExecutor<statement::Lambda<LambdaIndex, AllSegs, AllParams>,
                     Types>::exec(std::forward<Data>(data));

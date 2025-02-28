@@ -35,6 +35,8 @@
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 
@@ -176,14 +178,19 @@ namespace internal
 /*!
  * HIP global function for launching HipKernel policies
  */
-template<typename Data, typename Exec>
-__global__ void HipKernelLauncher(Data data)
+template<typename Data, typename Exec, typename ReduceParams>
+__global__ void HipKernelLauncher(Data data, ReduceParams params)
 {
 
   using data_t        = camp::decay<Data>;
   data_t private_data = data;
 
   Exec::exec(private_data, true);
+
+  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(private_data.param_tuple);
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+    params = private_data.param_tuple;
+  }
 }
 
 /*!
@@ -193,9 +200,9 @@ __global__ void HipKernelLauncher(Data data)
  *
  * This launcher is used by the HipKerelFixed policies.
  */
-template<int BlockSize, typename Data, typename Exec>
+template<int BlockSize, typename Data, typename Exec, typename ReduceParams>
 __launch_bounds__(BlockSize, 1) __global__
-    void HipKernelLauncherFixed(Data data)
+    void HipKernelLauncherFixed(Data data, ReduceParams params)
 {
 
   using data_t        = camp::decay<Data>;
@@ -203,6 +210,11 @@ __launch_bounds__(BlockSize, 1) __global__
 
   // execute the the object
   Exec::exec(private_data, true);
+
+  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(private_data.param_tuple);
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+    params = private_data.param_tuple;
+  }
 }
 
 /*!
@@ -213,15 +225,15 @@ __launch_bounds__(BlockSize, 1) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<int BlockSize, typename Data, typename executor_t>
+template<int BlockSize, typename Data, typename executor_t, typename ReduceParams>
 struct HipKernelLauncherGetter
 {
   using type = camp::decay<
-      decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
+      decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t, ReduceParams>)>;
 
   static constexpr type get() noexcept
   {
-    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
+    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t, ReduceParams>;
   }
 };
 
@@ -229,15 +241,15 @@ struct HipKernelLauncherGetter
  * Helper class specialization for BlockSize == 0 and gets the unfixed max
  * block size version of the kernel.
  */
-template<typename Data, typename executor_t>
-struct HipKernelLauncherGetter<0, Data, executor_t>
+template<typename Data, typename executor_t, typename ReduceParams>
+struct HipKernelLauncherGetter<0, Data, executor_t, ReduceParams>
 {
   using type =
-      camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
+      camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t, ReduceParams>)>;
 
   static constexpr type get() noexcept
   {
-    return &internal::HipKernelLauncher<Data, executor_t>;
+    return &internal::HipKernelLauncher<Data, executor_t, ReduceParams>;
   }
 };
 
@@ -275,10 +287,14 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,
   using executor_t =
       internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
+  using ParamTuple_t = typename Data::param_tuple_t;
+
   using kernelGetter_t =
       HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,
                               Data,
-                              executor_t>;
+                              executor_t,
+                              ParamTuple_t>;
+
 
   inline static const void* get_func()
   {

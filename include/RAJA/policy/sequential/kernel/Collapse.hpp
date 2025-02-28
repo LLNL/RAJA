@@ -69,8 +69,7 @@ struct StatementExecutor<
         statement::Collapse<seq_exec, ArgList<ArgRest...>, EnclosedStmts...>,
         NewTypes>;
 
-    auto pack = make_forall_param_pack_from_tuple(data.param_tuple);
-    RAJA::expt::ParamMultiplexer::init<seq_exec>(pack);
+    RAJA::expt::init_params<seq_exec>(data.param_tuple);
     auto len0 = segment_length<Arg0>(data);
 
 
@@ -80,7 +79,7 @@ struct StatementExecutor<
 
       next_loop_t::exec(data);
     }
-    RAJA::expt::ParamMultiplexer::resolve<seq_exec>(pack);
+    RAJA::expt::resolve_params<seq_exec>(data.param_tuple);
   }
 };
 
