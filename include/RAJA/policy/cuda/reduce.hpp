@@ -329,7 +329,7 @@ RAJA_DEVICE RAJA_INLINE void grid_reduce(
   const int threadId = ThreadIterationGetter::index();
 
   T temp = block_reduce<ThreadIterationGetter, OP>(val, OP::identity());
-  //printf("temp %d\n", temp);
+  // printf("temp %d\n", temp);
 
   // one thread per block writes to device_mem
   bool lastBlock = false;

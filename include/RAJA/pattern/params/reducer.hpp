@@ -1,6 +1,8 @@
 #ifndef NEW_REDUCE_HPP
 #define NEW_REDUCE_HPP
 
+#include <type_traits>
+
 #include "RAJA/pattern/params/params_base.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 
@@ -68,12 +70,12 @@ struct Reducer : public ForallParamBase
 {
   using op         = Op;
   using value_type = T;  // This is a basic data type
-  // using VOp = ValOp<T, Op>;
+
   Reducer() = default;
 
   // Basic data type constructor
   RAJA_HOST_DEVICE Reducer(value_type* target_in)
-      : m_valop(VOp {*target_in}),
+      : m_valop(VOp {}),
         target(target_in)
   {}
 
@@ -244,6 +246,14 @@ auto constexpr ReduceLoc(T* target, IndexType* index)
   return detail::Reducer<Op<VL, VL, VL>, VL, ValOp<ValLoc<T, IndexType>, Op>>(
       target, index);
 }
+
+template<typename T>
+struct is_instance_of_reducer : std::false_type
+{};
+
+template<typename Op, typename T, typename VOp>
+struct is_instance_of_reducer<detail::Reducer<Op, T, VOp>> : std::true_type
+{};
 
 }  // namespace expt
 

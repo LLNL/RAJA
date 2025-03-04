@@ -187,8 +187,10 @@ __global__ void HipKernelLauncher(Data data, ReduceParams params)
 
   Exec::exec(private_data, true);
 
-  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(private_data.param_tuple);
-  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
+      private_data.param_tuple);
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+  {
     params = private_data.param_tuple;
   }
 }
@@ -211,8 +213,10 @@ __launch_bounds__(BlockSize, 1) __global__
   // execute the the object
   Exec::exec(private_data, true);
 
-  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(private_data.param_tuple);
-  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0) {
+  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
+      private_data.param_tuple);
+  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+  {
     params = private_data.param_tuple;
   }
 }
@@ -225,15 +229,22 @@ __launch_bounds__(BlockSize, 1) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<int BlockSize, typename Data, typename executor_t, typename ReduceParams>
+template<int BlockSize,
+         typename Data,
+         typename executor_t,
+         typename ReduceParams>
 struct HipKernelLauncherGetter
 {
-  using type = camp::decay<
-      decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t, ReduceParams>)>;
+  using type =
+      camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize,
+                                                             Data,
+                                                             executor_t,
+                                                             ReduceParams>)>;
 
   static constexpr type get() noexcept
   {
-    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t, ReduceParams>;
+    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t,
+                                             ReduceParams>;
   }
 };
 
@@ -244,8 +255,8 @@ struct HipKernelLauncherGetter
 template<typename Data, typename executor_t, typename ReduceParams>
 struct HipKernelLauncherGetter<0, Data, executor_t, ReduceParams>
 {
-  using type =
-      camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t, ReduceParams>)>;
+  using type = camp::decay<
+      decltype(&internal::HipKernelLauncher<Data, executor_t, ReduceParams>)>;
 
   static constexpr type get() noexcept
   {
@@ -294,7 +305,6 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,
                               Data,
                               executor_t,
                               ParamTuple_t>;
-
 
   inline static const void* get_func()
   {
