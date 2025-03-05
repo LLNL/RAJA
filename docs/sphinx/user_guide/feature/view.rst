@@ -37,7 +37,6 @@ Please see the following tutorial sections for detailed examples that use
 RAJA Views and Layouts:
 
  * :ref:`tut-view_layout-label`
- * :ref:`tut-reshape_layout-label`
  * :ref:`tut-offsetlayout-label`
  * :ref:`tut-permutedlayout-label`
  * :ref:`tut-kernelexecpols-label`
