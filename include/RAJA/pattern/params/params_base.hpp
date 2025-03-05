@@ -49,7 +49,7 @@ struct ValLoc
   RAJA_HOST_DEVICE void setLoc(IndexType inindex) { loc = inindex; }
 
   value_type val;
-  index_type loc = -1;
+  index_type loc;
 };
 
 template<typename T, template<typename, typename, typename> class Op>

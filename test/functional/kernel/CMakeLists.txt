@@ -52,6 +52,8 @@ add_subdirectory(nested-loop-view-types)
 
 add_subdirectory(reduce-loc)
 
+add_subdirectory(reduce-params)
+
 add_subdirectory(tile-icount-tcount-direct-unchecked)
 
 add_subdirectory(tile-icount-tcount-direct)
