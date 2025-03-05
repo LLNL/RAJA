@@ -9,7 +9,7 @@
 .. _feat-view-label:
 
 ========================
-View, Rehsape, and Layout
+View, Reshape, and Layout
 ========================
 
 Matrices and tensors, which are common in scientific computing applications,
