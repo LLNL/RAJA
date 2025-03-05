@@ -123,7 +123,8 @@ struct LoopData
 
   // Tuple of parameters that are thread privatized
   using param_tuple_t = ParamTuple;
-  using arg_tuple_t = typename expt::detail::ParamToArgHelper<ParamTuple>::type;
+  using arg_tuple_t =
+      typename RAJA::expt::detail::ParamToArgHelper<ParamTuple>::type;
   ParamTuple param_tuple;
 
   Resource res;

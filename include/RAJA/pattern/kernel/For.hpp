@@ -140,13 +140,13 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
     using len_t = decltype(len);
 
     RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));
-    expt::init_params<seq_exec>(data.param_tuple);
+    RAJA::expt::init_params<seq_exec>(data.param_tuple);
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       for_wrapper(*(begin_it + i));
     }
 
-    expt::resolve_params<seq_exec>(data.param_tuple);
+    RAJA::expt::resolve_params<seq_exec>(data.param_tuple);
   }
 };
 

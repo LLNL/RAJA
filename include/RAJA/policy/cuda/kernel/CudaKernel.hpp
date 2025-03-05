@@ -224,8 +224,6 @@ __global__ void CudaKernelLauncher(Data data, ReduceParams params)
   if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
   {
     params = RAJA::expt::filter_reducers(private_data.param_tuple);
-    // // static_assert(std::is_same<decltype(private_data.param_tuple),
-    // int>::value);
   }
 }
 
@@ -256,7 +254,6 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
   {
     params = RAJA::expt::filter_reducers(private_data.param_tuple);
-    // // static_assert(std::is_same<decltype(params), int>::value);
   }
 }
 
@@ -343,7 +340,6 @@ struct CudaLaunchHelper<
 
   using ReducerParamTuple_t = typename RAJA::expt::FilterOutReducers<
       typename Data::param_tuple_t>::type;
-  // static_assert(std::is_same<int, ReducerParamTuple_t>::value);
 
   using kernelGetter_t =
       CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,
@@ -699,7 +695,6 @@ struct StatementExecutor<
         // currently an unresolved issue.
         //
         auto reducer_tuple = RAJA::expt::filter_reducers(data.param_tuple);
-        // // static_assert(std::is_same<decltype(reducer_tuple), int>::value);
         RAJA::expt::init_params<EXEC_POL>(data.param_tuple, launch_info);
 
         auto cuda_data = RAJA::cuda::make_launch_body(

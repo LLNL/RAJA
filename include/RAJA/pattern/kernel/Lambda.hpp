@@ -238,7 +238,7 @@ struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_param_t, id>>
           camp::tuple_element_t<id,
                                 typename camp::decay<Data>::arg_tuple_t>>::type
   {
-    return expt::detail::get_lambda_arg(camp::get<id>(data.param_tuple));
+    return RAJA::expt::detail::get_lambda_arg(camp::get<id>(data.param_tuple));
   }
 };
 
@@ -265,7 +265,6 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda_with_args(
       LambdaArgSwitchboard<Types, targLists>::extract(data)...);
 }
 
-// 3 extra params
 /*!
  * A RAJA::kernel statement that invokes a lambda function
  * with user specified arguments.
@@ -286,18 +285,6 @@ struct StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>
   }
 };
 
-template<typename...>
-RAJA_HOST_DEVICE void print_pack()
-{}
-
-template<camp::idx_t first, camp::idx_t... rest>
-RAJA_HOST_DEVICE void print_pack()
-{
-  printf("%d ", first);
-  print_pack<rest...>();
-}
-
-// 2
 template<camp::idx_t LambdaIndex,
          typename Types,
          typename Data,
@@ -311,12 +298,11 @@ RAJA_INLINE RAJA_HOST_DEVICE void invoke_lambda(Data&& data,
   using AllSegs   = Segs<SEGS...>;
   using AllParams = Params<PARAMS...>;
 
-  //  invoke the expanded Lambda executor, passing in all segments and params
+  // invoke the expanded Lambda executor, passing in all segments and params
   StatementExecutor<statement::Lambda<LambdaIndex, AllSegs, AllParams>,
                     Types>::exec(std::forward<Data>(data));
 }
 
-// 1
 template<camp::idx_t LambdaIndex, typename Types>
 struct StatementExecutor<statement::Lambda<LambdaIndex>, Types>
 {

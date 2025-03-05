@@ -48,7 +48,6 @@ param_resolve(EXEC_POL const&,
               Reducer<OP, T, VOp>& red,
               RAJA::cuda::detail::cudaInfo& ci)
 {
-
   // complete reduction
   ci.res.wait();
 

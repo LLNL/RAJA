@@ -177,12 +177,8 @@ struct CudaStatementListExecutorHelper
   {
     // Execute stmt
     cur_stmt_t::exec(data, thread_active);
-    // using mapper_t = cur_stmt_t::DimensionCalculator::IndexMapper;
-    // static_assert(std::is_same<mapper_t, int>::value, "foo");
-    // using IterationGetter = IndexGlobal<>
-    // using exec_policy_t = RAJA::policy::cuda::cuda_exec_explicit<
-    // RAJA::expt::combine_params(data.param_tuple);
-    //  Execute next stmt
+
+    // Execute next stmt
     next_helper_t::exec(data, thread_active);
   }
 
