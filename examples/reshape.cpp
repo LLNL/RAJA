@@ -93,9 +93,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with custom indexing...\n";
 
+  // _Reshape_custom_start
   using custom_seq = std::index_sequence<2U,0U,1U>;
 
-  // _Reshape_custom_start
   auto Cview = RAJA::Reshape<custom_seq>::get(Cptr, K, N, M);
   // _Reshape_custom_end
 

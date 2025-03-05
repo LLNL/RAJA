@@ -94,13 +94,11 @@ access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... *
 
 Reshape
 ^^^^^^^
-The ``RAJA::Reshape`` method takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object. The reshape method is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
+The ``RAJA::Reshape`` method takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object.
+The reshape method is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
 
-The first meta-layout is
-
-based on a right-most layout which follows standard C indexing (right most index has unit stride).
+The first meta-layout is based on a right-most layout which follows standard C indexing (right most index has unit stride).
 For example:
-
 
 .. literalinclude:: ../../../../examples/reshape.cpp
    :start-after: _Reshape_right_start
@@ -118,16 +116,17 @@ is demonstrated in the following example.
    :language: C++
 
 Finally, users may specify a custom index ordering by providing a ``std::index_sequence`` type as a
-
-template argument.
+template argument for the ``RAJA::Reshape`` method. A ``RAJA::View`` enumerates the parathesis accessor
+from left to right starting at zero. The ``std::index_sequence`` will hold an ordering of slowest (left most)
+to fastest (right most) index for the ``RAJA::View``. In the following example, unit stride will be given to
+index 1 while index 2 is assumed to have the unit stride.
 
 .. literalinclude:: ../../../../examples/reshape.cpp
    :start-after: _Reshape_custom_start
    :end-before: _Reshape_custom_end
    :language: C++
 
-The example above will give unit stride to the right most index of the sequence while the left most index will have
-the longest stride. The file ```RAJA/examples/reshape.cpp`` contains full working code demonstrating configuring and using
+The file ```RAJA/examples/reshape.cpp`` contains full working code demonstrating configuring and using
 the ``RAJA::Reshape`` method to generate a ``RAJA::View``.
 
 
