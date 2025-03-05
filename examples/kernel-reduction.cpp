@@ -89,73 +89,89 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "SEQ MAX VAL LOC 2 = "<< seq_maxloc2 << std::endl;
 
 #if defined RAJA_ENABLE_CUDA
-  RAJA::resources::Cuda cuda_res;
-  int *dA = cuda_res.allocate<int>(N * N);
-  cuda_res.memcpy(dA, A, sizeof(int) * N * N);
-
-  using EXEC_POL_CUDA_2 =
+  using ResourceType = RAJA::resources::Cuda
+  using EXEC_POL =
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
-        RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
+      RAJA::statement::For<1, RAJA::gpu_thread_x_loop,
+        RAJA::statement::For<0, RAJA::gpu_thread_y_loop,
                                 RAJA::statement::Lambda<0>
         >
       >
     >
   >;
+#elif defined RAJA_ENABLE_HIP
+  using ResourceType = RAJA::resources::Hip;
+  using EXEC_POL =
+  RAJA::KernelPolicy<
+    RAJA::statement::HipKernel<
+      RAJA::statement::For<1, RAJA::hip_thread_x_loop,
+        RAJA::statement::For<0, RAJA::hip_thread_y_loop,
+                                RAJA::statement::Lambda<0>
+        >
+      >
+    >
+  >;
+#endif
+
+#if defined RAJA_ENABLE_CUDA or defined RAJA_ENABLE_HIP
+  ResourceType res;
+  int *dA = res.allocate<int>(N * N);
+  res.memcpy(dA, A, sizeof(int) * N * N);
+
 
   RAJA::View<int, RAJA::Layout<2>> dAview(dA, N, N);
-  int cuda_min = std::numeric_limits<int>::max();
-  int cuda_max = std::numeric_limits<int>::min();
-  int cuda_sum = 0;
-  VALLOC_INT cuda_minloc(std::numeric_limits<int>::max(), -1);
-  VALLOC_INT cuda_maxloc(std::numeric_limits<int>::min(), -1);
-  RAJA::Index_type cuda_minloc2(-1);
-  RAJA::Index_type cuda_maxloc2(-1);
-  int cuda_min2 = std::numeric_limits<int>::max();
-  int cuda_max2 = std::numeric_limits<int>::min();
-  auto res = RAJA::kernel_param<EXEC_POL_CUDA_2>(
+  int gpu_min = std::numeric_limits<int>::max();
+  int gpu_max = std::numeric_limits<int>::min();
+  int gpu_sum = 0;
+  VALLOC_INT gpu_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT gpu_maxloc(std::numeric_limits<int>::min(), -1);
+  RAJA::Index_type gpu_minloc2(-1);
+  RAJA::Index_type gpu_maxloc2(-1);
+  int gpu_min2 = std::numeric_limits<int>::max();
+  int gpu_max2 = std::numeric_limits<int>::min();
+  RAJA::kernel_param<EXEC_POL>(
     // segments
     RAJA::make_tuple(col_range, row_range),
     // params
     RAJA::make_tuple(
-      RAJA::expt::Reduce<RAJA::operators::plus   >(&cuda_sum),
-      RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
-      RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
-      RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_minloc),
-      RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
-      RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&cuda_min2, &cuda_minloc2),
-      RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&cuda_max2, &cuda_maxloc2)
+      RAJA::expt::Reduce<RAJA::operators::plus   >(&gpu_sum),
+      RAJA::expt::Reduce<RAJA::operators::minimum>(&gpu_min),
+      RAJA::expt::Reduce<RAJA::operators::maximum>(&gpu_max),
+      RAJA::expt::Reduce<RAJA::operators::minimum>(&gpu_minloc),
+      RAJA::expt::Reduce<RAJA::operators::maximum>(&gpu_maxloc),
+      RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&gpu_min2, &gpu_minloc2),
+      RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&gpu_max2, &gpu_maxloc2)
     ),
     // lambda 1
     [=] RAJA_HOST_DEVICE (int row,
       int col,
-      VALOP_INT_SUM &_cuda_sum,
-      VALOP_INT_MIN &_cuda_min,
-      VALOP_INT_MAX &_cuda_max,
-      VALOPLOC_INT_MIN &_cuda_minloc,
-      VALOPLOC_INT_MAX &_cuda_maxloc,
-      VALOPLOC_INT_MIN &_cuda_minloc2,
-      VALOPLOC_INT_MAX &_cuda_maxloc2)
-    {
-      _cuda_min = _cuda_min.min(dAview(row, col));
-      _cuda_max = _cuda_max.max(dAview(row, col));
-      _cuda_sum += dAview(row, col);
+      VALOP_INT_SUM &_gpu_sum,
+      VALOP_INT_MIN &_gpu_min,
+      VALOP_INT_MAX &_gpu_max,
+      VALOPLOC_INT_MIN &_gpu_minloc,
+      VALOPLOC_INT_MAX &_gpu_maxloc,
+      VALOPLOC_INT_MIN &_gpu_minloc2,
+      VALOPLOC_INT_MAX &_gpu_maxloc2)
+      {
+      _gpu_sum += dAview(row, col);
+      _gpu_min = _gpu_min.min(dAview(row, col));
+      _gpu_max = _gpu_max.max(dAview(row, col));
 
       // loc
-      _cuda_minloc.minloc(dAview(row, col), row * N + col);
-      _cuda_maxloc.maxloc(dAview(row, col), row * N + col);
-      _cuda_minloc2.minloc(dAview(row, col), row * N + col);
-      _cuda_maxloc2.maxloc(dAview(row, col), row * N + col);
+      _gpu_minloc.minloc(dAview(row, col), row * N + col);
+      _gpu_maxloc.maxloc(dAview(row, col), row * N + col);
+      _gpu_minloc2.minloc(dAview(row, col), row * N + col);
+      _gpu_maxloc2.maxloc(dAview(row, col), row * N + col);
     }
   );
-  std::cout << "CUDA MIN VAL = " << cuda_min << std::endl;
-  std::cout << "CUDA MAX VAL = " << cuda_max << std::endl;
-  std::cout << "CUDA SUM VAL = " << cuda_sum << std::endl;
-  std::cout << "CUDA MIN VAL = " << cuda_minloc.getVal() << " MIN VALLOC  = " << cuda_minloc.getLoc() << std::endl;
-  std::cout << "CUDA MAX VAL = " << cuda_maxloc.getVal() << " MAX VALLOC  = " << cuda_maxloc.getLoc() << std::endl;
-  std::cout << "CUDA MIN VAL LOC 2 = "<< cuda_minloc2 << std::endl;
-  std::cout << "CUDA MAX VAL LOC 2 = "<< cuda_maxloc2 << std::endl;
+  std::cout << "CUDA MIN VAL = " << gpu_min << std::endl;
+  std::cout << "CUDA MAX VAL = " << gpu_max << std::endl;
+  std::cout << "CUDA SUM VAL = " << gpu_sum << std::endl;
+  std::cout << "CUDA MIN VAL = " << gpu_minloc.getVal() << " MIN VALLOC  = " << gpu_minloc.getLoc() << std::endl;
+  std::cout << "CUDA MAX VAL = " << gpu_maxloc.getVal() << " MAX VALLOC  = " << gpu_maxloc.getLoc() << std::endl;
+  std::cout << "CUDA MIN VAL LOC 2 = "<< gpu_minloc2 << std::endl;
+  std::cout << "CUDA MAX VAL LOC 2 = "<< gpu_maxloc2 << std::endl;
 #endif
 
 };

@@ -210,9 +210,9 @@ struct CudaStatementListExecutorHelper<num_stmts, num_stmts, StmtList>
   }
 };
 
+
 template<typename Data, typename Policy, typename Types>
-struct CudaStatementExecutor
-{};
+struct CudaStatementExecutor;
 
 template<typename Data, typename StmtList, typename Types>
 struct CudaStatementListExecutor;
