@@ -98,7 +98,8 @@ The ``RAJA::Reshape`` method takes a pointer to data and extents in each dimensi
 
 Meta-layouts are predefined types which specify stride ordering. The first meta-layout is
 based on a right-most layout which follows standard C indexing (right most index has unit stride).
-The example below illustrates the following capability.
+For example:
+
 
 .. literalinclude:: ../../../../examples/reshape.cpp
    :start-after: _Reshape_right_start
