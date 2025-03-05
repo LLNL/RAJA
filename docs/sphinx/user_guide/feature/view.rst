@@ -96,7 +96,8 @@ Reshape
 ^^^^^^^
 The ``RAJA::Reshape`` method takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object. The reshape method is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
 
-Meta-layouts are predefined types which specify stride ordering. The first meta-layout is
+The first meta-layout is
+
 based on a right-most layout which follows standard C indexing (right most index has unit stride).
 For example:
 
