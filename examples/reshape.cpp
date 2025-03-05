@@ -5,15 +5,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/Timer.hpp"
-
-
 #include "memoryManager.hpp"
 
 /*
@@ -25,17 +19,6 @@
  *  stride.
  *
  */
-
-/*
- * Define number of threads in a GPU thread block
- */
-#if defined(RAJA_ENABLE_CUDA)
-constexpr int CUDA_BLOCK_SIZE = 256;
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-constexpr int HIP_BLOCK_SIZE = 256;
-#endif
 
 //
 //Function for checking results
