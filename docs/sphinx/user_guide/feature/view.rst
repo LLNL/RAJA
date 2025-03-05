@@ -116,10 +116,10 @@ is demonstrated in the following example.
    :language: C++
 
 Finally, users may specify a custom index ordering by providing a ``std::index_sequence`` type as a
-template argument for the ``RAJA::Reshape`` method. A ``RAJA::View`` enumerates the parathesis accessor
+template argument for the ``RAJA::Reshape`` method. A ``RAJA::View`` enumerates its corresponding parenthesis accessor
 from left to right starting at zero. The ``std::index_sequence`` will hold an ordering of slowest (left most)
-to fastest (right most) index for the ``RAJA::View``. In the following example, unit stride will be given to
-index 1 while index 2 is assumed to have the unit stride.
+to fastest (right most) index for the ``RAJA::View``. In the following example, index 1 in the ``RAJA::View`` is
+assumed to have the fastest stride while index 2 will have the longest stride.
 
 .. literalinclude:: ../../../../examples/reshape.cpp
    :start-after: _Reshape_custom_start
