@@ -94,9 +94,8 @@ access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... *
 
 Reshape
 ^^^^^^^
-The ``RAJA::Reshape`` method is designed as a simplified multi-dimensional pointer abstraction
-only requiring the pointer, dimensions, and prefered layout type based on a template specilization.
-RAJA supports three template specializations for the ``RAJA::Reshape`` method. The first specilization is
+The ``RAJA::Reshape`` method will provide developers a ``RAJA::View`` given a pointer, dimentions and a meta-layout.
+Meta-layouts are predefined types which specify stride ordering. The first meta-layout is
 based on a right-most layout which follows standard C indexing (right most index has unit stride).
 The example below illustrates the following capability.
 
@@ -106,7 +105,7 @@ The example below illustrates the following capability.
    :language: C++
 In the example above a ``RAJA::View`` is returned with right most indexing having unit stride.
 
-The second supported layout is the ``RAJA::layout_left`` which will follow a Fortran style indexing
+The second supported meta-layout is the ``RAJA::layout_left`` which will follow a Fortran style indexing
 in which the left most index has unit stride and the right most has the longest stride. The configuration
 is demonstrated in the following example.
 
