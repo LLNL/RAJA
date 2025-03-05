@@ -94,7 +94,8 @@ access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... *
 
 Reshape
 ^^^^^^^
-The ``RAJA::Reshape`` method will provide developers a ``RAJA::View`` given a pointer, dimentions and a meta-layout.
+The ``RAJA::Reshape`` method takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object. The reshape method is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
+
 Meta-layouts are predefined types which specify stride ordering. The first meta-layout is
 based on a right-most layout which follows standard C indexing (right most index has unit stride).
 The example below illustrates the following capability.
