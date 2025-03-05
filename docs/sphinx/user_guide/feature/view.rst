@@ -117,7 +117,8 @@ is demonstrated in the following example.
    :end-before: _Reshape_left_end
    :language: C++
 
-Finally, users may specify a custom index ordering by providing a ``std::index_sequence`` list as a
+Finally, users may specify a custom index ordering by providing a ``std::index_sequence`` type as a
+
 template argument.
 
 .. literalinclude:: ../../../../examples/reshape.cpp
