@@ -107,7 +107,7 @@ struct AccessorDeviceScopeUseBlockFence
       u.array[i] = __hip_atomic_load(&ptr[i], __ATOMIC_RELAXED,
                                      __HIP_MEMORY_SCOPE_AGENT);
 #else
-      u.array[i] = atomicAdd(&ptr[i], integer_type(0));
+      u.array[i] = ::atomicAdd(&ptr[i], integer_type(0));
 #endif
     }
 
@@ -132,7 +132,7 @@ struct AccessorDeviceScopeUseBlockFence
       __hip_atomic_store(&ptr[i], u.array[i], __ATOMIC_RELAXED,
                          __HIP_MEMORY_SCOPE_AGENT);
 #else
-      atomicExch(&ptr[i], u.array[i]);
+      ::atomicExch(&ptr[i], u.array[i]);
 #endif
     }
   }

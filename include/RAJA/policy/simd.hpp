@@ -25,5 +25,7 @@
 #include "RAJA/policy/sequential/launch.hpp"
 #include "RAJA/policy/simd/kernel/For.hpp"
 #include "RAJA/policy/simd/kernel/ForICount.hpp"
+#include "RAJA/policy/simd/params/reduce.hpp"
+#include "RAJA/policy/simd/params/kernel_name.hpp"
 
 #endif  // closing endif for header file include guard

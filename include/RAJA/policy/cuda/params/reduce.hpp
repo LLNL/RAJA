@@ -19,10 +19,10 @@ namespace detail
 
 // Init
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
-camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> param_init(
-    EXEC_POL const&,
-    Reducer<OP, T, VOp>& red,
-    RAJA::cuda::detail::cudaInfo& ci)
+camp::concepts::enable_if<RAJA::type_traits::is_cuda_policy<EXEC_POL>>
+param_init(EXEC_POL const&,
+           Reducer<OP, T, VOp>& red,
+           RAJA::cuda::detail::cudaInfo& ci)
 {
   red.devicetarget =
       RAJA::cuda::pinned_mempool_type::getInstance().template malloc<T>(1);
@@ -34,7 +34,7 @@ camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> param_init(
 // Combine
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
 RAJA_HOST_DEVICE camp::concepts::enable_if<
-    type_traits::is_cuda_policy<EXEC_POL>>
+    RAJA::type_traits::is_cuda_policy<EXEC_POL>>
 param_combine(EXEC_POL const&, Reducer<OP, T, VOp>& red)
 {
   RAJA::cuda::impl::expt::grid_reduce<typename EXEC_POL::IterationGetter, OP>(
@@ -43,10 +43,10 @@ param_combine(EXEC_POL const&, Reducer<OP, T, VOp>& red)
 
 // Resolve
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
-camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> param_resolve(
-    EXEC_POL const&,
-    Reducer<OP, T, VOp>& red,
-    RAJA::cuda::detail::cudaInfo& ci)
+camp::concepts::enable_if<RAJA::type_traits::is_cuda_policy<EXEC_POL>>
+param_resolve(EXEC_POL const&,
+              Reducer<OP, T, VOp>& red,
+              RAJA::cuda::detail::cudaInfo& ci)
 {
   // complete reduction
   ci.res.wait();

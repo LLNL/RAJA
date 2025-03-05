@@ -43,7 +43,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -65,7 +65,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (params.threads.value[0] > zero && params.threads.value[1] > zero &&
         params.threads.value[2] > zero && params.teams.value[0] > zero &&
         params.teams.value[1] > zero && params.teams.value[2] > zero)
@@ -114,16 +114,16 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
+    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
+    EXEC_POL pol {};
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
-    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    EXEC_POL pol {};
     RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     //
@@ -139,7 +139,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         launch_params.threads.value[0] * launch_params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (launch_params.threads.value[0] > zero &&
         launch_params.threads.value[1] > zero &&
         launch_params.threads.value[2] > zero &&
@@ -206,7 +206,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -228,7 +228,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (params.threads.value[0] > zero && params.threads.value[1] > zero &&
         params.threads.value[2] > zero && params.teams.value[0] > zero &&
         params.teams.value[1] > zero && params.teams.value[2] > zero)
@@ -283,16 +283,16 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
+    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
+    EXEC_POL pol {};
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
-    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    EXEC_POL pol {};
     RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     //
@@ -308,7 +308,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         launch_params.threads.value[0] * launch_params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (launch_params.threads.value[0] > zero &&
         launch_params.threads.value[1] > zero &&
         launch_params.threads.value[2] > zero &&

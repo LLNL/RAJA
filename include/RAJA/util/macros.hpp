@@ -152,6 +152,7 @@ RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char* str)
 {
 #if defined(__SYCL_DEVICE_ONLY__)
+  RAJA_UNUSED_VAR(str);
   // segfault here ran into linking problems
   *((volatile char*)0) = 0;  // write to address 0
 #else

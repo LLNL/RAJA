@@ -15,8 +15,8 @@ template <typename INDEX_TYPE, typename WORKING_RES, typename LAUNCH_POLICY,
 void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 {
 
-  constexpr int threads_x   = 4;
-  constexpr int blocks_x    = 4;
+  constexpr INDEX_TYPE threads_x   = 4;
+  constexpr INDEX_TYPE blocks_x    = 4;
 
   RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, M*threads_x+1);
 

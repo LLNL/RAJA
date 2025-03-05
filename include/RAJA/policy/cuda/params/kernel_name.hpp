@@ -16,10 +16,8 @@ namespace detail
 
 // Init
 template<typename EXEC_POL>
-camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> param_init(
-    EXEC_POL const&,
-    KernelName& kn,
-    const RAJA::cuda::detail::cudaInfo&)
+camp::concepts::enable_if<RAJA::type_traits::is_cuda_policy<EXEC_POL>>
+param_init(EXEC_POL const&, KernelName& kn, const RAJA::cuda::detail::cudaInfo&)
 {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   nvtxRangePush(kn.name);
@@ -31,16 +29,14 @@ camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> param_init(
 // Combine
 template<typename EXEC_POL>
 RAJA_HOST_DEVICE camp::concepts::enable_if<
-    type_traits::is_cuda_policy<EXEC_POL>>
+    RAJA::type_traits::is_cuda_policy<EXEC_POL>>
 param_combine(EXEC_POL const&, KernelName&)
 {}
 
 // Resolve
 template<typename EXEC_POL>
-camp::concepts::enable_if<type_traits::is_cuda_policy<EXEC_POL>> param_resolve(
-    EXEC_POL const&,
-    KernelName&,
-    const RAJA::cuda::detail::cudaInfo&)
+camp::concepts::enable_if<RAJA::type_traits::is_cuda_policy<EXEC_POL>>
+param_resolve(EXEC_POL const&, KernelName&, const RAJA::cuda::detail::cudaInfo&)
 {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT)
   nvtxRangePop();

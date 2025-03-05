@@ -33,5 +33,7 @@
 #include "RAJA/policy/sequential/sort.hpp"
 #include "RAJA/policy/sequential/launch.hpp"
 #include "RAJA/policy/sequential/WorkGroup.hpp"
+#include "RAJA/policy/sequential/params/reduce.hpp"
+#include "RAJA/policy/sequential/params/kernel_name.hpp"
 
 #endif  // closing endif for header file include guard

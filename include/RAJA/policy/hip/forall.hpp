@@ -614,21 +614,20 @@ RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const&,
-    Iterable&& iter,
-    LoopBody&& loop_body,
-    ForallParam)
+forall_impl(resources::Hip hip_res,
+            ::RAJA::policy::hip::hip_exec<IterationMapping,
+                                          IterationGetter,
+                                          Concretizer,
+                                          Async> const& pol,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL =
-      ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
-                                    Concretizer, Async>;
+  using EXEC_POL     = camp::decay<decltype(pol)>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
                                     LOOP_BODY, Iterator, ForallParam>;
   using DimensionCalculator =
@@ -709,9 +708,7 @@ forall_impl(resources::Hip hip_res,
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL =
-      ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
-                                    Concretizer, Async>;
+  using EXEC_POL     = camp::decay<decltype(pol)>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
                                     LOOP_BODY, Iterator, ForallParam>;
   using DimensionCalculator =
