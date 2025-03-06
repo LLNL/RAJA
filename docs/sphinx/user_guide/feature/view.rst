@@ -115,13 +115,10 @@ is demonstrated in the following example.
    :end-before: _Reshape_left_end
    :language: C++
 
-Finally, users may specify a custom index ordering by providing a ``std::index_sequence`` type as a
+Users may also specify a custom index ordering by providing a ``std::index_sequence`` type as a
 template argument to the ``RAJA::Reshape`` method. The members of the ``std::index_sequence`` enumerate
-the striding order of the arguments of the ``RAJA::View`` parenthesis operator. Using an ``std::index_sequence``
-in a ``RAJA::Reshape`` method gives the same ``RAJA::View`` object created with a custom permutation. For example
-the section :ref:`permuted-layout-label` describes the construction of a ``RAJA::View`` object with a custom stride
-ordering. The same ``RAJA::View`` object can be constructed using the ``RAJA::Reshape`` method and the following
-sequence ``std::index_sequence<1U, 2U, 0U>``.
+the striding order of the arguments of the ``RAJA::View`` parenthesis operator. Using the ``std::index_sequence<1U, 2U, 0U>``
+in a ``RAJA::Reshape`` method will construct the same ``RAJA::View`` object as described in Section :ref:`permuted-layout-label`.
 
 As an additional example to use the C index ordering (``RAJA::layout_right``) with a 3-dimensional ``RAJA::View`` use the
 following  sequence type ``std::index_sequence<0U,1U,2U>``.  In the following example, we consider a permutation
