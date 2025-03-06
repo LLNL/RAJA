@@ -204,9 +204,10 @@ using the default Layout constructor, as shown above, RAJA provides other
 methods to generate layouts for different indexing patterns. We describe
 them here.
 
+.. _permuted-layout-label:
+
 Permuted Layout
 ^^^^^^^^^^^^^^^^
-.. _permuted-layout-label:
 
 The ``RAJA::make_permuted_layout`` method creates a ``RAJA::Layout`` object
 with permuted index strides. That is, the indices with shortest to
