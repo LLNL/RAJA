@@ -121,7 +121,7 @@ the striding order of the arguments of the ``RAJA::View`` parenthesis operator. 
 in a ``RAJA::Reshape`` method will construct the same ``RAJA::View`` object as described in Section :ref:`permuted-layout-label`.
 
 As an additional example to use the C index ordering (``RAJA::layout_right``) with a 3-dimensional ``RAJA::View`` use the
-following  sequence type ``std::index_sequence<0U,1U,2U>``.  In the following example, we consider a permutation
+following  sequence type ``std::index_sequence<0U,1U,2U>``.  In our final example, we consider a permutation
 in which index 1 is placed in the right most position of the sequence so it has unit stride. Finally, since index 2 is placed in
 the left most position of the sequence it has the longest stride.
 
