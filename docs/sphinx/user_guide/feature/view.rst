@@ -119,7 +119,7 @@ Finally, users may specify a custom index ordering by providing a ``std::index_s
 template argument to the ``RAJA::Reshape`` method. The members of the ``std::index_sequence`` enumerate
 the striding order of the arguments of the ``RAJA::View`` parenthesis operator. Using an ``std::index_sequence``
 in a ``RAJA::Reshape`` method gives the same ``RAJA::View`` object created with a custom permutation. For example
-the section :ref:`_permuted-layout-label` describes the construction of a ``RAJA::View`` object with a custom stride
+the section :ref:`permuted-layout-label` describes the construction of a ``RAJA::View`` object with a custom stride
 ordering. The same ``RAJA::View`` object can be constructed using the ``RAJA::Reshape`` method and the following
 sequence ``std::index_sequence<1U, 2U, 0U>``.
 
@@ -205,7 +205,6 @@ methods to generate layouts for different indexing patterns. We describe
 them here.
 
 .. _permuted-layout-label:
-
 Permuted Layout
 ^^^^^^^^^^^^^^^^
 
