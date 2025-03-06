@@ -117,10 +117,14 @@ is demonstrated in the following example.
 
 Finally, users may specify a custom index ordering by providing a ``std::index_sequence`` type as a
 template argument to the ``RAJA::Reshape`` method. The members of the ``std::index_sequence`` enumerate
-the striding order of the arguments of the ``RAJA::View`` parenthesis operator.
+the striding order of the arguments of the ``RAJA::View`` parenthesis operator. Using an ``std::index_sequence``
+in a ``RAJA::Reshape`` method gives the same ``RAJA::View`` object created with a custom permutation. For example
+the section :ref:`_permuted-layout-label` describes the construction of a ``RAJA::View`` object with a custom stride
+ordering. The same ``RAJA::View`` object can be constructed using the ``RAJA::Reshape`` method and the following
+sequence ``std::index_sequence<1U, 2U, 0U>``.
 
-For example to use the C index ordering (``RAJA::layout_right``) with a 3-dimensional ``RAJA::View`` use the following 
-sequence type ``std::index_sequence<0U,1U,2U>``.  In the following example, we consider a permutation
+As an additional example to use the C index ordering (``RAJA::layout_right``) with a 3-dimensional ``RAJA::View`` use the
+following  sequence type ``std::index_sequence<0U,1U,2U>``.  In the following example, we consider a permutation
 in which index 1 is placed in the right most position of the sequence so it has unit stride. Finally, since index 2 is placed in
 the left most position of the sequence it has the longest stride.
 
@@ -202,6 +206,7 @@ them here.
 
 Permuted Layout
 ^^^^^^^^^^^^^^^^
+.. _permuted-layout-label:
 
 The ``RAJA::make_permuted_layout`` method creates a ``RAJA::Layout`` object
 with permuted index strides. That is, the indices with shortest to
