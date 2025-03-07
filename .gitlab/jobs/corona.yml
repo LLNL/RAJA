@@ -1,5 +1,5 @@
 #############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,9 +31,11 @@ rocmcc_5_7_1_hip_desul_atomics:
     SPEC: " ~shared +rocm ~openmp +tests +desul amdgpu_target=gfx906 %rocmcc@=5.7.1 ^hip@5.7.1"
   extends: .job_on_corona
 
-clang_19_0_0_sycl_gcc_10_3_1_rocmcc_5_7_1_hip:
+clang_20_0_0_sycl_gcc_10_3_1_rocmcc_6_0_2_hip:
   variables:
-    SPEC: " ~shared +sycl ~openmp +tests %clang@=19.0.0 cxxflags==\"-w -fsycl -fsycl-unnamed-lambda -fsycl-targets=amdgcn-amd-amdhsa -Xsycl-target-backend --offload-arch=gfx906\""
-    MODULE_LIST: "rocm/5.7.1"
+    SPEC: " ~shared +sycl ~openmp +tests %clang@=20.0.0 cxxflags==\"-w -fsycl -fsycl-unnamed-lambda -fsycl-targets=amdgcn-amd-amdhsa -Xsycl-target-backend --offload-arch=gfx906\""
+    MODULE_LIST: "rocm/6.0.2"
+    SYCL_PATH: "/usr/WS2/raja-dev/clang_sycl_730cd3a5275f_hip_gcc10.3.1_rocm6.0.2/"
+    LD_LIBRARY_PATH: "${SYCL_PATH}/lib:${SYCL_PATH}/lib64:${LD_LIBRARY_PATH}"
   extends: .job_on_corona
 

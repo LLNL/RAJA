@@ -7,7 +7,7 @@ then
 fi
 
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC and RAJA
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC and RAJA
 # project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -202,10 +202,6 @@ then
     mkdir -p ${build_dir} && cd ${build_dir}
 
     timed_message "Building RAJA"
-    if [[ "${truehostname}" == "tioga" ]]
-    then
-        module unload rocm
-    fi
     $cmake_exe \
       -C ${hostconfig_path} \
       -DCMAKE_INSTALL_PREFIX=${install_dir} \

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,16 +34,16 @@ namespace omp
  *
  */
 
-template <typename Func>
-RAJA_INLINE void region_impl(const omp_parallel_region &, Func &&body)
+template<typename Func>
+RAJA_INLINE void region_impl(const omp_parallel_region&, Func&& body)
 {
 
 #pragma omp parallel
-    { // curly brackets to ensure body() is encapsulated in omp parallel region
-      //thread private copy of body
-      auto loopbody = body;
-      loopbody();
-    }
+  {  // curly brackets to ensure body() is encapsulated in omp parallel region
+    // thread private copy of body
+    auto loopbody = body;
+    loopbody();
+  }
 }
 
 }  // namespace omp

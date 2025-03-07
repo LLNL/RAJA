@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -76,7 +76,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template<typename REDUCE_POLICY_T, typename T>
 class ReduceMin;
 
 /*!
@@ -102,7 +102,7 @@ class ReduceMin;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
+template<typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMinLoc;
 
 /*!
@@ -127,7 +127,7 @@ class ReduceMinLoc;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template<typename REDUCE_POLICY_T, typename T>
 class ReduceMax;
 
 /*!
@@ -153,7 +153,7 @@ class ReduceMax;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
+template<typename REDUCE_POLICY_T, typename T, typename IndexType = Index_type>
 class ReduceMaxLoc;
 
 /*!
@@ -178,7 +178,7 @@ class ReduceMaxLoc;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template<typename REDUCE_POLICY_T, typename T>
 class ReduceSum;
 
 /*!
@@ -203,9 +203,9 @@ class ReduceSum;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template<typename REDUCE_POLICY_T, typename T>
 class ReduceBitOr;
- 
+
 
 /*!
  ******************************************************************************
@@ -229,9 +229,9 @@ class ReduceBitOr;
  *
  ******************************************************************************
  */
-template <typename REDUCE_POLICY_T, typename T>
+template<typename REDUCE_POLICY_T, typename T>
 class ReduceBitAnd;
-} //namespace RAJA
+}  // namespace RAJA
 
 
 #endif  // closing endif for header file include guard

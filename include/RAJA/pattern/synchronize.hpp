@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -38,10 +38,10 @@ namespace RAJA
  * \see RAJA::policy::omp::synchronize_impl
  * \see RAJA::policy::cuda::synchronize_impl
  */
-template <typename Policy>
+template<typename Policy>
 void synchronize()
 {
-  synchronize_impl(Policy{});
+  synchronize_impl(Policy {});
 }
 }  // namespace RAJA
 

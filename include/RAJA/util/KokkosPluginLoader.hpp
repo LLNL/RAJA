@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,39 +14,44 @@
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 
-namespace RAJA {
-namespace util {
+namespace RAJA
+{
+namespace util
+{
 
-  class KokkosPluginLoader : public ::RAJA::util::PluginStrategy
-  {
-  public:
-    using Parent = ::RAJA::util::PluginStrategy;
-    typedef void (*init_function)(const int, const uint64_t, const uint32_t, void*);
-    typedef void (*pre_function)(const char*, const uint32_t, uint64_t*);
-    typedef void (*post_function)(uint64_t);
-    typedef void (*finalize_function)();
+class KokkosPluginLoader : public ::RAJA::util::PluginStrategy
+{
+public:
+  using Parent = ::RAJA::util::PluginStrategy;
+  typedef void (*init_function)(const int,
+                                const uint64_t,
+                                const uint32_t,
+                                void*);
+  typedef void (*pre_function)(const char*, const uint32_t, uint64_t*);
+  typedef void (*post_function)(uint64_t);
+  typedef void (*finalize_function)();
 
-    KokkosPluginLoader();
+  KokkosPluginLoader();
 
-    void preLaunch(const RAJA::util::PluginContext& p) override;
+  void preLaunch(const RAJA::util::PluginContext& p) override;
 
-    void postLaunch(const RAJA::util::PluginContext& p) override;
+  void postLaunch(const RAJA::util::PluginContext& p) override;
 
-    void finalize() override;
+  void finalize() override;
 
-  private:
-    void initPlugin(const std::string &path);
-    
-    void initDirectory(const std::string &path);
+private:
+  void initPlugin(const std::string& path);
 
-    std::vector<init_function> init_functions;
-    std::vector<pre_function> pre_functions;
-    std::vector<post_function> post_functions;
-    std::vector<finalize_function> finalize_functions;
+  void initDirectory(const std::string& path);
 
-  };  // end KokkosPluginLoader class
+  std::vector<init_function> init_functions;
+  std::vector<pre_function> pre_functions;
+  std::vector<post_function> post_functions;
+  std::vector<finalize_function> finalize_functions;
 
-  void linkKokkosPluginLoader();
+};  // end KokkosPluginLoader class
+
+void linkKokkosPluginLoader();
 
 }  // end namespace util
 }  // end namespace RAJA

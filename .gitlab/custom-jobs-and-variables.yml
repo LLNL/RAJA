@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC and RADIUSS
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC and RADIUSS
 # project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (MIT)
@@ -70,6 +70,9 @@ variables:
   artifacts:
     reports:
       junit: junit.xml
+    name: "${CI_PROJECT_NAME}-${CI_MACHINE}-${CI_JOB_NAME}-${CI_PIPELINE_ID}"
+    paths:
+      - ./*.cmake
 
 .reproducer_vars:
   script:

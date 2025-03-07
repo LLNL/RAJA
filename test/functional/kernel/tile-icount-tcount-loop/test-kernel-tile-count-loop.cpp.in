@@ -18,7 +18,7 @@
 // Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
-#include "test-kernel-single-loop-@TESTTYPE@.hpp"
+#include "test-kernel-tile-@TESTTYPE@-loop.hpp"
 
 //
 // Note that a separate test file/executable is generated for each tile size
@@ -135,7 +135,7 @@ using CudaKernelForICountExecPols = camp::list<
   RAJA::KernelPolicy< 
     RAJA::statement::CudaKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_loop,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct, 
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_loop,
           RAJA::statement::Lambda<0>
         >
       >
@@ -149,7 +149,7 @@ using CudaKernelTileTCountExecPols = camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_loop,
-        RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
+        RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
           RAJA::statement::Lambda<0>
         >
       >
@@ -170,7 +170,7 @@ using HipKernelForICountExecPols = camp::list<
   RAJA::KernelPolicy< 
     RAJA::statement::HipKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_loop,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct, 
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_loop,
           RAJA::statement::Lambda<0>
         >
       >
@@ -184,7 +184,7 @@ using HipKernelTileTCountExecPols = camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
       RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_loop,
-        RAJA::statement::For<0, RAJA::hip_thread_x_direct,
+        RAJA::statement::For<0, RAJA::hip_thread_x_loop,
           RAJA::statement::Lambda<0>
         >
       >
@@ -205,7 +205,7 @@ using SyclKernelForICountExecPols = camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::SyclKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::sycl_group_0_loop,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::sycl_local_0_direct,
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::sycl_local_0_loop,
           RAJA::statement::Lambda<0>
         >
       >
@@ -219,7 +219,7 @@ using SyclKernelTileTCountExecPols = camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::SyclKernel<
       RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::sycl_group_0_loop,
-        RAJA::statement::For<0, RAJA::sycl_local_0_direct,
+        RAJA::statement::For<0, RAJA::sycl_local_0_loop,
           RAJA::statement::Lambda<0>
         >
       >
@@ -232,7 +232,7 @@ using SyclKernelTileTCountExecPols = camp::list<
 //
 // Cartesian product of types used in parameterized tests
 //
-using @BACKEND@KernelSingleLoop@TESTTYPE@Types =
+using @BACKEND@KernelTile@TESTTYPE@Types =
   Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@Kernel@TESTTYPE@ExecPols,
                                 @BACKEND@ReducePols,
@@ -242,5 +242,5 @@ using @BACKEND@KernelSingleLoop@TESTTYPE@Types =
 // Instantiate parameterized tests
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               KernelSingleLoop@TESTTYPE@Test,
-                               @BACKEND@KernelSingleLoop@TESTTYPE@Types);
+                               KernelTile@TESTTYPE@LoopTest,
+                               @BACKEND@KernelTile@TESTTYPE@Types);

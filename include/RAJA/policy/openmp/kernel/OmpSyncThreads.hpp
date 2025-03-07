@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,37 +29,31 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-
-
 namespace RAJA
 {
 
 namespace statement
 {
-struct OmpSyncThreads : public internal::Statement<camp::nil> {
-};
+struct OmpSyncThreads : public internal::Statement<camp::nil>
+{};
 
-} // namespace statement
+}  // namespace statement
 
 namespace internal
 {
 
 
-
-//Statement executor to synchronize omp threads inside a kernel region
+// Statement executor to synchronize omp threads inside a kernel region
 template<typename Types>
-struct StatementExecutor<statement::OmpSyncThreads, Types> {
-
-template<typename Data>
-static RAJA_INLINE void exec(Data &&)
+struct StatementExecutor<statement::OmpSyncThreads, Types>
 {
-  #pragma omp barrier
-}
 
+  template<typename Data>
+  static RAJA_INLINE void exec(Data&&)
+  {
+#pragma omp barrier
+  }
 };
-
-
-
 
 
 }  // namespace internal

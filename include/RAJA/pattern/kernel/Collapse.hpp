@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,11 +26,11 @@ namespace statement
 {
 
 
-template <typename ExecPolicy, typename ForList, typename... EnclosedStmts>
+template<typename ExecPolicy, typename ForList, typename... EnclosedStmts>
 struct Collapse : public internal::ForList,
                   public internal::CollapseBase,
-                  public internal::Statement<ExecPolicy, EnclosedStmts...> {
-};
+                  public internal::Statement<ExecPolicy, EnclosedStmts...>
+{};
 
 
 }  // namespace statement

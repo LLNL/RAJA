@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,17 +20,18 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
   constexpr int tile_size_y = 3;
   constexpr int tile_size_z = 4;
 
-  constexpr int threads_x = 2*tile_size_x;
-  constexpr int threads_y = 3*tile_size_y;
-  constexpr int threads_z = 4*tile_size_z;
+  constexpr int threads_x = tile_size_x;
+  constexpr int threads_y = tile_size_y;
+  constexpr int threads_z = tile_size_z;
 
   constexpr int blocks_x = 4;
   constexpr int blocks_y = 5;
   constexpr int blocks_z = 6;
 
-  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, tile_size_x*M);
-  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, tile_size_y*M);
-  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, tile_size_z*M);
+  // Use fewer than the number of teams and threads
+  RAJA::TypedRangeSegment<INDEX_TYPE> r1(0, ((blocks_x-1)*threads_x+1)*M);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r2(0, ((blocks_y-1)*threads_y+1)*M);
+  RAJA::TypedRangeSegment<INDEX_TYPE> r3(0, ((blocks_z-1)*threads_z+1)*M);
 
   INDEX_TYPE N1 = static_cast<INDEX_TYPE>(r1.end() - r1.begin());
   INDEX_TYPE N2 = static_cast<INDEX_TYPE>(r2.end() - r2.begin());
@@ -56,9 +57,10 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
                                      &check_array,
                                      &test_array);
 
-  if ( RAJA::stripIndexType(N) > 0 ) {
+  std::iota(test_array, test_array + data_len, 0);
+  working_res.memset(working_array, 0, sizeof(INDEX_TYPE) * data_len);
 
-    std::iota(test_array, test_array + RAJA::stripIndexType(N), 0);
+  if ( RAJA::stripIndexType(N) > 0 ) {
 
     constexpr int DIM = 3;
     using layout_t = RAJA::Layout<DIM, INDEX_TYPE,DIM-1>;
@@ -78,7 +80,7 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 
                                 auto idx = tx + N1 * (ty + N2 * tz);
 
-                                Aview(tz, ty, tx) = static_cast<INDEX_TYPE>(idx);
+                                Aview(tz, ty, tx) += static_cast<INDEX_TYPE>(idx);
 
                               });
                           });
@@ -90,17 +92,13 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     });
   } else { // zero-length segment
 
-    memset(static_cast<void*>(test_array), 0, sizeof(INDEX_TYPE) * data_len);
-
-    working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * data_len);
-
     RAJA::launch<LAUNCH_POLICY>
-      (RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z), RAJA::Threads(blocks_x, blocks_y ,blocks_z)),
+      (RAJA::LaunchParams(RAJA::Teams(blocks_x, blocks_y, blocks_z), RAJA::Threads(threads_x, threads_y,threads_z)),
         [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::tile<TEAM_Z_POLICY>(ctx, threads_z, r3, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &z_tile) {
-            RAJA::tile<TEAM_Y_POLICY>(ctx, threads_y, r2, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &y_tile) {
-                RAJA::tile<TEAM_X_POLICY>(ctx, threads_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile) {
+        RAJA::tile<TEAM_Z_POLICY>(ctx, tile_size_z, r3, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &z_tile) {
+            RAJA::tile<TEAM_Y_POLICY>(ctx, tile_size_y, r2, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &y_tile) {
+                RAJA::tile<TEAM_X_POLICY>(ctx, tile_size_x, r1, [&](RAJA::TypedRangeSegment<INDEX_TYPE> const &x_tile) {
 
                     RAJA::loop<THREAD_Z_POLICY>(ctx, z_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(tz)) {
                         RAJA::loop<THREAD_Y_POLICY>(ctx, y_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(ty)) {
@@ -119,6 +117,7 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
   }
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * data_len);
+  working_res.wait();
 
   if (RAJA::stripIndexType(N) > 0) {
 
@@ -153,13 +152,13 @@ TYPED_TEST_P(LaunchNestedTileDirectTest, RangeSegmentTeams)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<1>>::type;
   using LAUNCH_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<0>>::type;
 
-  using THREAD_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
-  using THREAD_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
-  using THREAD_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<3>>::type;
+  using TEAM_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<1>>::type;
+  using TEAM_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<2>>::type;
+  using TEAM_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<3>>::type;
 
-  using TEAM_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<4>>::type;
-  using TEAM_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<5>>::type;
-  using TEAM_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<6>>::type;
+  using THREAD_Z_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<4>>::type;
+  using THREAD_Y_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<5>>::type;
+  using THREAD_X_POLICY = typename camp::at<typename camp::at<TypeParam,camp::num<2>>::type, camp::num<6>>::type;
 
 
   // test zero-length range segment
