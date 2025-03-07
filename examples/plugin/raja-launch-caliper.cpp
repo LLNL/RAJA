@@ -103,7 +103,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    timer.start();
    RAJA::launch<seq_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-      RAJA::expt::KernelName("CALI: launch kernel"),
+      RAJA::expt::KernelName(RAJA_KERNEL_NAME),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<seq_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
