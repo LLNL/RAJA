@@ -8,9 +8,9 @@
 
 .. _feat-view-label:
 
-========================
-View, Reshape, and Layout
-========================
+===============
+View and Layout
+===============
 
 Matrices and tensors, which are common in scientific computing applications,
 are naturally expressed as multi-dimensional arrays. However, for efficiency
@@ -31,7 +31,7 @@ to access a matrix entry in row `r` and column `c`. However, this solution has
 limitations; e.g., additional macro definitions may be needed when adopting a
 different matrix data layout or when using other matrices. To facilitate
 multi-dimensional indexing and different indexing layouts, RAJA provides
-``RAJA::View``, ``RAJA::Reshape``, ``RAJA::Layout``, and ``RAJA::OffsetLayout`` classes.
+``RAJA::View``, ``RAJA::Layout``, and ``RAJA::OffsetLayout`` classes.
 
 Please see the following tutorial sections for detailed examples that use
 RAJA Views and Layouts:
@@ -91,48 +91,6 @@ accesses array entries with unit stride. The loop::
    }
 
 access array entries with stride N :subscript:`n` * N :subscript:`(n-1)` * ... * N :subscript:`(j+1)`.
-
-Reshape
-^^^^^^^
-The ``RAJA::Reshape`` method takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object.
-The reshape method is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
-
-The first meta-layout is based on a right-most layout which follows standard C indexing (right most index has unit stride).
-For example:
-
-.. literalinclude:: ../../../../examples/reshape.cpp
-   :start-after: _Reshape_right_start
-   :end-before: _Reshape_right_end
-   :language: C++
-In the example above a ``RAJA::View`` is returned with right most indexing having unit stride.
-
-The second supported meta-layout is the ``RAJA::layout_left`` which will follow a Fortran style indexing
-in which the left most index has unit stride and the right most has the longest stride. The configuration
-is demonstrated in the following example.
-
-.. literalinclude:: ../../../../examples/reshape.cpp
-   :start-after: _Reshape_left_start
-   :end-before: _Reshape_left_end
-   :language: C++
-
-Users may also specify a custom index ordering by providing a ``std::index_sequence`` type as a
-template argument to the ``RAJA::Reshape`` method. The members of the ``std::index_sequence`` enumerate
-the striding order of the arguments of the ``RAJA::View`` parenthesis operator. Using the ``std::index_sequence<1U, 2U, 0U>``
-in a ``RAJA::Reshape`` method will construct the same ``RAJA::View`` object as described in Section :ref:`permuted-layout-label`.
-
-As an additional example to use the C index ordering (``RAJA::layout_right``) with a 3-dimensional ``RAJA::View`` use the
-following  sequence type ``std::index_sequence<0U,1U,2U>``.  In our final example, we consider a permutation
-in which index 1 is placed in the right most position of the sequence so it has unit stride. Finally, since index 2 is placed in
-the left most position of the sequence it has the longest stride.
-
-.. literalinclude:: ../../../../examples/reshape.cpp
-   :start-after: _Reshape_custom_start
-   :end-before: _Reshape_custom_end
-   :language: C++
-
-The file ```RAJA/examples/reshape.cpp`` contains full working code demonstrating configuring and using
-the ``RAJA::Reshape`` method to generate a ``RAJA::View``.
-
 
 MultiView
 ^^^^^^^^^^^^^^^^
@@ -430,6 +388,48 @@ mapped to that corresponding entry of the index_list for the second dimension.
 	   data from a view.  It is also the  user's responsibility to ensure
 	   the index lists being used reside in  the same memory space as the
 	   data stored in the view.
+
+------------------
+Make Permuted View
+------------------
+The ``RAJA::make_permuted_view`` function takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object.
+The function is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
+
+The first meta-layout is based on a right-most layout which follows standard C indexing (right most index has unit stride).
+For example:
+
+.. literalinclude:: ../../../../examples/make_permuted_view.cpp
+   :start-after: _Make_Permuted_View_right_start
+   :end-before: _Make_Permuted_View_right_end
+   :language: C++
+In the example above a ``RAJA::View`` is returned with right most indexing having unit stride.
+
+The second supported meta-layout is the ``RAJA::layout_left`` which will follow a Fortran style indexing
+in which the left most index has unit stride and the right most has the longest stride. The configuration
+is demonstrated in the following example.
+
+.. literalinclude:: ../../../../examples/make_permuted_view.cpp
+   :start-after: _Make_Permuted_View_left_start
+   :end-before: _Make_Permuted_View_left_end
+   :language: C++
+
+Users may also specify a custom index ordering by providing a ``std::index_sequence`` type as a
+template argument to the ``RAJA::make_permuted_view`` function. The members of the ``std::index_sequence`` enumerate
+the striding order of the arguments of the ``RAJA::View`` parenthesis operator. Using the ``std::index_sequence<1U, 2U, 0U>``
+in a ``RAJA::make_permuted_view`` function will construct the same ``RAJA::View`` object as described in Section :ref:`permuted-layout-label`.
+
+As an additional example to use the C index ordering (``RAJA::layout_right``) with a 3-dimensional ``RAJA::View`` use the
+following  sequence type ``std::index_sequence<0U,1U,2U>``.  In our final example, we consider a permutation
+in which index 1 is placed in the right most position of the sequence so it has unit stride. Finally, since index 2 is placed in
+the left most position of the sequence it has the longest stride.
+
+.. literalinclude:: ../../../../examples/make_permuted_view.cpp
+   :start-after: _Make_Permuted_View_custom_start
+   :end-before: _Make_Permuted_View_custom_end
+   :language: C++
+
+The file ```RAJA/examples/make_permuted_view.cpp`` contains full working code demonstrating configuring and using
+the ``RAJA::make_permuted_view`` function to generate a ``RAJA::View``.
 
 -------------------
 RAJA Index Mapping
