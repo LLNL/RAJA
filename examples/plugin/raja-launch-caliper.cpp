@@ -15,6 +15,8 @@
 
 /*
  *  RAJA Caliper integration with launch
+ *  This example will assign a default
+ *  kernel name based on file name and location
  */
 
 //
@@ -138,7 +140,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    RAJA::launch<cuda_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-      RAJA::expt::KernelName("CALI: launch Cuda kernel"),
+      RAJA::expt::KernelName(RAJA_KERNEL_NAME),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<cuda_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
@@ -177,7 +179,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    RAJA::launch<hip_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-      RAJA::expt::KernelName("CALI: launch Cuda kernel"),
+      RAJA::expt::KernelName(RAJA_KERNEL_NAME),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<hip_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
