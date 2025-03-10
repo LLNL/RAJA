@@ -289,7 +289,7 @@ namespace detail
 {
 
 template<typename meta_layout>
-struct Reshape;
+struct PermutedViewHelper;
 
 template<typename T>
 constexpr auto get_last_index(T last)
@@ -304,7 +304,7 @@ constexpr auto get_last_index(T0, T1 t1, Args... args)
 }
 
 template<std::size_t... Is>
-struct Reshape<std::index_sequence<Is...>>
+struct PermutedViewHelper<std::index_sequence<Is...>>
 {
   template<typename Index_t, typename T, typename... Ts>
   static auto get(T* ptr, Ts... s)
@@ -323,7 +323,7 @@ struct Reshape<std::index_sequence<Is...>>
 };
 
 template<>
-struct Reshape<layout_right>
+struct PermutedViewHelper<layout_right>
 {
   template<typename Index_t, typename T, typename... Ts>
   static auto get(T* ptr, Ts... s)
@@ -343,7 +343,7 @@ constexpr std::array<RAJA::idx_t, sizeof...(Is)> make_reverse_array(
 }
 
 template<>
-struct Reshape<layout_left>
+struct PermutedViewHelper<layout_left>
 {
   template<typename Index_t, typename T, typename... Ts>
   static auto get(T* ptr, Ts... s)
@@ -370,7 +370,7 @@ template<typename meta_layout,
          typename... Ts>
 auto make_permuted_view(T* ptr, Ts&&... s)
 {
-  return detail::Reshape<meta_layout>::template get<Index_t>(
+  return detail::PermutedViewHelper<meta_layout>::template get<Index_t>(
       ptr, std::forward<Ts>(s)...);
 }
 
