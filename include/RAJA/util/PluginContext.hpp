@@ -20,13 +20,16 @@ namespace util
 
 class KokkosPluginLoader;
 
-struct PluginContext {
-  public:
-   PluginContext(const Platform p, const std::string *name = nullptr) :
-   platform(p), kernel_name(name) {}
+struct PluginContext
+{
+public:
+  PluginContext(const Platform p, const std::string* name = nullptr)
+      : platform(p),
+        kernel_name(name)
+  {}
 
   Platform platform;
-  const std::string *kernel_name;
+  const std::string* kernel_name;
 
 private:
   mutable uint64_t kID;
@@ -35,9 +38,9 @@ private:
 };
 
 template<typename Policy>
-PluginContext make_context(const std::string *name=nullptr)
+PluginContext make_context(const std::string* name = nullptr)
 {
-  return PluginContext{detail::get_platform<Policy>::value, name};
+  return PluginContext {detail::get_platform<Policy>::value, name};
 }
 
 }  // namespace util

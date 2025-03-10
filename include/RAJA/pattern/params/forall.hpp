@@ -269,16 +269,21 @@ constexpr auto&& get_lambda(Args&&... args)
 // kernel_name is expected to be the second to last argument, just extract it
 //
 //
-template<typename... Args, typename std::enable_if<sizeof...(Args) >= 2, bool>::type = true>
-constexpr auto&& get_kernel_name(Args&&... args){
-  return camp::get<sizeof...(Args)-2>( camp::forward_as_tuple(std::forward<Args>(args)...) );
+template<typename... Args,
+         typename std::enable_if<sizeof...(Args) >= 2, bool>::type = true>
+constexpr auto&& get_kernel_name(Args&&... args)
+{
+  return camp::get<sizeof...(Args) - 2>(
+      camp::forward_as_tuple(std::forward<Args>(args)...));
 }
 
-
-template<typename... Args, typename std::enable_if<sizeof...(Args) < 2, bool>::type = true>
-constexpr auto&& get_kernel_name(Args&&... args){
-  return camp::get<0>( camp::forward_as_tuple(std::forward<Args>(args)...) );
+template<typename... Args,
+         typename std::enable_if<sizeof...(Args) < 2, bool>::type = true>
+constexpr auto&& get_kernel_name(Args&&... args)
+{
+  return camp::get<0>(camp::forward_as_tuple(std::forward<Args>(args)...));
 }
+
 //===========================================================================
 
 //===========================================================================

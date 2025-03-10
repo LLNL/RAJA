@@ -539,22 +539,25 @@ template<typename T>
 struct get_kernel_name
 {
   template<typename U>
-  static std::string get(U &)
+  static std::string get(U&)
   {
-    return std::string(); //return empty string
+    return std::string();  // return empty string
   }
 };
 
 template<>
 struct get_kernel_name<RAJA::expt::detail::KernelName&&>
 {
-  static std::string get(const RAJA::expt::detail::KernelName &kernel_name)
+  static std::string get(const RAJA::expt::detail::KernelName& kernel_name)
   {
     return kernel_name.name;
   }
 };
 
-template <typename ExecutionPolicy, typename Res, typename Container, typename... Params>
+template<typename ExecutionPolicy,
+         typename Res,
+         typename Container,
+         typename... Params>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<Res>,
     concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
@@ -567,14 +570,15 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
 
-  auto&& kernel_name =  expt::get_kernel_name(std::forward<Params>(params)...);
-  auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
+  auto&& kernel_name = expt::get_kernel_name(std::forward<Params>(params)...);
+  auto&& loop_body   = expt::get_lambda(std::forward<Params>(params)...);
 
   expt::check_forall_optional_args(loop_body, f_params);
 
   std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
-  util::PluginContext context{util::make_context<camp::decay<ExecutionPolicy>>(&kname)};
+  util::PluginContext context {
+      util::make_context<camp::decay<ExecutionPolicy>>(&kname)};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;

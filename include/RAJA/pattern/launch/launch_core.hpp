@@ -244,22 +244,28 @@ public:
 template<typename LAUNCH_POLICY>
 struct LaunchExecute;
 
-//Duplicate of code above on account that we need to support the case in which a kernel_name is not given
-template <typename LAUNCH_POLICY, typename ... ReduceParams>
-void launch(LaunchParams const &launch_params, ReduceParams&&... rest_of_launch_args)
+// Duplicate of code above on account that we need to support the case in which
+// a kernel_name is not given
+template<typename LAUNCH_POLICY, typename... ReduceParams>
+void launch(LaunchParams const& launch_params,
+            ReduceParams&&... rest_of_launch_args)
 {
-  //Get reducers
-  auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
+  // Get reducers
+  auto reducers = expt::make_forall_param_pack(
+      std::forward<ReduceParams>(rest_of_launch_args)...);
 
-  //get kernel name
-  auto&& kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
+  // get kernel name
+  auto&& kernel_name =
+      expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
   std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
-  auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
+  auto&& launch_body =
+      expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
 
-  //Take the first policy as we assume the second policy is not user defined.
-  //We rely on the user to pair launch and loop policies correctly.
-  util::PluginContext context{util::make_context<typename LAUNCH_POLICY::host_policy_t>(&kname)};
+  // Take the first policy as we assume the second policy is not user defined.
+  // We rely on the user to pair launch and loop policies correctly.
+  util::PluginContext context {
+      util::make_context<typename LAUNCH_POLICY::host_policy_t>(&kname)};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -288,25 +294,35 @@ void launch(ExecPlace place, LaunchParams const& params, BODY const& body)
   launch<POLICY_LIST>(place, params, nullptr, body);
 }
 
-//Run-time API for new reducer interface with support of the case without a new kernel name
-template <typename POLICY_LIST, typename... ReduceParams>
-void launch(ExecPlace place, const LaunchParams &launch_params, ReduceParams&&... rest_of_launch_args)
-            //BODY const &body)
+// Run-time API for new reducer interface with support of the case without a new
+// kernel name
+template<typename POLICY_LIST, typename... ReduceParams>
+void launch(ExecPlace place,
+            const LaunchParams& launch_params,
+            ReduceParams&&... rest_of_launch_args)
+// BODY const &body)
 {
 
-  //Forward to single policy launch API - simplifies testing of plugins
-  switch (place) {
-    case ExecPlace::HOST: {
-      using Res = typename resources::get_resource<typename POLICY_LIST::host_policy_t>::type;
-      launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>
-        (Res::get_default(), launch_params, std::forward<ReduceParams>(rest_of_launch_args)...);
+  // Forward to single policy launch API - simplifies testing of plugins
+  switch (place)
+  {
+    case ExecPlace::HOST:
+    {
+      using Res = typename resources::get_resource<
+          typename POLICY_LIST::host_policy_t>::type;
+      launch<LaunchPolicy<typename POLICY_LIST::host_policy_t>>(
+          Res::get_default(), launch_params,
+          std::forward<ReduceParams>(rest_of_launch_args)...);
       break;
     }
 #if defined(RAJA_GPU_ACTIVE)
-  case ExecPlace::DEVICE: {
-      using Res = typename resources::get_resource<typename POLICY_LIST::device_policy_t>::type;
-      launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>
-        (Res::get_default(), launch_params, std::forward<ReduceParams>(rest_of_launch_args)...);
+    case ExecPlace::DEVICE:
+    {
+      using Res = typename resources::get_resource<
+          typename POLICY_LIST::device_policy_t>::type;
+      launch<LaunchPolicy<typename POLICY_LIST::device_policy_t>>(
+          Res::get_default(), launch_params,
+          std::forward<ReduceParams>(rest_of_launch_args)...);
       break;
     }
 #endif
@@ -347,22 +363,27 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device)
   return RAJA::resources::Resource(host_res);
 }
 
-//Launch API which takes team resource struct and supports new reducers
+// Launch API which takes team resource struct and supports new reducers
 
-//Duplicate of API above on account that we need to handle the case that a kernel name is not provided
-template <typename POLICY_LIST, typename ... ReduceParams>
-resources::EventProxy<resources::Resource>
-launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
-       ReduceParams&&... rest_of_launch_args)
+// Duplicate of API above on account that we need to handle the case that a
+// kernel name is not provided
+template<typename POLICY_LIST, typename... ReduceParams>
+resources::EventProxy<resources::Resource> launch(
+    RAJA::resources::Resource res,
+    LaunchParams const& launch_params,
+    ReduceParams&&... rest_of_launch_args)
 {
 
-  //Get reducers
-  auto reducers = expt::make_forall_param_pack(std::forward<ReduceParams>(rest_of_launch_args)...);
+  // Get reducers
+  auto reducers = expt::make_forall_param_pack(
+      std::forward<ReduceParams>(rest_of_launch_args)...);
 
-  auto&& kernel_name =  expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
+  auto&& kernel_name =
+      expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
   std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
 
-  auto&& launch_body = expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
+  auto&& launch_body =
+      expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
 
   ExecPlace place;
   if (res.get_platform() == RAJA::Platform::host)
@@ -378,11 +399,13 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
   // Configure plugins
   //
 #if defined(RAJA_GPU_ACTIVE)
-  util::PluginContext context{place == ExecPlace::HOST ?
-      util::make_context<typename POLICY_LIST::host_policy_t>(&kname) :
-      util::make_context<typename POLICY_LIST::device_policy_t>(&kname)};
+  util::PluginContext context {
+      place == ExecPlace::HOST
+          ? util::make_context<typename POLICY_LIST::host_policy_t>(&kname)
+          : util::make_context<typename POLICY_LIST::device_policy_t>(&kname)};
 #else
-  util::PluginContext context{util::make_context<typename POLICY_LIST::host_policy_t>(&kname)};
+  util::PluginContext context {
+      util::make_context<typename POLICY_LIST::host_policy_t>(&kname)};
 #endif
 
   util::callPreCapturePlugins(context);
@@ -399,7 +422,8 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
     case ExecPlace::HOST:
     {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, nullptr, p_body, reducers);
+      resources::EventProxy<resources::Resource> e_proxy =
+          launch_t::exec(res, launch_params, nullptr, p_body, reducers);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
@@ -407,7 +431,8 @@ launch(RAJA::resources::Resource res, LaunchParams const &launch_params,
     case ExecPlace::DEVICE:
     {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
-      resources::EventProxy<resources::Resource> e_proxy = launch_t::exec(res, launch_params, nullptr, p_body, reducers);
+      resources::EventProxy<resources::Resource> e_proxy =
+          launch_t::exec(res, launch_params, nullptr, p_body, reducers);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
