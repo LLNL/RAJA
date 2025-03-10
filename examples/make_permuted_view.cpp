@@ -11,11 +11,11 @@
 #include "memoryManager.hpp"
 
 /*
- *  RAJA Reshape method
+ *  RAJA make_permuted_view function
  *
  *  This example will intialize array using
- *  the RAJA Reshape method. The Reshape
- *  method offers right and left most unit
+ *  the RAJA make_permuted_view function. The make_permuted_view
+ *  function offers right and left most unit
  *  stride.
  *
  */
@@ -28,7 +28,7 @@ void checkResult(int *ptr, int K, int N, int M);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "\n\nRAJA reshape method example....\n"<< std::endl;
+  std::cout << "\n\nRAJA make_permuted_view function example....\n"<< std::endl;
 
   const int K = 3;
   const int N = 1;
@@ -45,9 +45,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with right most indexing...\n";
-  // _Reshape_right_start
-  auto Rview = RAJA::Reshape<RAJA::layout_right>::get(Rptr, K, N, M);
-  // _Reshape_right_end
+  // _Make_Permuted_View_right_start
+  auto Rview = RAJA::make_permuted_view<RAJA::layout_right>(Rptr, K, N, M);
+  // _Make_Permuted_View_right_end
 
   for(int k = 0; k < K; ++k) {
     for(int n = 0; n < N; ++n) {
@@ -67,9 +67,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with left most indexing...\n";
-  // _Reshape_left_start
-  auto Lview = RAJA::Reshape<RAJA::layout_left>::get(Lptr, K, N, M);
-  // _Reshape_left_end
+  // _Make_Permuted_View_left_start
+  auto Lview = RAJA::make_permuted_view<RAJA::layout_left>(Lptr, K, N, M);
+  // _Make_Permuted_View_left_end
 
   //Note the loop ordering has change from above
   for(int m = 0; m < M; ++m) {
@@ -93,11 +93,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
   std::cout << "\n\nInitialize array with custom indexing...\n";
 
-  // _Reshape_custom_start
+  // _Make_Permuted_View_custom_start
   using custom_seq = std::index_sequence<2U,0U,1U>;
 
-  auto Cview = RAJA::Reshape<custom_seq>::get(Cptr, K, N, M);
-  // _Reshape_custom_end
+  auto Cview = RAJA::make_permuted_view<custom_seq>(Cptr, K, N, M);
+  // _Make_Permuted_View_custom_end
 
   //Note the loop ordering has change from above
   for(int m = 0; m < M; ++m) {
