@@ -316,8 +316,7 @@ struct Reshape<std::index_sequence<Is...>>
         RAJA::make_permuted_layout(extent, std::array<RAJA::idx_t, N> {Is...});
 
     constexpr auto unit_stride = detail::get_last_index(Is...);
-    using view_t =
-        RAJA::View<T, RAJA::Layout<N, Index_t, unit_stride>>;
+    using view_t = RAJA::View<T, RAJA::Layout<N, Index_t, unit_stride>>;
 
     return view_t(ptr, custom_layout);
   }
@@ -365,10 +364,14 @@ struct Reshape<layout_left>
 
 }  // namespace detail
 
-template<typename meta_layout, typename Index_t = RAJA::Index_type, typename T, typename... Ts>
+template<typename meta_layout,
+         typename Index_t = RAJA::Index_type,
+         typename T,
+         typename... Ts>
 auto make_permuted_view(T* ptr, Ts&&... s)
 {
-  return detail::Reshape<meta_layout>::template get<Index_t>(ptr, std::forward<Ts>(s)...);
+  return detail::Reshape<meta_layout>::template get<Index_t>(
+      ptr, std::forward<Ts>(s)...);
 }
 
 }  // namespace RAJA
