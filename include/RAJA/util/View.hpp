@@ -1,4 +1,3 @@
-
 /*!
  ******************************************************************************
  *
@@ -286,11 +285,12 @@ struct layout_left
 struct layout_right
 {};
 
-template<typename LAYOUT>
-struct Reshape;
-
 namespace detail
 {
+
+template<typename meta_layout>
+struct Reshape;
+
 template<typename T>
 constexpr auto get_last_index(T last)
 {
@@ -302,12 +302,11 @@ constexpr auto get_last_index(T0, T1 t1, Args... args)
 {
   return get_last_index(t1, args...);
 }
-}  // namespace detail
 
 template<std::size_t... Is>
 struct Reshape<std::index_sequence<Is...>>
 {
-  template<typename T, typename... Ts>
+  template<typename Index_t, typename T, typename... Ts>
   static auto get(T* ptr, Ts... s)
   {
     constexpr int N = sizeof...(Ts);
@@ -318,7 +317,7 @@ struct Reshape<std::index_sequence<Is...>>
 
     constexpr auto unit_stride = detail::get_last_index(Is...);
     using view_t =
-        RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, unit_stride>>;
+        RAJA::View<T, RAJA::Layout<N, Index_t, unit_stride>>;
 
     return view_t(ptr, custom_layout);
   }
@@ -327,18 +326,15 @@ struct Reshape<std::index_sequence<Is...>>
 template<>
 struct Reshape<layout_right>
 {
-  template<typename T, typename... Ts>
+  template<typename Index_t, typename T, typename... Ts>
   static auto get(T* ptr, Ts... s)
   {
     constexpr int N = sizeof...(Ts);
-    using view_t    = RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, N - 1>>;
+    using view_t    = RAJA::View<T, RAJA::Layout<N, Index_t, N - 1>>;
 
     return view_t(ptr, s...);
   }
 };
-
-namespace detail
-{
 
 template<std::size_t... Is>
 constexpr std::array<RAJA::idx_t, sizeof...(Is)> make_reverse_array(
@@ -347,12 +343,10 @@ constexpr std::array<RAJA::idx_t, sizeof...(Is)> make_reverse_array(
   return std::array<RAJA::idx_t, sizeof...(Is)> {sizeof...(Is) - 1U - Is...};
 }
 
-}  // namespace detail
-
 template<>
 struct Reshape<layout_left>
 {
-  template<typename T, typename... Ts>
+  template<typename Index_t, typename T, typename... Ts>
   static auto get(T* ptr, Ts... s)
   {
     constexpr int N = sizeof...(Ts);
@@ -363,11 +357,19 @@ struct Reshape<layout_left>
         detail::make_reverse_array(std::make_index_sequence<N> {});
 
     auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_array);
-    using view_t        = RAJA::View<T, RAJA::Layout<N, RAJA::Index_type, 0U>>;
+    using view_t        = RAJA::View<T, RAJA::Layout<N, Index_t, 0U>>;
 
     return view_t(ptr, reverse_layout);
   }
 };
+
+}  // namespace detail
+
+template<typename meta_layout, typename Index_t = RAJA::Index_type, typename T, typename... Ts>
+auto make_permuted_view(T* ptr, Ts&&... s)
+{
+  return detail::Reshape<meta_layout>::template get<Index_t>(ptr, std::forward<Ts>(s)...);
+}
 
 }  // namespace RAJA
 
