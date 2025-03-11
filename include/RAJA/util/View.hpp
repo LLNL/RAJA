@@ -312,8 +312,8 @@ struct PermutedViewHelper<std::index_sequence<stride_order_idx...>>
     constexpr int N = sizeof...(Extents);
     std::array<RAJA::idx_t, N> extent_arr {extents...};
 
-    auto custom_layout =
-        RAJA::make_permuted_layout(extent_arr, std::array<RAJA::idx_t, N> {stride_order_idx...});
+    auto custom_layout = RAJA::make_permuted_layout(
+        extent_arr, std::array<RAJA::idx_t, N> {stride_order_idx...});
 
     constexpr auto unit_stride = detail::get_last_index(stride_order_idx...);
     using view_t = RAJA::View<T, RAJA::Layout<N, IndexType, unit_stride>>;
@@ -336,10 +336,11 @@ struct PermutedViewHelper<layout_right>
 };
 
 template<std::size_t... stride_order_idx>
-constexpr std::array<RAJA::idx_t, sizeof...(stride_order_idx)> make_reverse_array(
-    std::index_sequence<stride_order_idx...>)
+constexpr std::array<RAJA::idx_t, sizeof...(stride_order_idx)>
+make_reverse_array(std::index_sequence<stride_order_idx...>)
 {
-  return std::array<RAJA::idx_t, sizeof...(stride_order_idx)> {sizeof...(stride_order_idx) - 1U - stride_order_idx...};
+  return std::array<RAJA::idx_t, sizeof...(stride_order_idx)> {
+      sizeof...(stride_order_idx) - 1U - stride_order_idx...};
 }
 
 template<>
