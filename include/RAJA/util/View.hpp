@@ -303,20 +303,20 @@ constexpr auto get_last_index(T0, T1 t1, Args... args)
   return get_last_index(t1, args...);
 }
 
-template<std::size_t... Is>
-struct PermutedViewHelper<std::index_sequence<Is...>>
+template<std::size_t... stride_order_idx>
+struct PermutedViewHelper<std::index_sequence<stride_order_idx...>>
 {
-  template<typename Index_t, typename T, typename... Ts>
-  static auto get(T* ptr, Ts... s)
+  template<typename IndexType, typename T, typename... Extents>
+  static auto get(T* ptr, Extents... extents)
   {
-    constexpr int N = sizeof...(Ts);
-    std::array<RAJA::idx_t, N> extent {s...};
+    constexpr int N = sizeof...(Extents);
+    std::array<RAJA::idx_t, N> extent_arr {extents...};
 
     auto custom_layout =
-        RAJA::make_permuted_layout(extent, std::array<RAJA::idx_t, N> {Is...});
+        RAJA::make_permuted_layout(extent_arr, std::array<RAJA::idx_t, N> {stride_order_idx...});
 
-    constexpr auto unit_stride = detail::get_last_index(Is...);
-    using view_t = RAJA::View<T, RAJA::Layout<N, Index_t, unit_stride>>;
+    constexpr auto unit_stride = detail::get_last_index(stride_order_idx...);
+    using view_t = RAJA::View<T, RAJA::Layout<N, IndexType, unit_stride>>;
 
     return view_t(ptr, custom_layout);
   }
@@ -325,38 +325,38 @@ struct PermutedViewHelper<std::index_sequence<Is...>>
 template<>
 struct PermutedViewHelper<layout_right>
 {
-  template<typename Index_t, typename T, typename... Ts>
-  static auto get(T* ptr, Ts... s)
+  template<typename IndexType, typename T, typename... Extents>
+  static auto get(T* ptr, Extents... extends)
   {
-    constexpr int N = sizeof...(Ts);
-    using view_t    = RAJA::View<T, RAJA::Layout<N, Index_t, N - 1>>;
+    constexpr int N = sizeof...(Extents);
+    using view_t    = RAJA::View<T, RAJA::Layout<N, IndexType, N - 1>>;
 
-    return view_t(ptr, s...);
+    return view_t(ptr, extends...);
   }
 };
 
-template<std::size_t... Is>
-constexpr std::array<RAJA::idx_t, sizeof...(Is)> make_reverse_array(
-    std::index_sequence<Is...>)
+template<std::size_t... stride_order_idx>
+constexpr std::array<RAJA::idx_t, sizeof...(stride_order_idx)> make_reverse_array(
+    std::index_sequence<stride_order_idx...>)
 {
-  return std::array<RAJA::idx_t, sizeof...(Is)> {sizeof...(Is) - 1U - Is...};
+  return std::array<RAJA::idx_t, sizeof...(stride_order_idx)> {sizeof...(stride_order_idx) - 1U - stride_order_idx...};
 }
 
 template<>
 struct PermutedViewHelper<layout_left>
 {
-  template<typename Index_t, typename T, typename... Ts>
-  static auto get(T* ptr, Ts... s)
+  template<typename IndexType, typename T, typename... Extents>
+  static auto get(T* ptr, Extents... extends)
   {
-    constexpr int N = sizeof...(Ts);
+    constexpr int N = sizeof...(Extents);
 
-    std::array<RAJA::idx_t, N> extent {s...};
+    std::array<RAJA::idx_t, N> extent_arr {extends...};
 
     constexpr auto reverse_array =
         detail::make_reverse_array(std::make_index_sequence<N> {});
 
-    auto reverse_layout = RAJA::make_permuted_layout(extent, reverse_array);
-    using view_t        = RAJA::View<T, RAJA::Layout<N, Index_t, 0U>>;
+    auto reverse_layout = RAJA::make_permuted_layout(extent_arr, reverse_array);
+    using view_t        = RAJA::View<T, RAJA::Layout<N, IndexType, 0U>>;
 
     return view_t(ptr, reverse_layout);
   }
@@ -365,13 +365,13 @@ struct PermutedViewHelper<layout_left>
 }  // namespace detail
 
 template<typename meta_layout,
-         typename Index_t = RAJA::Index_type,
+         typename IndexType = RAJA::Index_type,
          typename T,
-         typename... Ts>
-auto make_permuted_view(T* ptr, Ts&&... s)
+         typename... Extents>
+auto make_permuted_view(T* ptr, Extents&&... extents)
 {
-  return detail::PermutedViewHelper<meta_layout>::template get<Index_t>(
-      ptr, std::forward<Ts>(s)...);
+  return detail::PermutedViewHelper<meta_layout>::template get<IndexType>(
+      ptr, std::forward<Extents>(extents)...);
 }
 
 }  // namespace RAJA
