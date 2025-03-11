@@ -335,12 +335,10 @@ struct PermutedViewHelper<layout_right>
   }
 };
 
-template<std::size_t... stride_order_idx>
-constexpr std::array<RAJA::idx_t, sizeof...(stride_order_idx)>
-make_reverse_array(std::index_sequence<stride_order_idx...>)
+template<std::size_t... idx>
+constexpr auto make_reverse_array(std::index_sequence<idx...>)
 {
-  return std::array<RAJA::idx_t, sizeof...(stride_order_idx)> {
-      sizeof...(stride_order_idx) - 1U - stride_order_idx...};
+  return std::array<RAJA::idx_t, sizeof...(idx)> {sizeof...(idx) - 1U - idx...};
 }
 
 template<>
