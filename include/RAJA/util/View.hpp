@@ -307,13 +307,13 @@ template<std::size_t... stride_order_idx>
 struct PermutedViewHelper<std::index_sequence<stride_order_idx...>>
 {
   template<typename IndexType, typename T, typename... Extents>
-  static auto get(T* ptr, Extents... extents)
+  static auto get(T* ptr, Extents&&... extents)
   {
     constexpr int N = sizeof...(Extents);
-    std::array<RAJA::idx_t, N> extent_arr {extents...};
 
     auto custom_layout = RAJA::make_permuted_layout(
-        extent_arr, std::array<RAJA::idx_t, N> {stride_order_idx...});
+        std::array<RAJA::idx_t, N> {std::forward<Extents>(extents)...},
+        std::array<RAJA::idx_t, N> {stride_order_idx...});
 
     constexpr auto unit_stride = detail::get_last_index(stride_order_idx...);
     using view_t = RAJA::View<T, RAJA::Layout<N, IndexType, unit_stride>>;
@@ -326,12 +326,12 @@ template<>
 struct PermutedViewHelper<layout_right>
 {
   template<typename IndexType, typename T, typename... Extents>
-  static auto get(T* ptr, Extents... extends)
+  static auto get(T* ptr, Extents&&... extents)
   {
     constexpr int N = sizeof...(Extents);
     using view_t    = RAJA::View<T, RAJA::Layout<N, IndexType, N - 1>>;
 
-    return view_t(ptr, extends...);
+    return view_t(ptr, std::forward<Extents>(extents)...);
   }
 };
 
@@ -347,17 +347,14 @@ template<>
 struct PermutedViewHelper<layout_left>
 {
   template<typename IndexType, typename T, typename... Extents>
-  static auto get(T* ptr, Extents... extends)
+  static auto get(T* ptr, Extents&&... extents)
   {
     constexpr int N = sizeof...(Extents);
 
-    std::array<RAJA::idx_t, N> extent_arr {extends...};
-
-    constexpr auto reverse_array =
-        detail::make_reverse_array(std::make_index_sequence<N> {});
-
-    auto reverse_layout = RAJA::make_permuted_layout(extent_arr, reverse_array);
-    using view_t        = RAJA::View<T, RAJA::Layout<N, IndexType, 0U>>;
+    auto reverse_layout = RAJA::make_permuted_layout(
+        std::array<RAJA::idx_t, N> {std::forward<Extents>(extents)...},
+        make_reverse_array(std::make_index_sequence<N> {}));
+    using view_t = RAJA::View<T, RAJA::Layout<N, IndexType, 0U>>;
 
     return view_t(ptr, reverse_layout);
   }
