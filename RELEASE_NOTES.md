@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2025.03.0 -- Release date 2025-03-dd
+Version 2025.03.0 -- Release date 2025-03-17
 ============================================
 
 This release contains new features, bug fixes, and updates to submodule
