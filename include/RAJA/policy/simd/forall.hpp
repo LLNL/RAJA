@@ -17,7 +17,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,55 +47,52 @@ namespace simd
 {
 
 
-template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<resources::Host>,
-  expt::type_traits::is_ForallParamPack<ForallParam>,
-  concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-  >
-forall_impl(RAJA::resources::Host host_res,
-            const simd_exec &,
-            Iterable &&iter,
-            Func &&loop_body,
+template<typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    expt::type_traits::is_ForallParamPack<ForallParam>,
+    concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+forall_impl(resources::Host host_res,
+            const simd_exec& pol,
+            Iterable&& iter,
+            Func&& body,
             ForallParam f_params)
 {
-  expt::ParamMultiplexer::init<seq_exec>(f_params);
+  expt::ParamMultiplexer::parampack_init(pol, f_params);
 
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
+
   RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    expt::invoke_body(f_params, loop_body, *(begin + i));
+  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+  {
+    expt::invoke_body(f_params, body, *(begin_it + i));
   }
 
-  expt::ParamMultiplexer::resolve<seq_exec>(f_params);
-  return RAJA::resources::EventProxy<resources::Host>(host_res);
+  expt::ParamMultiplexer::parampack_resolve(pol, f_params);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
-template <typename Iterable, typename Func, typename ForallParam>
-RAJA_INLINE
-concepts::enable_if_t<
-  resources::EventProxy<resources::Host>,
-  expt::type_traits::is_ForallParamPack<ForallParam>,
-  expt::type_traits::is_ForallParamPack_empty<ForallParam>
-  >
-forall_impl(RAJA::resources::Host host_res,
-            const simd_exec &,
-            Iterable &&iter,
-            Func &&loop_body,
+template<typename Iterable, typename Func, typename ForallParam>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    expt::type_traits::is_ForallParamPack<ForallParam>,
+    expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Host host_res,
+            const simd_exec&,
+            Iterable&& iter,
+            Func&& body,
             ForallParam)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
+
   RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
+  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+  {
+    body(*(begin_it + i));
   }
 
-  return RAJA::resources::EventProxy<resources::Host>(host_res);
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace simd

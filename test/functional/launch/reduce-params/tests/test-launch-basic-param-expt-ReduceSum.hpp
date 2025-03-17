@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,6 +21,7 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
                                            const std::vector<IDX_TYPE>& seg_idx,
                                            camp::resources::Resource working_res)
 {
+  using REF_SUM = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>;
 
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
@@ -59,7 +60,7 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
      "LaunchSumBasicTest",
      RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
      RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_sum, DATA_TYPE &_sum2) {
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_SUM &_sum, REF_SUM &_sum2) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
           _sum  += working_array[idx];
@@ -79,7 +80,7 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
        RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_sum) {
+       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_SUM &_sum) {
 
         RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
             _sum += working_array[idx];

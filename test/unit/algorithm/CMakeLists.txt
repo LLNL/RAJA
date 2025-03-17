@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,9 @@ if(RAJA_ENABLE_HIP)
   list(APPEND SORT_BACKENDS Hip)
 endif()
 
+##
+## OpenMP Target back-end support missing for these tests
+##
 # if(RAJA_ENABLE_TARGET_OPENMP)
 #   list(APPEND SORT_BACKENDS OpenMPTarget)
 # endif()

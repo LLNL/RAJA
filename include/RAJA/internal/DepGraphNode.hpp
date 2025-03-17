@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,9 +56,10 @@ public:
   /// Default ctor initializes node to default state.
   ///
   DepGraphNode()
-      : m_num_dep_tasks(0), m_semaphore_reload_value(0), m_semaphore_value(0)
-  {
-  }
+      : m_num_dep_tasks(0),
+        m_semaphore_reload_value(0),
+        m_semaphore_value(0)
+  {}
 
   ///
   /// Get/set semaphore value; i.e., the current number of (unsatisfied)
@@ -82,7 +83,8 @@ public:
   ///
   void satisfyOne()
   {
-    if (m_semaphore_value > 0) {
+    if (m_semaphore_value > 0)
+    {
       --m_semaphore_value;
     }
   }
@@ -92,7 +94,8 @@ public:
   ///
   void wait()
   {
-    while (m_semaphore_value > 0) {
+    while (m_semaphore_value > 0)
+    {
       // TODO: an efficient wait would be better here, but the standard
       // promise/future is not good enough
       std::this_thread::yield();

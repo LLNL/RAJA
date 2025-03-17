@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,12 +12,14 @@ set(TILETYPES Fixed2D Fixed2DSum Fixed2DMinMax)
 
 foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
   foreach( TILE_TYPE ${TILETYPES} )
-    # OpenMPTarget crashes the xl compiler when building this test... 
-    if( NOT((TILE_BACKEND STREQUAL "OpenMPTarget")) )
+    #
+    # OpenMPTarget tests fail for traditional RAJA reductions
+    #
+    if( (TILE_TYPE STREQUAL "Fixed2D") OR NOT((TILE_BACKEND STREQUAL "OpenMPTarget")) )
       configure_file( test-kernel-tilefixed.cpp.in
                       test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
       raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}
-                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
+                     SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
 
       target_include_directories(test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.exe
                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -34,9 +36,10 @@ set(TILETYPES Dynamic2D)
 
 foreach( TILE_BACKEND ${KERNEL_BACKENDS} )
   foreach( TILE_TYPE ${TILETYPES} )
-    # Dynamic tiling not yet implemented for Cuda or Hip
-    # Removing OpenMPTarget because XLC compilation requires ~50 minutes
-    if( NOT ((TILE_BACKEND STREQUAL "Cuda") OR (TILE_BACKEND STREQUAL "Hip") OR (TILE_BACKEND STREQUAL "OpenMPTarget") OR (TILE_BACKEND STREQUAL "Sycl")) )
+    #
+    # Dynamic tiling not yet implemented for CUDA, HIP, or SYCL
+    #
+    if( NOT ((TILE_BACKEND STREQUAL "Cuda") OR (TILE_BACKEND STREQUAL "Hip") OR (TILE_BACKEND STREQUAL "Sycl")) )
       configure_file( test-kernel-tiledyn.cpp.in
                       test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}.cpp )
       raja_add_test( NAME test-kernel-tile-${TILE_TYPE}-${TILE_BACKEND}

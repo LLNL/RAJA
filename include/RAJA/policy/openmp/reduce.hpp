@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,7 +42,7 @@ namespace RAJA
 
 namespace detail
 {
-template <typename T, typename Reduce>
+template<typename T, typename Reduce>
 class ReduceOMP
     : public reduce::detail::BaseCombinable<T, Reduce, ReduceOMP<T, Reduce>>
 {
@@ -55,7 +55,8 @@ public:
 
   ~ReduceOMP()
   {
-    if (Base::parent) {
+    if (Base::parent)
+    {
 #pragma omp critical(ompReduceCritical)
       Reduce()(Base::parent->local(), Base::my_data);
       Base::my_data = Base::identity;
@@ -75,7 +76,7 @@ RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP)
 
 namespace detail
 {
-template <typename T, typename Reduce>
+template<typename T, typename Reduce>
 class ReduceOMPOrdered
     : public reduce::detail::
           BaseCombinable<T, Reduce, ReduceOMPOrdered<T, Reduce>>
@@ -101,20 +102,22 @@ public:
 
   ~ReduceOMPOrdered()
   {
-    Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
+    Reduce {}((*data)[omp_get_thread_num()], Base::my_data);
     Base::my_data = Base::identity;
   }
 
   T get_combined() const
   {
-    if (Base::my_data != Base::identity) {
-      Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
+    if (Base::my_data != Base::identity)
+    {
+      Reduce {}((*data)[omp_get_thread_num()], Base::my_data);
       Base::my_data = Base::identity;
     }
 
     T res = Base::identity;
-    for (size_t i = 0; i < data->size(); ++i) {
-      Reduce{}(res, (*data)[i]);
+    for (size_t i = 0; i < data->size(); ++i)
+    {
+      Reduce {}(res, (*data)[i]);
     }
     return res;
   }

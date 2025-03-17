@@ -22,7 +22,6 @@
 
 #include "RAJA/policy/sycl/MemUtils_SYCL.hpp"
 
-
 namespace RAJA
 {
 
@@ -48,23 +47,9 @@ syclInfo tl_status;
 #pragma omp threadprivate(tl_status)
 #endif
 
-camp::resources::Resource* app_q = NULL;
-
-void setQueue(camp::resources::Resource* qu) {
-  app_q = qu;
-}
-
 //! State of raja sycl queue synchronization for sycl reducer objects
-std::unordered_map<cl::sycl::queue, bool> g_queue_info_map{
-    {cl::sycl::queue(), true}};
-
-cl::sycl::queue* getQueue() {
-  if (app_q != NULL) {
-    return app_q->get<camp::resources::Sycl>().get_queue();
-  }
-
-  return NULL;
-}
+std::unordered_map<::sycl::queue, bool> g_queue_info_map {
+    {::sycl::queue(), true}};
 
 }  // namespace detail
 

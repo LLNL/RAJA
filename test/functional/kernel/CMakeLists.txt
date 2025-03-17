@@ -1,11 +1,12 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
 list(APPEND KERNEL_BACKENDS Sequential)
+set(KERNEL_DIRECT_UNCHECKED_BACKENDS "")
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND KERNEL_BACKENDS OpenMP)
@@ -13,10 +14,12 @@ endif()
 
 if(RAJA_ENABLE_CUDA)
   list(APPEND KERNEL_BACKENDS Cuda)
+  list(APPEND KERNEL_DIRECT_UNCHECKED_BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
   list(APPEND KERNEL_BACKENDS Hip)
+  list(APPEND KERNEL_DIRECT_UNCHECKED_BACKENDS Hip)
 endif()
 
 if(RAJA_ENABLE_SYCL)
@@ -49,7 +52,11 @@ add_subdirectory(nested-loop-view-types)
 
 add_subdirectory(reduce-loc)
 
-add_subdirectory(single-loop-tile-icount-tcount)
+add_subdirectory(tile-icount-tcount-direct-unchecked)
+
+add_subdirectory(tile-icount-tcount-direct)
+
+add_subdirectory(tile-icount-tcount-loop)
 
 add_subdirectory(tile-variants)
 

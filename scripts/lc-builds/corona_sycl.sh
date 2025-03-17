@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,7 +13,7 @@ if [[ $# -lt 1 ]]; then
   echo "   1) SYCL compiler installation path"
   echo
   echo "For example: "
-  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1"
+  echo "    corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_730cd3a5275f_hip_gcc10.3.1_rocm6.0.2"
   exit
 fi
 
@@ -38,7 +38,7 @@ DATE=$(printf '%(%Y-%m-%d)T\n' -1)
 export PATH=${SYCL_PATH}/bin:$PATH
 export LD_LIBRARY_PATH=${SYCL_PATH}/lib:${SYCL_PATH}/lib64:$LD_LIBRARY_PATH
 
-## NOTE: RAJA tests are turned off due to compilation issues.
+module load cmake/3.23.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -69,9 +69,6 @@ echo "   1) Load the ROCm module version matching the version in the compiler pa
 echo "      you passed to this script."
 echo
 echo "   2) Prefix the LD_LIBRARY_PATH environment variable with "
-echo "        SYCL_PATH/lib:SYCL_PATH/lib64"
-echo
-echo "      where SYCL_PATH is set to the compiler installation path you passed"
-echo "      to this script (using the proper command for your shell)."
+echo "        ${SYCL_PATH}/lib:${SYCL_PATH}/lib64"
 echo
 echo "***********************************************************************"

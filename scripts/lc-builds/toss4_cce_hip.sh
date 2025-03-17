@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,6 +57,7 @@ cmake \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=ON \
   -DENABLE_CUDA=OFF \
+  -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

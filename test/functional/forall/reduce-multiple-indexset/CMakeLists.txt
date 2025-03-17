@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,10 +10,11 @@
 #
 set(REDUCETYPES ReduceSum ReduceMin ReduceMax ReduceMinLoc ReduceMaxLoc)
 
+##
+## Do not create OpenMP Target tests for "traditional" RAJA reduction interface
+##
 if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM FORALL_BACKENDS OpenMPTarget)
-  endif()
+  list(REMOVE_ITEM FORALL_BACKENDS OpenMPTarget)
 endif()
 
 #

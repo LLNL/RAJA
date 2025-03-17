@@ -13,7 +13,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,7 +28,6 @@
 
 #include <string.h>
 
-
 namespace RAJA
 {
 namespace util
@@ -38,8 +37,8 @@ namespace util
 /*!
  * Reinterpret any datatype as another datatype of the same size
  */
-template <typename A, typename B>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const &a)
+template<typename A, typename B>
+RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const& a)
 {
   static_assert(sizeof(A) == sizeof(B), "A and B must be the same size");
 

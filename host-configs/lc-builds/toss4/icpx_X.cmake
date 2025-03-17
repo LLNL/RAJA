@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,8 +8,8 @@
 set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
 ##set(COMMON_FLAGS "--gcc-toolchain=/usr/tce/packages/gcc/gcc-10.3.1")
-##set(COMMON_OPT_FLAGS "-march=native -finline-functions -fp-model=precise")
-set(COMMON_OPT_FLAGS "-march=native -finline-functions")
+set(COMMON_OPT_FLAGS "-march=native -finline-functions -fp-model=precise")
+#set(COMMON_OPT_FLAGS "-march=native -finline-functions")
 
 ##set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_FLAGS} -O3 ${COMMON_OPT_FLAGS}" CACHE STRING "")
 ##set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${COMMON_FLAGS} -O3 -g ${COMMON_OPT_FLAGS}" CACHE STRING "")

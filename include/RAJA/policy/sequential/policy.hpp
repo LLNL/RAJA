@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,7 +30,7 @@ enum struct multi_reduce_algorithm : int
   left_fold
 };
 
-template < multi_reduce_algorithm t_multi_algorithm >
+template<multi_reduce_algorithm t_multi_algorithm>
 struct MultiReduceTuning
 {
   static constexpr multi_reduce_algorithm algorithm = t_multi_algorithm;
@@ -38,7 +38,7 @@ struct MultiReduceTuning
       (algorithm == multi_reduce_algorithm::left_fold);
 };
 
-} // namspace sequential
+}  // namespace sequential
 
 namespace policy
 {
@@ -60,20 +60,20 @@ namespace sequential
 struct seq_region : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Pattern::region,
                                                           Launch::sync,
-                                                          Platform::host> {
-};
+                                                          Platform::host>
+{};
 
 struct seq_launch_t : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                             Pattern::region,
                                                             Launch::sync,
-                                                            Platform::host> {
-};
+                                                            Platform::host>
+{};
 
 struct seq_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                         Pattern::forall,
                                                         Launch::undefined,
-                                                        Platform::host> {
-};
+                                                        Platform::host>
+{};
 
 ///
 /// Index set segment iteration policies
@@ -86,8 +86,8 @@ using seq_segit = seq_exec;
 struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                         Pattern::workgroup_exec,
                                                         Launch::sync,
-                                                        Platform::host> {
-};
+                                                        Platform::host>
+{};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -99,20 +99,20 @@ struct seq_work : make_policy_pattern_launch_platform_t<Policy::sequential,
 struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Pattern::reduce,
                                                           Launch::undefined,
-                                                          Platform::host> {
-};
+                                                          Platform::host>
+{};
 
 ///
-template < typename tuning >
-struct seq_multi_reduce_policy
-    : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                            Pattern::multi_reduce,
-                                            Launch::undefined,
-                                            Platform::host,
-                                            std::conditional_t<tuning::consistent,
-                                                               reduce::ordered,
-                                                               reduce::unordered>> {
-};
+template<typename tuning>
+struct seq_multi_reduce_policy : make_policy_pattern_launch_platform_t<
+                                     Policy::sequential,
+                                     Pattern::multi_reduce,
+                                     Launch::undefined,
+                                     Platform::host,
+                                     std::conditional_t<tuning::consistent,
+                                                        reduce::ordered,
+                                                        reduce::unordered>>
+{};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -121,13 +121,12 @@ struct seq_multi_reduce_policy
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_atomic {
-};
+struct seq_atomic
+{};
 
-
-template < RAJA::sequential::multi_reduce_algorithm algorithm >
-using seq_multi_reduce_tuning = seq_multi_reduce_policy<
-    RAJA::sequential::MultiReduceTuning<algorithm> >;
+template<RAJA::sequential::multi_reduce_algorithm algorithm>
+using seq_multi_reduce_tuning =
+    seq_multi_reduce_policy<RAJA::sequential::MultiReduceTuning<algorithm>>;
 
 // Policies for RAJA::MultiReduce* objects with specific behaviors.
 // - left_fold policies combine new values into a single value.
@@ -143,12 +142,12 @@ using seq_multi_reduce = seq_multi_reduce_left_fold;
 
 using policy::sequential::seq_atomic;
 using policy::sequential::seq_exec;
-using policy::sequential::seq_reduce;
+using policy::sequential::seq_launch_t;
 using policy::sequential::seq_multi_reduce;
+using policy::sequential::seq_reduce;
 using policy::sequential::seq_region;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_work;
-using policy::sequential::seq_launch_t;
 
 
 }  // namespace RAJA

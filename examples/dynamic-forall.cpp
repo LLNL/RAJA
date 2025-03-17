@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -77,28 +77,25 @@ int main(int argc, char *argv[])
 
 //----------------------------------------------------------------------------//
 
-  std::cout << "\n Running C-style vector addition...\n";
+  std::cout << "\n Running dynamic forall vector addition and reductions...\n";
 
-  // _cstyle_vector_add_start
-  for (int i = 0; i < N; ++i) {
-    c[i] = a[i] + b[i];
-  }
-  // _cstyle_vector_add_end
-
-  checkResult(c, N);
-//printResult(c, N);
-
-
-//----------------------------------------------------------------------------//
-// Example of dynamic policy selection for forall
-//----------------------------------------------------------------------------//
-
+  int sum = 0;
+  using VAL_INT_SUM = RAJA::expt::ValOp<int, RAJA::operators::plus>;
+  
+  RAJA::RangeSegment range(0, N); 
+  
   //policy is chosen from the list
-  RAJA::expt::dynamic_forall<policy_list>(pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
+  RAJA::dynamic_forall<policy_list>(pol, range,
+    RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
+      RAJA::expt::KernelName("RAJA dynamic forall"),
+      [=] RAJA_HOST_DEVICE (int i, VAL_INT_SUM &_sum) {
+      
       c[i] = a[i] + b[i];
+      _sum += 1;
   });
   // _rajaseq_vector_add_end
 
+  std::cout << "Sum = " << sum << ", expected sum: " << N << std::endl;
   checkResult(c, N);
 //printResult(c, N);
 
@@ -126,9 +123,9 @@ void checkResult(int* res, int len)
     if ( res[i] != 0 ) { correct = false; }
   }
   if ( correct ) {
-    std::cout << "\n\t result -- PASS\n";
+    std::cout << "\n\t Vector sum result -- PASS\n";
   } else {
-    std::cout << "\n\t result -- FAIL\n";
+    std::cout << "\n\t Vector sum result -- FAIL\n";
   }
 }
 

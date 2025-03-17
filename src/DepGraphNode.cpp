@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,9 +29,11 @@ void DepGraphNode::print(std::ostream& os) const
      << m_semaphore_reload_value << std::endl;
 
   os << "     num dep tasks = " << m_num_dep_tasks;
-  if (m_num_dep_tasks > 0) {
+  if (m_num_dep_tasks > 0)
+  {
     os << " ( ";
-    for (int jj = 0; jj < m_num_dep_tasks; ++jj) {
+    for (int jj = 0; jj < m_num_dep_tasks; ++jj)
+    {
       os << m_dep_task[jj] << "  ";
     }
     os << " )";

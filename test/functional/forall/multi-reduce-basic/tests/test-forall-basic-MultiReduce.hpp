@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -73,13 +73,15 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
     test_range[i] = ~IDX_TYPE(0);
   }
 
-  std::uniform_int_distribution<IDX_TYPE> work_per_iterate_distribution(0, num_bins);
+  {
+    std::uniform_int_distribution<IDX_TYPE> work_per_iterate_distribution(0, num_bins);
 
-  for (IDX_TYPE i = 0; i < idx_len; ++i) {
-    IDX_TYPE idx = seg_idx[i];
-    test_range[idx] = data_len;
-    data_len += work_per_iterate_distribution(rngen);
-    test_range[idx+1] = data_len;
+    for (IDX_TYPE i = 0; i < idx_len; ++i) {
+      IDX_TYPE idx = seg_idx[i];
+      test_range[idx] = data_len;
+      data_len += work_per_iterate_distribution(rngen);
+      test_range[idx+1] = data_len;
+    }
   }
 
   allocateForallTestData(data_len,
@@ -94,16 +96,19 @@ ForallMultiReduceBasicTestImpl(const SEG_TYPE& seg,
                          &check_bins,
                          &test_bins);
 
-  // use ints to initialize array here to avoid floating point precision issues
-  std::uniform_int_distribution<int> array_int_distribution(0, modval-1);
-  std::uniform_int_distribution<IDX_TYPE> bin_distribution(0, num_bins-1);
+  if (data_len > IDX_TYPE(0)) {
+
+    // use ints to initialize array here to avoid floating point precision issues
+    std::uniform_int_distribution<int> array_int_distribution(0, modval-1);
+    std::uniform_int_distribution<IDX_TYPE> bin_distribution(0, num_bins-1);
 
 
-  for (IDX_TYPE i = 0; i < data_len; ++i) {
-    test_array[i] = DATA_TYPE(array_int_distribution(rngen));
+    for (IDX_TYPE i = 0; i < data_len; ++i) {
+      test_array[i] = DATA_TYPE(array_int_distribution(rngen));
 
-    // this may use the same bin multiple times per iterate
-    test_bins[i] = bin_distribution(rngen);
+      // this may use the same bin multiple times per iterate
+      test_bins[i] = bin_distribution(rngen);
+    }
   }
 
   working_res.memcpy(working_range, test_range, sizeof(IDX_TYPE) * (idx_range+1));

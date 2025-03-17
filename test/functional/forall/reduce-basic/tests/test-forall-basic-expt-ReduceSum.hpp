@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,8 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
                                   const std::vector<IDX_TYPE>& seg_idx,
                                   camp::resources::Resource working_res)
 {
+  using REF_SUM = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -46,13 +48,14 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  DATA_TYPE sum = 0;
-  DATA_TYPE sum2 = 2;
+  DATA_TYPE sum(0);
+  DATA_TYPE sum2(2);
 
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
     RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &s1, DATA_TYPE &s2) {
+    RAJA::expt::KernelName("RAJA Reduce Sum"),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_SUM &s1, REF_SUM &s2) {
       s1 += working_array[idx];
       s2 += working_array[idx];
   });
@@ -67,7 +70,7 @@ void ForallReduceSumBasicTestImpl(const SEG_TYPE& seg,
   for (int j = 0; j < nloops; ++j) {
     RAJA::forall<EXEC_POLICY>(seg, 
       RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &s) {
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_SUM &s) {
         s += working_array[idx];
     });
   }

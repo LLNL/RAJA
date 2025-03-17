@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,6 +20,8 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
                                      const std::vector<IDX_TYPE>& seg_idx,
                                      camp::resources::Resource working_res)
 {
+  using REF_BITAND = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::bit_and>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -41,18 +43,20 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   }
   working_res.memcpy(working_array, test_array, sizeof(DATA_TYPE) * data_len);
 
-  RAJA::ReduceBitAnd<REDUCE_POLICY, DATA_TYPE> simpand(21);
+  DATA_TYPE simpand(21);
 
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
-    simpand &= working_array[idx];
+  RAJA::forall<EXEC_POLICY>(seg,
+    RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITAND & _simpand) {
+      _simpand &= working_array[idx];
   });
 
-  ASSERT_EQ(static_cast<DATA_TYPE>(simpand.get()), 5);
+  ASSERT_EQ(static_cast<DATA_TYPE>(simpand), 5);
 
-  
-  // 
+
+  //
   // And now a randomized test that pushes zeros around
-  // 
+  //
 
   const int modval = 100;
 
@@ -72,7 +76,8 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg,
     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
-    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &r1, DATA_TYPE &r2) {
+    RAJA::expt::KernelName("RAJA Reduce BitAnd"),
+    [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITAND &r1, REF_BITAND &r2) {
       r1 &= working_array[idx];
       r2 &= working_array[idx];
   });
@@ -86,13 +91,13 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   for (int j = 0; j < nloops; ++j) {
     RAJA::forall<EXEC_POLICY>(seg,
       RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
-      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, DATA_TYPE &r1) {
+      [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITAND &r1) {
         r1 &= working_array[idx];
     });
   }
 
   ASSERT_EQ(static_cast<DATA_TYPE>(redand), ref_and);
-   
+
 
   deallocateForallTestData<DATA_TYPE>(working_res,
                                       working_array,

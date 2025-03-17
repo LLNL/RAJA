@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,6 @@
 #include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
-
 namespace RAJA
 {
 namespace internal
@@ -42,22 +41,29 @@ namespace internal
 
 // SyclStatementExecutor for actually invoking the lambda
 
-template <typename Data, camp::idx_t LambdaIndex, typename... Args, typename Types>
-struct SyclStatementExecutor<Data, statement::Lambda<LambdaIndex, Args...>, Types> {
+template<typename Data,
+         camp::idx_t LambdaIndex,
+         typename... Args,
+         typename Types>
+struct SyclStatementExecutor<Data,
+                             statement::Lambda<LambdaIndex, Args...>,
+                             Types>
+{
 
-  static
-  inline RAJA_DEVICE void exec(Data &data, cl::sycl::nd_item<3> item, bool thread_active)
+  static inline RAJA_DEVICE void exec(Data& data,
+                                      ::sycl::nd_item<3> RAJA_UNUSED_ARG(item),
+                                      bool thread_active)
   {
     // Only execute the lambda if it hasn't been masked off
-    if(thread_active){
-      StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>::exec(data);
+    if (thread_active)
+    {
+      StatementExecutor<statement::Lambda<LambdaIndex, Args...>, Types>::exec(
+          data);
     }
-
   }
 
-  static
-  inline
-  LaunchDims calculateDimensions(Data const & RAJA_UNUSED_ARG(data))
+  static inline LaunchDims calculateDimensions(
+      Data const& RAJA_UNUSED_ARG(data))
   {
     return LaunchDims();
   }

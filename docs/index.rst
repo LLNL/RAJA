@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -121,7 +121,8 @@ RAJA User Documentation
 =======================
 
   * :doc:`RAJA User Guide <sphinx/user_guide/index>`
-  * `RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_
+  * `RAJA Portability Suite Tutorial Repo <https://github.com/LLNL/raja-suite-tutorial>`_
+  * `Archived RAJA Tutorials Repo <https://github.com/LLNL/RAJA-tutorials>`_
   * `Source Documentation <doxygen/html/index.html>`_
 
 ============================

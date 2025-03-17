@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,14 +10,11 @@
 #
 set(REDUCETYPES Sum Min Max BitAnd BitOr)
 
-#
-# If building openmp target tests, remove the back-end to
-# from the list of tests to generate here.
-#
+##
+## Disable traditional RAJA reductions test creation for OpenMP Target
+##
 if(RAJA_ENABLE_TARGET_OPENMP)
-  #if(RAJA_TEST_OPENMP_TARGET_SUBSET)
-    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
-  #endif()
+  list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
 endif()
 
 #
@@ -33,6 +30,7 @@ endif()
 #
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
+
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( REDUCETYPE ${REDUCETYPES} )
     configure_file( test-kernel-nested-multi-reduce.cpp.in

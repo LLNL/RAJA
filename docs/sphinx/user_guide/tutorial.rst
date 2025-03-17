@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -449,3 +449,11 @@ Other RAJA Features and Usage Examples
 
    tutorial/halo-exchange.rst
    tutorial/matrix_multiply.rst
+
+.. important:: The `RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`
+               is an excellent source of RAJA usage examples. The Suite
+               contains many numerical kernels, each of which is implemented
+               in a variety of RAJA and non-RAJA variants in OpenMP, CUDA, HIP,
+               SYCL, etc. Comparing different variants of these kernels is
+               instructive to understand how to use RAJA features and how they
+               work.

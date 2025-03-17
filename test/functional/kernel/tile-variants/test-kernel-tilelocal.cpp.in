@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,7 +35,9 @@ using SequentialKernelTileExecPols =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::seq_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
+
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+
             RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
               RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
@@ -62,7 +64,9 @@ using OpenMPKernelTileExecPols =
     RAJA::KernelPolicy<
       RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::omp_parallel_for_exec,
         RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::seq_exec,
+
           RAJA::statement::InitLocalMem<RAJA::cpu_tile_mem, RAJA::ParamList<2>,
+
             RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::seq_exec,
               RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::seq_exec,
                 RAJA::statement::Lambda<0>
@@ -91,9 +95,11 @@ using CudaKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::cuda_block_x_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::cuda_block_y_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::cuda_block_x_direct_unchecked,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::cuda_block_y_direct_unchecked,
+
             RAJA::statement::InitLocalMem<RAJA::cuda_shared_mem, RAJA::ParamList<2>,
+
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_loop,
                 RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::cuda_thread_y_direct,
                   RAJA::statement::Lambda<0>
@@ -126,9 +132,11 @@ using HipKernelTileExecPols =
 
     RAJA::KernelPolicy<
       RAJA::statement::HipKernel<
-        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::hip_block_x_loop,
-          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::hip_block_y_direct,
+        RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::hip_block_x_direct_unchecked,
+          RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::hip_block_y_direct_unchecked,
+
             RAJA::statement::InitLocalMem<RAJA::hip_shared_mem, RAJA::ParamList<2>,
+
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_x_loop,
                 RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::hip_thread_y_direct,
                   RAJA::statement::Lambda<0>
@@ -163,7 +171,9 @@ using HipKernelTileExecPols =
       RAJA::statement::SyclKernel<
         RAJA::statement::Tile<1, RAJA::tile_fixed<tile_dim_x>, RAJA::sycl_group_0_loop,
           RAJA::statement::Tile<0, RAJA::tile_fixed<tile_dim_y>, RAJA::sycl_group_1_direct,
+
             RAJA::statement::InitLocalMem<RAJA::sycl_shared_mem, RAJA::ParamList<2>,
+
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::sycl_local_0_loop,
                 RAJA::statement::ForICount<0, RAJA::statement::Param<1>, RAJA::sycl_local_1_direct,
                   RAJA::statement::Lambda<0>

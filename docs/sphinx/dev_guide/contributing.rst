@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -71,10 +71,10 @@ of the contributor. The process involves four main steps:
   #. A RAJA contributor makes a PR on the RAJA GitHub project to merge a
      branch on which she has developed a contribution into another RAJA branch,
      typically, the develop branch.
-  #. When a PR is created, GitHub triggers Azure CI testing checks and 
-     possibly GitLab CI checks if the branch is part of the RAJA GItHub repo. 
-     Running and pass/fail status is reported back to GitHub where it can be 
-     viewed and monitored.
+  #. When a PR is created, GitHub triggers Azure and GitHub Actions CI test
+     checks and GitLab CI checks if the branch is part of the RAJA GitHub repo. 
+     Running and pass/fail status for all checks is reported back to the 
+     corresponding GitHub pull request where it can be viewed and monitored.
   #. Meanwhile, RAJA team members and other contributors review the PR, 
      suggesting changes and/or approving when they think it is ready to merge.
   #. When all checks pass and the PR is approved, the PR may be merged.
@@ -192,6 +192,62 @@ likely the develop branch.
                the contribution.  For example, 
                **username/feature/<name-of-feature>** for a new feature, 
                **username/bugfix/<issue-fixed>** for a bugfix, etc.
+
+-----------------------------------
+Code Formatting
+-----------------------------------
+RAJA enforces style within the ``src`` and ``include`` directories using clang-format,
+major version 14.  Formatting will be enforced on pull requests through CI.
+Each contributor must guarantee that their code is in compliance with the
+clang-format settings specified within ``.clang-format``.  To make this easy,
+RAJA has provided two options for applying clang-format:
+
+* The CMake build target ``style``
+
+  *  If a ``clang-format`` executable with major version 14 is available in the ``PATH``
+     when running CMake, RAJA's build system will find that executable and set 
+     the CMake variable ``CLANGFORMAT_EXECUTABLE`` to that executable's path.  
+  *  Alternatively, the ``CLANGFORMAT_EXECUTABLE`` CMake variable can be set by the user 
+     to the path of a clang-format 14 executable.  For example, on Linux, this would look 
+     like
+
+    .. code-block:: bash
+
+      mkdir build
+      cd build
+      cmake ../ <other CMake options> -DCLANGFORMAT_EXECUTABLE=<path to clang-format 14>
+
+
+  *  If an invalid version of ``clang-format`` is supplied, the following error will be 
+     emitted at build config time:
+
+    .. code-block:: bash
+
+      blt_add_clangformat_target: clang-format '14' is required, found <incorrect version>.
+        Disabling 'style' build target.  
+
+
+  *  If no ``CLANGFORMAT_EXECUTABLE`` is supplied, ``cmake`` will print the warning 
+     ``Failed to locate CMakeFormat executable``.
+        
+* Git hooks
+
+  * Follow these steps to setup githooks, from the root directory of RAJA
+
+    .. code-block:: bash
+
+     # Only necessary if clang-format 14 is not in the $PATH variable.  
+     # This line can also be placed in .zshrc
+     $ export RAJA_CLANG_FORMAT=<path to clang-format install>
+     $ scripts/setup-hooks.sh
+
+  * The ``scripts/setup-hooks.sh`` script will install a ``pre-commit`` git hook 
+    script that applies clang-format to any changes staged with git.  If a ``clang-format``
+    executable with major version 14 is available in the ``PATH``, this executable will be used.
+    If not, the user must set the environment variable ``RAJA_CLANG_FORMAT`` to a valid 
+    clang-format executable.  If the script cannot find a valid clang-format installation
+    from either the ``PATH`` or from the environment variable ``RAJA_CLANG_FORMAT``, the 
+    script will print a warning and exit, allowing the commit to continue.
 
 .. _prfromfork-label:
 

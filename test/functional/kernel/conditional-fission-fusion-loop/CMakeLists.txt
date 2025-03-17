@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -19,6 +19,15 @@
 #if(RAJA_ENABLE_SYCL)
 #  list(APPEND KERNEL_BACKENDS Sycl)
 #endif()
+
+##
+## Enable OpenMP Target tests when support for fission-fusion is fixed
+##
+if(RAJA_ENABLE_TARGET_OPENMP)
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
+    list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
+  endif()
+endif()
 
 foreach( BACKEND ${KERNEL_BACKENDS} )
       configure_file( test-kernel-conditional-fission-fusion-loop.cpp.in

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,7 +30,7 @@ echo
 rm -rf build_${BUILD_SUFFIX} 2>/dev/null
 mkdir build_${BUILD_SUFFIX} && cd build_${BUILD_SUFFIX}
 
-module load cmake/3.20.2
+module load cmake/3.23.1
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -38,6 +38,7 @@ cmake \
   -DBLT_CXX_STD=c++14 \
   -C ../host-configs/lc-builds/blueos/clang_X.cmake \
   -DENABLE_OPENMP=On \
+  -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

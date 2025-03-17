@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
@@ -14,8 +14,8 @@ endif()
 include(CMakeDependentOption)
 
 # Set version number
-set(RAJA_VERSION_MAJOR 2024)
-set(RAJA_VERSION_MINOR 07)
+set(RAJA_VERSION_MAJOR 2025)
+set(RAJA_VERSION_MINOR 03)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
@@ -41,7 +41,7 @@ project(RAJA LANGUAGES CXX C
   VERSION ${RAJA_LOADED})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
-
+set(BLT_REQUIRED_CLANGFORMAT_VERSION  "14" CACHE STRING "")
 include(cmake/SetupRajaOptions.cmake)
 
 cmake_minimum_required(VERSION 3.23)
@@ -122,7 +122,7 @@ if (RAJA_ENABLE_CUDA)
     message(STATUS "CUDA compute architecture set to RAJA default 35 since it was not specified")
     set(CMAKE_CUDA_ARCHITECTURES "35" CACHE STRING "Set CMAKE_CUDA_ARCHITECTURES to RAJA minimum supported" FORCE)
   endif()
-  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}") 
+  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}")
   if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
       set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
@@ -135,6 +135,9 @@ endif()
 include(cmake/SetupCompilers.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
+
+# Configure `style` target for enforcing code style
+raja_add_code_checks()
 
 set (raja_sources
   src/AlignedRangeIndexSetBuilders.cpp
@@ -171,6 +174,7 @@ endif()
 
 if(RAJA_ENABLE_HIP)
   message(STATUS "HIP version: ${hip_VERSION}")
+  set(RAJA_HIP_WAVESIZE "64" CACHE STRING "Set the wave size for GPU architecture. E.g. MI200/MI300 this is 64.")
   if("${hip_VERSION}" VERSION_LESS "3.5")
     message(FATAL_ERROR "Trying to use HIP/ROCm version ${hip_VERSION}. RAJA requires HIP/ROCm version 3.5 or newer. ")
   endif()
@@ -220,6 +224,7 @@ if (RAJA_ENABLE_SYCL)
     ${raja_depends}
     sycl)
 endif ()
+
 
 message(STATUS "Desul Atomics support is ${RAJA_ENABLE_DESUL_ATOMICS}")
 if (RAJA_ENABLE_DESUL_ATOMICS)

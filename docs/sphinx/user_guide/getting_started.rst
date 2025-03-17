@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -28,7 +28,7 @@ in :ref:`configopt-label`.
 To build RAJA and use its most basic features, you will need:
 
 - C++ compiler with C++14 support
-- `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
+- `CMake <https://cmake.org/>`_ version 3.23 or greater.
 
 
 ==================
@@ -371,3 +371,11 @@ be located in the ``<build-dir>/test`` directory.
 For an overview of all the main RAJA features, see :ref:`features-label`.
 A full tutorial with a variety of examples showing how to use RAJA features
 can be found in :ref:`tutorial-label`.
+
+.. important:: The `RAJA Performance Suite <https://github.com/LLNL/RAJAPerf>`
+               is an excellent source of RAJA usage examples. The Suite
+               contains many numerical kernels, each of which is implemented
+               in a variety of RAJA and non-RAJA variants in OpenMP, CUDA, HIP,
+               SYCL, etc. Comparing different variants of these kernels is
+               instructive to understand how to use RAJA features and how they
+               work.

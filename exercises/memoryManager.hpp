@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -76,7 +76,7 @@ void deallocate(T *&ptr)
     hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
 #elif defined(RAJA_ENABLE_SYCL)
       auto qu = sycl_res->get<camp::resources::Sycl>().get_queue();
-      ptr = cl::sycl::malloc_device<T>(size, *qu);
+      ptr = ::sycl::malloc_device<T>(size, *qu);
 #endif
     return ptr;
   }

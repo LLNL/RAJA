@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename MULTI_REDUCE_POLICY_T, typename T>
+template<typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceMin;
 
 /*!
@@ -94,7 +94,7 @@ struct MultiReduceMin;
  *
  ******************************************************************************
  */
-template <typename MULTI_REDUCE_POLICY_T, typename T>
+template<typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceMax;
 
 /*!
@@ -124,7 +124,7 @@ struct MultiReduceMax;
  *
  ******************************************************************************
  */
-template <typename MULTI_REDUCE_POLICY_T, typename T>
+template<typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceSum;
 
 /*!
@@ -154,9 +154,9 @@ struct MultiReduceSum;
  *
  ******************************************************************************
  */
-template <typename MULTI_REDUCE_POLICY_T, typename T>
+template<typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceBitOr;
- 
+
 
 /*!
  ******************************************************************************
@@ -171,7 +171,8 @@ struct MultiReduceBitOr;
    Index_ptr bins = ...;
    Real_ptr bit_vals = ...;
 
-   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins, init_val);
+   MultiReduceBitAnd<multi_reduce_policy, Real_type> my_bits(num_bins,
+ init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
       my_bits[bins[i]] &= (data[i]);
@@ -185,10 +186,10 @@ struct MultiReduceBitOr;
  *
  ******************************************************************************
  */
-template <typename MULTI_REDUCE_POLICY_T, typename T>
+template<typename MULTI_REDUCE_POLICY_T, typename T>
 struct MultiReduceBitAnd;
 
-} //namespace RAJA
+}  // namespace RAJA
 
 
 #endif  // closing endif for header file include guard

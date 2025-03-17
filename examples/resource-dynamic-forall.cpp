@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
   RAJA::resources::Resource res = RAJA::Get_Host_Resource(host_res, select_cpu_or_gpu);
 #endif
 
-  RAJA::expt::dynamic_forall<policy_list>
+  RAJA::dynamic_forall<policy_list>
   (res, pol, RAJA::RangeSegment(0, N), [=] RAJA_HOST_DEVICE (int i)   {
 
     c[i] = a[i] + b[i];

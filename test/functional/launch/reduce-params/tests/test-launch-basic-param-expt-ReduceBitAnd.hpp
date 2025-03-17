@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,8 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
                                      const std::vector<IDX_TYPE>& seg_idx,
                                      camp::resources::Resource working_res)
 {
+  using REF_BITAND = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::bit_and>;
+
   IDX_TYPE data_len = seg_idx[seg_idx.size() - 1] + 1;
   IDX_TYPE idx_len = static_cast<IDX_TYPE>( seg_idx.size() );
 
@@ -51,7 +53,7 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_simpand) {
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_BITAND &_simpand) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 
@@ -86,7 +88,7 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
      RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
-     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE &_redand, DATA_TYPE &_redand2) {
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_BITAND &_redand, REF_BITAND &_redand2) {
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
         _redand  &= working_array[idx];
         _redand2 &= working_array[idx];
@@ -103,7 +105,7 @@ void LaunchParamExptReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
     RAJA::launch<LAUNCH_POLICY>
       (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
        RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
-       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, DATA_TYPE _redand) {
+       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_BITAND _redand) {
         RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
           _redand &= working_array[idx];
       });
