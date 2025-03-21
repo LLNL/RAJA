@@ -59,9 +59,7 @@ fi
 
 if [[ -n ${module_list} ]]
 then
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    echo "~~~~~ Modules to load: ${module_list}"
-    echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    timed_message "Modules to load: ${module_list}"
     module load ${module_list}
 fi
 
@@ -81,7 +79,7 @@ then
     prefix="${prefix}-${job_unique_id}"
 else
     # We set the prefix in the parent directory so that spack dependencies are not installed inside the source tree.
-    prefix="$(pwd)/../spack-and-build-root"
+    prefix="${project_dir}/../spack-and-build-root"
 fi
 
 echo "Creating directory ${prefix}"
@@ -202,8 +200,18 @@ then
     mkdir -p ${build_dir} && cd ${build_dir}
 
     timed_message "Building RAJA"
+    # We set the MPI tests command to allow overlapping.
+    # Shared allocation: Allows build_and_test.sh to run within a sub-allocation (see CI config).
+    # Use /dev/shm: Prevent MPI tests from running on a node where the build dir doesn't exist.
+    cmake_options=""
+    if [[ "${truehostname}" == "ruby" || "${truehostname}" == "poodle" ]]
+    then
+        cmake_options="-DBLT_MPI_COMMAND_APPEND:STRING=--overlap"
+    fi
+
     $cmake_exe \
       -C ${hostconfig_path} \
+      ${cmake_options} \
       -DCMAKE_INSTALL_PREFIX=${install_dir} \
       ${project_dir}
     if ! $cmake_exe --build . -j ${core_counts[$truehostname]}
