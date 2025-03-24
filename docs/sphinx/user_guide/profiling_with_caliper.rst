@@ -12,8 +12,10 @@
 Profiling with Caliper
 ************************
 
-To aid in profiling the RAJA abstraction layer has dynamic and static plugin support with the Caliper performance library through RAJA's plugin mechanism :ref:`feat-plugins-label`. Caliper is developed at LLNL and freely available on GitHub, see `Caliper GitHub <https://github.com/LLNL/Caliper>`_ .
-Caliper provides a common interface for various vendor profiling tools, its own built in performance reports.
+To aid in profiling the RAJA abstraction layer has dynamic and static plugin support with the Caliper performance library through RAJA's plugin mechanism,
+we refer the reader to the :ref:`feat-plugins-label` section for more on RAJA plugins. Caliper is developed at LLNL and freely available on GitHub,
+see `Caliper GitHub <https://github.com/LLNL/Caliper>`_ . Caliper provides a common interface for various vendor profiling tools, its own built in performance
+reports.
 
 In this section we will demonstrate how to configure RAJA with Caliper, run simple examples with kernel performance,
 and finally use the Thicket library, also developed at LLNL and freely available on GitHub, see `Thicket GitHub <https://github.com/LLNL/Thicket>`_ .
@@ -84,5 +86,34 @@ which are not provided a name are ommited from Caliper profiling.
   });
 
 .. note:: The RAJA KernelName feature lives under the expt namespace as it part of a new param reducer interface.
-          It will be removed from from expt once the new reducer interface has matured. 
+          It will be removed from from expt once the new reducer interface has matured.
 
+
+=============================================
+Basic integration with vendor profiling tools
+=============================================
+Once Caliper is integrated and kernels are provided with a kernel name, the Caliper library provides various
+services to assist developers better understand their codes. For example the following command
+`CALI_CONFIG=cuda-activity-report,show_kernels ./bin/raja-forall-caliper` will report all CUDA related activity
+within an exectuable::
+
+  Path                     Kernel                                           Host Time GPU Time GPU %
+  C-version elapsed time                                                     0.000744
+  RAJA Seq daxpy Kernel                                                      0.000783
+  RAJA SIMD daxpy Kernel                                                     0.000704
+  RAJA OpenMP daxpy Kernel                                                   0.009124
+  cudaMalloc                                                                 0.128423
+  cudaMemcpy                                                                 0.002385 0.001757 73.662910
+  cudaStreamCreate                                                           0.000230
+  RAJA CUDA daxpy Kernel
+  |-                                                                        0.000159
+  |-                      void RAJA::policy::cuda~~}::detail::KernelName>)           0.000038
+  cudaLaunchKernel
+   |-                                                                      0.000066
+   |-                    void RAJA::policy::cuda~~}::detail::KernelName>)           0.000038
+  cudaStreamSynchronize                                                    0.000050
+  cudaFree                                                                   0.000495
+
+
+  .. image:: figures/CUDA_profiling.png
+  :width: 400
