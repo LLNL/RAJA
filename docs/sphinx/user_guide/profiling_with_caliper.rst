@@ -114,6 +114,25 @@ within an exectuable::
   cudaStreamSynchronize                                                    0.000050
   cudaFree                                                                   0.000495
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Generating an NVIDIA Nsight Systems file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  .. image:: figures/CUDA_profiling.png
-  :width: 400
+Caliper can also be used to generate a NVIDIA Nsight Systems file. The following comman will generate the file and annotate the CUDA
+kernel region::
+
+CALI_SERVICES_ENABLE=nvtx,cuda nsys profile -o my_profile ./bin/raja-forall-caliper
+
+.. image:: figures/CUDA_profiling.png
+:width: 400
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Generating a ROCM trace file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Configuring a ROCM trace file with Caliper may be done using the following command::
+
+  CALI_SERVICES_ENABLE=roctx,rocm,trace rocprof --hip-trace --roctx-trace ./bin/raja-forall-caliper
+
+
+  .. image:: figures/ROCM_profiling.png
+:width: 400
