@@ -123,8 +123,9 @@ kernel region::
 
 CALI_SERVICES_ENABLE=nvtx,cuda nsys profile -o my_profile ./bin/raja-forall-caliper
 
+The nsys file is then read into the NVIDIA Nsight toolkit. 
+
 .. image:: figures/CUDA_profiling.png
-:width: 400
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Generating a ROCM trace file
@@ -133,6 +134,24 @@ Configuring a ROCM trace file with Caliper may be done using the following comma
 
   CALI_SERVICES_ENABLE=roctx,rocm,trace rocprof --hip-trace --roctx-trace ./bin/raja-forall-caliper
 
+The trace file is then read into the Chrome tracer tool as demonstrated below. 
 
-  .. image:: figures/ROCM_profiling.png
-:width: 400
+.. image:: figures/ROCM_profiling.png
+
+^^^^^^^^^^^^^^^^^^^^^^^
+Generating Hatchet file
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Lastly the following command will generate a .cali file which can be read into the Thicket library::
+
+  CALI_CONFIG=hatchet-region-profile ./bin/raja-forall-caliper
+
+
+The Hatchet library can then be used to create a color coded tree::
+
+  gf = ht.GraphFrame.from_caliperreader(caliper_file)
+  print(gf.tree())
+
+.. image:: figures/Hatchet_tree.png 
+
+
