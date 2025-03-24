@@ -12,14 +12,15 @@
 Profiling with Caliper
 ************************
 
-To aid in profiling the RAJA abstraction layer has dynamic and static plugin support with the Caliper performance library through RAJA's plugin mechanism,
-we refer the reader to the :ref:`feat-plugins-label` section for more on RAJA plugins. Caliper is developed at LLNL and freely available on GitHub,
-see `Caliper GitHub <https://github.com/LLNL/Caliper>`_ . Caliper provides a common interface for various vendor profiling tools, its own built in performance
+To aid in profiling, the RAJA abstraction layer has dynamic and static plugin support for the Caliper performance library.
+We refer the reader to the :ref:`feat-plugins-label` section for more on RAJA plugins. Caliper is developed at LLNL and freely available on GitHub,
+see `Caliper GitHub <https://github.com/LLNL/Caliper>`_ . Caliper provides a common interface for various vendor profiling tools and its own built-in performance
 reports.
 
-In this section we will demonstrate how to configure RAJA with Caliper, run simple examples with kernel performance,
-and finally use the Thicket library, also developed at LLNL and freely available on GitHub, see `Thicket GitHub <https://github.com/LLNL/Thicket>`_ .
-For more detailed tutorials we refer the reader to the Caliper and Thicket tutorials.
+In this section we will demonstrate how to configure RAJA with Caliper, run a simple examples with kernel profiling,
+and a quick snapshot of hotspots of using the Thicket libary. The Thicket library is also developed at LLNL and freely available on GitHub,
+see `Thicket GitHub <https://github.com/LLNL/Thicket>`_ .
+This page is focused as a quickstart guide, for more detailed tutorials we refer the reader to the Caliper and Thicket tutorials.
 
 
 =================================
@@ -27,7 +28,7 @@ Building and running with Caliper
 =================================
 Caliper serves as a portable profiling library which may be configured with various vendor options. For the most up to date
 configuration options we refer the reader to the `Caliper GitHub <https://github.com/LLNL/Caliper>`_  page.
-For the following examples we use Caliper v2.12.1 and configure on three, CPU only, NVTX, and ROCTX enabled different platorms::
+For the following examples we use Caliper v2.12.1 and configure on three different platforms; CPU only, NVTX, and ROCTX::
 
   //Basic CPU using default build parameters
   cmake ../
@@ -42,17 +43,17 @@ Building RAJA with Caliper enabled requires pointing RAJA to the Caliper shared 
 
   cmake –DRAJA_ENABLE_RUNTIME_PLUGINS=ON –Dcaliper_DIR=${CALIPER_BUILD_DIR}/share/cmake/caliper ../
 
-As a quick build check we can run the basic Caliper RAJA::forall example::
+As a quick build check we build the basic Caliper RAJA-Caliper example::
 
   //Example make
   make raja-forall-caliper
 
-Finally, the Caliper annotated RAJA example may be running as::
+Finally, the Caliper annotated RAJA example may be executed via::
 
   //Run with raja-forall-caliper example!
   CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
 
-If we built with NVTX enabled Caliper and CUDA enabled RAJA the end of the the run the program should output
+If we build with NVTX enabled Caliper and CUDA enabled RAJA the end of the the run the program should output
 the following runtime information::
 
   Path                     Time (E) Time (I) Time % (E) Time % (I)
@@ -67,15 +68,15 @@ The left two columns are absolute time in seconds while the right two columns co
 within the program.
 
 .. note:: RAJA methods which offload to the GPU will require a synchronous GPU policy to ensure that the kernel
-          has completed prior to total runtime being reported. For asynchronous kernels Caliper offers the
+          has completed prior to the total runtime being reported. For asynchronous kernels Caliper offers the
           `hip.gputime` or `cuda.gputime` service which may be added to CALI_CONFIG to accurately capture kernel
           time.
 
 ========================================
 Profiling RAJA kernels via kernel naming
 ========================================
-Caliper annotations of RAJA kernels work through the Kernel naming mechanism currenly only supported in forall
-and launch. The ``RAJA::expt::KernelName`` container holds a string and used for profiling in caliper. Kernels
+Caliper annotations of RAJA kernels work through the RAJA kernel naming mechanism currenly only supported in forall
+and launch. The ``RAJA::expt::KernelName`` container holds a string and used for profiling in Caliper. Kernels
 which are not provided a name are ommited from Caliper profiling::
 
     RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
@@ -86,13 +87,15 @@ which are not provided a name are ommited from Caliper profiling::
   });
 
 .. note:: The RAJA KernelName feature lives under the expt namespace as it part of a new param reducer interface.
-          It will be removed from from expt once the new reducer interface has matured.
+          It will be removed from expt once the new reducer interface has matured.
+
+.. note:: The RAJA KernelName must be placed before the lambda to ensure proper behavior.
 
 
 =============================================
 Basic integration with vendor profiling tools
 =============================================
-Once Caliper is integrated and kernels are provided with a kernel name, the Caliper library provides various
+Once Caliper is configured with RAJA and kernels are provided with a kernel name, the Caliper library provides various
 services to assist developers better understand their codes. For example the following command
 `CALI_CONFIG=cuda-activity-report,show_kernels ./bin/raja-forall-caliper` will report all CUDA related activity
 within an exectuable::
@@ -114,16 +117,18 @@ within an exectuable::
   cudaStreamSynchronize                                                      0.000050
   cudaFree                                                                   0.000495
 
+A simiar command may be found for HIP kernels under the Caliper documentation.
+  
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Generating an NVIDIA Nsight Systems file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Caliper can also be used to generate a NVIDIA Nsight Systems file. The following comman will generate the file and annotate the CUDA
+Caliper can also be used to generate a NVIDIA Nsight Systems file. The following command will generate the file and annotate the CUDA
 kernel region::
 
 CALI_SERVICES_ENABLE=nvtx,cuda nsys profile -o my_profile ./bin/raja-forall-caliper
 
-The nsys file is then read into the NVIDIA Nsight toolkit. 
+The nsys file may then be read into the NVIDIA Nsight toolkit. 
 
 .. image:: figures/CUDA_profiling.png
 
@@ -134,7 +139,7 @@ Configuring a ROCM trace file with Caliper may be done using the following comma
 
   CALI_SERVICES_ENABLE=roctx,rocm,trace rocprof --hip-trace --roctx-trace ./bin/raja-forall-caliper
 
-The trace file is then read into the Chrome tracer tool as demonstrated below. 
+The trace file may then be read into the Chrome tracer tool as demonstrated below. 
 
 .. image:: figures/ROCM_profiling.png
 
@@ -142,21 +147,22 @@ The trace file is then read into the Chrome tracer tool as demonstrated below.
 Generating Hatchet file
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Lastly the following command will generate a .cali file which can be read into the Thicket library::
+Lastly, the following command will generate a .cali file which can be read into the Thicket library::
 
   CALI_CONFIG=hatchet-region-profile ./bin/raja-forall-caliper
 
 
-The using the python jupyter notebooks and Hatchet library we can load the .cali file and begin analysing
+Using python jupyter notebooks and the Hatchet library we can load the .cali file and begin analysing
 performance of our application. The following snippet will generate a color coded tree high-lighting hotspots
-of our application.
+(in red) of our application::
 
   caliper_file = region_profile.cali
   gf = ht.GraphFrame.from_caliperreader(caliper_file)
   print(gf.tree())
 
-.. image:: figures/Hatchet_tree.png 
-
+Within the jupyter notebook the color coded tree will look like this:  
+  
+.. image:: figures/Hatchet_tree.png
 
 =============
 Final remarks
@@ -164,5 +170,5 @@ Final remarks
 The capabilities of Caliper and Hatchet exceed what has been presented here. Our main goal was to provide
 users a quick start guide to building and profiling with Caliper and Hatchet. We highly recommend exploting
 the `Caliper GitHub <https://github.com/LLNL/Caliper>`_  and `Thicket GitHub <https://github.com/LLNL/Thicket>`_
-pages for the latest versions and links to documentation. Finally, a full-fledged tutorial is avaible of on YouTube
-`2024 Caliper, Hatchet, and Thicket <https://youtu.be/qVmxDOxM9Ws?feature=shared>`_. 
+pages for the latest versions and links to documentation. Finally, a full-fledged tutorial is avaible of LLNL profiling
+tools on YouTube `2024 Caliper, Hatchet, and Thicket <https://youtu.be/qVmxDOxM9Ws?feature=shared>`_. 
