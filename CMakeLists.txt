@@ -165,7 +165,6 @@ set (raja_depends
     NO_DEFAULT_PATH
     PATHS ${caliper_DIR}
   )
-message(STATUS "Using Caliper from location =  ${caliper_DIR}")
 endif()
 
 if (RAJA_ENABLE_OPENMP)
