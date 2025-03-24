@@ -257,7 +257,8 @@ void launch(LaunchParams const& launch_params,
   // get kernel name
   auto&& kernel_name =
       expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
-  std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
+  std::string kname =
+      KernelNameHelper<decltype(kernel_name)>::getKernelName(kernel_name);
 
   auto&& launch_body =
       expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
@@ -380,7 +381,8 @@ resources::EventProxy<resources::Resource> launch(
 
   auto&& kernel_name =
       expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
-  std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
+  std::string kname =
+      KernelNameHelper<decltype(kernel_name)>::getKernelName(kernel_name);
 
   auto&& launch_body =
       expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);

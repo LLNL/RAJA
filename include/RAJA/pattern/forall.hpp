@@ -536,19 +536,20 @@ forall_Icount(ExecutionPolicy&& p,
  */
 
 template<typename T>
-struct get_kernel_name
+struct KernelNameHelper
 {
   template<typename U>
-  static std::string get(U&)
+  static std::string getKernelName(U&)
   {
     return std::string();  // return empty string
   }
 };
 
 template<>
-struct get_kernel_name<RAJA::expt::detail::KernelName&&>
+struct KernelNameHelper<RAJA::expt::detail::KernelName&&>
 {
-  static std::string get(const RAJA::expt::detail::KernelName& kernel_name)
+  static std::string getKernelName(
+      const RAJA::expt::detail::KernelName& kernel_name)
   {
     return kernel_name.name;
   }
@@ -575,7 +576,8 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
 
   expt::check_forall_optional_args(loop_body, f_params);
 
-  std::string kname = get_kernel_name<decltype(kernel_name)>::get(kernel_name);
+  std::string kname =
+      KernelNameHelper<decltype(kernel_name)>::getKernelName(kernel_name);
 
   util::PluginContext context {
       util::make_context<camp::decay<ExecutionPolicy>>(&kname)};
