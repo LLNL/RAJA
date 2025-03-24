@@ -23,3 +23,15 @@ For more detailed tutorials we refer the reader to the Caliper and Thicket tutor
 =====================
 Building with Caliper
 =====================
+Caliper serves as a portable profiling library which may be configured with various vendor options. For the most up to date
+configuration options we refer the reader to the `Caliper GitHub <https://github.com/LLNL/Caliper>`_  page.
+For the following examples we use Caliper v2.12.1 and configure on three, CPU only, NVTX, and ROCTX enabled different platorms::
+
+  //Basic CPU using default build parameters
+  cmake ../
+  
+  //With NVTX ON
+  cmake -DWITH_NVTX=ON ../
+
+  //With ROCTX ON
+  cmake -DWITH_ROCTX=ON ../
