@@ -76,7 +76,7 @@ Profiling RAJA kernels via kernel naming
 ========================================
 Caliper annotations of RAJA kernels work through the Kernel naming mechanism currenly only supported in forall
 and launch. The ``RAJA::expt::KernelName`` container holds a string and used for profiling in caliper. Kernels
-which are not provided a name are ommited from Caliper profiling.
+which are not provided a name are ommited from Caliper profiling::
 
     RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
     RAJA::expt::KernelName("RAJA Seq daxpy Kernel"), [=] (int i) {
