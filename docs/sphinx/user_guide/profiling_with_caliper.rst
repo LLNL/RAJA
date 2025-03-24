@@ -147,11 +147,22 @@ Lastly the following command will generate a .cali file which can be read into t
   CALI_CONFIG=hatchet-region-profile ./bin/raja-forall-caliper
 
 
-The Hatchet library can then be used to create a color coded tree::
+The using the python jupyter notebooks and Hatchet library we can load the .cali file and begin analysing
+performance of our application. The following snippet will generate a color coded tree high-lighting hotspots
+of our application.
 
+  caliper_file = region_profile.cali
   gf = ht.GraphFrame.from_caliperreader(caliper_file)
   print(gf.tree())
 
 .. image:: figures/Hatchet_tree.png 
 
 
+=============
+Final remarks
+=============
+The capabilities of Caliper and Hatchet exceed what has been presented here. Our main goal was to provide
+users a quick start guide to building and profiling with Caliper and Hatchet. We highly recommend exploting
+the `Caliper GitHub <https://github.com/LLNL/Caliper>`_  and `Thicket GitHub <https://github.com/LLNL/Thicket>`_
+pages for the latest versions and links to documentation. Finally, a full-fledged tutorial is avaible of on YouTube
+`2024 Caliper, Hatchet, and Thicket <https://youtu.be/qVmxDOxM9Ws?feature=shared>`_. 
