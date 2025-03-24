@@ -106,12 +106,12 @@ within an exectuable::
   cudaMemcpy                                                                 0.002385 0.001757 73.662910
   cudaStreamCreate                                                           0.000230
   RAJA CUDA daxpy Kernel
-  |-                                                                        0.000159
-  |-                      void RAJA::policy::cuda~~}::detail::KernelName>)           0.000038
+  |-                                                                         0.000159
+  |-                      void RAJA::policy::cuda~~}::detail::KernelName>)            0.000038
   cudaLaunchKernel
-   |-                                                                      0.000066
-   |-                    void RAJA::policy::cuda~~}::detail::KernelName>)           0.000038
-  cudaStreamSynchronize                                                    0.000050
+   |-                                                                        0.000066
+   |-                    void RAJA::policy::cuda~~}::detail::KernelName>)            0.000038
+  cudaStreamSynchronize                                                      0.000050
   cudaFree                                                                   0.000495
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
