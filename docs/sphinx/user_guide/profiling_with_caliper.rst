@@ -69,6 +69,20 @@ within the program.
           `hip.gputime` or `cuda.gputime` service which may be added to CALI_CONFIG to accurately capture kernel
           time.
 
-=================================
-Building and running with Caliper
-=================================
+========================================
+Profiling RAJA kernels via kernel naming
+========================================
+Caliper annotations of RAJA kernels work through the Kernel naming mechanism currenly only supported in forall
+and launch. The ``RAJA::expt::KernelName`` container holds a string and used for profiling in caliper. Kernels
+which are not provided a name are ommited from Caliper profiling.
+
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+    RAJA::expt::KernelName("RAJA Seq daxpy Kernel"), [=] (int i) {
+
+        a[i] += b[i] * c;
+
+  });
+
+.. note:: The RAJA KernelName feature lives under the expt namespace as it part of a new param reducer interface.
+          It will be removed from from expt once the new reducer interface has matured. 
+
