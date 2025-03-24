@@ -45,12 +45,13 @@ As a quick build check we can run the basic Caliper RAJA::forall example::
   //Example make
   make raja-forall-caliper
 
-Finally, we can run Caliper annotated RAJA::
+Finally, the Caliper annotated RAJA example may be running as::
 
   //Run with raja-forall-caliper example!
   CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
 
-At the end of the the run the program will output the following runtime information::
+If we built with NVTX enabled Caliper and CUDA enabled RAJA the end of the the run the program should output
+the following runtime information::
 
   Path                     Time (E) Time (I) Time % (E) Time % (I)
   C-version elapsed time   0.000820 0.000820   0.395169   0.395169
@@ -58,3 +59,16 @@ At the end of the the run the program will output the following runtime informat
   RAJA SIMD daxpy Kernel   0.000611 0.000611   0.294629   0.294629
   RAJA OpenMP daxpy Kernel 0.013691 0.013691   6.598422   6.598422
   RAJA CUDA daxpy Kernel   0.000118 0.000118   0.056827   0.056827
+
+The (E) column corresponds to exclusive timing; while the (I) column will correspond to inclusive timing.
+The left two columns are absolute time in seconds while the right two columns correspond to percentage of time
+within the program.
+
+.. note:: RAJA methods which offload to the GPU will require a synchronous GPU policy to ensure that the kernel
+          has completed prior to total runtime being reported. For asynchronous kernels Caliper offers the
+          `hip.gputime` or `cuda.gputime` service which may be added to CALI_CONFIG to accurately capture kernel
+          time.
+
+=================================
+Building and running with Caliper
+=================================
