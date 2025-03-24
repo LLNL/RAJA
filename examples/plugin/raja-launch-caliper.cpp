@@ -11,12 +11,13 @@
 #include <caliper/cali.h>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/Timer.hpp"
 
 /*
- *  RAJA Caliper integration with launch
- *  This example will assign a default
- *  kernel name based on file name and location
+ *  Daxpy example with Caliper annotations.
+ *
+ *  This example repeats the RAJA daxpy example
+ *  using RAJA launch and with Caliper annotations.
+ *  For a sample run: CALI_CONFIG=runtime-report ./bin/raja-launch-caliper
  */
 
 //
@@ -28,10 +29,6 @@ void printResult(double* v, int len);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
   std::cout << "\n\nRAJA daxpy example...\n";
-
-//
-  auto timer = RAJA::Timer();
-
 
 //
 // Define vector length
@@ -75,18 +72,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-version of daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
-  {
-    timer.reset();
-    timer.start();
-    CALI_CXX_MARK_SCOPE("CALI: C-version elapsed time");
-    for (int i = 0; i < N; ++i) {
-      a[i] += b[i] * c;
-    }
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
-  }
 
+  CALI_MARK_BEGIN("C-version elapsed time");    
+  for (int i = 0; i < N; ++i) {
+    a[i] += b[i] * c;
+  }
+  CALI_MARK_END("C-version elapsed time");
+  
   std::memcpy( aref, a, N* sizeof(double) );
 
 //----------------------------------------------------------------------------//
@@ -97,29 +89,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running launch sequential daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
- {
-   using seq_launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
-   using seq_loop_policy   = RAJA::LoopPolicy<RAJA::seq_exec>;
+  using seq_launch_policy = RAJA::LaunchPolicy<RAJA::seq_launch_t>;
+  using seq_loop_policy   = RAJA::LoopPolicy<RAJA::seq_exec>;
 
-   timer.reset();
-   timer.start();
-   RAJA::launch<seq_launch_policy>
-     (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-      RAJA::expt::KernelName("RAJA launch Seq daxpy Kernel"),
-      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
+  RAJA::launch<seq_launch_policy>
+    (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
+     RAJA::expt::KernelName("RAJA launch Seq daxpy Kernel"),
+     [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
-        RAJA::loop<seq_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
-        {
-          a[i] += b[i] * c;
-        });
+       RAJA::loop<seq_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
+       {
+         a[i] += b[i] * c;
+       });
 
-    });
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
-  }
+     });
+
   checkResult(a, aref, N);
-//printResult(a, N);
+  //printResult(a, N);
 
 //----------------------------------------------------------------------------//
 

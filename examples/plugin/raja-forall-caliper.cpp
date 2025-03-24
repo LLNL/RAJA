@@ -11,10 +11,13 @@
 #include <caliper/cali.h>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/Timer.hpp"
 
 /*
- *  Daxpy Example
+ *  Daxpy example with Caliper annotations.
+ *
+ *  This example repeats the RAJA daxpy example
+ *  with Caliper annotations.
+ *  For a sample run: CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
  *
  *  Computes a += b*c, where a, b are vectors of doubles
  *  and c is a scalar double. It illustrates similarities between a
@@ -35,10 +38,6 @@ void printResult(double* v, int len);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
   std::cout << "\n\nRAJA daxpy example...\n";
-
-//
-  auto timer = RAJA::Timer();
-
 
 //
 // Define vector length
@@ -76,16 +75,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running C-version of daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
-  {
-    timer.start();
-    CALI_CXX_MARK_SCOPE("C-version elapsed time");
-    for (int i = 0; i < N; ++i) {
-      a[i] += b[i] * c;
-    }
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "C-version elapsed time : " << etime << " seconds" << std::endl;
+
+  CALI_MARK_BEGIN("C-version elapsed time");
+  for (int i = 0; i < N; ++i) {
+    a[i] += b[i] * c;
   }
+  CALI_MARK_END("C-version elapsed time");
 
   std::memcpy( aref, a, N* sizeof(double) );
 
@@ -109,19 +104,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA sequential daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
- {
-    timer.reset();
-    timer.start();
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),     
-      RAJA::expt::KernelName("RAJA Seq daxpy Kernel"), [=] (int i) {
+
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+    RAJA::expt::KernelName("RAJA Seq daxpy Kernel"), [=] (int i) {
 
         a[i] += b[i] * c;
 
-    });
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "RAJA-Seq elapsed time : " << etime << " seconds" << std::endl;
-  }
+  });
   checkResult(a, aref, N);
 //printResult(a, N);
 
@@ -133,20 +122,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::cout << "\n Running RAJA SIMD daxpy...\n";
   std::memcpy( a, a0, N * sizeof(double) );
-  {
-    timer.reset();
-    timer.start();
-    RAJA::forall<RAJA::simd_exec>
-      (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
-       [=] (int i) {
-         a[i] += b[i] * c;
-       });
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "RAJA-SIMD elapsed time : " << etime << " seconds" << std::endl;
-    checkResult(a, aref, N);
-  }
+
+  RAJA::forall<RAJA::simd_exec>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("RAJA SIMD daxpy Kernel"),
+     [=] (int i) {
+       a[i] += b[i] * c;
+     });
+
+  checkResult(a, aref, N);
 //printResult(a, N);
 
 
@@ -156,19 +140,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA OpenMP daxpy...\n";
 
   std::memcpy( a, a0, N * sizeof(double) );
-  {
-    timer.reset();
-    timer.start();
-    RAJA::forall<RAJA::omp_parallel_for_exec>
-      (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA OpenMP daxpy Kernel"),
-       [=] (int i) {
-         a[i] += b[i] * c;
-       });
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "RAJA-OMP elapsed time : " << etime << " seconds" << std::endl;
-  }
+
+  RAJA::forall<RAJA::omp_parallel_for_exec>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("RAJA OpenMP daxpy Kernel"),
+     [=] (int i) {
+       a[i] += b[i] * c;
+   });
+
   checkResult(a, aref, N);
 //printResult(a, N);
 #endif
@@ -178,6 +157,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
 //
 // RAJA CUDA parallel GPU version (256 threads per thread block).
+// The aync policy will ensure that we synchronize before Caliper
+// reports runtime.
 //
   std::cout << "\n Running RAJA CUDA daxpy...\n";
 
@@ -188,19 +169,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice ));
   cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice ));
 
-  {
-    timer.reset();
-    timer.start();
-    RAJA::forall<RAJA::cuda_exec<256>>
-      (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA CUDA daxpy Kernel"),
-       [=] RAJA_DEVICE (int i) {
-         a[i] += b[i] * c;
-       });
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "RAJA-CUDA elapsed time : " << etime << " seconds" << std::endl;
-  }
+  constexpr bool async = false;
+  RAJA::forall<RAJA::cuda_exec<256,async>>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("RAJA CUDA daxpy Kernel"),
+     [=] RAJA_DEVICE (int i) {
+       a[i] += b[i] * c;
+  });
 
   cudaErrchk(cudaMemcpy( ta, a, N * sizeof(double), cudaMemcpyDeviceToHost ));
 
@@ -217,6 +192,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_HIP)
 //
 // RAJA HIP parallel GPU version (256 threads per thread block).
+// The aync policy will ensure that we synchronize before Caliper
+// reports runtime.
 //
   std::cout << "\n Running RAJA HIP daxpy...\n";
 
@@ -227,19 +204,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
   hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
 
-  {
-    timer.reset();
-    timer.start();
-    RAJA::forall<RAJA::hip_exec<256>>
-      (RAJA::RangeSegment(0, N),
-       RAJA::expt::KernelName("RAJA HIP daxpy Kernel"),
-       [=] RAJA_DEVICE (int i) {
-         a[i] += b[i] * c;
-       });
-    timer.stop();
-    RAJA::Timer::ElapsedType etime = timer.elapsed();
-    std::cout << "RAJA-HIP elapsed time : " << etime << " seconds" << std::endl;
-  }
+  constexpr bool async = false;
+  RAJA::forall<RAJA::hip_exec<256, async>>
+    (RAJA::RangeSegment(0, N),
+     RAJA::expt::KernelName("RAJA HIP daxpy Kernel"),
+     [=] RAJA_DEVICE (int i) {
+       a[i] += b[i] * c;
+   });
 
   hipErrchk(hipMemcpy( ta, a, N * sizeof(double), hipMemcpyDeviceToHost ));
 
