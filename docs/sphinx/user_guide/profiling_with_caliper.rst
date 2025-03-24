@@ -153,8 +153,8 @@ Lastly, the following command will generate a .cali file which can be read into 
 
 
 Using python jupyter notebooks and the Hatchet library we can load the .cali file and begin analysing
-performance of our application. The following snippet will generate a color coded tree high-lighting hotspots
-(in red) of our application::
+performance of our application. The following sequence of commands will generate a color coded tree
+high-lighting hotspots (in red) of our application::
 
   caliper_file = region_profile.cali
   gf = ht.GraphFrame.from_caliperreader(caliper_file)
