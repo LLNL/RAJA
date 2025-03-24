@@ -45,12 +45,10 @@ Building RAJA with Caliper enabled requires pointing RAJA to the Caliper shared 
 
 As a quick build check we build the basic Caliper RAJA-Caliper example::
 
-  //Example make
   make raja-forall-caliper
 
 Finally, the Caliper annotated RAJA example may be executed via::
 
-  //Run with raja-forall-caliper example!
   CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
 
 If we build with NVTX enabled Caliper and CUDA enabled RAJA the end of the the run the program should output
