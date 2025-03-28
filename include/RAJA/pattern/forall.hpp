@@ -333,12 +333,14 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);  
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -391,11 +393,14 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
                 "a TypedIndexSet policy by mistake?");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+                               util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -483,12 +488,15 @@ forall_Icount(ExecutionPolicy&& p,
 
   auto f_params = expt::make_forall_param_pack(std::forward<FirstParam>(first),
                                                std::forward<Params>(params)...);
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
+  
   auto&& loop_body = expt::get_lambda(std::forward<FirstParam>(first),
                                       std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
-
+  
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+    util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -534,26 +542,6 @@ forall_Icount(ExecutionPolicy&& p,
  *
  ******************************************************************************
  */
-
-template<typename T>
-struct KernelNameHelper
-{
-  template<typename U>
-  static std::string getKernelName(U&)
-  {
-    return std::string();  // return empty string
-  }
-};
-
-template<>
-struct KernelNameHelper<RAJA::expt::detail::KernelName&&>
-{
-  static std::string getKernelName(
-      const RAJA::expt::detail::KernelName& kernel_name)
-  {
-    return kernel_name.name;
-  }
-};
 
 template<typename ExecutionPolicy,
          typename Res,

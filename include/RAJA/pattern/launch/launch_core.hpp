@@ -378,10 +378,8 @@ resources::EventProxy<resources::Resource> launch(
   auto reducers = expt::make_forall_param_pack(
       std::forward<ReduceParams>(rest_of_launch_args)...);
 
-  auto&& kernel_name =
-      expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
-  std::string kname =
-      KernelNameHelper<decltype(kernel_name)>::getKernelName(kernel_name);
+  std::string kernel_name =
+    expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
 
   auto&& launch_body =
       expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
@@ -402,11 +400,11 @@ resources::EventProxy<resources::Resource> launch(
 #if defined(RAJA_GPU_ACTIVE)
   util::PluginContext context {
       place == ExecPlace::HOST
-          ? util::make_context<typename POLICY_LIST::host_policy_t>(&kname)
-          : util::make_context<typename POLICY_LIST::device_policy_t>(&kname)};
+	? util::make_context<typename POLICY_LIST::host_policy_t>(std::move(kernel_name))
+	: util::make_context<typename POLICY_LIST::device_policy_t>(std::move(kernel_name))};
 #else
   util::PluginContext context {
-      util::make_context<typename POLICY_LIST::host_policy_t>(&kname)};
+    util::make_context<typename POLICY_LIST::host_policy_t>(std::move(kernel_name))};
 #endif
 
   util::callPreCapturePlugins(context);
