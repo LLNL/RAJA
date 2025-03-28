@@ -255,10 +255,8 @@ void launch(LaunchParams const& launch_params,
       std::forward<ReduceParams>(rest_of_launch_args)...);
 
   // get kernel name
-  auto&& kernel_name =
+  std::string kernel_name =
       expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
-  std::string kname =
-      KernelNameHelper<decltype(kernel_name)>::getKernelName(kernel_name);
 
   auto&& launch_body =
       expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
@@ -266,7 +264,8 @@ void launch(LaunchParams const& launch_params,
   // Take the first policy as we assume the second policy is not user defined.
   // We rely on the user to pair launch and loop policies correctly.
   util::PluginContext context {
-      util::make_context<typename LAUNCH_POLICY::host_policy_t>(&kname)};
+      util::make_context<typename LAUNCH_POLICY::host_policy_t>(
+          std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;

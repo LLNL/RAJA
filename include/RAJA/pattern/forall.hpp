@@ -571,16 +571,14 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
 
-  auto&& kernel_name = expt::get_kernel_name(std::forward<Params>(params)...);
-  auto&& loop_body   = expt::get_lambda(std::forward<Params>(params)...);
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
+  auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
 
   expt::check_forall_optional_args(loop_body, f_params);
 
-  std::string kname =
-      KernelNameHelper<decltype(kernel_name)>::getKernelName(kernel_name);
-
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>(&kname)};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;

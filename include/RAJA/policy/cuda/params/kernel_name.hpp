@@ -20,7 +20,10 @@ camp::concepts::enable_if<RAJA::type_traits::is_cuda_policy<EXEC_POL>>
 param_init(EXEC_POL const&, KernelName& kn, const RAJA::cuda::detail::cudaInfo&)
 {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
-  nvtxRangePush(kn.name);
+  if (kn.name != nullptr)
+  {
+    nvtxRangePush(kn.name);
+  }
 #else
   RAJA_UNUSED_VAR(kn);
 #endif
@@ -36,10 +39,17 @@ param_combine(EXEC_POL const&, KernelName&)
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_cuda_policy<EXEC_POL>>
-param_resolve(EXEC_POL const&, KernelName&, const RAJA::cuda::detail::cudaInfo&)
+param_resolve(EXEC_POL const&,
+              KernelName& kn,
+              const RAJA::cuda::detail::cudaInfo&)
 {
 #if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
-  nvtxRangePop();
+  if (kn.name != nullptr)
+  {
+    nvtxRangePop();
+  }
+#else
+  RAJA_UNUSED_VAR(kn);
 #endif
 }
 

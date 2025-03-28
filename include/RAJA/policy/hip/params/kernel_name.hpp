@@ -24,7 +24,10 @@ camp::concepts::enable_if<RAJA::type_traits::is_hip_policy<EXEC_POL>>
 param_init(EXEC_POL const&, KernelName& kn, const RAJA::hip::detail::hipInfo&)
 {
 #if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
-  roctxRangePush(kn.name);
+  if (kn.name != nullptr)
+  {
+    roctxRangePush(kn.name);
+  }
 #else
   RAJA_UNUSED_VAR(kn);
 #endif
@@ -43,7 +46,10 @@ camp::concepts::enable_if<RAJA::type_traits::is_hip_policy<EXEC_POL>>
 param_resolve(EXEC_POL const&, KernelName&, const RAJA::hip::detail::hipInfo&)
 {
 #if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
-  roctxRangePop();
+  if (kn.name != nullptr)
+  {
+    roctxRangePop();
+  }
 #endif
 }
 

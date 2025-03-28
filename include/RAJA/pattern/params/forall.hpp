@@ -4,6 +4,9 @@
 #include "RAJA/util/CombiningAdapter.hpp"
 
 #include "RAJA/pattern/params/params_base.hpp"
+#include "RAJA/pattern/params/kernel_name.hpp"
+
+#include <utility>
 
 namespace RAJA
 {
@@ -266,22 +269,44 @@ constexpr auto&& get_lambda(Args&&... args)
 //===========================================================================
 //
 //
-// kernel_name is expected to be the second to last argument, just extract it
+// kernel_name can be anywhere in the paramater pack so we must search for it
 //
-//
-template<typename... Args,
-         typename std::enable_if<sizeof...(Args) >= 2, bool>::type = true>
-constexpr auto&& get_kernel_name(Args&&... args)
+//===========================================================================
+template<std::size_t name_idx,
+         typename... Args,
+         std::enable_if_t<(name_idx < sizeof...(Args))>* = nullptr>
+std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
 {
-  return camp::get<sizeof...(Args) - 2>(
-      camp::forward_as_tuple(std::forward<Args>(args)...));
+  return std::string(camp::get<name_idx>(std::move(tuple_args)).name);
 }
 
-template<typename... Args,
-         typename std::enable_if<sizeof...(Args) < 2, bool>::type = true>
-constexpr auto&& get_kernel_name(Args&&... args)
+template<std::size_t name_idx,
+         typename... Args,
+         std::enable_if_t<(name_idx >= sizeof...(Args))>* = nullptr>
+std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
 {
-  return camp::get<0>(camp::forward_as_tuple(std::forward<Args>(args)...));
+  return std::string();
+}
+
+template<typename... Args, std::size_t... Idx>
+std::string get_kernel_name_helper(camp::tuple<Args...>&& tuple_args,
+                                   std::index_sequence<Idx...> i_seq)
+{
+  constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
+  constexpr std::size_t name_idx    = std::min(
+         {(std::is_same<std::decay_t<Args>, RAJA::expt::detail::KernelName>::value
+               ? Idx
+               : default_idx)...});
+
+  return get_kernel_name_string<name_idx>(std::move(tuple_args));
+}
+
+template<typename... Args>
+std::string get_kernel_name(Args&&... args)
+{
+  return get_kernel_name_helper(
+      camp::forward_as_tuple(std::forward<Args>(args)...),
+      std::make_index_sequence<sizeof...(Args)> {});
 }
 
 //===========================================================================
