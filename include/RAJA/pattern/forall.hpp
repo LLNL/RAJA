@@ -334,7 +334,7 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                 "a TypedIndexSet policy by mistake?");
 
   std::string kernel_name =
-      expt::get_kernel_name(std::forward<Params>(params)...);  
+      expt::get_kernel_name(std::forward<Params>(params)...);
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
@@ -400,7 +400,7 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-                               util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -490,13 +490,13 @@ forall_Icount(ExecutionPolicy&& p,
                                                std::forward<Params>(params)...);
   std::string kernel_name =
       expt::get_kernel_name(std::forward<Params>(params)...);
-  
+
   auto&& loop_body = expt::get_lambda(std::forward<FirstParam>(first),
                                       std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
-  
+
   util::PluginContext context {
-    util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;

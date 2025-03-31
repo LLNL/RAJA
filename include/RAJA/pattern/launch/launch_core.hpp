@@ -379,7 +379,7 @@ resources::EventProxy<resources::Resource> launch(
       std::forward<ReduceParams>(rest_of_launch_args)...);
 
   std::string kernel_name =
-    expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
+      expt::get_kernel_name(std::forward<ReduceParams>(rest_of_launch_args)...);
 
   auto&& launch_body =
       expt::get_lambda(std::forward<ReduceParams>(rest_of_launch_args)...);
@@ -400,11 +400,14 @@ resources::EventProxy<resources::Resource> launch(
 #if defined(RAJA_GPU_ACTIVE)
   util::PluginContext context {
       place == ExecPlace::HOST
-	? util::make_context<typename POLICY_LIST::host_policy_t>(std::move(kernel_name))
-	: util::make_context<typename POLICY_LIST::device_policy_t>(std::move(kernel_name))};
+          ? util::make_context<typename POLICY_LIST::host_policy_t>(
+                std::move(kernel_name))
+          : util::make_context<typename POLICY_LIST::device_policy_t>(
+                std::move(kernel_name))};
 #else
   util::PluginContext context {
-    util::make_context<typename POLICY_LIST::host_policy_t>(std::move(kernel_name))};
+      util::make_context<typename POLICY_LIST::host_policy_t>(
+          std::move(kernel_name))};
 #endif
 
   util::callPreCapturePlugins(context);
