@@ -74,20 +74,20 @@ within the program.
 Profiling RAJA kernels via kernel naming
 ========================================
 Caliper annotations of RAJA kernels work through the RAJA kernel naming mechanism currenly only supported in forall
-and launch. The ``RAJA::expt::KernelName`` container holds a string and used for profiling in Caliper. Kernels
+and launch. The ``RAJA::expt::Name`` container holds a string and used for profiling in Caliper. Kernels
 which are not provided a name are ommited from Caliper profiling::
 
     RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
-    RAJA::expt::KernelName("RAJA Seq daxpy Kernel"), [=] (int i) {
+    RAJA::expt::Name("RAJA Seq daxpy Kernel"), [=] (int i) {
 
         a[i] += b[i] * c;
 
   });
 
-.. note:: The RAJA KernelName feature lives under the expt namespace as it part of a new param reducer interface.
+.. note:: The RAJA Name feature lives under the expt namespace as it part of a new param reducer interface.
           It will be removed from expt once the new reducer interface has matured.
 
-.. note:: The RAJA KernelName must be placed before the lambda to ensure proper behavior.
+.. note:: The RAJA Name must be placed before the lambda to ensure proper behavior.
 
 
 =============================================
@@ -108,10 +108,10 @@ within an exectuable::
   cudaStreamCreate                                                           0.000230
   RAJA CUDA daxpy Kernel
   |-                                                                         0.000159
-  |-                      void RAJA::policy::cuda~~}::detail::KernelName>)            0.000038
+  |-                      void RAJA::policy::cuda~~}::detail::Name>)            0.000038
   cudaLaunchKernel
    |-                                                                        0.000066
-   |-                    void RAJA::policy::cuda~~}::detail::KernelName>)            0.000038
+   |-                    void RAJA::policy::cuda~~}::detail::Name>)            0.000038
   cudaStreamSynchronize                                                      0.000050
   cudaFree                                                                   0.000495
 

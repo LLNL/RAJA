@@ -15,7 +15,7 @@ namespace detail
 // Init
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_sycl_policy<EXEC_POL>>
-param_init(EXEC_POL const&, KernelName&)
+param_init(EXEC_POL const&, Name&)
 {
   // TODO: Define kernel naming
 }
@@ -23,13 +23,13 @@ param_init(EXEC_POL const&, KernelName&)
 // Combine
 template<typename EXEC_POL, typename T>
 camp::concepts::enable_if<RAJA::type_traits::is_sycl_policy<EXEC_POL>>
-    SYCL_EXTERNAL param_combine(EXEC_POL const&, KernelName&, T)
+    SYCL_EXTERNAL param_combine(EXEC_POL const&, Name&, T)
 {}
 
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_sycl_policy<EXEC_POL>>
-param_resolve(EXEC_POL const&, KernelName&)
+param_resolve(EXEC_POL const&, Name&)
 {
   // TODO: Define kernel naming
 }

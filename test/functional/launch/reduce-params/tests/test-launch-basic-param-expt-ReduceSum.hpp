@@ -59,7 +59,7 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
      RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
-     RAJA::expt::KernelName("LaunchSumBasicTest"),     
+     RAJA::expt::Name("LaunchSumBasicTest"),     
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_SUM &_sum, REF_SUM &_sum2) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {

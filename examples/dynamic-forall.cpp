@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
   //policy is chosen from the list
   RAJA::dynamic_forall<policy_list>(pol, range,
     RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
-      RAJA::expt::KernelName("RAJA dynamic forall"),
+      RAJA::expt::Name("RAJA dynamic forall"),
       [=] RAJA_HOST_DEVICE (int i, VAL_INT_SUM &_sum) {
       
       c[i] = a[i] + b[i];

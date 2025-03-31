@@ -215,7 +215,7 @@ constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple)
   static_assert(detail::check_types_derive_base<detail::ForallParamBase,
                                                 camp::decay<Ts>...>::value,
                 "Forall optional arguments do not derive ForallParamBase. "
-                "Please see Reducer, ReducerLoc and KernelName for examples.");
+                "Please see Reducer, ReducerLoc and Name for examples.");
   return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
 }
 
@@ -295,7 +295,7 @@ std::string get_kernel_name_helper(camp::tuple<Args...>&& tuple_args,
   constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
   constexpr std::size_t name_idx    = std::min(
          {default_idx,
-          (std::is_same<std::decay_t<Args>, RAJA::expt::detail::KernelName>::value
+          (std::is_same<std::decay_t<Args>, RAJA::expt::detail::Name>::value
                ? Idx
                : default_idx)...});
 

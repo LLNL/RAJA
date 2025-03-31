@@ -10,18 +10,18 @@ namespace expt
 namespace detail
 {
 
-struct KernelName : public ForallParamBase
+struct Name : public ForallParamBase
 {
-  RAJA_HOST_DEVICE KernelName() {}
+  RAJA_HOST_DEVICE Name() {}
 
-  KernelName(const char* name_in) : name(name_in) {}
+  Name(const char* name_in) : name(name_in) {}
 
   const char* name;
 };
 
 }  // namespace detail
 
-inline auto KernelName(const char* n) { return detail::KernelName(n); }
+inline auto Name(const char* n) { return detail::Name(n); }
 }  // namespace expt
 
 

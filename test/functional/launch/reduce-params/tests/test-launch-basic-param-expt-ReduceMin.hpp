@@ -61,7 +61,7 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
      RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
      RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-     RAJA::expt::KernelName("LaunchMinBasicTest"),
+     RAJA::expt::Name("LaunchMinBasicTest"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_mininit, REF_MIN &_min) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
