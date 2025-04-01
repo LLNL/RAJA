@@ -74,7 +74,7 @@ within the program.
 Profiling RAJA kernels via kernel naming
 ========================================
 Caliper annotations of RAJA kernels work through the RAJA kernel naming mechanism which is currently only supported in forall
-and launch. The ``RAJA::Name`` container holds a string and used for profiling in Caliper. Kernels
+and launch. The ``RAJA::Name`` container holds a string and is used for profiling in Caliper. Kernels
 which are not provided a name are ommited from Caliper profiling::
 
     RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
