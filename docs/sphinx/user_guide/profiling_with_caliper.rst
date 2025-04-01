@@ -51,7 +51,7 @@ Finally, the Caliper annotated RAJA example may be executed via::
 
   CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
 
-If we build with NVTX enabled Caliper and CUDA enabled RAJA the end of the the run the program should output
+If we build with NVTX enabled Caliper and CUDA enabled RAJA, the program should output
 the following runtime information::
 
   Path                     Time (E) Time (I) Time % (E) Time % (I)
