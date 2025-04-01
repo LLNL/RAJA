@@ -17,7 +17,7 @@ We refer the reader to the :ref:`feat-plugins-label` section for more on RAJA pl
 see `Caliper GitHub <https://github.com/LLNL/Caliper>`_ . Caliper provides a common interface for various vendor profiling tools and its own built-in performance
 reports.
 
-In this section we demonstrate how to configure RAJA with Caliper, run a simple examples with kernel profiling,
+In this section we demonstrate how to configure RAJA with Caliper, run simple examples with kernel profiling,
 and a quick snapshot of hotspots of using the Thicket libary. The Thicket library is also developed at LLNL and freely available on GitHub,
 see `Thicket GitHub <https://github.com/LLNL/Thicket>`_ .
 This page is tailored to be a quickstart guide, for more detailed tutorials we refer the reader to the Caliper and Thicket tutorials.
