@@ -294,10 +294,9 @@ std::string get_kernel_name_helper(camp::tuple<Args...>&& tuple_args,
 {
   constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
   constexpr std::size_t name_idx    = std::min(
-         {default_idx,
-          (std::is_same<std::decay_t<Args>, RAJA::expt::detail::Name>::value
-               ? Idx
-               : default_idx)...});
+         {default_idx, (std::is_same<std::decay_t<Args>, RAJA::detail::Name>::value
+                            ? Idx
+                            : default_idx)...});
 
   return get_kernel_name_string<name_idx>(std::move(tuple_args));
 }

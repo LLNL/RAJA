@@ -76,7 +76,7 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg,
     RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor),
     RAJA::expt::Reduce<RAJA::operators::bit_or>(&redor2),
-    RAJA::expt::Name("RAJA Reduce BitOr"),
+    RAJA::Name("RAJA Reduce BitOr"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITOR &r1, REF_BITOR &r2) {
       r1 |= working_array[idx];
       r2 |= working_array[idx];

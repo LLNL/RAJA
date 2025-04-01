@@ -5,8 +5,6 @@
 
 namespace RAJA
 {
-namespace expt
-{
 namespace detail
 {
 
@@ -36,7 +34,6 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_resolve(
 }
 
 }  //  namespace detail
-}  //  namespace expt
 }  //  namespace RAJA
 
 

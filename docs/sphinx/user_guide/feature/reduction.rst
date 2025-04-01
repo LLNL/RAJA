@@ -352,7 +352,7 @@ any number of ``RAJA::expt::Reduce`` arguments to the ``RAJA::forall`` method::
     RAJA::expt::Reduce<RAJA::operators::plus>(&rs),        // --> 1 double added
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),     // --> 1 double added
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm_loc), // --> 1 VL_DOUBLE added
-    RAJA::expt::Name("MyFirstRAJAKernel"),           // --> NO args added
+    RAJA::Name("MyFirstRAJAKernel"),           // --> NO args added
     [=] (int i,
          VALOP_DOUBLE_SUM& _rs,
          VALOP_DOUBLE_MIN& _rm,
@@ -385,9 +385,9 @@ compile successfully. Otherwise, a static assertion will be triggered::
           current implementation, other optional arguments besides
           ``RAJA::expt::Reduce`` can be passed to a ``RAJA::forall`` to extend
           its behavior. In the above example we demonstrate using
-          ``RAJA::expt::Name``, which wraps a ``RAJA::forall`` executing
+          ``RAJA::Name``, which wraps a ``RAJA::forall`` executing
           under a ``HIP`` or ``CUDA`` policy in a named region. Use of
-          ``RAJA::expt::Name`` does not require an additional
+          ``RAJA::Name`` does not require an additional
           parameter in the lambda expression.
 
 
@@ -408,7 +408,7 @@ The usage of the experiemental reductions is similar to the forall example as il
   RAJA::launch<EXEC_POL> ( Res,
     RAJA::expt::Reduce<RAJA::operators::plus>(&rs),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&rm),
-    "LaunchReductionKernel",
+    RAJA::Name("LaunchReductionKernel"),
     [=] RAJA_HOST_DEVICE (int i, VALOP_DOUBLE_SUM& _rs, VALOP_DOUBLE_MIN& _rm) {
 
       RAJA::loop<loop_pol>(ctx, Seg, [&] (int i) {

@@ -5,8 +5,6 @@
 
 namespace RAJA
 {
-namespace expt
-{
 namespace detail
 {
 
@@ -37,7 +35,6 @@ param_resolve(EXEC_POL const&, Name&)
 #endif
 
 }  //  namespace detail
-}  //  namespace expt
 }  //  namespace RAJA
 
 

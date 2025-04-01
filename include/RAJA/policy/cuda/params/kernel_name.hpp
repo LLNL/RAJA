@@ -9,8 +9,6 @@
 
 namespace RAJA
 {
-namespace expt
-{
 namespace detail
 {
 
@@ -52,7 +50,6 @@ param_resolve(EXEC_POL const&, Name& kn, const RAJA::cuda::detail::cudaInfo&)
 }
 
 }  //  namespace detail
-}  //  namespace expt
 }  //  namespace RAJA
 
 #endif

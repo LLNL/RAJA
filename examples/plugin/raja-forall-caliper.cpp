@@ -106,7 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::memcpy( a, a0, N * sizeof(double) );
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
-    RAJA::expt::Name("RAJA Seq daxpy Kernel"), [=] (int i) {
+    RAJA::Name("RAJA Seq daxpy Kernel"), [=] (int i) {
 
         a[i] += b[i] * c;
 
@@ -125,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<RAJA::simd_exec>
     (RAJA::RangeSegment(0, N),
-     RAJA::expt::Name("RAJA SIMD daxpy Kernel"),
+     RAJA::Name("RAJA SIMD daxpy Kernel"),
      [=] (int i) {
        a[i] += b[i] * c;
      });
@@ -143,7 +143,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<RAJA::omp_parallel_for_exec>
     (RAJA::RangeSegment(0, N),
-     RAJA::expt::Name("RAJA OpenMP daxpy Kernel"),
+     RAJA::Name("RAJA OpenMP daxpy Kernel"),
      [=] (int i) {
        a[i] += b[i] * c;
    });
@@ -172,7 +172,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr bool async = false;
   RAJA::forall<RAJA::cuda_exec<256,async>>
     (RAJA::RangeSegment(0, N),
-     RAJA::expt::Name("RAJA CUDA daxpy Kernel"),
+     RAJA::Name("RAJA CUDA daxpy Kernel"),
      [=] RAJA_DEVICE (int i) {
        a[i] += b[i] * c;
   });
@@ -207,7 +207,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   constexpr bool async = false;
   RAJA::forall<RAJA::hip_exec<256, async>>
     (RAJA::RangeSegment(0, N),
-     RAJA::expt::Name("RAJA HIP daxpy Kernel"),
+     RAJA::Name("RAJA HIP daxpy Kernel"),
      [=] RAJA_DEVICE (int i) {
        a[i] += b[i] * c;
    });

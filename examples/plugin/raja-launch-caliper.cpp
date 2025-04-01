@@ -94,7 +94,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<seq_launch_policy>
     (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-     RAJA::expt::Name("RAJA launch Seq daxpy Kernel"),
+     RAJA::Name("RAJA launch Seq daxpy Kernel"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
        RAJA::loop<seq_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
@@ -127,7 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    RAJA::launch<cuda_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-      RAJA::expt::Name("RAJA launch CUDA daxpy Kernel"),
+      RAJA::Name("RAJA launch CUDA daxpy Kernel"),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<cuda_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)
@@ -167,7 +167,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
    RAJA::launch<hip_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
-      RAJA::expt::Name("RAJA launch HIP daxpy Kernel"),
+      RAJA::Name("RAJA launch HIP daxpy Kernel"),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
         RAJA::loop<hip_loop_policy>(ctx, RAJA::RangeSegment(0, N), [&] (int i)

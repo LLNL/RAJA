@@ -5,12 +5,10 @@
 
 namespace RAJA
 {
-namespace expt
-{
 namespace detail
 {
 
-struct Name : public ForallParamBase
+struct Name : public ::RAJA::expt::detail::ForallParamBase
 {
   RAJA_HOST_DEVICE Name() {}
 
@@ -22,7 +20,6 @@ struct Name : public ForallParamBase
 }  // namespace detail
 
 inline auto Name(const char* n) { return detail::Name(n); }
-}  // namespace expt
 
 
 }  //  namespace RAJA

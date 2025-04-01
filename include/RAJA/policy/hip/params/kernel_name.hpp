@@ -13,8 +13,6 @@
 
 namespace RAJA
 {
-namespace expt
-{
 namespace detail
 {
 
@@ -54,7 +52,6 @@ param_resolve(EXEC_POL const&, Name&, const RAJA::hip::detail::hipInfo&)
 }
 
 }  //  namespace detail
-}  //  namespace expt
 }  //  namespace RAJA
 
 #endif
