@@ -141,12 +141,12 @@ about the plugin, not necessarily of the project using it.
 #. The plugin must have the following factory method that returns
    a pointer to an instance of your plugin::
 
-     extern "C" RAJA::util::PluginStrategy* getPlugin()
+     extern "C" RAJA::util::PluginStrategy* RAJAGetPlugin()
      {
        return new MyPluginName;
      }
   
-   Note that using ``extern "C"`` is required to search for the ``getPlugin()``
+   Note that using ``extern "C"`` is required to search for the ``RAJAGetPlugin()``
    method call for the dynamically loaded plugin correctly.
 
 #. The plugin must be compiled to be a shared object with a ``.so`` extension. 

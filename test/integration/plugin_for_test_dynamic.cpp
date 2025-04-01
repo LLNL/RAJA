@@ -17,7 +17,7 @@ class ExceptionPlugin :
   }
 };
 
-extern "C" RAJA::util::PluginStrategy *getPlugin()
+extern "C" RAJA::util::PluginStrategy *RAJAGetPlugin()
 {
   return new ExceptionPlugin;
 }
