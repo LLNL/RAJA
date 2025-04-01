@@ -98,7 +98,7 @@ which are not provided a name are ommited from Caliper profiling::
 =============================================
 Basic integration with vendor profiling tools
 =============================================
-Once Caliper is configured with RAJA and kernels are provided with a kernel name, the Caliper library provides various
+Once RAJA is configured with Caliper and kernels are provided with kernel names, the Caliper library provides various
 services to understand code performence. For example the following command::
 
   CALI_CONFIG=cuda-activity-report,show_kernels ./bin/raja-forall-caliper
