@@ -5,6 +5,8 @@
 
 namespace RAJA
 {
+namespace expt
+{
 namespace detail
 {
 
@@ -13,7 +15,7 @@ namespace detail
 // Init
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_sycl_policy<EXEC_POL>>
-param_init(EXEC_POL const&, Name&)
+param_init(EXEC_POL const&, RAJA::detail::Name&)
 {
   // TODO: Define kernel naming
 }
@@ -21,13 +23,13 @@ param_init(EXEC_POL const&, Name&)
 // Combine
 template<typename EXEC_POL, typename T>
 camp::concepts::enable_if<RAJA::type_traits::is_sycl_policy<EXEC_POL>>
-    SYCL_EXTERNAL param_combine(EXEC_POL const&, Name&, T)
+    SYCL_EXTERNAL param_combine(EXEC_POL const&, RAJA::detail::Name&, T)
 {}
 
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_sycl_policy<EXEC_POL>>
-param_resolve(EXEC_POL const&, Name&)
+param_resolve(EXEC_POL const&, RAJA::detail::Name&)
 {
   // TODO: Define kernel naming
 }
@@ -35,6 +37,7 @@ param_resolve(EXEC_POL const&, Name&)
 #endif
 
 }  //  namespace detail
+}  //  namespace expt
 }  //  namespace RAJA
 
 

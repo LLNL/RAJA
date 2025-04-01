@@ -5,6 +5,8 @@
 
 namespace RAJA
 {
+namespace expt
+{
 namespace detail
 {
 
@@ -12,7 +14,7 @@ namespace detail
 template<typename EXEC_POL>
 camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::simd_exec>> param_init(
     EXEC_POL const&,
-    Name&)
+    RAJA::detail::Name&)
 {
   // TODO: Define kernel naming
 }
@@ -21,18 +23,19 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::simd_exec>> param_init(
 template<typename EXEC_POL, typename T>
 RAJA_HOST_DEVICE camp::concepts::enable_if<
     std::is_same<EXEC_POL, RAJA::simd_exec>>
-param_combine(EXEC_POL const&, Name&, T)
+param_combine(EXEC_POL const&, RAJA::detail::Name&, T)
 {}
 
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::simd_exec>>
-param_resolve(EXEC_POL const&, Name&)
+param_resolve(EXEC_POL const&, RAJA::detail::Name&)
 {
   // TODO: Define kernel naming
 }
 
 }  //  namespace detail
+}  //  namespace expt
 }  //  namespace RAJA
 
 
