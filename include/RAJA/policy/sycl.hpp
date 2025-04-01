@@ -36,6 +36,8 @@
 //#include "RAJA/policy/sycl/synchronize.hpp"
 #include "RAJA/policy/sycl/launch.hpp"
 //#include "RAJA/policy/sycl/WorkGroup.hpp"
+#include "RAJA/policy/sycl/params/reduce.hpp"
+#include "RAJA/policy/sycl/params/kernel_name.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_SYCL)
 

@@ -44,6 +44,8 @@
 #include "RAJA/policy/openmp/synchronize.hpp"
 #include "RAJA/policy/openmp/launch.hpp"
 #include "RAJA/policy/openmp/WorkGroup.hpp"
+#include "RAJA/policy/openmp/params/reduce.hpp"
+#include "RAJA/policy/openmp/params/kernel_name.hpp"
 
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)

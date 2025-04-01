@@ -29,11 +29,11 @@ endif()
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TESTTYPE ${TESTTYPES} )
     foreach( TILESIZE ${TILESIZES} )
-      configure_file( test-kernel-single-loop-tile-count.cpp.in
-                      test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
-      raja_add_test( NAME test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}
-                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.cpp )
-      target_include_directories(test-kernel-single-loop-${TESTTYPE}-${TILESIZE}-${BACKEND}.exe
+      configure_file( test-kernel-tile-count-direct.cpp.in
+                      test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct.cpp )
+      raja_add_test( NAME test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct
+                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct.cpp )
+      target_include_directories(test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct.exe
                                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     endforeach()
   endforeach()

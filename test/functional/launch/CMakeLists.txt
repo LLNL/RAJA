@@ -6,6 +6,7 @@
 ###############################################################################
 
 list(APPEND LAUNCH_BACKENDS Sequential)
+set(LAUNCH_DIRECT_UNCHECKED_BACKENDS "")
 
 if(RAJA_ENABLE_OPENMP)
   list(APPEND LAUNCH_BACKENDS OpenMP)
@@ -13,10 +14,12 @@ endif()
 
 if(RAJA_ENABLE_CUDA)
   list(APPEND LAUNCH_BACKENDS Cuda)
+  list(APPEND LAUNCH_DIRECT_UNCHECKED_BACKENDS Cuda)
 endif()
 
 if(RAJA_ENABLE_HIP)
   list(APPEND LAUNCH_BACKENDS Hip)
+  list(APPEND LAUNCH_DIRECT_UNCHECKED_BACKENDS Hip)
 endif()
 
 if(RAJA_ENABLE_SYCL)
@@ -36,16 +39,24 @@ add_subdirectory(segment)
 
 add_subdirectory(shared_mem)
 
-add_subdirectory(nested_loop)
+add_subdirectory(nested_direct_unchecked)
 
 add_subdirectory(nested_direct)
 
-add_subdirectory(tile_icount_direct)
+add_subdirectory(nested_loop)
 
-add_subdirectory(tile_icount_loop)
+add_subdirectory(tile_icount_tcount_direct_unchecked)
+
+add_subdirectory(tile_icount_tcount_direct)
+
+add_subdirectory(tile_icount_tcount_loop)
+
+add_subdirectory(nested_tile_direct_unchecked)
 
 add_subdirectory(nested_tile_direct)
 
 add_subdirectory(nested_tile_loop)
 
 unset( LAUNCH_BACKENDS )
+unset( LAUNCH_DIRECT_UNCHECKED_BACKENDS )
+

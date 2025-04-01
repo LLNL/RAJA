@@ -4,6 +4,10 @@
 ###############################################################################
 
 raja_add_executable(
+  NAME make_permuted_view
+  SOURCES make_permuted_view.cpp)
+
+raja_add_executable(
   NAME tut_launch_basic
   SOURCES tut_launch_basic.cpp)
 

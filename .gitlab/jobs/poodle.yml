@@ -31,9 +31,9 @@ gcc_10_3_1:
 
 # custom variant
 # https://github.com/LLNL/RAJA/pull/1712#issuecomment-2292006843
-intel_2023_2_1:
+oneapi_2023_2_1:
   variables:
-    SPEC: "${PROJECT_POODLE_VARIANTS} +lowopttest cxxflags==-fp-model=precise %intel@=2023.2.1 ${PROJECT_POODLE_DEPS}"
+    SPEC: "${PROJECT_POODLE_VARIANTS} +lowopttest cxxflags==-fp-model=precise %oneapi@=2023.2.1 ${PROJECT_POODLE_DEPS}"
   extends: .job_on_poodle
 
 ############

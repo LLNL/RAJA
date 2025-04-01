@@ -12,7 +12,8 @@ namespace detail
 
 // Init
 template<typename EXEC_POL>
-camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> init(
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_init(
+    EXEC_POL const&,
     KernelName&)
 {
   // TODO: Define kernel naming
@@ -22,12 +23,13 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> init(
 template<typename EXEC_POL, typename T>
 RAJA_HOST_DEVICE camp::concepts::enable_if<
     std::is_same<EXEC_POL, RAJA::seq_exec>>
-combine(KernelName&, T)
+param_combine(EXEC_POL const&, KernelName&, T)
 {}
 
 // Resolve
 template<typename EXEC_POL>
-camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> resolve(
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_resolve(
+    EXEC_POL const&,
     KernelName&)
 {
   // TODO: Define kernel naming

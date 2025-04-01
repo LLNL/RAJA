@@ -43,7 +43,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -65,7 +65,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (params.threads.value[0] > zero && params.threads.value[1] > zero &&
         params.threads.value[2] > zero && params.teams.value[0] > zero &&
         params.teams.value[1] > zero && params.teams.value[2] > zero)
@@ -114,16 +114,17 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
+    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
+    EXEC_POL pol {};
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
-    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers);
+    RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     //
     // Compute the number of blocks and threads
@@ -138,7 +139,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         launch_params.threads.value[0] * launch_params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (launch_params.threads.value[0] > zero &&
         launch_params.threads.value[1] > zero &&
         launch_params.threads.value[2] > zero &&
@@ -149,14 +150,14 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
 
       auto combiner = [](ReduceParams x, ReduceParams y) {
-        RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
+        RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, x, y);
         return x;
       };
 
       RAJA_FT_BEGIN;
 
       ReduceParams* res = ::sycl::malloc_shared<ReduceParams>(1, *q);
-      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
+      RAJA::expt::ParamMultiplexer::parampack_init(pol, *res);
       auto reduction = ::sycl::reduction(res, launch_reducers, combiner);
 
       q->submit([&](::sycl::handler& h) {
@@ -174,7 +175,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
                    s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
 
                ReduceParams fp;
-               RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+               RAJA::expt::ParamMultiplexer::parampack_init(pol, fp);
 
                RAJA::expt::invoke_body(fp, body_in, ctx);
 
@@ -182,13 +183,14 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
              });
        }).wait();  // Need to wait for completion to free memory
 
-      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(launch_reducers, *res);
+      RAJA::expt::ParamMultiplexer::parampack_combine(pol, launch_reducers,
+                                                      *res);
       ::sycl::free(res, *q);
 
       RAJA_FT_END;
     }
 
-    RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers);
+    RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers);
 
     return resources::EventProxy<resources::Resource>(res);
   }
@@ -204,7 +206,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -226,7 +228,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         params.threads.value[0] * params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (params.threads.value[0] > zero && params.threads.value[1] > zero &&
         params.threads.value[2] > zero && params.teams.value[0] > zero &&
         params.teams.value[1] > zero && params.teams.value[2] > zero)
@@ -281,16 +283,17 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
+       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
+    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
+    EXEC_POL pol {};
 
     /*Get the queue from concrete resource */
     ::sycl::queue* q = res.get<camp::resources::Sycl>().get_queue();
 
-    using EXEC_POL = RAJA::sycl_launch_t<async, 0>;
-    RAJA::expt::ParamMultiplexer::init<EXEC_POL>(launch_reducers);
+    RAJA::expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     //
     // Compute the number of blocks and threads
@@ -305,7 +308,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
         launch_params.threads.value[0] * launch_params.teams.value[0]);
 
     // Only launch kernel if we have something to iterate over
-    constexpr size_t zero = 0;
+    constexpr int zero = 0;
     if (launch_params.threads.value[0] > zero &&
         launch_params.threads.value[1] > zero &&
         launch_params.threads.value[2] > zero &&
@@ -316,7 +319,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
 
       auto combiner = [](ReduceParams x, ReduceParams y) {
-        RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(x, y);
+        RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, x, y);
         return x;
       };
 
@@ -332,7 +335,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       q->memcpy(lbody, &body_in, sizeof(LOOP_BODY)).wait();
 
       ReduceParams* res = ::sycl::malloc_shared<ReduceParams>(1, *q);
-      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(*res);
+      RAJA::expt::ParamMultiplexer::parampack_init(pol, *res);
       auto reduction = ::sycl::reduction(res, launch_reducers, combiner);
 
       q->submit([&](::sycl::handler& h) {
@@ -350,7 +353,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
                    s_vec.get_multi_ptr<::sycl::access::decorated::yes>().get();
 
                ReduceParams fp;
-               RAJA::expt::ParamMultiplexer::init<EXEC_POL>(fp);
+               RAJA::expt::ParamMultiplexer::parampack_init(pol, fp);
 
                RAJA::expt::invoke_body(fp, *lbody, ctx);
 
@@ -358,14 +361,15 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
              });
        }).wait();  // Need to wait for completion to free memory
 
-      RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(launch_reducers, *res);
+      RAJA::expt::ParamMultiplexer::parampack_combine(pol, launch_reducers,
+                                                      *res);
       ::sycl::free(res, *q);
       ::sycl::free(lbody, *q);
 
       RAJA_FT_END;
     }
 
-    RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(launch_reducers);
+    RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers);
 
     return resources::EventProxy<resources::Resource>(res);
   }

@@ -89,7 +89,7 @@ struct Reducer : public ForallParamBase
   value_type* target = nullptr;
 
   // combineTarget() performs the final op on the target data and location in
-  // resolve()
+  // param_resolve()
   RAJA_HOST_DEVICE void combineTarget(value_type in)
   {
     value_type temp = op {}(*target, in);
@@ -173,7 +173,7 @@ struct Reducer<Op<ValLoc<T, I>, ValLoc<T, I>, ValLoc<T, I>>,
   target_index_type* target_index = nullptr;
 
   // combineTarget() performs the final op on the target data and location in
-  // resolve()
+  // param_resolve()
   RAJA_HOST_DEVICE void combineTarget(value_type in)
   {
     // Create a different temp ValLoc solely for combining

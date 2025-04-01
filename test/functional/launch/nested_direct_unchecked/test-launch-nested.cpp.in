@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,14 +13,14 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
-#include "RAJA_test-launch-loop-teams-threads-1D-execpol.hpp"
+#include "RAJA_test-launch-direct-unchecked-teams-threads-3D-execpol.hpp"
 
 //
-// Header for tests in ./tests loopory
+// Header for tests in ./tests directory
 //
 // Note: CMake adds ./tests as an include dir for these tests.
 //
-#include "test-launch-nested-Tile-iCount-Loop.hpp"
+#include "test-launch-nested-@NESTEDTYPES@.hpp"
 
 
 //
@@ -35,5 +35,5 @@ using @BACKEND@LaunchNestedTypes =
 // Instantiate parameterized test
 //
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               LaunchNestedTileLoopTest,
+                               LaunchNested@NESTEDTYPES@Test,
                                @BACKEND@LaunchNestedTypes);
