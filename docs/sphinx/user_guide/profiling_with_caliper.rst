@@ -157,7 +157,7 @@ Lastly, the following command will generate a .cali file which can be read into 
   CALI_CONFIG=hatchet-region-profile ./bin/raja-forall-caliper
 
 
-Using python jupyter notebooks and the Hatchet library we can load the .cali file and begin analysing
+Using python jupyter notebooks and the Hatchet library we can load the .cali file and begin analyzing
 performance of our application. The following sequence of commands will generate a color coded tree
 high-lighting hotspots (in red) of our application::
 
