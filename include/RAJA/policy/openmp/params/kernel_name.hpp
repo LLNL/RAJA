@@ -23,7 +23,9 @@ param_init(EXEC_POL const&, RAJA::detail::Name&)
 // Combine
 template<typename EXEC_POL, typename T>
 camp::concepts::enable_if<RAJA::type_traits::is_openmp_policy<EXEC_POL>>
-param_combine(EXEC_POL const&, RAJA::detail::Name&, T& /*place holder argument*/)
+param_combine(EXEC_POL const&,
+              RAJA::detail::Name&,
+              T& /*place holder argument*/)
 {}
 
 // Resolve

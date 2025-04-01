@@ -8,11 +8,11 @@ namespace RAJA
 namespace detail
 {
 
-struct Name : public ::RAJA::expt::detail::ForallParamBase
+struct Name : public RAJA::expt::detail::ForallParamBase
 {
   RAJA_HOST_DEVICE Name() {}
 
-  Name(const char* name_in) : name(name_in) {}
+  explicit Name(const char* name_in) : name(name_in) {}
 
   const char* name;
 };

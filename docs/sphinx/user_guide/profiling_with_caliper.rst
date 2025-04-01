@@ -26,6 +26,7 @@ This page is tailored to be a quickstart guide, for more detailed tutorials we r
 =================================
 Building and running with Caliper
 =================================
+
 Caliper serves as a portable profiling library which may be configured with various vendor options. For the most up to date
 configuration options we refer the reader to the `Caliper GitHub <https://github.com/LLNL/Caliper>`_  page.
 For the following examples we use Caliper v2.12.1 and configure on three different platforms; CPU only, with NVTX for CUDA, and with ROCTX for HIP::
@@ -73,9 +74,9 @@ within the program.
 ========================================
 Profiling RAJA kernels via kernel naming
 ========================================
+
 Caliper annotations of RAJA kernels work through the RAJA kernel naming mechanism which is currently only supported in forall
-and launch. The ``RAJA::Name`` container holds a string and is used for profiling in Caliper. Kernels
-which are not provided a name are ommited from Caliper profiling::
+and launch. The ``RAJA::Name`` container holds a string and is used for profiling in Caliper.::
 
     RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
     RAJA::Name("RAJA Seq daxpy Kernel"), [=] (int i) {
@@ -84,20 +85,24 @@ which are not provided a name are ommited from Caliper profiling::
 
   });
 
+Kernels which are not provided a name are ommited from Caliper profiling.
+
 .. note:: The RAJA Name feature lives under the RAJA namespace.
 
-.. note:: The RAJA Name may be placed anywhere in the RAJA reducer parameter list
+.. note:: The RAJA Name may be placed anywhere in the RAJA reducer parameter list.
 
 .. note:: When RAJA is not configured with Caliper, NVTX and ROCTX profiling can
           still be configured with RAJA using the following CMAKE variables respectively::
+
             -DRAJA_ENABLE_NV_TOOLS_EXT=ON
             -DRAJA_ENABLE_ROCTX=ON
-         When Caliper is configured with RAJA all performance profiling is performed by Caliper.
 
+.. note:: When Caliper is configured with RAJA all performance profiling is performed by Caliper.
 
 =============================================
 Basic integration with vendor profiling tools
 =============================================
+
 Once RAJA is configured with Caliper and kernels are provided with kernel names, the Caliper library provides various
 services to understand code performence. For example the following command::
 
@@ -172,6 +177,7 @@ Within the jupyter notebook the color coded tree will look like this:
 =============
 Final remarks
 =============
+
 The capabilities of Caliper and Hatchet exceed what has been presented here. Our main goal was to provide
 users a quick start guide to building and profiling with Caliper and Hatchet. We highly recommend exploring
 the `Caliper GitHub <https://github.com/LLNL/Caliper>`_  and `Thicket GitHub <https://github.com/LLNL/Thicket>`_

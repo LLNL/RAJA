@@ -21,7 +21,9 @@ namespace detail
 // Init
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_hip_policy<EXEC_POL>>
-param_init(EXEC_POL const&, RAJA::detail::Name& kn, const RAJA::hip::detail::hipInfo&)
+param_init(EXEC_POL const&,
+           RAJA::detail::Name& kn,
+           const RAJA::hip::detail::hipInfo&)
 {
 #if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
   if (kn.name != nullptr)
@@ -43,7 +45,9 @@ param_combine(EXEC_POL const&, RAJA::detail::Name&)
 // Resolve
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_hip_policy<EXEC_POL>>
-param_resolve(EXEC_POL const&, RAJA::detail::Name&, const RAJA::hip::detail::hipInfo&)
+param_resolve(EXEC_POL const&,
+              RAJA::detail::Name&,
+              const RAJA::hip::detail::hipInfo&)
 {
 #if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
   if (kn.name != nullptr)
