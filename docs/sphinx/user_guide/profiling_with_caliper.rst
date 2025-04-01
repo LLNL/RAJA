@@ -18,7 +18,7 @@ see `Caliper GitHub <https://github.com/LLNL/Caliper>`_ . Caliper provides a com
 reports.
 
 In this section we demonstrate how to configure RAJA with Caliper, run simple examples with kernel profiling,
-and a quick snapshot of hotspots of using the Thicket libary. The Thicket library is also developed at LLNL and freely available on GitHub,
+and view a quick snapshot of hotspots of using the Thicket libary. The Thicket library is also developed at LLNL and freely available on GitHub,
 see `Thicket GitHub <https://github.com/LLNL/Thicket>`_ .
 This page is tailored to be a quickstart guide, for more detailed tutorials we refer the reader to the Caliper and Thicket tutorials.
 
