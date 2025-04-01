@@ -42,7 +42,7 @@ For the following examples we use Caliper v2.12.1 and configure on three differe
 
 Building RAJA with Caliper enabled requires pointing RAJA to the Caliper shared cmake file and enabling plugins::
 
-  cmake –DRAJA_ENABLE_RUNTIME_PLUGINS=ON –Dcaliper_DIR=${CALIPER_BUILD_DIR}/share/cmake/caliper ../
+  cmake -DRAJA_ENABLE_RUNTIME_PLUGINS=ON -Dcaliper_DIR=${CALIPER_BUILD_DIR}/share/cmake/caliper ../
 
 As a quick build check we build the basic Caliper RAJA-Caliper example::
 
@@ -145,6 +145,7 @@ The nsys file may then be read into the NVIDIA Nsight toolkit.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Generating a ROCM trace file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Configuring a ROCM trace file with Caliper may be done using the following command::
 
   CALI_SERVICES_ENABLE=roctx,rocm,trace rocprof --hip-trace --roctx-trace ./bin/raja-forall-caliper
