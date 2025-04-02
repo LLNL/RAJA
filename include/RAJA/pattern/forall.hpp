@@ -490,7 +490,6 @@ forall_Icount(ExecutionPolicy&& p,
                                                std::forward<Params>(params)...);
   std::string kernel_name =
       expt::get_kernel_name(std::forward<Params>(params)...);
-
   auto&& loop_body = expt::get_lambda(std::forward<FirstParam>(first),
                                       std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
