@@ -90,7 +90,7 @@ void RuntimePluginLoader::initPlugin(const std::string& path)
 #ifndef _WIN32
   // clear out any existing dlerrors
   RAJA_UNUSED_VAR(dlerror());
-  
+
   void* plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
   if (!plugin)
   {
@@ -99,7 +99,7 @@ void RuntimePluginLoader::initPlugin(const std::string& path)
 
   RuntimePluginLoader::Parent* (*RAJAGetPlugin)() =
       (RuntimePluginLoader::Parent * (*)()) dlsym(plugin, "RAJAGetPlugin");
-  
+
   if (!RAJAGetPlugin)
   {
     // clear the dlerror
