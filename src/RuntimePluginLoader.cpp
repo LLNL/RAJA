@@ -117,7 +117,7 @@ void RuntimePluginLoader::initPlugin(const std::string& path)
   }
   else
   {
-    printf("[RuntimePluginLoader]: dlsym failed: %s\n", error);
+    printf("[RuntimePluginLoader]: dlsym failed: %s\n", dlerror());
   }
 #else
   RAJA_UNUSED_ARG(path);
