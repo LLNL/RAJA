@@ -56,7 +56,7 @@ private:
   element_type m_value;
 
 public:
-  static constexpr int s_num_elem = policy::hip::device_constants.WARP_SIZE;
+  static constexpr int s_num_elem = RAJA_HIP_WAVESIZE;
 
   /*!
    * @brief Default constructor, zeros register contents
