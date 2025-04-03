@@ -89,12 +89,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "SEQ MAX VAL LOC 2 = "<< seq_maxloc2 << std::endl;
 
 #if defined RAJA_ENABLE_CUDA
-  using ResourceType = RAJA::resources::Cuda
+  using ResourceType = RAJA::resources::Cuda;
   using EXEC_POL =
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
-      RAJA::statement::For<1, RAJA::gpu_thread_x_loop,
-        RAJA::statement::For<0, RAJA::gpu_thread_y_loop,
+      RAJA::statement::For<1, RAJA::cuda_thread_x_loop,
+        RAJA::statement::For<0, RAJA::cuda_thread_y_loop,
                                 RAJA::statement::Lambda<0>
         >
       >
@@ -165,13 +165,145 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       _gpu_maxloc2.maxloc(dAview(row, col), row * N + col);
     }
   );
-  std::cout << "CUDA MIN VAL = " << gpu_min << std::endl;
-  std::cout << "CUDA MAX VAL = " << gpu_max << std::endl;
-  std::cout << "CUDA SUM VAL = " << gpu_sum << std::endl;
-  std::cout << "CUDA MIN VAL = " << gpu_minloc.getVal() << " MIN VALLOC  = " << gpu_minloc.getLoc() << std::endl;
-  std::cout << "CUDA MAX VAL = " << gpu_maxloc.getVal() << " MAX VALLOC  = " << gpu_maxloc.getLoc() << std::endl;
-  std::cout << "CUDA MIN VAL LOC 2 = "<< gpu_minloc2 << std::endl;
-  std::cout << "CUDA MAX VAL LOC 2 = "<< gpu_maxloc2 << std::endl;
+  std::cout << "GPU MIN VAL = " << gpu_min << std::endl;
+  std::cout << "GPU MAX VAL = " << gpu_max << std::endl;
+  std::cout << "GPU SUM VAL = " << gpu_sum << std::endl;
+  std::cout << "GPU MIN VAL = " << gpu_minloc.getVal() << " MIN VALLOC  = " << gpu_minloc.getLoc() << std::endl;
+  std::cout << "GPU MAX VAL = " << gpu_maxloc.getVal() << " MAX VALLOC  = " << gpu_maxloc.getLoc() << std::endl;
+  std::cout << "GPU MIN VAL LOC 2 = "<< gpu_minloc2 << std::endl;
+  std::cout << "GPU MAX VAL LOC 2 = "<< gpu_maxloc2 << std::endl;
+
+#endif
+#if defined RAJA_ENABLE_OPENMP
+using EXEC_POL_OPENMP =
+  RAJA::KernelPolicy<
+    RAJA::statement::For<1, RAJA::seq_exec,  // row
+      RAJA::statement::For<0, RAJA::omp_parallel_for_exec,            // col
+        RAJA::statement::Lambda<0>
+      >
+    >
+  >;
+
+int openmp_min = std::numeric_limits<int>::max();
+int openmp_max = std::numeric_limits<int>::min();
+int openmp_sum = 0;
+VALLOC_INT openmp_minloc(std::numeric_limits<int>::max(), -1);
+VALLOC_INT openmp_maxloc(std::numeric_limits<int>::min(), -1);
+RAJA::Index_type openmp_minloc2(-1);
+RAJA::Index_type openmp_maxloc2(-1);
+int openmp_min2 = std::numeric_limits<int>::max();
+int openmp_max2 = std::numeric_limits<int>::min();
+
+RAJA::kernel_param<EXEC_POL_OPENMP>(
+  RAJA::make_tuple(col_range, row_range),
+  RAJA::make_tuple(
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&openmp_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&openmp_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&openmp_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&openmp_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&openmp_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&openmp_min2, &openmp_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&openmp_max2, &openmp_maxloc2)
+  ),
+  // lambda 1
+  [=] RAJA_HOST_DEVICE (
+      int row,
+      int col,
+      VALOP_INT_SUM &_gpu_sum,
+      VALOP_INT_MIN &_gpu_min ,
+      VALOP_INT_MAX &_gpu_max,
+      VALOPLOC_INT_MIN &_gpu_minloc,
+      VALOPLOC_INT_MAX &_gpu_maxloc,
+      VALOPLOC_INT_MIN &_gpu_minloc2,
+      VALOPLOC_INT_MAX &_gpu_maxloc2
+    )
+    {
+    _gpu_sum += Aview(row, col);
+    _gpu_min = _gpu_min.min(Aview(row, col));
+    if (Aview(row, col) > 0)
+      printf("val %d loc %d %d\n", Aview(row, col), row, col);
+    _gpu_max = _gpu_max.max(Aview(row, col));
+
+    // loc
+    _gpu_minloc.minloc(Aview(row, col), row * N + col);
+    _gpu_maxloc.maxloc(Aview(row, col), row * N + col);
+    _gpu_minloc2.minloc(Aview(row, col), row * N + col);
+    _gpu_maxloc2.maxloc(Aview(row, col), row * N + col);
+  }
+
+  );
+
+  std::cout << "Seq + OpenMP MIN VAL = " << openmp_min << std::endl;
+  std::cout << "Seq + OpenMP MAX VAL = " << openmp_max << std::endl;
+  std::cout << "Seq + OpenMP SUM VAL = " << openmp_sum << std::endl;
+  std::cout << "Seq + OpenMP MIN VAL = " << openmp_minloc.getVal() << " MIN VALLOC  = " << openmp_minloc.getLoc() << std::endl;
+  std::cout << "Seq + OpenMP MAX VAL = " << openmp_maxloc.getVal() << " MAX VALLOC  = " << openmp_maxloc.getLoc() << std::endl;
+  std::cout << "Seq + OpenMP MIN VAL LOC 2 = "<< openmp_minloc2 << std::endl;
+  std::cout << "Seq + OpenMP MAX VAL LOC 2 = "<< openmp_maxloc2 << std::endl;
+
+
+
+  using EXEC_POL_OPENMP_2 =
+  RAJA::KernelPolicy<
+      RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
+        RAJA::statement::Lambda<0>
+      >
+  >;
+
+
+int openmp_min_2 = std::numeric_limits<int>::max();
+int openmp_max_2 = std::numeric_limits<int>::min();
+int openmp_sum_2 = 0;
+VALLOC_INT openmp_minloc_2(std::numeric_limits<int>::max(), -1);
+VALLOC_INT openmp_maxloc_2(std::numeric_limits<int>::min(), -1);
+RAJA::Index_type openmp_minloc_2_loc(-1);
+RAJA::Index_type openmp_maxloc_2_loc(-1);
+int openmp_min2_2 = std::numeric_limits<int>::max();
+int openmp_max2_2 = std::numeric_limits<int>::min();
+
+RAJA::kernel_param<EXEC_POL_OPENMP_2>(
+  RAJA::make_tuple(RAJA::RangeSegment(0, N * N)),
+  RAJA::make_tuple(
+    RAJA::expt::Reduce<RAJA::operators::plus   >(&openmp_sum_2),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&openmp_min_2),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&openmp_max_2),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&openmp_minloc_2),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&openmp_maxloc_2),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&openmp_min2_2, &openmp_minloc_2_loc),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&openmp_max2_2, &openmp_maxloc_2_loc)
+  ),
+  // lambda 1
+  [=] RAJA_HOST_DEVICE (
+      int idx,
+      VALOP_INT_SUM &_gpu_sum,
+      VALOP_INT_MIN &_gpu_min,
+      VALOP_INT_MAX &_gpu_max,
+      VALOPLOC_INT_MIN &_gpu_minloc,
+      VALOPLOC_INT_MAX &_gpu_maxloc,
+      VALOPLOC_INT_MIN &_gpu_minloc2,
+      VALOPLOC_INT_MAX &_gpu_maxloc2
+      )
+      {
+      _gpu_sum += A[idx];
+      _gpu_min.min(A[idx]);
+      _gpu_max.max(A[idx]);
+
+      // loc
+      _gpu_minloc.minloc(A[idx], idx);
+      _gpu_maxloc.maxloc(A[idx], idx);
+      _gpu_minloc2.minloc(A[idx], idx);
+      _gpu_maxloc2.maxloc(A[idx], idx);
+    }
+  );
+
+  std::cout << "OpenMP MIN VAL = " << openmp_min_2 << std::endl;
+  std::cout << "OpenMP MAX VAL = " << openmp_max_2 << std::endl;
+  std::cout << "OpenMP SUM VAL = " << openmp_sum_2 << std::endl;
+  std::cout << "OpenMP MIN VAL = " << openmp_minloc_2.getVal() << " MIN VALLOC  = " << openmp_minloc_2.getLoc() << std::endl;
+  std::cout << "OpenMP MAX VAL = " << openmp_maxloc_2.getVal() << " MAX VALLOC  = " << openmp_maxloc_2.getLoc() << std::endl;
+  std::cout << "OpenMP MIN VAL LOC 2 = "<< openmp_minloc_2_loc << std::endl;
+  std::cout << "OpenMP MAX VAL LOC 2 = "<< openmp_maxloc_2_loc << std::endl;
+
 #endif
 
 };
