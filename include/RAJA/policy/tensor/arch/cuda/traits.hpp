@@ -33,7 +33,7 @@ struct RegisterTraits<RAJA::expt::cuda_warp_register, T>
 {
   using element_type                      = T;
   using register_policy                   = RAJA::expt::cuda_warp_register;
-  static constexpr camp::idx_t s_num_elem = 32;
+  static constexpr camp::idx_t s_num_elem = RAJA_CUDA_WARPSIZE;
   static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
   using int_element_type                  = int32_t;
 };

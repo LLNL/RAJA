@@ -352,7 +352,7 @@ struct DeviceConstants
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
-constexpr DeviceConstants device_constants(32, 1024, 32);  // V100
+constexpr DeviceConstants device_constants(RAJA_CUDA_WARPSIZE, 1024, 32);  // V100
 static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
               "RAJA Assumption Broken: device_constants.WARP_SIZE < "
               "device_constants.MAX_WARPS");

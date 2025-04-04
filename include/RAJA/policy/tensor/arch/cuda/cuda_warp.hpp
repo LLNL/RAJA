@@ -24,8 +24,6 @@
 
 #ifdef RAJA_ENABLE_CUDA
 
-#include "RAJA/policy/cuda/reduce.hpp"
-
 #ifndef RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
 #define RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
 
@@ -55,7 +53,7 @@ private:
   element_type m_value;
 
 public:
-  static constexpr int s_num_elem = 32;
+  static constexpr int s_num_elem = RAJA_CUDA_WARPSIZE;
 
   /*!
    * @brief Default constructor, zeros register contents
@@ -492,7 +490,7 @@ public:
    */
   constexpr RAJA_INLINE RAJA_DEVICE element_type get(int i) const
   {
-    return __shfl_sync(0xffffffff, m_value, i, 32);
+    return __shfl_sync(0xffffffff, m_value, i);
   }
 
   /*!
@@ -531,7 +529,7 @@ public:
   self_type get_and_broadcast(int i) const
   {
     self_type x;
-    x.m_value = __shfl_sync(0xffffffff, m_value, i, 32);
+    x.m_value = __shfl_sync(0xffffffff, m_value, i);
     return x;
   }
 
@@ -833,8 +831,9 @@ public:
 
     // Third: mask off everything but output_segment
     //        this is because all output segments are valid at this point
-    // (5-segbits), the 5 is since the warp-width is 32 == 1<<5
-    int our_output_segment = get_lane() >> (5 - segbits);
+    static constexpr int log2_warp_size =
+        RAJA::log2(RAJA_CUDA_WARPSIZE);
+    int our_output_segment = get_lane() >> (log2_warp_size - segbits);
     bool in_output_segment = our_output_segment == output_segment;
     if (!in_output_segment)
     {
@@ -884,8 +883,10 @@ public:
 
     // First: tree reduce values within each segment
     element_type x = m_value;
+    static constexpr int log2_warp_size =
+        RAJA::log2(RAJA_CUDA_WARPSIZE);
     RAJA_UNROLL
-    for (int i = 0; i < 5 - segbits; ++i)
+    for (int i = 0; i < log2_warp_size - segbits; ++i)
     {
 
       // tree shuffle
