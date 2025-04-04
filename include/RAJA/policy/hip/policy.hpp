@@ -29,6 +29,7 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/hip/intrinsics.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/OffsetOperators.hpp"
@@ -322,47 +323,6 @@ namespace policy
 {
 namespace hip
 {
-
-struct DeviceConstants
-{
-  RAJA::Index_type WARP_SIZE;
-  RAJA::Index_type MAX_BLOCK_SIZE;
-  RAJA::Index_type MAX_WARPS;
-  RAJA::Index_type
-      ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE;  // basically the cache line size of
-                                             // the cache level that handles
-                                             // atomics
-
-  constexpr DeviceConstants(RAJA::Index_type warp_size,
-                            RAJA::Index_type max_block_size,
-                            RAJA::Index_type atomic_cache_line_bytes) noexcept
-      : WARP_SIZE(warp_size),
-        MAX_BLOCK_SIZE(max_block_size),
-        MAX_WARPS(max_block_size / warp_size),
-        ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE(atomic_cache_line_bytes)
-  {}
-};
-
-//
-// Operations in the included files are parametrized using the following
-// values for HIP warp size and max block size.
-//
-#if defined(__HIP_PLATFORM_AMD__)
-constexpr DeviceConstants device_constants(RAJA_HIP_WAVESIZE,
-                                           1024,
-                                           64);  // MI300A
-// constexpr DeviceConstants device_constants(RAJA_HIP_WAVESIZE, 1024, 128); //
-// MI250X
-
-#elif defined(__HIP_PLATFORM_NVIDIA__)
-constexpr DeviceConstants device_constants(RAJA_CUDA_WARPSIZE, 1024, 32);  // V100
-#endif
-static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
-              "RAJA Assumption Broken: device_constants.WARP_SIZE < "
-              "device_constants.MAX_WARPS");
-static_assert(device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
-              "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
-              "a multiple of device_constants.WARP_SIZE");
 
 template<typename _IterationMapping,
          kernel_sync_requirement sync,
