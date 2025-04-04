@@ -36,7 +36,6 @@
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/math.hpp"
 
-
 namespace RAJA
 {
 
