@@ -280,7 +280,7 @@ void launch(LaunchParams const& launch_params,
   using Res = typename resources::get_resource<
       typename LAUNCH_POLICY::host_policy_t>::type;
 
-  launch_t::exec(Res::get_default(), launch_params, nullptr, p_body, reducers);
+  launch_t::exec(Res::get_default(), launch_params, p_body, reducers);
 
   util::callPostLaunchPlugins(context);
 }
@@ -291,7 +291,7 @@ void launch(LaunchParams const& launch_params,
 template<typename POLICY_LIST, typename BODY>
 void launch(ExecPlace place, LaunchParams const& params, BODY const& body)
 {
-  launch<POLICY_LIST>(place, params, nullptr, body);
+  launch<POLICY_LIST>(place, params, body);
 }
 
 // Run-time API for new reducer interface with support of the case without a new
@@ -425,7 +425,7 @@ resources::EventProxy<resources::Resource> launch(
     {
       using launch_t = LaunchExecute<typename POLICY_LIST::host_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy =
-          launch_t::exec(res, launch_params, nullptr, p_body, reducers);
+          launch_t::exec(res, launch_params, p_body, reducers);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }
@@ -434,7 +434,7 @@ resources::EventProxy<resources::Resource> launch(
     {
       using launch_t = LaunchExecute<typename POLICY_LIST::device_policy_t>;
       resources::EventProxy<resources::Resource> e_proxy =
-          launch_t::exec(res, launch_params, nullptr, p_body, reducers);
+          launch_t::exec(res, launch_params, p_body, reducers);
       util::callPostLaunchPlugins(context);
       return e_proxy;
     }

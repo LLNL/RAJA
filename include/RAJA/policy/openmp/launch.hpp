@@ -35,7 +35,6 @@ struct LaunchExecute<RAJA::omp_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& params,
-       const char*,
        BODY const& body,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
