@@ -179,6 +179,7 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #cmakedefine RAJA_ENABLE_OMP_TASK
 #cmakedefine RAJA_ENABLE_VECTORIZATION
 
+#cmakedefine RAJA_ENABLE_CALIPER
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
 #cmakedefine RAJA_ENABLE_ROCTX
 
