@@ -15,11 +15,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef RAJA_ENABLE_CUDA
-
-
 #ifndef RAJA_policy_tensor_arch_cuda_traits_HPP
 #define RAJA_policy_tensor_arch_cuda_traits_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_CUDA_ACTIVE)
+
 
 namespace RAJA
 {
@@ -43,7 +45,6 @@ struct RegisterTraits<RAJA::expt::cuda_warp_register, T>
 }  // namespace RAJA
 
 
+#endif  // RAJA_CUDA_ACTIVE
+
 #endif
-
-
-#endif  // RAJA_ENABLE_CUDA

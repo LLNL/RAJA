@@ -16,18 +16,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
+#define RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
+
 #include "RAJA/config.hpp"
+
+#if defined(RAJA_CUDA_ACTIVE)
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
-
 #include "RAJA/policy/cuda/intrinsics.hpp"
-
-#ifndef RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
-#define RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
 
 namespace RAJA
 {
@@ -1071,6 +1072,6 @@ public:
 }  // namespace RAJA
 
 
-#endif  // Guard
-
 #endif  // CUDA
+
+#endif  // Guard

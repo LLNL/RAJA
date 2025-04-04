@@ -16,18 +16,19 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
+#define RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
+
 #include "RAJA/config.hpp"
+
+#if defined(RAJA_HIP_ACTIVE)
+
 #include "RAJA/util/macros.hpp"
 #include "RAJA/pattern/tensor/internal/RegisterBase.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/Operators.hpp"
 
-#ifdef RAJA_ENABLE_HIP
-
 #include "RAJA/policy/hip/intrinsics.hpp"
-
-#ifndef RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
-#define RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
 
 namespace RAJA
 {
@@ -1073,6 +1074,6 @@ public:
 }  // namespace RAJA
 
 
-#endif  // Guard
-
 #endif  // HIP
+
+#endif  // Guard

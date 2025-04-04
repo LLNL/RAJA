@@ -15,11 +15,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef RAJA_ENABLE_HIP
-
-
 #ifndef RAJA_policy_tensor_arch_hip_traits_HPP
 #define RAJA_policy_tensor_arch_hip_traits_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_HIP_ACTIVE)
+
 
 namespace RAJA
 {
@@ -43,7 +45,6 @@ struct RegisterTraits<RAJA::expt::hip_wave_register, T>
 }  // namespace RAJA
 
 
+#endif  // RAJA_HIP_ACTIVE
+
 #endif
-
-
-#endif  // RAJA_ENABLE_HIP
