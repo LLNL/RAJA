@@ -42,7 +42,7 @@ For the following examples we use Caliper v2.12.1 and configure on three differe
 
 Building RAJA with Caliper enabled requires pointing RAJA to the Caliper shared cmake file and enabling plugins::
 
-  cmake -DRAJA_ENABLE_RUNTIME_PLUGINS=ON -Dcaliper_DIR=${CALIPER_BUILD_DIR}/share/cmake/caliper ../
+  cmake -DRAJA_ENABLE_RUNTIME_PLUGINS=ON -DRAJA_ENABLE_CALIPER=ON -Dcaliper_DIR=${CALIPER_BUILD_DIR}/share/cmake/caliper ../
 
 As a quick build check we build the basic Caliper RAJA-Caliper example::
 
