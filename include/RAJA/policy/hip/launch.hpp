@@ -77,7 +77,6 @@ struct LaunchExecute<
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -123,7 +122,7 @@ struct LaunchExecute<
         //
         void* args[] = {(void*)&body};
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
-                          hip_res, async, kernel_name);
+                          hip_res, async);
       }
 
       RAJA_FT_END;
@@ -141,7 +140,6 @@ struct LaunchExecute<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -201,7 +199,7 @@ struct LaunchExecute<
         //
         void* args[] = {(void*)&body, (void*)&launch_reducers};
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
-                          hip_res, async, kernel_name);
+                          hip_res, async);
 
         RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
                                                         launch_info);
@@ -264,7 +262,6 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -311,7 +308,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
         //
         void* args[] = {(void*)&body};
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
-                          hip_res, async, kernel_name);
+                          hip_res, async);
       }
 
       RAJA_FT_END;
@@ -329,7 +326,6 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -392,7 +388,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
         //
         void* args[] = {(void*)&body, (void*)&launch_reducers};
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
-                          hip_res, async, kernel_name);
+                          hip_res, async);
 
         RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
                                                         launch_info);

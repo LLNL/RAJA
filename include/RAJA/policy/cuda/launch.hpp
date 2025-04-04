@@ -79,7 +79,6 @@ struct LaunchExecute<
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -125,7 +124,7 @@ struct LaunchExecute<
         //
         void* args[] = {(void*)&body};
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
-                           cuda_res, async, kernel_name);
+                           cuda_res, async);
       }
 
       RAJA_FT_END;
@@ -143,7 +142,6 @@ struct LaunchExecute<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -202,7 +200,7 @@ struct LaunchExecute<
         //
         void* args[] = {(void*)&body, (void*)&launch_reducers};
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
-                           cuda_res, async, kernel_name);
+                           cuda_res, async);
 
         RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
                                                         launch_info);
@@ -269,7 +267,6 @@ struct LaunchExecute<
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -316,7 +313,7 @@ struct LaunchExecute<
         //
         void* args[] = {(void*)&body};
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
-                           cuda_res, async, kernel_name);
+                           cuda_res, async);
       }
 
       RAJA_FT_END;
@@ -334,7 +331,6 @@ struct LaunchExecute<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        const LaunchParams& launch_params,
-       const char* kernel_name,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -396,7 +392,7 @@ struct LaunchExecute<
         //
         void* args[] = {(void*)&body, (void*)&launch_reducers};
         RAJA::cuda::launch(func, gridSize, blockSize, args, shared_mem_size,
-                           cuda_res, async, kernel_name);
+                           cuda_res, async);
 
         RAJA::expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers,
                                                         launch_info);

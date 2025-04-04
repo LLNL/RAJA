@@ -47,7 +47,6 @@ struct LaunchExecute<RAJA::seq_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY const& body,
        ReduceParams& RAJA_UNUSED_ARG(ReduceParams))
   {
@@ -73,7 +72,6 @@ struct LaunchExecute<RAJA::seq_launch_t>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& launch_params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY const& body,
        ReduceParams& launch_reducers)
   {

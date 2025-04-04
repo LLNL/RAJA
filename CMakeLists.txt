@@ -157,8 +157,19 @@ endif ()
 
 set (raja_depends)
 
+if (RAJA_ENABLE_CALIPER)
+set (raja_depends
+    ${raja_depends}
+    caliper)
+  find_package(caliper REQUIRED
+    NO_DEFAULT_PATH
+    PATHS ${caliper_DIR}
+  )
+endif()
+
 if (RAJA_ENABLE_OPENMP)
   set (raja_depends
+    ${raja_depends}
     openmp)
 endif()
 
