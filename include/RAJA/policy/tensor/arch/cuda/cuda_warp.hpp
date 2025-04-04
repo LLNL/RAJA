@@ -24,6 +24,8 @@
 
 #ifdef RAJA_ENABLE_CUDA
 
+#include "RAJA/policy/cuda/intrinsics.hpp"
+
 #ifndef RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
 #define RAJA_policy_tensor_arch_cuda_cuda_warp_register_HPP
 
