@@ -34,13 +34,15 @@
 #include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/policy/sequential/params/reduce.hpp"
+#include "RAJA/policy/sequential/forall.hpp"
 
-#include "RAJA/pattern/params/forall.hpp"
 
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 
 #include "RAJA/policy/hip/kernel/internal.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {

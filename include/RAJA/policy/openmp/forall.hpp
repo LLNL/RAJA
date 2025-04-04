@@ -91,43 +91,36 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(
     resources::Host host_res,
-    const omp_parallel_exec<InnerPolicy>& p,
+    const omp_parallel_exec<InnerPolicy>&,
     Iterable&& iter,
     RAJA::internal::ForWrapper<ArgumentId, Data, Types, EnclosedStmts...>&
         loop_body,
-    ForallParam f_params)
+    ForallParam)
 {
-
   using EXEC_POL = camp::decay<InnerPolicy>;
-  using ForWrapperType =
-      RAJA::internal::ForWrapper<ArgumentId, Data, Types, EnclosedStmts...>;
   auto reducers_tuple = loop_body.data.param_tuple;
-  auto loop_data      = loop_body.data;
   RAJA::expt::init_params<EXEC_POL>(reducers_tuple);
 
   using EXEC_POL = camp::decay<InnerPolicy>;
   using RAJA::internal::thread_privatize;
   RAJA_UNUSED_VAR(EXEC_POL {});
+  RAJA_EXTRACT_BED_IT(iter);
   _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(reducers_tuple)>::type  \
-        : RAJA::expt::combine_params<EXEC_POL>(omp_out, omp_in) ) ")  // initializer(omp_priv
-                                                                      // =
-                                                                      // omp_in)
-                                                                      // ")
+        : RAJA::expt::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
 
-      RAJA_EXTRACT_BED_IT(iter);
-
-#pragma omp parallel for reduction(combine : reducers_tuple)
+#pragma omp parallel
+{
+auto body = thread_privatize(loop_body);
+#pragma omp for reduction(combine : reducers_tuple)
   for (decltype(distance_it) i = 0; i < distance_it; ++i)
   {
-
-    auto body = thread_privatize(loop_body);
+    body.get_priv().data.param_tuple = reducers_tuple;
     body.get_priv()(begin_it[i]);
-    RAJA::expt::combine_params<EXEC_POL>(reducers_tuple,
-                                         body.get_priv().data.param_tuple);
+    reducers_tuple = body.get_priv().data.param_tuple;
   }
-
-  RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
+}
+RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
 
   return resources::EventProxy<resources::Host>(host_res);
 }

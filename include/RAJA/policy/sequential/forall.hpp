@@ -34,7 +34,7 @@
 #include "RAJA/pattern/detail/forall.hpp"
 
 #include "RAJA/util/resource.hpp"
-
+#include "RAJA/policy/sequential/params/reduce.hpp"
 #include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA

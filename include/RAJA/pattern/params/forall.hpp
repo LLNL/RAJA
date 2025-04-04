@@ -6,8 +6,6 @@
 #include "RAJA/util/CombiningAdapter.hpp"
 
 #include "RAJA/pattern/params/params_base.hpp"
-#include "camp/number.hpp"
-#include "camp/tuple.hpp"
 
 namespace RAJA
 {
@@ -181,6 +179,17 @@ RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple,
       params_tuple, std::forward<Args>(args)...);
 }
 
+//template<typename ExecPol, typename... Params, typename... Args>
+//RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple,
+//                                  camp::tuple<Params...>& params_tuple
+//                                     Args&&... args)
+//{
+//  using ParamTupleType = camp::decay<decltype(params_tuple)>;
+//  combine_params_helper<ExecPol>(
+//      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+//      params_tuple, std::forward<Args>(args)...);
+//}
+//
 //
 //
 // Forall Parameter Packing type
