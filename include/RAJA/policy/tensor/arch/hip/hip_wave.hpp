@@ -24,6 +24,8 @@
 
 #ifdef RAJA_ENABLE_HIP
 
+#include "RAJA/policy/hip/reduce.hpp"
+
 #ifndef RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
 #define RAJA_policy_tensor_arch_hip_hip_wave_register_HPP
 
