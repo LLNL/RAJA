@@ -98,7 +98,9 @@ forall_impl(
     ForallParam)
 {
   using EXEC_POL = camp::decay<InnerPolicy>;
-  auto reducers_tuple = loop_body.data.param_tuple;
+
+  auto reducers_tuple =
+      RAJA::expt::filter_reducers_const(loop_body.data.param_tuple);
   RAJA::expt::init_params<EXEC_POL>(reducers_tuple);
 
   using EXEC_POL = camp::decay<InnerPolicy>;
@@ -110,17 +112,17 @@ forall_impl(
         : RAJA::expt::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
 
 #pragma omp parallel
-{
-auto body = thread_privatize(loop_body);
-#pragma omp for reduction(combine : reducers_tuple)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
   {
-    body.get_priv().data.param_tuple = reducers_tuple;
-    body.get_priv()(begin_it[i]);
-    reducers_tuple = body.get_priv().data.param_tuple;
+    auto body = thread_privatize(loop_body);
+#pragma omp for reduction(combine : reducers_tuple)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      body.get_priv()(begin_it[i]);
+      reducers_tuple =
+          RAJA::expt::filter_reducers_const(body.get_priv().data.param_tuple);
+    }
   }
-}
-RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
+  RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
 
   return resources::EventProxy<resources::Host>(host_res);
 }

@@ -4,6 +4,9 @@
 
 #include "RAJA/pattern/params/reducer.hpp"
 #include "RAJA/util/CombiningAdapter.hpp"
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
 #include "RAJA/pattern/params/params_base.hpp"
 
@@ -23,17 +26,17 @@ struct TupleConcatType<camp::tuple<LParams...>, camp::tuple<RParams...>>
 };
 
 template<typename T>
-struct FilterOutReducers
+struct filter_out_reducers
 {};
 
 template<>
-struct FilterOutReducers<camp::tuple<>>
+struct filter_out_reducers<camp::tuple<>>
 {
   using type = camp::tuple<>;
 };
 
 template<typename T>
-struct FilterOutReducers<camp::tuple<T>>
+struct filter_out_reducers<camp::tuple<T>>
 {
   using type = typename std::conditional<is_instance_of_reducer<T>::value,
                                          camp::tuple<T>,
@@ -41,11 +44,11 @@ struct FilterOutReducers<camp::tuple<T>>
 };
 
 template<typename FirstParam, typename... RestofParams>
-struct FilterOutReducers<camp::tuple<FirstParam, RestofParams...>>
+struct filter_out_reducers<camp::tuple<FirstParam, RestofParams...>>
 {
 private:
   using rest_of_params_type =
-      typename FilterOutReducers<camp::tuple<RestofParams...>>::type;
+      typename filter_out_reducers<camp::tuple<RestofParams...>>::type;
 
 public:
   using type = typename std::conditional<
@@ -54,6 +57,14 @@ public:
                                rest_of_params_type>::type,
       rest_of_params_type>::type;
 };
+
+template<typename T>
+struct tuple_contains_type
+{};
+
+template<typename... Params>
+struct tuple_contains_type<camp::tuple<Params...>>
+{};
 
 template<typename VOp, typename T, typename Op, typename... Params>
 RAJA_HOST_DEVICE constexpr camp::tuple<detail::Reducer<VOp, T, Op>&, Params...>
@@ -95,11 +106,44 @@ RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
       params, camp::num<sizeof...(Params)> {});
 }
 
+template<typename VOp, typename T, typename Op, typename... Params>
+RAJA_HOST_DEVICE constexpr camp::tuple<detail::Reducer<VOp, T, Op>, Params...>
+filter_reducers_impl_helper_const(detail::Reducer<VOp, T, Op> red,
+                                  camp::tuple<Params...> RHS)
+{
+  return camp::tuple_cat_pair(camp::tuple<detail::Reducer<VOp, T, Op>>(red),
+                              RHS);
+}
+
+template<typename LHS, typename... Params>
+RAJA_HOST_DEVICE constexpr camp::tuple<Params...>
+filter_reducers_impl_helper_const(LHS&, camp::tuple<Params...> RHS)
+{
+  return RHS;
+}
+
+template<camp::idx_t param_size, typename TupleType>
+RAJA_HOST_DEVICE constexpr camp::tuple<> filter_reducers_impl_const(
+    TupleType&,
+    camp::num<0>)
+{
+  return camp::tuple<> {};
+}
+
+template<camp::idx_t param_size, typename TupleType, camp::idx_t idx>
+RAJA_HOST_DEVICE constexpr auto filter_reducers_impl_const(TupleType& param,
+                                                           camp::num<idx>)
+{
+  return filter_reducers_impl_helper_const(
+      camp::get<param_size - idx>(param),
+      filter_reducers_impl_const<param_size>(param, camp::num<idx - 1> {}));
+}
+
 template<typename... Params>
 RAJA_HOST_DEVICE constexpr auto filter_reducers_const(
-    const camp::tuple<Params...>& params)
+    camp::tuple<Params...>& params)
 {
-  return filter_reducers_impl<sizeof...(Params)>(
+  return filter_reducers_impl_const<sizeof...(Params)>(
       params, camp::num<sizeof...(Params)> {});
 }
 
@@ -170,26 +214,25 @@ RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
 }
 
 template<typename ExecPol, typename... Params, typename... Args>
-RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple,
-                                     Args&&... args)
+RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = camp::decay<decltype(params)>;
+  combine_params_helper<ExecPol>(
+      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(), params);
+}
+
+template<typename ExecPol, typename... Params, typename... Args>
+RAJA_HOST_DEVICE void combine_params(
+    camp::tuple<Params...>& params_tuple,
+    const camp::tuple<Params...>& params_tuple_in)
 {
   using ParamTupleType = camp::decay<decltype(params_tuple)>;
   combine_params_helper<ExecPol>(
       camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
-      params_tuple, std::forward<Args>(args)...);
+      params_tuple, params_tuple_in);
 }
 
-//template<typename ExecPol, typename... Params, typename... Args>
-//RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple,
-//                                  camp::tuple<Params...>& params_tuple
-//                                     Args&&... args)
-//{
-//  using ParamTupleType = camp::decay<decltype(params_tuple)>;
-//  combine_params_helper<ExecPol>(
-//      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
-//      params_tuple, std::forward<Args>(args)...);
-//}
-//
 //
 //
 // Forall Parameter Packing type

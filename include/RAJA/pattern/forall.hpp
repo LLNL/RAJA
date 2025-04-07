@@ -74,8 +74,6 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/sequential/forall.hpp"
-#include "RAJA/pattern/detail/forall.hpp"
-#include "RAJA/pattern/params/forall.hpp"
 
 #include "RAJA/pattern/detail/forall.hpp"
 #include "RAJA/pattern/detail/privatizer.hpp"

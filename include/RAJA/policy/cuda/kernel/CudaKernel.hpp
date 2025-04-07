@@ -338,7 +338,7 @@ struct CudaLaunchHelper<
   using executor_t =
       internal::cuda_statement_list_executor_t<StmtList, Data, Types>;
 
-  using ReducerParamTuple_t = typename RAJA::expt::FilterOutReducers<
+  using ReducerParamTuple_t = typename RAJA::expt::filter_out_reducers<
       typename Data::param_tuple_t>::type;
 
   using kernelGetter_t =

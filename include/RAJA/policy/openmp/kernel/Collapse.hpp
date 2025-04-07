@@ -76,7 +76,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
 
     using RAJA::internal::thread_privatize;
-    auto reducer_tuple = RAJA::expt::filter_reducers(data.param_tuple);
+
     RAJA::expt::init_params<omp_parallel_collapse_exec>(data.param_tuple);
     auto privatizer = thread_privatize(data);
 #pragma omp parallel for private(i0, i1) firstprivate(privatizer)              \

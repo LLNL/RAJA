@@ -34,15 +34,13 @@
 #include "RAJA/pattern/kernel.hpp"
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
-#include "RAJA/policy/sequential/params/reduce.hpp"
-#include "RAJA/policy/sequential/forall.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
 
 #include "RAJA/policy/hip/MemUtils_HIP.hpp"
 #include "RAJA/policy/hip/policy.hpp"
 
 #include "RAJA/policy/hip/kernel/internal.hpp"
-#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {
@@ -299,7 +297,7 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,
   using executor_t =
       internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
-  using ReducerParamTuple_t = typename RAJA::expt::FilterOutReducers<
+  using ReducerParamTuple_t = typename RAJA::expt::filter_out_reducers<
       typename Data::param_tuple_t>::type;
 
   using kernelGetter_t =
