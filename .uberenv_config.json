@@ -4,7 +4,7 @@
 "package_final_phase" : "initconfig",
 "package_source_dir" : "../..",
 "spack_url": "https://github.com/spack/spack.git",
-"spack_branch": "woptim/rsc-2025-03-0",
+"spack_branch": "rsc-2025-03-0",
 "spack_configs_path": "scripts/radiuss-spack-configs",
 "spack_packages_path": "scripts/radiuss-spack-configs/packages",
 "spack_setup_clingo": false
