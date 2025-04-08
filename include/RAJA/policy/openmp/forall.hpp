@@ -107,9 +107,7 @@ forall_impl(
   using RAJA::internal::thread_privatize;
   RAJA_UNUSED_VAR(EXEC_POL {});
   RAJA_EXTRACT_BED_IT(iter);
-  _Pragma(" omp declare reduction( combine \
-        : typename std::remove_reference<decltype(reducers_tuple)>::type  \
-        : RAJA::expt::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
+  RAJA_OMP_DECLARE_TUPLE_REDUCTION_COMBINE;
 
 #pragma omp parallel
   {

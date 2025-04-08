@@ -16,11 +16,11 @@ namespace expt
 {
 
 template<typename... T>
-struct TupleConcatType
+struct tuple_concat_type
 {};
 
 template<typename... LParams, typename... RParams>
-struct TupleConcatType<camp::tuple<LParams...>, camp::tuple<RParams...>>
+struct tuple_concat_type<camp::tuple<LParams...>, camp::tuple<RParams...>>
 {
   using type = camp::tuple<LParams..., RParams...>;
 };
@@ -53,8 +53,8 @@ private:
 public:
   using type = typename std::conditional<
       is_instance_of_reducer<FirstParam>::value,
-      typename TupleConcatType<camp::tuple<FirstParam>,
-                               rest_of_params_type>::type,
+      typename tuple_concat_type<camp::tuple<FirstParam>,
+                                 rest_of_params_type>::type,
       rest_of_params_type>::type;
 };
 
