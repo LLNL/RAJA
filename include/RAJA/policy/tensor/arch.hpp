@@ -142,11 +142,11 @@ using default_register = RAJA_TENSOR_REGISTER_TYPE;
 #endif
 
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef RAJA_CUDA_ACTIVE
 #include "RAJA/policy/tensor/arch/cuda/traits.hpp"
 #endif
 
-#ifdef RAJA_ENABLE_HIP
+#ifdef RAJA_HIP_ACTIVE
 #include "RAJA/policy/tensor/arch/hip/traits.hpp"
 #endif
 
