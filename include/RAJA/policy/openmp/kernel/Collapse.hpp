@@ -121,8 +121,6 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
 
     using RAJA::internal::thread_privatize;
-
-    RAJA::expt::init_params<omp_parallel_collapse_exec>(data.param_tuple);
     auto privatizer = thread_privatize(data);
 #pragma omp parallel for private(i0, i1) firstprivate(privatizer)              \
     RAJA_COLLAPSE(2)
@@ -137,7 +135,6 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
             private_data);
       }
     }
-    RAJA::expt::resolve_params<omp_parallel_collapse_exec>(data.param_tuple);
   }
 };
 
@@ -211,8 +208,6 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
     using NewTypes2 = setSegmentTypeFromData<NewTypes1, Arg2, Data>;
 
-    auto reducer_tuple = RAJA::expt::filter_reducers(data.param_tuple);
-    RAJA::expt::init_params<omp_parallel_collapse_exec>(data.param_tuple);
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
 #pragma omp parallel for private(i0, i1, i2) firstprivate(privatizer)          \
@@ -232,7 +227,6 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
         }
       }
     }
-    RAJA::expt::resolve_params<omp_parallel_collapse_exec>(data.param_tuple);
   }
 };
 

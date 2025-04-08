@@ -191,20 +191,14 @@ void init_params(camp::tuple<Params...>& params_tuple, Args&&... args)
       std::forward<Args>(args)...);
 }
 
-template<typename ExecPol,
-         typename ParamTuple,
-         camp::idx_t... Seq,
-         typename... Args>
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
 RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
                                             ParamTuple& params_tuple)
 {
   CAMP_EXPAND(param_combine(ExecPol {}, camp::get<Seq>(params_tuple)));
 }
 
-template<typename ExecPol,
-         typename ParamTuple,
-         camp::idx_t... Seq,
-         typename... Args>
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
 RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
                                             ParamTuple& params_tuple,
                                             const ParamTuple& params_tuple_in)
@@ -213,7 +207,7 @@ RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
                             camp::get<Seq>(params_tuple_in)));
 }
 
-template<typename ExecPol, typename... Params, typename... Args>
+template<typename ExecPol, typename... Params>
 RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple)
 {
   auto params          = filter_reducers(params_tuple);
@@ -222,7 +216,7 @@ RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple)
       camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(), params);
 }
 
-template<typename ExecPol, typename... Params, typename... Args>
+template<typename ExecPol, typename... Params>
 RAJA_HOST_DEVICE void combine_params(
     camp::tuple<Params...>& params_tuple,
     const camp::tuple<Params...>& params_tuple_in)
