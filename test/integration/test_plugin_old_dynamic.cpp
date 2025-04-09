@@ -4,20 +4,18 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-#include "RAJA/util/PluginStrategy.hpp"
+#include "RAJA/RAJA.hpp"
+#include "gtest/gtest.h"
 
-#include <exception>
-
-class ExceptionPlugin :
-  public RAJA::util::PluginStrategy
+TEST(PluginTestDynamic, Exception)
 {
-  public:
-  void preLaunch(const RAJA::util::PluginContext& RAJA_UNUSED_ARG(p)) override {
-    throw std::runtime_error("preLaunch");
-  }
-};
+  RAJA::util::init_plugins("../../lib/libdynamic_plugin_old.so");
+  int* a = new int[10];
 
-extern "C" RAJA::util::PluginStrategy *RAJAGetPlugin()
-{
-  return new ExceptionPlugin;
+  ASSERT_ANY_THROW({
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10),
+                               [=](int i) { a[i] = 0; });
+  });
+
+  delete[] a;
 }

@@ -39,10 +39,6 @@
 #include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
-#include "nvToolsExt.h"
-#endif
-
 namespace RAJA
 {
 
@@ -277,19 +273,10 @@ void launch(const void* func,
             void** args,
             size_t shmem,
             ::RAJA::resources::Cuda res,
-            bool async       = true,
-            const char* name = nullptr)
+            bool async = true)
 {
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
-  if (name) nvtxRangePushA(name);
-#else
-  RAJA_UNUSED_VAR(name);
-#endif
   cudaErrchk(
       cudaLaunchKernel(func, gridDim, blockDim, args, shmem, res.get_stream()));
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT)
-  if (name) nvtxRangePop();
-#endif
   launch(res, async);
 }
 

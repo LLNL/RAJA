@@ -260,7 +260,7 @@ struct ForallParamBase
 
   // Some of this can be made virtual in c++20, for now must be defined in each
   // child class if any arguments to the forall lambda are needed (e.g.
-  // KernelName is excluded.)
+  // Name is excluded.)
   using ARG_TUP_T  = camp::tuple<>;
   using ARG_LIST_T = typename ARG_TUP_T::TList;
 

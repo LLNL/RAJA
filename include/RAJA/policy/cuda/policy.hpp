@@ -29,6 +29,7 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/cuda/intrinsics.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/OffsetOperators.hpp"
@@ -327,41 +328,6 @@ namespace policy
 {
 namespace cuda
 {
-
-struct DeviceConstants
-{
-  RAJA::Index_type WARP_SIZE;
-  RAJA::Index_type MAX_BLOCK_SIZE;
-  RAJA::Index_type MAX_WARPS;
-  RAJA::Index_type
-      ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE;  // basically the cache line size of
-                                             // the cache level that handles
-                                             // atomics
-
-  constexpr DeviceConstants(RAJA::Index_type warp_size,
-                            RAJA::Index_type max_block_size,
-                            RAJA::Index_type atomic_cache_line_bytes) noexcept
-      : WARP_SIZE(warp_size),
-        MAX_BLOCK_SIZE(max_block_size),
-        MAX_WARPS(max_block_size / warp_size),
-        ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE(atomic_cache_line_bytes)
-  {}
-};
-
-//
-// Operations in the included files are parametrized using the following
-// values for CUDA warp size and max block size.
-//
-constexpr DeviceConstants device_constants(32, 1024, 32);  // V100
-static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
-              "RAJA Assumption Broken: device_constants.WARP_SIZE < "
-              "device_constants.MAX_WARPS");
-static_assert(device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
-              "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
-              "a multiple of device_constants.WARP_SIZE");
-
-constexpr const size_t MIN_BLOCKS_PER_SM = 1;
-constexpr const size_t MAX_BLOCKS_PER_SM = 32;
 
 template<typename _IterationMapping,
          kernel_sync_requirement sync,
