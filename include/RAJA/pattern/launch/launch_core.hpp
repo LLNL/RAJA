@@ -182,8 +182,10 @@ public:
   // Bump style allocator used to
   // get memory from the pool
   size_t shared_mem_offset;
-
   void* shared_mem_ptr;
+
+  size_t mem_arena_offset;
+  void* mem_arena_ptr;
 
 #if defined(RAJA_ENABLE_SYCL)
   mutable ::sycl::nd_item<3>* itm;
@@ -208,6 +210,26 @@ public:
     return static_cast<T*>(mem_ptr);
   }
 
+  template<typename T>
+  RAJA_HOST_DEVICE createMemoryArena(T *ptr, size_t bytes)
+  {
+    void * mem_arena_ptr = static_cast<char*>(&ptr[0]);
+  }
+
+  // TODO handle alignment
+  template<typename T>
+  RAJA_HOST_DEVICE T* getArenaMemory(size_t bytes)
+  {
+
+    // Calculate offset in bytes with a char pointer
+    void* mem_ptr = static_cast<char*>(arena_mem_ptr) + shared_arena_offset;
+
+    arena_mem_offset += bytes * sizeof(T);
+
+    // convert to desired type
+    return static_cast<T*>(mem_ptr);
+  }
+
   /*
   //Odd dependecy with atomics is breaking CI builds
   template<typename T, size_t DIM, typename IDX_T=RAJA::Index_type, ptrdiff_t
@@ -222,11 +244,20 @@ public:
   }
   */
 
-  RAJA_HOST_DEVICE void releaseSharedMemory()
+  //default is to release all
+  RAJA_HOST_DEVICE void releaseSharedMemory(size_t offset=-1)
   {
     // On the cpu/gpu we want to restart the count
-    shared_mem_offset = 0;
+    shared_mem_offset = offset < 0 ? 0 : shared_mem_offset - offset;
   }
+
+  //default is to release all
+  RAJA_HOST_DEVICE void releaseArenaMemory(size_t offset=-1)
+  {
+    // On the cpu/gpu we want to restart the count
+    arena_mem_offset = offset < 0 ? 0 : arena_mem_offset - offset;
+  }
+
 
   RAJA_HOST_DEVICE
   void teamSync()
