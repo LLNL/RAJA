@@ -20,6 +20,25 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2025.03.1 -- Release date 2025-04-17
+============================================
+
+This release contains one new feature and a bugfix.
+
+Notable changes include:
+
+  * New features / API changes:
+    * Added initial support for Caliper to gather profiling data for kernels.
+      See user docs and examples for configuration instructions and examples
+      of usage.
+
+  * Build changes/improvements:
+    * None
+
+  * Bug fixes/improvements:
+    * Fix header file include issue when vectorization enabled in a HIP build.
+
+
 Version 2025.03.0 -- Release date 2025-03-17
 ============================================
 
