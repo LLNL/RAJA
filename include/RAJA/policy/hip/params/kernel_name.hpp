@@ -46,7 +46,7 @@ param_combine(EXEC_POL const&, RAJA::detail::Name&)
 template<typename EXEC_POL>
 camp::concepts::enable_if<RAJA::type_traits::is_hip_policy<EXEC_POL>>
 param_resolve(EXEC_POL const&,
-              RAJA::detail::Name&,
+              RAJA::detail::Name& kn,
               const RAJA::hip::detail::hipInfo&)
 {
 #if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
@@ -54,6 +54,8 @@ param_resolve(EXEC_POL const&,
   {
     roctxRangePop();
   }
+#else
+  RAJA_UNUSED_VAR(kn);
 #endif
 }
 
