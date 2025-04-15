@@ -222,7 +222,7 @@ public:
   {
 
     // Calculate offset in bytes with a char pointer
-    void* mem_ptr = static_cast<char*>(arena_mem_ptr) + shared_arena_offset;
+    void* mem_ptr = static_cast<char*>(mem_arena_ptr) + mem_arena_offset;
 
     arena_mem_offset += bytes * sizeof(T);
 
