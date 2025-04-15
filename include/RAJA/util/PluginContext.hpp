@@ -8,6 +8,8 @@
 #ifndef RAJA_plugin_context_HPP
 #define RAJA_plugin_context_HPP
 
+#include <string>
+
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/internal/get_platform.hpp"
 
@@ -21,9 +23,13 @@ class KokkosPluginLoader;
 struct PluginContext
 {
 public:
-  PluginContext(const Platform p) : platform(p) {}
+  PluginContext(const Platform p, std::string&& name)
+      : platform(p),
+        kernel_name(std::move(name))
+  {}
 
   Platform platform;
+  std::string kernel_name;
 
 private:
   mutable uint64_t kID;
@@ -32,9 +38,9 @@ private:
 };
 
 template<typename Policy>
-PluginContext make_context()
+PluginContext make_context(std::string&& name)
 {
-  return PluginContext {detail::get_platform<Policy>::value};
+  return PluginContext {detail::get_platform<Policy>::value, std::move(name)};
 }
 
 }  // namespace util

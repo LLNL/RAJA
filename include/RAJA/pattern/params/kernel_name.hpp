@@ -5,24 +5,21 @@
 
 namespace RAJA
 {
-namespace expt
-{
 namespace detail
 {
 
-struct KernelName : public ForallParamBase
+struct Name : public RAJA::expt::detail::ForallParamBase
 {
-  RAJA_HOST_DEVICE KernelName() {}
+  RAJA_HOST_DEVICE Name() {}
 
-  KernelName(const char* name_in) : name(name_in) {}
+  explicit Name(const char* name_in) : name(name_in) {}
 
   const char* name;
 };
 
 }  // namespace detail
 
-inline auto KernelName(const char* n) { return detail::KernelName(n); }
-}  // namespace expt
+inline auto Name(const char* n) { return detail::Name(n); }
 
 
 }  //  namespace RAJA

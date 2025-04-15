@@ -8,9 +8,9 @@
 
 .. _tut-teamsbasic-label:
 
-------------------------------------
-Naming kernels for NVTX/ROCTX tools
-------------------------------------
+-------------------------------------
+Naming kernels using NVTX/ROCTX tools
+-------------------------------------
 
 There are no exercise files to work through for this section. Instead, there
 is an example source file ``RAJA/examples/teams_reductions.cpp`` which
@@ -20,16 +20,16 @@ Key RAJA feature shown in the following example:
 
   *  Naming kernels using an optional argument in ``RAJA::launch`` methods.
 
-In this example, we illustrate kernel naming capabilities within the RAJA Launch
-framework for use with NVTX or ROCTX region naming capabilities.
+In this example, we illustrate kernel naming capabilities within the RAJA launch and forall
+API for use with NVTX or ROCTX region naming capabilities.
 
-To name a ``RAJA::launch`` kernel, a string name is passed as an argument
+To name a ``RAJA::launch`` (similar capability in ``RAJA::forall``) kernel, a string name is passed as an argument
 before the lambda ::
 
   RAJA::launch<launch_policy>(RAJA::ExecPlace ,
     RAJA::LaunchParams(RAJA::Teams(Nteams,Nteams),
                        RAJA::Threads(Nthreads,Nthreads)),
-                       "myKernel",
+                       RAJA::Name("myKernel"),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
       /* Kernel body code goes here */
@@ -58,8 +58,7 @@ Similarly, ROCm tools can be used to generate traces of a profile and
 the resulting json file can be viewed using tools such as `Perfetto
 <https://ui.perfetto.dev/#!/>`_.
 
-In future work, we plan to add support to other profiling tools. Thus, API 
-changes may occur based on user feedback and integration with other tools. 
+
 Enabling NVTX profiling with RAJA Launch requires RAJA to be configured with 
-RAJA_ENABLE_NV_TOOLS_EXT=ON.
-or RAJA_ENABLE_ROCTX=ON for ROCTX profiling on AMD platforms platforms.
+RAJA_ENABLE_NV_TOOLS_EXT=ON or RAJA_ENABLE_ROCTX=ON for ROCTX profiling on AMD platforms platforms.
+To profile with Caliper we refer the reader to the following section :ref:`profiling-with-Caliper-label`.

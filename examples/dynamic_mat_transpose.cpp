@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
   RAJA::launch<launch_policy>
     (res, RAJA::LaunchParams(RAJA::Teams(outer_Dimc, outer_Dimr),
                              RAJA::Threads(TILE_DIM, TILE_DIM), dynamic_shared_mem_size),
-     "Matrix tranpose with dynamic shared memory kernel",
+     RAJA::Name("Matrix tranpose with dynamic shared memory kernel"),
       [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx)
   {
     RAJA::loop<outer1>(ctx, RAJA::RangeSegment(0, outer_Dimr), [&] (int by){
