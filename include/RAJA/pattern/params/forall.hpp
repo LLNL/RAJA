@@ -285,6 +285,7 @@ template<std::size_t name_idx,
          std::enable_if_t<(name_idx >= sizeof...(Args))>* = nullptr>
 std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
 {
+  RAJA_UNUSED_VAR(tuple_args);
   return std::string();
 }
 
@@ -292,6 +293,8 @@ template<typename... Args, std::size_t... Idx>
 std::string get_kernel_name_helper(camp::tuple<Args...>&& tuple_args,
                                    std::index_sequence<Idx...> i_seq)
 {
+  RAJA_UNUSED_VAR(i_seq);
+
   constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
   constexpr std::size_t name_idx    = std::min(
          {default_idx, (std::is_same<std::decay_t<Args>, RAJA::detail::Name>::value
