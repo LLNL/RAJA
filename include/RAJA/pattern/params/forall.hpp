@@ -434,14 +434,6 @@ constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple)
   return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
 }
 
-// pattern/param/forall.hpp contains a very similar function, but it requires
-// passing an rvalue and also strips out the final element from the tuple
-template<typename... Params>
-constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Params...>& tuple)
-{
-  return RAJA::expt::ForallParamPack<camp::decay<Params>...>(tuple);
-}
-
 namespace detail
 {
 // Maybe we should do a lot of these with structs...
@@ -677,16 +669,6 @@ RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params,
   return detail::invoke_with_order(
       camp::forward<Params>(params), camp::forward<Fn>(f),
       typename camp::decay<Params>::lambda_arg_seq(),
-      camp::forward<Ts...>(extra)...);
-}
-
-template<typename Fn, typename... Ts>
-RAJA_HOST_DEVICE constexpr auto invoke_body_for_wrapper(Fn&& f, Ts&&... extra)
-{
-  using Params = decltype(f.data.param_tuple);
-  return detail::invoke_with_order(
-      camp::forward<Params>(f.data.param_tuple), camp::forward<Fn>(f),
-      camp::make_idx_seq_t<camp::tuple_size<Params>::value>(),
       camp::forward<Ts...>(extra)...);
 }
 

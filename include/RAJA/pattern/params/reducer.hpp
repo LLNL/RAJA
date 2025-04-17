@@ -263,7 +263,7 @@ template<typename... Params>
 struct TupleContainsReducers<camp::tuple<Params...>>
     : std::integral_constant<
           bool,
-          camp::concepts::all_of<is_instance_of_reducer<Params>...>::value>
+          camp::concepts::any_of<is_instance_of_reducer<Params>...>::value>
 {};
 
 }  // namespace expt

@@ -141,7 +141,6 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
   template<typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-
     // Set the argument type for this loop
     using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
@@ -152,13 +151,10 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
     using len_t = decltype(len);
 
     RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));
-    RAJA::expt::init_params<seq_exec>(data.param_tuple);
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       for_wrapper(*(begin_it + i));
     }
-
-    RAJA::expt::resolve_params<seq_exec>(data.param_tuple);
   }
 };
 

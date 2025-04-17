@@ -142,7 +142,8 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
-
+  // todo(bowen) Move this
+  RAJA::expt::resolve_params<seq_exec>(loop_data.param_tuple);
   util::callPostLaunchPlugins(context);
 
   return resources::EventProxy<Resource>(resource);

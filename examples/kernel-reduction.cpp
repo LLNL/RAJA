@@ -36,10 +36,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
-      A[col + row * N] = - row - col;
+      A[col + row * N] = (row * N + col) % 100 + 1;
     }
   }
   A[0] = 1000;
+  A[N * N / 2] = 0;
 
   RAJA::TypedRangeSegment<int> row_range(0, N);
   RAJA::TypedRangeSegment<int> col_range(0, N);
@@ -58,7 +59,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&seq_max2, &seq_maxloc2)
     ),
     // lambda 1
-    [=] RAJA_HOST_DEVICE (int row,
+    [=] (int row,
       int col,
       VALOP_INT_SUM &_sum,
       VALOP_INT_MIN &_min,
@@ -71,7 +72,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       _min = _min.min(Aview(row, col));
       _max = _max.max(Aview(row, col));
       _sum += Aview(row, col);
-
       // loc
       _minloc.minloc(Aview(row, col), row * N + col);
       _maxloc.maxloc(Aview(row, col), row * N + col);
@@ -87,6 +87,113 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "SEQ MAX VAL = " << seq_maxloc.getVal() << " MAX VALLOC  = " << seq_maxloc.getLoc() << std::endl;
   std::cout << "SEQ MIN VAL LOC 2 = "<< seq_minloc2 << std::endl;
   std::cout << "SEQ MAX VAL LOC 2 = "<< seq_maxloc2 << std::endl;
+
+  int seq_for_min = std::numeric_limits<int>::max();
+  int seq_for_max = std::numeric_limits<int>::min();
+  int seq_for_sum = 0;
+  VALLOC_INT seq_for_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT seq_for_maxloc(std::numeric_limits<int>::min(), -1);
+  RAJA::Index_type seq_for_minloc2(-1);
+  RAJA::Index_type seq_for_maxloc2(-1);
+  int seq_for_min2 = std::numeric_limits<int>::max();
+  int seq_for_max2 = std::numeric_limits<int>::min();
+
+  using EXEC_POL_SEQ_FOR = RAJA::KernelPolicy<
+  RAJA::statement::For<0, RAJA::seq_exec,
+                            RAJA::statement::Lambda<0>
+    >
+  >;
+
+  RAJA::kernel_param<EXEC_POL_SEQ_FOR>(
+    // segments
+    RAJA::make_tuple(col_range),
+    // params
+    RAJA::make_tuple(
+      RAJA::expt::Reduce<RAJA::operators::plus   >(&seq_for_sum),
+      RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_for_min),
+      RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_for_max),
+      RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_for_minloc),
+      RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_for_maxloc),
+      RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&seq_for_min2, &seq_for_minloc2),
+      RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&seq_for_max2, &seq_for_maxloc2)
+    ),
+    // lambda 1
+    [=] (
+      int col,
+      VALOP_INT_SUM &_sum,
+      VALOP_INT_MIN &_min,
+      VALOP_INT_MAX &_max,
+      VALOPLOC_INT_MIN &_minloc,
+      VALOPLOC_INT_MAX &_maxloc,
+      VALOPLOC_INT_MIN &_minloc2,
+      VALOPLOC_INT_MAX &_maxloc2)
+    {
+      for( int row = 0; row < N; ++row)
+      {
+        _min = _min.min(Aview(row, col));
+        _max = _max.max(Aview(row, col));
+        _sum += Aview(row, col);
+        // loc
+        _minloc.minloc(Aview(row, col), row * N + col);
+        _maxloc.maxloc(Aview(row, col), row * N + col);
+        _minloc2.minloc(Aview(row, col), row * N + col);
+        _maxloc2.maxloc(Aview(row, col), row * N + col);
+      }
+    }
+  );
+
+  std::cout << "SEQ + FOR MIN VAL = " << seq_for_min << std::endl;
+  std::cout << "SEQ + FOR MAX VAL = " << seq_for_max << std::endl;
+  std::cout << "SEQ + FOR SUM VAL = " << seq_for_sum << std::endl;
+  std::cout << "SEQ + FOR MIN VAL = " << seq_for_minloc.getVal() << " MIN VALLOC  = " << seq_for_minloc.getLoc() << std::endl;
+  std::cout << "SEQ + FOR MAX VAL = " << seq_for_maxloc.getVal() << " MAX VALLOC  = " << seq_for_maxloc.getLoc() << std::endl;
+  std::cout << "SEQ + FOR MIN VAL LOC 2 = "<< seq_for_minloc2 << std::endl;
+  std::cout << "SEQ + FOR MAX VAL LOC 2 = "<< seq_for_maxloc2 << std::endl;
+
+  int for_seq_min = std::numeric_limits<int>::max();
+  int for_seq_max = std::numeric_limits<int>::min();
+  int for_seq_sum = 0;
+  VALLOC_INT for_seq_minloc(std::numeric_limits<int>::max(), -1);
+  VALLOC_INT for_seq_maxloc(std::numeric_limits<int>::min(), -1);
+  RAJA::Index_type for_seq_minloc2(-1);
+  RAJA::Index_type for_seq_maxloc2(-1);
+  int for_seq_min2 = std::numeric_limits<int>::max();
+  int for_seq_max2 = std::numeric_limits<int>::min();
+
+  RAJA::forall<RAJA::seq_exec>(col_range,
+    RAJA::expt::Reduce<RAJA::operators::plus>(&for_seq_sum),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&for_seq_min),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&for_seq_max),
+    RAJA::expt::Reduce<RAJA::operators::minimum>(&for_seq_minloc),
+    RAJA::expt::Reduce<RAJA::operators::maximum>(&for_seq_maxloc),
+    RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&for_seq_min2, &for_seq_minloc2),
+    RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&for_seq_max2, &for_seq_maxloc2),
+    [=] (int col,
+         VALOP_INT_SUM &_sum,
+         VALOP_INT_MIN &_min,
+         VALOP_INT_MAX &_max,
+         VALOPLOC_INT_MIN &_minloc,
+         VALOPLOC_INT_MAX &_maxloc,
+         VALOPLOC_INT_MIN &_minloc2,
+         VALOPLOC_INT_MAX &_maxloc2
+    ) {
+    for( int row = 0; row < N; ++row)
+    {
+      _min = _min.min(Aview(row, col));
+      _max = _max.max(Aview(row, col));
+      _sum += Aview(row, col);
+
+      _minloc.minloc(Aview(row, col), row * N + col);
+      _maxloc.maxloc(Aview(row, col), row * N + col);
+      _minloc2.minloc(Aview(row, col), row * N + col);
+      _maxloc2.maxloc(Aview(row, col), row * N + col);
+    }
+  });
+
+  std::cout << "FOR SEQ MIN VAL = " << for_seq_min << std::endl;
+  std::cout << "FOR SEQ MAX VAL = " << for_seq_max << std::endl;
+  std::cout << "FOR SEQ SUM VAL = " << for_seq_sum << std::endl;
+
 
 #if defined RAJA_ENABLE_CUDA
   using ResourceType = RAJA::resources::Cuda;
@@ -183,6 +290,13 @@ using EXEC_POL_OPENMP =
       >
     >
   >;
+//using EXEC_POL_OPENMP =
+//  RAJA::KernelPolicy<
+//    RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+//      RAJA::ArgList<1,0>,
+//      RAJA::statement::Lambda<0>
+//    >
+//  >;
 
 int openmp_min = std::numeric_limits<int>::max();
 int openmp_max = std::numeric_limits<int>::min();
@@ -220,8 +334,6 @@ RAJA::kernel_param<EXEC_POL_OPENMP>(
     {
     _gpu_sum += Aview(row, col);
     _gpu_min = _gpu_min.min(Aview(row, col));
-    if (Aview(row, col) > 0)
-      printf("val %d loc %d %d\n", Aview(row, col), row, col);
     _gpu_max = _gpu_max.max(Aview(row, col));
 
     // loc

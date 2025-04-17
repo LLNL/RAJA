@@ -39,7 +39,7 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
 
   // set rows to point to check and work _arrays
   RAJA::TypedRangeSegment<INDEX_TYPE> seg(0,ydim);
-  RAJA::forall<FORALL_POLICY>(seg, [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
   {
     workarr2D[zz] = work_array + zz * ydim;
   });
@@ -54,9 +54,12 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
   {
     for ( int xx = 0; xx < xdim; ++xx )
     {
-      checkarr2D[zz][xx] = zz*xdim + xx;
+      checkarr2D[zz][xx] = (zz*xdim + xx ) % 100 + 1;
     }
+    // Make a unique min
     checkarr2D[ydim-1][xdim-1] = 0;
+    // Make a unique max
+    checkarr2D[ydim/2][xdim/2] = 101;
   });
 
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * array_length);
@@ -65,6 +68,7 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
   RAJA::TypedRangeSegment<INDEX_TYPE> rowrange(0, ydim);
 
   using VALLOC_DATA_TYPE = RAJA::expt::ValLoc<DATA_TYPE, Index2D>;
+  using VALOP_DATA_TYPE_SUM = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>;
   using VALOP_DATA_TYPE_MIN = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::minimum>;
   using VALOP_DATA_TYPE_MAX = RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::maximum>;
   using VALOPLOC_DATA_TYPE_MIN = RAJA::expt::ValLocOp<DATA_TYPE, Index2D, RAJA::operators::minimum>;
@@ -74,6 +78,7 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
   VALLOC_DATA_TYPE seq_maxloc(std::numeric_limits<DATA_TYPE>::min(), Index2D(-1,-1));
   Index2D seq_minloc2(-1, -1);
   Index2D seq_maxloc2(-1, -1);
+  DATA_TYPE seq_sum = 0;
   DATA_TYPE seq_min = std::numeric_limits<DATA_TYPE>::max();
   DATA_TYPE seq_max = std::numeric_limits<DATA_TYPE>::min();
   DATA_TYPE seq_min2 = std::numeric_limits<DATA_TYPE>::max();
@@ -83,6 +88,7 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
   VALLOC_DATA_TYPE maxloc(std::numeric_limits<DATA_TYPE>::min(), Index2D(-1,-1));
   Index2D minloc2(-1, -1);
   Index2D maxloc2(-1, -1);
+  DATA_TYPE sum = 0;
   DATA_TYPE min2 = std::numeric_limits<DATA_TYPE>::max();
   DATA_TYPE max2 = std::numeric_limits<DATA_TYPE>::min();
   DATA_TYPE min = std::numeric_limits<DATA_TYPE>::max();
@@ -93,6 +99,7 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
     RAJA::make_tuple(colrange, rowrange),
     // params
     RAJA::make_tuple(
+      RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&minloc),
@@ -102,14 +109,16 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
     ),
       [=] RAJA_HOST_DEVICE (int c,
                             int r,
+                            VALOP_DATA_TYPE_SUM &_sum,
                             VALOP_DATA_TYPE_MIN &_min,
                             VALOP_DATA_TYPE_MAX &_max,
                             VALOPLOC_DATA_TYPE_MIN &_minloc,
                             VALOPLOC_DATA_TYPE_MAX &_maxloc,
                             VALOPLOC_DATA_TYPE_MIN &_minloc2,
                             VALOPLOC_DATA_TYPE_MAX &_maxloc2) {
-        _min = _min.min(workarr2D[r][c]);
-        _max = _max.max(workarr2D[r][c]);
+        _sum += workarr2D[r][c];
+        _min.min(workarr2D[r][c]);
+        _max.max(workarr2D[r][c]);
 
         // loc
         _minloc.minloc(workarr2D[r][c], Index2D(c, r));
@@ -120,14 +129,16 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
 
   // CPU answer
 
-  RAJA::forall<RAJA::seq_exec>(colrange,
+  RAJA::forall<RAJA::seq_exec>(rowrange,
+    RAJA::expt::Reduce<RAJA::operators::plus>(&seq_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&seq_min2, &seq_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&seq_max2, &seq_maxloc2),
-    [=] (INDEX_TYPE c,
+    [=] (INDEX_TYPE r,
+         VALOP_DATA_TYPE_SUM &_sum,
          VALOP_DATA_TYPE_MIN &_min,
          VALOP_DATA_TYPE_MAX &_max,
          VALOPLOC_DATA_TYPE_MIN &_minloc,
@@ -135,8 +146,9 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
          VALOPLOC_DATA_TYPE_MIN &_minloc2,
          VALOPLOC_DATA_TYPE_MAX &_maxloc2
     ) {
-    for( int r = 0; r < ydim; ++r)
+    for (int c = 0; c < xdim; ++c)
     {
+      _sum += checkarr2D[r][c];
       _min = _min.min(checkarr2D[r][c]);
       _max = _max.max(checkarr2D[r][c]);
 
@@ -148,6 +160,15 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
     }
   });
 
+  DATA_TYPE DEBUG_SUM = 0;
+  for (int r = 0 ; r < ydim; ++r) {
+    for (int c = 0; c < xdim; ++c) {
+      DEBUG_SUM += checkarr2D[r][c];
+    }
+  }
+
+  ASSERT_DOUBLE_EQ(seq_sum, sum);
+  ASSERT_FLOAT_EQ(DEBUG_SUM, sum);
   ASSERT_DOUBLE_EQ(seq_min2, min2);
   ASSERT_DOUBLE_EQ(seq_max2, max2);
   ASSERT_DOUBLE_EQ(seq_min, min);
@@ -196,6 +217,7 @@ TYPED_TEST_P(KernelReduceParamsTest, ParamReduceKernel)
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<5>>::type;
 
   KernelParamReduceTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(10, 10);
+  KernelParamReduceTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(100, 100);
   KernelParamReduceTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(151, 151);
   KernelParamReduceTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, FORALL_POLICY, EXEC_POLICY, REDUCE_POLICY>(362, 362);
 }
