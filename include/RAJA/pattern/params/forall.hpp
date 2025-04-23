@@ -159,9 +159,10 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr parampack_combine(EXEC_POL const& pol,
-                                          ForallParamPack<Params...>& f_params,
-                                          Args&&... args)
+  RAJA_HOST_DEVICE static void constexpr parampack_combine(
+      EXEC_POL const& pol,
+      ForallParamPack<Params...>& f_params,
+      Args&&... args)
   {
     FP::parampack_combine(pol, typename FP::params_seq(), f_params,
                           std::forward<Args>(args)...);
