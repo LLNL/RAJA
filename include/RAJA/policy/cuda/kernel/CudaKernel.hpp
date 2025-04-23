@@ -240,7 +240,7 @@ template<int BlockSize,
          typename Exec,
          typename ReduceParams>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void CudaKernelLauncherFixed(Data data, ReduceParams RAJA_UNUSED_ARG(params))
+    void CudaKernelLauncherFixed(Data data, ReduceParams params)
 {
 
   using data_t        = camp::decay<Data>;
