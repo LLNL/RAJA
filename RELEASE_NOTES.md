@@ -19,6 +19,15 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
+Version 2025.03.2 -- Release date 2025-04-24
+============================================
+
+This release contains bugfixes
+
+  * Build changes/improvements:
+    * Removed unused variables related to kernel naming
+    * Added missing host device annotations on missing param reducers
+
 
 Version 2025.03.1 -- Release date 2025-04-17
 ============================================
