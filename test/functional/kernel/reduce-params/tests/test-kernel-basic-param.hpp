@@ -39,18 +39,18 @@ void KernelParamReduceTestImpl(const int xdim, const int ydim)
 
   // set rows to point to check and work _arrays
   RAJA::TypedRangeSegment<INDEX_TYPE> seg(0,ydim);
-  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
+  RAJA::forall<FORALL_POLICY>(seg, [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
   {
     workarr2D[zz] = work_array + zz * ydim;
   });
 
-  RAJA::forall<RAJA::seq_exec>(seg, [=] (INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
   {
     checkarr2D[zz] = check_array + zz * ydim;
   });
 
   // initializing  values
-  RAJA::forall<RAJA::seq_exec>(seg, [=] (INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
   {
     for ( int xx = 0; xx < xdim; ++xx )
     {
