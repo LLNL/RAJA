@@ -226,7 +226,7 @@ __global__ void CudaKernelLauncher(Data data, ReduceParams params)
     params = RAJA::expt::filter_reducers(private_data.param_tuple);
   }
   // Suppress unused variable warning
-  (void)params;
+  RAJA_UNUSED_VAR(params);
 }
 
 /*!
@@ -258,7 +258,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
     params = RAJA::expt::filter_reducers(private_data.param_tuple);
   }
   // Suppress unused variable warning
-  (void)params;
+  RAJA_UNUSED_VAR(params);
 }
 
 /*!

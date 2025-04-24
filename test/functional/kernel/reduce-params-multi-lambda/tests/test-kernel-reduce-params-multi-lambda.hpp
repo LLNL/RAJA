@@ -39,18 +39,18 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
 
   // set rows to point to check and work _arrays
   RAJA::TypedRangeSegment<INDEX_TYPE> seg(0,ydim);
-  RAJA::forall<FORALL_POLICY>(seg, [=] RAJA_HOST_DEVICE(INDEX_TYPE zz)
+  RAJA::forall<FORALL_POLICY>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
   {
     workarr2D[zz] = work_array + zz * ydim;
   });
 
-  RAJA::forall<FORALL_POLICY>(seg, [=] (INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
   {
     checkarr2D[zz] = check_array + zz * ydim;
   });
 
   // initializing  values
-  RAJA::forall<FORALL_POLICY>(seg, [=] (INDEX_TYPE zz)
+  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
   {
     for ( int xx = 0; xx < xdim; ++xx )
     {
@@ -131,9 +131,9 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
     ) {
     for (int c = 0; c < xdim; ++c)
     {
-      _sum += workarr2D[r][c];
-      _min.min(workarr2D[r][c]);
-      _max.max(workarr2D[r][c]);
+      _sum += checkarr2D[r][c];
+      _min.min(checkarr2D[r][c]);
+      _max.max(checkarr2D[r][c]);
     }
   });
 
