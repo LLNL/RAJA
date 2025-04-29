@@ -435,8 +435,8 @@ Specifically,
     <https://github.com/LLNL/RAJAPerf/blob/develop/Dockerfile>`_ drives the
     Azure testing pipelines.
 
-The Performance Suite GitLab CI uses the ``uberenv`` and
-``radiuss-spack-configs`` versions located in the RAJA submodule to make the
+The Performance Suite GitLab CI uses the Uberenv and RADIUSS Spack Configs repo 
+versions located in the RAJA submodule to make the
 testing consistent across projects and avoid redundancy. This is reflected in
 the `RAJAPerf/.uberenv_config.json
 <https://github.com/LLNL/RAJAPerf/blob/develop/.uberenv_config.json>`_ file
