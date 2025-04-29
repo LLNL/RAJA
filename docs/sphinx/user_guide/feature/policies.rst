@@ -595,7 +595,7 @@ policies:
 | Fraction<size_t, numerator, denomenator>,          | occupancy based on the max occupancy    |
 | BLOCKS_PER_SM_OFFSET>                              | Using the following formula:            |
 |                                                    | (Fraction * kernel_max_blocks_per_sm +  |
-|                                                    |  BLOCKS_PER_SM_OFFSET) * sm_per_device  |
+|                                                    | BLOCKS_PER_SM_OFFSET) * sm_per_device   |
 +----------------------------------------------------+-----------------------------------------+
 
 Several notable constraints apply to RAJA CUDA/HIP *direct_unchecked* policies.
