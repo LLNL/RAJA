@@ -199,7 +199,7 @@ Other programming model specific compilation options are also available:
       ======================================   =================================
       Variable                                 Default
       ======================================   =================================
-      **ENABLE_CLANG_CUDA                      Off (if on, (RAJA_)ENABLE_CUDA 
+      **ENABLE_CLANG_CUDA                      Off (if on, ENABLE_CUDA 
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
       RAJA_ENABLE_NV_TOOLS_EXT                 Off

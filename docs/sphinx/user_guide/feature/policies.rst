@@ -524,7 +524,7 @@ policies have the prefix ``hip_``.
 +----------------------------------------------------+---------------+---------------------------------+
 | cuda/hip_warp_direct_unchecked                     | kernel (For)  | Map work to threads in a        |
 |                                                    |               | warp directly without checking  |
-|                                                    |               | loop bounds. |
+|                                                    |               | loop bounds.                    |
 |                                                    |               | Cannot be used in conjunction   |
 |                                                    |               | with cuda/hip_thread_x_*        |
 |                                                    |               | policies.                       |
