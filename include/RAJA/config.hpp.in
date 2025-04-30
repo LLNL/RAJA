@@ -262,7 +262,7 @@ namespace RAJA {
 #define RAJA_OPENMP_5_1_ATOMICS
 #endif
   
-#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)  
+#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
 #if defined(_OPENMP)
 #if (_OPENMP >= 200805)
 #if defined(RAJA_ENABLE_OPENMP_TASK)
