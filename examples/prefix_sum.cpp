@@ -6,13 +6,10 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
-#include <iostream>
-#include <iomanip>  
-#include <vector>
-#include <cassert>
-#include <chrono>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/util/Timer.hpp"
+
 #include "memoryManager.hpp"
 
 /*
@@ -42,7 +39,7 @@ const int CUDA_BLOCK_SIZE = 256;
 /*
   N - the length of the series to perform the prefix sum
 */
-const int N = 100;
+const int N = 100000000;
 
 bool check_equal(const std::vector<int>& a, const std::vector<int>& b)
 {
@@ -59,39 +56,45 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   std::vector<int> input(N, 1);
   std::vector<int> reference_output(N, 0);
-  std::vector<int> test_output(N, 0);
+  std::vector<int> test_output(N, 0);  
+
+  auto timer = RAJA::Timer();
+  double elapsed_us;
 
   //----------------------------------------------------------------------------
   std::cout << "\n Running C-style prefix sum...\n";
 
-  auto start = std::chrono::high_resolution_clock::now();
+  timer.start();
 
   reference_output[0] = 0;
   for (int i = 1; i < N; ++i) {
     reference_output[i] = reference_output[i - 1] + input[i - 1];
   }
 
-  auto end = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-  std::cout << "   Reference complete. Time: " << duration.count() << " us\n";
+  timer.stop();
+  elapsed_us = timer.elapsed();
+  
+  std::cout << "   Reference complete. Time: " << elapsed_us * 1e6 << " us\n";
+  timer.reset();
 
   //----------------------------------------------------------------------------
   std::cout << "\n Running RAJA::exclusive_scan with seq_exec...\n";
   std::fill(test_output.begin(), test_output.end(), 0);
 
-  start = std::chrono::high_resolution_clock::now();
+  timer.start();
 
   RAJA::exclusive_scan<RAJA::seq_exec>(
     RAJA::make_span(input),
     RAJA::make_span(test_output),
     RAJA::operators::plus<int>());
 
-  end = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  timer.stop();
+  elapsed_us = timer.elapsed();
 
   std::cout << "   Result: " 
             << (check_equal(reference_output, test_output) ? "PASS" : "FAIL")
-            << " | Time: " << duration.count() << " us\n";
+            << " | Time: " << elapsed_us * 1e6 << " us\n";
+  timer.reset();
 
 
   //----------------------------------------------------------------------------
@@ -99,19 +102,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   std::cout << "\n Running RAJA::exclusive_scan with omp_parallel_for_exec...\n";
   std::fill(test_output.begin(), test_output.end(), 0);
   
-  start = std::chrono::high_resolution_clock::now();
+  timer.start();
   
   RAJA::exclusive_scan<RAJA::omp_parallel_for_exec>(
     RAJA::make_span(input),
     RAJA::make_span(test_output),
     RAJA::operators::plus<int>());
   
-  end = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  timer.stop();
+  elapsed_us = timer.elapsed();
   
   std::cout << "   Result: " 
             << (check_equal(reference_output, test_output) ? "PASS" : "FAIL")
-            << " | Time: " << duration.count() << " us\n";
+            << " | Time: " << elapsed_us * 1e6 << " us\n";
+  timer.reset();
 #endif
   
 
@@ -129,7 +133,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   cudaMemset(d_output, 0, N * sizeof(int));
   
   cudaDeviceSynchronize();
-  start = std::chrono::high_resolution_clock::now();
+  timer.start();
   
   RAJA::exclusive_scan<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
     RAJA::make_span(d_input, N),
@@ -137,15 +141,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
     RAJA::operators::plus<int>{});
   
   cudaDeviceSynchronize();  // Make sure the scan finishes before timing ends
-  end = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  timer.stop();
+  elapsed_us = timer.elapsed();
   
   cudaMemcpy(test_output.data(), d_output, N * sizeof(int), cudaMemcpyDeviceToHost);
   
   std::cout << "   Result: " 
             << (check_equal(reference_output, test_output) ? "PASS" : "FAIL")
-            << " | Time: " << duration.count() << " us\n";
-  
+            << " | Time: " << elapsed_us * 1e6 << " us\n";
+  timer.reset();
   cudaFree(d_input);
   cudaFree(d_output);
 #endif
