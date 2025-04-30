@@ -18,6 +18,8 @@ option(RAJA_ENABLE_VECTORIZATION "Build experimental vectorization support" On)
 
 option(RAJA_ENABLE_OPENMP_TASK "Build OpenMP task variants of certain algorithms" Off)
 
+option(RAJA_ENABLE_OPENMP_5_1_ATOMICS "Enable OpenMP 5.1 atomics for min/max operations" On)
+
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 
 option(RAJA_ENABLE_EXERCISES "Build exercises " On)

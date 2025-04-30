@@ -177,6 +177,7 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #cmakedefine RAJA_ENABLE_SYCL
 
 #cmakedefine RAJA_ENABLE_OMP_TASK
+#cmakedefine RAJA_ENABLE_OPENMP_5_1_ATOMICS
 #cmakedefine RAJA_ENABLE_VECTORIZATION
 
 #cmakedefine RAJA_ENABLE_CALIPER
@@ -256,7 +257,12 @@ static_assert.
 
 namespace RAJA {
 
-#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
+// Enables OpenMP 5.1 atomics for min/max operations  
+#if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_OPENMP_5_1_ATOMICS)
+#define RAJA_OPENMP_5_1_ATOMICS
+#endif
+  
+#if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)  
 #if defined(_OPENMP)
 #if (_OPENMP >= 200805)
 #if defined(RAJA_ENABLE_OPENMP_TASK)
