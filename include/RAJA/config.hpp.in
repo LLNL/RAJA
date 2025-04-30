@@ -258,8 +258,8 @@ static_assert.
 namespace RAJA {
 
 // Enables OpenMP 5.1 atomics for min/max operations  
-#if defined(RAJA_ENABLE_OPENMP) && defined(RAJA_ENABLE_OPENMP_5_1_ATOMICS)
-#define RAJA_OPENMP_5_1_ATOMICS
+#if defined(RAJA_ENABLE_OPENMP) && _OPENMP >= 202011 && defined(RAJA_ENABLE_OPENMP_5_1_ATOMICS)
+#define RAJA_ENABLE_OPENMP_5_1_ATOMICS_INTERNAL
 #endif
   
 #if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
