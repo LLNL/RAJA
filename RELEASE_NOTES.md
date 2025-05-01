@@ -27,6 +27,8 @@ This release contains bugfixes
   * Build changes/improvements:
     * Removed unused variables related to kernel naming
     * Added missing host device annotations on missing param reducers
+    * CMAKE build option to allow for use of OpenMP 5.1 atomics for min/max operations.
+       The option is on by default.
 
 
 Version 2025.03.1 -- Release date 2025-04-17
