@@ -58,14 +58,6 @@ public:
       rest_of_params_type>::type;
 };
 
-template<typename T>
-struct tuple_contains_type
-{};
-
-template<typename... Params>
-struct tuple_contains_type<camp::tuple<Params...>>
-{};
-
 template<typename VOp, typename T, typename Op, typename... Params>
 RAJA_HOST_DEVICE constexpr camp::tuple<detail::Reducer<VOp, T, Op>&, Params...>
 filter_reducers_impl_helper(detail::Reducer<VOp, T, Op>& red,

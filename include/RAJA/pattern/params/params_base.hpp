@@ -289,7 +289,7 @@ struct GetArgType
 template<typename ParamType>
 struct GetArgType<
     ParamType,
-    typename std::enable_if<std::is_base_of<ParamBase, ParamType>::value>::type>
+    typename std::enable_if_t<std::is_base_of<ParamBase, ParamType>::value>>
 {
   using type = typename ParamType::ARG_T;
 };
@@ -301,9 +301,9 @@ struct ParamToArgHelper<camp::tuple<Params...>>
 };
 
 template<typename T>
-RAJA_HOST_DEVICE typename std::enable_if<
+RAJA_HOST_DEVICE typename std::enable_if_t<
     std::is_base_of<ParamBase, T>::value,
-    typename std::add_lvalue_reference<typename T::ARG_T>::type>::type
+    typename std::add_lvalue_reference<typename T::ARG_T>::type>
 get_lambda_arg(T& Param)
 {
   return *Param.get_lambda_arg();
@@ -311,8 +311,8 @@ get_lambda_arg(T& Param)
 
 template<typename T>
 RAJA_HOST_DEVICE
-    typename std::enable_if<!std::is_base_of<ParamBase, T>::value,
-                            typename std::add_lvalue_reference<T>::type>::type
+    typename std::enable_if_t<!std::is_base_of<ParamBase, T>::value,
+                              typename std::add_lvalue_reference<T>::type>
     get_lambda_arg(T& Param)
 {
   return Param;

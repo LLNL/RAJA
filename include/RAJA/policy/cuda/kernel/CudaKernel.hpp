@@ -210,8 +210,8 @@ namespace internal
 /*!
  * CUDA global function for launching CudaKernel policies
  */
-template<typename Data, typename Exec, typename ReduceParams>
-__global__ void CudaKernelLauncher(Data data, ReduceParams params)
+template<typename Data, typename Exec>
+__global__ void CudaKernelLauncher(Data data)
 {
 
   using data_t        = camp::decay<Data>;
@@ -221,12 +221,6 @@ __global__ void CudaKernelLauncher(Data data, ReduceParams params)
 
   RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
       private_data.param_tuple);
-  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
-  {
-    params = RAJA::expt::filter_reducers(private_data.param_tuple);
-  }
-  // Suppress unused variable warning
-  RAJA_UNUSED_VAR(params);
 }
 
 /*!
@@ -236,13 +230,9 @@ __global__ void CudaKernelLauncher(Data data, ReduceParams params)
  *
  * This launcher is used by the CudaKerelFixed policies.
  */
-template<int BlockSize,
-         int BlocksPerSM,
-         typename Data,
-         typename Exec,
-         typename ReduceParams>
+template<int BlockSize, int BlocksPerSM, typename Data, typename Exec>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void CudaKernelLauncherFixed(Data data, ReduceParams params)
+    void CudaKernelLauncherFixed(Data data)
 {
 
   using data_t        = camp::decay<Data>;
@@ -253,12 +243,6 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
 
   RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
       private_data.param_tuple);
-  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
-  {
-    params = RAJA::expt::filter_reducers(private_data.param_tuple);
-  }
-  // Suppress unused variable warning
-  RAJA_UNUSED_VAR(params);
 }
 
 /*!
@@ -269,24 +253,19 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<int BlockSize,
-         int BlocksPerSM,
-         typename Data,
-         typename executor_t,
-         typename ReduceParams>
+template<int BlockSize, int BlocksPerSM, typename Data, typename executor_t>
 struct CudaKernelLauncherGetter
 {
   using type =
       camp::decay<decltype(&internal::CudaKernelLauncherFixed<BlockSize,
                                                               BlocksPerSM,
                                                               Data,
-                                                              executor_t,
-                                                              ReduceParams>)>;
+                                                              executor_t>)>;
 
   static constexpr type get() noexcept
   {
     return &internal::CudaKernelLauncherFixed<BlockSize, BlocksPerSM, Data,
-                                              executor_t, ReduceParams>;
+                                              executor_t>;
   }
 };
 
@@ -294,15 +273,15 @@ struct CudaKernelLauncherGetter
  * Helper class specialization for BlockSize == 0 and gets the unfixed max
  * block size version of the kernel.
  */
-template<typename Data, typename executor_t, typename ReduceParams>
-struct CudaKernelLauncherGetter<0, 0, Data, executor_t, ReduceParams>
+template<typename Data, typename executor_t>
+struct CudaKernelLauncherGetter<0, 0, Data, executor_t>
 {
-  using type = camp::decay<
-      decltype(&internal::CudaKernelLauncher<Data, executor_t, ReduceParams>)>;
+  using type =
+      camp::decay<decltype(&internal::CudaKernelLauncher<Data, executor_t>)>;
 
   static constexpr type get() noexcept
   {
-    return &internal::CudaKernelLauncher<Data, executor_t, ReduceParams>;
+    return &internal::CudaKernelLauncher<Data, executor_t>;
   }
 };
 
@@ -342,15 +321,11 @@ struct CudaLaunchHelper<
   using executor_t =
       internal::cuda_statement_list_executor_t<StmtList, Data, Types>;
 
-  using ReducerParamTuple_t = typename RAJA::expt::filter_out_reducers<
-      typename Data::param_tuple_t>::type;
-
   using kernelGetter_t =
       CudaKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,
                                (blocks_per_sm <= 0) ? 0 : blocks_per_sm,
                                Data,
-                               executor_t,
-                               ReducerParamTuple_t>;
+                               executor_t>;
 
   inline static const void* get_func()
   {
@@ -708,7 +683,7 @@ struct StatementExecutor<
         //
         // Launch the kernel
         //
-        void* args[] = {(void*)&cuda_data, (void*)&(reducer_tuple)};
+        void* args[] = {(void*)&cuda_data};
         RAJA::cuda::launch(func, launch_dims.dims.blocks,
                            launch_dims.dims.threads, args, shmem, res,
                            launch_t::async);

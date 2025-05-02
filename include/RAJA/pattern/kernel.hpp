@@ -142,7 +142,10 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
-  // todo(bowen) Move this
+  // There isn't another good place to resolve sequential parameters, so
+  // complete resolution here.  This simply calls combineTarget() a second time
+  // for non-sequential backends (eg HIP, CUDA), which does not represent a
+  // significant overhead.
   RAJA::expt::resolve_params<seq_exec>(loop_data.param_tuple);
   util::callPostLaunchPlugins(context);
 

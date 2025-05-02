@@ -178,8 +178,8 @@ namespace internal
 /*!
  * HIP global function for launching HipKernel policies
  */
-template<typename Data, typename Exec, typename ReduceParams>
-__global__ void HipKernelLauncher(Data data, ReduceParams params)
+template<typename Data, typename Exec>
+__global__ void HipKernelLauncher(Data data)
 {
 
   using data_t        = camp::decay<Data>;
@@ -188,10 +188,6 @@ __global__ void HipKernelLauncher(Data data, ReduceParams params)
   Exec::exec(private_data, true);
   RAJA::expt::combine_params<RAJA::hip_flatten_global_xyz_direct>(
       private_data.param_tuple);
-  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
-  {
-    params = RAJA::expt::filter_reducers(private_data.param_tuple);
-  }
 }
 
 /*!
@@ -201,9 +197,9 @@ __global__ void HipKernelLauncher(Data data, ReduceParams params)
  *
  * This launcher is used by the HipKerelFixed policies.
  */
-template<int BlockSize, typename Data, typename Exec, typename ReduceParams>
+template<int BlockSize, typename Data, typename Exec>
 __launch_bounds__(BlockSize, 1) __global__
-    void HipKernelLauncherFixed(Data data, ReduceParams params)
+    void HipKernelLauncherFixed(Data data)
 {
 
   using data_t        = camp::decay<Data>;
@@ -214,10 +210,6 @@ __launch_bounds__(BlockSize, 1) __global__
 
   RAJA::expt::combine_params<RAJA::hip_flatten_global_xyz_direct>(
       private_data.param_tuple);
-  if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
-  {
-    params = RAJA::expt::filter_reducers(private_data.param_tuple);
-  }
 }
 
 /*!
@@ -228,22 +220,15 @@ __launch_bounds__(BlockSize, 1) __global__
  * The default case handles BlockSize != 0 and gets the fixed max block size
  * version of the kernel.
  */
-template<int BlockSize,
-         typename Data,
-         typename executor_t,
-         typename ReduceParams>
+template<int BlockSize, typename Data, typename executor_t>
 struct HipKernelLauncherGetter
 {
-  using type =
-      camp::decay<decltype(&internal::HipKernelLauncherFixed<BlockSize,
-                                                             Data,
-                                                             executor_t,
-                                                             ReduceParams>)>;
+  using type = camp::decay<
+      decltype(&internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>)>;
 
   static constexpr type get() noexcept
   {
-    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t,
-                                             ReduceParams>;
+    return &internal::HipKernelLauncherFixed<BlockSize, Data, executor_t>;
   }
 };
 
@@ -251,15 +236,15 @@ struct HipKernelLauncherGetter
  * Helper class specialization for BlockSize == 0 and gets the unfixed max
  * block size version of the kernel.
  */
-template<typename Data, typename executor_t, typename ReduceParams>
-struct HipKernelLauncherGetter<0, Data, executor_t, ReduceParams>
+template<typename Data, typename executor_t>
+struct HipKernelLauncherGetter<0, Data, executor_t>
 {
-  using type = camp::decay<
-      decltype(&internal::HipKernelLauncher<Data, executor_t, ReduceParams>)>;
+  using type =
+      camp::decay<decltype(&internal::HipKernelLauncher<Data, executor_t>)>;
 
   static constexpr type get() noexcept
   {
-    return &internal::HipKernelLauncher<Data, executor_t, ReduceParams>;
+    return &internal::HipKernelLauncher<Data, executor_t>;
   }
 };
 
@@ -297,14 +282,10 @@ struct HipLaunchHelper<hip_explicit_launch<async0, num_blocks, num_threads>,
   using executor_t =
       internal::hip_statement_list_executor_t<StmtList, Data, Types>;
 
-  using ReducerParamTuple_t = typename RAJA::expt::filter_out_reducers<
-      typename Data::param_tuple_t>::type;
-
   using kernelGetter_t =
       HipKernelLauncherGetter<(num_threads <= 0) ? 0 : num_threads,
                               Data,
-                              executor_t,
-                              ReducerParamTuple_t>;
+                              executor_t>;
 
   inline static const void* get_func()
   {
@@ -652,7 +633,6 @@ struct StatementExecutor<
         launch_info.dynamic_smem = &shmem;
         launch_info.res          = res;
 
-        auto reducer_tuple = RAJA::expt::filter_reducers(data.param_tuple);
         RAJA::expt::init_params<EXEC_POL>(data.param_tuple, launch_info);
 
         auto hip_data = RAJA::hip::make_launch_body(
@@ -662,7 +642,7 @@ struct StatementExecutor<
         //
         // Launch the kernel
         //
-        void* args[] = {(void*)&hip_data, (void*)&(reducer_tuple)};
+        void* args[] = {(void*)&hip_data};
         RAJA::hip::launch(func, launch_dims.dims.blocks,
                           launch_dims.dims.threads, args, shmem, res,
                           launch_t::async);
