@@ -83,7 +83,7 @@ forall_impl(const ExecPol<ChunkSize>& p,
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
 
-#pragma for schedule(static) reduction(combine : f_params)
+#pragma omp for schedule(static) reduction(combine : f_params)
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
@@ -121,7 +121,7 @@ forall_impl(const ExecPol<ChunkSize>& p,
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
 
-#pragma for schedule(static, ChunkSize) reduction(combine : f_params)
+#pragma omp for schedule(static, ChunkSize) reduction(combine : f_params)
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
@@ -218,7 +218,7 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
 
-#pragma for schedule(dynamic) reduction(combine : f_params)
+#pragma omp for schedule(dynamic) reduction(combine : f_params)
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
