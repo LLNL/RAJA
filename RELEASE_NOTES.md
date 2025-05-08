@@ -19,18 +19,6 @@ Notable changes include:
 
   * Bug fixes/improvements:
 
-Version 2025.03.2 -- Release date 2025-05-07
-============================================
-
-This release contains bugfixes
-
-  * Build changes/improvements:
-    * Removed unused variables related to kernel naming
-    * Added missing host device annotations on missing param reducers
-    * CMAKE build option to allow for use of OpenMP 5.1 atomics for min/max operations.
-       The option is on by default.
-    * Full backwards compatibility of kernel naming and lambda capture style reducers.
-
 
 Version 2025.03.1 -- Release date 2025-04-17
 ============================================

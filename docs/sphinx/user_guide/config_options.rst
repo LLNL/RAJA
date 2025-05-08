@@ -112,13 +112,14 @@ generated when CMake runs. The ``config.hpp`` header file is included in other
 RAJA headers so all options propagate consistently through the 
 build process for all of the code. 
 
-The following tables describe which variables set RAJA options and 
-and their default settings. 
+.. note:: The following discussion indicates which options exist in RAJA 
+          only and those which are dependent options. **Dependent options 
+          appear in the discussion with parentheses around the 'RAJA_'
+          prefix to indicate that the option name without the prefix can be 
+          used and is often preferred.**
 
-.. note:: Items marked with a double asterisk (**) indicate variables that 
-          are supported directly in CMake and are also supported in RAJA as
-          CMake dependent options, for finer-grained configuration control.
-          The RAJA CMake dependent variable form adds the prefix ``RAJA_``.
+The following tables describe which variables set RAJA options and 
+and their default settings:
 
 Examples, tests, warnings, etc.
 --------------------------------
@@ -129,12 +130,12 @@ tutorial exercises, etc. are built when RAJA is compiled.
       =========================  =========================================
       Variable                   Default
       =========================  =========================================
-      **ENABLE_TESTS             On 
-      **ENABLE_EXAMPLES          On 
+      (RAJA_)ENABLE_TESTS        On 
+      (RAJA_)ENABLE_EXAMPLES     On 
       RAJA_ENABLE_EXERCISES      On 
-      **ENABLE_BENCHMARKS        Off
+      (RAJA_)ENABLE_BENCHMARKS   Off
       RAJA_ENABLE_REPRODUCERS    Off 
-      **ENABLE_COVERAGE          Off (supported for GNU compilers only)
+      (RAJA_)ENABLE_COVERAGE     Off (supported for GNU compilers only)
       =========================  =========================================
 
 Other configuration options are available to specialize how RAJA is compiled:
@@ -142,7 +143,7 @@ Other configuration options are available to specialize how RAJA is compiled:
       ==================================   =========================
       Variable                             Default
       ==================================   =========================
-      RAJA_ENABLE_WARNINGS_AS_ERRORS       Off
+      (RAJA_)ENABLE_WARNINGS_AS_ERRORS     Off
       RAJA_ENABLE_FORCEINLINE_RECURSIVE    On (Intel compilers only)
       RAJA_ALLOW_INCONSISTENT_OPTIONS      Off 
       ==================================   =========================
@@ -187,9 +188,10 @@ are as follows (names are descriptive of what they enable):
       ==========================   ============================================
       Variable                     Default
       ==========================   ============================================
-      **ENABLE_OPENMP              Off
-      **ENABLE_CUDA                Off
-      **ENABLE_HIP                 Off
+      (RAJA_)ENABLE_OPENMP         Off
+      (RAJA_)ENABLE_CUDA           Off
+      RAJA_ENABLE_CLANG_CUDA       Off
+      (RAJA_)ENABLE_HIP            Off
       RAJA_ENABLE_TARGET_OPENMP    Off (when on, ENABLE_OPENMP must also be on)
       RAJA_ENABLE_SYCL             Off
       ==========================   ============================================
@@ -199,7 +201,7 @@ Other programming model specific compilation options are also available:
       ======================================   =================================
       Variable                                 Default
       ======================================   =================================
-      **ENABLE_CLANG_CUDA                      Off (if on, ENABLE_CUDA 
+      (RAJA_)ENABLE_CLANG_CUDA                 Off (if on, (RAJA_)ENABLE_CUDA 
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
       RAJA_ENABLE_NV_TOOLS_EXT                 Off

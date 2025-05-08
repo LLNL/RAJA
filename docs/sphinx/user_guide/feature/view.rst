@@ -160,7 +160,6 @@ methods to generate layouts for different indexing patterns. We describe
 them here.
 
 .. _permuted-layout-label:
-
 Permuted Layout
 ^^^^^^^^^^^^^^^^
 
@@ -393,7 +392,6 @@ mapped to that corresponding entry of the index_list for the second dimension.
 ------------------
 Make Permuted View
 ------------------
-
 The ``RAJA::make_permuted_view`` function takes a pointer to data and extents in each dimension as arguments and returns a ``RAJA::View`` object.
 The function is specialized on a `meta-layout` template parameter, which specifies the stride ordering for the dimensions.
 
@@ -404,7 +402,6 @@ For example:
    :start-after: _Make_Permuted_View_right_start
    :end-before: _Make_Permuted_View_right_end
    :language: C++
-
 In the example above a ``RAJA::View`` is returned with right most indexing having unit stride.
 
 The second supported meta-layout is the ``RAJA::layout_left`` which will follow a Fortran style indexing

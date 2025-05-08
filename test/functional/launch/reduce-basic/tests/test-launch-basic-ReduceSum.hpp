@@ -58,7 +58,6 @@ void LaunchReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     RAJA::Name("launch ReduceSum"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
           sum  += working_array[idx];

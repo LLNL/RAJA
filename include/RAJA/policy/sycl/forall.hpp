@@ -148,10 +148,6 @@ forall_impl(resources::Sycl& sycl_res,
   return resources::EventProxy<resources::Sycl>(sycl_res);
 }
 
-//
-// Define if parampack is empty, avoids ambigous definitions.
-//
-
 template<typename Iterable,
          typename LoopBody,
          size_t BlockSize,
@@ -159,15 +155,12 @@ template<typename Iterable,
          typename ForallParam,
          typename std::enable_if<!std::is_trivially_copyable<LoopBody> {},
                                  bool>::type = true>
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<resources::Sycl>,
-    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
-    RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(resources::Sycl& sycl_res,
-            sycl_exec<BlockSize, Async>,
-            Iterable&& iter,
-            LoopBody&& loop_body,
-            ForallParam)
+RAJA_INLINE resources::EventProxy<resources::Sycl> forall_impl(
+    resources::Sycl& sycl_res,
+    sycl_exec<BlockSize, Async>,
+    Iterable&& iter,
+    LoopBody&& loop_body,
+    ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;

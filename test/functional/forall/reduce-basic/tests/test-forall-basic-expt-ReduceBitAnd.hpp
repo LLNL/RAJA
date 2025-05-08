@@ -46,8 +46,7 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   DATA_TYPE simpand(21);
 
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand), 
-			    RAJA::Name("expt Reduce Bit And"),
+    RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITAND & _simpand) {
       _simpand &= working_array[idx];
   });
