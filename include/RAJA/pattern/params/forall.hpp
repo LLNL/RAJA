@@ -15,6 +15,13 @@ namespace RAJA
 namespace expt
 {
 
+template<typename... Params>
+RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
+{
+  return camp::get_refs_to_elements_by_type_trait<is_instance_of_reducer>(
+      params);
+}
+
 template<typename ExecPol,
          typename ParamTuple,
          camp::idx_t... Seq,
