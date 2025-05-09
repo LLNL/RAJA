@@ -440,8 +440,8 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
 #else
-#define RAJA_UNROLL RAJA_PRAGMA(unroll)
-#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
+#define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
 #endif
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)
