@@ -49,7 +49,7 @@ template<camp::idx_t ArgumentId,
          typename... EnclosedStmts>
 struct TileTCount : public internal::Statement<ExecPolicy, EnclosedStmts...>
 {
-  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+  static_assert(std::is_base_of<RAJA::expt::detail::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "
                 "RAJA::Statement::Param< # >");
   using tile_policy_t = TilePolicy;
