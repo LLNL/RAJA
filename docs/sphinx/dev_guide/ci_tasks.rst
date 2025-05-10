@@ -190,8 +190,8 @@ Building the Compiler
 .. important:: Because Intel updates their compiler repo daily, it is possible
    that the head of the SYCL branch will fail to build. In the event that it
    does not build, try checking out an earlier commit. On the Intel/LLVM GitHub
-    page, one can see which of their commits builds by checking the status
-    badge next to each commit. Look for a commit that passes. 
+   page, one can see which of their commits builds by checking the status
+   badge next to each commit. Look for a commit that passes. 
 
 #. Load the module of the version of GCC headers that you want to use. For example, we typically use the system default, which on corona is gcc/10.3.1-magic::
 

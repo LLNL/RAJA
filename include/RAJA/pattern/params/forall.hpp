@@ -159,9 +159,10 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr parampack_combine(EXEC_POL const& pol,
-                                          ForallParamPack<Params...>& f_params,
-                                          Args&&... args)
+  RAJA_HOST_DEVICE static void constexpr parampack_combine(
+      EXEC_POL const& pol,
+      ForallParamPack<Params...>& f_params,
+      Args&&... args)
   {
     FP::parampack_combine(pol, typename FP::params_seq(), f_params,
                           std::forward<Args>(args)...);
@@ -283,14 +284,16 @@ std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
 template<std::size_t name_idx,
          typename... Args,
          std::enable_if_t<(name_idx >= sizeof...(Args))>* = nullptr>
-std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
+std::string get_kernel_name_string(
+    camp::tuple<Args...>&& RAJA_UNUSED_ARG(tuple_args))
 {
   return std::string();
 }
 
 template<typename... Args, std::size_t... Idx>
-std::string get_kernel_name_helper(camp::tuple<Args...>&& tuple_args,
-                                   std::index_sequence<Idx...> i_seq)
+std::string get_kernel_name_helper(
+    camp::tuple<Args...>&& tuple_args,
+    std::index_sequence<Idx...> RAJA_UNUSED_ARG(i_seq))
 {
   constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
   constexpr std::size_t name_idx    = std::min(
