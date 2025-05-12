@@ -17,6 +17,7 @@ TEST(message_handler, initialize) {
   });
 
   ASSERT_EQ(msg.test_any(), false);
+  ASSERT_EQ(test, 0);
 } 
 
 TEST(message_handler, initialize_with_resource) {
@@ -26,6 +27,7 @@ TEST(message_handler, initialize_with_resource) {
   });
 
   ASSERT_EQ(msg.test_any(), false);
+  ASSERT_EQ(test, 0);
 } 
 
 TEST(message_handler, clear) {
@@ -47,6 +49,7 @@ TEST(message_handler, try_post_message) {
   });
 
   ASSERT_EQ(msg.try_post_message(5), true);
+  ASSERT_EQ(test, 0);
 } 
 
 TEST(message_handler, try_post_message_overflow) {
@@ -54,8 +57,10 @@ TEST(message_handler, try_post_message_overflow) {
   RAJA::message_handler<void(int)> msg(1, [&](int val) {
     test = val;   
   });
+
   ASSERT_EQ(msg.try_post_message(5), true);
   ASSERT_EQ(msg.try_post_message(7), false);
+  ASSERT_EQ(test, 0);
 } 
 
 TEST(message_handler, wait_all) {
