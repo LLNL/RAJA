@@ -20,7 +20,7 @@
 
 #include <algorithm>
 #include <functional>
-#include "RAJA/pattern/atomic.hpp"
+#include "RAJA/policy/msg_queue.hpp"
 
 // TODO: should these use the RAJA headers instead?
 #include "camp/tuple.hpp"
@@ -28,17 +28,14 @@
 
 namespace RAJA
 {
+namespace detail 
+{	
   ///
   /// Queue for storing messages. Fills buffer up to capacity.
   /// Once at capacity, messages are discarded.
   ///
-  /// TODO: Currently, messages can be discarded. This is fine
-  /// if the use case is storing the first error message(s). However,
-  /// are there other use cases that need to read and write at 
-  /// the same time?
-  ///
   template <typename T>
-  class message_queue 
+  class queue 
   {
   public:
     using value_type     = T;
@@ -48,27 +45,11 @@ namespace RAJA
     using iterator       = pointer;
     using const_iterator = const_pointer;
 
-    message_queue() : m_capacity{0}, m_size{0}, m_buf{nullptr} 
+    queue() : m_capacity{0}, m_size{0}, m_buf{nullptr} 
     {}
-    message_queue(size_type capacity, pointer buf) : 
+    queue(size_type capacity, pointer buf) : 
       m_capacity{capacity}, m_size{0}, m_buf{buf} 
     {}
-
-    template <typename... Ts>
-    RAJA_HOST_DEVICE
-    bool try_emplace(Ts&&... args) {
-      // TODO: does this need to be moved to system atomics instead
-      // Currently, the general use case is just storing messages
-      // on device and performing callback on host (i.e. not storing
-      // messages on host and device at the same time).    
-      auto local_size = RAJA::atomicInc<auto_atomic>(&m_size);
-      if (m_buf != nullptr && local_size < m_capacity) {
-        m_buf[local_size] = T(std::forward<Ts>(args)...);
-	return true;
-      }
-
-      return false;
-    }
 
     constexpr pointer data() noexcept {
       return m_buf;
@@ -118,11 +99,12 @@ namespace RAJA
     {
       m_size = 0;
     }
-  private:
+
     size_type m_capacity;
     size_type m_size;
     pointer m_buf;
   };
+} // end of detail namespace 
 
   template <typename Callable>
   class message_handler;
@@ -141,7 +123,7 @@ namespace RAJA
   {
   public:
     using message       = camp::tuple<std::decay_t<Args>...>;  
-    using msg_queue     = message_queue<message>;
+    using msg_queue     = detail::queue<message>;
     using callback_type = std::function<R(Args...)>;
 
   public:
@@ -177,12 +159,11 @@ namespace RAJA
     message_handler(message_handler&&) = delete;
     message_handler& operator=(message_handler&&) = delete;
 
-    template <typename... Ts>
-    RAJA_HOST_DEVICE
-    bool try_post_message(Ts&&... args)
+    template <typename Policy>
+    RAJA::messages::queue<msg_queue, Policy> get_queue()
     {
-      return m_queue.try_emplace(camp::make_tuple(std::forward<Ts>(args)...)); 
-    }
+      return RAJA::messages::queue<msg_queue, Policy>{m_queue};
+    } 
 
     void clear()
     {
