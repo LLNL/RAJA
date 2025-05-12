@@ -36,10 +36,6 @@ public:
 
   using value_type     = typename Container::value_type;
   using size_type      = typename Container::size_type;
-  using pointer        = value_type*;
-  using const_pointer  = const value_type*;
-  using iterator       = pointer;
-  using const_iterator = const_pointer;
 
   queue(Container& container) : m_container{&container}
   {}
@@ -50,12 +46,12 @@ public:
 
   template <typename... Ts>
   RAJA_HOST_DEVICE
-  bool try_emplace(Ts&&... args) 
+  bool try_post_message(Ts&&... args) 
   {
     if (m_container != nullptr) { 
       auto local_size = RAJA::atomicInc<auto_atomic>(&(m_container->m_size));
-      if (m_container->m_buf != nullptr && local_size < m_container->m_capacity) {
-        m_container[local_size] = value_type(std::forward<Ts>(args)...);
+      if (m_container->m_data != nullptr && local_size < m_container->m_capacity) {
+        m_container->m_data[local_size] = value_type(std::forward<Ts>(args)...);
         return true;
       }
     }  

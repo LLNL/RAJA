@@ -20,6 +20,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
+
 #include "RAJA/policy/msg_queue.hpp"
 
 // TODO: should these use the RAJA headers instead?
@@ -28,83 +30,144 @@
 
 namespace RAJA
 {
-namespace detail 
-{	
   ///
-  /// Queue for storing messages. Fills buffer up to capacity.
-  /// Once at capacity, messages are discarded.
+  /// Owning wrapper for a message queue. This is used for ownership
+  /// of the message queue and is a move-only class. For getting a view-like
+  /// class, use the `get_queue` member function, which allows copying.
   ///
   template <typename T>
-  class queue 
+  class message_bus
   {
   public:
     using value_type     = T;
     using size_type      = unsigned long long;
     using pointer        = value_type*;
     using const_pointer  = const value_type*;
-    using iterator       = pointer;
-    using const_iterator = const_pointer;
+    using iterator       = value_type*;
+    using const_iterator = const value_type*;
+    using resource_type  = camp::resources::Resource; 
 
-    queue() : m_capacity{0}, m_size{0}, m_buf{nullptr} 
-    {}
-    queue(size_type capacity, pointer buf) : 
-      m_capacity{capacity}, m_size{0}, m_buf{buf} 
-    {}
-
-    constexpr pointer data() noexcept {
-      return m_buf;
-    }
-
-    constexpr const_pointer data() const noexcept {
-      return m_buf;
-    }
-
-    constexpr size_type capacity() const noexcept {
-      return m_capacity;
-    }
-
-    constexpr size_type size() const noexcept {
-      return std::min(m_capacity, m_size);
-    }
-
-    constexpr bool empty() const noexcept {
-      return size() == 0;
-    }
-
-    constexpr iterator begin() noexcept { 
-      return data(); 
-    }
-
-    constexpr const_iterator begin() const noexcept { 
-      return const_iterator(data()); 
-    }
-
-    constexpr const_iterator cbegin() const noexcept { 
-      return const_iterator(data()); 
-    }
-
-    constexpr iterator end() noexcept {
-      return data()+size(); 
-    }
-
-    constexpr const_iterator end() const noexcept { 
-      return const_iterator(data()+size()); 
-    }
-
-    constexpr const_iterator cend() const noexcept   { 
-      return const_iterator(data()+size()); 
-    }
-
-    void clear() noexcept
+  private:
+    // Internal classes
+    struct queue
     {
-      m_size = 0;
+      using value_type     = T;
+      using size_type      = unsigned long long;
+      using pointer        = value_type*;
+      using const_pointer  = const value_type*;
+      using iterator       = value_type*;
+      using const_iterator = const value_type*;
+
+      size_type m_size{0};
+      size_type m_capacity{0};
+      pointer m_data{nullptr};
+    };
+
+    struct resource_deleter
+    {
+    public:    
+      template <typename Resource>
+      resource_deleter(Resource res) : m_res{res}    
+      {}
+
+      void operator()(queue* ptr)
+      {
+        m_res.wait();     
+        m_res.deallocate(ptr, camp::resources::MemoryAccess::Pinned); 
+      } 
+    private:
+      resource_type m_res;
+    };
+
+  public:
+    message_bus() : m_res{camp::resources::Host()}, 
+      m_bus{m_res.allocate<queue>(1, camp::resources::MemoryAccess::Pinned),
+            resource_deleter{m_res}} 
+    {}
+
+    template <typename Resource>
+    message_bus(Resource res) : m_res{res}, 
+      m_bus{new (m_res.allocate<queue>(1, camp::resources::MemoryAccess::Pinned)) queue{},
+            resource_deleter{m_res}}
+    {}
+
+    template <typename Resource>
+    message_bus(const size_type num_messages, Resource res) : message_bus{res}
+    {
+      reserve(num_messages);
     }
 
-    size_type m_capacity;
-    size_type m_size;
-    pointer m_buf;
+    ~message_bus()
+    {
+      reset();
+    }
+
+    // Copy ctor/operator
+    message_bus(const message_bus&) = delete;
+    message_bus& operator=(const message_bus&) = delete;
+
+    // Move ctor/operator
+    message_bus(message_bus&&) = default;
+    message_bus& operator=(message_bus&&) = default;
+
+    void reserve(size_type num_messages)
+    {
+      reset();
+      m_bus->m_data = m_res.allocate<value_type>(num_messages,
+        camp::resources::MemoryAccess::Pinned);
+      m_bus->m_capacity = num_messages;
+    }
+  
+    void reset()
+    {
+      // Verify that queue is not in use
+      if (m_bus->m_data != nullptr) {
+        m_res.wait();
+        m_res.deallocate(m_bus->m_data,
+          camp::resources::MemoryAccess::Pinned);
+	m_bus->m_data = nullptr;
+      }
+      m_bus->m_capacity = 0;
+      m_bus->m_size     = 0;
+    }
+
+    bool has_pending_messages()
+    {
+      return get_num_pending_messages() != 0;
+    }
+
+    size_type get_num_pending_messages()
+    {
+      m_res.wait();
+      return std::min(m_bus->m_size, m_bus->m_capacity);
+    }
+
+    void clear_messages()
+    {
+      m_res.wait();
+      m_bus->m_size = 0; 
+    }
+
+    template <typename Policy>
+    RAJA::messages::queue<queue, Policy> get_queue() const noexcept
+    {
+      return RAJA::messages::queue<queue, Policy>{m_bus.get()};
+    } 
+
+    iterator begin() noexcept 
+    {
+      return m_bus->m_data;
+    }
+
+    iterator end() noexcept 
+    {
+      return m_bus->m_data + get_num_pending_messages();
+    }
+
+  private:
+    resource_type m_res; 
+    std::unique_ptr<queue, resource_deleter> m_bus;
   };
-} // end of detail namespace 
 
   template <typename Callable>
   class message_handler;
@@ -123,64 +186,53 @@ namespace detail
   {
   public:
     using message       = camp::tuple<std::decay_t<Args>...>;  
-    using msg_queue     = detail::queue<message>;
     using callback_type = std::function<R(Args...)>;
+    using msg_bus       = message_bus<message>;
 
   public:
     template <typename Callable>
     message_handler(const std::size_t num_messages, Callable c) 
-      : m_res{camp::resources::Host()}, 
-        m_queue{num_messages, m_res.allocate<message>(num_messages,
-            camp::resources::MemoryAccess::Pinned)}, 
+      : m_bus{num_messages, camp::resources::Host()}, 
         m_callback{c}
     {}  
 
     template <typename Resource, typename Callable>
     message_handler(const std::size_t num_messages, Resource res, 
                     Callable c) 
-      : m_res{res}, 
-        m_queue{num_messages, m_res.allocate<message>(num_messages,
-            camp::resources::MemoryAccess::Pinned)}, 
+      : m_bus{num_messages, res}, 
         m_callback{c}
     {}  
 
-    ~message_handler() 
-    {
-      m_res.wait();
-      m_res.deallocate(m_queue.data(), camp::resources::MemoryAccess::Pinned); 
-    }
+    ~message_handler() = default;
 
     // Doesn't support copying 
     message_handler(const message_handler&) = delete;
     message_handler& operator=(const message_handler&) = delete;
 
-    // TODO need proper move support 
     // Move ctor/operator
-    message_handler(message_handler&&) = delete;
-    message_handler& operator=(message_handler&&) = delete;
+    message_handler(message_handler&&) = default;
+    message_handler& operator=(message_handler&&) = default;
 
     template <typename Policy>
-    RAJA::messages::queue<msg_queue, Policy> get_queue()
+    auto get_queue()
     {
-      return RAJA::messages::queue<msg_queue, Policy>{m_queue};
+      return m_bus.template get_queue<Policy>();
     } 
 
     void clear()
     {
-      m_res.wait();   
-      m_queue.clear();
+      m_bus.clear_messages();
     }
 
     bool test_any()
     {
-      m_res.wait();   
-      return !m_queue.empty(); 
+      return m_bus.has_pending_messages(); 
     }
 
     void wait_all()
     {
       if (test_any()) {
-        for (const auto& msg: m_queue) {
+        for (const auto& msg: m_bus) {
           camp::apply(m_callback, msg);     
         }
         clear();
@@ -188,8 +240,7 @@ namespace detail
     }
 
   private:
-    camp::resources::Resource m_res;
-    msg_queue m_queue;
+    msg_bus m_bus;
     callback_type m_callback;
   }; 
 }
