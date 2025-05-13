@@ -443,15 +443,15 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #else // CUDA compiler active, with GCC host compiler
 #if defined(__NVCC_DIAG_PRAGMA_SUPPORT__) // CUDA >= 11.5
 #define RAJA_UNROLL \
-        _Pragma ("nv_diagnostic push") \
-        _Pragma ("nv_diag_suppress 1675") \
-        _Pragma ("GCC unroll 10000") \
-        _Pragma ("nv_diagnostic pop")
+        RAJA_PRAGMA (nv_diagnostic push) \
+        RAJA_PRAGMA (nv_diag_suppress 1675) \
+        RAJA_PRAGMA (GCC unroll 10000) \
+        RAJA_PRAGMA (nv_diagnostic pop)
 #define RAJA_UNROLL_COUNT(N) \
-        _Pragma ("nv_diagnostic push") \
-        _Pragma ("nv_diag_suppress 1675") \
-        _Pragma ("GCC unroll N") \
-        _Pragma ("nv_diagnostic pop")
+        RAJA_PRAGMA (nv_diagnostic push) \
+        RAJA_PRAGMA (nv_diag_suppress 1675) \
+        RAJA_PRAGMA (GCC unroll N) \
+        RAJA_PRAGMA (nv_diagnostic pop)
 #else // CUDA < 11.5
 // Choosing not to unroll CPU code to avoid warnings of
 // unrecognized pragmas from NVCC.
