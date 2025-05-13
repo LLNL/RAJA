@@ -20,7 +20,7 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
-Version 2025.03.2 -- Release date 2025-05-12
+Version 2025.03.2 -- Release date 2025-05-13
 ============================================
 
 This release contains bugfixes
