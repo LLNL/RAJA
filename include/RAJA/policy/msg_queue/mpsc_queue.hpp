@@ -44,9 +44,11 @@ public:
   {}
 
 
+  /// Posts message to queue. This is marked `const` to pass to lambda by
+  /// copy.
   template <typename... Ts>
   RAJA_HOST_DEVICE
-  bool try_post_message(Ts&&... args) 
+  bool try_post_message(Ts&&... args) const
   {
     if (m_container != nullptr) { 
       auto local_size = RAJA::atomicInc<auto_atomic>(&(m_container->m_size));

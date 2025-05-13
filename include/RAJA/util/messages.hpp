@@ -148,6 +148,7 @@ namespace RAJA
       m_bus->m_size = 0; 
     }
 
+    // TODO: look into why this is returning an address that requires XNACK
     template <typename Policy>
     RAJA::messages::queue<queue, Policy> get_queue() const noexcept
     {
