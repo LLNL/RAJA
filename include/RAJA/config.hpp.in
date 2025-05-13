@@ -447,13 +447,14 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
         _Pragma ("nv_diag_suppress 1675") \
         _Pragma ("GCC unroll 10000") \
         _Pragma ("nv_diagnostic pop")
-// CUDA < 11.5
 #define RAJA_UNROLL_COUNT(N) \
         _Pragma ("nv_diagnostic push") \
         _Pragma ("nv_diag_suppress 1675") \
         _Pragma ("GCC unroll N") \
         _Pragma ("nv_diagnostic pop")
-#else
+#else // CUDA < 11.5
+// Choosing not to unroll CPU code to avoid warnings of
+// unrecognized pragmas from NVCC.
 #define RAJA_UNROLL
 #define RAJA_UNROLL_COUNT(N)
 #endif // __NVCC_DIAG_PRAGMA_SUPPORT__
