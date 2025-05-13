@@ -30,6 +30,7 @@ This release contains bugfixes
        * Added missing host device annotations on missing param reducers
        * CMAKE build option to allow for use of OpenMP 5.1 atomics for min/max operations. The option is on by default.
        * Full backwards compatibility of kernel naming and lambda capture style reducers.
+       * Removed compiler warnings related to NVCC and loop unrolling
 
 
 Version 2025.03.1 -- Release date 2025-04-17
