@@ -9,6 +9,9 @@
 #include "camp/tuple.hpp"
 
 #include "RAJA/pattern/params/params_base.hpp"
+#include "RAJA/pattern/params/kernel_name.hpp"
+
+#include <utility>
 
 namespace RAJA
 {
@@ -249,9 +252,10 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr parampack_combine(EXEC_POL const& pol,
-                                          ForallParamPack<Params...>& f_params,
-                                          Args&&... args)
+  RAJA_HOST_DEVICE static void constexpr parampack_combine(
+      EXEC_POL const& pol,
+      ForallParamPack<Params...>& f_params,
+      Args&&... args)
   {
     FP::parampack_combine(pol, typename FP::params_seq(), f_params,
                           std::forward<Args>(args)...);
@@ -305,7 +309,7 @@ constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple)
   static_assert(detail::check_types_derive_base<detail::ForallParamBase,
                                                 camp::decay<Ts>...>::value,
                 "Forall optional arguments do not derive ForallParamBase. "
-                "Please see Reducer, ReducerLoc and KernelName for examples.");
+                "Please see Reducer, ReducerLoc and Name for examples.");
   return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
 }
 
@@ -356,6 +360,52 @@ constexpr auto&& get_lambda(Args&&... args)
 
 //===========================================================================
 
+//===========================================================================
+//
+//
+// kernel_name can be anywhere in the paramater pack so we must search for it
+//
+//===========================================================================
+template<std::size_t name_idx,
+         typename... Args,
+         std::enable_if_t<(name_idx < sizeof...(Args))>* = nullptr>
+std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
+{
+  return std::string(camp::get<name_idx>(std::move(tuple_args)).name);
+}
+
+template<std::size_t name_idx,
+         typename... Args,
+         std::enable_if_t<(name_idx >= sizeof...(Args))>* = nullptr>
+std::string get_kernel_name_string(
+    camp::tuple<Args...>&& RAJA_UNUSED_ARG(tuple_args))
+{
+  return std::string();
+}
+
+template<typename... Args, std::size_t... Idx>
+std::string get_kernel_name_helper(
+    camp::tuple<Args...>&& tuple_args,
+    std::index_sequence<Idx...> RAJA_UNUSED_ARG(i_seq))
+{
+  constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
+  constexpr std::size_t name_idx    = std::min(
+         {default_idx, (std::is_same<std::decay_t<Args>, RAJA::detail::Name>::value
+                            ? Idx
+                            : default_idx)...});
+
+  return get_kernel_name_string<name_idx>(std::move(tuple_args));
+}
+
+template<typename... Args>
+std::string get_kernel_name(Args&&... args)
+{
+  return get_kernel_name_helper(
+      camp::forward_as_tuple(std::forward<Args>(args)...),
+      std::make_index_sequence<sizeof...(Args)> {});
+}
+
+//===========================================================================
 
 //===========================================================================
 //

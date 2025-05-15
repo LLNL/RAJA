@@ -105,7 +105,7 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
     Resource resource,
     Bodies&&... bodies)
 {
-  util::PluginContext context {util::make_context<PolicyType>()};
+  util::PluginContext context {util::make_context<PolicyType>(std::string())};
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with

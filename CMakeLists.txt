@@ -16,7 +16,7 @@ include(CMakeDependentOption)
 # Set version number
 set(RAJA_VERSION_MAJOR 2025)
 set(RAJA_VERSION_MINOR 03)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -157,8 +157,19 @@ endif ()
 
 set (raja_depends)
 
+if (RAJA_ENABLE_CALIPER)
+set (raja_depends
+    ${raja_depends}
+    caliper)
+  find_package(caliper REQUIRED
+    NO_DEFAULT_PATH
+    PATHS ${caliper_DIR}
+  )
+endif()
+
 if (RAJA_ENABLE_OPENMP)
   set (raja_depends
+    ${raja_depends}
     openmp)
 endif()
 

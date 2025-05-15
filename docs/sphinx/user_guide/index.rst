@@ -33,5 +33,6 @@ to use RAJA in an application can be found in :ref:`app-considerations-label`.
    config_options
    features
    cook_book
+   profiling_with_caliper
    app_considerations
    tutorial
