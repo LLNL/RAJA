@@ -1,5 +1,21 @@
 #include "RAJA/RAJA.hpp"
 
+/*
+ *  Kernel Reduction Example
+ *
+ *  This example illustrates use of the RAJA::expt::Reducer with the RAJA::kernel_param
+ *  interface.
+ *
+ *  RAJA features shown:
+ *    -  RAJA::kernel_param with RAJA::expt::Reducer in the param tuple
+ *    -  Using different reduction types with kernel
+ *    -  Examples of different backends with reductions
+ *
+ *  One upside of this approach compared to statement::Reduce is it allows users to
+ *  provide simpler execution policies to RAJA::kernel_param
+ */
+
+
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
   using namespace RAJA;
@@ -290,13 +306,6 @@ using EXEC_POL_OPENMP =
       >
     >
   >;
-//using EXEC_POL_OPENMP =
-//  RAJA::KernelPolicy<
-//    RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
-//      RAJA::ArgList<1,0>,
-//      RAJA::statement::Lambda<0>
-//    >
-//  >;
 
 int openmp_min = std::numeric_limits<int>::max();
 int openmp_max = std::numeric_limits<int>::min();

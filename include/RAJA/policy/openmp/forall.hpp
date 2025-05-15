@@ -33,6 +33,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
+#include "RAJA/pattern/kernel/Lambda.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
@@ -61,7 +62,8 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
-    concepts::negate<RAJA::internal::IsInstanceOfForWrapper<camp::decay<Func>>>,
+    // false,
+    // concepts::negate<RAJA::internal::IsInstanceOfForWrapper<camp::decay<Func>>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Host host_res,
@@ -87,6 +89,7 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
+    RAJA::internal::LoopDataHasReducers<camp::decay<Data>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(
@@ -99,8 +102,7 @@ forall_impl(
 {
   using EXEC_POL = camp::decay<InnerPolicy>;
 
-  auto reducers_tuple =
-      RAJA::expt::filter_reducers_const(loop_body.data.param_tuple);
+  auto reducers_tuple = loop_body.data.param_tuple;
   RAJA::expt::init_params<EXEC_POL>(reducers_tuple);
 
   using EXEC_POL = camp::decay<InnerPolicy>;
@@ -116,8 +118,7 @@ forall_impl(
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       body.get_priv()(begin_it[i]);
-      reducers_tuple =
-          RAJA::expt::filter_reducers_const(body.get_priv().data.param_tuple);
+      reducers_tuple = body.get_priv().data.param_tuple;
     }
   }
   RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);

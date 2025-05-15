@@ -79,7 +79,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
 
     using RAJA::internal::thread_privatize;
-    auto reducers_tuple = RAJA::expt::filter_reducers_const(data.param_tuple);
+    auto reducers_tuple = data.param_tuple;
     RAJA::expt::init_params<omp_parallel_collapse_exec>(reducers_tuple);
     auto privatizer = thread_privatize(data);
     using EXEC_POL  = omp_parallel_collapse_exec;
@@ -98,8 +98,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
         private_data.template assign_offset<Arg1>(i1);
         execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(
             private_data);
-        reducers_tuple =
-            RAJA::expt::filter_reducers_const(private_data.param_tuple);
+        reducers_tuple = private_data.param_tuple;
       }
     }
     RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
@@ -169,7 +168,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     using NewTypes1 = setSegmentTypeFromData<NewTypes0, Arg1, Data>;
     using NewTypes2 = setSegmentTypeFromData<NewTypes1, Arg2, Data>;
 
-    auto reducers_tuple = RAJA::expt::filter_reducers(data.param_tuple);
+    auto reducers_tuple = data.param_tuple;
     RAJA::expt::init_params<omp_parallel_collapse_exec>(reducers_tuple);
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
@@ -190,8 +189,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
           private_data.template assign_offset<Arg2>(i2);
           execute_statement_list<camp::list<EnclosedStmts...>, NewTypes2>(
               private_data);
-          reducers_tuple =
-              RAJA::expt::filter_reducers_const(private_data.param_tuple);
+          reducers_tuple = private_data.param_tuple;
         }
       }
     }
