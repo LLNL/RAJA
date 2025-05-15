@@ -20,6 +20,38 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2025.03.2 -- Release date 2025-05-14
+============================================
+
+This release contains bugfixes
+
+     * Build changes/improvements:
+       * Removed unused variables related to kernel naming
+       * Added missing host device annotations on missing param reducers
+       * CMAKE build option to allow for use of OpenMP 5.1 atomics for min/max operations. The option is on by default.
+       * Full backwards compatibility of kernel naming and lambda capture style reducers.
+       * Removed compiler warnings related to NVCC and loop unrolling
+
+
+Version 2025.03.1 -- Release date 2025-04-17
+============================================
+
+This release contains one new feature and a bugfix.
+
+Notable changes include:
+
+  * New features / API changes:
+    * Added initial support for Caliper to gather profiling data for kernels.
+      See user docs and examples for configuration instructions and examples
+      of usage.
+
+  * Build changes/improvements:
+    * None
+
+  * Bug fixes/improvements:
+    * Fix header file include issue when vectorization enabled in a HIP build.
+
+
 Version 2025.03.0 -- Release date 2025-03-17
 ============================================
 
