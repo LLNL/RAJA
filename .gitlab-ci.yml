@@ -34,8 +34,11 @@ variables:
 # Use the service user workspace. Solves permission issues, stores everything
 # at the same location whoever triggers a pipeline.
 #  CUSTOM_CI_BUILDS_DIR: "/usr/workspace/rajasa/gitlab-runner"
-# Tells Gitlab to recursively update the submodules when cloning the project.
-  GIT_SUBMODULE_STRATEGY: recursive
+# Submodules: We don't need to fetch dependencies handled by Spack.
+  GIT_SUBMODULE_STRATEGY: normal
+  GIT_SUBMODULE_DEPTH: 1
+  GIT_SUBMODULE_UPDATE_FLAGS: --jobs 3
+  GIT_SUBMODULE_PATHS: tpl/desul scripts/radiuss-spack-configs scripts/uberenv
 
 ##### PROJECT VARIABLES
   MP_BRANCH: "develop"

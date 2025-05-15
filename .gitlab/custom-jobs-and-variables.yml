@@ -65,7 +65,6 @@ variables:
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
 # CI behavior.
-# See Umpire for an example (export junit test reports).
 .custom_job:
   artifacts:
     reports:
