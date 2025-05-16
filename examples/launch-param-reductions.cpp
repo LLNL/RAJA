@@ -318,11 +318,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
           _cuda_min.min(d_a[i]);
           _cuda_max.max(d_a[i]);
 
-          _cuda_minloc.minloc(a[i], i);
-          _cuda_maxloc.maxloc(a[i], i);
+          _cuda_minloc.minloc(d_a[i], i);
+          _cuda_maxloc.maxloc(d_a[i], i);
 
-          _cuda_minloc2.minloc(a[i], i);
-          _cuda_maxloc2.maxloc(a[i], i);
+          _cuda_minloc2.minloc(d_a[i], i);
+          _cuda_maxloc2.maxloc(d_a[i], i);
 
         }
       );

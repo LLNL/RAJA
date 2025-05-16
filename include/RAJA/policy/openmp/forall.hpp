@@ -33,6 +33,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
+#include "RAJA/pattern/kernel/Lambda.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
@@ -61,6 +62,8 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
+    // false,
+    // concepts::negate<RAJA::internal::IsInstanceOfForWrapper<camp::decay<Func>>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Host host_res,
@@ -74,6 +77,52 @@ forall_impl(resources::Host host_res,
     auto body = thread_privatize(loop_body);
     forall_impl(host_res, InnerPolicy {}, iter, body.get_priv(), f_params);
   });
+  return resources::EventProxy<resources::Host>(host_res);
+}
+
+template<typename Iterable,
+         camp::idx_t ArgumentId,
+         typename Data,
+         typename Types,
+         typename... EnclosedStmts,
+         typename InnerPolicy,
+         typename ForallParam>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    RAJA::internal::LoopDataHasReducers<camp::decay<Data>>,
+    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+    RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(
+    resources::Host host_res,
+    const omp_parallel_exec<InnerPolicy>&,
+    Iterable&& iter,
+    RAJA::internal::ForWrapper<ArgumentId, Data, Types, EnclosedStmts...>&
+        loop_body,
+    ForallParam)
+{
+  using EXEC_POL = camp::decay<InnerPolicy>;
+
+  auto reducers_tuple = loop_body.data.param_tuple;
+  RAJA::expt::init_params<EXEC_POL>(reducers_tuple);
+
+  using EXEC_POL = camp::decay<InnerPolicy>;
+  using RAJA::internal::thread_privatize;
+  RAJA_UNUSED_VAR(EXEC_POL {});
+  RAJA_EXTRACT_BED_IT(iter);
+  RAJA_OMP_DECLARE_TUPLE_REDUCTION_COMBINE;
+
+#pragma omp parallel
+  {
+    auto body = thread_privatize(loop_body);
+#pragma omp for reduction(combine : reducers_tuple)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      body.get_priv()(begin_it[i]);
+      reducers_tuple = body.get_priv().data.param_tuple;
+    }
+  }
+  RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
+
   return resources::EventProxy<resources::Host>(host_res);
 }
 
