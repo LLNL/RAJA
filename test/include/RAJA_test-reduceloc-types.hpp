@@ -19,6 +19,7 @@ struct Index2D {
    RAJA::Index_type idx, idy;
    constexpr Index2D() : idx(-1), idy(-1) {}
    constexpr Index2D(RAJA::Index_type idx, RAJA::Index_type idy) : idx(idx), idy(idy) {}
+   void operator=(RAJA::Index_type rhs) { idx = rhs; idx = rhs; }
 };
 
 #endif // __RAJA_test_reduceloc_types_HPP__
