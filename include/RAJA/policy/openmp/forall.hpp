@@ -62,8 +62,6 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
-    // false,
-    // concepts::negate<RAJA::internal::IsInstanceOfForWrapper<camp::decay<Func>>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Host host_res,

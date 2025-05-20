@@ -673,9 +673,7 @@ struct StatementExecutor<
         // of the launch_dims and potential changes to shmem here that is
         // currently an unresolved issue.
         //
-        auto reducer_tuple = RAJA::expt::filter_reducers(data.param_tuple);
         RAJA::expt::init_params<EXEC_POL>(data.param_tuple, launch_info);
-
         auto cuda_data = RAJA::cuda::make_launch_body(
             func, launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res,
             data);

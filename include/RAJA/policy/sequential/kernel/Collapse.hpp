@@ -72,7 +72,6 @@ struct StatementExecutor<
     RAJA::expt::init_params<seq_exec>(data.param_tuple);
     auto len0 = segment_length<Arg0>(data);
 
-
     for (auto i0 = 0; i0 < len0; ++i0)
     {
       data.template assign_offset<Arg0>(i0);

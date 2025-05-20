@@ -193,7 +193,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
         }
       }
     }
-#pragma omp barrier
+
     RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
   }
 

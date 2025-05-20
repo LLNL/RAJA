@@ -49,7 +49,7 @@ struct ValLoc
   RAJA_HOST_DEVICE void setLoc(IndexType inindex) { loc = inindex; }
 
   value_type val;
-  index_type loc;
+  index_type loc = -1;
 };
 
 template<typename T, template<typename, typename, typename> class Op>
@@ -289,7 +289,7 @@ struct GetArgType
 template<typename ParamType>
 struct GetArgType<
     ParamType,
-    typename std::enable_if_t<std::is_base_of<ParamBase, ParamType>::value>>
+    std::enable_if_t<std::is_base_of<ParamBase, ParamType>::value>>
 {
   using type = typename ParamType::ARG_T;
 };
@@ -301,19 +301,18 @@ struct ParamToArgHelper<camp::tuple<Params...>>
 };
 
 template<typename T>
-RAJA_HOST_DEVICE typename std::enable_if_t<
+RAJA_HOST_DEVICE std::enable_if_t<
     std::is_base_of<ParamBase, T>::value,
-    typename std::add_lvalue_reference<typename T::ARG_T>::type>
+    std::add_lvalue_reference_t<typename T::ARG_T>>
 get_lambda_arg(T& Param)
 {
   return *Param.get_lambda_arg();
 }
 
 template<typename T>
-RAJA_HOST_DEVICE
-    typename std::enable_if_t<!std::is_base_of<ParamBase, T>::value,
-                              typename std::add_lvalue_reference<T>::type>
-    get_lambda_arg(T& Param)
+RAJA_HOST_DEVICE std::enable_if_t<!std::is_base_of<ParamBase, T>::value,
+                                  std::add_lvalue_reference_t<T>>
+get_lambda_arg(T& Param)
 {
   return Param;
 }
