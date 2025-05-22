@@ -256,11 +256,11 @@ struct is_instance_of_reducer<detail::Reducer<Op, T, VOp>> : std::true_type
 {};
 
 template<typename T>
-struct TupleContainsReducers : std::false_type
+struct tuple_contains_reducers : std::false_type
 {};
 
 template<typename... Params>
-struct TupleContainsReducers<camp::tuple<Params...>>
+struct tuple_contains_reducers<camp::tuple<Params...>>
     : std::integral_constant<
           bool,
           camp::concepts::any_of<is_instance_of_reducer<Params>...>::value>

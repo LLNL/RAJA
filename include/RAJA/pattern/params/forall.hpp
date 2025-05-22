@@ -18,13 +18,6 @@ namespace RAJA
 namespace expt
 {
 
-template<typename EXEC_POL, typename T>
-camp::concepts::enable_if<
-    concepts::negate<is_instance_of_reducer<camp::decay<T>>>,
-    concepts::negate<std::is_same<T, RAJA::detail::Name>>>
-param_combine(EXEC_POL const&, T&, const T&)
-{}
-
 template<typename... Params>
 RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
 {
@@ -82,6 +75,13 @@ RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
 {
   CAMP_EXPAND(param_combine(ExecPol {}, camp::get<Seq>(params_tuple)));
 }
+
+template<typename EXEC_POL, typename T>
+camp::concepts::enable_if<
+    concepts::negate<is_instance_of_reducer<camp::decay<T>>>,
+    concepts::negate<std::is_same<T, RAJA::detail::Name>>>
+param_combine(EXEC_POL const&, T&, const T&)
+{}
 
 template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
 RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
