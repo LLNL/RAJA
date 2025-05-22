@@ -37,7 +37,7 @@ using SequentialKernelLocExecPols =
       RAJA::statement::For<1, RAJA::seq_exec,  // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
         >
       >
     >
@@ -59,7 +59,7 @@ using OpenMPKernelLocExecPols =
       RAJA::statement::For<1, RAJA::seq_exec,  // row
         RAJA::statement::For<0, RAJA::omp_parallel_for_exec,  // col
           RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
         >
       >
     >,
@@ -68,7 +68,7 @@ using OpenMPKernelLocExecPols =
       RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
         RAJA::statement::For<0, RAJA::seq_exec,  // col
           RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
         >
       >
     >,
@@ -77,7 +77,7 @@ using OpenMPKernelLocExecPols =
       RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
         RAJA::ArgList<1,0>,
           RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
       >
     >
 
@@ -99,7 +99,7 @@ using OpenMPTargetKernelLocExecPols =
       RAJA::statement::For<1, RAJA::seq_exec,  // row
         RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<16>,  // col
           RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
         >
       >
     >,
@@ -109,7 +109,7 @@ using OpenMPTargetKernelLocExecPols =
       RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
         RAJA::ArgList<1,0>,
           RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+          RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
       >
     >
 
@@ -133,7 +133,7 @@ using CudaKernelLocExecPols =
         RAJA::statement::For<1, RAJA::cuda_thread_x_loop,  // row
           RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
             RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
           >
         >
       >
@@ -146,7 +146,7 @@ using CudaKernelLocExecPols =
         RAJA::statement::For<1, RAJA::seq_exec,  // row
           RAJA::statement::For<0, RAJA::cuda_thread_x_loop,  // col
             RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
           >
         >
       >
@@ -157,7 +157,7 @@ using CudaKernelLocExecPols =
         RAJA::statement::For<1, RAJA::seq_exec,  // row
           RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
             RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
           >
         >
       >
@@ -182,7 +182,7 @@ using HipKernelLocExecPols =
         RAJA::statement::For<1, RAJA::hip_thread_x_loop,  // row
           RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
             RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
           >
         >
       >
@@ -195,7 +195,7 @@ using HipKernelLocExecPols =
         RAJA::statement::For<1, RAJA::seq_exec,  // row
           RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // col
             RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
           >
         >
       >
@@ -206,7 +206,7 @@ using HipKernelLocExecPols =
         RAJA::statement::For<1, RAJA::seq_exec,  // row
           RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
             RAJA::statement::Lambda<0, RAJA::Segs<0,1>, RAJA::Params<0>, RAJA::Params<2>, RAJA::Params<4>>,
-            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>>
+            RAJA::statement::Lambda<1, RAJA::Segs<0,1>, RAJA::Params<1>, RAJA::Params<3>, RAJA::Params<5>, RAJA::Params<6>>
           >
         >
       >

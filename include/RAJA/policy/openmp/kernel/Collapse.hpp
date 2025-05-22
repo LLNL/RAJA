@@ -63,7 +63,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
   template<typename Data>
   static RAJA_INLINE concepts::enable_if<
-      RAJA::internal::LoopDataHasReducers<camp::decay<Data>>>
+      RAJA::internal::loop_data_has_reducers<camp::decay<Data>>>
   exec(Data&& data)
   {
     const auto l0 = segment_length<Arg0>(data);
@@ -105,8 +105,8 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   }
 
   template<typename Data>
-  static RAJA_INLINE concepts::enable_if<
-      concepts::negate<RAJA::internal::LoopDataHasReducers<camp::decay<Data>>>>
+  static RAJA_INLINE concepts::enable_if<concepts::negate<
+      RAJA::internal::loop_data_has_reducers<camp::decay<Data>>>>
   exec(Data&& data)
   {
     const auto l0 = segment_length<Arg0>(data);
@@ -153,7 +153,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
   template<typename Data>
   static RAJA_INLINE concepts::enable_if<
-      RAJA::internal::LoopDataHasReducers<camp::decay<Data>>>
+      RAJA::internal::loop_data_has_reducers<camp::decay<Data>>>
   exec(Data&& data)
   {
     const auto l0 = segment_length<Arg0>(data);
@@ -198,8 +198,8 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
   }
 
   template<typename Data>
-  static RAJA_INLINE concepts::enable_if<
-      concepts::negate<RAJA::internal::LoopDataHasReducers<camp::decay<Data>>>>
+  static RAJA_INLINE concepts::enable_if<concepts::negate<
+      RAJA::internal::loop_data_has_reducers<camp::decay<Data>>>>
   exec(Data&& data)
   {
     const auto l0 = segment_length<Arg0>(data);

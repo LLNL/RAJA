@@ -80,18 +80,6 @@ struct ForWrapper : public GenericWrapper<Data, Types, EnclosedStmts...>
   }
 };
 
-template<typename T>
-struct IsInstanceOfForWrapper : std::false_type
-{};
-
-template<camp::idx_t ArgumentId,
-         typename Data,
-         typename Types,
-         typename... EnclosedStmts>
-struct IsInstanceOfForWrapper<
-    ForWrapper<ArgumentId, Data, Types, EnclosedStmts...>> : std::true_type
-{};
-
 /*!
  * A generic RAJA::kernel forall_impl executor for statement::For
  *

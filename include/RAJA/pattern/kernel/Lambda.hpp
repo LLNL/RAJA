@@ -60,14 +60,14 @@ struct LambdaArg
 };
 
 template<typename T>
-struct LoopDataHasReducers : std::false_type
+struct loop_data_has_reducers : std::false_type
 {};
 
 template<typename SegmentTuple,
          typename ParamTuple,
          typename Resource,
          typename... Bodies>
-struct LoopDataHasReducers<
+struct loop_data_has_reducers<
     LoopData<SegmentTuple, ParamTuple, Resource, Bodies...>>
     : RAJA::expt::TupleContainsReducers<ParamTuple>
 {};

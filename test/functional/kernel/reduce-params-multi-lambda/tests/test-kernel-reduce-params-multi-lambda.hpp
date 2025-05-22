@@ -95,7 +95,8 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min_1),
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min_2),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&max_1),
-      RAJA::expt::Reduce<RAJA::operators::maximum>(&max_2)
+      RAJA::expt::Reduce<RAJA::operators::maximum>(&max_2),
+      double {0.0}
     ),
       [=] RAJA_HOST_DEVICE (int c,
                             int r,
@@ -110,7 +111,8 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
                             int r,
                             VALOP_DATA_TYPE_SUM &_sum,
                             VALOP_DATA_TYPE_MIN &_min,
-                            VALOP_DATA_TYPE_MAX &_max) {
+                            VALOP_DATA_TYPE_MAX &_max,
+                            double) {
         _sum += workarr2D[r][c];
         _min.min(workarr2D[r][c]);
         _max.max(workarr2D[r][c]);

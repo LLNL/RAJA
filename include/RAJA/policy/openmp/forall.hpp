@@ -87,7 +87,7 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
-    RAJA::internal::LoopDataHasReducers<camp::decay<Data>>,
+    RAJA::internal::loop_data_has_reducers<camp::decay<Data>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(

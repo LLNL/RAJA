@@ -2,6 +2,7 @@
 #define NEW_REDUCE_OMP_REDUCE_HPP
 
 #include "RAJA/pattern/params/reducer.hpp"
+#include "RAJA/pattern/params/kernel_name.hpp"
 
 namespace RAJA
 {
