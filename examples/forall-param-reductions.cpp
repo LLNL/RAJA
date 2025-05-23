@@ -12,7 +12,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Forall Reduction Example
+ *  Forall Param Reduction Example
  *
  *  This example illustrates use of the RAJA reduction types: min, max,
  *  sum, min-loc, and max-loc.

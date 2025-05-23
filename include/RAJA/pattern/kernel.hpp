@@ -146,7 +146,7 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   // complete resolution here.  This simply calls combineTarget() a second time
   // for non-sequential backends (eg HIP, CUDA), which does not represent a
   // significant overhead.
-  RAJA::expt::resolve_params<seq_exec>(loop_data.param_tuple);
+  RAJA::expt::detail::resolve_params<seq_exec>(loop_data.param_tuple);
   util::callPostLaunchPlugins(context);
 
   return resources::EventProxy<Resource>(resource);

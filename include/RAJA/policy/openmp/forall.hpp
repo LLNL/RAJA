@@ -101,7 +101,7 @@ forall_impl(
   using EXEC_POL = camp::decay<InnerPolicy>;
 
   auto reducers_tuple = loop_body.data.param_tuple;
-  RAJA::expt::init_params<EXEC_POL>(reducers_tuple);
+  RAJA::expt::detail::init_params<EXEC_POL>(reducers_tuple);
 
   using EXEC_POL = camp::decay<InnerPolicy>;
   using RAJA::internal::thread_privatize;
@@ -116,10 +116,17 @@ forall_impl(
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       body.get_priv()(begin_it[i]);
+      // Note: this is inefficient. However, the structure of loop data
+      // requires us to perform this manual copy. This is because body performs
+      // the local reduction on its own copy of the reducers, not the OpenMP
+      // managed copy of the reducers_tuple.  Alternatively, we could have
+      // OpenMP use LoopData as the combination object, but this would require
+      // additional changes to make LoopData trivially constructable (a
+      // requirement for OpenMP combinations.)
       reducers_tuple = body.get_priv().data.param_tuple;
     }
   }
-  RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
+  RAJA::expt::detail::resolve_params<EXEC_POL>(reducers_tuple);
 
   return resources::EventProxy<resources::Host>(host_res);
 }

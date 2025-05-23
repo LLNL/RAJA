@@ -14,10 +14,7 @@ struct ValLoc
 
   ValLoc() = default;
 
-  RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v)
-  {
-    loc = -1;
-  }
+  RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v), loc(-1) {}
 
   RAJA_HOST_DEVICE constexpr ValLoc(value_type v, index_type l) : val(v), loc(l)
   {}

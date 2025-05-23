@@ -80,7 +80,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
 
     using RAJA::internal::thread_privatize;
     auto reducers_tuple = data.param_tuple;
-    RAJA::expt::init_params<omp_parallel_collapse_exec>(reducers_tuple);
+    RAJA::expt::detail::init_params<omp_parallel_collapse_exec>(reducers_tuple);
     auto privatizer = thread_privatize(data);
     using EXEC_POL  = omp_parallel_collapse_exec;
     RAJA_UNUSED_VAR(EXEC_POL {});
@@ -98,10 +98,13 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
         private_data.template assign_offset<Arg1>(i1);
         execute_statement_list<camp::list<EnclosedStmts...>, NewTypes1>(
             private_data);
+        // Note: we don't want to do this copy, but it is necessary for now
+        // due to limitations of the LoopData interface in OpenMP combine
+        // calls. See note in policy/openmp/forall.hpp for more detail.
         reducers_tuple = private_data.param_tuple;
       }
     }
-    RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
+    RAJA::expt::detail::resolve_params<EXEC_POL>(reducers_tuple);
   }
 
   template<typename Data>
@@ -169,7 +172,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
     using NewTypes2 = setSegmentTypeFromData<NewTypes1, Arg2, Data>;
 
     auto reducers_tuple = data.param_tuple;
-    RAJA::expt::init_params<omp_parallel_collapse_exec>(reducers_tuple);
+    RAJA::expt::detail::init_params<omp_parallel_collapse_exec>(reducers_tuple);
     using RAJA::internal::thread_privatize;
     auto privatizer = thread_privatize(data);
     using EXEC_POL  = omp_parallel_collapse_exec;
@@ -194,7 +197,7 @@ struct StatementExecutor<statement::Collapse<omp_parallel_collapse_exec,
       }
     }
 
-    RAJA::expt::resolve_params<EXEC_POL>(reducers_tuple);
+    RAJA::expt::detail::resolve_params<EXEC_POL>(reducers_tuple);
   }
 
   template<typename Data>

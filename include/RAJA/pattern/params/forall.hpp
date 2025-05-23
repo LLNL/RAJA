@@ -17,6 +17,8 @@ namespace RAJA
 {
 namespace expt
 {
+namespace detail
+{
 
 template<typename... Params>
 RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
@@ -112,6 +114,7 @@ RAJA_HOST_DEVICE void combine_params(
       params_tuple, params_tuple_in);
 }
 
+}  // namespace detail
 //
 //
 // Forall Parameter Packing type

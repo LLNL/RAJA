@@ -149,7 +149,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept
 #define RAJA_OMP_DECLARE_TUPLE_REDUCTION_COMBINE                               \
   _Pragma(" omp declare reduction( combine \
     : typename std::remove_reference<decltype(reducers_tuple)>::type  \
-    : RAJA::expt::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
+    : RAJA::expt::detail::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
 #endif
 
 

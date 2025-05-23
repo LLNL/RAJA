@@ -219,7 +219,7 @@ __global__ void CudaKernelLauncher(Data data)
 
   Exec::exec(private_data, true);
 
-  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
+  RAJA::expt::detail::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
       private_data.param_tuple);
 }
 
@@ -241,7 +241,7 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   // execute the the object
   Exec::exec(private_data, true);
 
-  RAJA::expt::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
+  RAJA::expt::detail::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
       private_data.param_tuple);
 }
 
@@ -656,7 +656,9 @@ struct StatementExecutor<
 
       {
         auto func = launch_t::get_func();
-
+        // The exact policy here does not affect the reduction operation, but
+        // we do need to accurately pass a resource and launch dimensions to
+        // perform initialization and resolution of reduction parameters.
         using EXEC_POL =
             ::RAJA::policy::cuda::cuda_exec_explicit<LaunchConfig, void, void,
                                                      0, true>;
@@ -666,6 +668,9 @@ struct StatementExecutor<
         launch_info.blockDim     = launch_dims.dims.threads;
         launch_info.dynamic_smem = &shmem;
         launch_info.res          = res;
+
+        RAJA::expt::detail::init_params<EXEC_POL>(data.param_tuple,
+                                                  launch_info);
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
@@ -673,7 +678,6 @@ struct StatementExecutor<
         // of the launch_dims and potential changes to shmem here that is
         // currently an unresolved issue.
         //
-        RAJA::expt::init_params<EXEC_POL>(data.param_tuple, launch_info);
         auto cuda_data = RAJA::cuda::make_launch_body(
             func, launch_dims.dims.blocks, launch_dims.dims.threads, shmem, res,
             data);
@@ -685,7 +689,8 @@ struct StatementExecutor<
         RAJA::cuda::launch(func, launch_dims.dims.blocks,
                            launch_dims.dims.threads, args, shmem, res,
                            launch_t::async);
-        RAJA::expt::resolve_params<EXEC_POL>(data.param_tuple, launch_info);
+        RAJA::expt::detail::resolve_params<EXEC_POL>(data.param_tuple,
+                                                     launch_info);
       }
     }
   }
