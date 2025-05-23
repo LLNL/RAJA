@@ -14,7 +14,7 @@ struct ValLoc
 
   ValLoc() = default;
 
-  RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v), loc(-1) {}
+  RAJA_HOST_DEVICE constexpr explicit ValLoc(value_type v) : val(v) {}
 
   RAJA_HOST_DEVICE constexpr ValLoc(value_type v, index_type l) : val(v), loc(l)
   {}
@@ -49,7 +49,7 @@ struct ValLoc
   RAJA_HOST_DEVICE void setLoc(IndexType inindex) { loc = inindex; }
 
   value_type val;
-  index_type loc;
+  index_type loc = -1;
 };
 
 template<typename T, template<typename, typename, typename> class Op>
