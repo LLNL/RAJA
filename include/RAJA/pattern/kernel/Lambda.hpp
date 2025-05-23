@@ -31,6 +31,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/params/reducer.hpp"
 
 namespace RAJA
 {
@@ -57,6 +58,19 @@ struct LambdaArg
 {
   static constexpr camp::idx_t value = V;
 };
+
+template<typename T>
+struct loop_data_has_reducers : std::false_type
+{};
+
+template<typename SegmentTuple,
+         typename ParamTuple,
+         typename Resource,
+         typename... Bodies>
+struct loop_data_has_reducers<
+    LoopData<SegmentTuple, ParamTuple, Resource, Bodies...>>
+    : RAJA::expt::tuple_contains_reducers<ParamTuple>
+{};
 
 }  // namespace internal
 
@@ -232,12 +246,11 @@ template<typename Types, camp::idx_t id>
 struct LambdaArgSwitchboard<Types, LambdaArg<lambda_arg_param_t, id>>
 {
   template<typename Data>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr static auto extract(Data&& data) ->
-      typename std::add_lvalue_reference<camp::tuple_element_t<
-          id,
-          typename camp::decay<Data>::param_tuple_t>>::type
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr static auto extract(Data&& data)
+      -> std::add_lvalue_reference_t<
+          camp::tuple_element_t<id, typename camp::decay<Data>::arg_tuple_t>>
   {
-    return camp::get<id>(data.param_tuple);
+    return RAJA::expt::detail::get_lambda_arg(camp::get<id>(data.param_tuple));
   }
 };
 

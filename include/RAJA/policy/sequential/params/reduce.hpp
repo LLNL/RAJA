@@ -29,6 +29,14 @@ camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_combine(
   out.m_valop.val = OP {}(out.m_valop.val, in.m_valop.val);
 }
 
+template<typename EXEC_POL, typename OP, typename T, typename VOp>
+camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_combine(
+    EXEC_POL const&,
+    Reducer<OP, T, VOp>&)
+{
+  // noopt
+}
+
 // Resolve
 template<typename EXEC_POL, typename OP, typename T, typename VOp>
 camp::concepts::enable_if<std::is_same<EXEC_POL, RAJA::seq_exec>> param_resolve(
