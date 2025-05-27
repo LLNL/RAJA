@@ -219,14 +219,14 @@ const int GPU_BLOCK_SIZE = 256;
       std::cout << "\n gpu stream 1: pointer " << ptr << " a[" << idx << "] = " << value << "\n";
     }
   );
-  auto gpu_msg_queue1 = logger.get_queue<RAJA::mpsc_queue>();
+  auto gpu_msg_queue1 = gpu_logger1.get_queue<RAJA::mpsc_queue>();
 
   auto gpu_logger2 = RAJA::message_handler<void(int*, int, int)>(num_messages, res_gpu2, 
     [](int* ptr, int idx, int value) {
       std::cout << "\n gpu stream 2: pointer " << ptr << " a[" << idx << "] = " << value << "\n";
     }
   );
-  auto gpu_msg_queue2 = logger.get_queue<RAJA::mpsc_queue>();
+  auto gpu_msg_queue2 = gpu_logger2.get_queue<RAJA::mpsc_queue>();
 
   int* d_a1 = res_gpu1.allocate<int>(N);
   int* d_b1 = res_gpu1.allocate<int>(N);
@@ -310,14 +310,14 @@ const int GPU_BLOCK_SIZE = 256;
       std::cout << "\n gpu stream 1: pointer (" << ptr << ") d_array1[" << idx << "] = " << value << "\n";
     }
   );
-  auto gpu_msg_queue1 = logger.get_queue<RAJA::mpsc_queue>();
+  auto gpu_msg_queue1 = gpu_logger1.get_queue<RAJA::mpsc_queue>();
 
   auto gpu_logger2 = RAJA::message_handler<void(int*, int, int)>(num_messages, res_gpu2, 
     [](int* ptr, int idx, int value) {
       std::cout << "\n gpu stream 2: pointer (" << ptr << ") d_array2[" << idx << "] = " << value << "\n";
     }
   );
-  auto gpu_msg_queue2 = logger.get_queue<RAJA::mpsc_queue>();
+  auto gpu_msg_queue2 = gpu_logger2.get_queue<RAJA::mpsc_queue>();
 
   // _raja_res_alloc_start
   int* d_array1 = res_gpu1.allocate<int>(N);
