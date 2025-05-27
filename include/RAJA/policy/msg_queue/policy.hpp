@@ -22,20 +22,20 @@
 
 namespace RAJA
 {
-namespace messages 
+namespace messages
 {
 
 ///
 /// This is a view-like queue so that message queues can be copied to kernels.
 ///
-template <typename Container, typename policy>
-class queue;	
-	
-}  // namespace messages 
+template<typename Container, typename policy>
+class queue;
+
+}  // namespace messages
 
 namespace policy
 {
-namespace messages 
+namespace messages
 {
 
 //
@@ -46,26 +46,26 @@ namespace messages
 //////////////////////////////////////////////////////////////////////
 //
 
-template <bool Overwrite = false>
+template<bool Overwrite = false>
 struct mpsc_queue
 {
   static constexpr bool should_overwrite = Overwrite;
 };
 
-template <bool Overwrite = false>
+template<bool Overwrite = false>
 struct spsc_queue
 {
   static constexpr bool should_overwrite = Overwrite;
 };
 
-}  // namespace messages 
+}  // namespace messages
 }  // namespace policy
 
 // TODO: support other queue policies
-//using spsc_queue           = policy::messages::spsc_queue<false>;
-//using spsc_queue_overwrite = policy::messages::spsc_queue<true>;
-using mpsc_queue           = policy::messages::mpsc_queue<false>;
-//using mpsc_queue_overwrite = policy::messages::mpsc_queue<true>;
+// using spsc_queue           = policy::messages::spsc_queue<false>;
+// using spsc_queue_overwrite = policy::messages::spsc_queue<true>;
+using mpsc_queue = policy::messages::mpsc_queue<false>;
+// using mpsc_queue_overwrite = policy::messages::mpsc_queue<true>;
 
 }  // namespace RAJA
 

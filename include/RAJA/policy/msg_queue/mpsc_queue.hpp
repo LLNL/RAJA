@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing implementation for a MPSC 
+ * \brief   Header file containing implementation for a MPSC
  *          message queue policy.
  *
  ******************************************************************************
@@ -28,35 +28,34 @@ namespace RAJA
 namespace messages
 {
 
-template <typename Container>
+template<typename Container>
 class queue<Container, RAJA::mpsc_queue>
 {
 public:
   using policy = RAJA::mpsc_queue;
 
-  using value_type     = typename Container::value_type;
-  using size_type      = typename Container::size_type;
+  using value_type = typename Container::value_type;
+  using size_type  = typename Container::size_type;
 
-  queue(Container& container) : m_container{&container}
-  {}
+  queue(Container& container) : m_container {&container} {}
 
-  queue(Container* container) : m_container{container}
-  {}
-
+  queue(Container* container) : m_container {container} {}
 
   /// Posts message to queue. This is marked `const` to pass to lambda by
   /// copy.
-  template <typename... Ts>
-  RAJA_HOST_DEVICE
-  bool try_post_message(Ts&&... args) const
+  template<typename... Ts>
+  RAJA_HOST_DEVICE bool try_post_message(Ts&&... args) const
   {
-    if (m_container != nullptr) { 
+    if (m_container != nullptr)
+    {
       auto local_size = RAJA::atomicInc<auto_atomic>(&(m_container->m_size));
-      if (m_container->m_data != nullptr && local_size < m_container->m_capacity) {
+      if (m_container->m_data != nullptr &&
+          local_size < m_container->m_capacity)
+      {
         m_container->m_data[local_size] = value_type(std::forward<Ts>(args)...);
         return true;
       }
-    }  
+    }
 
     return false;
   }
@@ -65,7 +64,7 @@ private:
   Container* m_container;
 };
 
-}
-}
+}  // namespace messages
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard
