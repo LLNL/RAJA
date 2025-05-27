@@ -138,7 +138,7 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
 
   util::callPreLaunchPlugins(context);
-
+  RAJA::expt::detail::init_params<seq_exec>(loop_data.param_tuple);
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
