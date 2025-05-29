@@ -19,6 +19,10 @@ if(RAJA_ENABLE_HIP)
   list(APPEND SCAN_BACKENDS Hip)
 endif()
 
+if(RAJA_ENABLE_SYCL)
+  list(APPEND SCAN_BACKENDS Sycl)
+endif()
+
 
 set(SCAN_TYPES Exclusive ExclusiveInplace Inclusive InclusiveInplace)
 
