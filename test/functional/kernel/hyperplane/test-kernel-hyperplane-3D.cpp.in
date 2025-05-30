@@ -31,6 +31,8 @@
 // Exec pols for kernel tile tests
 //
 
+using UseParamReducers = camp::list<std::true_type, std::false_type>;
+
 using SequentialKernelHyperplaneExecPols =
   camp::list<
 
@@ -98,7 +100,7 @@ using OpenMPTargetKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -201,7 +203,8 @@ using @BACKEND@KernelHyperplane =
                                 ReduceDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
-                                @BACKEND@ReducePols>>::Types;
+                                @BACKEND@ReducePols,
+                                UseParamReducers>>::Types;
 
 //
 // Instantiate parameterized test

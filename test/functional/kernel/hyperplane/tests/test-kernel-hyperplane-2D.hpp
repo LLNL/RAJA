@@ -11,7 +11,104 @@
 #include <numeric>
 #include <type_traits>
 
-template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY>
+template<typename DATA_TYPE, typename REDUCE_POLICY, bool TypeTrait>
+struct ReducerHelper {};
+
+template<typename DATA_TYPE, typename REDUCE_POLICY>
+struct ReducerHelper<DATA_TYPE, REDUCE_POLICY, false> {
+  using type = RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE>;
+};
+
+template<typename DATA_TYPE, typename REDUCE_POLICY>
+struct ReducerHelper<DATA_TYPE, REDUCE_POLICY, true> {
+  using type = DATA_TYPE;
+};
+
+template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
+typename std::enable_if<USE_PARAM_REDUCER::value>::type
+CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>>& WorkView,
+           const int idim,
+           const int jdim,
+           const int groups,
+           DATA_TYPE& trip_count,
+           DATA_TYPE& oob_count)
+{
+  RAJA::TypedRangeSegment<INDEX_TYPE>  Grange( 0, groups );
+  RAJA::TypedRangeSegment<INDEX_TYPE>  Irange( 0, idim );
+  RAJA::TypedRangeSegment<INDEX_TYPE>  Jrange( 0, jdim );
+
+  RAJA::kernel_param<EXEC_POLICY> ( RAJA::make_tuple( Grange, Irange, Jrange ),
+    RAJA::make_tuple(
+      RAJA::expt::Reduce<RAJA::operators::plus>(&trip_count),
+      RAJA::expt::Reduce<RAJA::operators::plus>(&oob_count)
+    ),
+    [=] RAJA_HOST_DEVICE (INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj,
+                          RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>& _trip_count,
+                          RAJA::expt::ValOp<DATA_TYPE, RAJA::operators::plus>& _oob_count ) {
+      if ((int)g < 0 || (int)g >= groups || (int)ii < 0 || (int)ii >= idim || (int)jj < 0 || (int)jj >= jdim) {
+        _oob_count += 1;
+      }
+
+      DATA_TYPE left = 1;
+      if (ii > 0) {
+        left = WorkView(g, ii - 1, jj);
+      }
+
+      DATA_TYPE up = 1;
+      if (jj > 0) {
+        up = WorkView(g, ii, jj - 1);
+      }
+
+      WorkView(g, ii, jj) = left + up;
+
+      _trip_count += 1;
+  });
+
+  ASSERT_EQ((INDEX_TYPE)trip_count, (INDEX_TYPE)groups * idim * jdim);
+  ASSERT_EQ((INDEX_TYPE)oob_count, (INDEX_TYPE)0);
+}
+
+template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
+typename std::enable_if<!USE_PARAM_REDUCER::value>::type
+CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>>& WorkView,
+           const int idim,
+           const int jdim,
+           const int groups,
+           RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE>& trip_count,
+           RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE>& oob_count)
+{
+  RAJA::TypedRangeSegment<INDEX_TYPE>  Grange( 0, groups );
+  RAJA::TypedRangeSegment<INDEX_TYPE>  Irange( 0, idim );
+  RAJA::TypedRangeSegment<INDEX_TYPE>  Jrange( 0, jdim );
+
+  RAJA::kernel<EXEC_POLICY> ( RAJA::make_tuple( Grange, Irange, Jrange ),
+    [=] RAJA_HOST_DEVICE ( INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj ) {
+      if ((int)g < 0 || (int)g >= groups || (int)ii < 0 || (int)ii >= idim || (int)jj < 0 || (int)jj >= jdim) {
+        oob_count += 1;
+      }
+
+      DATA_TYPE left = 1;
+      if (ii > 0) {
+        left = WorkView(g, ii - 1, jj);
+      }
+
+      DATA_TYPE up = 1;
+      if (jj > 0) {
+        up = WorkView(g, ii, jj - 1);
+      }
+
+      WorkView(g, ii, jj) = left + up;
+
+      trip_count += 1;
+  });
+
+  ASSERT_EQ((INDEX_TYPE)trip_count.get(), (INDEX_TYPE)groups * idim * jdim);
+  ASSERT_EQ((INDEX_TYPE)oob_count.get(), (INDEX_TYPE)0);
+
+}
+
+
+template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCERS>
 void KernelHyperplane2DTestImpl(const int groups, const int idim, const int jdim)
 {
   // This test traverses "groups" 2D arrays, and modifies values in a 1D hyperplane manner.
@@ -40,39 +137,14 @@ void KernelHyperplane2DTestImpl(const int groups, const int idim, const int jdim
 
   work_res.memcpy( work_array, test_array, sizeof(DATA_TYPE) * array_length );
 
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> trip_count(0);
-  RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> oob_count(0);
+  using ReducerType = typename ReducerHelper<DATA_TYPE, REDUCE_POLICY, USE_PARAM_REDUCERS::value>::type;
+  ReducerType trip_count(0);
+  ReducerType oob_count(0);
 
   // perform array arithmetic with a 1D hyperplane, in either the I or J direction
-  RAJA::TypedRangeSegment<INDEX_TYPE>  Grange( 0, groups );
-  RAJA::TypedRangeSegment<INDEX_TYPE>  Irange( 0, idim );
-  RAJA::TypedRangeSegment<INDEX_TYPE>  Jrange( 0, jdim );
-
-  RAJA::kernel<EXEC_POLICY> ( RAJA::make_tuple( Grange, Irange, Jrange ),
-    [=] RAJA_HOST_DEVICE ( INDEX_TYPE g, INDEX_TYPE ii, INDEX_TYPE jj ) {
-      if ((int)g < 0 || (int)g >= groups || (int)ii < 0 || (int)ii >= idim || (int)jj < 0 || (int)jj >= jdim) {
-        oob_count += 1;
-      }
-
-      DATA_TYPE left = 1;
-      if (ii > 0) {
-        left = WorkView(g, ii - 1, jj);
-      }
-
-      DATA_TYPE up = 1;
-      if (jj > 0) {
-        up = WorkView(g, ii, jj - 1);
-      }
-
-      WorkView(g, ii, jj) = left + up;
-
-      trip_count += 1;
-  });
+  CallKernel<INDEX_TYPE, DATA_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(WorkView, idim, jdim, groups, trip_count, oob_count);
 
   work_res.memcpy( check_array, work_array, sizeof(DATA_TYPE) * array_length );
-
-  ASSERT_EQ((INDEX_TYPE)trip_count.get(), (INDEX_TYPE)groups * idim * jdim);
-  ASSERT_EQ((INDEX_TYPE)oob_count.get(), (INDEX_TYPE)0);
 
   // perform array arithmetic on the CPU
   for (int g = 0; g < groups; ++g) {
@@ -122,10 +194,11 @@ TYPED_TEST_P(KernelHyperplane2DTest, Hyperplane2DKernel)
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
+  using USE_PARAM_REDUCERS = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(1, 10, 10);
-  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(2, 111, 205);
-  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY>(3, 213, 123);
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(1, 10, 10);
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(2, 111, 205);
+  KernelHyperplane2DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(3, 213, 123);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(KernelHyperplane2DTest,
