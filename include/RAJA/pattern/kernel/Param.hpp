@@ -22,19 +22,13 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/params/params_base.hpp"
 
 #include <iostream>
 #include <type_traits>
 
 namespace RAJA
 {
-namespace internal
-{
-
-struct ParamBase
-{};
-
-}  // end namespace internal
 
 namespace statement
 {
@@ -47,7 +41,7 @@ namespace statement
  * RAJA::kernel execution policies.
  */
 template<camp::idx_t ParamId>
-struct Param : public internal::ParamBase
+struct Param : public expt::detail::ParamBase
 {
 
   constexpr static camp::idx_t param_idx = ParamId;
