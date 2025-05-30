@@ -54,7 +54,7 @@ using SequentialKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_OPENMP)
 
 using OpenMPKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
@@ -78,7 +78,7 @@ using OpenMPKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 using OpenMPTargetKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<16>,
@@ -102,7 +102,7 @@ using OpenMPTargetKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -172,7 +172,8 @@ using HipKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_SYCL)
 // no existing SYCL implementation of Hyperplane
 #endif  // RAJA_ENABLE_SYCL
-
+// Boolean switch to control use of new vs old reducer interface
+using UseParamReducers = camp::list<std::true_type, std::false_type>;
 //
 // Cartesian product of types used in parameterized tests
 //
@@ -181,7 +182,8 @@ using @BACKEND@KernelHyperplane =
                                 ReduceDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
-                                @BACKEND@ReducePols>>::Types;
+                                @BACKEND@ReducePols,
+                                UseParamReducers>>::Types;
 
 //
 // Instantiate parameterized test
