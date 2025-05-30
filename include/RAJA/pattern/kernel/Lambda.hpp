@@ -59,19 +59,6 @@ struct LambdaArg
   static constexpr camp::idx_t value = V;
 };
 
-template<typename T>
-struct loop_data_has_reducers : std::false_type
-{};
-
-template<typename SegmentTuple,
-         typename ParamTuple,
-         typename Resource,
-         typename... Bodies>
-struct loop_data_has_reducers<
-    LoopData<SegmentTuple, ParamTuple, Resource, Bodies...>>
-    : RAJA::expt::tuple_contains_reducers<ParamTuple>
-{};
-
 }  // namespace internal
 
 /*!

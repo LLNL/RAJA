@@ -33,7 +33,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
-#include "RAJA/pattern/kernel/Lambda.hpp"
+#include "RAJA/pattern/kernel/type-traits.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
@@ -62,6 +62,8 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
+    concepts::negate<
+        RAJA::internal::is_wrapper_with_reducers<camp::decay<Func>>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Host host_res,
@@ -79,31 +81,25 @@ forall_impl(resources::Host host_res,
 }
 
 template<typename Iterable,
-         camp::idx_t ArgumentId,
-         typename Data,
-         typename Types,
-         typename... EnclosedStmts,
+         typename Func,
          typename InnerPolicy,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
-    RAJA::internal::loop_data_has_reducers<camp::decay<Data>>,
+    RAJA::internal::is_wrapper_with_reducers<camp::decay<Func>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(
-    resources::Host host_res,
-    const omp_parallel_exec<InnerPolicy>&,
-    Iterable&& iter,
-    RAJA::internal::ForWrapper<ArgumentId, Data, Types, EnclosedStmts...>&
-        loop_body,
-    ForallParam)
+forall_impl(resources::Host host_res,
+            const omp_parallel_exec<InnerPolicy>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
 {
-  using EXEC_POL = camp::decay<InnerPolicy>;
-
   auto reducers_tuple = loop_body.data.param_tuple;
+
+  using EXEC_POL = camp::decay<InnerPolicy>;
   RAJA::expt::detail::init_params<EXEC_POL>(reducers_tuple);
 
-  using EXEC_POL = camp::decay<InnerPolicy>;
   using RAJA::internal::thread_privatize;
   RAJA_UNUSED_VAR(EXEC_POL {});
   RAJA_EXTRACT_BED_IT(iter);
