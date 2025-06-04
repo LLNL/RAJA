@@ -25,7 +25,7 @@ struct ReducerHelper<DATA_TYPE, REDUCE_POLICY, true> {
 };
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
-typename std::enable_if<USE_PARAM_REDUCER::value>::type
+std::enable_if_t<USE_PARAM_REDUCER::value>
 CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>>& WorkView,
            const int idim,
            const int jdim,
@@ -69,7 +69,7 @@ CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>>& WorkView,
 }
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
-typename std::enable_if<!USE_PARAM_REDUCER::value>::type
+std::enable_if_t<!USE_PARAM_REDUCER::value>
 CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<3, INDEX_TYPE>>& WorkView,
            const int idim,
            const int jdim,

@@ -232,7 +232,7 @@ using SyclKernelTileTCountExecPols = camp::list<
 // Don't test new interface with sycl.
 using UseReducerParams = camp::list<std::false_type>;
 #else
-using UseReducerParams = camp::list<std::true_type/*, std::false_type*/>;
+using UseReducerParams = camp::list<std::true_type, std::false_type>;
 #endif  // if defined(RAJA_ENABLE_SYCL)
 
 //
@@ -242,8 +242,8 @@ using @BACKEND@KernelTile@TESTTYPE@Types =
   Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@Kernel@TESTTYPE@ExecPols,
                                 @BACKEND@ReducePols,
-                                TileSizes,
-                                UseReducerParams> >::Types;
+                                UseReducerParams,
+                                TileSizes> >::Types;
 
 //
 // Instantiate parameterized tests

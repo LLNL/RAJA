@@ -25,7 +25,7 @@ struct ReducerHelper<DATA_TYPE, REDUCE_POLICY, true> {
 };
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
-typename std::enable_if<USE_PARAM_REDUCER::value>::type
+std::enable_if_t<USE_PARAM_REDUCER::value>
 CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
            const int idim,
            const int jdim,
@@ -80,7 +80,7 @@ CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
 }
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
-typename std::enable_if<!USE_PARAM_REDUCER::value>::type
+std::enable_if_t<!USE_PARAM_REDUCER::value>
 CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
            const int idim,
            const int jdim,
@@ -127,14 +127,14 @@ CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
 }
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCERS>
-typename std::enable_if<std::is_unsigned<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type
+std::enable_if_t<std::is_unsigned<RAJA::strip_index_type_t<INDEX_TYPE>>::value>
 KernelHyperplane3DTestImpl(const int RAJA_UNUSED_ARG(groups), const int RAJA_UNUSED_ARG(idim), const int RAJA_UNUSED_ARG(jdim), const int RAJA_UNUSED_ARG(kdim))
 {
   // do nothing for unsigned index types
 }
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename WORKING_RES, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCERS>
-typename std::enable_if<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>::type
+std::enable_if_t<std::is_signed<RAJA::strip_index_type_t<INDEX_TYPE>>::value>
 KernelHyperplane3DTestImpl(const int groups, const int idimin, const int jdimin, const int kdimin)
 {
   // This test traverses "groups" number of 3D arrays, and modifies values in a 2D hyperplane manner.

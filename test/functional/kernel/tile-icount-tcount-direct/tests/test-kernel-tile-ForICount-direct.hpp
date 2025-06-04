@@ -31,7 +31,7 @@ struct ReducerHelper<IDX_TYPE, REDUCE_POLICY, true> {
 };
 
 template<typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_REDUCER_PARAM>
-typename std::enable_if<USE_REDUCER_PARAM::value>::type
+std::enable_if_t<USE_REDUCER_PARAM::value>
 call_kernel(IDX_TYPE& trip_count,
             IDX_TYPE t,
             IDX_TYPE N,
@@ -65,7 +65,7 @@ call_kernel(IDX_TYPE& trip_count,
 }
 
 template<typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_REDUCER_PARAM>
-typename std::enable_if<!USE_REDUCER_PARAM::value>::type
+std::enable_if_t<!USE_REDUCER_PARAM::value>
 call_kernel(RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE>& trip_count,
             IDX_TYPE t,
             IDX_TYPE N,
@@ -121,9 +121,9 @@ TYPED_TEST_P(KernelTileForICountDirectTest, ForICountTileKernel)
   using IDX_TYPE    = typename camp::at<TypeParam, camp::num<0>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<1>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<2>>::type;
-  using USE_REDUCER_PARAM = typename camp::at<TypeParam, camp::num<4>>::type;
+  using USE_REDUCER_PARAM = typename camp::at<TypeParam, camp::num<3>>::type;
 
-  IDX_TYPE tsize = camp::at_v<TypeParam, 3>::value;
+  IDX_TYPE tsize = camp::at_v<TypeParam, 4>::value;
 
   KernelTileForICountDirectTestImpl<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_REDUCER_PARAM>(
     IDX_TYPE(57), tsize);
