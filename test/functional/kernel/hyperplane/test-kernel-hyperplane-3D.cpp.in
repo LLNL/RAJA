@@ -31,8 +31,6 @@
 // Exec pols for kernel tile tests
 //
 
-using UseParamReducers = camp::list<std::true_type, std::false_type>;
-
 using SequentialKernelHyperplaneExecPols =
   camp::list<
 
@@ -203,12 +201,13 @@ using @BACKEND@KernelHyperplane =
                                 ReduceDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
-                                @BACKEND@ReducePols,
-                                UseParamReducers>>::Types;
+                                @BACKEND@ReducePols>>::Types;
 
 //
 // Instantiate parameterized test
 //
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(KernelHyperplane3DCaptureReduceTest);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(KernelHyperplane3DParamReduceTest);
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               KernelHyperplane@TEST_TYPE@Test,
+                               KernelHyperplane@TEST_TYPE@@REDUCER_TYPE@Test,
                                @BACKEND@KernelHyperplane);

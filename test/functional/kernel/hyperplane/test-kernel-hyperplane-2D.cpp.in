@@ -172,8 +172,7 @@ using HipKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_SYCL)
 // no existing SYCL implementation of Hyperplane
 #endif  // RAJA_ENABLE_SYCL
-// Boolean switch to control use of new vs old reducer interface
-using UseParamReducers = camp::list<std::true_type, std::false_type>;
+
 //
 // Cartesian product of types used in parameterized tests
 //
@@ -182,12 +181,13 @@ using @BACKEND@KernelHyperplane =
                                 ReduceDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
-                                @BACKEND@ReducePols,
-                                UseParamReducers>>::Types;
+                                @BACKEND@ReducePols>>::Types;
 
 //
 // Instantiate parameterized test
 //
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(KernelHyperplane2DCaptureReduceTest);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(KernelHyperplane2DParamReduceTest);
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               KernelHyperplane@TEST_TYPE@Test,
+                               KernelHyperplane@TEST_TYPE@@REDUCER_TYPE@Test,
                                @BACKEND@KernelHyperplane);
