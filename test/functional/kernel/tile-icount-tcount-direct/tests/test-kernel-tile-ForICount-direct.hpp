@@ -70,7 +70,7 @@ call_kernel(RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE>& trip_count,
             IDX_TYPE t,
             IDX_TYPE N,
             IDX_TYPE tsize) {
-  RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE> tile_count;
+  RAJA::ReduceSum<REDUCE_POLICY, IDX_TYPE> tile_count (0);
   RAJA::kernel_param<EXEC_POLICY>(
     RAJA::make_tuple(
       RAJA::TypedRangeSegment<IDX_TYPE>(0, N)
