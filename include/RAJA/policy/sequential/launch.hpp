@@ -40,13 +40,13 @@ template<>
 struct LaunchExecute<RAJA::seq_launch_t>
 {
 
-  template<typename BODY, typename ReduceParams>
+  template<typename BODY,size_t ThreadDIM=3, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       LaunchParams const& params,
+       LaunchParams<ThreadDIM> const& params,
        BODY const& body,
        ReduceParams& RAJA_UNUSED_ARG(ReduceParams))
   {
@@ -64,14 +64,14 @@ struct LaunchExecute<RAJA::seq_launch_t>
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename BODY, typename ReduceParams>
+  template<typename BODY, size_t ThreadDIM=3, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       LaunchParams const& launch_params,
+       LaunchParams<ThreadDIM> const& launch_params,
        BODY const& body,
        ReduceParams& launch_reducers)
   {
