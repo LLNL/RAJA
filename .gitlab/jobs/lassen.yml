@@ -36,7 +36,7 @@ gcc_8_3_1_cuda_11_7_0_ats_disabled:
   variables:
     SPEC: " ~shared +openmp +tests +cuda %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
     MODULE_LIST: "cuda/11.7.0"
-    LASSEN_JOB_ALLOC: "1 --atsdisable -W 30 -q pci"
+    LASSEN_JOB_ALLOC: "1 --atsdisable -W 45 -q pci"
 
 ##########
 # OTHERS

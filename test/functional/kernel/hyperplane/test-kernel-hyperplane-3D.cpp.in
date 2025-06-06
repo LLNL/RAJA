@@ -98,7 +98,7 @@ using OpenMPTargetKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -206,6 +206,8 @@ using @BACKEND@KernelHyperplane =
 //
 // Instantiate parameterized test
 //
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(KernelHyperplane3DCaptureReduceTest);
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(KernelHyperplane3DParamReduceTest);
 INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
-                               KernelHyperplane@TEST_TYPE@Test,
+                               KernelHyperplane@TEST_TYPE@@REDUCER_TYPE@Test,
                                @BACKEND@KernelHyperplane);
