@@ -38,14 +38,14 @@ generate-job-lists:
     LOCAL_JOBS_PATH: ".gitlab/jobs"
   script:
     - cat ${RADIUSS_JOBS_PATH}/ruby.yml ${LOCAL_JOBS_PATH}/ruby.yml > ruby-jobs.yml
-    - cat ${RADIUSS_JOBS_PATH}/poodle.yml ${LOCAL_JOBS_PATH}/poodle.yml > poodle-jobs.yml
+    - cat ${RADIUSS_JOBS_PATH}/tuolumne.yml ${LOCAL_JOBS_PATH}/tuolumne.yml > tuolumne-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/lassen.yml ${LOCAL_JOBS_PATH}/lassen.yml > lassen-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/corona.yml ${LOCAL_JOBS_PATH}/corona.yml > corona-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/tioga.yml ${LOCAL_JOBS_PATH}/tioga.yml > tioga-jobs.yml
   artifacts:
     paths:
       - ruby-jobs.yml
-      - poodle-jobs.yml
+      - tuolumne-jobs.yml
       - lassen-jobs.yml
       - corona-jobs.yml
       - tioga-jobs.yml
@@ -62,16 +62,16 @@ ruby-build-and-test:
   needs: [ruby-up-check, generate-job-lists]
   extends: [.build-and-test]
 
-# POODLE
-poodle-up-check:
+# DANE
+dane-up-check:
   variables:
-    CI_MACHINE: "poodle"
+    CI_MACHINE: "dane"
   extends: [.machine-check]
 
-poodle-build-and-test:
+dane-build-and-test:
   variables:
-    CI_MACHINE: "poodle"
-  needs: [poodle-up-check, generate-job-lists]
+    CI_MACHINE: "dane"
+  needs: [dane-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 # CORONA
@@ -96,6 +96,18 @@ tioga-build-and-test:
   variables:
     CI_MACHINE: "tioga"
   needs: [tioga-up-check, generate-job-lists]
+  extends: [.build-and-test]
+
+# TUOLUMNE
+tuolumne-up-check:
+  variables:
+    CI_MACHINE: "tuolumne"
+  extends: [.machine-check]
+
+tuolumne-build-and-test:
+  variables:
+    CI_MACHINE: "tuolumne"
+  needs: [tuolumne-up-check, generate-job-lists]
   extends: [.build-and-test]
 
 # LASSEN
