@@ -232,7 +232,7 @@ using SyclKernelTileTCountExecPols = camp::list<
 
 #define @REDUCER_TYPE@
 // Switch to control testing old vs new reducer interface
-#if defined(ParamReduce) //and not defined(RAJA_ENABLE_SYCL)
+#if defined(ParamReduce) and not defined(RAJA_ENABLE_SYCL)
 using UseParamReducers = camp::list<std::true_type>;
 #elif defined(CaptureReduce)
 using UseParamReducers = camp::list<std::false_type>;

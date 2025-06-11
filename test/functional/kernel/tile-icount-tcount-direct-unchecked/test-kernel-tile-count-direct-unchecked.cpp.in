@@ -103,7 +103,7 @@ using HipKernelTileTCountExecPols = camp::list<
 #endif  // if defined(RAJA_ENABLE_HIP)
 #define @REDUCER_TYPE@
 // Switch to control testing old vs new reducer interface
-#if defined(ParamReduce)
+#if defined(ParamReduce) and not defined(RAJA_ENABLE_SYCL)
 using UseParamReducers = camp::list<std::true_type>;
 #elif defined(CaptureReduce)
 using UseParamReducers = camp::list<std::false_type>;
