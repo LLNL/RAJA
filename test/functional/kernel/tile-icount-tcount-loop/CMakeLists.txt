@@ -23,6 +23,10 @@ foreach( BACKEND ${KERNEL_BACKENDS} )
     foreach( TESTTYPE ${TESTTYPES} )
       foreach( TILESIZE ${TILESIZES} )
         foreach( REDUCER_TYPE ${REDUCER_TYPES} )
+          # The sycl backend does not support parameter based reductions.
+          if (BACKEND STREQUAL "Sycl" and REDUCER_TYPE STREQUAL "ParamReduce")
+            continue()
+          endif()
           configure_file( test-kernel-tile-count-loop.cpp.in
                           test-kernel-${TESTTYPE}-${TILESIZE}-${REDUCER_TYPE}-${BACKEND}-loop.cpp )
           raja_add_test( NAME test-kernel-${TESTTYPE}-${TILESIZE}-${REDUCER_TYPE}-${BACKEND}-loop
