@@ -24,7 +24,7 @@ foreach( BACKEND ${KERNEL_DIRECT_UNCHECKED_BACKENDS} )
       foreach( TILESIZE ${TILESIZES} )
         foreach( REDUCER_TYPE ${REDUCER_TYPES} )
           # The sycl backend does not support parameter based reductions.
-          if (BACKEND STREQUAL "Sycl" and REDUCER_TYPE STREQUAL "ParamReduce")
+          if ((BACKEND STREQUAL "Sycl") AND (REDUCER_TYPE STREQUAL "ParamReduce"))
             continue()
           endif()
           configure_file( test-kernel-tile-count-direct-unchecked.cpp.in
