@@ -10,6 +10,7 @@
 #
 set(TESTTYPES 2D 3D)
 set(REDUCER_TYPES ParamReduce CaptureReduce)
+set(REDUCER_TYPES ParamReduce CaptureReduce)
 
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TEST_TYPE ${TESTTYPES} )

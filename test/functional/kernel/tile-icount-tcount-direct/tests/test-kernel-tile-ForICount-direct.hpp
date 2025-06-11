@@ -78,13 +78,12 @@ void KernelTileForICountDirectTestImpl(IDX_TYPE N, IDX_TYPE tsize)
   for (IDX_TYPE t = 0; t < tsize; ++t) {
     IDX_TYPE tile_count = 0;
     call_kernel<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_REDUCER_PARAM>(trip_count, tile_count, t, N, tsize);
-    ASSERT_EQ( trip_count, (t+1) * N );
-
 
     IDX_TYPE tile_expect = N / tsize;
     if ( t < N % tsize ) {
       tile_expect += 1;
     }
+    ASSERT_EQ(trip_count, (t+1) * N);
     ASSERT_EQ(tile_count, tile_expect);
 
   }

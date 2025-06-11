@@ -6,14 +6,15 @@
 ###############################################################################
 
 #
-# List of test types for future expansion, if needed. 
+# List of test types for future expansion, if needed.
 #
 set(TESTTYPES ForICount TileTCount)
 set(TILESIZES 8 32)
+set(REDUCER_TYPES ParamReduce CaptureReduce)
 
 #
-# Generate tests for each enabled RAJA back-end. 
-# 
+# Generate tests for each enabled RAJA back-end.
+#
 # Note: KERNEL_BACKENDS is defined in ../CMakeLists.txt
 #
 
@@ -21,23 +22,26 @@ set(TILESIZES 8 32)
 ## Disable OpenMP Target tests, which cause front-end crash in LLVM based compilers
 ##
 if(RAJA_ENABLE_TARGET_OPENMP)
-  if(RAJA_TEST_OPENMP_TARGET_SUBSET)   
+  if(RAJA_TEST_OPENMP_TARGET_SUBSET)
     list(REMOVE_ITEM KERNEL_BACKENDS OpenMPTarget)
-  endif() 
+  endif()
 endif()
 
 foreach( BACKEND ${KERNEL_BACKENDS} )
   foreach( TESTTYPE ${TESTTYPES} )
     foreach( TILESIZE ${TILESIZES} )
-      configure_file( test-kernel-tile-count-direct.cpp.in
-                      test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct.cpp )
-      raja_add_test( NAME test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct
-                    SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct.cpp )
-      target_include_directories(test-kernel-${TESTTYPE}-${TILESIZE}-${BACKEND}-direct.exe
-                                PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      foreach( REDUCER_TYPE ${REDUCER_TYPES} )
+        configure_file( test-kernel-tile-count-direct.cpp.in
+                        test-kernel-${TESTTYPE}-${TILESIZE}-${REDUCER_TYPE}-${BACKEND}-direct.cpp )
+        raja_add_test( NAME test-kernel-${TESTTYPE}-${TILESIZE}-${REDUCER_TYPE}-${BACKEND}-direct
+                      SOURCES ${CMAKE_CURRENT_BINARY_DIR}/test-kernel-${TESTTYPE}-${TILESIZE}-${REDUCER_TYPE}-${BACKEND}-direct.cpp )
+        target_include_directories(test-kernel-${TESTTYPE}-${TILESIZE}-${REDUCER_TYPE}-${BACKEND}-direct.exe
+                                  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+      endforeach()
     endforeach()
   endforeach()
 endforeach()
 
+unset( REDUCER_TYPES )
 unset( TILESIZES )
 unset( TESTTYPES )

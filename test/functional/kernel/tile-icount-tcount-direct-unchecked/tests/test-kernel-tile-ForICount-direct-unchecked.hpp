@@ -25,23 +25,23 @@ call_kernel(IDX_TYPE& trip_count,
             IDX_TYPE N,
             IDX_TYPE tsize) {
   RAJA::kernel_param<EXEC_POLICY>(
-      RAJA::make_tuple(
-        RAJA::TypedRangeSegment<IDX_TYPE>(0, N)
-      ),
-      RAJA::make_tuple( static_cast<IDX_TYPE>(0),
-        RAJA::expt::Reduce<RAJA::operators::plus>(&trip_count),
-        RAJA::expt::Reduce<RAJA::operators::plus>(&tile_count)
-      ),
+    RAJA::make_tuple(
+      RAJA::TypedRangeSegment<IDX_TYPE>(0, N)
+    ),
+    RAJA::make_tuple( static_cast<IDX_TYPE>(0),
+      RAJA::expt::Reduce<RAJA::operators::plus>(&trip_count),
+      RAJA::expt::Reduce<RAJA::operators::plus>(&tile_count)
+    ),
 
-      [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE ii,
-                           RAJA::expt::ValOp<IDX_TYPE, RAJA::operators::plus>& _trip_count,
-                           RAJA::expt::ValOp<IDX_TYPE, RAJA::operators::plus>& _tile_count) {
-        _trip_count += 1;
-        if ( i % tsize == t && ii == t ) {
-          _tile_count += 1;
-        }
+    [=] RAJA_HOST_DEVICE(IDX_TYPE i, IDX_TYPE ii,
+                          RAJA::expt::ValOp<IDX_TYPE, RAJA::operators::plus>& _trip_count,
+                          RAJA::expt::ValOp<IDX_TYPE, RAJA::operators::plus>& _tile_count) {
+      _trip_count += 1;
+      if ( i % tsize == t && ii == t ) {
+        _tile_count += 1;
       }
-    );
+    }
+  );
 }
 
 template<typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_REDUCER_PARAM>
@@ -78,13 +78,12 @@ void KernelTileForICountDirectUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
   for (IDX_TYPE t = 0; t < tsize; ++t) {
     IDX_TYPE tile_count = 0;
     call_kernel<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_REDUCER_PARAM>(trip_count, tile_count, t, N, tsize);
-    ASSERT_EQ( trip_count, (t+1) * N );
-
 
     IDX_TYPE tile_expect = N / tsize;
     if ( t < N % tsize ) {
       tile_expect += 1;
     }
+    ASSERT_EQ(trip_count, (t+1) * N);
     ASSERT_EQ(tile_count, tile_expect);
 
   }

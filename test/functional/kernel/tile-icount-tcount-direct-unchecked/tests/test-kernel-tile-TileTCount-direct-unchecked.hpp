@@ -84,7 +84,7 @@ void KernelTileTileTCountDirectUncheckedTestImpl(IDX_TYPE N, IDX_TYPE tsize)
       tile_expect = N - t * tsize;
     }
     ASSERT_EQ(tile_count, tile_expect);
-    ASSERT_EQ(trip_count, (t+1) * N );
+    ASSERT_EQ(trip_count, (t+1) * N);
   }
 }
 

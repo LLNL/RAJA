@@ -101,9 +101,15 @@ using HipKernelTileTCountExecPols = camp::list<
 
 >;
 #endif  // if defined(RAJA_ENABLE_HIP)
-
+#define @REDUCER_TYPE@
 // Switch to control testing old vs new reducer interface
-using UseParamReducers = camp::list<std::true_type, std::false_type>;
+#if defined(ParamReduce)
+using UseParamReducers = camp::list<std::true_type>;
+#elif defined(CaptureReduce)
+using UseParamReducers = camp::list<std::false_type>;
+#else
+static_assert(false, "unreachable");
+#endif
 //
 // Cartesian product of types used in parameterized tests
 //

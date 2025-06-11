@@ -13,13 +13,13 @@
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
 std::enable_if_t<USE_PARAM_REDUCER::value>
-CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
+CallKernel(DATA_TYPE& trip_count,
+           DATA_TYPE& oob_count,
+           RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
            const int idim,
            const int jdim,
            const int kdim,
-           const int groups,
-           DATA_TYPE& trip_count,
-           DATA_TYPE& oob_count)
+           const int groups)
 {
 
   // perform array arithmetic with a 2D J-K hyperplane
@@ -64,13 +64,13 @@ CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
 
 template <typename INDEX_TYPE, typename DATA_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_PARAM_REDUCER>
 std::enable_if_t<!USE_PARAM_REDUCER::value>
-CallKernel(RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
+CallKernel(DATA_TYPE& _trip_count,
+           DATA_TYPE& _oob_count,
+           RAJA::View<DATA_TYPE, RAJA::Layout<4, INDEX_TYPE>>& WorkView,
            const int idim,
            const int jdim,
            const int kdim,
-           const int groups,
-           DATA_TYPE& _trip_count,
-           DATA_TYPE& _oob_count)
+           const int groups)
 {
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> trip_count (_trip_count);
   RAJA::ReduceSum<REDUCE_POLICY, DATA_TYPE> oob_count (_oob_count);
@@ -164,7 +164,7 @@ KernelHyperplane3DTestImpl(const int groups, const int idimin, const int jdimin,
   DATA_TYPE trip_count(0);
   DATA_TYPE oob_count(0);
 
-  CallKernel<INDEX_TYPE, DATA_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(WorkView, idim, jdim, kdim, groups, trip_count, oob_count);
+  CallKernel<INDEX_TYPE, DATA_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(trip_count, oob_count, WorkView, idim, jdim, kdim, groups);
 
   ASSERT_EQ((INDEX_TYPE)trip_count, (INDEX_TYPE)groups * idim * jdim * kdim);
   ASSERT_EQ((INDEX_TYPE)oob_count, (INDEX_TYPE)0);
@@ -215,49 +215,27 @@ KernelHyperplane3DTestImpl(const int groups, const int idimin, const int jdimin,
 }
 
 
-TYPED_TEST_SUITE_P(KernelHyperplane3DParamReduceTest);
+TYPED_TEST_SUITE_P(KernelHyperplane3DTest);
 template <typename T>
-class KernelHyperplane3DParamReduceTest : public ::testing::Test
+class KernelHyperplane3DTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_SUITE_P(KernelHyperplane3DCaptureReduceTest);
-template <typename T>
-class KernelHyperplane3DCaptureReduceTest : public ::testing::Test
-{
-};
-
-TYPED_TEST_P(KernelHyperplane3DParamReduceTest, Hyperplane3DParamReduceKernel)
+TYPED_TEST_P(KernelHyperplane3DTest, Hyperplane3DKernel)
 {
   using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
   using DATA_TYPE  = typename camp::at<TypeParam, camp::num<1>>::type;
   using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
   using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
   using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
+  using USE_PARAM_REDUCERS = typename camp::at<TypeParam, camp::num<5>>::type;
 
-  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, std::true_type>(1, 10, 10, 10);
-  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, std::true_type>(2, 151, 111, 205);
-  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, std::true_type>(3, 101, 213, 123);
+  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(1, 10, 10, 10);
+  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(2, 151, 111, 205);
+  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, USE_PARAM_REDUCERS>(3, 101, 213, 123);
 }
 
-TYPED_TEST_P(KernelHyperplane3DCaptureReduceTest, Hyperplane3DCaptureReduceKernel)
-{
-  using INDEX_TYPE  = typename camp::at<TypeParam, camp::num<0>>::type;
-  using DATA_TYPE  = typename camp::at<TypeParam, camp::num<1>>::type;
-  using WORKING_RES = typename camp::at<TypeParam, camp::num<2>>::type;
-  using EXEC_POLICY = typename camp::at<TypeParam, camp::num<3>>::type;
-  using REDUCE_POLICY = typename camp::at<TypeParam, camp::num<4>>::type;
-
-  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, std::false_type>(1, 10, 10, 10);
-  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, std::false_type>(2, 151, 111, 205);
-  KernelHyperplane3DTestImpl<INDEX_TYPE, DATA_TYPE, WORKING_RES, EXEC_POLICY, REDUCE_POLICY, std::false_type>(3, 101, 213, 123);
-}
-
-
-REGISTER_TYPED_TEST_SUITE_P(KernelHyperplane3DParamReduceTest,
-                            Hyperplane3DParamReduceKernel);
-
-REGISTER_TYPED_TEST_SUITE_P(KernelHyperplane3DCaptureReduceTest,
-                            Hyperplane3DCaptureReduceKernel);
+REGISTER_TYPED_TEST_SUITE_P(KernelHyperplane3DTest,
+                            Hyperplane3DKernel);
 
 #endif  // __TEST_KERNEL_HYPERPLANE_3D_HPP__

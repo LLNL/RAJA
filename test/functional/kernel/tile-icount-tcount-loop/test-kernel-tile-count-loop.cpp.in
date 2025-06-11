@@ -227,12 +227,17 @@ using SyclKernelTileTCountExecPols = camp::list<
   >
 
 >;
-// Switch to control use of older reducer interface or the new reduce param
-// Don't test new interface with sycl.
-using UseReducerParams = camp::list<std::false_type>;
-#else
-using UseReducerParams = camp::list<std::true_type, std::false_type>;
 #endif  // if defined(RAJA_ENABLE_SYCL)
+
+#define @REDUCER_TYPE@
+// Switch to control testing old vs new reducer interface
+#if defined(ParamReduce) and not defined(RAJA_ENABLE_SYCL)
+using UseParamReducers = camp::list<std::true_type>;
+#elif defined(CaptureReduce)
+using UseParamReducers = camp::list<std::false_type>;
+#else
+static_assert(false, "unreachable");
+#endif
 
 //
 // Cartesian product of types used in parameterized tests
@@ -241,7 +246,7 @@ using @BACKEND@KernelTile@TESTTYPE@Types =
   Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@Kernel@TESTTYPE@ExecPols,
                                 @BACKEND@ReducePols,
-                                UseReducerParams,
+                                UseParamReducers,
                                 TileSizes> >::Types;
 
 //
