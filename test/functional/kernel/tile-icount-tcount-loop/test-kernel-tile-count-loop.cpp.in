@@ -229,17 +229,9 @@ using SyclKernelTileTCountExecPols = camp::list<
 >;
 #endif  // if defined(RAJA_ENABLE_SYCL)
 
-#define @REDUCER_TYPE@
-// Switch to control testing old vs new reducer interface.
-// Note: CMake prevents configuration of a Sycl-ParamReduce test,
-// since ParamReduce in Sycl is currently unsupported.
-#if defined(ParamReduce)
-using UseParamReducers = camp::list<std::true_type>;
-#elif defined(CaptureReduce)
-using UseParamReducers = camp::list<std::false_type>;
-#else
-static_assert(false, "unreachable");
-#endif
+// Switch to control testing old vs new reducer interface
+using UseParamReduce = camp::list<std::true_type>;
+using UseCaptureReduce = camp::list<std::false_type>;
 
 //
 // Cartesian product of types used in parameterized tests
@@ -248,7 +240,7 @@ using @BACKEND@KernelTile@TESTTYPE@Types =
   Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@Kernel@TESTTYPE@ExecPols,
                                 @BACKEND@ReducePols,
-                                UseParamReducers,
+                                Use@REDUCER_TYPE@,
                                 TileSizes> >::Types;
 
 //

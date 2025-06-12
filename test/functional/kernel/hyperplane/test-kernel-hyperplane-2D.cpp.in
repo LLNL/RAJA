@@ -173,15 +173,10 @@ using HipKernelHyperplaneExecPols =
 // no existing SYCL implementation of Hyperplane
 #endif  // RAJA_ENABLE_SYCL
 
-#define @REDUCER_TYPE@
 // Switch to control testing old vs new reducer interface
-#if defined(ParamReduce)
-using UseParamReducers = camp::list<std::true_type>;
-#elif defined(CaptureReduce)
-using UseParamReducers = camp::list<std::false_type>;
-#else
-static_assert(false, "unreachable");
-#endif
+using UseParamReduce = camp::list<std::true_type>;
+using UseCaptureReduce = camp::list<std::false_type>;
+
 
 //
 // Cartesian product of types used in parameterized tests
@@ -192,7 +187,7 @@ using @BACKEND@KernelHyperplane =
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
                                 @BACKEND@ReducePols,
-                                UseParamReducers>>::Types;
+                                Use@REDUCER_TYPE@>>::Types;
 
 //
 // Instantiate parameterized test
