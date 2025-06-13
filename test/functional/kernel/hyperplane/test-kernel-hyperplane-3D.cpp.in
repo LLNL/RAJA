@@ -14,7 +14,6 @@
 #include "RAJA_test-kernel-tile-size.hpp"
 
 #include "RAJA_test-reducepol.hpp"
-#include "RAJA_test-reduce-types.hpp"
 
 // for data types
 #include "RAJA_test-reduce-types.hpp"
