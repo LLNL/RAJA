@@ -13,6 +13,7 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-reduce-types.hpp"
 
 //
 // Header for tests in ./tests directory
@@ -228,10 +229,6 @@ using SyclKernelTileTCountExecPols = camp::list<
 
 >;
 #endif  // if defined(RAJA_ENABLE_SYCL)
-
-// Switch to control testing old vs new reducer interface
-using UseParamReduce = camp::list<std::true_type>;
-using UseCaptureReduce = camp::list<std::false_type>;
 
 //
 // Cartesian product of types used in parameterized tests

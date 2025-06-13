@@ -19,7 +19,7 @@
 using SequentialReducePols = camp::list< RAJA::seq_reduce >;
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OpenMPReducePols = 
+using OpenMPReducePols =
 #if 0 // is ordered reduction broken???
   camp::list< RAJA::omp_reduce,
               RAJA::omp_reduce_ordered >;

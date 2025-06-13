@@ -19,7 +19,7 @@ struct Value {
 
 template<typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_REDUCER_PARAM>
 std::enable_if_t<USE_REDUCER_PARAM::value>
-call_kernel(IDX_TYPE& trip_count,
+CallKernel(IDX_TYPE& trip_count,
             IDX_TYPE& tile_count,
             IDX_TYPE t,
             IDX_TYPE N,
@@ -45,7 +45,7 @@ call_kernel(IDX_TYPE& trip_count,
 
 template<typename IDX_TYPE, typename EXEC_POLICY, typename REDUCE_POLICY, typename USE_REDUCER_PARAM>
 std::enable_if_t<!USE_REDUCER_PARAM::value>
-call_kernel(IDX_TYPE& _trip_count,
+CallKernel(IDX_TYPE& _trip_count,
             IDX_TYPE& _tile_count,
             IDX_TYPE t,
             IDX_TYPE N,
@@ -77,7 +77,7 @@ void KernelTileTileTCountDirectTestImpl(IDX_TYPE N, IDX_TYPE tsize)
 
   for (IDX_TYPE t = 0; t < NT; ++t) {
     IDX_TYPE tile_count = 0;
-    call_kernel<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_REDUCER_PARAM>(trip_count, tile_count, t, N, tsize);
+    CallKernel<IDX_TYPE, EXEC_POLICY, REDUCE_POLICY, USE_REDUCER_PARAM>(trip_count, tile_count, t, N, tsize);
 
     IDX_TYPE tile_expect = tsize;
     if ( (t + 1) * tsize > N ) {

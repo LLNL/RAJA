@@ -14,6 +14,7 @@
 #include "RAJA_test-kernel-tile-size.hpp"
 
 #include "RAJA_test-reducepol.hpp"
+#include "RAJA_test-reduce-types.hpp"
 
 // for data types
 #include "RAJA_test-reduce-types.hpp"
@@ -172,11 +173,6 @@ using HipKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_SYCL)
 // no existing SYCL implementation of Hyperplane
 #endif  // RAJA_ENABLE_SYCL
-
-// Switch to control testing old vs new reducer interface
-using UseParamReduce = camp::list<std::true_type>;
-using UseCaptureReduce = camp::list<std::false_type>;
-
 
 //
 // Cartesian product of types used in parameterized tests
