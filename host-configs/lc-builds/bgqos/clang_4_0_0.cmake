@@ -10,9 +10,9 @@ set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 set(CMAKE_CXX_COMPILER "/usr/apps/gnu/clang/r284961-stable/bin/bgclang++11" CACHE PATH "")
 set(CMAKE_C_COMPILER "/usr/apps/gnu/clang/r284961-stable/bin/bgclang" CACHE PATH "")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math -std=c++11 -stdlib=libc++" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -ffast-math -std=c++11 -stdlib=libc++" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -std=c++11 -stdlib=libc++" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math -std=c++17 -stdlib=libc++" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -ffast-math -std=c++17 -stdlib=libc++" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -std=c++17 -stdlib=libc++" CACHE STRING "")
 
 set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
