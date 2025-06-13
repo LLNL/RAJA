@@ -40,7 +40,7 @@ module load cmake/3.23.1
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/xl/xl-${COMP_XL_VER}/bin/xlc++_r \
-  -DBLT_CXX_STD=c++14 \
+  -DBLT_CXX_STD=c++17 \
   -C ../host-configs/lc-builds/blueos/nvcc_xl_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_CUDA=On \
