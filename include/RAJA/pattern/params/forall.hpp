@@ -15,7 +15,6 @@
 
 namespace RAJA
 {
-
 namespace expt
 {
 namespace detail
