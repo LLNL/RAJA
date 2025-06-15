@@ -15,10 +15,18 @@
 
 namespace RAJA
 {
+
+inline void SetRAJACaliperProfiling(bool enable)
+{
+  expt::detail::RAJA_caliper_profile = enable;
+}
+
 namespace expt
 {
 namespace detail
 {
+
+inline bool RAJA_caliper_profile = true;
 
 template<typename... Params>
 RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
@@ -410,9 +418,15 @@ std::string get_kernel_name_helper(
 template<typename... Args>
 std::string get_kernel_name(Args&&... args)
 {
-  return get_kernel_name_helper(
-      camp::forward_as_tuple(std::forward<Args>(args)...),
-      std::make_index_sequence<sizeof...(Args)> {});
+
+  //
+  // Empty strings do not get profiled in our Caliper plugin
+  //
+  return RAJA_caliper_profile
+             ? get_kernel_name_helper(
+                   camp::forward_as_tuple(std::forward<Args>(args)...),
+                   std::make_index_sequence<sizeof...(Args)> {})
+             : std::string();
 }
 
 //===========================================================================
