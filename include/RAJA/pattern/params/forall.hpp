@@ -16,16 +16,14 @@
 namespace RAJA
 {
 
-inline void SetRAJACaliperProfiling(bool enable)
-{
-  expt::detail::RAJA_caliper_profile = enable;
-}
-
 namespace expt
 {
 namespace detail
 {
 
+// Internal variable to toggle Caliper profiling on and off
+// Users have access to a global function.
+// Function is defined later in this file.
 inline bool RAJA_caliper_profile = true;
 
 template<typename... Params>
@@ -422,7 +420,7 @@ std::string get_kernel_name(Args&&... args)
   //
   // Empty strings do not get profiled in our Caliper plugin
   //
-  return RAJA_caliper_profile
+  return RAJA::expt::detail::RAJA_caliper_profile
              ? get_kernel_name_helper(
                    camp::forward_as_tuple(std::forward<Args>(args)...),
                    std::make_index_sequence<sizeof...(Args)> {})
@@ -624,6 +622,13 @@ RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params,
 //===========================================================================
 
 }  //  namespace expt
+
+// Global function to toggle Caliper profiling on and off
+inline void SetRAJACaliperProfiling(bool enable)
+{
+  ::RAJA::expt::detail::RAJA_caliper_profile = enable;
+}
+
 }  //  namespace RAJA
 
 #endif  //  FORALL_PARAM_HPP
