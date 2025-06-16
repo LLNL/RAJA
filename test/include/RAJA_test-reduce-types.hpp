@@ -18,6 +18,10 @@
 #include "RAJA/RAJA.hpp"
 #include "camp/list.hpp"
 
+// Switch to control testing old vs new reducer interface
+using UseParamReduce = camp::list<std::true_type>;
+using UseCaptureReduce = camp::list<std::false_type>;
+
 //
 // Reduce data types
 //
