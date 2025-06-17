@@ -68,6 +68,10 @@ raja_add_executable(
   SOURCES pi-reduce_vs_atomic.cpp)
 
 raja_add_executable(
+  NAME launch-high-dim-threads
+  SOURCES launch-high-dim-threads.cpp)
+
+raja_add_executable(
   NAME raja-launch
   SOURCES raja-launch.cpp)
 
