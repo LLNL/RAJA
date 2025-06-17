@@ -70,13 +70,13 @@ struct LaunchExecute<
     RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>>
 {
 
-  template<size_t ThreadDIM=3, typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams<ThreadDIM> & params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -87,14 +87,15 @@ struct LaunchExecute<
     resources::Hip hip_res = res.get<RAJA::resources::Hip>();
 
 
-    for(int k=0; k<3;++k) {
-      std::cout<<"params.threads.value "<<
-        params.threads.value[k]<<std::endl;
+    for (int k = 0; k < 3; ++k)
+    {
+      std::cout << "params.threads.value " << params.threads.value[k]
+                << std::endl;
     }
 
-    for(int k=0; k<3;++k) {
-      std::cout<<"params.teams.value "<<
-        params.teams.value[k]<<std::endl;
+    for (int k = 0; k < 3; ++k)
+    {
+      std::cout << "params.teams.value " << params.teams.value[k] << std::endl;
     }
 
 
@@ -121,7 +122,7 @@ struct LaunchExecute<
 
       {
         size_t shared_mem_size = params.shared_mem_size;
-        std::cout<<"launching kernel "<<std::endl;
+        std::cout << "launching kernel " << std::endl;
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
@@ -138,16 +139,18 @@ struct LaunchExecute<
       }
 
       RAJA_FT_END;
-    }else{
+    }
+    else
+    {
 
-      std::cout<<"did not launch kernel "<<std::endl;
+      std::cout << "did not launch kernel " << std::endl;
     }
 
     return resources::EventProxy<resources::Resource>(res);
   }
 
   // Version with explicit reduction parameters..
-  template<size_t ThreadDIM=3, typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -270,7 +273,7 @@ template<bool async, int nthreads>
 struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
 {
 
-  template<size_t ThreadDIM=3, typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -333,7 +336,7 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
   }
 
   // Version with explicit reduction parameters..
-  template<size_t ThreadDIM=3, typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,

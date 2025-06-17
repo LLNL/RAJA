@@ -147,6 +147,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       std::cout << "\n Running upper triangular pattern example on the device...\n";
     }
 
+    RAJA::LaunchParams();
+    
     //Example of high-dimensional thread-team
     RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads<4>(1,2,3,4));
     

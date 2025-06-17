@@ -40,7 +40,7 @@ template<>
 struct LaunchExecute<RAJA::seq_launch_t>
 {
 
-  template<typename BODY,size_t ThreadDIM=3, typename ReduceParams>
+  template<typename BODY, size_t ThreadDIM = 3, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -64,7 +64,7 @@ struct LaunchExecute<RAJA::seq_launch_t>
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename BODY, size_t ThreadDIM=3, typename ReduceParams>
+  template<typename BODY, size_t ThreadDIM = 3, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,

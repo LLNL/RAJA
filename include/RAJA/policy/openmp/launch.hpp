@@ -28,7 +28,7 @@ template<>
 struct LaunchExecute<RAJA::omp_launch_t>
 {
 
-  template<size_t ThreadDIM=3, typename BODY, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
@@ -55,7 +55,7 @@ struct LaunchExecute<RAJA::omp_launch_t>
     return resources::EventProxy<resources::Resource>(res);
   }
 
-  template<typename ReduceParams, typename BODY, size_t ThreadDIM=3>
+  template<typename ReduceParams, typename BODY, size_t ThreadDIM = 3>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,

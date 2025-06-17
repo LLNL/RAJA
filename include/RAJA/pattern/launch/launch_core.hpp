@@ -107,7 +107,7 @@ struct Teams
   constexpr Teams(int i, int j, int k) : value {i, j, k} {}
 };
 
-template<size_t DIM=3>
+template<size_t DIM = 3>
 struct Threads
 {
   int value[DIM];
@@ -131,28 +131,14 @@ struct Threads
 
   RAJA_HOST_DEVICE
   constexpr Threads(int i, int j, int k) : value {i, j, k} {}
+
   //#else
-  template<typename...Args>
-  constexpr Threads(Args...args) : value{args...} {};
+  template<typename... Args>
+  constexpr Threads(Args... args) : value {args...} {};
 #endif
 };
 
-struct Lanes
-{
-  int value;
-
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  constexpr Lanes() : value(0) {}
-
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  constexpr Lanes(int i) : value(i) {}
-};
-
-template<size_t ThreadDIM>
+template<size_t ThreadDIM = 3>
 struct LaunchParams
 {
 public:
@@ -163,7 +149,6 @@ public:
   RAJA_INLINE
   LaunchParams() = default;
 
-  //template<size_t ThreadDIM>
   LaunchParams(Teams in_teams,
                Threads<ThreadDIM> in_threads,
                size_t in_shared_mem_size = 0)
@@ -255,7 +240,7 @@ struct LaunchExecute;
 
 // Duplicate of code above on account that we need to support the case in which
 // a kernel_name is not given
-template<typename LAUNCH_POLICY,size_t ThreadDIM=3, typename... ReduceParams>
+template<typename LAUNCH_POLICY, size_t ThreadDIM = 3, typename... ReduceParams>
 void launch(LaunchParams<ThreadDIM> const& launch_params,
             ReduceParams&&... rest_of_launch_args)
 {
@@ -297,15 +282,17 @@ void launch(LaunchParams<ThreadDIM> const& launch_params,
 //=================================================
 // Run time based policy launch
 //=================================================
-template<typename POLICY_LIST, size_t ThreadDIM=3, typename BODY>
-void launch(ExecPlace place, LaunchParams<ThreadDIM> const& params, BODY const& body)
+template<typename POLICY_LIST, size_t ThreadDIM = 3, typename BODY>
+void launch(ExecPlace place,
+            LaunchParams<ThreadDIM> const& params,
+            BODY const& body)
 {
   launch<POLICY_LIST>(place, params, body);
 }
 
 // Run-time API for new reducer interface with support of the case without a new
 // kernel name
-template<typename POLICY_LIST, size_t ThreadDIM=3, typename... ReduceParams>
+template<typename POLICY_LIST, size_t ThreadDIM = 3, typename... ReduceParams>
 void launch(ExecPlace place,
             LaunchParams<ThreadDIM> const& launch_params,
             ReduceParams&&... rest_of_launch_args)
@@ -376,7 +363,7 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device)
 
 // Duplicate of API above on account that we need to handle the case that a
 // kernel name is not provided
-template<typename POLICY_LIST, size_t ThreadDIM=3, typename... ReduceParams>
+template<typename POLICY_LIST, size_t ThreadDIM = 3, typename... ReduceParams>
 resources::EventProxy<resources::Resource> launch(
     RAJA::resources::Resource res,
     LaunchParams<ThreadDIM> const& launch_params,
