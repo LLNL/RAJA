@@ -9,7 +9,7 @@ jobs:
 ##    static:
 ##      SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-2022'
   variables:
     CMAKE_EXTRA_FLAGS: '-DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
   steps:
