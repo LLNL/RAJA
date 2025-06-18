@@ -158,6 +158,11 @@ endif ()
 set (raja_depends)
 
 if (RAJA_ENABLE_CALIPER)
+
+if (RAJA_ENABLE_CUDA)
+find_package(CUDAToolkit)
+endif()
+  
 set (raja_depends
     ${raja_depends}
     caliper)
