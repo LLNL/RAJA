@@ -82,7 +82,7 @@ Gitlab CI testing. These are described in the RAJA Developer Guide.
 
 Dependencies that are required to build the RAJA code are:
 
-- A C++ 14 standard compliant compiler
+- A C++ 17 standard compliant compiler
 - `BLT build system <https://github.com/LLNL/blt>`_
 - `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 - `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_
