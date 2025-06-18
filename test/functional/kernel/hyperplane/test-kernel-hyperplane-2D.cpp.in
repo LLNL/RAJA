@@ -54,7 +54,7 @@ using SequentialKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_OPENMP)
 
 using OpenMPKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
@@ -78,7 +78,7 @@ using OpenMPKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 using OpenMPTargetKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<16>,
@@ -102,7 +102,7 @@ using OpenMPTargetKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -181,7 +181,8 @@ using @BACKEND@KernelHyperplane =
                                 ReduceDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
-                                @BACKEND@ReducePols>>::Types;
+                                @BACKEND@ReducePols,
+                                Use@REDUCER_TYPE@>>::Types;
 
 //
 // Instantiate parameterized test

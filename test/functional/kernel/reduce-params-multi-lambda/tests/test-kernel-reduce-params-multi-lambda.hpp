@@ -73,6 +73,7 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
 
   DATA_TYPE sum_1 = 0;
   DATA_TYPE sum_2 = 0;
+  DATA_TYPE mutual_sum = 0;
   DATA_TYPE sum_seq = 0;
 
   DATA_TYPE min_1 = 0;
@@ -96,14 +97,19 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
       RAJA::expt::Reduce<RAJA::operators::minimum>(&min_2),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&max_1),
       RAJA::expt::Reduce<RAJA::operators::maximum>(&max_2),
-      double {0.0}
+      double {0.0},
+      // This reducer capture tests that our calls to init/resolve are
+      // not init or resolving reducers in between lambda calls.
+      RAJA::expt::Reduce<RAJA::operators::plus>(&mutual_sum)
     ),
       [=] RAJA_HOST_DEVICE (int c,
                             int r,
                             VALOP_DATA_TYPE_SUM &_sum,
                             VALOP_DATA_TYPE_MIN &_min,
-                            VALOP_DATA_TYPE_MAX &_max) {
+                            VALOP_DATA_TYPE_MAX &_max,
+                            VALOP_DATA_TYPE_SUM &_mutual_sum) {
         _sum += workarr2D[r][c];
+        _mutual_sum += workarr2D[r][c];
         _min.min(workarr2D[r][c]);
         _max.max(workarr2D[r][c]);
       },
@@ -112,8 +118,10 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
                             VALOP_DATA_TYPE_SUM &_sum,
                             VALOP_DATA_TYPE_MIN &_min,
                             VALOP_DATA_TYPE_MAX &_max,
-                            double) {
+                            double,
+                            VALOP_DATA_TYPE_SUM &_mutual_sum) {
         _sum += workarr2D[r][c];
+        _mutual_sum += workarr2D[r][c];
         _min.min(workarr2D[r][c]);
         _max.max(workarr2D[r][c]);
       }
@@ -150,6 +158,8 @@ void KernelParamReduceMultiLambda(const int xdim, const int ydim)
   ASSERT_DOUBLE_EQ(max_seq, max_1);
   ASSERT_DOUBLE_EQ(max_seq, max_2);
   ASSERT_DOUBLE_EQ(max_1, max_2);
+
+  ASSERT_DOUBLE_EQ(mutual_sum, sum_1 + sum_2);
 
 
   deallocateForallTestData<DATA_TYPE> ( work_res,
