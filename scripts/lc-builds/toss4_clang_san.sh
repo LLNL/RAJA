@@ -42,7 +42,7 @@ module load cmake/3.23.1
 cmake \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-${COMP_VER}/bin/clang++ \
-  -DBLT_CXX_STD=c++14 \
+  -DBLT_CXX_STD=c++17 \
   -C ../host-configs/lc-builds/toss4/clang_X_${SAN_VER}.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_BENCHMARKS=ON \

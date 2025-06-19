@@ -52,7 +52,7 @@ cmake \
   -DCMAKE_HIP_ARCHITECTURES=${HIP_ARCH} \
   -DGPU_TARGETS=${HIP_ARCH} \
   -DAMDGPU_TARGETS=${HIP_ARCH} \
-  -DBLT_CXX_STD=c++14 \
+  -DBLT_CXX_STD=c++17 \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=ON \

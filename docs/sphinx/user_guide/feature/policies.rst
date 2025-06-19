@@ -1152,7 +1152,7 @@ RAJA Kernel Execution Policies
 
 RAJA kernel execution policy constructs form a simple domain specific language
 for composing and transforming complex loops that relies
-**solely on standard C++14 template support**.
+**solely on standard C++17 template support**.
 RAJA kernel policies are constructed using a combination of *Statements* and
 *Statement Lists*. A RAJA Statement is an action, such as execute a loop,
 invoke a lambda, set a thread barrier, etc. A StatementList is an ordered list
