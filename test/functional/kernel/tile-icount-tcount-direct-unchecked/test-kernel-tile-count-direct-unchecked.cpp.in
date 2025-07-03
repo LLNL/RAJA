@@ -13,6 +13,7 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-reduce-types.hpp"
 
 //
 // Header for tests in ./tests directory
@@ -22,7 +23,7 @@
 
 //
 // Note that a separate test file/executable is generated for each tile size
-// defined via CMake variable 'TILESIZE' defined in CMakeLists.txt file. 
+// defined via CMake variable 'TILESIZE' defined in CMakeLists.txt file.
 // The reason for doing it this way is that the tests require the tile size
 // in the exec policy must match the tile size value defined here. Defining
 // multiple tile sizes in a list here and using that to define a cartesian
@@ -36,11 +37,11 @@ using TileSizes = camp::list< Value<@TILESIZE@> >;
 //
 // Num reduction policies must match num exec policies.
 //
-using CudaReducePols = camp::list< RAJA::cuda_reduce >; 
+using CudaReducePols = camp::list< RAJA::cuda_reduce >;
 
-using CudaKernelForICountExecPols = camp::list< 
+using CudaKernelForICountExecPols = camp::list<
 
-  RAJA::KernelPolicy< 
+  RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_direct_unchecked,
         RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct_unchecked,
@@ -52,7 +53,7 @@ using CudaKernelForICountExecPols = camp::list<
 
 >;
 
-using CudaKernelTileTCountExecPols = camp::list< 
+using CudaKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
@@ -71,11 +72,11 @@ using CudaKernelTileTCountExecPols = camp::list<
 //
 // Num reduction policies must match num exec policies.
 //
-using HipReducePols = camp::list< RAJA::hip_reduce >; 
+using HipReducePols = camp::list< RAJA::hip_reduce >;
 
 using HipKernelForICountExecPols = camp::list<
 
-  RAJA::KernelPolicy< 
+  RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_direct_unchecked,
         RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct_unchecked,
@@ -87,7 +88,7 @@ using HipKernelForICountExecPols = camp::list<
 
 >;
 
-using HipKernelTileTCountExecPols = camp::list< 
+using HipKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
@@ -97,7 +98,7 @@ using HipKernelTileTCountExecPols = camp::list<
         >
       >
     >
-  > 
+  >
 
 >;
 #endif  // if defined(RAJA_ENABLE_HIP)
@@ -109,6 +110,7 @@ using @BACKEND@KernelTile@TESTTYPE@Types =
   Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@Kernel@TESTTYPE@ExecPols,
                                 @BACKEND@ReducePols,
+                                Use@REDUCER_TYPE@,
                                 TileSizes> >::Types;
 
 //

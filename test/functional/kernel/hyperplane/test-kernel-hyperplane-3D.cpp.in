@@ -98,7 +98,7 @@ using OpenMPTargetKernelHyperplaneExecPols =
 #if defined(RAJA_ENABLE_CUDA)
 
 using CudaKernelHyperplaneExecPols =
-  camp::list< 
+  camp::list<
 
     RAJA::KernelPolicy<
       RAJA::statement::CudaKernel<
@@ -201,7 +201,8 @@ using @BACKEND@KernelHyperplane =
                                 ReduceDataTypeList,
                                 @BACKEND@ResourceList,
                                 @BACKEND@KernelHyperplaneExecPols,
-                                @BACKEND@ReducePols>>::Types;
+                                @BACKEND@ReducePols,
+                                Use@REDUCER_TYPE@>>::Types;
 
 //
 // Instantiate parameterized test
