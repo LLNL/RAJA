@@ -72,13 +72,13 @@ struct LaunchExecute<
                                                named_usage::unspecified>>
 {
 
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -87,6 +87,18 @@ struct LaunchExecute<
     auto func = reinterpret_cast<const void*>(&launch_global_fcn<BODY>);
 
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
+
+    for (int k = 0; k < 3; ++k)
+    {
+      std::cout << "params.threads.value " << params.threads.value[k]
+                << std::endl;
+    }
+
+    for (int k = 0; k < 3; ++k)
+    {
+      std::cout << "params.teams.value " << params.teams.value[k] << std::endl;
+    }
+
 
     //
     // Compute the number of blocks and threads
@@ -129,19 +141,23 @@ struct LaunchExecute<
 
       RAJA_FT_END;
     }
+    else
+    {
+      std::cout << "did not launch kernel " << std::endl;
+    }
 
     return resources::EventProxy<resources::Resource>(res);
   }
 
   // Version with explicit reduction parameters..
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -260,13 +276,13 @@ struct LaunchExecute<
     RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>>
 {
 
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -323,14 +339,14 @@ struct LaunchExecute<
   }
 
   // Version with explicit reduction parameters..
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM=3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
