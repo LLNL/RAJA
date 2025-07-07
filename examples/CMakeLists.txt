@@ -72,6 +72,10 @@ raja_add_executable(
   SOURCES launch-high-dim-threads.cpp)
 
 raja_add_executable(
+  NAME 4D_tensor_contraction
+  SOURCES 4D_tensor_contraction.cpp)
+
+raja_add_executable(
   NAME raja-launch
   SOURCES raja-launch.cpp)
 

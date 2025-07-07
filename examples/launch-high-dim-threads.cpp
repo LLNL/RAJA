@@ -156,8 +156,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     RAJA::launch<launch_policy>
       (select_cpu_or_gpu,
-       //RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads<4>(1,2,3,4)),
-       RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
+       RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads<4>(1,2,3,4)),
+       //RAJA::LaunchParams(RAJA::Teams(N_tri), RAJA::Threads(N_tri)),
        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
          printf("in kernel \n");
          RAJA::loop<teams_x>(ctx, RAJA::RangeSegment(0, N_tri), [&](int r) {

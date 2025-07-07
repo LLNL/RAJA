@@ -110,7 +110,8 @@ struct Teams
 template<size_t DIM = 3>
 struct Threads
 {
-  int value[DIM];
+  std::array<int, DIM> value;
+  //int value[DIM];
 #if 1
   RAJA_INLINE
 
@@ -134,7 +135,7 @@ struct Threads
 
   //#else
   template<typename... Args>
-  constexpr Threads(Args... args) : value {args...} {};
+  constexpr Threads(Args... args) : value {static_cast<int>(args)...} {};
 #endif
 };
 
