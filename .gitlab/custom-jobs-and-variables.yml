@@ -25,9 +25,9 @@ variables:
 
 # Dane
 # Arguments for top level allocation
-  DANE_SHARED_ALLOC: "--exclusive --time=120 --nodes=1"
+  DANE_SHARED_ALLOC: "--exclusive --reservation=ci --time=120 --nodes=1"
 # Arguments for job level allocation
-  DANE_JOB_ALLOC: "--nodes=1"
+  DANE_JOB_ALLOC: "--reservation=ci --nodes=1"
 # Project specific variants for dane
   PROJECT_DANE_VARIANTS: "~shared +openmp +vectorization +tests"
 # Project specific deps for dane
