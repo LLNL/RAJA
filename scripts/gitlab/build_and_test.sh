@@ -204,7 +204,7 @@ then
     # Shared allocation: Allows build_and_test.sh to run within a sub-allocation (see CI config).
     # Use /dev/shm: Prevent MPI tests from running on a node where the build dir doesn't exist.
     cmake_options=""
-    if [[ "${truehostname}" == "ruby" || "${truehostname}" == "poodle" ]]
+    if [[ "${truehostname}" == "ruby" || "${truehostname}" == "poodle" || "${truehostname}" == "dane" ]]
     then
         cmake_options="-DBLT_MPI_COMMAND_APPEND:STRING=--overlap"
     fi
