@@ -33,7 +33,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 {
 
   // If the launch lambda is trivially copyable
-  template<size_t ThreadDIM = 3, typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -102,7 +103,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
   // If the launch lambda is trivially copyable and we have explcit reduction
   // parameters
-  template<size_t ThreadDIM = 3, typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -194,7 +196,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
   }
 
   // If the launch lambda is not trivially copyable
-  template<size_t ThreadDIM = 3, typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<!std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -269,7 +272,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
   }
 
   // If the launch lambda is not trivially copyable
-  template<size_t ThreadDIM = 3, typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<!std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>

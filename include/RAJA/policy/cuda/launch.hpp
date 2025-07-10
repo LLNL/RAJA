@@ -28,21 +28,24 @@
 namespace RAJA
 {
 
-//internal helper function
+// internal helper function
 namespace detail
 {
 
 template<typename T, size_t... I>
-constexpr T multiply_impl(const std::array<T, sizeof...(I)>& arr, std::index_sequence<I...>) {
-    return (arr[I] * ...);
+constexpr T multiply_impl(const std::array<T, sizeof...(I)>& arr,
+                          std::index_sequence<I...>)
+{
+  return (arr[I] * ...);
 }
 
 template<typename T, size_t N>
-constexpr T multiplyArray(const std::array<T, N>& arr) {
-    return multiply_impl(arr, std::make_index_sequence<N>{});
+constexpr T multiplyArray(const std::array<T, N>& arr)
+{
+  return multiply_impl(arr, std::make_index_sequence<N> {});
 }
 
-}
+}  // namespace detail
 
 template<typename BODY>
 __global__ void launch_global_fcn(BODY body_in)
@@ -105,8 +108,10 @@ struct LaunchExecute<
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
 
 
-    if(params.threads.value.size() > 3) {
-      std::cout<<"threads container is larger than 3 : "<<params.threads.value.size() <<std::endl;
+    if (params.threads.value.size() > 3)
+    {
+      std::cout << "threads container is larger than 3 : "
+                << params.threads.value.size() << std::endl;
     }
 
 
@@ -120,18 +125,22 @@ struct LaunchExecute<
 
     cuda_dim_t blockSize;
 
-    if(params.threads.value.size() < 4)
+    if (params.threads.value.size() < 4)
     {
-      blockSize = cuda_dim_t{static_cast<cuda_dim_member_t>(params.threads.value[0]),
-                             static_cast<cuda_dim_member_t>(params.threads.value[1]),
-                             static_cast<cuda_dim_member_t>(params.threads.value[2])};
-    } else {
+      blockSize =
+          cuda_dim_t {static_cast<cuda_dim_member_t>(params.threads.value[0]),
+                      static_cast<cuda_dim_member_t>(params.threads.value[1]),
+                      static_cast<cuda_dim_member_t>(params.threads.value[2])};
+    }
+    else
+    {
 
       int total_threads = detail::multiplyArray(params.threads.value);
-      std::cout<<"Total threads"<<std::endl;
-      blockSize = cuda_dim_t{static_cast<cuda_dim_member_t>(detail::multiplyArray(params.threads.value)),
-                             static_cast<cuda_dim_member_t>(1),
-                             static_cast<cuda_dim_member_t>(1)};
+      std::cout << "Total threads" << std::endl;
+      blockSize = cuda_dim_t {static_cast<cuda_dim_member_t>(
+                                  detail::multiplyArray(params.threads.value)),
+                              static_cast<cuda_dim_member_t>(1),
+                              static_cast<cuda_dim_member_t>(1)};
     }
 
     /*
@@ -367,7 +376,7 @@ struct LaunchExecute<
   }
 
   // Version with explicit reduction parameters..
-  template<size_t ThreadDIM=3, typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,

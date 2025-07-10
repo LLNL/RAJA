@@ -111,7 +111,7 @@ template<size_t DIM = 3>
 struct Threads
 {
   std::array<int, DIM> value;
-  //int value[DIM];
+  // int value[DIM];
 #if 1
   RAJA_INLINE
 
