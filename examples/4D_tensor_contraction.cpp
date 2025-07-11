@@ -61,33 +61,33 @@ using teams = RAJA::LoopPolicy<RAJA::seq_exec
 
 using loop_0 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_HIP)
-                                ,RAJA::seq_exec
+                                ,RAJA::hip_loop_dim_exec<0>
 #endif
                                 >;
 using loop_1 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_HIP)
-                                ,RAJA::seq_exec
+                                ,RAJA::hip_loop_dim_exec<1>
 #endif
                                 >;
 using loop_2 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_HIP)
-                                ,RAJA::seq_exec
+                                ,RAJA::hip_loop_dim_exec<2>
 #endif
                                 >;
 using loop_3 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_HIP)
-                                ,RAJA::seq_exec
+                                ,RAJA::hip_loop_dim_exec<3>
 #endif
                                 >;
 
 using loop_4 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_HIP)
-                                ,RAJA::seq_exec
+                                ,RAJA::hip_loop_dim_exec<4>
 #endif
                                 >;
 using loop_5 = RAJA::LoopPolicy<RAJA::seq_exec
 #if defined(RAJA_ENABLE_HIP)
-                                ,RAJA::seq_exec
+                                ,RAJA::hip_loop_dim_exec<5>
 #endif
                                 >;
 
@@ -97,17 +97,17 @@ void tensor_contraction(AVIEW A, BVIEW B, CVIEW C, RAJA::ExecPlace platform)
 {
 
   RAJA::launch<launch_policy>
-    (RAJA::LaunchParams(RAJA::Teams(TotalMats), RAJA::Threads<6>(I, J, K, M, N, O)),
+    (platform, RAJA::LaunchParams(RAJA::Teams(TotalMats), RAJA::Threads<6>(I, J, K, M, N, O)),
        [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
          RAJA::loop<teams>(ctx, RAJA::RangeSegment(0, TotalMats), [&](int r) {
 
-           RAJA::loop<loop_0>(ctx, RAJA::RangeSegment(0, I), [&](int i) {
-             RAJA::loop<loop_1>(ctx, RAJA::RangeSegment(0, J), [&](int j) {
-               RAJA::loop<loop_2>(ctx, RAJA::RangeSegment(0, K), [&](int k) {
-                 RAJA::loop<loop_3>(ctx, RAJA::RangeSegment(0, M), [&](int m) {
-                   RAJA::loop<loop_4>(ctx, RAJA::RangeSegment(0, N), [&](int n) {
-                     RAJA::loop<loop_5>(ctx, RAJA::RangeSegment(0, O), [&](int o) {
+           RAJA::loop<loop_5>(ctx, RAJA::RangeSegment(0, I), [&](int i) {
+             RAJA::loop<loop_4>(ctx, RAJA::RangeSegment(0, J), [&](int j) {
+               RAJA::loop<loop_3>(ctx, RAJA::RangeSegment(0, K), [&](int k) {
+                 RAJA::loop<loop_2>(ctx, RAJA::RangeSegment(0, M), [&](int m) {
+                   RAJA::loop<loop_1>(ctx, RAJA::RangeSegment(0, N), [&](int n) {
+                     RAJA::loop<loop_0>(ctx, RAJA::RangeSegment(0, O), [&](int o) {
 
                        double dot = 0.0;
                        for(int l = 0; l < L; ++l) {
@@ -169,6 +169,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
 
   }
+
+
+
+  tensor_contraction(A, B, C, RAJA::ExecPlace::HOST);
+
+  tensor_contraction(A, B, test_C, RAJA::ExecPlace::DEVICE);
+
+
+  //test correctness
+  double diff = 0.0;
+  for(int i = 0; i < I * J * K * M * N * O; ++i) {
+    diff += fabs(Cptr[i] - test_Cptr[i]);
+  }
+
+  std::cout<<"diff = "<<diff<<std::endl;
+
+
 
 
 }  // Main

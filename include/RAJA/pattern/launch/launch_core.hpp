@@ -107,9 +107,10 @@ struct Teams
   constexpr Teams(int i, int j, int k) : value {i, j, k} {}
 };
 
-template<size_t DIM = 3>
+template<size_t DIM=3>
 struct Threads
 {
+
   std::array<int, DIM> value;
   // int value[DIM];
 #if 1
@@ -179,6 +180,10 @@ public:
   size_t shared_mem_offset;
 
   void* shared_mem_ptr;
+
+  //hardcoded for now...
+  std::array<int, 6> thread_dim;
+  std::array<int, 6> thread_id;
 
 #if defined(RAJA_ENABLE_SYCL)
   mutable ::sycl::nd_item<3>* itm;

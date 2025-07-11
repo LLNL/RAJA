@@ -28,25 +28,6 @@
 namespace RAJA
 {
 
-// internal helper function
-namespace detail
-{
-
-template<typename T, size_t... I>
-constexpr T multiply_impl(const std::array<T, sizeof...(I)>& arr,
-                          std::index_sequence<I...>)
-{
-  return (arr[I] * ...);
-}
-
-template<typename T, size_t N>
-constexpr T multiplyArray(const std::array<T, N>& arr)
-{
-  return multiply_impl(arr, std::make_index_sequence<N> {});
-}
-
-}  // namespace detail
-
 template<typename BODY>
 __global__ void launch_global_fcn(BODY body_in)
 {
