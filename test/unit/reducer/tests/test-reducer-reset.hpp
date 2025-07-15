@@ -87,7 +87,7 @@ template <  typename ReducePolicy,
 void testReducerReset()
 {
   camp::resources::Resource work_res{WORKING_RES::get_default()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   NumericType * resetVal = nullptr;
   NumericType * workVal = nullptr;
@@ -98,15 +98,8 @@ void testReducerReset()
   resetVal = host_res.allocate<NumericType>(1);
 
   work_res.memcpy( workVal, &initVal, sizeof(initVal) );
+  work_res.wait();
   resetVal[0] = (NumericType)10;
-
-  #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-  #endif
-
-  #if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-  #endif
 
   RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
   RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);

@@ -27,7 +27,7 @@ template <typename ExecPolicy,
           typename DispatchTyper,
           typename IndexType,
           typename Allocator,
-          typename WORKINGRES,
+          typename WorkingRes,
           RAJA::Platform PLATFORM>
 struct PluginWorkGroupTestImpl {
 void operator()() const
@@ -58,7 +58,7 @@ void operator()() const
                   Allocator
                 >;
 
-  SetupPluginVars spv(WORKINGRES{});
+  SetupPluginVars spv(WorkingRes::get_default());
 
   CounterData* data = plugin_test_resource->allocate<CounterData>(10);
 
@@ -73,6 +73,7 @@ void operator()() const
       loop_data[i].launch_counter_post    = -1;
     }
     plugin_test_resource->memcpy(data, &loop_data[0], 10*sizeof(CounterData));
+    plugin_test_resource->wait();
   }
 
   WorkPool_type pool(Allocator{});
@@ -84,6 +85,7 @@ void operator()() const
   {
     CounterData plugin_data;
     plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+    plugin_test_resource->wait();
     ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
     ASSERT_EQ(plugin_data.capture_counter_pre,     10);
     ASSERT_EQ(plugin_data.capture_counter_post,    10);
@@ -95,6 +97,7 @@ void operator()() const
   {
     CounterData loop_data[10];
     plugin_test_resource->memcpy(&loop_data[0], data, 10*sizeof(CounterData));
+    plugin_test_resource->wait();
 
     for (int i = 0; i < 10; i++) {
       ASSERT_EQ(loop_data[i].capture_platform_active, RAJA::Platform::undefined);
@@ -111,6 +114,7 @@ void operator()() const
   {
     CounterData plugin_data;
     plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+    plugin_test_resource->wait();
     ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
     ASSERT_EQ(plugin_data.capture_counter_pre,     10);
     ASSERT_EQ(plugin_data.capture_counter_post,    10);
@@ -122,6 +126,7 @@ void operator()() const
   {
     CounterData loop_data[10];
     plugin_test_resource->memcpy(&loop_data[0], data, 10*sizeof(CounterData));
+    plugin_test_resource->wait();
 
     for (int i = 0; i < 10; i++) {
       ASSERT_EQ(loop_data[i].capture_platform_active, RAJA::Platform::undefined);
@@ -138,6 +143,7 @@ void operator()() const
   {
     CounterData plugin_data;
     plugin_test_resource->memcpy(&plugin_data, plugin_test_data, sizeof(CounterData));
+    plugin_test_resource->wait();
     ASSERT_EQ(plugin_data.capture_platform_active, RAJA::Platform::undefined);
     ASSERT_EQ(plugin_data.capture_counter_pre,     10);
     ASSERT_EQ(plugin_data.capture_counter_post,    10);
@@ -149,6 +155,7 @@ void operator()() const
   {
     CounterData loop_data[10];
     plugin_test_resource->memcpy(&loop_data, data, 10*sizeof(CounterData));
+    plugin_test_resource->wait();
 
     for (int i = 0; i < 10; i++) {
       ASSERT_EQ(loop_data[i].capture_platform_active, PLATFORM);
@@ -172,7 +179,7 @@ template <size_t BLOCK_SIZE, bool Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
-          typename WORKINGRES,
+          typename WorkingRes,
           RAJA::Platform PLATFORM
           >
 struct PluginWorkGroupTestImpl<RAJA::hip_work<BLOCK_SIZE, Async>,
@@ -181,7 +188,7 @@ struct PluginWorkGroupTestImpl<RAJA::hip_work<BLOCK_SIZE, Async>,
                                detail::indirect_function_call_dispatch_typer,
                                IndexType,
                                Allocator,
-                               WORKINGRES,
+                               WorkingRes,
                                PLATFORM> {
 void operator()() const
 { }
@@ -191,7 +198,7 @@ template <size_t BLOCK_SIZE, bool Async,
           typename StoragePolicy,
           typename IndexType,
           typename Allocator,
-          typename WORKINGRES,
+          typename WorkingRes,
           RAJA::Platform PLATFORM
           >
 struct PluginWorkGroupTestImpl<RAJA::hip_work<BLOCK_SIZE, Async>,
@@ -200,7 +207,7 @@ struct PluginWorkGroupTestImpl<RAJA::hip_work<BLOCK_SIZE, Async>,
                                detail::indirect_virtual_function_dispatch_typer,
                                IndexType,
                                Allocator,
-                               WORKINGRES,
+                               WorkingRes,
                                PLATFORM> {
 void operator()() const
 { }
