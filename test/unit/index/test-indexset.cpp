@@ -17,7 +17,7 @@
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests.
 //
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
 
 TEST(IndexSetUnitTest, Empty)
