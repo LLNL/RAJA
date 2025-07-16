@@ -19,7 +19,7 @@ void LaunchRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   INDEX_TYPE N = INDEX_TYPE(r1.size());
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
