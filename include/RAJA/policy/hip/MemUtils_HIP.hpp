@@ -50,9 +50,9 @@ RAJA_INLINE
 hipDeviceProp_t get_device_prop()
 {
   int device;
-  hipErrchk(hipGetDevice(&device));
+  hipErrchk(hipGetDevice, &device);
   hipDeviceProp_t prop;
-  hipErrchk(hipGetDeviceProperties(&prop, device));
+  hipErrchk(hipGetDeviceProperties, &prop, device);
   return prop;
 }
 
@@ -73,15 +73,15 @@ struct PinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    hipErrchk(hipHostMalloc(&ptr, nbytes,
-                            hipHostMallocMapped | hipHostMallocNonCoherent));
+    hipErrchk(hipHostMalloc, &ptr, nbytes,
+                            hipHostMallocMapped | hipHostMallocNonCoherent);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    hipErrchk(hipHostFree(ptr));
+    hipErrchk(hipHostFree, ptr);
     return true;
   }
 };
@@ -94,14 +94,14 @@ struct DeviceAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    hipErrchk(hipMalloc(&ptr, nbytes));
+    hipErrchk(hipMalloc, &ptr, nbytes);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    hipErrchk(hipFree(ptr));
+    hipErrchk(hipFree, ptr);
     return true;
   }
 };
@@ -116,16 +116,16 @@ struct DeviceZeroedAllocator
   {
     auto res = ::camp::resources::Hip::get_default();
     void* ptr;
-    hipErrchk(hipMalloc(&ptr, nbytes));
-    hipErrchk(hipMemsetAsync(ptr, 0, nbytes, res.get_stream()));
-    hipErrchk(hipStreamSynchronize(res.get_stream()));
+    hipErrchk(hipMalloc, &ptr, nbytes);
+    hipErrchk(hipMemsetAsync, ptr, 0, nbytes, res.get_stream());
+    hipErrchk(hipStreamSynchronize, res.get_stream());
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    hipErrchk(hipFree(ptr));
+    hipErrchk(hipFree, ptr);
     return true;
   }
 };
@@ -138,14 +138,14 @@ struct DevicePinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    hipErrchk(hipMalloc(&ptr, nbytes));
+    hipErrchk(hipMalloc, &ptr, nbytes);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    hipErrchk(hipFree(ptr));
+    hipErrchk(hipFree, ptr);
     return true;
   }
 };
@@ -211,7 +211,7 @@ void synchronize()
   }
   if (synchronize)
   {
-    hipErrchk(hipDeviceSynchronize());
+    hipErrchk(hipDeviceSynchronize);
   }
 }
 
@@ -270,13 +270,13 @@ void launch(const void* func,
             bool async = true)
 {
   hipErrchk(
-      hipLaunchKernel(func, gridDim, blockDim, args, shmem, res.get_stream()));
+      hipLaunchKernel, func, gridDim, blockDim, args, shmem, res.get_stream());
   launch(res, async);
 }
 
 //! Check for errors
 RAJA_INLINE
-void peekAtLastError() { hipErrchk(hipPeekAtLastError()); }
+void peekAtLastError() { hipErrchk(hipPeekAtLastError); }
 
 //! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
@@ -315,7 +315,7 @@ RAJA_INLINE
 size_t maxDynamicShmem()
 {
   hipFuncAttributes func_attr;
-  hipErrchk(hipFuncGetAttributes(&func_attr, detail::tl_status.func));
+  hipErrchk(hipFuncGetAttributes, &func_attr, detail::tl_status.func);
   return func_attr.maxDynamicSharedSizeBytes;
 }
 
@@ -426,9 +426,9 @@ hip_occupancy_max_blocks_threads(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    hipErrchk(hipOccupancyMaxPotentialBlockSize(
+    hipErrchk(hipOccupancyMaxPotentialBlockSize,
         &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
-        func, func_dynamic_shmem_per_block));
+        func, func_dynamic_shmem_per_block);
 #else
     RAJA_UNUSED_VAR(func);
     hipDeviceProp_t& prop           = hip::device_prop();
@@ -462,9 +462,9 @@ hip_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
     data.func_threads_per_block       = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
-        func_dynamic_shmem_per_block));
+        func_dynamic_shmem_per_block);
 #else
     RAJA_UNUSED_VAR(func);
     data.func_max_blocks_per_sm =
@@ -496,9 +496,9 @@ hip_occupancy_max_blocks(const void* func,
     data.func_threads_per_block       = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor(
+    hipErrchk(hipOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
-        func_dynamic_shmem_per_block));
+        func_dynamic_shmem_per_block);
 #else
     RAJA_UNUSED_VAR(func);
     data.func_max_blocks_per_sm =

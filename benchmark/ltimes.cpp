@@ -1084,15 +1084,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  cudaErrchk( cudaMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dL_data, L_data, L_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
+  cudaErrchk(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
 
   //
   // View types and Views/Layouts for indexing into arrays
@@ -1139,7 +1139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1149,7 +1149,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
@@ -1157,12 +1157,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 
-  cudaErrchk( cudaMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
-                          cudaMemcpyDeviceToHost ) );
+  cudaErrchk(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+                          cudaMemcpyDeviceToHost);
 
-  cudaErrchk( cudaFree( dL_data ) );
-  cudaErrchk( cudaFree( dpsi_data ) );
-  cudaErrchk( cudaFree( dphi_data ) );
+  cudaErrchk(cudaFree, dL_data);
+  cudaErrchk(cudaFree, dpsi_data);
+  cudaErrchk(cudaFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1189,15 +1189,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  cudaErrchk( cudaMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dL_data, L_data, L_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
+  cudaErrchk(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
 
 
   using pol_launch = RAJA::LaunchPolicy<RAJA::seq_launch_t, RAJA::cuda_launch_t<true, 512> >;
@@ -1233,7 +1233,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
   timer.start();
 
 
@@ -1265,7 +1265,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   }
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
 
   timer.stop();
   double t = timer.elapsed();
@@ -1274,12 +1274,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 
-  cudaErrchk( cudaMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
-                          cudaMemcpyDeviceToHost ) );
+  cudaErrchk(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+                          cudaMemcpyDeviceToHost);
 
-  cudaErrchk( cudaFree( dL_data ) );
-  cudaErrchk( cudaFree( dpsi_data ) );
-  cudaErrchk( cudaFree( dphi_data ) );
+  cudaErrchk(cudaFree, dL_data);
+  cudaErrchk(cudaFree, dpsi_data);
+  cudaErrchk(cudaFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1312,15 +1312,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  cudaErrchk( cudaMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dL_data, L_data, L_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
+  cudaErrchk(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
 
 
   using matrix_layout = RowMajorLayout;
@@ -1369,7 +1369,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
   timer.start();
 
   auto seg_g = RAJA::TypedRangeSegment<IG>(0, num_g);
@@ -1415,7 +1415,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   }
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
 
   timer.stop();
   double t = timer.elapsed();
@@ -1424,12 +1424,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 
-  cudaErrchk( cudaMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
-                          cudaMemcpyDeviceToHost ) );
+  cudaErrchk(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+                          cudaMemcpyDeviceToHost);
 
-  cudaErrchk( cudaFree( dL_data ) );
-  cudaErrchk( cudaFree( dpsi_data ) );
-  cudaErrchk( cudaFree( dphi_data ) );
+  cudaErrchk(cudaFree, dL_data);
+  cudaErrchk(cudaFree, dpsi_data);
+  cudaErrchk(cudaFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1455,15 +1455,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  cudaErrchk( cudaMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dL_data, L_data, L_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
-  cudaErrchk( cudaMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
-  cudaErrchk( cudaMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
-                          cudaMemcpyHostToDevice ) );
+  cudaErrchk(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  cudaErrchk(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+                          cudaMemcpyHostToDevice);
 
 
   //
@@ -1598,7 +1598,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  cudaErrchk( cudaDeviceSynchronize() );
+  cudaErrchk(cudaDeviceSynchronize, );
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1667,8 +1667,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(DEBUG_LTIMES)
 
-  cudaErrchk( cudaMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
-                          cudaMemcpyDeviceToHost ) );
+  cudaErrchk(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+                          cudaMemcpyDeviceToHost);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1678,9 +1678,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-  cudaErrchk( cudaFree( dL_data ) );
-  cudaErrchk( cudaFree( dpsi_data ) );
-  cudaErrchk( cudaFree( dphi_data ) );
+  cudaErrchk(cudaFree, dL_data);
+  cudaErrchk(cudaFree, dpsi_data);
+  cudaErrchk(cudaFree, dphi_data);
 }
 #endif
 
@@ -1696,15 +1696,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  hipErrchk( hipMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
-  hipErrchk( hipMemcpy( dL_data, L_data, L_size * sizeof(double),
-                          hipMemcpyHostToDevice ) );
-  hipErrchk( hipMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
-  hipErrchk( hipMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
-                          hipMemcpyHostToDevice ) );
-  hipErrchk( hipMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
-  hipErrchk( hipMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
-                          hipMemcpyHostToDevice ) );
+  hipErrchk(hipMalloc, (void**)&dL_data, L_size * sizeof(double));
+  hipErrchk(hipMemcpy, dL_data, L_data, L_size * sizeof(double),
+                          hipMemcpyHostToDevice);
+  hipErrchk(hipMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  hipErrchk(hipMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+                          hipMemcpyHostToDevice);
+  hipErrchk(hipMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  hipErrchk(hipMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+                          hipMemcpyHostToDevice);
 
   //
   // View types and Views/Layouts for indexing into arrays
@@ -1751,7 +1751,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
-  hipErrchk( hipDeviceSynchronize() );
+  hipErrchk(hipDeviceSynchronize, );
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1761,19 +1761,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  hipErrchk( hipDeviceSynchronize() );
+  hipErrchk(hipDeviceSynchronize, );
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
   std::cout << "  RAJA HIP version of LTimes run time (sec.): "
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
-  hipErrchk( hipMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
-                          hipMemcpyDeviceToHost ) );
+  hipErrchk(hipMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+                          hipMemcpyDeviceToHost);
 
-  hipErrchk( hipFree( dL_data ) );
-  hipErrchk( hipFree( dpsi_data ) );
-  hipErrchk( hipFree( dphi_data ) );
+  hipErrchk(hipFree, dL_data);
+  hipErrchk(hipFree, dpsi_data);
+  hipErrchk(hipFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1798,15 +1798,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  hipErrchk( hipMalloc( (void**)&dL_data, L_size * sizeof(double) ) );
-  hipErrchk( hipMemcpy( dL_data, L_data, L_size * sizeof(double),
-                          hipMemcpyHostToDevice ) );
-  hipErrchk( hipMalloc( (void**)&dpsi_data, psi_size * sizeof(double) ) );
-  hipErrchk( hipMemcpy( dpsi_data, psi_data, psi_size * sizeof(double),
-                          hipMemcpyHostToDevice ) );
-  hipErrchk( hipMalloc( (void**)&dphi_data, phi_size * sizeof(double) ) );
-  hipErrchk( hipMemcpy( dphi_data, phi_data, phi_size * sizeof(double),
-                          hipMemcpyHostToDevice ) );
+  hipErrchk(hipMalloc, (void**)&dL_data, L_size * sizeof(double));
+  hipErrchk(hipMemcpy, dL_data, L_data, L_size * sizeof(double),
+                          hipMemcpyHostToDevice);
+  hipErrchk(hipMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  hipErrchk(hipMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+                          hipMemcpyHostToDevice);
+  hipErrchk(hipMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  hipErrchk(hipMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+                          hipMemcpyHostToDevice);
 
 
   //
@@ -1941,7 +1941,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  hipErrchk( hipDeviceSynchronize() );
+  hipErrchk(hipDeviceSynchronize, );
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -2011,8 +2011,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(DEBUG_LTIMES)
 
-  hipErrchk( hipMemcpy( phi_data, dphi_data, phi_size * sizeof(double),
-                          hipMemcpyDeviceToHost ) );
+  hipErrchk(hipMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+                          hipMemcpyDeviceToHost);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -2022,9 +2022,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-  hipErrchk( hipFree( dL_data ) );
-  hipErrchk( hipFree( dpsi_data ) );
-  hipErrchk( hipFree( dphi_data ) );
+  hipErrchk(hipFree, dL_data);
+  hipErrchk(hipFree, dpsi_data);
+  hipErrchk(hipFree, dphi_data);
 }
 #endif
 

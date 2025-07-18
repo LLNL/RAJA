@@ -119,11 +119,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using cuda_loop_policy   = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
 
   a = 0; b = 0;
-  cudaErrchk(cudaMalloc( (void**)&a, N * sizeof(double) ));
-  cudaErrchk(cudaMalloc( (void**)&b, N * sizeof(double) ));
+  cudaErrchk(cudaMalloc, (void**)&a, N * sizeof(double));
+  cudaErrchk(cudaMalloc, (void**)&b, N * sizeof(double));
 
-  cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice ));
-  cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice ));
+  cudaErrchk(cudaMemcpy, a, a0, N * sizeof(double), cudaMemcpyHostToDevice);
+  cudaErrchk(cudaMemcpy, b, tb, N * sizeof(double), cudaMemcpyHostToDevice);
 
    RAJA::launch<cuda_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
@@ -137,10 +137,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     });
 
-  cudaErrchk(cudaMemcpy( ta, a, N * sizeof(double), cudaMemcpyDeviceToHost ));
+  cudaErrchk(cudaMemcpy, ta, a, N * sizeof(double), cudaMemcpyDeviceToHost);
 
-  cudaErrchk(cudaFree(a));
-  cudaErrchk(cudaFree(b));
+  cudaErrchk(cudaFree, a);
+  cudaErrchk(cudaFree, b);
 
   a = ta;
   checkResult(a, aref, N);
@@ -159,11 +159,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using hip_loop_policy   = RAJA::LoopPolicy<RAJA::hip_global_thread_x>;
 
   a = 0; b = 0;
-  hipErrchk(hipMalloc( (void**)&a, N * sizeof(double) ));
-  hipErrchk(hipMalloc( (void**)&b, N * sizeof(double) ));
+  hipErrchk(hipMalloc, (void**)&a, N * sizeof(double));
+  hipErrchk(hipMalloc, (void**)&b, N * sizeof(double));
 
-  hipErrchk(hipMemcpy( a, a0, N * sizeof(double), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( b, tb, N * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy, a, a0, N * sizeof(double), hipMemcpyHostToDevice);
+  hipErrchk(hipMemcpy, b, tb, N * sizeof(double), hipMemcpyHostToDevice);
 
    RAJA::launch<hip_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
@@ -177,10 +177,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     });
 
-  hipErrchk(hipMemcpy( ta, a, N * sizeof(double), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy, ta, a, N * sizeof(double), hipMemcpyDeviceToHost);
 
-  hipErrchk(hipFree(a));
-  hipErrchk(hipFree(b));
+  hipErrchk(hipFree, a);
+  hipErrchk(hipFree, b);
 
   a = ta;
   checkResult(a, aref, N);

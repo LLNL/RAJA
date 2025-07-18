@@ -284,14 +284,14 @@ private:
  *  void* malloc(size_t nbytes)
  *  {
  *    void* ptr;
- *    cudaErrchk(cudaMalloc(&ptr, nbytes));
+ *    cudaErrchk(cudaMalloc, &ptr, nbytes);
  *    return ptr;
  *  }
  *
  *  // returns true on success, false on failure
  *  bool free(void* ptr)
  *  {
- *    cudaErrchk(cudaFree(ptr));
+ *    cudaErrchk(cudaFree, ptr);
  *    return true;
  *  }
  * };

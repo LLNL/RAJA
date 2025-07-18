@@ -25,12 +25,17 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include <iostream>
+#include <utility>
+#include <tuple>
 #include <string>
+#include <sstream>
+#include <stdexcept>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 
 #include "RAJA/util/macros.hpp"
+#include "RAJA/util/for_each.hpp"
 
 namespace RAJA
 {
@@ -43,9 +48,13 @@ namespace RAJA
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define cudaErrchk(ans)                                                        \
-  {                                                                            \
-    ::RAJA::cudaAssert((ans), __FILE__, __LINE__);                             \
+#define cudaErrchk(func, ...)                                             \
+  {                                                                       \
+    ::RAJA::cudaAssert(func(__VA_ARGS__),                                 \
+                       RAJA_STRINGIFY(func),                              \
+                       RAJA_STRINGIFY(__VA_ARGS__),                       \
+                       std::tie(__VA_ARGS__),                             \
+                       __FILE__, __LINE__);                               \
   }
 
 inline void cudaAssert(cudaError_t code,
@@ -55,21 +64,34 @@ inline void cudaAssert(cudaError_t code,
 {
   if (code != cudaSuccess)
   {
+    std::ostringstream str;
+    str << "CUDAassert: ";
+    str << cudaGetErrorString(code);
+    str << " ";
+    str << func_name;
+    str << "(";
+    str << args_name;
+    str << ")(";
+    for_each_tuple(args, [&, first=true](auto const& arg) mutable {
+      if (!first) {
+        str << " ";
+      } else {
+        first = false;
+      }
+      str << arg;
+    });
+    str << ") ";
+    str << file;
+    str << ":";
+    str << line;
+    auto msg{str.str()};
     if (abort)
     {
-      std::string msg;
-      msg += "CUDAassert: ";
-      msg += cudaGetErrorString(code);
-      msg += " ";
-      msg += file;
-      msg += ":";
-      msg += std::to_string(line);
       throw std::runtime_error(msg);
     }
     else
     {
-      fprintf(stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file,
-              line);
+      std::cerr << msg;
     }
   }
 }

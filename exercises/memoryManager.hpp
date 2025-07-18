@@ -37,9 +37,9 @@ T *allocate(RAJA::Index_type size)
   T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(
-      cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
+      cudaMallocManaged, (void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal);
 #elif defined(RAJA_ENABLE_HIP)
-      hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
+      hipErrchk(hipMalloc, (void **)&ptr, sizeof(T) * size);
 #elif defined(RAJA_ENABLE_SYCL)
       ptr = sycl_res->allocate<T>(size, camp::resources::MemoryAccess::Managed);
 #else
@@ -53,9 +53,9 @@ void deallocate(T *&ptr)
 {
   if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaFree, ptr);
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipFree(ptr));
+    hipErrchk(hipFree, ptr);
 #elif defined(RAJA_ENABLE_SYCL)
     sycl_res->deallocate(ptr);
 #else
@@ -71,9 +71,9 @@ void deallocate(T *&ptr)
   {
     T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMalloc((void **)&ptr, sizeof(T) * size));
+    cudaErrchk(cudaMalloc, (void **)&ptr, sizeof(T) * size);
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
+    hipErrchk(hipMalloc, (void **)&ptr, sizeof(T) * size);
 #elif defined(RAJA_ENABLE_SYCL)
       auto qu = sycl_res->get<camp::resources::Sycl>().get_queue();
       ptr = ::sycl::malloc_device<T>(size, *qu);
@@ -86,9 +86,9 @@ void deallocate(T *&ptr)
   {
     if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaFree(ptr));
+      cudaErrchk(cudaFree, ptr);
 #elif defined(RAJA_ENABLE_HIP)
-      hipErrchk(hipFree(ptr));
+      hipErrchk(hipFree, ptr);
 #elif defined(RAJA_ENABLE_SYCL)
     sycl_res->deallocate(ptr);
 #endif
