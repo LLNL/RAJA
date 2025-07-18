@@ -50,9 +50,9 @@ RAJA_INLINE
 cudaDeviceProp get_device_prop()
 {
   int device;
-  cudaErrchk(cudaGetDevice(&device));
+  cudaErrchk(cudaGetDevice, &device);
   cudaDeviceProp prop;
-  cudaErrchk(cudaGetDeviceProperties(&prop, device));
+  cudaErrchk(cudaGetDeviceProperties, &prop, device);
   return prop;
 }
 
@@ -73,14 +73,14 @@ struct PinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    cudaErrchk(cudaHostAlloc(&ptr, nbytes, cudaHostAllocMapped));
+    cudaErrchk(cudaHostAlloc, &ptr, nbytes, cudaHostAllocMapped);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFreeHost(ptr));
+    cudaErrchk(cudaFreeHost, ptr);
     return true;
   }
 };
@@ -93,14 +93,14 @@ struct DeviceAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    cudaErrchk(cudaMalloc(&ptr, nbytes));
+    cudaErrchk(cudaMalloc, &ptr, nbytes);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaFree, ptr);
     return true;
   }
 };
@@ -115,16 +115,16 @@ struct DeviceZeroedAllocator
   {
     auto res = ::camp::resources::Cuda::get_default();
     void* ptr;
-    cudaErrchk(cudaMalloc(&ptr, nbytes));
-    cudaErrchk(cudaMemsetAsync(ptr, 0, nbytes, res.get_stream()));
-    cudaErrchk(cudaStreamSynchronize(res.get_stream()));
+    cudaErrchk(cudaMalloc, &ptr, nbytes);
+    cudaErrchk(cudaMemsetAsync, ptr, 0, nbytes, res.get_stream());
+    cudaErrchk(cudaStreamSynchronize, res.get_stream());
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaFree, ptr);
     return true;
   }
 };
@@ -137,13 +137,13 @@ struct DevicePinnedAllocator
   void* malloc(size_t nbytes)
   {
     int device;
-    cudaErrchk(cudaGetDevice(&device));
+    cudaErrchk(cudaGetDevice, &device);
     void* ptr;
-    cudaErrchk(cudaMallocManaged(&ptr, nbytes, cudaMemAttachGlobal));
+    cudaErrchk(cudaMallocManaged, &ptr, nbytes, cudaMemAttachGlobal);
     cudaErrchk(
-        cudaMemAdvise(ptr, nbytes, cudaMemAdviseSetPreferredLocation, device));
-    cudaErrchk(cudaMemAdvise(ptr, nbytes, cudaMemAdviseSetAccessedBy,
-                             cudaCpuDeviceId));
+        cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetPreferredLocation, device);
+    cudaErrchk(cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetAccessedBy,
+                             cudaCpuDeviceId);
 
     return ptr;
   }
@@ -151,7 +151,7 @@ struct DevicePinnedAllocator
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFree(ptr));
+    cudaErrchk(cudaFree, ptr);
     return true;
   }
 };
@@ -217,7 +217,7 @@ void synchronize()
   }
   if (synchronize)
   {
-    cudaErrchk(cudaDeviceSynchronize());
+    cudaErrchk(cudaDeviceSynchronize);
   }
 }
 
@@ -276,13 +276,13 @@ void launch(const void* func,
             bool async = true)
 {
   cudaErrchk(
-      cudaLaunchKernel(func, gridDim, blockDim, args, shmem, res.get_stream()));
+      cudaLaunchKernel, func, gridDim, blockDim, args, shmem, res.get_stream());
   launch(res, async);
 }
 
 //! Check for errors
 RAJA_INLINE
-void peekAtLastError() { cudaErrchk(cudaPeekAtLastError()); }
+void peekAtLastError() { cudaErrchk(cudaPeekAtLastError); }
 
 //! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
@@ -321,7 +321,7 @@ RAJA_INLINE
 size_t maxDynamicShmem()
 {
   cudaFuncAttributes func_attr;
-  cudaErrchk(cudaFuncGetAttributes(&func_attr, detail::tl_status.func));
+  cudaErrchk(cudaFuncGetAttributes, &func_attr, detail::tl_status.func);
   return func_attr.maxDynamicSharedSizeBytes;
 }
 
@@ -431,9 +431,9 @@ cuda_occupancy_max_blocks_threads(const void* func,
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
-    cudaErrchk(cudaOccupancyMaxPotentialBlockSize(
+    cudaErrchk(cudaOccupancyMaxPotentialBlockSize,
         &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
-        func, func_dynamic_shmem_per_block));
+        func, func_dynamic_shmem_per_block);
   }
 
   return data;
@@ -460,9 +460,9 @@ cuda_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
     data.func_threads_per_block       = func_threads_per_block;
 
-    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
-        func_dynamic_shmem_per_block));
+        func_dynamic_shmem_per_block);
   }
 
   return data;
@@ -484,9 +484,9 @@ cuda_occupancy_max_blocks(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
     data.func_threads_per_block       = func_threads_per_block;
 
-    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
-        func_dynamic_shmem_per_block));
+        func_dynamic_shmem_per_block);
   }
 
   return data;

@@ -412,8 +412,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   double *d_I    = memoryManager::allocate_gpu<double>(NN);
   double *d_Iold = memoryManager::allocate_gpu<double>(NN);
-  hipErrchk(hipMemcpy( d_I, I, NN * sizeof(double), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_Iold, Iold, NN * sizeof(double), hipMemcpyHostToDevice ));
+  hipErrchk(hipMemcpy, d_I, I, NN * sizeof(double), hipMemcpyHostToDevice);
+  hipErrchk(hipMemcpy, d_Iold, Iold, NN * sizeof(double), hipMemcpyHostToDevice);
 
   while (resI2 > tol * tol) {
 
@@ -456,7 +456,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     iteration++;
   }
   hipDeviceSynchronize();
-  hipErrchk(hipMemcpy( I, d_I, NN * sizeof(double), hipMemcpyDeviceToHost ));
+  hipErrchk(hipMemcpy, I, d_I, NN * sizeof(double), hipMemcpyDeviceToHost);
   computeErr(I, gridx);
   printf("No of iterations: %d \n \n", iteration);
 

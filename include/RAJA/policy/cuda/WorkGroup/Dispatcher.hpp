@@ -55,8 +55,8 @@ inline void* get_cached_value_ptr(size_t nbytes)
   if (nbytes > cached_nbytes)
   {
     cached_nbytes = 0;
-    cudaErrchk(cudaFreeHost(ptr));
-    cudaErrchk(cudaMallocHost(&ptr, nbytes));
+    cudaErrchk(cudaFreeHost, ptr);
+    cudaErrchk(cudaMallocHost, &ptr, nbytes);
     cached_nbytes = nbytes;
   }
   return ptr;
@@ -84,8 +84,8 @@ inline auto get_value(Factory&& factory)
   auto func =
       reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
   void* args[] = {(void*)&ptr, (void*)&factory};
-  cudaErrchk(cudaLaunchKernel(func, 1, 1, args, 0, res.get_stream()));
-  cudaErrchk(cudaStreamSynchronize(res.get_stream()));
+  cudaErrchk(cudaLaunchKernel, func, 1, 1, args, 0, res.get_stream());
+  cudaErrchk(cudaStreamSynchronize, res.get_stream());
 
   return *ptr;
 }

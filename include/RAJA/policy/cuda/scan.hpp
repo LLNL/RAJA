@@ -66,17 +66,17 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> inclusive_inplace(
   // Determine temporary device storage requirements
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+  cudaErrchk(::cub::DeviceScan::InclusiveScan, d_temp_storage,
                                               temp_storage_bytes, begin, begin,
-                                              binary_op, len, stream));
+                                              binary_op, len, stream);
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+  cudaErrchk(::cub::DeviceScan::InclusiveScan, d_temp_storage,
                                               temp_storage_bytes, begin, begin,
-                                              binary_op, len, stream));
+                                              binary_op, len, stream);
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
@@ -115,17 +115,17 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> exclusive_inplace(
   // Determine temporary device storage requirements
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan, d_temp_storage,
                                               temp_storage_bytes, begin, begin,
-                                              binary_op, init, len, stream));
+                                              binary_op, init, len, stream);
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan, d_temp_storage,
                                               temp_storage_bytes, begin, begin,
-                                              binary_op, init, len, stream));
+                                              binary_op, init, len, stream);
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
@@ -164,15 +164,15 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> inclusive(
   // Determine temporary device storage requirements
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan,
+      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream);
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan,
+      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream);
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 
@@ -213,17 +213,17 @@ RAJA_INLINE resources::EventProxy<resources::Cuda> exclusive(
   // Determine temporary device storage requirements
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan, d_temp_storage,
                                               temp_storage_bytes, begin, out,
-                                              binary_op, init, len, stream));
+                                              binary_op, init, len, stream);
   // Allocate temporary storage
   d_temp_storage =
       cuda::device_mempool_type::getInstance().malloc<unsigned char>(
           temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan, d_temp_storage,
                                               temp_storage_bytes, begin, out,
-                                              binary_op, init, len, stream));
+                                              binary_op, init, len, stream);
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 

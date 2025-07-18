@@ -25,11 +25,16 @@
 #if defined(RAJA_ENABLE_HIP)
 
 #include <iostream>
+#include <utility>
+#include <tuple>
 #include <string>
+#include <sstream>
+#include <stdexcept>
 
 #include <hip/hip_runtime.h>
 
 #include "RAJA/util/macros.hpp"
+#include "RAJA/util/for_each.hpp"
 
 namespace RAJA
 {
@@ -42,33 +47,53 @@ namespace RAJA
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define hipErrchk(ans)                                                         \
-  {                                                                            \
-    ::RAJA::hipAssert((ans), __FILE__, __LINE__);                              \
+#define hipErrchk(func, ...)                                              \
+  {                                                                       \
+    ::RAJA::hipAssert(func(__VA_ARGS__),                                  \
+                      RAJA_STRINGIFY(func),                               \
+                      RAJA_STRINGIFY(__VA_ARGS__),                        \
+                      std::tie(__VA_ARGS__),                              \
+                      __FILE__, __LINE__);                                \
   }
 
-inline void hipAssert(hipError_t code,
-                      const char* file,
+template < typename... Ts >
+RAJA_INLINE void hipAssert(const char* file,
                       int line,
-                      bool abort = true)
+                      bool abort,
+                      int code,
+                      std::pair<const char*, Ts> const& ...args
+                      )
 {
   if (code != hipSuccess)
   {
+    std::ostringstream str;
+    str << "HIPassert: ";
+    str << hipGetErrorString(code);
+    str << " ";
+    str << func_name;
+    str << "(";
+    str << args_name;
+    str << ")(";
+    for_each_tuple(args, [&, first=true](auto const& arg) mutable {
+      if (!first) {
+        str << " ";
+      } else {
+        first = false;
+      }
+      str << arg;
+    });
+    str << ") ";
+    str << file;
+    str << ":";
+    str << line;
+    auto msg{str.str()};
     if (abort)
     {
-      std::string msg;
-      msg += "HIPassert: ";
-      msg += hipGetErrorString(code);
-      msg += " ";
-      msg += file;
-      msg += ":";
-      msg += std::to_string(line);
       throw std::runtime_error(msg);
     }
     else
     {
-      fprintf(stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file,
-              line);
+      std::cerr << msg;
     }
   }
 }
