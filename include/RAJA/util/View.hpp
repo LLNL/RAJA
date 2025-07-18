@@ -197,7 +197,7 @@ struct MultiView
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
-  RAJA_INLINE constexpr layout_type const& get_layout() const { return m_layout; }
+  RAJA_INLINE constexpr layout_type const& get_layout() const { return layout; }
 
   template<size_t n_dims = layout_type::n_dims, typename IdxLin = Index_type>
   RAJA_INLINE RAJA::
