@@ -35,6 +35,8 @@
 #include "RAJA/pattern/kernel/For.hpp"
 #include "RAJA/pattern/kernel/Lambda.hpp"
 
+#include "RAJA/pattern/params/forall.hpp"
+
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
@@ -216,6 +218,9 @@ __global__ void CudaKernelLauncher(Data data)
   data_t private_data = data;
 
   Exec::exec(private_data, true);
+
+  RAJA::expt::detail::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
+      private_data.param_tuple);
 }
 
 /*!
@@ -235,6 +240,9 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
 
   // execute the the object
   Exec::exec(private_data, true);
+
+  RAJA::expt::detail::combine_params<RAJA::cuda_flatten_global_xyz_direct>(
+      private_data.param_tuple);
 }
 
 /*!
@@ -648,7 +656,21 @@ struct StatementExecutor<
 
       {
         auto func = launch_t::get_func();
+        // The exact policy here does not affect the reduction operation, but
+        // we do need to accurately pass a resource and launch dimensions to
+        // perform initialization and resolution of reduction parameters.
+        using EXEC_POL =
+            ::RAJA::policy::cuda::cuda_exec_explicit<LaunchConfig, void, void,
+                                                     0, true>;
 
+        RAJA::cuda::detail::cudaInfo launch_info;
+        launch_info.gridDim      = launch_dims.dims.blocks;
+        launch_info.blockDim     = launch_dims.dims.threads;
+        launch_info.dynamic_smem = &shmem;
+        launch_info.res          = res;
+
+        RAJA::expt::detail::init_params<EXEC_POL>(data.param_tuple,
+                                                  launch_info);
         //
         // Privatize the LoopData, using make_launch_body to setup reductions
         //
@@ -667,6 +689,8 @@ struct StatementExecutor<
         RAJA::cuda::launch(func, launch_dims.dims.blocks,
                            launch_dims.dims.threads, args, shmem, res,
                            launch_t::async);
+        RAJA::expt::detail::resolve_params<EXEC_POL>(data.param_tuple,
+                                                     launch_info);
       }
     }
   }

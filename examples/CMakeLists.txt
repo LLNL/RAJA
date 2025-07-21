@@ -110,6 +110,10 @@ raja_add_executable(
   SOURCES kernel-dynamic-tile.cpp)
 
 raja_add_executable(
+  NAME kernel-reduction
+  SOURCES kernel-reduction.cpp)
+
+raja_add_executable(
   NAME resource-kernel
   SOURCES resource-kernel.cpp)
 

@@ -40,7 +40,10 @@ namespace sycl
 template<typename T, typename I>
 struct minloc
 {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
+  RAJA_HOST_DEVICE static constexpr T identity()
+  {
+    return ::RAJA::operators::limits<T>::max();
+  }
 
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T& val,
                                                I& loc,
@@ -58,7 +61,10 @@ struct minloc
 template<typename T, typename I>
 struct maxloc
 {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
+  RAJA_HOST_DEVICE static constexpr T identity()
+  {
+    return ::RAJA::operators::limits<T>::min();
+  }
 
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T& val,
                                                I& loc,
@@ -305,7 +311,7 @@ struct TargetReduceLoc
   explicit TargetReduceLoc(
       T init_val,
       IndexType init_loc,
-      T identity_val_ = Reducer::identity,
+      T identity_val_ = Reducer::identity(),
       IndexType identity_loc_ =
           RAJA::reduce::detail::DefaultLoc<IndexType>().value())
       : info(),
@@ -319,7 +325,7 @@ struct TargetReduceLoc
 
   void reset(T init_val_,
              IndexType init_loc_,
-             T identity_val_ = Reducer::identity,
+             T identity_val_ = Reducer::identity(),
              IndexType identity_loc_ =
                  RAJA::reduce::detail::DefaultLoc<IndexType>().value())
   {
@@ -351,7 +357,7 @@ struct TargetReduceLoc
       }
       info.isMapped = true;
     }
-    finalVal = Reducer::identity;
+    finalVal = Reducer::identity();
     finalLoc = IndexType(RAJA::reduce::detail::DefaultLoc<IndexType>().value());
     Reducer {}(finalVal, finalLoc, initVal, initLoc);
     Reducer {}(finalVal, finalLoc, val.value, loc.value);

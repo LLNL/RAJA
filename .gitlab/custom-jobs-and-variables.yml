@@ -56,7 +56,7 @@ variables:
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 # Arguments for job level allocation
-  LASSEN_JOB_ALLOC: "1 -W 45 -q pci"
+  LASSEN_JOB_ALLOC: "1 -W 50 -q pci"
 # Project specific variants for lassen
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +vectorization +tests cuda_arch=70"
 # Project specific deps for lassen
@@ -65,7 +65,6 @@ variables:
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
 # CI behavior.
-# See Umpire for an example (export junit test reports).
 .custom_job:
   artifacts:
     reports:

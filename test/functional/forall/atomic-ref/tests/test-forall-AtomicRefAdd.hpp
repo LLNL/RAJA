@@ -99,24 +99,10 @@ void testAtomicRefAdd(RAJA::TypedRangeSegment<IdxType> seg,
       hit[(IdxType)val] = true;
       });
 
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
-
   work_res.memcpy( hcount, count, sizeof(T) );
   work_res.memcpy( hlist, list, sizeof(T) * N );
   work_res.memcpy( hhit, hit, sizeof(bool) * N );
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
+  work_res.wait();
 
   EXPECT_EQ(countop.final, hcount[0]);
   for (IdxType i = 0; i < seg.size(); i++) {
@@ -129,16 +115,16 @@ void testAtomicRefAdd(RAJA::TypedRangeSegment<IdxType> seg,
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
-          typename WORKINGRES,
+          typename WorkingRes,
           typename IdxType,
           typename T>
 void ForallAtomicRefAddTestImpl( IdxType N )
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
-  camp::resources::Resource work_res{WORKINGRES()};
+  camp::resources::Resource work_res{WorkingRes::get_default()};
 
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   T * count   = work_res.allocate<T>(1);
   T * list    = work_res.allocate<T>(N);
@@ -147,14 +133,6 @@ void ForallAtomicRefAddTestImpl( IdxType N )
   T * hcount   = host_res.allocate<T>(1);
   T * hlist    = host_res.allocate<T>(N);
   bool * hhit  = host_res.allocate<bool>(N);
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
 
   testAtomicRefAdd<ExecPolicy, AtomicPolicy, IdxType, T, 
                      PreIncCountOp  >(seg, count, list, hit, hcount, hlist, hhit, work_res, N);

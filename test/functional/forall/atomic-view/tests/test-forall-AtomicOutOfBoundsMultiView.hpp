@@ -16,7 +16,7 @@
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
-          typename WORKINGRES,
+          typename WorkingRes,
           typename IdxType,
           typename T>
 void ForallAtomicOutOfBoundsMultiViewTestImpl( IdxType N )
@@ -30,22 +30,14 @@ void ForallAtomicOutOfBoundsMultiViewTestImpl( IdxType N )
   RAJA::TypedRangeSegment<IdxType> seg_dstside(0, dst_side);
   RAJA::TypedRangeSegment<IdxType> seg_srcside(0, src_side);
 
-  camp::resources::Resource work_res{WORKINGRES()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource work_res{WorkingRes::get_default()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   T *  actualsource = work_res.allocate<T> (N);
   T ** source       = work_res.allocate<T*>(src_side);
   T *  actualdest   = work_res.allocate<T> (N/2);
   T ** dest         = work_res.allocate<T*>(dst_side);
   T *  check_array  = host_res.allocate<T> (N/2);
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
 
   // PASS_REGEX: Negative index while accessing array of pointers
 
@@ -65,13 +57,7 @@ void ForallAtomicOutOfBoundsMultiViewTestImpl( IdxType N )
   EXPECT_THROW( (sum_atomic_view(0,-1) = (T)0), std::runtime_error );
   #endif
 
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
+  work_res.wait();
 
   work_res.deallocate( actualsource );
   work_res.deallocate( source );

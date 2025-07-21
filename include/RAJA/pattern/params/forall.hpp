@@ -1,7 +1,12 @@
 #ifndef FORALL_PARAM_HPP
 #define FORALL_PARAM_HPP
 
+
+#include "RAJA/pattern/params/reducer.hpp"
 #include "RAJA/util/CombiningAdapter.hpp"
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
 
 #include "RAJA/pattern/params/params_base.hpp"
 #include "RAJA/pattern/params/kernel_name.hpp"
@@ -12,7 +17,104 @@ namespace RAJA
 {
 namespace expt
 {
+namespace detail
+{
 
+template<typename... Params>
+RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
+{
+  return camp::get_refs_to_elements_by_type_trait<is_instance_of_reducer>(
+      params);
+}
+
+template<typename ExecPol,
+         typename ParamTuple,
+         camp::idx_t... Seq,
+         typename... Args>
+void resolve_params_helper(ParamTuple& params_tuple,
+                           const camp::idx_seq<Seq...>&,
+                           Args&&... args)
+{
+  CAMP_EXPAND(param_resolve(ExecPol {}, camp::get<Seq>(params_tuple),
+                            std::forward<Args>(args)...));
+}
+
+template<typename ExecPol, typename... Params, typename... Args>
+void resolve_params(camp::tuple<Params...>& params_tuple, Args&&... args)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = decltype(params);
+  resolve_params_helper<ExecPol>(
+      params, camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+      std::forward<Args>(args)...);
+}
+
+template<typename ExecPol,
+         typename ParamTuple,
+         camp::idx_t... Seq,
+         typename... Args>
+void init_params_helper(ParamTuple& params_tuple,
+                        const camp::idx_seq<Seq...>&,
+                        Args&&... args)
+{
+  CAMP_EXPAND(param_init(ExecPol {}, camp::get<Seq>(params_tuple),
+                         std::forward<Args>(args)...));
+}
+
+template<typename ExecPol, typename... Params, typename... Args>
+void init_params(camp::tuple<Params...>& params_tuple, Args&&... args)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = decltype(params);
+  init_params_helper<ExecPol>(
+      params, camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+      std::forward<Args>(args)...);
+}
+
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
+RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
+                                            ParamTuple& params_tuple)
+{
+  CAMP_EXPAND(param_combine(ExecPol {}, camp::get<Seq>(params_tuple)));
+}
+
+template<typename EXEC_POL, typename T>
+camp::concepts::enable_if<
+    concepts::negate<is_instance_of_reducer<camp::decay<T>>>,
+    concepts::negate<std::is_same<T, RAJA::detail::Name>>>
+param_combine(EXEC_POL const&, T&, const T&)
+{}
+
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
+RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
+                                            ParamTuple& params_tuple,
+                                            const ParamTuple& params_tuple_in)
+{
+  CAMP_EXPAND(param_combine(ExecPol {}, camp::get<Seq>(params_tuple),
+                            camp::get<Seq>(params_tuple_in)));
+}
+
+template<typename ExecPol, typename... Params>
+RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = camp::decay<decltype(params)>;
+  combine_params_helper<ExecPol>(
+      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(), params);
+}
+
+template<typename ExecPol, typename... Params>
+RAJA_HOST_DEVICE void combine_params(
+    camp::tuple<Params...>& params_tuple,
+    const camp::tuple<Params...>& params_tuple_in)
+{
+  using ParamTupleType = camp::decay<decltype(params_tuple)>;
+  combine_params_helper<ExecPol>(
+      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+      params_tuple, params_tuple_in);
+}
+
+}  // namespace detail
 //
 //
 // Forall Parameter Packing type
@@ -133,6 +235,7 @@ public:
 
   template<typename... Ts>
   ForallParamPack(camp::tuple<Ts...>&& t) : param_tup(std::move(t)) {};
+
 };  // struct ForallParamPack
 
 //===========================================================================

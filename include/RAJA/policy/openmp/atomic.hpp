@@ -88,7 +88,7 @@ RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicMin(omp_atomic, T* acc, T value)
 {
-#if _OPENMP >= 202011
+#if defined(RAJA_USE_OPENMP_5_1_ATOMICS)
   T old;
 #pragma omp atomic capture compare
   {
@@ -109,7 +109,7 @@ RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_HOST_DEVICE RAJA_INLINE T atomicMax(omp_atomic, T* acc, T value)
 {
-#if _OPENMP >= 202011
+#if defined(RAJA_USE_OPENMP_5_1_ATOMICS)
   T old;
 #pragma omp atomic capture compare
   {

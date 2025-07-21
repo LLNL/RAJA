@@ -13,6 +13,7 @@
 #include "RAJA_test-index-types.hpp"
 
 #include "RAJA_test-forall-data.hpp"
+#include "RAJA_test-reduce-types.hpp"
 
 //
 // Header for tests in ./tests directory
@@ -22,7 +23,7 @@
 
 //
 // Note that a separate test file/executable is generated for each tile size
-// defined via CMake variable 'TILESIZE' defined in CMakeLists.txt file. 
+// defined via CMake variable 'TILESIZE' defined in CMakeLists.txt file.
 // The reason for doing it this way is that the tests require the tile size
 // in the exec policy must match the tile size value defined here. Defining
 // multiple tile sizes in a list here and using that to define a cartesian
@@ -35,11 +36,11 @@ using TileSizes = camp::list< Value<@TILESIZE@> >;
 //
 // Num reduction policies must match num exec policies.
 //
-using SequentialReducePols = camp::list< RAJA::seq_reduce >; 
+using SequentialReducePols = camp::list< RAJA::seq_reduce >;
 
 // Sequential execution policy types
-using SequentialKernelForICountExecPols = camp::list< 
-    
+using SequentialKernelForICountExecPols = camp::list<
+
   RAJA::KernelPolicy<
     RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::seq_exec,
@@ -51,7 +52,7 @@ using SequentialKernelForICountExecPols = camp::list<
 >;
 
 using SequentialKernelTileTCountExecPols = camp::list<
-   
+
   RAJA::KernelPolicy<
     RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::seq_exec,
@@ -66,10 +67,10 @@ using SequentialKernelTileTCountExecPols = camp::list<
 //
 // Num reduction policies must match num exec policies.
 //
-using OpenMPReducePols = camp::list< RAJA::omp_reduce >; 
+using OpenMPReducePols = camp::list< RAJA::omp_reduce >;
 
-using OpenMPKernelForICountExecPols = camp::list< 
-    
+using OpenMPKernelForICountExecPols = camp::list<
+
   RAJA::KernelPolicy<
     RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::omp_parallel_for_exec,
@@ -80,8 +81,8 @@ using OpenMPKernelForICountExecPols = camp::list<
 
 >;
 
-using OpenMPKernelTileTCountExecPols = camp::list< 
-    
+using OpenMPKernelTileTCountExecPols = camp::list<
+
   RAJA::KernelPolicy<
     RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::seq_exec,
       RAJA::statement::For<0, RAJA::omp_parallel_for_exec,
@@ -89,7 +90,7 @@ using OpenMPKernelTileTCountExecPols = camp::list<
       >
     >
   >
-   
+
 >;
 #endif  // if defined(RAJA_ENABLE_OPENMP)
 
@@ -97,9 +98,9 @@ using OpenMPKernelTileTCountExecPols = camp::list<
 //
 // Num reduction policies must match num exec policies.
 //
-using OpenMPTargetReducePols = camp::list< RAJA::omp_target_reduce >; 
+using OpenMPTargetReducePols = camp::list< RAJA::omp_target_reduce >;
 
-using OpenMPTargetKernelForICountExecPols = camp::list< 
+using OpenMPTargetKernelForICountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::omp_target_parallel_for_exec_nt,
@@ -111,7 +112,7 @@ using OpenMPTargetKernelForICountExecPols = camp::list<
 
 >;
 
-using OpenMPTargetKernelTileTCountExecPols = camp::list< 
+using OpenMPTargetKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::TileTCount<0, RAJA::statement::Param<0>, RAJA::tile_fixed<@TILESIZE@>, RAJA::omp_target_parallel_for_exec_nt,
@@ -120,7 +121,7 @@ using OpenMPTargetKernelTileTCountExecPols = camp::list<
       >
     >
   >
-   
+
 >;
 #endif  // if defined(RAJA_ENABLE_TARGET_OPENMP)
 
@@ -128,14 +129,14 @@ using OpenMPTargetKernelTileTCountExecPols = camp::list<
 //
 // Num reduction policies must match num exec policies.
 //
-using CudaReducePols = camp::list< RAJA::cuda_reduce >; 
+using CudaReducePols = camp::list< RAJA::cuda_reduce >;
 
-using CudaKernelForICountExecPols = camp::list< 
+using CudaKernelForICountExecPols = camp::list<
 
-  RAJA::KernelPolicy< 
+  RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::cuda_block_x_direct,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct, 
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct,
           RAJA::statement::Lambda<0>
         >
       >
@@ -144,7 +145,7 @@ using CudaKernelForICountExecPols = camp::list<
 
 >;
 
-using CudaKernelTileTCountExecPols = camp::list< 
+using CudaKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernel<
@@ -163,14 +164,14 @@ using CudaKernelTileTCountExecPols = camp::list<
 //
 // Num reduction policies must match num exec policies.
 //
-using HipReducePols = camp::list< RAJA::hip_reduce >; 
+using HipReducePols = camp::list< RAJA::hip_reduce >;
 
 using HipKernelForICountExecPols = camp::list<
 
-  RAJA::KernelPolicy< 
+  RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
       RAJA::statement::Tile<0, RAJA::tile_fixed<@TILESIZE@>, RAJA::hip_block_x_direct,
-        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct, 
+        RAJA::statement::ForICount<0, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct,
           RAJA::statement::Lambda<0>
         >
       >
@@ -179,7 +180,7 @@ using HipKernelForICountExecPols = camp::list<
 
 >;
 
-using HipKernelTileTCountExecPols = camp::list< 
+using HipKernelTileTCountExecPols = camp::list<
 
   RAJA::KernelPolicy<
     RAJA::statement::HipKernel<
@@ -189,7 +190,7 @@ using HipKernelTileTCountExecPols = camp::list<
         >
       >
     >
-  > 
+  >
 
 >;
 #endif  // if defined(RAJA_ENABLE_HIP)
@@ -236,6 +237,7 @@ using @BACKEND@KernelTile@TESTTYPE@Types =
   Test< camp::cartesian_product<IdxTypeList,
                                 @BACKEND@Kernel@TESTTYPE@ExecPols,
                                 @BACKEND@ReducePols,
+                                Use@REDUCER_TYPE@,
                                 TileSizes> >::Types;
 
 //
