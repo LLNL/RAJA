@@ -146,7 +146,8 @@ RAJA_INLINE long long builtin_atomicOr(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicOr(uint64_t* acc, uint64_t value)
 {
-  long long return_val = _InterlockedOr64((long long*)acc, *((long long*)&value));
+  long long return_val =
+      _InterlockedOr64((long long*)acc, *((long long*)&value));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
@@ -207,7 +208,8 @@ RAJA_INLINE long long builtin_atomicExchange(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicExchange(uint64_t* acc, uint64_t value)
 {
-  long long return_val = _InterlockedExchange64((long long*)acc, *((long long*)&value));
+  long long return_val =
+      _InterlockedExchange64((long long*)acc, *((long long*)&value));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
@@ -232,9 +234,12 @@ RAJA_INLINE char builtin_atomicCAS(char* acc, char compare, char value)
   return _InterlockedCompareExchange8(acc, value, compare);
 }
 
-RAJA_INLINE uint8_t builtin_atomicCAS(uint8_t* acc, uint8_t compare, uint8_t value)
+RAJA_INLINE uint8_t builtin_atomicCAS(uint8_t* acc,
+                                      uint8_t compare,
+                                      uint8_t value)
 {
-  char return_val = _InterlockedCompareExchange8((char*)acc, *((char*)&value), *((char*)&compare));
+  char return_val = _InterlockedCompareExchange8((char*)acc, *((char*)&value),
+                                                 *((char*)&compare));
   return *(reinterpret_cast<uint8_t*>(&return_val));
 }
 
@@ -243,9 +248,12 @@ RAJA_INLINE short builtin_atomicCAS(short* acc, short compare, short value)
   return _InterlockedCompareExchange16(acc, value, compare);
 }
 
-RAJA_INLINE uint16_t builtin_atomicCAS(uint16_t* acc, uint16_t compare, uint16_t value)
+RAJA_INLINE uint16_t builtin_atomicCAS(uint16_t* acc,
+                                       uint16_t compare,
+                                       uint16_t value)
 {
-  short return_val = _InterlockedCompareExchange16((short*)acc, *((short*)&value), *((short*)&compare));
+  short return_val = _InterlockedCompareExchange16(
+      (short*)acc, *((short*)&value), *((short*)&compare));
   return *(reinterpret_cast<uint16_t*>(&return_val));
 }
 
@@ -254,9 +262,12 @@ RAJA_INLINE long builtin_atomicCAS(long* acc, long compare, long value)
   return _InterlockedCompareExchange(acc, value, compare);
 }
 
-RAJA_INLINE uint32_t builtin_atomicCAS(uint32_t* acc, uint32_t compare, uint32_t value)
+RAJA_INLINE uint32_t builtin_atomicCAS(uint32_t* acc,
+                                       uint32_t compare,
+                                       uint32_t value)
 {
-  long return_val = _InterlockedCompareExchange((long*)acc, *((long*)&value), *((long*)&compare));
+  long return_val = _InterlockedCompareExchange((long*)acc, *((long*)&value),
+                                                *((long*)&compare));
   return *(reinterpret_cast<uint32_t*>(&return_val));
 }
 
@@ -273,7 +284,8 @@ RAJA_INLINE uint64_t builtin_atomicCAS(uint64_t* acc,
                                        uint64_t compare,
                                        uint64_t value)
 {
-  long long return_val = _InterlockedCompareExchange64((long long*)acc, *((long long*)&value), *((long long*)&compare));
+  long long return_val = _InterlockedCompareExchange64(
+      (long long*)acc, *((long long*)&value), *((long long*)&compare));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
@@ -325,7 +337,8 @@ RAJA_INLINE long long builtin_atomicAdd(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicAdd(uint64_t* acc, uint64_t value)
 {
-  long long return_val = _InterlockedExchangeAdd64((long long*)acc, *((long long*)&value));
+  long long return_val =
+      _InterlockedExchangeAdd64((long long*)acc, *((long long*)&value));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
@@ -353,7 +366,8 @@ RAJA_INLINE short builtin_atomicSub(short* acc, short value)
 
 RAJA_INLINE uint16_t builtin_atomicSub(uint16_t* acc, uint16_t value)
 {
-  short return_val = _InterlockedExchangeAdd16((short*)acc, *((short*)&(-value)));
+  short return_val =
+      _InterlockedExchangeAdd16((short*)acc, *((short*)&(-value)));
   return *(reinterpret_cast<uint16_t*>(&return_val));
 }
 
@@ -377,7 +391,8 @@ RAJA_INLINE long long builtin_atomicSub(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicSub(uint64_t* acc, uint64_t value)
 {
-  long long return_val = _InterlockedExchangeAdd64((long long*)acc, *((long long*)&(-value)));
+  long long return_val =
+      _InterlockedExchangeAdd64((long long*)acc, *((long long*)&(-value)));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
@@ -429,7 +444,8 @@ RAJA_INLINE long long builtin_atomicAnd(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicAnd(uint64_t* acc, uint64_t value)
 {
-  long long return_val = _InterlockedAnd64((long long*)acc, *((long long*)&value));
+  long long return_val =
+      _InterlockedAnd64((long long*)acc, *((long long*)&value));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
@@ -481,7 +497,8 @@ RAJA_INLINE long long builtin_atomicXor(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicXor(uint64_t* acc, uint64_t value)
 {
-  long long return_val = _InterlockedXor64((long long*)acc, *((long long*)&value));
+  long long return_val =
+      _InterlockedXor64((long long*)acc, *((long long*)&value));
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
