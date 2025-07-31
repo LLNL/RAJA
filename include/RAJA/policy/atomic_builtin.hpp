@@ -104,42 +104,46 @@ struct builtin_useCAS
 /*!
  * Atomic or using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicOr(T* acc, T value)
+RAJA_INLINE char builtin_atomicOr(char* acc, char value)
 {
-  char return_val = _InterlockedOr8((char*)acc, *((char*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedOr8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicOr(T* acc, T value)
+RAJA_INLINE uint8_t builtin_atomicOr(uint8_t* acc, uint8_t value)
 {
-  short return_val = _InterlockedOr16((short*)acc, *((short*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedOr8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicOr(T* acc, T value)
+RAJA_INLINE short builtin_atomicOr(short* acc, short value)
 {
-  long return_val = _InterlockedOr((long*)acc, *((long*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedOr16(acc, value);
+}
+
+RAJA_INLINE uint16_t builtin_atomicOr(uint16_t* acc, uint16_t value)
+{
+  return _InterlockedOr16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicOr(long* acc, long value)
+{
+  return _InterlockedOr(acc, value);
+}
+
+RAJA_INLINE uint32_t builtin_atomicOr(uint32_t* acc, uint32_t value)
+{
+  return _InterlockedOr(acc, value);
 }
 
 #if defined(_WIN64)
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicOr(T* acc, T value)
+RAJA_INLINE long long builtin_atomicOr(long long* acc, long long value)
 {
-  long long return_val = _InterlockedOr64((long long*)acc, *((long long*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedOr64(acc, value);
+}
+
+RAJA_INLINE uint64_t builtin_atomicOr(uint64_t* acc, uint64_t value)
+{
+  return _InterlockedOr64(acc, value);
 }
 
 #endif
@@ -157,42 +161,46 @@ RAJA_INLINE T builtin_atomicLoad(T* acc)
 /*!
  * Atomic exchange using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicExchange(T* acc, T value)
+RAJA_INLINE char builtin_atomicExchange(char* acc, char value)
 {
-  char return_val = _InterlockedExchange8((char*)acc, *((char*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchange8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicExchange(T* acc, T value)
+RAJA_INLINE uint8_t builtin_atomicExchange(uint8_t* acc, uint8_t value)
 {
-  short return_val = _InterlockedExchange16((short*)acc, *((short*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchange8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicExchange(T* acc, T value)
+RAJA_INLINE short builtin_atomicExchange(short* acc, short value)
 {
-  long return_val = _InterlockedExchange((long*)acc, *((long*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchange16(acc, value);
+}
+
+RAJA_INLINE uint16_t builtin_atomicExchange(uint16_t* acc, uint16_t value)
+{
+  return _InterlockedExchange16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicExchange(long* acc, long value)
+{
+  return _InterlockedExchange(acc, value);
+}
+
+RAJA_INLINE uint32_t builtin_atomicExchange(uint32_t* acc, uint32_t value)
+{
+  return _InterlockedExchange(acc, value);
 }
 
 #if defined(_WIN64)
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicExchange(T* acc, T value)
+RAJA_INLINE long long builtin_atomicExchange(long long* acc, long long value)
 {
-  long long return_val = _InterlockedExchange((long long*)acc, *((long long*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchange64(acc, value);
+}
+
+RAJA_INLINE uint64_t builtin_atomicExchange(uint64_t* acc, uint64_t value)
+{
+  return _InterlockedExchange64(acc, value);
 }
 
 #endif
@@ -211,42 +219,50 @@ RAJA_INLINE void builtin_atomicStore(T* acc, T value)
 /*!
  * Atomic compare and swap using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicCAS(T* acc, T compare, T value)
+RAJA_INLINE char builtin_atomicCAS(char* acc, char compare, char value)
 {
-  char return_val = _InterlockedCompareExchange8((char*)acc, *((char*)&value), *((char*)&compare));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedCompareExchange8(acc, value, compare);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicCAS(T* acc, T compare, T value)
+RAJA_INLINE uint8_t builtin_atomicCAS(uint8_t* acc, uint8_t compare, uint8_t value)
 {
-  short return_val = _InterlockedCompareExchange16((short*)acc, *((short*)&value), *((short*)&compare));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedCompareExchange8(acc, value, compare);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicCAS(T* acc, T compare, T value)
+RAJA_INLINE short builtin_atomicCAS(short* acc, short compare, short value)
 {
-  long return_val = _InterlockedCompareExchange((long*)acc, *((long*)&value), *((long*)&compare));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedCompareExchange16(acc, value, compare);
+}
+
+RAJA_INLINE uint16_t builtin_atomicCAS(uint16_t* acc, uint16_t compare, uint16_t value)
+{
+  return _InterlockedCompareExchange16(acc, value, compare);
+}
+
+RAJA_INLINE long builtin_atomicCAS(long* acc, long compare, long value)
+{
+  return _InterlockedCompareExchange(acc, value, compare);
+}
+
+RAJA_INLINE uint32_t builtin_atomicCAS(uint32_t* acc, uint32_t compare, uint32_t value)
+{
+  return _InterlockedCompareExchange(acc, value, compare);
 }
 
 #if defined(_WIN64)
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicCAS(T* acc, T compare, T value)
+RAJA_INLINE long long builtin_atomicCAS(long long* acc,
+                                        long long compare,
+                                        long long value)
 {
-  long long return_val = _InterlockedCompareExchange64((long long*)acc, *((long long*)&value), *((long long*)&compare));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedCompareExchange64(acc, value, compare);
+}
+
+RAJA_INLINE uint64_t builtin_atomicCAS(uint64_t* acc,
+                                       uint64_t compare,
+                                       uint64_t value)
+{
+  return _InterlockedCompareExchange64(acc, value, compare);
 }
 
 #endif
@@ -255,42 +271,46 @@ builtin_atomicCAS(T* acc, T compare, T value)
 /*!
  * Atomic addition using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicAdd(T* acc, T value)
+RAJA_INLINE char builtin_atomicAdd(char* acc, char value)
 {
-  char return_val = _InterlockedExchangeAdd8((char*)acc, *((char*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicAdd(T* acc, T value)
+RAJA_INLINE uint8_t builtin_atomicAdd(uint8_t* acc, uint8_t value)
 {
-  short return_val = _InterlockedExchangeAdd16((short*)acc, *((short*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicAdd(T* acc, T value)
+RAJA_INLINE short builtin_atomicAdd(short* acc, short value)
 {
-  long return_val = _InterlockedExchangeAdd((long*)acc, *((long*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd16(acc, value);
+}
+
+RAJA_INLINE uint16_t builtin_atomicAdd(uint16_t* acc, uint16_t value)
+{
+  return _InterlockedExchangeAdd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAdd(long* acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, value);
+}
+
+RAJA_INLINE uint32_t builtin_atomicAdd(uint32_t* acc, uint32_t value)
+{
+  return _InterlockedExchangeAdd(acc, value);
 }
 
 #if defined(_WIN64)
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicAdd(T* acc, T value)
+RAJA_INLINE long long builtin_atomicAdd(long long* acc, long long value)
 {
-  long long return_val = _InterlockedExchangeAdd64((long long*)acc, *((long long*)&value));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd64(acc, value);
+}
+
+RAJA_INLINE uint64_t builtin_atomicAdd(uint64_t* acc, uint64_t value)
+{
+  return _InterlockedExchangeAdd64(acc, value);
 }
 
 #endif
@@ -299,42 +319,46 @@ builtin_atomicAdd(T* acc, T value)
 /*!
  * Atomic subtraction using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicSub(T* acc, T value)
+RAJA_INLINE char builtin_atomicSub(char* acc, char value)
 {
-  char return_val = _InterlockedExchangeAdd8((char*)acc, *((char*)&(-value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd8(acc, -value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicSub(T* acc, T value)
+RAJA_INLINE uint8_t builtin_atomicSub(uint8_t* acc, uint8_t value)
 {
-  short return_val = _InterlockedExchangeAdd16((short*)acc, *((short*)&(-value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd8(acc, -value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicSub(T* acc, T value)
+RAJA_INLINE short builtin_atomicSub(short* acc, short value)
 {
-  long return_val = _InterlockedExchangeAdd((long*)acc, *((long*)&(-value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd16(acc, -value);
+}
+
+RAJA_INLINE uint16_t builtin_atomicSub(uint16_t* acc, uint16_t value)
+{
+  return _InterlockedExchangeAdd16(acc, -value);
+}
+
+RAJA_INLINE long builtin_atomicSub(long* acc, long value)
+{
+  return _InterlockedExchangeAdd(acc, -value);
+}
+
+RAJA_INLINE uint32_t builtin_atomicSub(uint32_t* acc, uint32_t value)
+{
+  return _InterlockedExchangeAdd(acc, -value);
 }
 
 #if defined(_WIN64)
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicSub(T* acc, T value)
+RAJA_INLINE long long builtin_atomicSub(long long* acc, long long value)
 {
-  long long return_val = _InterlockedExchangeAdd64((long long*)acc, *((long long*)&(-value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedExchangeAdd64(acc, -value);
+}
+
+RAJA_INLINE uint64_t builtin_atomicSub(uint64_t* acc, uint64_t value)
+{
+  return _InterlockedExchangeAdd64(acc, -value);
 }
 
 #endif
@@ -343,42 +367,46 @@ builtin_atomicSub(T* acc, T value)
 /*!
  * Atomic and using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicAnd(T* acc, T value)
+RAJA_INLINE char builtin_atomicAnd(char* acc, char value)
 {
-  char return_val = _InterlockedAnd8((char*)acc, *((char*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedAnd8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicAnd(T* acc, T value)
+RAJA_INLINE uint8_t builtin_atomicAnd(uint8_t* acc, uint8_t value)
 {
-  short return_val = _InterlockedAnd16((short*)acc, *((short*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedAnd8(acc, value);
 }
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicAnd(T* acc, T value)
+RAJA_INLINE short builtin_atomicAnd(short* acc, short value)
 {
-  long return_val = _InterlockedAnd((long*)acc, *((long*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedAnd16(acc, value);
+}
+
+RAJA_INLINE uint16_t builtin_atomicAnd(uint16_t* acc, uint16_t value)
+{
+  return _InterlockedAnd16(acc, value);
+}
+
+RAJA_INLINE long builtin_atomicAnd(long* acc, long value)
+{
+  return _InterlockedAnd(acc, value);
+}
+
+RAJA_INLINE uint32_t builtin_atomicAnd(uint32_t* acc, uint32_t value)
+{
+  return _InterlockedAnd(acc, value);
 }
 
 #if defined(_WIN64)
 
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicAnd(T* acc, T value)
+RAJA_INLINE long long builtin_atomicAnd(long long* acc, long long value)
 {
-  long long return_val = _InterlockedAnd64((long long*)acc, *((long long*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
+  return _InterlockedAnd64(acc, value);
+}
+
+RAJA_INLINE uint64_t builtin_atomicAnd(uint64_t* acc, uint64_t value)
+{
+  return _InterlockedAnd64(acc, value);
 }
 
 #endif
@@ -387,47 +415,12 @@ builtin_atomicAnd(T* acc, T value)
 /*!
  * Atomic xor using intrinsics
  */
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 1, T>
-builtin_atomicXor(T* acc, T value)
-{
-  char return_val = _InterlockedXor8((char*)acc, *((char*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
-}
-
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 2, T>
-builtin_atomicXor(T* acc, T value)
-{
-  short return_val = _InterlockedXor16((short*)acc, *((short*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
-}
-
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 4, T>
-builtin_atomicXor(T* acc, T value)
-{
-  long return_val = _InterlockedXor((long*)acc, *((long*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
-}
-
-#if defined(_WIN64)
-
-template <typename T>
-RAJA_INLINE
-std::enable_if_t<sizeof(T) == 8, T>
-builtin_atomicXor(T* acc, T value)
-{
-  long long return_val = _InterlockedXor64((long long*)acc, *((long long*)&(value)));
-  return *(reinterpret_cast<T*>(&return_val));
-}
-
-#endif
-
 RAJA_INLINE char builtin_atomicXor(char* acc, char value)
+{
+  return _InterlockedXor8(acc, value);
+}
+
+RAJA_INLINE uint8_t builtin_atomicXor(uint8_t* acc, uint8_t value)
 {
   return _InterlockedXor8(acc, value);
 }
@@ -437,7 +430,17 @@ RAJA_INLINE short builtin_atomicXor(short* acc, short value)
   return _InterlockedXor16(acc, value);
 }
 
+RAJA_INLINE uint16_t builtin_atomicXor(uint16_t* acc, uint16_t value)
+{
+  return _InterlockedXor16(acc, value);
+}
+
 RAJA_INLINE long builtin_atomicXor(long* acc, long value)
+{
+  return _InterlockedXor(acc, value);
+}
+
+RAJA_INLINE uint32_t builtin_atomicXor(uint32_t* acc, uint32_t value)
 {
   return _InterlockedXor(acc, value);
 }
@@ -445,6 +448,11 @@ RAJA_INLINE long builtin_atomicXor(long* acc, long value)
 #if defined(_WIN64)
 
 RAJA_INLINE long long builtin_atomicXor(long long* acc, long long value)
+{
+  return _InterlockedXor64(acc, value);
+}
+
+RAJA_INLINE uint64_t builtin_atomicXor(uint64_t* acc, uint64_t value)
 {
   return _InterlockedXor64(acc, value);
 }
