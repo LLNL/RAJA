@@ -356,7 +356,8 @@ RAJA_INLINE char builtin_atomicSub(char* acc, char value)
 RAJA_INLINE uint8_t builtin_atomicSub(uint8_t* acc, uint8_t value)
 {
   uint8_t neg_value = -value;
-  char return_val = _InterlockedExchangeAdd8((char*)acc, *((char*)&(neg_value)));
+  char return_val =
+      _InterlockedExchangeAdd8((char*)acc, *((char*)&(neg_value)));
   return *(reinterpret_cast<uint8_t*>(&return_val));
 }
 
