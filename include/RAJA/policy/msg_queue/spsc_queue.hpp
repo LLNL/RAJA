@@ -90,7 +90,8 @@ public:
       auto local_size = m_container->m_size++;
       if (m_container->m_data != nullptr)
       {
-        m_container->m_data[local_size % m_container->m_capacity] = value_type(std::forward<Ts>(args)...);
+        m_container->m_data[local_size % m_container->m_capacity] =
+            value_type(std::forward<Ts>(args)...);
         return true;
       }
     }
