@@ -32,6 +32,31 @@
  *
  */
 
+// This is a simplified example fixed string to show how
+// custom types can be used with the message queue.
+template <std::size_t N>
+class my_string
+{
+public:
+  char m_data[N];
+
+  my_string(const char* str)
+  {
+    if (str == NULL) { return; }  
+    std::size_t i = 0;
+    for (i = 0; *str != '\0' && i < N; str++, i++) {
+      m_data[i] = *str;
+    } 
+
+    std::size_t len = (i < N) ? i : N-1;
+    m_data[len] = '\0';
+  }
+
+  const char* c_str() const
+  {
+    return m_data;
+  }
+};
 
 //
 // Functions for checking and printing results
@@ -56,8 +81,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // Allocate and initialize message handler and queue
 //
   auto logger = RAJA::make_message_handler(num_messages, host, 
-    [](int* ptr, int idx, int value) {
-      std::cout << "\n pointer " << ptr << " a[" << idx << "] = " << value << "\n";
+    [](const my_string<128>& str, int* ptr, int idx, int value) {
+      std::cout << "\n " << str.c_str() << " " << ptr << " a[" << idx << "] = " << value << "\n";
     }
   );
   auto cpu_msg_queue = logger.get_queue<RAJA::mpsc_queue>();
@@ -95,7 +120,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int i = 0; i < N; ++i) {
     if (a[i] < 0) { 
-      cpu_msg_queue.try_post_message(a, i, a[i]); 
+      cpu_msg_queue.try_post_message("message from C-style loop", a, i, a[i]); 
     }
     c[i] = a[i] + b[i];
   }
@@ -113,7 +138,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::forall<RAJA::seq_exec>(host, RAJA::RangeSegment(0, N), [=] (int i) { 
     if (a[i] < 0) { 
-      cpu_msg_queue.try_post_message(a, i, a[i]); 
+      cpu_msg_queue.try_post_message("message from RAJA seq_exec loop", a, i, a[i]); 
     }
     c[i] = a[i] + b[i]; 
   });
@@ -143,7 +168,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<RAJA::omp_parallel_for_exec>(host, RAJA::RangeSegment(0, N),
   [=] (int i) {
     if (a[i] < 0) { 
-      cpu_msg_queue.try_post_message(a, i, a[i]); 
+      cpu_msg_queue.try_post_message("message from RAJA omp_parallel_for_exec loop", a, i, a[i]); 
     }
     c[i] = a[i] + b[i]; 
   });
@@ -160,7 +185,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<RAJA::omp_parallel_for_static_exec< >>(host, RAJA::RangeSegment(0, N),
   [=] (int i) {
     if (a[i] < 0) { 
-      cpu_msg_queue.try_post_message(a, i, a[i]); 
+      cpu_msg_queue.try_post_message("message from RAJA omp_parallel_for_static_exec loop", a, i, a[i]); 
     }
     c[i] = a[i] + b[i]; 
   });
@@ -177,7 +202,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<RAJA::omp_parallel_for_dynamic_exec<16>>(host, RAJA::RangeSegment(0, N),
   [=] (int i) {
     if (a[i] < 0) { 
-      cpu_msg_queue.try_post_message(a, i, a[i]); 
+      cpu_msg_queue.try_post_message("message from RAJA omp_parallel_for_dynamic_exec<16> loop", a, i, a[i]); 
     }
     c[i] = a[i] + b[i]; 
   });
@@ -215,15 +240,15 @@ const int GPU_BLOCK_SIZE = 256;
 #endif
   // TODO: does this work with sycl?
   auto gpu_logger1 = RAJA::make_message_handler(num_messages, res_gpu1, 
-    [](int* ptr, int idx, int value) {
-      std::cout << "\n gpu stream 1: pointer " << ptr << " a[" << idx << "] = " << value << "\n";
+    [](const my_string<128>& str, int* ptr, int idx, int value) {
+      std::cout << "\n " << str.c_str() << " " << ptr << " a[" << idx << "] = " << value << "\n";
     }
   );
   auto gpu_msg_queue1 = gpu_logger1.get_queue<RAJA::mpsc_queue>();
 
   auto gpu_logger2 = RAJA::make_message_handler(num_messages, res_gpu2, 
-    [](int* ptr, int idx, int value) {
-      std::cout << "\n gpu stream 2: pointer " << ptr << " a[" << idx << "] = " << value << "\n";
+    [](const my_string<128>& str, int* ptr, int idx, int value) {
+      std::cout << "\n " << str.c_str() << " " << ptr << " a[" << idx << "] = " << value << "\n";
     }
   );
   auto gpu_msg_queue2 = gpu_logger2.get_queue<RAJA::mpsc_queue>();
@@ -246,7 +271,7 @@ const int GPU_BLOCK_SIZE = 256;
   RAJA::forall<EXEC_POLICY>(res_gpu1, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     if (d_a1[i] < 0) { 
-      gpu_msg_queue1.try_post_message(d_a1, i, d_a1[i]); 
+      gpu_msg_queue1.try_post_message("message from GPU stream 1: pointer =", d_a1, i, d_a1[i]); 
     }
     d_c1[i] = d_a1[i] + d_b1[i]; 
   });    
@@ -254,7 +279,7 @@ const int GPU_BLOCK_SIZE = 256;
   RAJA::forall<EXEC_POLICY>(res_gpu2, RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
     if (d_a2[i] < 0) { 
-      gpu_msg_queue2.try_post_message(d_a2, i, d_a2[i]); 
+      gpu_msg_queue2.try_post_message("message from GPU stream 2: pointer =", d_a2, i, d_a2[i]); 
     }
     d_c2[i] = d_a2[i] + d_b2[i]; 
   }); 
