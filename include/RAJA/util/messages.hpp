@@ -24,7 +24,6 @@
 
 #include "RAJA/policy/msg_queue.hpp"
 
-// TODO: should these use the RAJA headers instead?
 #include "camp/tuple.hpp"
 #include "camp/resource.hpp"
 

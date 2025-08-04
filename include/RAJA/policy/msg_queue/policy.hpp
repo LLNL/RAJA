@@ -62,10 +62,10 @@ struct spsc_queue
 }  // namespace policy
 
 // TODO: support other queue policies
-// using spsc_queue           = policy::messages::spsc_queue<false>;
-// using spsc_queue_overwrite = policy::messages::spsc_queue<true>;
-using mpsc_queue = policy::messages::mpsc_queue<false>;
-// using mpsc_queue_overwrite = policy::messages::mpsc_queue<true>;
+using spsc_queue           = policy::messages::spsc_queue<false>;
+using spsc_queue_overwrite = policy::messages::spsc_queue<true>;
+using mpsc_queue           = policy::messages::mpsc_queue<false>;
+using mpsc_queue_overwrite = policy::messages::mpsc_queue<true>;
 
 }  // namespace RAJA
 

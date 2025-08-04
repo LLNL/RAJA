@@ -30,10 +30,10 @@ namespace messages
 {
 
 template<typename Container>
-class queue<Container, RAJA::mpsc_queue>
+class queue<Container, RAJA::spsc_queue>
 {
 public:
-  using policy = RAJA::mpsc_queue;
+  using policy = RAJA::spsc_queue;
 
   using value_type = typename Container::value_type;
   using size_type  = typename Container::size_type;
@@ -50,7 +50,7 @@ public:
   {
     if (m_container != nullptr)
     {
-      auto local_size = RAJA::atomicInc<auto_atomic>(&(m_container->m_size));
+      auto local_size = m_container->m_size++;
       if (m_container->m_data != nullptr &&
           local_size < m_container->m_capacity)
       {
@@ -67,10 +67,10 @@ private:
 };
 
 template<typename Container>
-class queue<Container, RAJA::mpsc_queue_overwrite>
+class queue<Container, RAJA::spsc_queue_overwrite>
 {
 public:
-  using policy = RAJA::mpsc_queue_overwrite;
+  using policy = RAJA::spsc_queue_overwrite;
 
   using value_type = typename Container::value_type;
   using size_type  = typename Container::size_type;
@@ -87,7 +87,7 @@ public:
   {
     if (m_container != nullptr)
     {
-      auto local_size = RAJA::atomicInc<auto_atomic>(&(m_container->m_size));
+      auto local_size = m_container->m_size++;
       if (m_container->m_data != nullptr)
       {
         m_container->m_data[local_size % m_container->m_capacity] = value_type(std::forward<Ts>(args)...);
