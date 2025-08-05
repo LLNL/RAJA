@@ -12,7 +12,7 @@
 
 TEST(message_handler, initialize) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, [&](int val) {
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
     test = val;   
   });
 
@@ -22,7 +22,7 @@ TEST(message_handler, initialize) {
 
 TEST(message_handler, initialize_with_resource) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, camp::resources::Host(), [&](int val) {
+  auto msg = RAJA::make_message_handler(1, camp::resources::Host(), [&](int val) {
     test = val;   
   });
 
@@ -32,7 +32,7 @@ TEST(message_handler, initialize_with_resource) {
 
 TEST(message_handler, clear) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, [&](int val) {
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
     test = val;   
   });
 
@@ -47,7 +47,7 @@ TEST(message_handler, clear) {
 
 TEST(message_handler, try_post_message) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, [&](int val) {
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
     test = val;   
   });
 
@@ -59,7 +59,7 @@ TEST(message_handler, try_post_message) {
 
 TEST(message_handler, try_post_message_overflow) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, [&](int val) {
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
     test = val;   
   });
 
@@ -70,9 +70,22 @@ TEST(message_handler, try_post_message_overflow) {
   ASSERT_EQ(test, 0);
 } 
 
+TEST(message_handler, try_post_message_overwrite) {
+  int test = 0;
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
+    test = val;   
+  });
+
+  auto q = msg.get_queue<RAJA::mpsc_queue_overwrite>();
+  ASSERT_EQ(q.try_post_message(5), true);
+  ASSERT_EQ(q.try_post_message(7), true);
+
+  ASSERT_EQ(test, 0);
+} 
+
 TEST(message_handler, wait_all) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, [&](int val) {
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
     test = val;   
   });
 
@@ -86,7 +99,7 @@ TEST(message_handler, wait_all) {
 
 TEST(message_handler, wait_all_array) {
   camp::array<int, 3> test = {0, 0, 0};
-  RAJA::message_handler<void(camp::array<int, 3>)> msg(1, 
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, 
     [&](camp::array<int, 3> val) {
       test[0] = val[0];   
       test[1] = val[1];
@@ -107,7 +120,7 @@ TEST(message_handler, wait_all_array) {
 
 TEST(message_handler, wait_all_overflow) {
   int test = 0;
-  RAJA::message_handler<void(int)> msg(1, [&](int val) {
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
     test = val;   
   });
 
@@ -117,4 +130,18 @@ TEST(message_handler, wait_all_overflow) {
 
   msg.wait_all();
   ASSERT_EQ(test, 1);
+}
+
+TEST(message_handler, wait_all_overwrite) {
+  int test = 0;
+  auto msg = RAJA::make_message_handler<RAJA::seq_exec>(1, [&](int val) {
+    test = val;   
+  });
+
+  auto q = msg.get_queue<RAJA::mpsc_queue_overwrite>();
+  ASSERT_EQ(q.try_post_message(1), true);
+  ASSERT_EQ(q.try_post_message(2), true);
+
+  msg.wait_all();
+  ASSERT_EQ(test, 2);
 }

@@ -182,11 +182,6 @@ public:
   using msg_bus       = message_bus<message>;
 
 public:
-  message_handler(const std::size_t num_messages, callback_type c)
-      : m_bus {num_messages, camp::resources::Host()},
-        m_callback {c}
-  {}
-
   template<typename Resource>
   message_handler(const std::size_t num_messages, Resource res, callback_type c)
       : m_bus {num_messages, res},
@@ -238,24 +233,21 @@ private:
   callback_type m_callback;
 };
 
-template<typename R, typename... Args>
-message_handler(const std::size_t, std::function<R(Args...)>)
-    -> message_handler<R(Args...)>;
-
 template<typename Resource, typename R, typename... Args>
 message_handler(const std::size_t, Resource, std::function<R(Args...)>)
     -> message_handler<R(Args...)>;
-
-template<typename Callable>
-auto make_message_handler(std::size_t num_msgs, Callable c)
-{
-  return RAJA::message_handler(num_msgs, std::function(c));
-}
 
 template<typename Resource, typename Callable>
 auto make_message_handler(std::size_t num_msgs, Resource r, Callable c)
 {
   return RAJA::message_handler(num_msgs, r, std::function(c));
+}
+
+template<typename ExecPol, typename Callable>
+auto make_message_handler(std::size_t num_msgs, Callable c)
+{
+  auto r = RAJA::resources::get_default_resource<ExecPol>();
+  return RAJA::make_message_handler(num_msgs, r, std::function(c));
 }
 
 }  // namespace RAJA
