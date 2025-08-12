@@ -37,7 +37,6 @@ generate-job-lists:
     RADIUSS_JOBS_PATH: "scripts/radiuss-spack-configs/gitlab/radiuss-jobs"
     LOCAL_JOBS_PATH: ".gitlab/jobs"
   script:
-    - cat ${RADIUSS_JOBS_PATH}/ruby.yml ${LOCAL_JOBS_PATH}/ruby.yml > ruby-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/dane.yml ${LOCAL_JOBS_PATH}/dane.yml > dane-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/lassen.yml ${LOCAL_JOBS_PATH}/lassen.yml > lassen-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/corona.yml ${LOCAL_JOBS_PATH}/corona.yml > corona-jobs.yml
@@ -45,24 +44,11 @@ generate-job-lists:
     - cat ${RADIUSS_JOBS_PATH}/tuolumne.yml ${LOCAL_JOBS_PATH}/tuolumne.yml > tuolumne-jobs.yml
   artifacts:
     paths:
-      - ruby-jobs.yml
       - dane-jobs.yml
       - lassen-jobs.yml
       - corona-jobs.yml
       - tioga-jobs.yml
       - tuolumne-jobs.yml
-
-# RUBY
-ruby-up-check:
-  variables:
-    CI_MACHINE: "ruby"
-  extends: [.machine-check]
-
-ruby-build-and-test:
-  variables:
-    CI_MACHINE: "ruby"
-  needs: [ruby-up-check, generate-job-lists]
-  extends: [.build-and-test]
 
 # DANE
 dane-up-check:

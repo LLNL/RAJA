@@ -7,21 +7,10 @@
 
 # We define the following GitLab pipeline variables:
 variables:
-# On LLNL's ruby, this pipeline creates only one allocation shared among jobs
+# On LLNL's machines, this pipeline creates only one allocation shared among jobs
 # in order to save time and resources. This allocation has to be uniquely named
 # so that we are sure to retrieve it and avoid collisions.
   ALLOC_NAME: ${CI_PROJECT_NAME}_ci_${CI_PIPELINE_ID}
-
-# Ruby
-# Arguments for top level allocation
-  RUBY_SHARED_ALLOC: "--exclusive --reservation=ci --time=40 --nodes=2"
-# Arguments for job level allocation
-# Note: We repeat the reservation, necessary when jobs are manually re-triggered.
-  RUBY_JOB_ALLOC: "--reservation=ci --nodes=1"
-# Project specific variants for ruby
-  PROJECT_RUBY_VARIANTS: "~shared +openmp +vectorization +tests"
-# Project specific deps for ruby
-  PROJECT_RUBY_DEPS:
 
 # Dane
 # Arguments for top level allocation
