@@ -44,7 +44,7 @@ TEST(IndexSetBuild, Aligned)
   indices.push_back(30);
   indices.push_back(31);
 
-  camp::resources::Resource res{camp::resources::Host()};
+  camp::resources::Resource res{camp::resources::Host::get_default()};
  
   RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
 

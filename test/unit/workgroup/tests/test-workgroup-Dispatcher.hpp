@@ -113,7 +113,7 @@ void operator()(RAJA::xargs<Args...>) const
   using TestCallable = DispatcherTestCallable<IndexType, Args...>;
 
   camp::resources::Resource work_res{WORKING_RES()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   static constexpr auto platform = RAJA::platform_of<ExecPolicy>::value;
   using DispatchPolicy = typename DispatchTyper::template type<TestCallable>;
@@ -145,6 +145,7 @@ void operator()(RAJA::xargs<Args...>) const
   testCall[2] = (IndexType)5;
 
   work_res.memcpy(workCall, testCall, sizeof(IndexType) * 3);
+  work_res.wait();
 
   testCall[0] = (IndexType)0;
   testCall[1] = (IndexType)0;
@@ -181,12 +182,14 @@ void operator()(RAJA::xargs<Args...>) const
 
 
   work_res.memcpy(wrk_obj, new_obj, sizeof(TestCallable) * 1);
+  work_res.wait();
 
   // move a value onto device and fiddle
   call_dispatcher<ForOnePol, Invoker_type, Dispatcher_cptr_type, IndexType, Args...>(
       dispatcher->invoke, wrk_obj, (IndexType)1, Args{}...);
 
   work_res.memcpy(testCall, workCall, sizeof(IndexType) * 3);
+  work_res.wait();
 
   ASSERT_EQ(testCall[0], chckCall[0]);
   ASSERT_EQ(testCall[1], chckCall[1]);
