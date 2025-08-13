@@ -355,7 +355,7 @@ RAJA_INLINE char builtin_atomicSub(char* acc, char value)
 
 RAJA_INLINE uint8_t builtin_atomicSub(uint8_t* acc, uint8_t value)
 {
-  char neg_value = -( *((char*)&(value)) );
+  char neg_value  = -(*((char*)&(value)));
   char return_val = _InterlockedExchangeAdd8((char*)acc, neg_value);
   return *(reinterpret_cast<uint8_t*>(&return_val));
 }
@@ -367,7 +367,7 @@ RAJA_INLINE short builtin_atomicSub(short* acc, short value)
 
 RAJA_INLINE uint16_t builtin_atomicSub(uint16_t* acc, uint16_t value)
 {
-  short neg_value = -( *((short*)&(value)) );
+  short neg_value  = -(*((short*)&(value)));
   short return_val = _InterlockedExchangeAdd16((short*)acc, neg_value);
   return *(reinterpret_cast<uint16_t*>(&return_val));
 }
@@ -379,7 +379,7 @@ RAJA_INLINE long builtin_atomicSub(long* acc, long value)
 
 RAJA_INLINE uint32_t builtin_atomicSub(uint32_t* acc, uint32_t value)
 {
-  long neg_value = -( *((long*)&(value)) );
+  long neg_value  = -(*((long*)&(value)));
   long return_val = _InterlockedExchangeAdd((long*)acc, neg_value);
   return *(reinterpret_cast<uint32_t*>(&return_val));
 }
@@ -393,9 +393,8 @@ RAJA_INLINE long long builtin_atomicSub(long long* acc, long long value)
 
 RAJA_INLINE uint64_t builtin_atomicSub(uint64_t* acc, uint64_t value)
 {
-  long long neg_value = -( *((long long*)&(value)) );
-  long long return_val =
-      _InterlockedExchangeAdd64((long long*)acc, newg_value);
+  long long neg_value  = -(*((long long*)&(value)));
+  long long return_val = _InterlockedExchangeAdd64((long long*)acc, neg_value);
   return *(reinterpret_cast<uint64_t*>(&return_val));
 }
 
