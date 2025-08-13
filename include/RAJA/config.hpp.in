@@ -22,7 +22,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -177,11 +177,14 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #cmakedefine RAJA_ENABLE_SYCL
 
 #cmakedefine RAJA_ENABLE_OMP_TASK
+#cmakedefine RAJA_ALLOW_OPENMP_5_1_ATOMICS
 #cmakedefine RAJA_ENABLE_VECTORIZATION
 
+#cmakedefine RAJA_ENABLE_CALIPER
 #cmakedefine RAJA_ENABLE_NV_TOOLS_EXT
 #cmakedefine RAJA_ENABLE_ROCTX
 
+#define RAJA_CUDA_WARPSIZE 32
 #cmakedefine RAJA_HIP_WAVESIZE @RAJA_HIP_WAVESIZE@
 
 /*!
@@ -254,6 +257,11 @@ static_assert.
 
 namespace RAJA {
 
+// Enables OpenMP 5.1 atomics for min/max operations  
+#if defined(RAJA_ENABLE_OPENMP) && _OPENMP >= 202011 && defined(RAJA_ALLOW_OPENMP_5_1_ATOMICS)
+#define RAJA_USE_OPENMP_5_1_ATOMICS
+#endif
+  
 #if defined(RAJA_ENABLE_OPENMP) && !defined(__HIP_DEVICE_COMPILE__)
 #if defined(_OPENMP)
 #if (_OPENMP >= 200805)
@@ -428,12 +436,28 @@ const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 #define RAJA_MAX_ALIGN 16
 #define RAJA_FORCEINLINE_RECURSIVE
 #define RAJA_INLINE inline  __attribute__((always_inline))
-#if !defined(__NVCC__)
+
+#if !defined(__NVCC__) // purely GCC, CUDA compiler not active
 #define RAJA_UNROLL RAJA_PRAGMA(GCC unroll 10000)
 #define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(GCC unroll N)
-#else
-#define RAJA_UNROLL RAJA_PRAGMA(unroll)
-#define RAJA_UNROLL_COUNT(N) RAJA_PRAGMA(unroll N)
+#else // CUDA compiler active, with GCC host compiler
+#if defined(__NVCC_DIAG_PRAGMA_SUPPORT__) // CUDA >= 11.5
+#define RAJA_UNROLL \
+        RAJA_PRAGMA (nv_diagnostic push) \
+        RAJA_PRAGMA (nv_diag_suppress 1675) \
+        RAJA_PRAGMA (GCC unroll 10000) \
+        RAJA_PRAGMA (nv_diagnostic pop)
+#define RAJA_UNROLL_COUNT(N) \
+        RAJA_PRAGMA (nv_diagnostic push) \
+        RAJA_PRAGMA (nv_diag_suppress 1675) \
+        RAJA_PRAGMA (GCC unroll N) \
+        RAJA_PRAGMA (nv_diagnostic pop)
+#else // CUDA < 11.5
+// Choosing not to unroll CPU code to avoid warnings of
+// unrecognized pragmas from NVCC.
+#define RAJA_UNROLL
+#define RAJA_UNROLL_COUNT(N)
+#endif // __NVCC_DIAG_PRAGMA_SUPPORT__
 #endif
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP)

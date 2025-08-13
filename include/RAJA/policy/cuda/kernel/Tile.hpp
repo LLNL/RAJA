@@ -10,7 +10,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,6 +41,92 @@ namespace RAJA
 {
 namespace internal
 {
+
+/*!
+ * A specialized RAJA::kernel cuda_impl executor for statement::Tile
+ * Assigns the tile segment to segment ArgumentId
+ * Meets all sync requirements
+ */
+template<typename Data,
+         camp::idx_t ArgumentId,
+         camp::idx_t chunk_size,
+         typename IndexMapper,
+         kernel_sync_requirement sync,
+         typename... EnclosedStmts,
+         typename Types>
+struct CudaStatementExecutor<
+    Data,
+    statement::Tile<
+        ArgumentId,
+        RAJA::tile_fixed<chunk_size>,
+        RAJA::policy::cuda::
+            cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>,
+        EnclosedStmts...>,
+    Types>
+{
+
+  using stmt_list_t = StatementList<EnclosedStmts...>;
+
+  using enclosed_stmts_t = CudaStatementListExecutor<Data, stmt_list_t, Types>;
+
+  using diff_t = segment_diff_type<ArgumentId, Data>;
+
+  using DimensionCalculator = KernelDimensionCalculator<
+      RAJA::policy::cuda::
+          cuda_indexer<iteration_mapping::DirectUnchecked, sync, IndexMapper>>;
+
+  static inline RAJA_DEVICE void exec(Data& data, bool thread_active)
+  {
+    // Get the segment referenced by this Tile statement
+    auto& segment = camp::get<ArgumentId>(data.segment_tuple);
+
+    using segment_t = camp::decay<decltype(segment)>;
+
+    // compute trip count
+    const diff_t i =
+        IndexMapper::template index<diff_t>() * static_cast<diff_t>(chunk_size);
+
+    // Keep copy of original segment, so we can restore it
+    segment_t orig_segment = segment;
+
+    // Assign our new tiled segment
+    segment = orig_segment.slice(i, static_cast<diff_t>(chunk_size));
+
+    // execute enclosed statements
+    enclosed_stmts_t::exec(data, thread_active);
+
+    // Set range back to original values
+    segment = orig_segment;
+  }
+
+  static inline LaunchDims calculateDimensions(Data const& data)
+  {
+    // Compute how many chunks
+    const diff_t full_len = segment_length<ArgumentId>(data);
+    const diff_t len =
+        RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
+
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
+
+    // privatize data, so we can mess with the segments
+    using data_t        = camp::decay<Data>;
+    data_t private_data = data;
+
+    // Get original segment
+    auto& segment = camp::get<ArgumentId>(private_data.segment_tuple);
+
+    // restrict to first tile
+    segment = segment.slice(0, static_cast<diff_t>(chunk_size));
+
+    // NOTE: We do not detect improper uses of direct_unchecked policies under
+    // tiling. This happens when using a direct unchecked policy on a tiled
+    // range that is not evenly divisible by chunk_size.
+    LaunchDims enclosed_dims =
+        enclosed_stmts_t::calculateDimensions(private_data);
+
+    return combine(dims, enclosed_dims);
+  }
+};
 
 /*!
  * A specialized RAJA::kernel cuda_impl executor for statement::Tile
@@ -111,9 +197,7 @@ struct CudaStatementExecutor<
     const diff_t len =
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -128,7 +212,7 @@ struct CudaStatementExecutor<
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
-    return dims.max(enclosed_dims);
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -212,9 +296,7 @@ struct CudaStatementExecutor<
     const diff_t len =
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -229,7 +311,7 @@ struct CudaStatementExecutor<
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
-    return dims.max(enclosed_dims);
+    return combine(dims, enclosed_dims);
   }
 };
 
@@ -308,9 +390,7 @@ struct CudaStatementExecutor<
     const diff_t len =
         RAJA_DIVIDE_CEILING_INT(full_len, static_cast<diff_t>(chunk_size));
 
-    CudaDims my_dims(0), my_min_dims(0);
-    DimensionCalculator {}.set_dimensions(my_dims, my_min_dims, len);
-    LaunchDims dims {my_dims, my_min_dims};
+    LaunchDims dims = DimensionCalculator::get_dimensions(len);
 
     // privatize data, so we can mess with the segments
     using data_t        = camp::decay<Data>;
@@ -325,7 +405,7 @@ struct CudaStatementExecutor<
     LaunchDims enclosed_dims =
         enclosed_stmts_t::calculateDimensions(private_data);
 
-    return dims.max(enclosed_dims);
+    return combine(dims, enclosed_dims);
   }
 };
 

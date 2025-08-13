@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -52,7 +52,7 @@ void ForallReduceMinBasicTestImpl(const SEG_TYPE& seg,
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> mininit(small_min);
   RAJA::ReduceMin<REDUCE_POLICY, DATA_TYPE> min(min_init);
 
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(seg, RAJA::Name("Reduce Min"), [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     mininit.min( working_array[idx] );
     min.min( working_array[idx] );
   });

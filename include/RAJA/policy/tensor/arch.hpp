@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -142,11 +142,11 @@ using default_register = RAJA_TENSOR_REGISTER_TYPE;
 #endif
 
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef RAJA_CUDA_ACTIVE
 #include "RAJA/policy/tensor/arch/cuda/traits.hpp"
 #endif
 
-#ifdef RAJA_ENABLE_HIP
+#ifdef RAJA_HIP_ACTIVE
 #include "RAJA/policy/tensor/arch/hip/traits.hpp"
 #endif
 

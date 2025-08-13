@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,8 +9,6 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
-
-#include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
 
@@ -108,9 +106,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize matrix data.
 //
-  double *A = memoryManager::allocate<double>(N * N);
-  double *B = memoryManager::allocate<double>(N * N);
-  double *C = memoryManager::allocate<double>(N * N);
+  RAJA::resources::Host host_res;
+  double *A = host_res.allocate<double>(N * N);
+  double *B = host_res.allocate<double>(N * N);
+  double *C = host_res.allocate<double>(N * N);
 
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
@@ -502,10 +501,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
-
-  double *d_A = memoryManager::allocate_gpu<double>(N * N);
-  double *d_B = memoryManager::allocate_gpu<double>(N * N);
-  double *d_C = memoryManager::allocate_gpu<double>(N * N);
+  using ResourceType = RAJA::resources::Hip;
+  ResourceType res;
+  double *d_A = res.allocate<double>(N * N);
+  double *d_B = res.allocate<double>(N * N);
+  double *d_C = res.allocate<double>(N * N);
 
   std::cout << "\n Running HIP mat-mult (RAJA-nested - POL4)...\n";
 
@@ -1218,9 +1218,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
-  memoryManager::deallocate_gpu(d_A);
-  memoryManager::deallocate_gpu(d_B);
-  memoryManager::deallocate_gpu(d_C);
+  res.deallocate(d_A);
+  res.deallocate(d_B);
+  res.deallocate(d_C);
 #endif // if RAJA_ENABLE_HIP
 
 //----------------------------------------------------------------------------//
@@ -1228,9 +1228,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Clean up.
 //
-  memoryManager::deallocate(A);
-  memoryManager::deallocate(B);
-  memoryManager::deallocate(C);
+  host_res.deallocate(A);
+  host_res.deallocate(B);
+  host_res.deallocate(C);
 
   std::cout << "\n DONE!...\n";
 

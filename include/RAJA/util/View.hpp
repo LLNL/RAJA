@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,12 +18,11 @@
 #ifndef RAJA_VIEW_HPP
 #define RAJA_VIEW_HPP
 
+#include <array>
 #include <type_traits>
 
 #include "RAJA/config.hpp"
-
 #include "RAJA/pattern/atomic.hpp"
-
 #include "RAJA/util/IndexLayout.hpp"
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -140,15 +139,16 @@ RAJA_HOST_DEVICE RAJA_INLINE auto removenth(Lay lyout, Tup&& tup)
 // the index into the array-of-pointers to be moved around in the MultiView
 // operator(); see the operator overload. Default of 0 means that the p2p index
 // is in the 0th position.
-template<typename ValueType,
-         typename LayoutType,
-         RAJA::Index_type P2Pidx      = 0,
-         typename PointerType         = ValueType**,
-         typename NonConstPointerType = camp::type::ptr::add<  // adds *
-             camp::type::ptr::add<camp::type::cv::rem<         // removes cv
-                 camp::type::ptr::rem<camp::type::ptr::rem<PointerType>  // removes
-                                                                         // *
-                                      >>>>>
+template<
+    typename ValueType,
+    typename LayoutType,
+    RAJA::Index_type P2Pidx      = 0,
+    typename PointerType         = ValueType**,
+    typename NonConstPointerType = camp::type::ptr::add<  // adds *
+        camp::type::ptr::add<camp::type::cv::rem<         // removes cv
+            camp::type::ptr::rem<camp::type::ptr::rem<PointerType>  // removes
+                                                                    // *
+                                 >>>>>
 struct MultiView
 {
   using value_type      = ValueType;
@@ -217,7 +217,6 @@ struct MultiView
       RAJA_ABORT_OR_THROW(
           "Negative index while accessing array of pointers.\n");
     }
-
     auto idx = stripIndexType(
         removenth<LayoutType, P2Pidx>(layout, camp::forward_as_tuple(ar...)));
     return data[pidx][idx];
@@ -280,6 +279,96 @@ RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy> make_atomic_view(
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);
 }
 
+struct layout_left
+{};
+
+struct layout_right
+{};
+
+namespace detail
+{
+
+template<typename meta_layout>
+struct PermutedViewHelper;
+
+template<typename T>
+constexpr auto get_last_index(T last)
+{
+  return last;
+}
+
+template<typename T0, typename T1, typename... Args>
+constexpr auto get_last_index(T0, T1 t1, Args... args)
+{
+  return get_last_index(t1, args...);
+}
+
+template<std::size_t... stride_order_idx>
+struct PermutedViewHelper<std::index_sequence<stride_order_idx...>>
+{
+  template<typename IndexType, typename T, typename... Extents>
+  static auto get(T* ptr, Extents&&... extents)
+  {
+    constexpr int N = sizeof...(Extents);
+
+    auto custom_layout = RAJA::make_permuted_layout(
+        std::array<RAJA::idx_t, N> {std::forward<Extents>(extents)...},
+        std::array<RAJA::idx_t, N> {stride_order_idx...});
+
+    constexpr auto unit_stride = detail::get_last_index(stride_order_idx...);
+    using view_t = RAJA::View<T, RAJA::Layout<N, IndexType, unit_stride>>;
+
+    return view_t(ptr, custom_layout);
+  }
+};
+
+template<>
+struct PermutedViewHelper<layout_right>
+{
+  template<typename IndexType, typename T, typename... Extents>
+  static auto get(T* ptr, Extents&&... extents)
+  {
+    constexpr int N = sizeof...(Extents);
+    using view_t    = RAJA::View<T, RAJA::Layout<N, IndexType, N - 1>>;
+
+    return view_t(ptr, std::forward<Extents>(extents)...);
+  }
+};
+
+template<std::size_t... idx>
+constexpr auto make_reverse_array(std::index_sequence<idx...>)
+{
+  return std::array<RAJA::idx_t, sizeof...(idx)> {sizeof...(idx) - 1U - idx...};
+}
+
+template<>
+struct PermutedViewHelper<layout_left>
+{
+  template<typename IndexType, typename T, typename... Extents>
+  static auto get(T* ptr, Extents&&... extents)
+  {
+    constexpr int N = sizeof...(Extents);
+
+    auto reverse_layout = RAJA::make_permuted_layout(
+        std::array<RAJA::idx_t, N> {std::forward<Extents>(extents)...},
+        make_reverse_array(std::make_index_sequence<N> {}));
+    using view_t = RAJA::View<T, RAJA::Layout<N, IndexType, 0U>>;
+
+    return view_t(ptr, reverse_layout);
+  }
+};
+
+}  // namespace detail
+
+template<typename meta_layout,
+         typename IndexType = RAJA::Index_type,
+         typename T,
+         typename... Extents>
+auto make_permuted_view(T* ptr, Extents&&... extents)
+{
+  return detail::PermutedViewHelper<meta_layout>::template get<IndexType>(
+      ptr, std::forward<Extents>(extents)...);
+}
 
 }  // namespace RAJA
 

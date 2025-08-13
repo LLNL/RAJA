@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -145,7 +145,7 @@ camp::list<
       RAJA::statement::Tile<0, RAJA::tile_fixed<8>,
                                RAJA::cuda_block_y_direct,
         RAJA::statement::Tile<1, RAJA::tile_fixed<8>,
-                                 RAJA::cuda_block_x_direct,
+                                 RAJA::cuda_block_x_direct_unchecked,
           RAJA::statement::For<0, RAJA::cuda_thread_y_direct,   // outer
             RAJA::statement::For<1, RAJA::cuda_thread_x_direct, // inner
               RAJA::statement::Lambda<0>
@@ -176,11 +176,11 @@ camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::CudaKernelFixed<4*8*8,
       RAJA::statement::Tile<0, RAJA::tile_fixed<4>,
-                               RAJA::cuda_block_z_direct,
+                               RAJA::cuda_block_z_direct_unchecked,
         RAJA::statement::Tile<1, RAJA::tile_fixed<8>,
-                                 RAJA::cuda_block_y_direct,
+                                 RAJA::cuda_block_y_direct_unchecked,
           RAJA::statement::Tile<2, RAJA::tile_fixed<8>,
-                                   RAJA::cuda_block_x_direct,
+                                   RAJA::cuda_block_x_direct_unchecked,
             RAJA::statement::For<0, RAJA::cuda_thread_z_direct,     // outer
               RAJA::statement::For<1, RAJA::cuda_thread_y_direct,   // middle
                 RAJA::statement::For<2, RAJA::cuda_thread_x_direct, // inner
@@ -216,7 +216,7 @@ camp::list<
       RAJA::statement::Tile<0, RAJA::tile_fixed<8>,
                                RAJA::hip_block_y_direct,
         RAJA::statement::Tile<1, RAJA::tile_fixed<8>,
-                                 RAJA::hip_block_x_direct,
+                                 RAJA::hip_block_x_direct_unchecked,
           RAJA::statement::For<0, RAJA::hip_thread_y_direct,   // outer
             RAJA::statement::For<1, RAJA::hip_thread_x_direct, // inner
               RAJA::statement::Lambda<0>
@@ -247,11 +247,11 @@ camp::list<
   RAJA::KernelPolicy<
     RAJA::statement::HipKernelFixed<4*8*8,
       RAJA::statement::Tile<0, RAJA::tile_fixed<4>,
-                               RAJA::hip_block_z_direct,
+                               RAJA::hip_block_z_direct_unchecked,
         RAJA::statement::Tile<1, RAJA::tile_fixed<8>,
-                                 RAJA::hip_block_y_direct,
+                                 RAJA::hip_block_y_direct_unchecked,
           RAJA::statement::Tile<2, RAJA::tile_fixed<8>,
-                                   RAJA::hip_block_x_direct,
+                                   RAJA::hip_block_x_direct_unchecked,
             RAJA::statement::For<0, RAJA::hip_thread_z_direct,     // outer
               RAJA::statement::For<1, RAJA::hip_thread_y_direct,   // middle
                 RAJA::statement::For<2, RAJA::hip_thread_x_direct, // inner

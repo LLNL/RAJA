@@ -11,7 +11,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,6 +32,8 @@
 #include "RAJA/policy/openmp_target/reduce.hpp"
 //#include "RAJA/policy/openmp_target/multi_reduce.hpp"
 #include "RAJA/policy/openmp_target/WorkGroup.hpp"
+#include "RAJA/policy/openmp_target/params/reduce.hpp"
+#include "RAJA/policy/openmp_target/params/kernel_name.hpp"
 
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) &&

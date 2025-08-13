@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,8 +48,9 @@ forall_impl(resources::Omp omp_res,
             Func&& loop_body,
             ForallParam f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
@@ -88,7 +89,8 @@ forall_impl(resources::Omp omp_res,
     RAJA::expt::invoke_body(f_params, ib, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
+
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 
@@ -156,8 +158,9 @@ forall_impl(resources::Omp omp_res,
             Func&& loop_body,
             ForallParam f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   using Body = typename std::remove_reference<decltype(loop_body)>::type;
@@ -174,7 +177,8 @@ forall_impl(resources::Omp omp_res,
     RAJA::expt::invoke_body(f_params, ib, begin_it[i]);
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
+
   return resources::EventProxy<resources::Omp>(omp_res);
 }
 

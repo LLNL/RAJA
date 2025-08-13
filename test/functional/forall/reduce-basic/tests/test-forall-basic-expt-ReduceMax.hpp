@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -56,7 +56,7 @@ void ForallReduceMaxBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::maximum>(&maxinit),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&max),
-    RAJA::expt::KernelName("RAJA Reduce Max"),
+    RAJA::Name("expt Reduce Max"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_MAX &mi, REF_MAX &m) {
       mi.max(working_array[idx]);
       m.max(working_array[idx]);

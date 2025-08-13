@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,7 +33,7 @@ module load cmake/3.23.1
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/gcc/gcc-${COMP_VER}/bin/g++ \
-  -DBLT_CXX_STD=c++14 \
+  -DBLT_CXX_STD=c++17 \
   -C ../host-configs/lc-builds/toss4/gcc_X.cmake \
   -DENABLE_OPENMP=On \
   -DENABLE_BENCHMARKS=On \

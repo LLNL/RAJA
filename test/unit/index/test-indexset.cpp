@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,7 +17,7 @@
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests.
 //
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
 
 TEST(IndexSetUnitTest, Empty)

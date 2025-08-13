@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -177,7 +177,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...>
     if (offset == size - index - 1)
     {
 
-      util::PluginContext context {util::make_context<Policy>()};
+      util::PluginContext context {util::make_context<Policy>(std::string())};
       util::callPreCapturePlugins(context);
 
       using RAJA::util::trigger_updates_before;
@@ -215,7 +215,7 @@ struct policy_invoker<0, size, Policy, rest...>
     if (offset == size - 1)
     {
 
-      util::PluginContext context {util::make_context<Policy>()};
+      util::PluginContext context {util::make_context<Policy>(std::string())};
       util::callPreCapturePlugins(context);
 
       using RAJA::util::trigger_updates_before;

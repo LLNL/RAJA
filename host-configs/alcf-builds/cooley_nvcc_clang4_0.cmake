@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,8 +14,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g" CACHE STRING "")
 
-set(CUDA_COMMON_OPT_FLAGS -restrict; -arch sm_35; -std c++11; --expt-extended-lambda)
-set(CUDA_COMMON_DEBUG_FLAGS -restrict; -arch compute_30; -std c++11; --expt-extended-lambda)
+set(CUDA_COMMON_OPT_FLAGS -restrict; -arch sm_35; -std c++17; --expt-extended-lambda)
+set(CUDA_COMMON_DEBUG_FLAGS -restrict; -arch compute_30; -std c++17; --expt-extended-lambda)
 
 set(HOST_OPT_FLAGS -Xcompiler -O3 -Xcompiler -fopenmp)
 

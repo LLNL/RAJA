@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and other RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -17,6 +17,8 @@ option(RAJA_ENABLE_SYCL "Build SYCL support" Off)
 option(RAJA_ENABLE_VECTORIZATION "Build experimental vectorization support" On)
 
 option(RAJA_ENABLE_OPENMP_TASK "Build OpenMP task variants of certain algorithms" Off)
+
+option(RAJA_ALLOW_OPENMP_5_1_ATOMICS "Enable OpenMP 5.1 atomics for min/max operations" On)
 
 option(RAJA_ENABLE_REPRODUCERS "Build issue reproducers" Off)
 

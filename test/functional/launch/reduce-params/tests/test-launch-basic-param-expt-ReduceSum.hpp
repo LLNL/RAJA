@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,9 +57,9 @@ void LaunchParamExptReduceSumBasicTestImpl(const SEG_TYPE& seg,
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     "LaunchSumBasicTest",
      RAJA::expt::Reduce<RAJA::operators::plus>(&sum),
      RAJA::expt::Reduce<RAJA::operators::plus>(&sum2),
+     RAJA::Name("LaunchSumBasicTest"),     
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_SUM &_sum, REF_SUM &_sum2) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {

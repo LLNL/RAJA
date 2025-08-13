@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,7 +46,7 @@ void KernelNestedLoopTest(){
   constexpr static int N = 1000;
   constexpr static int DIM = 2;
 
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
   WORKING_RES work_res{WORKING_RES::get_default()};
 
   // Allocate Tests Data

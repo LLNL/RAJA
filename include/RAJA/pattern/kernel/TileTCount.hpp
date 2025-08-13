@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -49,7 +49,7 @@ template<camp::idx_t ArgumentId,
          typename... EnclosedStmts>
 struct TileTCount : public internal::Statement<ExecPolicy, EnclosedStmts...>
 {
-  static_assert(std::is_base_of<internal::ParamBase, ParamId>::value,
+  static_assert(std::is_base_of<RAJA::expt::detail::ParamBase, ParamId>::value,
                 "Inappropriate ParamId, ParamId must be of type "
                 "RAJA::Statement::Param< # >");
   using tile_policy_t = TilePolicy;

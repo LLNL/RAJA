@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -88,19 +88,32 @@ void RuntimePluginLoader::finalize()
 void RuntimePluginLoader::initPlugin(const std::string& path)
 {
 #ifndef _WIN32
+  // clear out any existing dlerrors
+  RAJA_UNUSED_VAR(dlerror());
+
   void* plugin = dlopen(path.c_str(), RTLD_NOW | RTLD_GLOBAL);
   if (!plugin)
   {
     printf("[RuntimePluginLoader]: dlopen failed: %s\n", dlerror());
   }
 
-  RuntimePluginLoader::Parent* (*getPlugin)() =
-      (RuntimePluginLoader::Parent * (*)()) dlsym(plugin, "getPlugin");
+  RuntimePluginLoader::Parent* (*RAJAGetPlugin)() =
+      (RuntimePluginLoader::Parent * (*)()) dlsym(plugin, "RAJAGetPlugin");
 
-  if (getPlugin)
+  if (!RAJAGetPlugin)
+  {
+    // clear the dlerror
+    RAJA_UNUSED_VAR(dlerror());
+
+    // try to find deprecated symbol
+    RAJAGetPlugin =
+        (RuntimePluginLoader::Parent * (*)()) dlsym(plugin, "getPlugin");
+  }
+
+  if (RAJAGetPlugin)
   {
     plugins.push_back(
-        std::unique_ptr<RuntimePluginLoader::Parent>(getPlugin()));
+        std::unique_ptr<RuntimePluginLoader::Parent>(RAJAGetPlugin()));
   }
   else
   {

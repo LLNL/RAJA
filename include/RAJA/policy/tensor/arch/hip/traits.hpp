@@ -9,17 +9,19 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef RAJA_ENABLE_HIP
-
-
 #ifndef RAJA_policy_tensor_arch_hip_traits_HPP
 #define RAJA_policy_tensor_arch_hip_traits_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_HIP_ACTIVE)
+
 
 namespace RAJA
 {
@@ -31,11 +33,9 @@ namespace expt
 template<typename T>
 struct RegisterTraits<RAJA::expt::hip_wave_register, T>
 {
-  using element_type    = T;
-  using register_policy = RAJA::expt::hip_wave_register;
-  static constexpr camp::idx_t s_num_elem =
-      policy::hip::device_constants.WARP_SIZE;
-
+  using element_type                      = T;
+  using register_policy                   = RAJA::expt::hip_wave_register;
+  static constexpr camp::idx_t s_num_elem = RAJA_HIP_WAVESIZE;
   static constexpr camp::idx_t s_num_bits = sizeof(T) * s_num_elem;
   using int_element_type                  = int32_t;
 };
@@ -45,7 +45,6 @@ struct RegisterTraits<RAJA::expt::hip_wave_register, T>
 }  // namespace RAJA
 
 
+#endif  // RAJA_HIP_ACTIVE
+
 #endif
-
-
-#endif  // RAJA_ENABLE_HIP

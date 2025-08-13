@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+.. ## Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 .. ## and RAJA project contributors. See the RAJA/LICENSE file
 .. ## for details.
 .. ##
@@ -19,7 +19,7 @@ This section should help get you up and running with RAJA quickly.
 Requirements
 ============
 
-The primary requirement for using RAJA is a C++14 standard compliant compiler.
+The primary requirement for using RAJA is a C++17 standard compliant compiler.
 Certain features, such as programming model back-ends like CUDA or HIP,
 must be supported by the compiler you chose to use them. Available RAJA
 configuration options and how to enable or disable features are described 
@@ -27,7 +27,7 @@ in :ref:`configopt-label`.
 
 To build RAJA and use its most basic features, you will need:
 
-- C++ compiler with C++14 support
+- C++ compiler with C++17 support
 - `CMake <https://cmake.org/>`_ version 3.23 or greater.
 
 
@@ -82,7 +82,7 @@ Gitlab CI testing. These are described in the RAJA Developer Guide.
 
 Dependencies that are required to build the RAJA code are:
 
-- A C++ 14 standard compliant compiler
+- A C++ 17 standard compliant compiler
 - `BLT build system <https://github.com/LLNL/blt>`_
 - `CMake <https://cmake.org/>`_ version 3.23 or greater when building the HIP back-end, and version 3.20 or greater otherwise.
 - `Camp compiler agnostic metaprogramming library  <https://github.com/LLNL/camp>`_

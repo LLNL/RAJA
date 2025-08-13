@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,19 +22,13 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/params/params_base.hpp"
 
 #include <iostream>
 #include <type_traits>
 
 namespace RAJA
 {
-namespace internal
-{
-
-struct ParamBase
-{};
-
-}  // end namespace internal
 
 namespace statement
 {
@@ -47,7 +41,7 @@ namespace statement
  * RAJA::kernel execution policies.
  */
 template<camp::idx_t ParamId>
-struct Param : public internal::ParamBase
+struct Param : public expt::detail::ParamBase
 {
 
   constexpr static camp::idx_t param_idx = ParamId;

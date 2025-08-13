@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -78,7 +78,7 @@ cmake \
   -DAMDGPU_TARGETS="${COMP_ARCH}:xnack+" \
   -DCMAKE_C_FLAGS="-fsanitize=address -shared-libsan" \
   -DCMAKE_CXX_FLAGS="-fsanitize=address -shared-libsan" \
-  -DBLT_CXX_STD=c++14 \
+  -DBLT_CXX_STD=c++17 \
   -C "../host-configs/lc-builds/toss4/${HOSTCONFIG}.cmake" \
   -DENABLE_HIP=ON \
   -DENABLE_OPENMP=ON \

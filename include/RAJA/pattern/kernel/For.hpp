@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,6 +24,7 @@
 #include <type_traits>
 
 #include "RAJA/pattern/kernel/internal.hpp"
+#include "RAJA/pattern/params/forall.hpp"
 
 namespace RAJA
 {
@@ -128,7 +129,6 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
   template<typename Data>
   static RAJA_INLINE void exec(Data&& data)
   {
-
     // Set the argument type for this loop
     using NewTypes = setSegmentTypeFromData<Types, ArgumentId, Data>;
 
@@ -139,7 +139,6 @@ struct StatementExecutor<statement::For<ArgumentId, seq_exec, EnclosedStmts...>,
     using len_t = decltype(len);
 
     RAJA_EXTRACT_BED_IT(TypedRangeSegment<len_t>(0, len));
-
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
       for_wrapper(*(begin_it + i));

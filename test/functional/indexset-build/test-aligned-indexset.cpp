@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,7 +44,7 @@ TEST(IndexSetBuild, Aligned)
   indices.push_back(30);
   indices.push_back(31);
 
-  camp::resources::Resource res{camp::resources::Host()};
+  camp::resources::Resource res{camp::resources::Host::get_default()};
  
   RAJA::TypedIndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
 

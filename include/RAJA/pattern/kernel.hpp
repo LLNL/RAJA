@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -105,7 +105,7 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
     Resource resource,
     Bodies&&... bodies)
 {
-  util::PluginContext context {util::make_context<PolicyType>()};
+  util::PluginContext context {util::make_context<PolicyType>(std::string())};
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
@@ -138,11 +138,15 @@ RAJA_INLINE resources::EventProxy<Resource> kernel_param_resource(
   using loop_types_t = internal::makeInitialLoopTypes<loop_data_t>;
 
   util::callPreLaunchPlugins(context);
-
+  RAJA::expt::detail::init_params<seq_exec>(loop_data.param_tuple);
   // Execute!
   RAJA_FORCEINLINE_RECURSIVE
   internal::execute_statement_list<PolicyType, loop_types_t>(loop_data);
-
+  // There isn't another good place to resolve sequential parameters, so
+  // complete resolution here.  This simply calls combineTarget() a second time
+  // for non-sequential backends (eg HIP, CUDA), which does not represent a
+  // significant overhead.
+  RAJA::expt::detail::resolve_params<seq_exec>(loop_data.param_tuple);
   util::callPostLaunchPlugins(context);
 
   return resources::EventProxy<Resource>(resource);
@@ -200,6 +204,6 @@ kernel(SegmentTuple&& segments, Bodies&&... bodies)
 #include "RAJA/pattern/kernel/Region.hpp"
 #include "RAJA/pattern/kernel/Tile.hpp"
 #include "RAJA/pattern/kernel/TileTCount.hpp"
-
+#include "RAJA/pattern/kernel/type-traits.hpp"
 
 #endif /* RAJA_pattern_kernel_HPP */

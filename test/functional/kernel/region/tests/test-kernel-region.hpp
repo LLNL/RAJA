@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,7 +11,7 @@
 template <typename INDEX_TYPE, typename WORKING_RES, typename EXEC_POLICY>
 void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
   const INDEX_TYPE N = last - first;
@@ -57,6 +57,7 @@ void KernelRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   );
   
   work_res.memcpy(check_array, work_array3, sizeof(INDEX_TYPE) * N );
+  work_res.wait();
 
   for (INDEX_TYPE i = 0; i < N; i++) {
     ASSERT_EQ(check_array[i], 151);

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,7 +21,7 @@ void allocateForallTestData(size_t N,
                             T** check_array,
                             T** test_array)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   *work_array = work_res.allocate<T>(RAJA::stripIndexType(N));
 
@@ -38,7 +38,7 @@ void allocateForallTestData(T N,
                             T** check_array,
                             T** test_array)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   *work_array = work_res.allocate<T>(RAJA::stripIndexType(N));
 
@@ -52,7 +52,7 @@ void deallocateForallTestData(camp::resources::Resource work_res,
                               T* check_array,
                               T* test_array)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   work_res.deallocate(work_array);
 

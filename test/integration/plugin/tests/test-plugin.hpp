@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,6 +43,7 @@ struct SetupPluginVars
     data.launch_counter_post    = 0;
 
     m_test_resource.memcpy(plugin_test_data, &data, sizeof(CounterData));
+    m_test_resource.wait();
   }
 
   SetupPluginVars(SetupPluginVars const&) = delete;
@@ -86,6 +87,7 @@ struct PluginTestCallable
     {
       CounterData i_data;
       plugin_test_resource->memcpy(&i_data, m_data_iptr, sizeof(CounterData));
+      plugin_test_resource->wait();
 
       if (m_data.capture_platform_active == RAJA::Platform::undefined &&
           i_data.capture_platform_active != RAJA::Platform::undefined) {

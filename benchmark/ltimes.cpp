@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -473,7 +473,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter){
-    RAJA::launch<pol_launch>(RAJA::ExecPlace::HOST, RAJA::LaunchParams(), [=](RAJA::LaunchContext ctx){
+    RAJA::launch<pol_launch>(RAJA::ExecPlace::HOST, RAJA::LaunchParams(), [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx){
 
       RAJA::loop<pol_g>(ctx, RAJA::TypedRangeSegment<IG>(0, num_g), [&](IG g){
         RAJA::loop<pol_z>(ctx, RAJA::TypedRangeSegment<IZ>(0, num_z), [&](IZ z){

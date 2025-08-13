@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,7 +47,6 @@ struct LaunchExecute<RAJA::seq_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY const& body,
        ReduceParams& RAJA_UNUSED_ARG(ReduceParams))
   {
@@ -73,11 +72,13 @@ struct LaunchExecute<RAJA::seq_launch_t>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& launch_params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY const& body,
        ReduceParams& launch_reducers)
   {
-    expt::ParamMultiplexer::init<seq_exec>(launch_reducers);
+    using EXEC_POL = RAJA::seq_exec;
+    EXEC_POL pol {};
+
+    expt::ParamMultiplexer::parampack_init(pol, launch_reducers);
 
     LaunchContext ctx;
     char* kernel_local_mem = new char[launch_params.shared_mem_size];
@@ -88,7 +89,7 @@ struct LaunchExecute<RAJA::seq_launch_t>
     delete[] kernel_local_mem;
     ctx.shared_mem_ptr = nullptr;
 
-    expt::ParamMultiplexer::resolve<seq_exec>(launch_reducers);
+    expt::ParamMultiplexer::parampack_resolve(pol, launch_reducers);
 
     return resources::EventProxy<resources::Resource>(res);
   }

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -54,7 +54,7 @@ struct RSMultiplexer < IdxType, RAJA::TypedListSegment<IdxType> >
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
-          typename WORKINGRES,
+          typename WorkingRes,
           typename IdxType,
           typename SegmentType,
           typename T>
@@ -63,7 +63,7 @@ void ForallAtomicBasicTestImpl( IdxType seglimit )
   // initialize an array
   const int len = 12;
 
-  camp::resources::Resource work_res{WORKINGRES()};
+  camp::resources::Resource work_res{WorkingRes::get_default()};
 
   SegmentType seg = 
     RSMultiplexer<IdxType, SegmentType>().makeseg(seglimit, work_res);

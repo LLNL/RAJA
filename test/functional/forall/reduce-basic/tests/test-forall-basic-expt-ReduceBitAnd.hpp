@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,7 +46,8 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   DATA_TYPE simpand(21);
 
   RAJA::forall<EXEC_POLICY>(seg,
-    RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand),
+    RAJA::expt::Reduce<RAJA::operators::bit_and>(&simpand), 
+			    RAJA::Name("expt Reduce Bit And"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITAND & _simpand) {
       _simpand &= working_array[idx];
   });
@@ -76,7 +77,7 @@ void ForallReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg,
     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand),
     RAJA::expt::Reduce<RAJA::operators::bit_and>(&redand2),
-    RAJA::expt::KernelName("RAJA Reduce BitAnd"),
+    RAJA::Name("RAJA Reduce BitAnd"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, REF_BITAND &r1, REF_BITAND &r2) {
       r1 &= working_array[idx];
       r2 &= working_array[idx];

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -94,15 +94,10 @@ testAtomicRefMinMaxOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list,
       T val = otherop(i);
       list[i] = val;
   });
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
 
   work_res.memcpy( hcount, count, sizeof(T) );
   work_res.memcpy( hlist, list, sizeof(T) * N );
+  work_res.wait();
 
   EXPECT_LE(otherop.final_min, hcount[0]);
   EXPECT_GE(otherop.final_max, hcount[0]);
@@ -115,30 +110,22 @@ testAtomicRefMinMaxOp(RAJA::TypedRangeSegment<IdxType> seg, T* count, T* list,
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
-          typename WORKINGRES,
+          typename WorkingRes,
           typename IdxType,
           typename T>
 void ForallAtomicRefMinMaxTestImpl( IdxType N )
 {
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
 
-  camp::resources::Resource work_res{WORKINGRES()};
+  camp::resources::Resource work_res{WorkingRes::get_default()};
 
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   T * count   = work_res.allocate<T>(1);
   T * list    = work_res.allocate<T>(N);
 
   T * hcount   = host_res.allocate<T>(1);
   T * hlist    = host_res.allocate<T>(N);
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
 
   testAtomicRefMinMaxOp<ExecPolicy, AtomicPolicy, IdxType, T, 
                        MaxEqOtherOp   >(seg, count, list, hcount, hlist, work_res, N);

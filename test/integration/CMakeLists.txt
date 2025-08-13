@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 # and RAJA project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,6 +36,14 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
   raja_add_plugin_library(NAME dynamic_plugin
                           SHARED TRUE
                           SOURCES plugin_for_test_dynamic.cpp)
+
+  raja_add_test(
+    NAME test-plugin-old-dynamic
+    SOURCES test_plugin_old_dynamic.cpp)
+
+  raja_add_plugin_library(NAME dynamic_plugin_old
+                          SHARED TRUE
+                          SOURCES plugin_old_for_test_dynamic.cpp)
 
   raja_add_test(
     NAME test-plugin-kokkos

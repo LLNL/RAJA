@@ -14,7 +14,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -55,21 +55,18 @@ namespace sequential
 //////////////////////////////////////////////////////////////////////
 //
 
-template<typename Iterable,
-         typename Func,
-         typename Resource,
-         typename ForallParam>
+template<typename Iterable, typename Func, typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Resource>,
+    resources::EventProxy<resources::Host>,
     expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(Resource res,
-            const seq_exec&,
+forall_impl(resources::Host host_res,
+            const seq_exec& pol,
             Iterable&& iter,
             Func&& body,
             ForallParam f_params)
 {
-  expt::ParamMultiplexer::init<seq_exec>(f_params);
+  expt::ParamMultiplexer::parampack_init(pol, f_params);
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -78,19 +75,17 @@ forall_impl(Resource res,
     expt::invoke_body(f_params, body, *(begin_it + i));
   }
 
-  expt::ParamMultiplexer::resolve<seq_exec>(f_params);
-  return resources::EventProxy<Resource>(res);
+  expt::ParamMultiplexer::parampack_resolve(pol, f_params);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
-template<typename Iterable,
-         typename Func,
-         typename Resource,
-         typename ForallParam>
+template<typename Iterable, typename Func, typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<Resource>,
+    resources::EventProxy<resources::Host>,
     expt::type_traits::is_ForallParamPack<ForallParam>,
     expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(Resource res,
+forall_impl(resources::Host host_res,
             const seq_exec&,
             Iterable&& iter,
             Func&& body,
@@ -102,7 +97,8 @@ forall_impl(Resource res,
   {
     body(*(begin_it + i));
   }
-  return resources::EventProxy<Resource>(res);
+
+  return resources::EventProxy<resources::Host>(host_res);
 }
 
 }  // namespace sequential

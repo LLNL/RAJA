@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -70,7 +70,7 @@ void ForallReduceBitOrBasicTestImpl(const SEG_TYPE& seg,
   RAJA::ReduceBitOr<REDUCE_POLICY, DATA_TYPE> redor(0);
   RAJA::ReduceBitOr<REDUCE_POLICY, DATA_TYPE> redor2(2);
 
-  RAJA::forall<EXEC_POLICY>(seg, [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
+  RAJA::forall<EXEC_POLICY>(seg, RAJA::Name("Reduce Bit Or"), [=] RAJA_HOST_DEVICE(IDX_TYPE idx) {
     redor  |= working_array[idx];
     redor2 |= working_array[idx];
   });

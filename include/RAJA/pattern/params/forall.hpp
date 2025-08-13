@@ -1,26 +1,120 @@
 #ifndef FORALL_PARAM_HPP
 #define FORALL_PARAM_HPP
 
-#include "RAJA/policy/sequential/params/reduce.hpp"
-#include "RAJA/policy/sequential/params/kernel_name.hpp"
-#include "RAJA/policy/openmp/params/reduce.hpp"
-#include "RAJA/policy/openmp/params/kernel_name.hpp"
-#include "RAJA/policy/openmp_target/params/reduce.hpp"
-#include "RAJA/policy/openmp_target/params/kernel_name.hpp"
-#include "RAJA/policy/cuda/params/reduce.hpp"
-#include "RAJA/policy/cuda/params/kernel_name.hpp"
-#include "RAJA/policy/hip/params/reduce.hpp"
-#include "RAJA/policy/hip/params/kernel_name.hpp"
-#include "RAJA/policy/sycl/params/reduce.hpp"
-#include "RAJA/policy/sycl/params/kernel_name.hpp"
 
+#include "RAJA/pattern/params/reducer.hpp"
 #include "RAJA/util/CombiningAdapter.hpp"
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
+#include "camp/tuple.hpp"
+
+#include "RAJA/pattern/params/params_base.hpp"
+#include "RAJA/pattern/params/kernel_name.hpp"
+
+#include <utility>
 
 namespace RAJA
 {
 namespace expt
 {
+namespace detail
+{
 
+template<typename... Params>
+RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
+{
+  return camp::get_refs_to_elements_by_type_trait<is_instance_of_reducer>(
+      params);
+}
+
+template<typename ExecPol,
+         typename ParamTuple,
+         camp::idx_t... Seq,
+         typename... Args>
+void resolve_params_helper(ParamTuple& params_tuple,
+                           const camp::idx_seq<Seq...>&,
+                           Args&&... args)
+{
+  CAMP_EXPAND(param_resolve(ExecPol {}, camp::get<Seq>(params_tuple),
+                            std::forward<Args>(args)...));
+}
+
+template<typename ExecPol, typename... Params, typename... Args>
+void resolve_params(camp::tuple<Params...>& params_tuple, Args&&... args)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = decltype(params);
+  resolve_params_helper<ExecPol>(
+      params, camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+      std::forward<Args>(args)...);
+}
+
+template<typename ExecPol,
+         typename ParamTuple,
+         camp::idx_t... Seq,
+         typename... Args>
+void init_params_helper(ParamTuple& params_tuple,
+                        const camp::idx_seq<Seq...>&,
+                        Args&&... args)
+{
+  CAMP_EXPAND(param_init(ExecPol {}, camp::get<Seq>(params_tuple),
+                         std::forward<Args>(args)...));
+}
+
+template<typename ExecPol, typename... Params, typename... Args>
+void init_params(camp::tuple<Params...>& params_tuple, Args&&... args)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = decltype(params);
+  init_params_helper<ExecPol>(
+      params, camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+      std::forward<Args>(args)...);
+}
+
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
+RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
+                                            ParamTuple& params_tuple)
+{
+  CAMP_EXPAND(param_combine(ExecPol {}, camp::get<Seq>(params_tuple)));
+}
+
+template<typename EXEC_POL, typename T>
+camp::concepts::enable_if<
+    concepts::negate<is_instance_of_reducer<camp::decay<T>>>,
+    concepts::negate<std::is_same<T, RAJA::detail::Name>>>
+param_combine(EXEC_POL const&, T&, const T&)
+{}
+
+template<typename ExecPol, typename ParamTuple, camp::idx_t... Seq>
+RAJA_HOST_DEVICE void combine_params_helper(const camp::idx_seq<Seq...>&,
+                                            ParamTuple& params_tuple,
+                                            const ParamTuple& params_tuple_in)
+{
+  CAMP_EXPAND(param_combine(ExecPol {}, camp::get<Seq>(params_tuple),
+                            camp::get<Seq>(params_tuple_in)));
+}
+
+template<typename ExecPol, typename... Params>
+RAJA_HOST_DEVICE void combine_params(camp::tuple<Params...>& params_tuple)
+{
+  auto params          = filter_reducers(params_tuple);
+  using ParamTupleType = camp::decay<decltype(params)>;
+  combine_params_helper<ExecPol>(
+      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(), params);
+}
+
+template<typename ExecPol, typename... Params>
+RAJA_HOST_DEVICE void combine_params(
+    camp::tuple<Params...>& params_tuple,
+    const camp::tuple<Params...>& params_tuple_in)
+{
+  using ParamTupleType = camp::decay<decltype(params_tuple)>;
+  combine_params_helper<ExecPol>(
+      camp::make_idx_seq_t<camp::tuple_size<ParamTupleType>::value>(),
+      params_tuple, params_tuple_in);
+}
+
+}  // namespace detail
 //
 //
 // Forall Parameter Packing type
@@ -43,45 +137,45 @@ struct ForallParamPack
 private:
   // Init
   template<typename EXEC_POL, camp::idx_t... Seq, typename... Args>
-  static constexpr void detail_init(EXEC_POL,
-                                    camp::idx_seq<Seq...>,
-                                    ForallParamPack& f_params,
-                                    Args&&... args)
-  {
-    CAMP_EXPAND(expt::detail::init<EXEC_POL>(camp::get<Seq>(f_params.param_tup),
-                                             std::forward<Args>(args)...));
-  }
-
-  // Combine
-  template<typename EXEC_POL, camp::idx_t... Seq>
-  RAJA_HOST_DEVICE static constexpr void detail_combine(
-      EXEC_POL,
-      camp::idx_seq<Seq...>,
-      ForallParamPack& out,
-      const ForallParamPack& in)
-  {
-    CAMP_EXPAND(detail::combine<EXEC_POL>(camp::get<Seq>(out.param_tup),
-                                          camp::get<Seq>(in.param_tup)));
-  }
-
-  template<typename EXEC_POL, camp::idx_t... Seq>
-  RAJA_HOST_DEVICE static constexpr void detail_combine(
-      EXEC_POL,
-      camp::idx_seq<Seq...>,
-      ForallParamPack& f_params)
-  {
-    CAMP_EXPAND(detail::combine<EXEC_POL>(camp::get<Seq>(f_params.param_tup)));
-  }
-
-  // Resolve
-  template<typename EXEC_POL, camp::idx_t... Seq, typename... Args>
-  static constexpr void detail_resolve(EXEC_POL,
+  static constexpr void parampack_init(EXEC_POL const& pol,
                                        camp::idx_seq<Seq...>,
                                        ForallParamPack& f_params,
                                        Args&&... args)
   {
-    CAMP_EXPAND(detail::resolve<EXEC_POL>(camp::get<Seq>(f_params.param_tup),
-                                          std::forward<Args>(args)...));
+    CAMP_EXPAND(param_init(pol, camp::get<Seq>(f_params.param_tup),
+                           std::forward<Args>(args)...));
+  }
+
+  // Combine
+  template<typename EXEC_POL, camp::idx_t... Seq>
+  RAJA_HOST_DEVICE static constexpr void parampack_combine(
+      EXEC_POL const& pol,
+      camp::idx_seq<Seq...>,
+      ForallParamPack& out,
+      const ForallParamPack& in)
+  {
+    CAMP_EXPAND(param_combine(pol, camp::get<Seq>(out.param_tup),
+                              camp::get<Seq>(in.param_tup)));
+  }
+
+  template<typename EXEC_POL, camp::idx_t... Seq>
+  RAJA_HOST_DEVICE static constexpr void parampack_combine(
+      EXEC_POL const& pol,
+      camp::idx_seq<Seq...>,
+      ForallParamPack& f_params)
+  {
+    CAMP_EXPAND(param_combine(pol, camp::get<Seq>(f_params.param_tup)));
+  }
+
+  // Resolve
+  template<typename EXEC_POL, camp::idx_t... Seq, typename... Args>
+  static constexpr void parampack_resolve(EXEC_POL const& pol,
+                                          camp::idx_seq<Seq...>,
+                                          ForallParamPack& f_params,
+                                          Args&&... args)
+  {
+    CAMP_EXPAND(param_resolve(pol, camp::get<Seq>(f_params.param_tup),
+                              std::forward<Args>(args)...));
   }
 
   // Used to construct the argument TYPES that will be invoked with the lambda.
@@ -141,6 +235,7 @@ public:
 
   template<typename... Ts>
   ForallParamPack(camp::tuple<Ts...>&& t) : param_tup(std::move(t)) {};
+
 };  // struct ForallParamPack
 
 //===========================================================================
@@ -155,21 +250,11 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr init(ForallParamPack<Params...>& f_params,
-                             Args&&... args)
+  static void constexpr parampack_init(EXEC_POL const& pol,
+                                       ForallParamPack<Params...>& f_params,
+                                       Args&&... args)
   {
-    FP::detail_init(EXEC_POL(), typename FP::params_seq(), f_params,
-                    std::forward<Args>(args)...);
-  }
-
-  template<typename EXEC_POL,
-           typename... Params,
-           typename... Args,
-           typename FP = ForallParamPack<Params...>>
-  static void constexpr combine(ForallParamPack<Params...>& f_params,
-                                Args&&... args)
-  {
-    FP::detail_combine(EXEC_POL(), typename FP::params_seq(), f_params,
+    FP::parampack_init(pol, typename FP::params_seq(), f_params,
                        std::forward<Args>(args)...);
   }
 
@@ -177,11 +262,25 @@ struct ParamMultiplexer
            typename... Params,
            typename... Args,
            typename FP = ForallParamPack<Params...>>
-  static void constexpr resolve(ForallParamPack<Params...>& f_params,
-                                Args&&... args)
+  RAJA_HOST_DEVICE static void constexpr parampack_combine(
+      EXEC_POL const& pol,
+      ForallParamPack<Params...>& f_params,
+      Args&&... args)
   {
-    FP::detail_resolve(EXEC_POL(), typename FP::params_seq(), f_params,
-                       std::forward<Args>(args)...);
+    FP::parampack_combine(pol, typename FP::params_seq(), f_params,
+                          std::forward<Args>(args)...);
+  }
+
+  template<typename EXEC_POL,
+           typename... Params,
+           typename... Args,
+           typename FP = ForallParamPack<Params...>>
+  static void constexpr parampack_resolve(EXEC_POL const& pol,
+                                          ForallParamPack<Params...>& f_params,
+                                          Args&&... args)
+  {
+    FP::parampack_resolve(pol, typename FP::params_seq(), f_params,
+                          std::forward<Args>(args)...);
   }
 };
 
@@ -220,7 +319,7 @@ constexpr auto make_forall_param_pack_from_tuple(camp::tuple<Ts...>&& tuple)
   static_assert(detail::check_types_derive_base<detail::ForallParamBase,
                                                 camp::decay<Ts>...>::value,
                 "Forall optional arguments do not derive ForallParamBase. "
-                "Please see Reducer, ReducerLoc and KernelName for examples.");
+                "Please see Reducer, ReducerLoc and Name for examples.");
   return ForallParamPack<camp::decay<Ts>...>(std::move(tuple));
 }
 
@@ -271,6 +370,52 @@ constexpr auto&& get_lambda(Args&&... args)
 
 //===========================================================================
 
+//===========================================================================
+//
+//
+// kernel_name can be anywhere in the paramater pack so we must search for it
+//
+//===========================================================================
+template<std::size_t name_idx,
+         typename... Args,
+         std::enable_if_t<(name_idx < sizeof...(Args))>* = nullptr>
+std::string get_kernel_name_string(camp::tuple<Args...>&& tuple_args)
+{
+  return std::string(camp::get<name_idx>(std::move(tuple_args)).name);
+}
+
+template<std::size_t name_idx,
+         typename... Args,
+         std::enable_if_t<(name_idx >= sizeof...(Args))>* = nullptr>
+std::string get_kernel_name_string(
+    camp::tuple<Args...>&& RAJA_UNUSED_ARG(tuple_args))
+{
+  return std::string();
+}
+
+template<typename... Args, std::size_t... Idx>
+std::string get_kernel_name_helper(
+    camp::tuple<Args...>&& tuple_args,
+    std::index_sequence<Idx...> RAJA_UNUSED_ARG(i_seq))
+{
+  constexpr std::size_t default_idx = std::numeric_limits<std::size_t>::max();
+  constexpr std::size_t name_idx    = std::min(
+         {default_idx, (std::is_same<std::decay_t<Args>, RAJA::detail::Name>::value
+                            ? Idx
+                            : default_idx)...});
+
+  return get_kernel_name_string<name_idx>(std::move(tuple_args));
+}
+
+template<typename... Args>
+std::string get_kernel_name(Args&&... args)
+{
+  return get_kernel_name_helper(
+      camp::forward_as_tuple(std::forward<Args>(args)...),
+      std::make_index_sequence<sizeof...(Args)> {});
+}
+
+//===========================================================================
 
 //===========================================================================
 //

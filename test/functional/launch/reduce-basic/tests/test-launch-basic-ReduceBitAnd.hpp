@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -50,6 +50,7 @@ void LaunchReduceBitAndBasicTestImpl(const SEG_TYPE& seg,
 
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
+     RAJA::Name("launch ReduceBitAnd"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {
 

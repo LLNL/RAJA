@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,7 @@
 
 template <typename ExecPolicy,
           typename AtomicPolicy,
-          typename WORKINGRES,
+          typename WorkingRes,
           typename IdxType,
           typename T>
 void ForallAtomicViewTestImpl( IdxType N )
@@ -22,34 +22,18 @@ void ForallAtomicViewTestImpl( IdxType N )
   RAJA::TypedRangeSegment<IdxType> seg(0, N);
   RAJA::TypedRangeSegment<IdxType> seg_half(0, N / 2);
 
-  camp::resources::Resource work_res{WORKINGRES()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource work_res{WorkingRes::get_default()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   T * hsource = host_res.allocate<T>(N);
   T * source = work_res.allocate<T>(N);
   T * dest = work_res.allocate<T>(N/2);
   T * check_array = host_res.allocate<T>(N/2);
 
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
-
   RAJA::forall<RAJA::seq_exec>(seg,
                                [=](IdxType i) { hsource[i] = (T)1; });
 
   work_res.memcpy( source, hsource, sizeof(T) * N );
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
 
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);
@@ -69,14 +53,7 @@ void ForallAtomicViewTestImpl( IdxType N )
   });
 
   work_res.memcpy( check_array, dest, sizeof(T) * N/2 );
-
-#if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-#endif
-
-#if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-#endif
+  work_res.wait();
 
   for (IdxType i = 0; i < N / 2; ++i) {
     EXPECT_EQ((T)2, check_array[i]);

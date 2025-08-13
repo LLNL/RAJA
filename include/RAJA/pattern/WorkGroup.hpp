@@ -9,7 +9,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -284,7 +284,8 @@ public:
       reserve(m_max_num_loops, m_max_storage_bytes);
     }
 
-    util::PluginContext context {util::make_context<exec_policy>()};
+    util::PluginContext context {
+        util::make_context<exec_policy>(std::string())};
     util::callPreCapturePlugins(context);
 
     using RAJA::util::trigger_updates_before;
@@ -515,7 +516,8 @@ WorkGroup<
                                          ALLOCATOR_T>::resource_type r,
                       Args... args)
 {
-  util::PluginContext context {util::make_context<EXEC_POLICY_T>()};
+  util::PluginContext context {
+      util::make_context<EXEC_POLICY_T>(std::string())};
   util::callPreLaunchPlugins(context);
 
   // move any per run storage into worksite

@@ -12,7 +12,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,6 +33,7 @@
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
+#include "RAJA/pattern/kernel/type-traits.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
@@ -61,6 +62,8 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Host>,
+    concepts::negate<
+        RAJA::internal::is_wrapper_with_reducers<camp::decay<Func>>>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
 forall_impl(resources::Host host_res,
@@ -74,6 +77,53 @@ forall_impl(resources::Host host_res,
     auto body = thread_privatize(loop_body);
     forall_impl(host_res, InnerPolicy {}, iter, body.get_priv(), f_params);
   });
+  return resources::EventProxy<resources::Host>(host_res);
+}
+
+template<typename Iterable,
+         typename Func,
+         typename InnerPolicy,
+         typename ForallParam>
+RAJA_INLINE concepts::enable_if_t<
+    resources::EventProxy<resources::Host>,
+    RAJA::internal::is_wrapper_with_reducers<camp::decay<Func>>,
+    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
+    RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
+forall_impl(resources::Host host_res,
+            const omp_parallel_exec<InnerPolicy>&,
+            Iterable&& iter,
+            Func&& loop_body,
+            ForallParam)
+{
+  auto reducers_tuple = loop_body.data.param_tuple;
+
+  using EXEC_POL = camp::decay<InnerPolicy>;
+  RAJA::expt::detail::init_params<EXEC_POL>(reducers_tuple);
+
+  using RAJA::internal::thread_privatize;
+  RAJA_UNUSED_VAR(EXEC_POL {});
+  RAJA_EXTRACT_BED_IT(iter);
+  RAJA_OMP_DECLARE_TUPLE_REDUCTION_COMBINE;
+
+#pragma omp parallel
+  {
+    auto body = thread_privatize(loop_body);
+#pragma omp for reduction(combine : reducers_tuple)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      body.get_priv()(begin_it[i]);
+      // Note: this is inefficient. However, the structure of loop data
+      // requires us to perform this manual copy. This is because body performs
+      // the local reduction on its own copy of the reducers, not the OpenMP
+      // managed copy of the reducers_tuple.  Alternatively, we could have
+      // OpenMP use LoopData as the combination object, but this would require
+      // additional changes to make LoopData trivially constructable (a
+      // requirement for OpenMP combinations.)
+      reducers_tuple = body.get_priv().data.param_tuple;
+    }
+  }
+  RAJA::expt::detail::resolve_params<EXEC_POL>(reducers_tuple);
+
   return resources::EventProxy<resources::Host>(host_res);
 }
 

@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -128,7 +128,7 @@ struct SyclLaunchHelper<false, sycl_launch<async0>, StmtList, Data, Types>
 
   static void launch(Data&& data,
                      internal::LaunchDims launch_dims,
-                     size_t shmem,
+                     size_t RAJA_UNUSED_ARG(shmem),
                      ::sycl::queue* qu)
   {
 
@@ -169,7 +169,7 @@ struct SyclLaunchHelper<true, sycl_launch<async0>, StmtList, Data, Types>
 
   static void launch(Data&& data,
                      internal::LaunchDims launch_dims,
-                     size_t shmem,
+                     size_t RAJA_UNUSED_ARG(shmem),
                      ::sycl::queue* qu)
   {
 

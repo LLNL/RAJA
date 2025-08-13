@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -59,9 +59,9 @@ void LaunchParamExptReduceMinBasicTestImpl(const SEG_TYPE& seg,
   
   RAJA::launch<LAUNCH_POLICY>
     (RAJA::LaunchParams(RAJA::Teams(blocks), RAJA::Threads(threads)),
-     "LaunchMinBasicTest",
      RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
      RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
+     RAJA::Name("LaunchMinBasicTest"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx, REF_MIN &_mininit, REF_MIN &_min) {
 
       RAJA::loop<GLOBAL_THREAD_POLICY>(ctx, seg, [&](IDX_TYPE idx) {

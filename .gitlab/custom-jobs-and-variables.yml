@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016-24, Lawrence Livermore National Security, LLC and RADIUSS
+# Copyright (c) 2016-25, Lawrence Livermore National Security, LLC and RADIUSS
 # project contributors. See the RAJA/LICENSE file for details.
 #
 # SPDX-License-Identifier: (MIT)
@@ -23,15 +23,15 @@ variables:
 # Project specific deps for ruby
   PROJECT_RUBY_DEPS:
 
-# Poodle
+# Dane
 # Arguments for top level allocation
-  POODLE_SHARED_ALLOC: "--exclusive --time=120 --nodes=1"
+  DANE_SHARED_ALLOC: "--exclusive --reservation=ci --time=120 --nodes=1"
 # Arguments for job level allocation
-  POODLE_JOB_ALLOC: "--nodes=1"
-# Project specific variants for poodle
-  PROJECT_POODLE_VARIANTS: "~shared +openmp +vectorization +tests"
-# Project specific deps for poodle
-  PROJECT_POODLE_DEPS:
+  DANE_JOB_ALLOC: "--reservation=ci --nodes=1"
+# Project specific variants for dane
+  PROJECT_DANE_VARIANTS: "~shared +openmp +vectorization +tests"
+# Project specific deps for dane
+  PROJECT_DANE_DEPS:
 
 # Corona
 # Arguments for top level allocation
@@ -53,10 +53,20 @@ variables:
 # Project specific deps for corona
   PROJECT_TIOGA_DEPS:
 
+# Tuolumne
+# Arguments for top level allocation
+  TUOLUMNE_SHARED_ALLOC: "--exclusive --queue=pci --time-limit=60m --nodes=1 -o per-resource.count=2"
+# Arguments for job level allocation
+  TUOLUMNE_JOB_ALLOC: "--nodes=1 --begin-time=+5s"
+# Project specific variants for corona
+  PROJECT_TUOLUMNE_VARIANTS: "~shared +openmp +vectorization +tests"
+# Project specific deps for corona
+  PROJECT_TUOLUMNE_DEPS:
+
 # Lassen and Butte use a different job scheduler (spectrum lsf) that does not
 # allow pre-allocation the same way slurm does.
 # Arguments for job level allocation
-  LASSEN_JOB_ALLOC: "1 -W 40 -q pci"
+  LASSEN_JOB_ALLOC: "1 -W 50 -q pci"
 # Project specific variants for lassen
   PROJECT_LASSEN_VARIANTS: "~shared +openmp +vectorization +tests cuda_arch=70"
 # Project specific deps for lassen
@@ -65,11 +75,13 @@ variables:
 # Configuration shared by build and test jobs specific to this project.
 # Not all configuration can be shared. Here projects can fine tune the
 # CI behavior.
-# See Umpire for an example (export junit test reports).
 .custom_job:
   artifacts:
     reports:
       junit: junit.xml
+    name: "${CI_PROJECT_NAME}-${CI_MACHINE}-${CI_JOB_NAME}-${CI_PIPELINE_ID}"
+    paths:
+      - ./*.cmake
 
 .reproducer_vars:
   script:

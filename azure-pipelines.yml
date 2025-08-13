@@ -9,7 +9,7 @@ jobs:
 ##    static:
 ##      SHARED_ARGS: '-DBUILD_SHARED_LIBS=Off'
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-2022'
   variables:
     CMAKE_EXTRA_FLAGS: '-DRAJA_ENABLE_WARNINGS_AS_ERRORS=Off -DBLT_CXX_STD="" -DCMAKE_CXX_STANDARD=17'
   steps:
@@ -44,6 +44,8 @@ jobs:
         docker_target: gcc12_desul
       clang15_desul:
         docker_target: clang15_desul
+      clang14_style:
+        docker_target: clang14_style
   pool:
     vmImage: 'ubuntu-latest'
   variables:

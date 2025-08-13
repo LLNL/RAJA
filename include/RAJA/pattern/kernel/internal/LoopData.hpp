@@ -10,7 +10,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,6 +30,7 @@
 #include "RAJA/pattern/detail/privatizer.hpp"
 #include "RAJA/pattern/kernel/internal/StatementList.hpp"
 #include "RAJA/pattern/kernel/internal/Template.hpp"
+#include "RAJA/pattern/params/params_base.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -122,6 +123,8 @@ struct LoopData
 
   // Tuple of parameters that are thread privatized
   using param_tuple_t = ParamTuple;
+  using arg_tuple_t =
+      typename RAJA::expt::detail::ParamToArgHelper<ParamTuple>::type;
   ParamTuple param_tuple;
 
   Resource res;

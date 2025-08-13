@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -111,7 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   //launch to intialize the stream
   RAJA::forall<device_pol>
-    (RAJA::RangeSegment(0,1), [=] RAJA_HOST_DEVICE (int i) {
+    (RAJA::RangeSegment(0,1), [=] RAJA_HOST_DEVICE (int RAJA_UNUSED_ARG(i)) {
   });
 
   int * array      = def_host_res.allocate<int>(N * N);

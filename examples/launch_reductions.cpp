@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
     (select_cpu_or_gpu,
      RAJA::LaunchParams(RAJA::Teams(GRID_SZ),
                         RAJA::Threads(TEAM_SZ)),
-     "Launch Reductions",
+     RAJA::Name("Launch Reductions"),
      [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) 
      {
 

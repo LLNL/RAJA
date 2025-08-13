@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,7 @@ void ForallReduceMinLocAltBasicTestImpl(const SEG_TYPE& seg,
   RAJA::forall<EXEC_POLICY>(seg, 
     RAJA::expt::Reduce<RAJA::operators::minimum>(&mininit),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&min),
-    RAJA::expt::KernelName("RAJA Reduce MinLoc"),
+    RAJA::Name("expt Reduce MinLoc"),
     [=] RAJA_HOST_DEVICE(IDX_TYPE idx, VL_LAMBDA_TYPE &mi, VL_LAMBDA_TYPE &m) {
       mi.minloc( working_array[idx], idx );
       m.minloc( working_array[idx], idx );

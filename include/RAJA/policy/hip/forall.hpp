@@ -13,7 +13,7 @@
  */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-24, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -443,7 +443,7 @@ __launch_bounds__(BlockSize, 1) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -471,7 +471,7 @@ __global__ void forallp_hip_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 template<
@@ -559,7 +559,7 @@ __launch_bounds__(BlockSize, 1) __global__
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 ///
@@ -590,7 +590,7 @@ __global__ void forallp_hip_kernel(LOOP_BODY loop_body,
   {
     RAJA::expt::invoke_body(f_params, body, idx[ii]);
   }
-  RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
 }
 
 }  // namespace impl
@@ -614,21 +614,20 @@ RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Hip>,
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const&,
-    Iterable&& iter,
-    LoopBody&& loop_body,
-    ForallParam)
+forall_impl(resources::Hip hip_res,
+            ::RAJA::policy::hip::hip_exec<IterationMapping,
+                                          IterationGetter,
+                                          Concretizer,
+                                          Async> const& pol,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL =
-      ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
-                                    Concretizer, Async>;
+  using EXEC_POL     = camp::decay<decltype(pol)>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
                                     LOOP_BODY, Iterator, ForallParam>;
   using DimensionCalculator =
@@ -696,21 +695,20 @@ RAJA_INLINE concepts::enable_if_t<
     RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
     concepts::negate<
         RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
-forall_impl(
-    resources::Hip hip_res,
-    ::RAJA::policy::hip::
-        hip_exec<IterationMapping, IterationGetter, Concretizer, Async> const&,
-    Iterable&& iter,
-    LoopBody&& loop_body,
-    ForallParam f_params)
+forall_impl(resources::Hip hip_res,
+            ::RAJA::policy::hip::hip_exec<IterationMapping,
+                                          IterationGetter,
+                                          Concretizer,
+                                          Async> const& pol,
+            Iterable&& iter,
+            LoopBody&& loop_body,
+            ForallParam f_params)
 {
   using Iterator  = camp::decay<decltype(std::begin(iter))>;
   using LOOP_BODY = camp::decay<LoopBody>;
   using IndexType =
       camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL =
-      ::RAJA::policy::hip::hip_exec<IterationMapping, IterationGetter,
-                                    Concretizer, Async>;
+  using EXEC_POL     = camp::decay<decltype(pol)>;
   using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
                                     LOOP_BODY, Iterator, ForallParam>;
   using DimensionCalculator =
@@ -751,7 +749,7 @@ forall_impl(
     launch_info.res      = hip_res;
 
     {
-      RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params, launch_info);
 
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
@@ -768,7 +766,8 @@ forall_impl(
       RAJA::hip::launch(func, dims.blocks, dims.threads, args, shmem, hip_res,
                         Async);
 
-      RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params, launch_info);
+      RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params,
+                                                      launch_info);
     }
 
     RAJA_FT_END;
