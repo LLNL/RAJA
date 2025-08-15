@@ -5,7 +5,7 @@
 
 #include <cuda.h>
 
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
+#if defined(RAJA_ENABLE_NVTX) && !defined(RAJA_ENABLE_CALIPER)
 #include <nvtx3/nvToolsExt.h>
 #endif
 
@@ -26,7 +26,7 @@ param_init(EXEC_POL const&,
            RAJA::detail::Name& kn,
            const RAJA::cuda::detail::cudaInfo&)
 {
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
+#if defined(RAJA_ENABLE_NVTX) && !defined(RAJA_ENABLE_CALIPER)
   if (kn.name != nullptr)
   {
     nvtxRangePush(kn.name);
@@ -50,7 +50,7 @@ param_resolve(EXEC_POL const&,
               RAJA::detail::Name& kn,
               const RAJA::cuda::detail::cudaInfo&)
 {
-#if defined(RAJA_ENABLE_NV_TOOLS_EXT) && !defined(RAJA_ENABLE_CALIPER)
+#if defined(RAJA_ENABLE_NVTX) && !defined(RAJA_ENABLE_CALIPER)
   if (kn.name != nullptr)
   {
     nvtxRangePop();
