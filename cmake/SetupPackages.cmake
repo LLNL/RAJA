@@ -43,6 +43,7 @@ if (RAJA_ENABLE_CUDA)
 endif ()
 
 if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NVTX)
+  # NVTX3 is included in the CUDA toolkit starting in CUDA 10.
   find_package(CUDAToolkit 10 REQUIRED)
 
   # TODO: Always use CUDA::nvtx3 when we require CMake 3.25 and above.
@@ -51,6 +52,8 @@ if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NVTX)
                        DEPENDS_ON CUDA::nvtx3
                        EXPORTABLE ON)
   else ()
+    # The FindCUDAToolkit module in CMake 3.25 and above adds ${CMAKE_DL_LIBS}
+    # as a dependency to the CUDA::nvtx3 target, so we do the same.
     blt_import_library(NAME nvtx3
                        INCLUDES ${CUDAToolkit_INCLUDE_DIRS}
                        TREAT_INCLUDES_AS_SYSTEM ON
