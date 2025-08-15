@@ -202,7 +202,7 @@ Other programming model specific compilation options are also available:
       **ENABLE_CLANG_CUDA                      Off (if on, ENABLE_CUDA 
                                                must be on too!)
       RAJA_ENABLE_EXTERNAL_CUB                 Off
-      RAJA_ENABLE_NV_TOOLS_EXT                 Off
+      RAJA_ENABLE_NVTX                         Off
       RAJA_ENABLE_EXTERNAL_ROCPRIM             Off
       RAJA_ENABLE_ROCTX                        Off
       ======================================   =================================
