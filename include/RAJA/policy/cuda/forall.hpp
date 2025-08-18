@@ -367,57 +367,6 @@ struct ForallDimensionCalculator<
  *
  ******************************************************************************
  */
-template<typename EXEC_POL,
-         size_t BlocksPerSM,
-         typename Iterator,
-         typename LOOP_BODY,
-         typename IndexType,
-         typename IterationMapping = typename EXEC_POL::IterationMapping,
-         typename IterationGetter  = typename EXEC_POL::IterationGetter,
-         std::enable_if_t<std::is_base_of<iteration_mapping::DirectBase,
-                                          IterationMapping>::value &&
-                              (IterationGetter::block_size > 0),
-                          size_t> BlockSize = IterationGetter::block_size>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forall_cuda_kernel(LOOP_BODY loop_body,
-                            const Iterator idx,
-                            IndexType length)
-{
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body      = privatizer.get_priv();
-  auto ii         = IterationGetter::template index<IndexType>();
-  if (ii < length)
-  {
-    body(idx[ii]);
-  }
-}
-
-///
-template<typename EXEC_POL,
-         size_t BlocksPerSM,
-         typename Iterator,
-         typename LOOP_BODY,
-         typename IndexType,
-         typename IterationMapping = typename EXEC_POL::IterationMapping,
-         typename IterationGetter  = typename EXEC_POL::IterationGetter,
-         std::enable_if_t<std::is_base_of<iteration_mapping::DirectBase,
-                                          IterationMapping>::value &&
-                              (IterationGetter::block_size <= 0),
-                          size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   const Iterator idx,
-                                   IndexType length)
-{
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body      = privatizer.get_priv();
-  auto ii         = IterationGetter::template index<IndexType>();
-  if (ii < length)
-  {
-    body(idx[ii]);
-  }
-}
 
 template<typename EXEC_POL,
          size_t BlocksPerSM,
@@ -441,11 +390,23 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   auto privatizer = thread_privatize(loop_body);
   auto& body      = privatizer.get_priv();
   auto ii         = IterationGetter::template index<IndexType>();
+  constexpr bool is_forall_parampack_empty =
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
   if (ii < length)
   {
-    RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    if constexpr (is_forall_parampack_empty)
+    {
+      body(idx[ii]);
+    }
+    else
+    {
+      RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    }
   }
-  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
+  if constexpr (!is_forall_parampack_empty)
+  {
+    RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
+  }
 }
 
 ///
@@ -470,68 +431,22 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   auto privatizer = thread_privatize(loop_body);
   auto& body      = privatizer.get_priv();
   auto ii         = IterationGetter::template index<IndexType>();
+  constexpr bool is_forall_parampack_empty =
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
   if (ii < length)
   {
-    RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    if constexpr (is_forall_parampack_empty)
+    {
+      body(idx[ii]);
+    }
+    else
+    {
+      RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    }
   }
-  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
-}
-
-template<
-    typename EXEC_POL,
-    size_t BlocksPerSM,
-    typename Iterator,
-    typename LOOP_BODY,
-    typename IndexType,
-    typename IterationMapping          = typename EXEC_POL::IterationMapping,
-    typename IterationGetter           = typename EXEC_POL::IterationGetter,
-    std::enable_if_t<std::is_base_of<iteration_mapping::StridedLoopBase,
-                                     IterationMapping>::value &&
-                         std::is_base_of<iteration_mapping::UnsizedLoopBase,
-                                         IterationMapping>::value &&
-                         (IterationGetter::block_size > 0),
-                     size_t> BlockSize = IterationGetter::block_size>
-__launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forall_cuda_kernel(LOOP_BODY loop_body,
-                            const Iterator idx,
-                            IndexType length)
-{
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body      = privatizer.get_priv();
-  for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
-       ii += IterationGetter::template size<IndexType>())
+  if constexpr (!is_forall_parampack_empty)
   {
-    body(idx[ii]);
-  }
-}
-
-///
-template<
-    typename EXEC_POL,
-    size_t BlocksPerSM,
-    typename Iterator,
-    typename LOOP_BODY,
-    typename IndexType,
-    typename IterationMapping = typename EXEC_POL::IterationMapping,
-    typename IterationGetter  = typename EXEC_POL::IterationGetter,
-    std::enable_if_t<std::is_base_of<iteration_mapping::StridedLoopBase,
-                                     IterationMapping>::value &&
-                         std::is_base_of<iteration_mapping::UnsizedLoopBase,
-                                         IterationMapping>::value &&
-                         (IterationGetter::block_size <= 0),
-                     size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   const Iterator idx,
-                                   IndexType length)
-{
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(loop_body);
-  auto& body      = privatizer.get_priv();
-  for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
-       ii += IterationGetter::template size<IndexType>())
-  {
-    body(idx[ii]);
+    RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
   }
 }
 
@@ -560,12 +475,24 @@ __launch_bounds__(BlockSize, BlocksPerSM) __global__
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto& body      = privatizer.get_priv();
+  constexpr bool is_forall_parampack_empty =
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
   for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
        ii += IterationGetter::template size<IndexType>())
   {
-    RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    if constexpr (is_forall_parampack_empty)
+    {
+      body(idx[ii]);
+    }
+    else
+    {
+      RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    }
   }
-  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
+  if constexpr (!is_forall_parampack_empty)
+  {
+    RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
+  }
 }
 
 ///
@@ -592,12 +519,24 @@ __global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
   auto& body      = privatizer.get_priv();
+  constexpr bool is_forall_parampack_empty =
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
   for (auto ii = IterationGetter::template index<IndexType>(); ii < length;
        ii += IterationGetter::template size<IndexType>())
   {
-    RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    if constexpr (is_forall_parampack_empty)
+    {
+      body(idx[ii]);
+    }
+    else
+    {
+      RAJA::expt::invoke_body(f_params, body, idx[ii]);
+    }
   }
-  RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
+  if constexpr (!is_forall_parampack_empty)
+  {
+    RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL {}, f_params);
+  }
 }
 
 }  // namespace impl
@@ -620,92 +559,7 @@ template<typename Iterable,
          typename ForallParam>
 RAJA_INLINE concepts::enable_if_t<
     resources::EventProxy<resources::Cuda>,
-    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
-    RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>
-forall_impl(resources::Cuda cuda_res,
-            ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
-                                                     IterationGetter,
-                                                     Concretizer,
-                                                     BlocksPerSM,
-                                                     Async> const& pol,
-            Iterable&& iter,
-            LoopBody&& loop_body,
-            ForallParam)
-{
-  using Iterator  = camp::decay<decltype(std::begin(iter))>;
-  using LOOP_BODY = camp::decay<LoopBody>;
-  using IndexType =
-      camp::decay<decltype(std::distance(std::begin(iter), std::end(iter)))>;
-  using EXEC_POL     = camp::decay<decltype(pol)>;
-  using UniqueMarker = ::camp::list<IterationMapping, IterationGetter,
-                                    LOOP_BODY, Iterator, ForallParam>;
-  using DimensionCalculator =
-      impl::ForallDimensionCalculator<IterationMapping, IterationGetter,
-                                      Concretizer, UniqueMarker>;
-
-  //
-  // Compute the requested iteration space size
-  //
-  Iterator begin = std::begin(iter);
-  Iterator end   = std::end(iter);
-  IndexType len  = std::distance(begin, end);
-
-  // Only launch kernel if we have something to iterate over
-  if (len > 0)
-  {
-
-    auto func = reinterpret_cast<const void*>(
-        &impl::forall_cuda_kernel<EXEC_POL, BlocksPerSM, Iterator, LOOP_BODY,
-                                  IndexType>);
-
-    //
-    // Setup shared memory buffers
-    //
-    size_t shmem = 0;
-
-    //
-    // Compute the kernel dimensions
-    //
-    internal::CudaDims dims(1);
-    DimensionCalculator::set_dimensions(dims, len, func, shmem);
-
-    RAJA_FT_BEGIN;
-
-    {
-      //
-      // Privatize the loop_body, using make_launch_body to setup reductions
-      //
-      LOOP_BODY body = RAJA::cuda::make_launch_body(
-          func, dims.blocks, dims.threads, shmem, cuda_res,
-          std::forward<LoopBody>(loop_body));
-
-      //
-      // Launch the kernels
-      //
-      void* args[] = {(void*)&body, (void*)&begin, (void*)&len};
-      RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res,
-                         Async);
-    }
-
-    RAJA_FT_END;
-  }
-
-  return resources::EventProxy<resources::Cuda>(cuda_res);
-}
-
-template<typename Iterable,
-         typename LoopBody,
-         typename IterationMapping,
-         typename IterationGetter,
-         typename Concretizer,
-         size_t BlocksPerSM,
-         bool Async,
-         typename ForallParam>
-RAJA_INLINE concepts::enable_if_t<
-    resources::EventProxy<resources::Cuda>,
-    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>,
-    concepts::negate<
-        RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>>>
+    RAJA::expt::type_traits::is_ForallParamPack<ForallParam>>
 forall_impl(resources::Cuda cuda_res,
             ::RAJA::policy::cuda::cuda_exec_explicit<IterationMapping,
                                                      IterationGetter,
@@ -734,6 +588,8 @@ forall_impl(resources::Cuda cuda_res,
   Iterator begin = std::begin(iter);
   Iterator end   = std::end(iter);
   IndexType len  = std::distance(begin, end);
+  constexpr bool is_forallparampack_empty =
+      RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
 
   // Only launch kernel if we have something to iterate over
   if (len > 0)
@@ -762,7 +618,11 @@ forall_impl(resources::Cuda cuda_res,
     launch_info.res      = cuda_res;
 
     {
-      RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params, launch_info);
+      if constexpr (!is_forallparampack_empty)
+      {
+        RAJA::expt::ParamMultiplexer::parampack_init(pol, f_params,
+                                                     launch_info);
+      }
 
       //
       // Privatize the loop_body, using make_launch_body to setup reductions
@@ -779,8 +639,11 @@ forall_impl(resources::Cuda cuda_res,
       RAJA::cuda::launch(func, dims.blocks, dims.threads, args, shmem, cuda_res,
                          Async);
 
-      RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params,
-                                                      launch_info);
+      if constexpr (!is_forallparampack_empty)
+      {
+        RAJA::expt::ParamMultiplexer::parampack_resolve(pol, f_params,
+                                                        launch_info);
+      }
     }
 
     RAJA_FT_END;
