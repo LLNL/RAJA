@@ -140,9 +140,9 @@ job can be adjusted in the job entry in the associated
 
   gcc_8_1_0:
   variables:
-    SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
-    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
-  extends: .job_on_ruby
+    SPEC: " ${PROJECT_DANE_VARIANTS} %gcc@8.1.0 ${PROJECT_DANE_DEPS}"
+    DANE_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
+  extends: .job_on_dane
 
 This example sets the build and test allocation time to 60 minutes and the
 the run resource to one node.
