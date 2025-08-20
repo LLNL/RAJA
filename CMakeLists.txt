@@ -188,10 +188,10 @@ if (RAJA_ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
     cuda)
-  if(RAJA_ENABLE_NV_TOOLS_EXT)
+  if(RAJA_ENABLE_NVTX)
     set(raja_depends
       ${raja_depends}
-      nvtoolsext)
+      nvtx3)
   endif ()
 endif ()
 
