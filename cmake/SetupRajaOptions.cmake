@@ -8,7 +8,7 @@
 set(RAJA_ENABLE_WARNINGS_AS_ERRORS Off CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS On CACHE BOOL "Enable tests asserting failure.")
 
-option(RAJA_ENABLE_NV_TOOLS_EXT "Build with NV_TOOLS_EXT support" Off)
+option(RAJA_ENABLE_NVTX "Build with NVTX support" Off)
 option(RAJA_ENABLE_ROCTX "Build with ENABLE_ROCTX support" Off)
 
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
