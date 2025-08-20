@@ -238,8 +238,8 @@ static_assert(RAJA_HAS_SOME_CXX14,
 #define RAJA_COMPILER_GNU
 #endif
 
-#define RAJA_STRINGIFY(x) RAJA_DO_STRINGIFY(x)
-#define RAJA_DO_STRINGIFY(x) #x
+#define RAJA_STRINGIFY_HELPER(...) #__VA_ARGS__
+#define RAJA_STRINGIFY(...) RAJA_STRINGIFY_HELPER(__VA_ARGS__)
 #ifdef _WIN32
 #define RAJA_PRAGMA(x) __pragma(x)
 #else
