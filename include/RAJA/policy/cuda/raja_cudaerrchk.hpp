@@ -86,7 +86,7 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R>>
     ::RAJA::cudaAssert(func(__VA_ARGS__),                                 \
                        RAJA_STRINGIFY(func),                              \
                        RAJA_STRINGIFY(__VA_ARGS__),                       \
-                       std::tie(__VA_ARGS__),                             \
+                       ::RAJA::ctie(__VA_ARGS__),                         \
                        __FILE__, __LINE__);                               \
   }
 
