@@ -140,9 +140,9 @@ job can be adjusted in the job entry in the associated
 
   gcc_8_1_0:
   variables:
-    SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
-    RUBY_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
-  extends: .job_on_ruby
+    SPEC: " ${PROJECT_DANE_VARIANTS} %gcc@8.1.0 ${PROJECT_DANE_DEPS}"
+    DANE_BUILD_AND_TEST_JOB_ALLOC: "--time=60 --nodes=1"
+  extends: .job_on_dane
 
 This example sets the build and test allocation time to 60 minutes and the
 the run resource to one node.
@@ -190,8 +190,8 @@ Building the Compiler
 .. important:: Because Intel updates their compiler repo daily, it is possible
    that the head of the SYCL branch will fail to build. In the event that it
    does not build, try checking out an earlier commit. On the Intel/LLVM GitHub
-    page, one can see which of their commits builds by checking the status
-    badge next to each commit. Look for a commit that passes. 
+   page, one can see which of their commits builds by checking the status
+   badge next to each commit. Look for a commit that passes. 
 
 #. Load the module of the version of GCC headers that you want to use. For example, we typically use the system default, which on corona is gcc/10.3.1-magic::
 

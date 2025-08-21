@@ -151,7 +151,7 @@ public:
     if (m_size > 0)
     {
 
-      camp::resources::Resource host_res {camp::resources::Host()};
+      camp::resources::Resource host_res {camp::resources::Host::get_default()};
 
       value_type* tmp = host_res.allocate<value_type>(m_size);
 
@@ -168,6 +168,7 @@ public:
       m_resource = new camp::resources::Resource(resource);
       m_data     = m_resource->allocate<value_type>(m_size);
       m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
+      m_resource->wait();
       m_owned = Owned;
 
       host_res.deallocate(tmp);
@@ -368,7 +369,7 @@ private:
 
       m_resource = new camp::resources::Resource(resource_);
 
-      camp::resources::Resource host_res {camp::resources::Host()};
+      camp::resources::Resource host_res {camp::resources::Host::get_default()};
 
       value_type* tmp = host_res.allocate<value_type>(m_size);
 
@@ -379,6 +380,7 @@ private:
 
       m_data = m_resource->allocate<value_type>(m_size);
       m_resource->memcpy(m_data, tmp, sizeof(value_type) * m_size);
+      m_resource->wait();
 
       host_res.deallocate(tmp);
 

@@ -141,9 +141,15 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept
  */
 #if defined(RAJA_ENABLE_OPENMP)
 #define RAJA_OMP_DECLARE_REDUCTION_COMBINE                                     \
+  RAJA_UNUSED_VAR(EXEC_POL {});                                                \
   _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
-        : RAJA::expt::ParamMultiplexer::combine<EXEC_POL>(omp_out, omp_in) ) ")  // initializer(omp_priv = omp_in) ")
+        : RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL{}, omp_out, omp_in) ) ")  // initializer(omp_priv = omp_in) ")
+
+#define RAJA_OMP_DECLARE_TUPLE_REDUCTION_COMBINE                               \
+  _Pragma(" omp declare reduction( combine \
+    : typename std::remove_reference<decltype(reducers_tuple)>::type  \
+    : RAJA::expt::detail::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
 #endif
 
 
@@ -151,6 +157,7 @@ RAJA_HOST_DEVICE
 inline void RAJA_ABORT_OR_THROW(const char* str)
 {
 #if defined(__SYCL_DEVICE_ONLY__)
+  RAJA_UNUSED_VAR(str);
   // segfault here ran into linking problems
   *((volatile char*)0) = 0;  // write to address 0
 #else

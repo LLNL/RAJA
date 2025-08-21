@@ -77,6 +77,7 @@
 
 #include "RAJA/pattern/detail/forall.hpp"
 #include "RAJA/pattern/detail/privatizer.hpp"
+#include "RAJA/pattern/params/kernel_name.hpp"
 
 #include "RAJA/internal/get_platform.hpp"
 #include "RAJA/util/plugins.hpp"
@@ -332,12 +333,14 @@ RAJA_INLINE resources::EventProxy<Res> forall_Icount(ExecutionPolicy&& p,
                 "Expected a TypedIndexSet but did not get one. Are you using "
                 "a TypedIndexSet policy by mistake?");
 
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -390,11 +393,14 @@ forall(ExecutionPolicy&& p, Res r, IdxSet&& c, Params&&... params)
                 "a TypedIndexSet policy by mistake?");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -482,12 +488,14 @@ forall_Icount(ExecutionPolicy&& p,
 
   auto f_params = expt::make_forall_param_pack(std::forward<FirstParam>(first),
                                                std::forward<Params>(params)...);
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<FirstParam>(first),
                                       std::forward<Params>(params)...);
   // expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;
@@ -549,11 +557,15 @@ forall(ExecutionPolicy&& p, Res r, Container&& c, Params&&... params)
                 "Container does not model RandomAccessIterator");
 
   auto f_params = expt::make_forall_param_pack(std::forward<Params>(params)...);
+
+  std::string kernel_name =
+      expt::get_kernel_name(std::forward<Params>(params)...);
   auto&& loop_body = expt::get_lambda(std::forward<Params>(params)...);
+
   expt::check_forall_optional_args(loop_body, f_params);
 
   util::PluginContext context {
-      util::make_context<camp::decay<ExecutionPolicy>>()};
+      util::make_context<camp::decay<ExecutionPolicy>>(std::move(kernel_name))};
   util::callPreCapturePlugins(context);
 
   using RAJA::util::trigger_updates_before;

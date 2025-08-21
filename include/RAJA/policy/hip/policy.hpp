@@ -29,6 +29,7 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/hip/intrinsics.hpp"
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/OffsetOperators.hpp"
@@ -323,47 +324,6 @@ namespace policy
 namespace hip
 {
 
-struct DeviceConstants
-{
-  RAJA::Index_type WARP_SIZE;
-  RAJA::Index_type MAX_BLOCK_SIZE;
-  RAJA::Index_type MAX_WARPS;
-  RAJA::Index_type
-      ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE;  // basically the cache line size of
-                                             // the cache level that handles
-                                             // atomics
-
-  constexpr DeviceConstants(RAJA::Index_type warp_size,
-                            RAJA::Index_type max_block_size,
-                            RAJA::Index_type atomic_cache_line_bytes) noexcept
-      : WARP_SIZE(warp_size),
-        MAX_BLOCK_SIZE(max_block_size),
-        MAX_WARPS(max_block_size / warp_size),
-        ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE(atomic_cache_line_bytes)
-  {}
-};
-
-//
-// Operations in the included files are parametrized using the following
-// values for HIP warp size and max block size.
-//
-#if defined(__HIP_PLATFORM_AMD__)
-constexpr DeviceConstants device_constants(RAJA_HIP_WAVESIZE,
-                                           1024,
-                                           64);  // MI300A
-// constexpr DeviceConstants device_constants(RAJA_HIP_WAVESIZE, 1024, 128); //
-// MI250X
-
-#elif defined(__HIP_PLATFORM_NVIDIA__)
-constexpr DeviceConstants device_constants(32, 1024, 32);  // V100
-#endif
-static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
-              "RAJA Assumption Broken: device_constants.WARP_SIZE < "
-              "device_constants.MAX_WARPS");
-static_assert(device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
-              "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
-              "a multiple of device_constants.WARP_SIZE");
-
 template<typename _IterationMapping,
          kernel_sync_requirement sync,
          typename... _IterationGetters>
@@ -438,7 +398,6 @@ struct unordered_hip_loop_y_block_iter_x_threadblock_average
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-
 
 template<typename tuning>
 struct hip_reduce_policy : public RAJA::make_policy_pattern_launch_platform_t<
@@ -1562,6 +1521,10 @@ using hip_multi_reduce_atomic_low_performance_low_overhead =
 using policy::hip::hip_block_reduce;
 using policy::hip::hip_warp_reduce;
 
+using hip_warp_direct_unchecked = RAJA::policy::hip::hip_indexer<
+    iteration_mapping::DirectUnchecked,
+    kernel_sync_requirement::none,
+    hip::thread_x<RAJA::policy::hip::device_constants.WARP_SIZE>>;
 using hip_warp_direct = RAJA::policy::hip::hip_indexer<
     iteration_mapping::Direct,
     kernel_sync_requirement::none,
@@ -1586,6 +1549,12 @@ using policy::hip::hip_launch_t;
 
 // policies usable with kernel and launch
 template<typename... indexers>
+using hip_indexer_direct_unchecked =
+    policy::hip::hip_indexer<iteration_mapping::DirectUnchecked,
+                             kernel_sync_requirement::none,
+                             indexers...>;
+
+template<typename... indexers>
 using hip_indexer_direct =
     policy::hip::hip_indexer<iteration_mapping::Direct,
                              kernel_sync_requirement::none,
@@ -1604,6 +1573,12 @@ using hip_indexer_syncable_loop = policy::hip::hip_indexer<
     indexers...>;
 
 template<typename... indexers>
+using hip_flatten_indexer_direct_unchecked =
+    policy::hip::hip_flatten_indexer<iteration_mapping::DirectUnchecked,
+                                     kernel_sync_requirement::none,
+                                     indexers...>;
+
+template<typename... indexers>
 using hip_flatten_indexer_direct =
     policy::hip::hip_flatten_indexer<iteration_mapping::Direct,
                                      kernel_sync_requirement::none,
@@ -1615,28 +1590,128 @@ using hip_flatten_indexer_loop = policy::hip::hip_flatten_indexer<
     kernel_sync_requirement::none,
     indexers...>;
 
+
 /*!
- * Maps segment indices to HIP threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * For example, a segment of size 2000 will not fit, and trigger a runtime
- * error.
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * This is the lowest overhead mapping, but requires that there are the same
+ * number of physical threads, blocks, or global threads as map requests.
+ * For example, a segment of size 1000 will only fit into 1000 threads, blocks,
+ * or global threads, and triggers a runtime error in some cases.
+ */
+template<named_dim... dims>
+using hip_thread_direct_unchecked = hip_indexer_direct_unchecked<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+using hip_thread_x_direct_unchecked = hip_thread_direct_unchecked<named_dim::x>;
+using hip_thread_y_direct_unchecked = hip_thread_direct_unchecked<named_dim::y>;
+using hip_thread_z_direct_unchecked = hip_thread_direct_unchecked<named_dim::z>;
+using hip_thread_xy_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::x, named_dim::y>;
+using hip_thread_xz_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::x, named_dim::z>;
+using hip_thread_yx_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::y, named_dim::x>;
+using hip_thread_yz_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::y, named_dim::z>;
+using hip_thread_zx_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::z, named_dim::x>;
+using hip_thread_zy_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::z, named_dim::y>;
+using hip_thread_xyz_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::x, named_dim::y, named_dim::z>;
+using hip_thread_xzy_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::x, named_dim::z, named_dim::y>;
+using hip_thread_yxz_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::y, named_dim::x, named_dim::z>;
+using hip_thread_yzx_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::y, named_dim::z, named_dim::x>;
+using hip_thread_zxy_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::z, named_dim::x, named_dim::y>;
+using hip_thread_zyx_direct_unchecked =
+    hip_thread_direct_unchecked<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_block_direct_unchecked = hip_indexer_direct_unchecked<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+using hip_block_x_direct_unchecked = hip_block_direct_unchecked<named_dim::x>;
+using hip_block_y_direct_unchecked = hip_block_direct_unchecked<named_dim::y>;
+using hip_block_z_direct_unchecked = hip_block_direct_unchecked<named_dim::z>;
+using hip_block_xy_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::x, named_dim::y>;
+using hip_block_xz_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::x, named_dim::z>;
+using hip_block_yx_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::y, named_dim::x>;
+using hip_block_yz_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::y, named_dim::z>;
+using hip_block_zx_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::z, named_dim::x>;
+using hip_block_zy_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::z, named_dim::y>;
+using hip_block_xyz_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::x, named_dim::y, named_dim::z>;
+using hip_block_xzy_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::x, named_dim::z, named_dim::y>;
+using hip_block_yxz_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::y, named_dim::x, named_dim::z>;
+using hip_block_yzx_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::y, named_dim::z, named_dim::x>;
+using hip_block_zxy_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::z, named_dim::x, named_dim::y>;
+using hip_block_zyx_direct_unchecked =
+    hip_block_direct_unchecked<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_global_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::IndexGlobal<dims,
+                                                  named_usage::unspecified,
+                                                  named_usage::unspecified>...>;
+using hip_global_x_direct_unchecked = hip_global_direct_unchecked<named_dim::x>;
+using hip_global_y_direct_unchecked = hip_global_direct_unchecked<named_dim::y>;
+using hip_global_z_direct_unchecked = hip_global_direct_unchecked<named_dim::z>;
+using hip_global_xy_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::x, named_dim::y>;
+using hip_global_xz_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::x, named_dim::z>;
+using hip_global_yx_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::y, named_dim::x>;
+using hip_global_yz_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::y, named_dim::z>;
+using hip_global_zx_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::z, named_dim::x>;
+using hip_global_zy_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::z, named_dim::y>;
+using hip_global_xyz_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::x, named_dim::y, named_dim::z>;
+using hip_global_xzy_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::x, named_dim::z, named_dim::y>;
+using hip_global_yxz_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::y, named_dim::x, named_dim::z>;
+using hip_global_yzx_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::y, named_dim::z, named_dim::x>;
+using hip_global_zxy_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::z, named_dim::x, named_dim::y>;
+using hip_global_zyx_direct_unchecked =
+    hip_global_direct_unchecked<named_dim::z, named_dim::y, named_dim::x>;
+
+/*!
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * This is a low overhead mapping, but requires that there are enough
+ * physical threads, blocks, or global threads to fit all of the direct map
+ * requests. For example, a segment of size 2000 will not fit into 1024 threads,
+ * blocks, or global threads, and triggers a runtime error in some cases.
  */
 template<named_dim... dims>
 using hip_thread_direct = hip_indexer_direct<
     hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
-
-using hip_thread_x_direct = hip_thread_direct<named_dim::x>;
-using hip_thread_y_direct = hip_thread_direct<named_dim::y>;
-using hip_thread_z_direct = hip_thread_direct<named_dim::z>;
-
+using hip_thread_x_direct  = hip_thread_direct<named_dim::x>;
+using hip_thread_y_direct  = hip_thread_direct<named_dim::y>;
+using hip_thread_z_direct  = hip_thread_direct<named_dim::z>;
 using hip_thread_xy_direct = hip_thread_direct<named_dim::x, named_dim::y>;
 using hip_thread_xz_direct = hip_thread_direct<named_dim::x, named_dim::z>;
 using hip_thread_yx_direct = hip_thread_direct<named_dim::y, named_dim::x>;
 using hip_thread_yz_direct = hip_thread_direct<named_dim::y, named_dim::z>;
 using hip_thread_zx_direct = hip_thread_direct<named_dim::z, named_dim::x>;
 using hip_thread_zy_direct = hip_thread_direct<named_dim::z, named_dim::y>;
-
 using hip_thread_xyz_direct =
     hip_thread_direct<named_dim::x, named_dim::y, named_dim::z>;
 using hip_thread_xzy_direct =
@@ -1650,142 +1725,18 @@ using hip_thread_zxy_direct =
 using hip_thread_zyx_direct =
     hip_thread_direct<named_dim::z, named_dim::y, named_dim::x>;
 
-/*!
- * Maps segment indices to HIP threads.
- * Uses block-stride looping to exceed the maximum number of physical threads
- */
-template<named_dim... dims>
-using hip_thread_loop = hip_indexer_loop<
-    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
-
-template<named_dim... dims>
-using hip_thread_syncable_loop = hip_indexer_syncable_loop<
-    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
-
-using hip_thread_x_loop = hip_thread_loop<named_dim::x>;
-using hip_thread_y_loop = hip_thread_loop<named_dim::y>;
-using hip_thread_z_loop = hip_thread_loop<named_dim::z>;
-
-using hip_thread_xy_loop = hip_thread_loop<named_dim::x, named_dim::y>;
-using hip_thread_xz_loop = hip_thread_loop<named_dim::x, named_dim::z>;
-using hip_thread_yx_loop = hip_thread_loop<named_dim::y, named_dim::x>;
-using hip_thread_yz_loop = hip_thread_loop<named_dim::y, named_dim::z>;
-using hip_thread_zx_loop = hip_thread_loop<named_dim::z, named_dim::x>;
-using hip_thread_zy_loop = hip_thread_loop<named_dim::z, named_dim::y>;
-
-using hip_thread_xyz_loop =
-    hip_thread_loop<named_dim::x, named_dim::y, named_dim::z>;
-using hip_thread_xzy_loop =
-    hip_thread_loop<named_dim::x, named_dim::z, named_dim::y>;
-using hip_thread_yxz_loop =
-    hip_thread_loop<named_dim::y, named_dim::x, named_dim::z>;
-using hip_thread_yzx_loop =
-    hip_thread_loop<named_dim::y, named_dim::z, named_dim::x>;
-using hip_thread_zxy_loop =
-    hip_thread_loop<named_dim::z, named_dim::x, named_dim::y>;
-using hip_thread_zyx_loop =
-    hip_thread_loop<named_dim::z, named_dim::y, named_dim::x>;
-
-/*
- * Maps segment indices to flattened HIP threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- * Reshapes multiple physical threads into a 1D iteration space
- */
-template<named_dim... dims>
-using hip_flatten_thread_direct = hip_flatten_indexer_direct<
-    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
-
-using hip_flatten_thread_x_direct = hip_flatten_thread_direct<named_dim::x>;
-using hip_flatten_thread_y_direct = hip_flatten_thread_direct<named_dim::y>;
-using hip_flatten_thread_z_direct = hip_flatten_thread_direct<named_dim::z>;
-
-using hip_flatten_thread_xy_direct =
-    hip_flatten_thread_direct<named_dim::x, named_dim::y>;
-using hip_flatten_thread_xz_direct =
-    hip_flatten_thread_direct<named_dim::x, named_dim::z>;
-using hip_flatten_thread_yx_direct =
-    hip_flatten_thread_direct<named_dim::y, named_dim::x>;
-using hip_flatten_thread_yz_direct =
-    hip_flatten_thread_direct<named_dim::y, named_dim::z>;
-using hip_flatten_thread_zx_direct =
-    hip_flatten_thread_direct<named_dim::z, named_dim::x>;
-using hip_flatten_thread_zy_direct =
-    hip_flatten_thread_direct<named_dim::z, named_dim::y>;
-
-using hip_flatten_thread_xyz_direct =
-    hip_flatten_thread_direct<named_dim::x, named_dim::y, named_dim::z>;
-using hip_flatten_thread_xzy_direct =
-    hip_flatten_thread_direct<named_dim::x, named_dim::z, named_dim::y>;
-using hip_flatten_thread_yxz_direct =
-    hip_flatten_thread_direct<named_dim::y, named_dim::x, named_dim::z>;
-using hip_flatten_thread_yzx_direct =
-    hip_flatten_thread_direct<named_dim::y, named_dim::z, named_dim::x>;
-using hip_flatten_thread_zxy_direct =
-    hip_flatten_thread_direct<named_dim::z, named_dim::x, named_dim::y>;
-using hip_flatten_thread_zyx_direct =
-    hip_flatten_thread_direct<named_dim::z, named_dim::y, named_dim::x>;
-
-/*
- * Maps segment indices to flattened HIP threads.
- * Reshapes multiple physical threads into a 1D iteration space
- * Uses block-stride looping to exceed the maximum number of physical threads
- */
-template<named_dim... dims>
-using hip_flatten_thread_loop = hip_flatten_indexer_loop<
-    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
-
-using hip_flatten_thread_x_loop = hip_flatten_thread_loop<named_dim::x>;
-using hip_flatten_thread_y_loop = hip_flatten_thread_loop<named_dim::y>;
-using hip_flatten_thread_z_loop = hip_flatten_thread_loop<named_dim::z>;
-
-using hip_flatten_thread_xy_loop =
-    hip_flatten_thread_loop<named_dim::x, named_dim::y>;
-using hip_flatten_thread_xz_loop =
-    hip_flatten_thread_loop<named_dim::x, named_dim::z>;
-using hip_flatten_thread_yx_loop =
-    hip_flatten_thread_loop<named_dim::y, named_dim::x>;
-using hip_flatten_thread_yz_loop =
-    hip_flatten_thread_loop<named_dim::y, named_dim::z>;
-using hip_flatten_thread_zx_loop =
-    hip_flatten_thread_loop<named_dim::z, named_dim::x>;
-using hip_flatten_thread_zy_loop =
-    hip_flatten_thread_loop<named_dim::z, named_dim::y>;
-
-using hip_flatten_thread_xyz_loop =
-    hip_flatten_thread_loop<named_dim::x, named_dim::y, named_dim::z>;
-using hip_flatten_thread_xzy_loop =
-    hip_flatten_thread_loop<named_dim::x, named_dim::z, named_dim::y>;
-using hip_flatten_thread_yxz_loop =
-    hip_flatten_thread_loop<named_dim::y, named_dim::x, named_dim::z>;
-using hip_flatten_thread_yzx_loop =
-    hip_flatten_thread_loop<named_dim::y, named_dim::z, named_dim::x>;
-using hip_flatten_thread_zxy_loop =
-    hip_flatten_thread_loop<named_dim::z, named_dim::x, named_dim::y>;
-using hip_flatten_thread_zyx_loop =
-    hip_flatten_thread_loop<named_dim::z, named_dim::y, named_dim::x>;
-
-
-/*!
- * Maps segment indices to HIP blocks.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical blocks to fit all of the direct map requests.
- */
 template<named_dim... dims>
 using hip_block_direct = hip_indexer_direct<
     hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
-
-using hip_block_x_direct = hip_block_direct<named_dim::x>;
-using hip_block_y_direct = hip_block_direct<named_dim::y>;
-using hip_block_z_direct = hip_block_direct<named_dim::z>;
-
+using hip_block_x_direct  = hip_block_direct<named_dim::x>;
+using hip_block_y_direct  = hip_block_direct<named_dim::y>;
+using hip_block_z_direct  = hip_block_direct<named_dim::z>;
 using hip_block_xy_direct = hip_block_direct<named_dim::x, named_dim::y>;
 using hip_block_xz_direct = hip_block_direct<named_dim::x, named_dim::z>;
 using hip_block_yx_direct = hip_block_direct<named_dim::y, named_dim::x>;
 using hip_block_yz_direct = hip_block_direct<named_dim::y, named_dim::z>;
 using hip_block_zx_direct = hip_block_direct<named_dim::z, named_dim::x>;
 using hip_block_zy_direct = hip_block_direct<named_dim::z, named_dim::y>;
-
 using hip_block_xyz_direct =
     hip_block_direct<named_dim::x, named_dim::y, named_dim::z>;
 using hip_block_xzy_direct =
@@ -1799,144 +1750,20 @@ using hip_block_zxy_direct =
 using hip_block_zyx_direct =
     hip_block_direct<named_dim::z, named_dim::y, named_dim::x>;
 
-/*!
- * Maps segment indices to HIP blocks.
- * Uses grid-stride looping to exceed the maximum number of blocks
- */
-template<named_dim... dims>
-using hip_block_loop = hip_indexer_loop<
-    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
-
-template<named_dim... dims>
-using hip_block_syncable_loop = hip_indexer_syncable_loop<
-    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
-
-using hip_block_x_loop = hip_block_loop<named_dim::x>;
-using hip_block_y_loop = hip_block_loop<named_dim::y>;
-using hip_block_z_loop = hip_block_loop<named_dim::z>;
-
-using hip_block_xy_loop = hip_block_loop<named_dim::x, named_dim::y>;
-using hip_block_xz_loop = hip_block_loop<named_dim::x, named_dim::z>;
-using hip_block_yx_loop = hip_block_loop<named_dim::y, named_dim::x>;
-using hip_block_yz_loop = hip_block_loop<named_dim::y, named_dim::z>;
-using hip_block_zx_loop = hip_block_loop<named_dim::z, named_dim::x>;
-using hip_block_zy_loop = hip_block_loop<named_dim::z, named_dim::y>;
-
-using hip_block_xyz_loop =
-    hip_block_loop<named_dim::x, named_dim::y, named_dim::z>;
-using hip_block_xzy_loop =
-    hip_block_loop<named_dim::x, named_dim::z, named_dim::y>;
-using hip_block_yxz_loop =
-    hip_block_loop<named_dim::y, named_dim::x, named_dim::z>;
-using hip_block_yzx_loop =
-    hip_block_loop<named_dim::y, named_dim::z, named_dim::x>;
-using hip_block_zxy_loop =
-    hip_block_loop<named_dim::z, named_dim::x, named_dim::y>;
-using hip_block_zyx_loop =
-    hip_block_loop<named_dim::z, named_dim::y, named_dim::x>;
-
-/*
- * Maps segment indices to flattened HIP blocks.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical blocks to fit all of the direct map requests.
- * Reshapes multiple physical blocks into a 1D iteration space
- */
-template<named_dim... dims>
-using hip_flatten_block_direct = hip_flatten_indexer_direct<
-    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
-
-using hip_flatten_block_x_direct = hip_flatten_block_direct<named_dim::x>;
-using hip_flatten_block_y_direct = hip_flatten_block_direct<named_dim::y>;
-using hip_flatten_block_z_direct = hip_flatten_block_direct<named_dim::z>;
-
-using hip_flatten_block_xy_direct =
-    hip_flatten_block_direct<named_dim::x, named_dim::y>;
-using hip_flatten_block_xz_direct =
-    hip_flatten_block_direct<named_dim::x, named_dim::z>;
-using hip_flatten_block_yx_direct =
-    hip_flatten_block_direct<named_dim::y, named_dim::x>;
-using hip_flatten_block_yz_direct =
-    hip_flatten_block_direct<named_dim::y, named_dim::z>;
-using hip_flatten_block_zx_direct =
-    hip_flatten_block_direct<named_dim::z, named_dim::x>;
-using hip_flatten_block_zy_direct =
-    hip_flatten_block_direct<named_dim::z, named_dim::y>;
-
-using hip_flatten_block_xyz_direct =
-    hip_flatten_block_direct<named_dim::x, named_dim::y, named_dim::z>;
-using hip_flatten_block_xzy_direct =
-    hip_flatten_block_direct<named_dim::x, named_dim::z, named_dim::y>;
-using hip_flatten_block_yxz_direct =
-    hip_flatten_block_direct<named_dim::y, named_dim::x, named_dim::z>;
-using hip_flatten_block_yzx_direct =
-    hip_flatten_block_direct<named_dim::y, named_dim::z, named_dim::x>;
-using hip_flatten_block_zxy_direct =
-    hip_flatten_block_direct<named_dim::z, named_dim::x, named_dim::y>;
-using hip_flatten_block_zyx_direct =
-    hip_flatten_block_direct<named_dim::z, named_dim::y, named_dim::x>;
-
-/*
- * Maps segment indices to flattened HIP blocks.
- * Reshapes multiple physical blocks into a 1D iteration space
- * Uses block-stride looping to exceed the maximum number of physical blocks
- */
-template<named_dim... dims>
-using hip_flatten_block_loop = hip_flatten_indexer_loop<
-    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
-
-using hip_flatten_block_x_loop = hip_flatten_block_loop<named_dim::x>;
-using hip_flatten_block_y_loop = hip_flatten_block_loop<named_dim::y>;
-using hip_flatten_block_z_loop = hip_flatten_block_loop<named_dim::z>;
-
-using hip_flatten_block_xy_loop =
-    hip_flatten_block_loop<named_dim::x, named_dim::y>;
-using hip_flatten_block_xz_loop =
-    hip_flatten_block_loop<named_dim::x, named_dim::z>;
-using hip_flatten_block_yx_loop =
-    hip_flatten_block_loop<named_dim::y, named_dim::x>;
-using hip_flatten_block_yz_loop =
-    hip_flatten_block_loop<named_dim::y, named_dim::z>;
-using hip_flatten_block_zx_loop =
-    hip_flatten_block_loop<named_dim::z, named_dim::x>;
-using hip_flatten_block_zy_loop =
-    hip_flatten_block_loop<named_dim::z, named_dim::y>;
-
-using hip_flatten_block_xyz_loop =
-    hip_flatten_block_loop<named_dim::x, named_dim::y, named_dim::z>;
-using hip_flatten_block_xzy_loop =
-    hip_flatten_block_loop<named_dim::x, named_dim::z, named_dim::y>;
-using hip_flatten_block_yxz_loop =
-    hip_flatten_block_loop<named_dim::y, named_dim::x, named_dim::z>;
-using hip_flatten_block_yzx_loop =
-    hip_flatten_block_loop<named_dim::y, named_dim::z, named_dim::x>;
-using hip_flatten_block_zxy_loop =
-    hip_flatten_block_loop<named_dim::z, named_dim::x, named_dim::y>;
-using hip_flatten_block_zyx_loop =
-    hip_flatten_block_loop<named_dim::z, named_dim::y, named_dim::x>;
-
-
-/*!
- * Maps segment indices to HIP global threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical threads to fit all of the direct map requests.
- */
 template<named_dim... dims>
 using hip_global_direct =
     hip_indexer_direct<hip::IndexGlobal<dims,
                                         named_usage::unspecified,
                                         named_usage::unspecified>...>;
-
-using hip_global_x_direct = hip_global_direct<named_dim::x>;
-using hip_global_y_direct = hip_global_direct<named_dim::y>;
-using hip_global_z_direct = hip_global_direct<named_dim::z>;
-
+using hip_global_x_direct  = hip_global_direct<named_dim::x>;
+using hip_global_y_direct  = hip_global_direct<named_dim::y>;
+using hip_global_z_direct  = hip_global_direct<named_dim::z>;
 using hip_global_xy_direct = hip_global_direct<named_dim::x, named_dim::y>;
 using hip_global_xz_direct = hip_global_direct<named_dim::x, named_dim::z>;
 using hip_global_yx_direct = hip_global_direct<named_dim::y, named_dim::x>;
 using hip_global_yz_direct = hip_global_direct<named_dim::y, named_dim::z>;
 using hip_global_zx_direct = hip_global_direct<named_dim::z, named_dim::x>;
 using hip_global_zy_direct = hip_global_direct<named_dim::z, named_dim::y>;
-
 using hip_global_xyz_direct =
     hip_global_direct<named_dim::x, named_dim::y, named_dim::z>;
 using hip_global_xzy_direct =
@@ -1951,32 +1778,74 @@ using hip_global_zyx_direct =
     hip_global_direct<named_dim::z, named_dim::y, named_dim::x>;
 
 /*!
- * Maps segment indices to HIP global threads.
- * Uses grid-stride looping to exceed the maximum number of global threads
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * Uses block-stride or grid-stride looping to exceed the maximum number of
+ * physical threads, blocks, or global threads.
  */
+template<named_dim... dims>
+using hip_thread_loop = hip_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+using hip_thread_x_loop  = hip_thread_loop<named_dim::x>;
+using hip_thread_y_loop  = hip_thread_loop<named_dim::y>;
+using hip_thread_z_loop  = hip_thread_loop<named_dim::z>;
+using hip_thread_xy_loop = hip_thread_loop<named_dim::x, named_dim::y>;
+using hip_thread_xz_loop = hip_thread_loop<named_dim::x, named_dim::z>;
+using hip_thread_yx_loop = hip_thread_loop<named_dim::y, named_dim::x>;
+using hip_thread_yz_loop = hip_thread_loop<named_dim::y, named_dim::z>;
+using hip_thread_zx_loop = hip_thread_loop<named_dim::z, named_dim::x>;
+using hip_thread_zy_loop = hip_thread_loop<named_dim::z, named_dim::y>;
+using hip_thread_xyz_loop =
+    hip_thread_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_thread_xzy_loop =
+    hip_thread_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_thread_yxz_loop =
+    hip_thread_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_thread_yzx_loop =
+    hip_thread_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_thread_zxy_loop =
+    hip_thread_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_thread_zyx_loop =
+    hip_thread_loop<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_block_loop = hip_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+using hip_block_x_loop  = hip_block_loop<named_dim::x>;
+using hip_block_y_loop  = hip_block_loop<named_dim::y>;
+using hip_block_z_loop  = hip_block_loop<named_dim::z>;
+using hip_block_xy_loop = hip_block_loop<named_dim::x, named_dim::y>;
+using hip_block_xz_loop = hip_block_loop<named_dim::x, named_dim::z>;
+using hip_block_yx_loop = hip_block_loop<named_dim::y, named_dim::x>;
+using hip_block_yz_loop = hip_block_loop<named_dim::y, named_dim::z>;
+using hip_block_zx_loop = hip_block_loop<named_dim::z, named_dim::x>;
+using hip_block_zy_loop = hip_block_loop<named_dim::z, named_dim::y>;
+using hip_block_xyz_loop =
+    hip_block_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_block_xzy_loop =
+    hip_block_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_block_yxz_loop =
+    hip_block_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_block_yzx_loop =
+    hip_block_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_block_zxy_loop =
+    hip_block_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_block_zyx_loop =
+    hip_block_loop<named_dim::z, named_dim::y, named_dim::x>;
+
 template<named_dim... dims>
 using hip_global_loop =
     hip_indexer_loop<hip::IndexGlobal<dims,
                                       named_usage::unspecified,
                                       named_usage::unspecified>...>;
-
-template<named_dim... dims>
-using hip_global_syncable_loop =
-    hip_indexer_syncable_loop<hip::IndexGlobal<dims,
-                                               named_usage::unspecified,
-                                               named_usage::unspecified>...>;
-
-using hip_global_x_loop = hip_global_loop<named_dim::x>;
-using hip_global_y_loop = hip_global_loop<named_dim::y>;
-using hip_global_z_loop = hip_global_loop<named_dim::z>;
-
+using hip_global_x_loop  = hip_global_loop<named_dim::x>;
+using hip_global_y_loop  = hip_global_loop<named_dim::y>;
+using hip_global_z_loop  = hip_global_loop<named_dim::z>;
 using hip_global_xy_loop = hip_global_loop<named_dim::x, named_dim::y>;
 using hip_global_xz_loop = hip_global_loop<named_dim::x, named_dim::z>;
 using hip_global_yx_loop = hip_global_loop<named_dim::y, named_dim::x>;
 using hip_global_yz_loop = hip_global_loop<named_dim::y, named_dim::z>;
 using hip_global_zx_loop = hip_global_loop<named_dim::z, named_dim::x>;
 using hip_global_zy_loop = hip_global_loop<named_dim::z, named_dim::y>;
-
 using hip_global_xyz_loop =
     hip_global_loop<named_dim::x, named_dim::y, named_dim::z>;
 using hip_global_xzy_loop =
@@ -1990,22 +1859,337 @@ using hip_global_zxy_loop =
 using hip_global_zyx_loop =
     hip_global_loop<named_dim::z, named_dim::y, named_dim::x>;
 
-/*
- * Maps segment indices to flattened HIP global threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical global threads to fit all of the direct map requests.
- * Reshapes multiple physical global threads into a 1D iteration space
+/*!
+ * Only used in the "kernel" abstraction.
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * Uses block-stride or grid-stride looping to exceed the maximum number of
+ * physical threads, blocks, or global threads.
+ * Allow synchronization in the loop, do not mask any threads out.
  */
+template<named_dim... dims>
+using hip_thread_syncable_loop = hip_indexer_syncable_loop<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+using hip_thread_x_syncable_loop = hip_thread_syncable_loop<named_dim::x>;
+using hip_thread_y_syncable_loop = hip_thread_syncable_loop<named_dim::y>;
+using hip_thread_z_syncable_loop = hip_thread_syncable_loop<named_dim::z>;
+using hip_thread_xy_syncable_loop =
+    hip_thread_syncable_loop<named_dim::x, named_dim::y>;
+using hip_thread_xz_syncable_loop =
+    hip_thread_syncable_loop<named_dim::x, named_dim::z>;
+using hip_thread_yx_syncable_loop =
+    hip_thread_syncable_loop<named_dim::y, named_dim::x>;
+using hip_thread_yz_syncable_loop =
+    hip_thread_syncable_loop<named_dim::y, named_dim::z>;
+using hip_thread_zx_syncable_loop =
+    hip_thread_syncable_loop<named_dim::z, named_dim::x>;
+using hip_thread_zy_syncable_loop =
+    hip_thread_syncable_loop<named_dim::z, named_dim::y>;
+using hip_thread_xyz_syncable_loop =
+    hip_thread_syncable_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_thread_xzy_syncable_loop =
+    hip_thread_syncable_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_thread_yxz_syncable_loop =
+    hip_thread_syncable_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_thread_yzx_syncable_loop =
+    hip_thread_syncable_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_thread_zxy_syncable_loop =
+    hip_thread_syncable_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_thread_zyx_syncable_loop =
+    hip_thread_syncable_loop<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_block_syncable_loop = hip_indexer_syncable_loop<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+using hip_block_x_syncable_loop = hip_block_syncable_loop<named_dim::x>;
+using hip_block_y_syncable_loop = hip_block_syncable_loop<named_dim::y>;
+using hip_block_z_syncable_loop = hip_block_syncable_loop<named_dim::z>;
+using hip_block_xy_syncable_loop =
+    hip_block_syncable_loop<named_dim::x, named_dim::y>;
+using hip_block_xz_syncable_loop =
+    hip_block_syncable_loop<named_dim::x, named_dim::z>;
+using hip_block_yx_syncable_loop =
+    hip_block_syncable_loop<named_dim::y, named_dim::x>;
+using hip_block_yz_syncable_loop =
+    hip_block_syncable_loop<named_dim::y, named_dim::z>;
+using hip_block_zx_syncable_loop =
+    hip_block_syncable_loop<named_dim::z, named_dim::x>;
+using hip_block_zy_syncable_loop =
+    hip_block_syncable_loop<named_dim::z, named_dim::y>;
+using hip_block_xyz_syncable_loop =
+    hip_block_syncable_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_block_xzy_syncable_loop =
+    hip_block_syncable_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_block_yxz_syncable_loop =
+    hip_block_syncable_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_block_yzx_syncable_loop =
+    hip_block_syncable_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_block_zxy_syncable_loop =
+    hip_block_syncable_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_block_zyx_syncable_loop =
+    hip_block_syncable_loop<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_global_syncable_loop =
+    hip_indexer_syncable_loop<hip::IndexGlobal<dims,
+                                               named_usage::unspecified,
+                                               named_usage::unspecified>...>;
+using hip_global_x_syncable_loop = hip_global_syncable_loop<named_dim::x>;
+using hip_global_y_syncable_loop = hip_global_syncable_loop<named_dim::y>;
+using hip_global_z_syncable_loop = hip_global_syncable_loop<named_dim::z>;
+using hip_global_xy_syncable_loop =
+    hip_global_syncable_loop<named_dim::x, named_dim::y>;
+using hip_global_xz_syncable_loop =
+    hip_global_syncable_loop<named_dim::x, named_dim::z>;
+using hip_global_yx_syncable_loop =
+    hip_global_syncable_loop<named_dim::y, named_dim::x>;
+using hip_global_yz_syncable_loop =
+    hip_global_syncable_loop<named_dim::y, named_dim::z>;
+using hip_global_zx_syncable_loop =
+    hip_global_syncable_loop<named_dim::z, named_dim::x>;
+using hip_global_zy_syncable_loop =
+    hip_global_syncable_loop<named_dim::z, named_dim::y>;
+using hip_global_xyz_syncable_loop =
+    hip_global_syncable_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_global_xzy_syncable_loop =
+    hip_global_syncable_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_global_yxz_syncable_loop =
+    hip_global_syncable_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_global_yzx_syncable_loop =
+    hip_global_syncable_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_global_zxy_syncable_loop =
+    hip_global_syncable_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_global_zyx_syncable_loop =
+    hip_global_syncable_loop<named_dim::z, named_dim::y, named_dim::x>;
+
+/*
+ * Maps segment indices to flattened HIP threads, blocks, or global threads.
+ * This is the lowest overhead mapping, but requires that there are the same
+ * number of physical threads, blocks, or global threads as map requests.
+ * Reshapes multiple physical threads, blocks, or global threads into a 1D
+ * iteration space
+ */
+template<named_dim... dims>
+using hip_flatten_thread_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::IndexGlobal<dims,
+                         named_usage::unspecified,
+                         named_usage::ignored>...>;
+using hip_flatten_thread_x_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::x>;
+using hip_flatten_thread_y_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::y>;
+using hip_flatten_thread_z_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::z>;
+using hip_flatten_thread_xy_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::x, named_dim::y>;
+using hip_flatten_thread_xz_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::x, named_dim::z>;
+using hip_flatten_thread_yx_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::y, named_dim::x>;
+using hip_flatten_thread_yz_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::y, named_dim::z>;
+using hip_flatten_thread_zx_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::z, named_dim::x>;
+using hip_flatten_thread_zy_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::z, named_dim::y>;
+using hip_flatten_thread_xyz_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::x,
+                                        named_dim::y,
+                                        named_dim::z>;
+using hip_flatten_thread_xzy_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::x,
+                                        named_dim::z,
+                                        named_dim::y>;
+using hip_flatten_thread_yxz_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::y,
+                                        named_dim::x,
+                                        named_dim::z>;
+using hip_flatten_thread_yzx_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::y,
+                                        named_dim::z,
+                                        named_dim::x>;
+using hip_flatten_thread_zxy_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::z,
+                                        named_dim::x,
+                                        named_dim::y>;
+using hip_flatten_thread_zyx_direct_unchecked =
+    hip_flatten_thread_direct_unchecked<named_dim::z,
+                                        named_dim::y,
+                                        named_dim::x>;
+
+template<named_dim... dims>
+using hip_flatten_block_direct_unchecked = hip_flatten_indexer_direct_unchecked<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+using hip_flatten_block_x_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::x>;
+using hip_flatten_block_y_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::y>;
+using hip_flatten_block_z_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::z>;
+using hip_flatten_block_xy_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::x, named_dim::y>;
+using hip_flatten_block_xz_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::x, named_dim::z>;
+using hip_flatten_block_yx_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::y, named_dim::x>;
+using hip_flatten_block_yz_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::y, named_dim::z>;
+using hip_flatten_block_zx_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::z, named_dim::x>;
+using hip_flatten_block_zy_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::z, named_dim::y>;
+using hip_flatten_block_xyz_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::x,
+                                       named_dim::y,
+                                       named_dim::z>;
+using hip_flatten_block_xzy_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::x,
+                                       named_dim::z,
+                                       named_dim::y>;
+using hip_flatten_block_yxz_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::y,
+                                       named_dim::x,
+                                       named_dim::z>;
+using hip_flatten_block_yzx_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::y,
+                                       named_dim::z,
+                                       named_dim::x>;
+using hip_flatten_block_zxy_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::z,
+                                       named_dim::x,
+                                       named_dim::y>;
+using hip_flatten_block_zyx_direct_unchecked =
+    hip_flatten_block_direct_unchecked<named_dim::z,
+                                       named_dim::y,
+                                       named_dim::x>;
+
+template<named_dim... dims>
+using hip_flatten_global_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::IndexGlobal<dims,
+                         named_usage::unspecified,
+                         named_usage::unspecified>...>;
+using hip_flatten_global_x_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::x>;
+using hip_flatten_global_y_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::y>;
+using hip_flatten_global_z_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::z>;
+using hip_flatten_global_xy_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::x, named_dim::y>;
+using hip_flatten_global_xz_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::x, named_dim::z>;
+using hip_flatten_global_yx_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::y, named_dim::x>;
+using hip_flatten_global_yz_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::y, named_dim::z>;
+using hip_flatten_global_zx_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::z, named_dim::x>;
+using hip_flatten_global_zy_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::z, named_dim::y>;
+using hip_flatten_global_xyz_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::x,
+                                        named_dim::y,
+                                        named_dim::z>;
+using hip_flatten_global_xzy_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::x,
+                                        named_dim::z,
+                                        named_dim::y>;
+using hip_flatten_global_yxz_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::y,
+                                        named_dim::x,
+                                        named_dim::z>;
+using hip_flatten_global_yzx_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::y,
+                                        named_dim::z,
+                                        named_dim::x>;
+using hip_flatten_global_zxy_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::z,
+                                        named_dim::x,
+                                        named_dim::y>;
+using hip_flatten_global_zyx_direct_unchecked =
+    hip_flatten_global_direct_unchecked<named_dim::z,
+                                        named_dim::y,
+                                        named_dim::x>;
+
+/*
+ * Maps segment indices to flattened HIP threads, blocks, or global threads.
+ * This is a low overhead mapping, but requires that there are enough
+ * physical threads, blocks, or global threads to fit all of the direct map
+ * requests.
+ * Reshapes multiple physical threads, blocks, or global threads into a 1D
+ * iteration space
+ */
+template<named_dim... dims>
+using hip_flatten_thread_direct = hip_flatten_indexer_direct<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+using hip_flatten_thread_x_direct = hip_flatten_thread_direct<named_dim::x>;
+using hip_flatten_thread_y_direct = hip_flatten_thread_direct<named_dim::y>;
+using hip_flatten_thread_z_direct = hip_flatten_thread_direct<named_dim::z>;
+using hip_flatten_thread_xy_direct =
+    hip_flatten_thread_direct<named_dim::x, named_dim::y>;
+using hip_flatten_thread_xz_direct =
+    hip_flatten_thread_direct<named_dim::x, named_dim::z>;
+using hip_flatten_thread_yx_direct =
+    hip_flatten_thread_direct<named_dim::y, named_dim::x>;
+using hip_flatten_thread_yz_direct =
+    hip_flatten_thread_direct<named_dim::y, named_dim::z>;
+using hip_flatten_thread_zx_direct =
+    hip_flatten_thread_direct<named_dim::z, named_dim::x>;
+using hip_flatten_thread_zy_direct =
+    hip_flatten_thread_direct<named_dim::z, named_dim::y>;
+using hip_flatten_thread_xyz_direct =
+    hip_flatten_thread_direct<named_dim::x, named_dim::y, named_dim::z>;
+using hip_flatten_thread_xzy_direct =
+    hip_flatten_thread_direct<named_dim::x, named_dim::z, named_dim::y>;
+using hip_flatten_thread_yxz_direct =
+    hip_flatten_thread_direct<named_dim::y, named_dim::x, named_dim::z>;
+using hip_flatten_thread_yzx_direct =
+    hip_flatten_thread_direct<named_dim::y, named_dim::z, named_dim::x>;
+using hip_flatten_thread_zxy_direct =
+    hip_flatten_thread_direct<named_dim::z, named_dim::x, named_dim::y>;
+using hip_flatten_thread_zyx_direct =
+    hip_flatten_thread_direct<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_flatten_block_direct = hip_flatten_indexer_direct<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+using hip_flatten_block_x_direct = hip_flatten_block_direct<named_dim::x>;
+using hip_flatten_block_y_direct = hip_flatten_block_direct<named_dim::y>;
+using hip_flatten_block_z_direct = hip_flatten_block_direct<named_dim::z>;
+using hip_flatten_block_xy_direct =
+    hip_flatten_block_direct<named_dim::x, named_dim::y>;
+using hip_flatten_block_xz_direct =
+    hip_flatten_block_direct<named_dim::x, named_dim::z>;
+using hip_flatten_block_yx_direct =
+    hip_flatten_block_direct<named_dim::y, named_dim::x>;
+using hip_flatten_block_yz_direct =
+    hip_flatten_block_direct<named_dim::y, named_dim::z>;
+using hip_flatten_block_zx_direct =
+    hip_flatten_block_direct<named_dim::z, named_dim::x>;
+using hip_flatten_block_zy_direct =
+    hip_flatten_block_direct<named_dim::z, named_dim::y>;
+using hip_flatten_block_xyz_direct =
+    hip_flatten_block_direct<named_dim::x, named_dim::y, named_dim::z>;
+using hip_flatten_block_xzy_direct =
+    hip_flatten_block_direct<named_dim::x, named_dim::z, named_dim::y>;
+using hip_flatten_block_yxz_direct =
+    hip_flatten_block_direct<named_dim::y, named_dim::x, named_dim::z>;
+using hip_flatten_block_yzx_direct =
+    hip_flatten_block_direct<named_dim::y, named_dim::z, named_dim::x>;
+using hip_flatten_block_zxy_direct =
+    hip_flatten_block_direct<named_dim::z, named_dim::x, named_dim::y>;
+using hip_flatten_block_zyx_direct =
+    hip_flatten_block_direct<named_dim::z, named_dim::y, named_dim::x>;
+
 template<named_dim... dims>
 using hip_flatten_global_direct =
     hip_flatten_indexer_direct<hip::IndexGlobal<dims,
                                                 named_usage::unspecified,
                                                 named_usage::unspecified>...>;
-
 using hip_flatten_global_x_direct = hip_flatten_global_direct<named_dim::x>;
 using hip_flatten_global_y_direct = hip_flatten_global_direct<named_dim::y>;
 using hip_flatten_global_z_direct = hip_flatten_global_direct<named_dim::z>;
-
 using hip_flatten_global_xy_direct =
     hip_flatten_global_direct<named_dim::x, named_dim::y>;
 using hip_flatten_global_xz_direct =
@@ -2018,7 +2202,6 @@ using hip_flatten_global_zx_direct =
     hip_flatten_global_direct<named_dim::z, named_dim::x>;
 using hip_flatten_global_zy_direct =
     hip_flatten_global_direct<named_dim::z, named_dim::y>;
-
 using hip_flatten_global_xyz_direct =
     hip_flatten_global_direct<named_dim::x, named_dim::y, named_dim::z>;
 using hip_flatten_global_xzy_direct =
@@ -2033,21 +2216,82 @@ using hip_flatten_global_zyx_direct =
     hip_flatten_global_direct<named_dim::z, named_dim::y, named_dim::x>;
 
 /*
- * Maps segment indices to flattened HIP global threads.
- * Reshapes multiple physical global threads into a 1D iteration space
- * Uses global thread-stride looping to exceed the maximum number of physical
- * global threads
+ * Maps segment indices to flattened HIP threads, blocks, or global threads.
+ * Reshapes multiple physical threads, blocks, or global threads into a 1D
+ * iteration space
+ * Uses block-stride or grid-stride looping to exceed the maximum number of
+ * physical threads, blocks, or global threads
  */
+template<named_dim... dims>
+using hip_flatten_thread_loop = hip_flatten_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::unspecified, named_usage::ignored>...>;
+using hip_flatten_thread_x_loop = hip_flatten_thread_loop<named_dim::x>;
+using hip_flatten_thread_y_loop = hip_flatten_thread_loop<named_dim::y>;
+using hip_flatten_thread_z_loop = hip_flatten_thread_loop<named_dim::z>;
+using hip_flatten_thread_xy_loop =
+    hip_flatten_thread_loop<named_dim::x, named_dim::y>;
+using hip_flatten_thread_xz_loop =
+    hip_flatten_thread_loop<named_dim::x, named_dim::z>;
+using hip_flatten_thread_yx_loop =
+    hip_flatten_thread_loop<named_dim::y, named_dim::x>;
+using hip_flatten_thread_yz_loop =
+    hip_flatten_thread_loop<named_dim::y, named_dim::z>;
+using hip_flatten_thread_zx_loop =
+    hip_flatten_thread_loop<named_dim::z, named_dim::x>;
+using hip_flatten_thread_zy_loop =
+    hip_flatten_thread_loop<named_dim::z, named_dim::y>;
+using hip_flatten_thread_xyz_loop =
+    hip_flatten_thread_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_flatten_thread_xzy_loop =
+    hip_flatten_thread_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_flatten_thread_yxz_loop =
+    hip_flatten_thread_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_flatten_thread_yzx_loop =
+    hip_flatten_thread_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_flatten_thread_zxy_loop =
+    hip_flatten_thread_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_flatten_thread_zyx_loop =
+    hip_flatten_thread_loop<named_dim::z, named_dim::y, named_dim::x>;
+
+template<named_dim... dims>
+using hip_flatten_block_loop = hip_flatten_indexer_loop<
+    hip::IndexGlobal<dims, named_usage::ignored, named_usage::unspecified>...>;
+using hip_flatten_block_x_loop = hip_flatten_block_loop<named_dim::x>;
+using hip_flatten_block_y_loop = hip_flatten_block_loop<named_dim::y>;
+using hip_flatten_block_z_loop = hip_flatten_block_loop<named_dim::z>;
+using hip_flatten_block_xy_loop =
+    hip_flatten_block_loop<named_dim::x, named_dim::y>;
+using hip_flatten_block_xz_loop =
+    hip_flatten_block_loop<named_dim::x, named_dim::z>;
+using hip_flatten_block_yx_loop =
+    hip_flatten_block_loop<named_dim::y, named_dim::x>;
+using hip_flatten_block_yz_loop =
+    hip_flatten_block_loop<named_dim::y, named_dim::z>;
+using hip_flatten_block_zx_loop =
+    hip_flatten_block_loop<named_dim::z, named_dim::x>;
+using hip_flatten_block_zy_loop =
+    hip_flatten_block_loop<named_dim::z, named_dim::y>;
+using hip_flatten_block_xyz_loop =
+    hip_flatten_block_loop<named_dim::x, named_dim::y, named_dim::z>;
+using hip_flatten_block_xzy_loop =
+    hip_flatten_block_loop<named_dim::x, named_dim::z, named_dim::y>;
+using hip_flatten_block_yxz_loop =
+    hip_flatten_block_loop<named_dim::y, named_dim::x, named_dim::z>;
+using hip_flatten_block_yzx_loop =
+    hip_flatten_block_loop<named_dim::y, named_dim::z, named_dim::x>;
+using hip_flatten_block_zxy_loop =
+    hip_flatten_block_loop<named_dim::z, named_dim::x, named_dim::y>;
+using hip_flatten_block_zyx_loop =
+    hip_flatten_block_loop<named_dim::z, named_dim::y, named_dim::x>;
+
 template<named_dim... dims>
 using hip_flatten_global_loop =
     hip_flatten_indexer_loop<hip::IndexGlobal<dims,
                                               named_usage::unspecified,
                                               named_usage::unspecified>...>;
-
 using hip_flatten_global_x_loop = hip_flatten_global_loop<named_dim::x>;
 using hip_flatten_global_y_loop = hip_flatten_global_loop<named_dim::y>;
 using hip_flatten_global_z_loop = hip_flatten_global_loop<named_dim::z>;
-
 using hip_flatten_global_xy_loop =
     hip_flatten_global_loop<named_dim::x, named_dim::y>;
 using hip_flatten_global_xz_loop =
@@ -2060,7 +2304,6 @@ using hip_flatten_global_zx_loop =
     hip_flatten_global_loop<named_dim::z, named_dim::x>;
 using hip_flatten_global_zy_loop =
     hip_flatten_global_loop<named_dim::z, named_dim::y>;
-
 using hip_flatten_global_xyz_loop =
     hip_flatten_global_loop<named_dim::x, named_dim::y, named_dim::z>;
 using hip_flatten_global_xzy_loop =
@@ -2074,130 +2317,341 @@ using hip_flatten_global_zxy_loop =
 using hip_flatten_global_zyx_loop =
     hip_flatten_global_loop<named_dim::z, named_dim::y, named_dim::x>;
 
+/*!
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * This is the lowest overhead mapping, but requires that there are the same
+ * number of physical threads as the map requests.
+ */
+template<int X_SIZE>
+using hip_thread_size_x_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_thread_size_y_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_thread_size_z_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
+using hip_thread_size_xy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_x<X_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
+using hip_thread_size_xz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_x<X_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
+using hip_thread_size_yx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_y<Y_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
+using hip_thread_size_yz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_y<Y_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
+using hip_thread_size_zx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_z<Z_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
+using hip_thread_size_zy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_z<Z_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_thread_size_xyz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_x<X_SIZE>,
+                                 hip::thread_y<Y_SIZE>,
+                                 hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_thread_size_xzy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_x<X_SIZE>,
+                                 hip::thread_z<Z_SIZE>,
+                                 hip::thread_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_thread_size_yxz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_y<Y_SIZE>,
+                                 hip::thread_x<X_SIZE>,
+                                 hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_thread_size_yzx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_y<Y_SIZE>,
+                                 hip::thread_z<Z_SIZE>,
+                                 hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_thread_size_zxy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_z<Z_SIZE>,
+                                 hip::thread_x<X_SIZE>,
+                                 hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_thread_size_zyx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::thread_z<Z_SIZE>,
+                                 hip::thread_y<Y_SIZE>,
+                                 hip::thread_x<X_SIZE>>;
+
+template<int X_SIZE>
+using hip_block_size_x_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_block_size_y_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_block_size_z_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
+using hip_block_size_xy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_x<X_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
+using hip_block_size_xz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_x<X_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
+using hip_block_size_yx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_y<Y_SIZE>, hip::block_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
+using hip_block_size_yz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_y<Y_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
+using hip_block_size_zx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_z<Z_SIZE>, hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
+using hip_block_size_zy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_z<Z_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_block_size_xyz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_x<X_SIZE>,
+                                 hip::block_y<Y_SIZE>,
+                                 hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_block_size_xzy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_x<X_SIZE>,
+                                 hip::block_z<Z_SIZE>,
+                                 hip::block_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_block_size_yxz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_y<Y_SIZE>,
+                                 hip::block_x<X_SIZE>,
+                                 hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_block_size_yzx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_y<Y_SIZE>,
+                                 hip::block_z<Z_SIZE>,
+                                 hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_block_size_zxy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_z<Z_SIZE>,
+                                 hip::block_x<X_SIZE>,
+                                 hip::block_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_block_size_zyx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::block_z<Z_SIZE>,
+                                 hip::block_y<Y_SIZE>,
+                                 hip::block_x<X_SIZE>>;
+
+template<int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_x_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE, int Y_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_y_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_z_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_xy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+                                 hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_xz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+                                 hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_yx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+                                 hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_yz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+                                 hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_zx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+                                 hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_zy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+                                 hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_xyz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+                                 hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+                                 hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_xzy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+                                 hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+                                 hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_yxz_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+                                 hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+                                 hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_yzx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+                                 hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+                                 hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_zxy_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+                                 hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+                                 hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_global_size_zyx_direct_unchecked =
+    hip_indexer_direct_unchecked<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+                                 hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+                                 hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*!
- * Maps segment indices to HIP global threads.
- * This is the lowest overhead mapping, but requires that there are enough
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * This is a low overhead mapping, but requires that there are enough
  * physical threads to fit all of the direct map requests.
  */
-template<int X_BLOCK_SIZE>
-using hip_thread_size_x_direct =
-    hip_indexer_direct<hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE>
-using hip_thread_size_y_direct =
-    hip_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE>
-using hip_thread_size_z_direct =
-    hip_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>>;
-
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
+template<int X_SIZE>
+using hip_thread_size_x_direct = hip_indexer_direct<hip::thread_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_thread_size_y_direct = hip_indexer_direct<hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_thread_size_z_direct = hip_indexer_direct<hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_thread_size_xy_direct =
-    hip_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                       hip::thread_y<Y_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_indexer_direct<hip::thread_x<X_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_thread_size_xz_direct =
-    hip_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                       hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_indexer_direct<hip::thread_x<X_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_thread_size_yx_direct =
-    hip_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                       hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_indexer_direct<hip::thread_y<Y_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_thread_size_yz_direct =
-    hip_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                       hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_indexer_direct<hip::thread_y<Y_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_thread_size_zx_direct =
-    hip_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                       hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_indexer_direct<hip::thread_z<Z_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_thread_size_zy_direct =
-    hip_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                       hip::thread_y<Y_BLOCK_SIZE>>;
+    hip_indexer_direct<hip::thread_z<Z_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_thread_size_xyz_direct = hip_indexer_direct<hip::thread_x<X_SIZE>,
+                                                      hip::thread_y<Y_SIZE>,
+                                                      hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_thread_size_xzy_direct = hip_indexer_direct<hip::thread_x<X_SIZE>,
+                                                      hip::thread_z<Z_SIZE>,
+                                                      hip::thread_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_thread_size_yxz_direct = hip_indexer_direct<hip::thread_y<Y_SIZE>,
+                                                      hip::thread_x<X_SIZE>,
+                                                      hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_thread_size_yzx_direct = hip_indexer_direct<hip::thread_y<Y_SIZE>,
+                                                      hip::thread_z<Z_SIZE>,
+                                                      hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_thread_size_zxy_direct = hip_indexer_direct<hip::thread_z<Z_SIZE>,
+                                                      hip::thread_x<X_SIZE>,
+                                                      hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_thread_size_zyx_direct = hip_indexer_direct<hip::thread_z<Z_SIZE>,
+                                                      hip::thread_y<Y_SIZE>,
+                                                      hip::thread_x<X_SIZE>>;
 
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using hip_thread_size_xyz_direct =
-    hip_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                       hip::thread_y<Y_BLOCK_SIZE>,
-                       hip::thread_z<Z_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using hip_thread_size_xzy_direct =
-    hip_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                       hip::thread_z<Z_BLOCK_SIZE>,
-                       hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using hip_thread_size_yxz_direct =
-    hip_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                       hip::thread_x<X_BLOCK_SIZE>,
-                       hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using hip_thread_size_yzx_direct =
-    hip_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                       hip::thread_z<Z_BLOCK_SIZE>,
-                       hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using hip_thread_size_zxy_direct =
-    hip_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                       hip::thread_x<X_BLOCK_SIZE>,
-                       hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using hip_thread_size_zyx_direct =
-    hip_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                       hip::thread_y<Y_BLOCK_SIZE>,
-                       hip::thread_x<X_BLOCK_SIZE>>;
-
-
-template<int X_GRID_SIZE>
-using hip_block_size_x_direct = hip_indexer_direct<hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE>
-using hip_block_size_y_direct = hip_indexer_direct<hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE>
-using hip_block_size_z_direct = hip_indexer_direct<hip::block_z<Z_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE>
+template<int X_SIZE>
+using hip_block_size_x_direct = hip_indexer_direct<hip::block_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_block_size_y_direct = hip_indexer_direct<hip::block_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_block_size_z_direct = hip_indexer_direct<hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_block_size_xy_direct =
-    hip_indexer_direct<hip::block_x<X_GRID_SIZE>, hip::block_y<Y_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE>
+    hip_indexer_direct<hip::block_x<X_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_block_size_xz_direct =
-    hip_indexer_direct<hip::block_x<X_GRID_SIZE>, hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE>
+    hip_indexer_direct<hip::block_x<X_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_block_size_yx_direct =
-    hip_indexer_direct<hip::block_y<Y_GRID_SIZE>, hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE>
+    hip_indexer_direct<hip::block_y<Y_SIZE>, hip::block_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_block_size_yz_direct =
-    hip_indexer_direct<hip::block_y<Y_GRID_SIZE>, hip::block_z<Z_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE>
+    hip_indexer_direct<hip::block_y<Y_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_block_size_zx_direct =
-    hip_indexer_direct<hip::block_z<Z_GRID_SIZE>, hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE>
+    hip_indexer_direct<hip::block_z<Z_SIZE>, hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_block_size_zy_direct =
-    hip_indexer_direct<hip::block_z<Z_GRID_SIZE>, hip::block_y<Y_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
-using hip_block_size_xyz_direct = hip_indexer_direct<hip::block_x<X_GRID_SIZE>,
-                                                     hip::block_y<Y_GRID_SIZE>,
-                                                     hip::block_z<Z_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
-using hip_block_size_xzy_direct = hip_indexer_direct<hip::block_x<X_GRID_SIZE>,
-                                                     hip::block_z<Z_GRID_SIZE>,
-                                                     hip::block_y<Y_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
-using hip_block_size_yxz_direct = hip_indexer_direct<hip::block_y<Y_GRID_SIZE>,
-                                                     hip::block_x<X_GRID_SIZE>,
-                                                     hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
-using hip_block_size_yzx_direct = hip_indexer_direct<hip::block_y<Y_GRID_SIZE>,
-                                                     hip::block_z<Z_GRID_SIZE>,
-                                                     hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
-using hip_block_size_zxy_direct = hip_indexer_direct<hip::block_z<Z_GRID_SIZE>,
-                                                     hip::block_x<X_GRID_SIZE>,
-                                                     hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
-using hip_block_size_zyx_direct = hip_indexer_direct<hip::block_z<Z_GRID_SIZE>,
-                                                     hip::block_y<Y_GRID_SIZE>,
-                                                     hip::block_x<X_GRID_SIZE>>;
-
+    hip_indexer_direct<hip::block_z<Z_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_block_size_xyz_direct = hip_indexer_direct<hip::block_x<X_SIZE>,
+                                                     hip::block_y<Y_SIZE>,
+                                                     hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_block_size_xzy_direct = hip_indexer_direct<hip::block_x<X_SIZE>,
+                                                     hip::block_z<Z_SIZE>,
+                                                     hip::block_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_block_size_yxz_direct = hip_indexer_direct<hip::block_y<Y_SIZE>,
+                                                     hip::block_x<X_SIZE>,
+                                                     hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_block_size_yzx_direct = hip_indexer_direct<hip::block_y<Y_SIZE>,
+                                                     hip::block_z<Z_SIZE>,
+                                                     hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_block_size_zxy_direct = hip_indexer_direct<hip::block_z<Z_SIZE>,
+                                                     hip::block_x<X_SIZE>,
+                                                     hip::block_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_block_size_zyx_direct = hip_indexer_direct<hip::block_z<Z_SIZE>,
+                                                     hip::block_y<Y_SIZE>,
+                                                     hip::block_x<X_SIZE>>;
 
 template<int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
 using hip_global_size_x_direct =
@@ -2208,7 +2662,6 @@ using hip_global_size_y_direct =
 template<int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using hip_global_size_z_direct =
     hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int X_GRID_SIZE = named_usage::unspecified,
@@ -2251,7 +2704,6 @@ template<int Z_BLOCK_SIZE,
 using hip_global_size_zy_direct =
     hip_indexer_direct<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
                        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int Z_BLOCK_SIZE,
@@ -2314,112 +2766,107 @@ using hip_global_size_zyx_direct =
                        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*!
- * Maps segment indices to HIP global threads.
- * Uses grid-stride looping to exceed the maximum number of global threads
+ * Maps segment indices to HIP threads, blocks, or global threads.
+ * Uses block-stride or grid-stride looping to exceed the maximum number of
+ * threads, blocks, or global threads.
  */
-template<int X_BLOCK_SIZE>
-using hip_thread_size_x_loop = hip_indexer_loop<hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE>
-using hip_thread_size_y_loop = hip_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE>
-using hip_thread_size_z_loop = hip_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>>;
-
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
+template<int X_SIZE>
+using hip_thread_size_x_loop = hip_indexer_loop<hip::thread_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_thread_size_y_loop = hip_indexer_loop<hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_thread_size_z_loop = hip_indexer_loop<hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_thread_size_xy_loop =
-    hip_indexer_loop<hip::thread_x<X_BLOCK_SIZE>, hip::thread_y<Y_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_indexer_loop<hip::thread_x<X_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_thread_size_xz_loop =
-    hip_indexer_loop<hip::thread_x<X_BLOCK_SIZE>, hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_indexer_loop<hip::thread_x<X_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_thread_size_yx_loop =
-    hip_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>, hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_indexer_loop<hip::thread_y<Y_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_thread_size_yz_loop =
-    hip_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>, hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_indexer_loop<hip::thread_y<Y_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_thread_size_zx_loop =
-    hip_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>, hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_indexer_loop<hip::thread_z<Z_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_thread_size_zy_loop =
-    hip_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>, hip::thread_y<Y_BLOCK_SIZE>>;
+    hip_indexer_loop<hip::thread_z<Z_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_thread_size_xyz_loop = hip_indexer_loop<hip::thread_x<X_SIZE>,
+                                                  hip::thread_y<Y_SIZE>,
+                                                  hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_thread_size_xzy_loop = hip_indexer_loop<hip::thread_x<X_SIZE>,
+                                                  hip::thread_z<Z_SIZE>,
+                                                  hip::thread_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_thread_size_yxz_loop = hip_indexer_loop<hip::thread_y<Y_SIZE>,
+                                                  hip::thread_x<X_SIZE>,
+                                                  hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_thread_size_yzx_loop = hip_indexer_loop<hip::thread_y<Y_SIZE>,
+                                                  hip::thread_z<Z_SIZE>,
+                                                  hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_thread_size_zxy_loop = hip_indexer_loop<hip::thread_z<Z_SIZE>,
+                                                  hip::thread_x<X_SIZE>,
+                                                  hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_thread_size_zyx_loop = hip_indexer_loop<hip::thread_z<Z_SIZE>,
+                                                  hip::thread_y<Y_SIZE>,
+                                                  hip::thread_x<X_SIZE>>;
 
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using hip_thread_size_xyz_loop = hip_indexer_loop<hip::thread_x<X_BLOCK_SIZE>,
-                                                  hip::thread_y<Y_BLOCK_SIZE>,
-                                                  hip::thread_z<Z_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using hip_thread_size_xzy_loop = hip_indexer_loop<hip::thread_x<X_BLOCK_SIZE>,
-                                                  hip::thread_z<Z_BLOCK_SIZE>,
-                                                  hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
-using hip_thread_size_yxz_loop = hip_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>,
-                                                  hip::thread_x<X_BLOCK_SIZE>,
-                                                  hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
-using hip_thread_size_yzx_loop = hip_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>,
-                                                  hip::thread_z<Z_BLOCK_SIZE>,
-                                                  hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
-using hip_thread_size_zxy_loop = hip_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>,
-                                                  hip::thread_x<X_BLOCK_SIZE>,
-                                                  hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
-using hip_thread_size_zyx_loop = hip_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>,
-                                                  hip::thread_y<Y_BLOCK_SIZE>,
-                                                  hip::thread_x<X_BLOCK_SIZE>>;
-
-
-template<int X_GRID_SIZE>
-using hip_block_size_x_loop = hip_indexer_loop<hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE>
-using hip_block_size_y_loop = hip_indexer_loop<hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE>
-using hip_block_size_z_loop = hip_indexer_loop<hip::block_z<Z_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE>
+template<int X_SIZE>
+using hip_block_size_x_loop = hip_indexer_loop<hip::block_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_block_size_y_loop = hip_indexer_loop<hip::block_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_block_size_z_loop = hip_indexer_loop<hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_block_size_xy_loop =
-    hip_indexer_loop<hip::block_x<X_GRID_SIZE>, hip::block_y<Y_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE>
+    hip_indexer_loop<hip::block_x<X_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_block_size_xz_loop =
-    hip_indexer_loop<hip::block_x<X_GRID_SIZE>, hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE>
+    hip_indexer_loop<hip::block_x<X_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_block_size_yx_loop =
-    hip_indexer_loop<hip::block_y<Y_GRID_SIZE>, hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE>
+    hip_indexer_loop<hip::block_y<Y_SIZE>, hip::block_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_block_size_yz_loop =
-    hip_indexer_loop<hip::block_y<Y_GRID_SIZE>, hip::block_z<Z_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE>
+    hip_indexer_loop<hip::block_y<Y_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_block_size_zx_loop =
-    hip_indexer_loop<hip::block_z<Z_GRID_SIZE>, hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE>
+    hip_indexer_loop<hip::block_z<Z_SIZE>, hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_block_size_zy_loop =
-    hip_indexer_loop<hip::block_z<Z_GRID_SIZE>, hip::block_y<Y_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
-using hip_block_size_xyz_loop = hip_indexer_loop<hip::block_x<X_GRID_SIZE>,
-                                                 hip::block_y<Y_GRID_SIZE>,
-                                                 hip::block_z<Z_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
-using hip_block_size_xzy_loop = hip_indexer_loop<hip::block_x<X_GRID_SIZE>,
-                                                 hip::block_z<Z_GRID_SIZE>,
-                                                 hip::block_y<Y_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
-using hip_block_size_yxz_loop = hip_indexer_loop<hip::block_y<Y_GRID_SIZE>,
-                                                 hip::block_x<X_GRID_SIZE>,
-                                                 hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
-using hip_block_size_yzx_loop = hip_indexer_loop<hip::block_y<Y_GRID_SIZE>,
-                                                 hip::block_z<Z_GRID_SIZE>,
-                                                 hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
-using hip_block_size_zxy_loop = hip_indexer_loop<hip::block_z<Z_GRID_SIZE>,
-                                                 hip::block_x<X_GRID_SIZE>,
-                                                 hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
-using hip_block_size_zyx_loop = hip_indexer_loop<hip::block_z<Z_GRID_SIZE>,
-                                                 hip::block_y<Y_GRID_SIZE>,
-                                                 hip::block_x<X_GRID_SIZE>>;
-
+    hip_indexer_loop<hip::block_z<Z_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_block_size_xyz_loop = hip_indexer_loop<hip::block_x<X_SIZE>,
+                                                 hip::block_y<Y_SIZE>,
+                                                 hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_block_size_xzy_loop = hip_indexer_loop<hip::block_x<X_SIZE>,
+                                                 hip::block_z<Z_SIZE>,
+                                                 hip::block_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_block_size_yxz_loop = hip_indexer_loop<hip::block_y<Y_SIZE>,
+                                                 hip::block_x<X_SIZE>,
+                                                 hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_block_size_yzx_loop = hip_indexer_loop<hip::block_y<Y_SIZE>,
+                                                 hip::block_z<Z_SIZE>,
+                                                 hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_block_size_zxy_loop = hip_indexer_loop<hip::block_z<Z_SIZE>,
+                                                 hip::block_x<X_SIZE>,
+                                                 hip::block_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_block_size_zyx_loop = hip_indexer_loop<hip::block_z<Z_SIZE>,
+                                                 hip::block_y<Y_SIZE>,
+                                                 hip::block_x<X_SIZE>>;
 
 template<int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
 using hip_global_size_x_loop =
@@ -2430,7 +2877,6 @@ using hip_global_size_y_loop =
 template<int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using hip_global_size_z_loop =
     hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int X_GRID_SIZE = named_usage::unspecified,
@@ -2473,7 +2919,6 @@ template<int Z_BLOCK_SIZE,
 using hip_global_size_zy_loop =
     hip_indexer_loop<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
                      hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int Z_BLOCK_SIZE,
@@ -2536,144 +2981,390 @@ using hip_global_size_zyx_loop =
                      hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*
- * Maps segment indices to flattened HIP global threads.
- * This is the lowest overhead mapping, but requires that there are enough
- * physical global threads to fit all of the direct map requests.
- * Reshapes multiple physical global threads into a 1D iteration space
+ * Maps segment indices to flattened HIP threads, blocks, or global threads.
+ * This is the lowest overhead mapping, but requires that there are the same
+ * number of physical threads, blocks, or global threads as the map requests.
+ * Reshapes multiple physical threads, blocks, or global threads into a 1D
+ * iteration space.
  */
-template<int X_BLOCK_SIZE>
+template<int X_SIZE>
+using hip_flatten_thread_size_x_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_flatten_thread_size_y_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_flatten_thread_size_z_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
+using hip_flatten_thread_size_xy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_x<X_SIZE>,
+                                         hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
+using hip_flatten_thread_size_xz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_x<X_SIZE>,
+                                         hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
+using hip_flatten_thread_size_yx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_y<Y_SIZE>,
+                                         hip::thread_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
+using hip_flatten_thread_size_yz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_y<Y_SIZE>,
+                                         hip::thread_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
+using hip_flatten_thread_size_zx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_z<Z_SIZE>,
+                                         hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
+using hip_flatten_thread_size_zy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_z<Z_SIZE>,
+                                         hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_flatten_thread_size_xyz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_x<X_SIZE>,
+                                         hip::thread_y<Y_SIZE>,
+                                         hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_flatten_thread_size_xzy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_x<X_SIZE>,
+                                         hip::thread_z<Z_SIZE>,
+                                         hip::thread_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_flatten_thread_size_yxz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_y<Y_SIZE>,
+                                         hip::thread_x<X_SIZE>,
+                                         hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_flatten_thread_size_yzx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_y<Y_SIZE>,
+                                         hip::thread_z<Z_SIZE>,
+                                         hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_flatten_thread_size_zxy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_z<Z_SIZE>,
+                                         hip::thread_x<X_SIZE>,
+                                         hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_flatten_thread_size_zyx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::thread_z<Z_SIZE>,
+                                         hip::thread_y<Y_SIZE>,
+                                         hip::thread_x<X_SIZE>>;
+
+template<int X_SIZE>
+using hip_flatten_block_size_x_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_x<X_SIZE>>;
+template<int Y_SIZE>
+using hip_flatten_block_size_y_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_y<Y_SIZE>>;
+template<int Z_SIZE>
+using hip_flatten_block_size_z_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
+using hip_flatten_block_size_xy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_x<X_SIZE>,
+                                         hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
+using hip_flatten_block_size_xz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_x<X_SIZE>,
+                                         hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
+using hip_flatten_block_size_yx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_y<Y_SIZE>,
+                                         hip::block_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
+using hip_flatten_block_size_yz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_y<Y_SIZE>,
+                                         hip::block_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
+using hip_flatten_block_size_zx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_z<Z_SIZE>,
+                                         hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
+using hip_flatten_block_size_zy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_z<Z_SIZE>,
+                                         hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
+using hip_flatten_block_size_xyz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_x<X_SIZE>,
+                                         hip::block_y<Y_SIZE>,
+                                         hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
+using hip_flatten_block_size_xzy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_x<X_SIZE>,
+                                         hip::block_z<Z_SIZE>,
+                                         hip::block_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
+using hip_flatten_block_size_yxz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_y<Y_SIZE>,
+                                         hip::block_x<X_SIZE>,
+                                         hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
+using hip_flatten_block_size_yzx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_y<Y_SIZE>,
+                                         hip::block_z<Z_SIZE>,
+                                         hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
+using hip_flatten_block_size_zxy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_z<Z_SIZE>,
+                                         hip::block_x<X_SIZE>,
+                                         hip::block_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
+using hip_flatten_block_size_zyx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<hip::block_z<Z_SIZE>,
+                                         hip::block_y<Y_SIZE>,
+                                         hip::block_x<X_SIZE>>;
+
+template<int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_x_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE, int Y_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_y_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_z_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_xy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_xz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_yx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_yz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_zx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_zy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_xyz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int X_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_xzy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_yxz_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
+template<int Y_BLOCK_SIZE,
+         int Z_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_yzx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_zxy_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>,
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
+template<int Z_BLOCK_SIZE,
+         int Y_BLOCK_SIZE,
+         int X_BLOCK_SIZE,
+         int Z_GRID_SIZE = named_usage::unspecified,
+         int Y_GRID_SIZE = named_usage::unspecified,
+         int X_GRID_SIZE = named_usage::unspecified>
+using hip_flatten_global_size_zyx_direct_unchecked =
+    hip_flatten_indexer_direct_unchecked<
+        hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
+        hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>,
+        hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
+
+/*
+ * Maps segment indices to flattened HIP threads, blocks, or global threads.
+ * This is a low overhead mapping, but requires that there are enough
+ * physical threads, blocks, or global threads to fit all of the direct map
+ * requests.
+ * Reshapes multiple physical threads, blocks, or global threads into a 1D
+ * iteration space.
+ */
+template<int X_SIZE>
 using hip_flatten_thread_size_x_direct =
-    hip_flatten_indexer_direct<hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_x<X_SIZE>>;
+template<int Y_SIZE>
 using hip_flatten_thread_size_y_direct =
-    hip_flatten_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE>
 using hip_flatten_thread_size_z_direct =
-    hip_flatten_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>>;
-
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_xy_direct =
-    hip_flatten_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                               hip::thread_y<Y_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_x<X_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_xz_direct =
-    hip_flatten_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                               hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_x<X_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_flatten_thread_size_yx_direct =
-    hip_flatten_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                               hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_y<Y_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_yz_direct =
-    hip_flatten_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                               hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_y<Y_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_flatten_thread_size_zx_direct =
-    hip_flatten_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                               hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_z<Z_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_zy_direct =
-    hip_flatten_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                               hip::thread_y<Y_BLOCK_SIZE>>;
-
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_z<Z_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_xyz_direct =
-    hip_flatten_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                               hip::thread_y<Y_BLOCK_SIZE>,
-                               hip::thread_z<Z_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_x<X_SIZE>,
+                               hip::thread_y<Y_SIZE>,
+                               hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_xzy_direct =
-    hip_flatten_indexer_direct<hip::thread_x<X_BLOCK_SIZE>,
-                               hip::thread_z<Z_BLOCK_SIZE>,
-                               hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_x<X_SIZE>,
+                               hip::thread_z<Z_SIZE>,
+                               hip::thread_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_yxz_direct =
-    hip_flatten_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                               hip::thread_x<X_BLOCK_SIZE>,
-                               hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_y<Y_SIZE>,
+                               hip::thread_x<X_SIZE>,
+                               hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
 using hip_flatten_thread_size_yzx_direct =
-    hip_flatten_indexer_direct<hip::thread_y<Y_BLOCK_SIZE>,
-                               hip::thread_z<Z_BLOCK_SIZE>,
-                               hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_y<Y_SIZE>,
+                               hip::thread_z<Z_SIZE>,
+                               hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_zxy_direct =
-    hip_flatten_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                               hip::thread_x<X_BLOCK_SIZE>,
-                               hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_direct<hip::thread_z<Z_SIZE>,
+                               hip::thread_x<X_SIZE>,
+                               hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
 using hip_flatten_thread_size_zyx_direct =
-    hip_flatten_indexer_direct<hip::thread_z<Z_BLOCK_SIZE>,
-                               hip::thread_y<Y_BLOCK_SIZE>,
-                               hip::thread_x<X_BLOCK_SIZE>>;
+    hip_flatten_indexer_direct<hip::thread_z<Z_SIZE>,
+                               hip::thread_y<Y_SIZE>,
+                               hip::thread_x<X_SIZE>>;
 
-
-template<int X_GRID_SIZE>
+template<int X_SIZE>
 using hip_flatten_block_size_x_direct =
-    hip_flatten_indexer_direct<hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_x<X_SIZE>>;
+template<int Y_SIZE>
 using hip_flatten_block_size_y_direct =
-    hip_flatten_indexer_direct<hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_y<Y_SIZE>>;
+template<int Z_SIZE>
 using hip_flatten_block_size_z_direct =
-    hip_flatten_indexer_direct<hip::block_z<Z_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_flatten_block_size_xy_direct =
-    hip_flatten_indexer_direct<hip::block_x<X_GRID_SIZE>,
-                               hip::block_y<Y_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_x<X_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_flatten_block_size_xz_direct =
-    hip_flatten_indexer_direct<hip::block_x<X_GRID_SIZE>,
-                               hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_x<X_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_flatten_block_size_yx_direct =
-    hip_flatten_indexer_direct<hip::block_y<Y_GRID_SIZE>,
-                               hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_y<Y_SIZE>, hip::block_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_flatten_block_size_yz_direct =
-    hip_flatten_indexer_direct<hip::block_y<Y_GRID_SIZE>,
-                               hip::block_z<Z_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_y<Y_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_flatten_block_size_zx_direct =
-    hip_flatten_indexer_direct<hip::block_z<Z_GRID_SIZE>,
-                               hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_z<Z_SIZE>, hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_flatten_block_size_zy_direct =
-    hip_flatten_indexer_direct<hip::block_z<Z_GRID_SIZE>,
-                               hip::block_y<Y_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_z<Z_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
 using hip_flatten_block_size_xyz_direct =
-    hip_flatten_indexer_direct<hip::block_x<X_GRID_SIZE>,
-                               hip::block_y<Y_GRID_SIZE>,
-                               hip::block_z<Z_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_x<X_SIZE>,
+                               hip::block_y<Y_SIZE>,
+                               hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
 using hip_flatten_block_size_xzy_direct =
-    hip_flatten_indexer_direct<hip::block_x<X_GRID_SIZE>,
-                               hip::block_z<Z_GRID_SIZE>,
-                               hip::block_y<Y_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_x<X_SIZE>,
+                               hip::block_z<Z_SIZE>,
+                               hip::block_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
 using hip_flatten_block_size_yxz_direct =
-    hip_flatten_indexer_direct<hip::block_y<Y_GRID_SIZE>,
-                               hip::block_x<X_GRID_SIZE>,
-                               hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_y<Y_SIZE>,
+                               hip::block_x<X_SIZE>,
+                               hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
 using hip_flatten_block_size_yzx_direct =
-    hip_flatten_indexer_direct<hip::block_y<Y_GRID_SIZE>,
-                               hip::block_z<Z_GRID_SIZE>,
-                               hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_y<Y_SIZE>,
+                               hip::block_z<Z_SIZE>,
+                               hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
 using hip_flatten_block_size_zxy_direct =
-    hip_flatten_indexer_direct<hip::block_z<Z_GRID_SIZE>,
-                               hip::block_x<X_GRID_SIZE>,
-                               hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_direct<hip::block_z<Z_SIZE>,
+                               hip::block_x<X_SIZE>,
+                               hip::block_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
 using hip_flatten_block_size_zyx_direct =
-    hip_flatten_indexer_direct<hip::block_z<Z_GRID_SIZE>,
-                               hip::block_y<Y_GRID_SIZE>,
-                               hip::block_x<X_GRID_SIZE>>;
-
+    hip_flatten_indexer_direct<hip::block_z<Z_SIZE>,
+                               hip::block_y<Y_SIZE>,
+                               hip::block_x<X_SIZE>>;
 
 template<int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
 using hip_flatten_global_size_x_direct =
@@ -2684,7 +3375,6 @@ using hip_flatten_global_size_y_direct =
 template<int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using hip_flatten_global_size_z_direct =
     hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int X_GRID_SIZE = named_usage::unspecified,
@@ -2727,7 +3417,6 @@ template<int Z_BLOCK_SIZE,
 using hip_flatten_global_size_zy_direct =
     hip_flatten_indexer_direct<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
                                hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int Z_BLOCK_SIZE,
@@ -2790,144 +3479,127 @@ using hip_flatten_global_size_zyx_direct =
                                hip::global_x<X_BLOCK_SIZE, X_GRID_SIZE>>;
 
 /*
- * Maps segment indices to flattened HIP global threads.
- * Reshapes multiple physical global threads into a 1D iteration space
- * Uses global thread-stride looping to exceed the maximum number of physical
- * global threads
+ * Maps segment indices to flattened HIP threads, blocks, or global threads.
+ * Reshapes multiple physical threads, blocks, or global threads into a 1D
+ * iteration space.
+ * Uses block-stride or grid-stride looping to exceed the maximum number of
+ * physical threads, blocks, or global threads.
  */
-template<int X_BLOCK_SIZE>
+template<int X_SIZE>
 using hip_flatten_thread_size_x_loop =
-    hip_flatten_indexer_loop<hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_x<X_SIZE>>;
+template<int Y_SIZE>
 using hip_flatten_thread_size_y_loop =
-    hip_flatten_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE>
 using hip_flatten_thread_size_z_loop =
-    hip_flatten_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>>;
-
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_xy_loop =
-    hip_flatten_indexer_loop<hip::thread_x<X_BLOCK_SIZE>,
-                             hip::thread_y<Y_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_x<X_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_xz_loop =
-    hip_flatten_indexer_loop<hip::thread_x<X_BLOCK_SIZE>,
-                             hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_x<X_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_flatten_thread_size_yx_loop =
-    hip_flatten_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>,
-                             hip::thread_x<X_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_y<Y_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_yz_loop =
-    hip_flatten_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>,
-                             hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_y<Y_SIZE>, hip::thread_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_flatten_thread_size_zx_loop =
-    hip_flatten_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>,
-                             hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_z<Z_SIZE>, hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_zy_loop =
-    hip_flatten_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>,
-                             hip::thread_y<Y_BLOCK_SIZE>>;
-
-template<int X_BLOCK_SIZE, int Y_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_z<Z_SIZE>, hip::thread_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_xyz_loop =
-    hip_flatten_indexer_loop<hip::thread_x<X_BLOCK_SIZE>,
-                             hip::thread_y<Y_BLOCK_SIZE>,
-                             hip::thread_z<Z_BLOCK_SIZE>>;
-template<int X_BLOCK_SIZE, int Z_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_x<X_SIZE>,
+                             hip::thread_y<Y_SIZE>,
+                             hip::thread_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_xzy_loop =
-    hip_flatten_indexer_loop<hip::thread_x<X_BLOCK_SIZE>,
-                             hip::thread_z<Z_BLOCK_SIZE>,
-                             hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int X_BLOCK_SIZE, int Z_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_x<X_SIZE>,
+                             hip::thread_z<Z_SIZE>,
+                             hip::thread_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
 using hip_flatten_thread_size_yxz_loop =
-    hip_flatten_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>,
-                             hip::thread_x<X_BLOCK_SIZE>,
-                             hip::thread_z<Z_BLOCK_SIZE>>;
-template<int Y_BLOCK_SIZE, int Z_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_y<Y_SIZE>,
+                             hip::thread_x<X_SIZE>,
+                             hip::thread_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
 using hip_flatten_thread_size_yzx_loop =
-    hip_flatten_indexer_loop<hip::thread_y<Y_BLOCK_SIZE>,
-                             hip::thread_z<Z_BLOCK_SIZE>,
-                             hip::thread_x<X_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int X_BLOCK_SIZE, int Y_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_y<Y_SIZE>,
+                             hip::thread_z<Z_SIZE>,
+                             hip::thread_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
 using hip_flatten_thread_size_zxy_loop =
-    hip_flatten_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>,
-                             hip::thread_x<X_BLOCK_SIZE>,
-                             hip::thread_y<Y_BLOCK_SIZE>>;
-template<int Z_BLOCK_SIZE, int Y_BLOCK_SIZE, int X_BLOCK_SIZE>
+    hip_flatten_indexer_loop<hip::thread_z<Z_SIZE>,
+                             hip::thread_x<X_SIZE>,
+                             hip::thread_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
 using hip_flatten_thread_size_zyx_loop =
-    hip_flatten_indexer_loop<hip::thread_z<Z_BLOCK_SIZE>,
-                             hip::thread_y<Y_BLOCK_SIZE>,
-                             hip::thread_x<X_BLOCK_SIZE>>;
+    hip_flatten_indexer_loop<hip::thread_z<Z_SIZE>,
+                             hip::thread_y<Y_SIZE>,
+                             hip::thread_x<X_SIZE>>;
 
-
-template<int X_GRID_SIZE>
+template<int X_SIZE>
 using hip_flatten_block_size_x_loop =
-    hip_flatten_indexer_loop<hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_x<X_SIZE>>;
+template<int Y_SIZE>
 using hip_flatten_block_size_y_loop =
-    hip_flatten_indexer_loop<hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_y<Y_SIZE>>;
+template<int Z_SIZE>
 using hip_flatten_block_size_z_loop =
-    hip_flatten_indexer_loop<hip::block_z<Z_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Y_SIZE>
 using hip_flatten_block_size_xy_loop =
-    hip_flatten_indexer_loop<hip::block_x<X_GRID_SIZE>,
-                             hip::block_y<Y_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_x<X_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Z_SIZE>
 using hip_flatten_block_size_xz_loop =
-    hip_flatten_indexer_loop<hip::block_x<X_GRID_SIZE>,
-                             hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_x<X_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int X_SIZE>
 using hip_flatten_block_size_yx_loop =
-    hip_flatten_indexer_loop<hip::block_y<Y_GRID_SIZE>,
-                             hip::block_x<X_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_y<Y_SIZE>, hip::block_x<X_SIZE>>;
+template<int Y_SIZE, int Z_SIZE>
 using hip_flatten_block_size_yz_loop =
-    hip_flatten_indexer_loop<hip::block_y<Y_GRID_SIZE>,
-                             hip::block_z<Z_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_y<Y_SIZE>, hip::block_z<Z_SIZE>>;
+template<int Z_SIZE, int X_SIZE>
 using hip_flatten_block_size_zx_loop =
-    hip_flatten_indexer_loop<hip::block_z<Z_GRID_SIZE>,
-                             hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_z<Z_SIZE>, hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int Y_SIZE>
 using hip_flatten_block_size_zy_loop =
-    hip_flatten_indexer_loop<hip::block_z<Z_GRID_SIZE>,
-                             hip::block_y<Y_GRID_SIZE>>;
-
-template<int X_GRID_SIZE, int Y_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_z<Z_SIZE>, hip::block_y<Y_SIZE>>;
+template<int X_SIZE, int Y_SIZE, int Z_SIZE>
 using hip_flatten_block_size_xyz_loop =
-    hip_flatten_indexer_loop<hip::block_x<X_GRID_SIZE>,
-                             hip::block_y<Y_GRID_SIZE>,
-                             hip::block_z<Z_GRID_SIZE>>;
-template<int X_GRID_SIZE, int Z_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_x<X_SIZE>,
+                             hip::block_y<Y_SIZE>,
+                             hip::block_z<Z_SIZE>>;
+template<int X_SIZE, int Z_SIZE, int Y_SIZE>
 using hip_flatten_block_size_xzy_loop =
-    hip_flatten_indexer_loop<hip::block_x<X_GRID_SIZE>,
-                             hip::block_z<Z_GRID_SIZE>,
-                             hip::block_y<Y_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int X_GRID_SIZE, int Z_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_x<X_SIZE>,
+                             hip::block_z<Z_SIZE>,
+                             hip::block_y<Y_SIZE>>;
+template<int Y_SIZE, int X_SIZE, int Z_SIZE>
 using hip_flatten_block_size_yxz_loop =
-    hip_flatten_indexer_loop<hip::block_y<Y_GRID_SIZE>,
-                             hip::block_x<X_GRID_SIZE>,
-                             hip::block_z<Z_GRID_SIZE>>;
-template<int Y_GRID_SIZE, int Z_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_y<Y_SIZE>,
+                             hip::block_x<X_SIZE>,
+                             hip::block_z<Z_SIZE>>;
+template<int Y_SIZE, int Z_SIZE, int X_SIZE>
 using hip_flatten_block_size_yzx_loop =
-    hip_flatten_indexer_loop<hip::block_y<Y_GRID_SIZE>,
-                             hip::block_z<Z_GRID_SIZE>,
-                             hip::block_x<X_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int X_GRID_SIZE, int Y_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_y<Y_SIZE>,
+                             hip::block_z<Z_SIZE>,
+                             hip::block_x<X_SIZE>>;
+template<int Z_SIZE, int X_SIZE, int Y_SIZE>
 using hip_flatten_block_size_zxy_loop =
-    hip_flatten_indexer_loop<hip::block_z<Z_GRID_SIZE>,
-                             hip::block_x<X_GRID_SIZE>,
-                             hip::block_y<Y_GRID_SIZE>>;
-template<int Z_GRID_SIZE, int Y_GRID_SIZE, int X_GRID_SIZE>
+    hip_flatten_indexer_loop<hip::block_z<Z_SIZE>,
+                             hip::block_x<X_SIZE>,
+                             hip::block_y<Y_SIZE>>;
+template<int Z_SIZE, int Y_SIZE, int X_SIZE>
 using hip_flatten_block_size_zyx_loop =
-    hip_flatten_indexer_loop<hip::block_z<Z_GRID_SIZE>,
-                             hip::block_y<Y_GRID_SIZE>,
-                             hip::block_x<X_GRID_SIZE>>;
-
+    hip_flatten_indexer_loop<hip::block_z<Z_SIZE>,
+                             hip::block_y<Y_SIZE>,
+                             hip::block_x<X_SIZE>>;
 
 template<int X_BLOCK_SIZE, int X_GRID_SIZE = named_usage::unspecified>
 using hip_flatten_global_size_x_loop =
@@ -2938,7 +3610,6 @@ using hip_flatten_global_size_y_loop =
 template<int Z_BLOCK_SIZE, int Z_GRID_SIZE = named_usage::unspecified>
 using hip_flatten_global_size_z_loop =
     hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int X_GRID_SIZE = named_usage::unspecified,
@@ -2981,7 +3652,6 @@ template<int Z_BLOCK_SIZE,
 using hip_flatten_global_size_zy_loop =
     hip_flatten_indexer_loop<hip::global_z<Z_BLOCK_SIZE, Z_GRID_SIZE>,
                              hip::global_y<Y_BLOCK_SIZE, Y_GRID_SIZE>>;
-
 template<int X_BLOCK_SIZE,
          int Y_BLOCK_SIZE,
          int Z_BLOCK_SIZE,

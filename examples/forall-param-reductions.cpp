@@ -12,7 +12,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Reduction Example
+ *  Forall Param Reduction Example
  *
  *  This example illustrates use of the RAJA reduction types: min, max,
  *  sum, min-loc, and max-loc.
@@ -140,9 +140,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_max),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&seq_minloc),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&seq_maxloc),
+    RAJA::Name("RAJA Reduce Seq Kernel"),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&seq_min2, &seq_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&seq_max2, &seq_maxloc2),
-    RAJA::expt::KernelName("RAJA Reduce Seq Kernel"),
     [=](int i,
         VALOP_INT_SUM &_seq_sum,
         VALOP_INT_MIN &_seq_min,
@@ -206,7 +206,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&omp_min2, &omp_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&omp_max2, &omp_maxloc2),
-    RAJA::expt::KernelName("RAJA Reduce OpenMP Kernel"),
+    RAJA::Name("RAJA Reduce OpenMP Kernel"),
     [=](int i,
         VALOP_INT_SUM &_omp_sum,
         VALOP_INT_MIN &_omp_min,
@@ -272,7 +272,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&omp_t_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&omp_t_min2, &omp_t_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&omp_t_max2, &omp_t_maxloc2),
-    RAJA::expt::KernelName("RAJA Reduce Target OpenMP Kernel"),
+    RAJA::Name("RAJA Reduce Target OpenMP Kernel"),
     [=](int i,
         VALOP_INT_SUM &_omp_t_sum,
         VALOP_INT_MIN &_omp_t_min,
@@ -335,6 +335,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::Index_type cuda_maxloc2(-1);
 
   RAJA::forall<EXEC_POL3>(cuda_res, arange,
+    RAJA::Name("RAJA Reduce CUDA Kernel"),
     RAJA::expt::Reduce<RAJA::operators::plus>(&cuda_sum),
     RAJA::expt::Reduce<RAJA::operators::minimum>(&cuda_min),
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_max),
@@ -342,7 +343,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&cuda_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&cuda_min2, &cuda_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&cuda_max2, &cuda_maxloc2),
-    RAJA::expt::KernelName("RAJA Reduce CUDA Kernel"),
     [=] RAJA_DEVICE ( int i,
                       VALOP_INT_SUM &_cuda_sum,
                       VALOP_INT_MIN &_cuda_min,
@@ -356,11 +356,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       _cuda_min.min(d_a[i]);
       _cuda_max.max(d_a[i]);
 
-      _cuda_minloc.minloc(a[i], i);
-      _cuda_maxloc.maxloc(a[i], i);
+      _cuda_minloc.minloc(d_a[i], i);
+      _cuda_maxloc.maxloc(d_a[i], i);
 
-      _cuda_minloc2.minloc(a[i], i);
-      _cuda_maxloc2.maxloc(a[i], i);
+      _cuda_minloc2.minloc(d_a[i], i);
+      _cuda_maxloc2.maxloc(d_a[i], i);
     }
   );
 
@@ -411,7 +411,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&hip_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&hip_min2, &hip_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&hip_max2, &hip_maxloc2),
-    RAJA::expt::KernelName("RAJA Reduce HIP Kernel"),
+    RAJA::Name("RAJA Reduce HIP Kernel"),
     [=] RAJA_DEVICE ( int i,
                       VALOP_INT_SUM &_hip_sum,
                       VALOP_INT_MIN &_hip_min,
@@ -481,7 +481,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::expt::Reduce<RAJA::operators::maximum>(&sycl_maxloc),
     RAJA::expt::ReduceLoc<RAJA::operators::minimum>(&sycl_min2, &sycl_minloc2),
     RAJA::expt::ReduceLoc<RAJA::operators::maximum>(&sycl_max2, &sycl_maxloc2),
-    RAJA::expt::KernelName("RAJA Reduce SYCL Kernel"),
+    RAJA::Name("RAJA Reduce SYCL Kernel"),
     [=] RAJA_DEVICE ( int i,
                       VALOP_INT_SUM &_sycl_sum,
                       VALOP_INT_MIN &_sycl_min,

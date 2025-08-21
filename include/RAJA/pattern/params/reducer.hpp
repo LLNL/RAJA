@@ -1,6 +1,8 @@
 #ifndef NEW_REDUCE_HPP
 #define NEW_REDUCE_HPP
 
+#include <type_traits>
+
 #include "RAJA/pattern/params/params_base.hpp"
 #include "RAJA/util/SoAPtr.hpp"
 
@@ -89,7 +91,7 @@ struct Reducer : public ForallParamBase
   value_type* target = nullptr;
 
   // combineTarget() performs the final op on the target data and location in
-  // resolve()
+  // param_resolve()
   RAJA_HOST_DEVICE void combineTarget(value_type in)
   {
     value_type temp = op {}(*target, in);
@@ -110,11 +112,14 @@ struct Reducer : public ForallParamBase
   // These are types and parameters extracted from this struct, and given to the
   // forall.
   using ARG_TUP_T = camp::tuple<VOp*>;
+  using ARG_T     = VOp;
 
   RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup()
   {
     return camp::make_tuple(&m_valop);
   }
+
+  RAJA_HOST_DEVICE ARG_T* get_lambda_arg() { return &m_valop; }
 
   using ARG_LIST_T                        = typename ARG_TUP_T::TList;
   static constexpr size_t num_lambda_args = camp::tuple_size<ARG_TUP_T>::value;
@@ -173,7 +178,7 @@ struct Reducer<Op<ValLoc<T, I>, ValLoc<T, I>, ValLoc<T, I>>,
   target_index_type* target_index = nullptr;
 
   // combineTarget() performs the final op on the target data and location in
-  // resolve()
+  // param_resolve()
   RAJA_HOST_DEVICE void combineTarget(value_type in)
   {
     // Create a different temp ValLoc solely for combining
@@ -197,6 +202,9 @@ struct Reducer<Op<ValLoc<T, I>, ValLoc<T, I>, ValLoc<T, I>>,
   // These are types and parameters extracted from this struct, and given to the
   // forall.
   using ARG_TUP_T = camp::tuple<VOp*>;
+  using ARG_T     = VOp;
+
+  RAJA_HOST_DEVICE ARG_T* get_lambda_arg() { return &m_valop; }
 
   RAJA_HOST_DEVICE ARG_TUP_T get_lambda_arg_tup()
   {
@@ -238,6 +246,25 @@ auto constexpr ReduceLoc(T* target, IndexType* index)
   return detail::Reducer<Op<VL, VL, VL>, VL, ValOp<ValLoc<T, IndexType>, Op>>(
       target, index);
 }
+
+template<typename T>
+struct is_instance_of_reducer : std::false_type
+{};
+
+template<typename Op, typename T, typename VOp>
+struct is_instance_of_reducer<detail::Reducer<Op, T, VOp>> : std::true_type
+{};
+
+template<typename T>
+struct tuple_contains_reducers : std::false_type
+{};
+
+template<typename... Params>
+struct tuple_contains_reducers<camp::tuple<Params...>>
+    : std::integral_constant<
+          bool,
+          camp::concepts::any_of<is_instance_of_reducer<Params>...>::value>
+{};
 
 }  // namespace expt
 

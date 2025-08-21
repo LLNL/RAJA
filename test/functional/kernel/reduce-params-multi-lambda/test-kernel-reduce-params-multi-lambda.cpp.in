@@ -1,0 +1,265 @@
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-25, Lawrence Livermore National Security, LLC
+// and RAJA project contributors. See the RAJA/LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+//
+// test/include headers
+//
+#include "RAJA_test-base.hpp"
+#include "RAJA_test-camp.hpp"
+#include "RAJA_test-index-types.hpp"
+
+// for data types
+#include "RAJA_test-reduce-types.hpp"
+#include "RAJA_test-reduceloc-types.hpp"
+#include "RAJA_test-forall-data.hpp"
+
+//
+// Header for tests in ./tests directory
+//
+// Note: CMake adds ./tests as an include dir for these tests.
+//
+#include "test-kernel-reduce-params-multi-lambda.hpp"
+
+
+using Lambda0Params =  RAJA::Params<0, 2, 4, 7>;
+using Lambda1Params =  RAJA::Params<1, 3, 5, 6, 7>;
+using Lambda0Segs = RAJA::Segs<0, 1>;
+using Lambda1Segs = RAJA::Segs<0, 1>;
+
+//
+// Exec pols for kernel region tests
+//
+
+using SequentialKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+          RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+        >
+      >
+    >
+
+  >;
+
+
+using SequentialKernelLocForallPols =
+  camp::list<
+    RAJA::seq_exec
+  >;
+
+#if defined(RAJA_ENABLE_OPENMP)
+
+using OpenMPKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::omp_parallel_for_exec,  // col
+          RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+          RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,  // row
+        RAJA::statement::For<0, RAJA::seq_exec,  // col
+          RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+          RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_parallel_collapse_exec,
+        RAJA::ArgList<1,0>,
+          RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+          RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+      >
+    >
+
+  >;
+
+using OpenMPKernelLocForallPols =
+  camp::list<
+    RAJA::omp_parallel_for_exec
+  >;
+
+#endif  // RAJA_ENABLE_OPENMP
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+
+using OpenMPTargetKernelLocExecPols =
+  camp::list<
+
+    RAJA::KernelPolicy<
+      RAJA::statement::For<1, RAJA::seq_exec,  // row
+        RAJA::statement::For<0, RAJA::omp_target_parallel_for_exec<16>,  // col
+          RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+          RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+        >
+      >
+    >,
+
+    // TODO: Works for XLC and Clang10, but only up to input size of 362x362 matrix.
+    RAJA::KernelPolicy<
+      RAJA::statement::Collapse<RAJA::omp_target_parallel_collapse_exec,
+        RAJA::ArgList<1,0>,
+          RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+          RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+      >
+    >
+
+  >;
+
+using OpenMPTargetKernelLocForallPols =
+  camp::list<
+    RAJA::omp_target_parallel_for_exec<16>
+  >;
+
+#endif  // RAJA_ENABLE_TARGET_OPENMP
+
+#if defined(RAJA_ENABLE_CUDA)
+
+using CudaKernelLocExecPols =
+  camp::list<
+
+     // Two full grid reductions
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_thread_x_loop,  // row
+          RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >,
+
+    // Two grid reductions in different directions, with seq exec mixed at different
+    // levels
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::seq_exec,  // row
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >,
+
+     RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::seq_exec,  // row
+          RAJA::statement::For<0, RAJA::cuda_thread_y_loop,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernel<
+        RAJA::statement::For<1, RAJA::cuda_global_size_y_loop<32>,  // row
+          RAJA::statement::For<0, RAJA::cuda_global_size_x_loop<32>,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >
+
+  >;
+
+using CudaKernelLocForallPols =
+  camp::list<
+    RAJA::cuda_exec<1024, true>
+  >;
+
+#endif  // RAJA_ENABLE_CUDA
+
+#if defined(RAJA_ENABLE_HIP)
+
+using HipKernelLocExecPols =
+  camp::list<
+    // Two full grid reductions
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::hip_thread_x_loop,  // row
+          RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >,
+
+    // Two grid reductions in different directions, with seq exec mixed at different
+    // levels
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::seq_exec,  // row
+          RAJA::statement::For<0, RAJA::hip_thread_x_loop,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >,
+
+     RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::seq_exec,  // row
+          RAJA::statement::For<0, RAJA::hip_thread_y_loop,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >,
+
+    RAJA::KernelPolicy<
+      RAJA::statement::HipKernel<
+        RAJA::statement::For<1, RAJA::hip_global_size_y_loop<32>,  // row
+          RAJA::statement::For<0, RAJA::hip_global_size_x_loop<32>,  // col
+            RAJA::statement::Lambda<0, Lambda0Segs, Lambda0Params>,
+            RAJA::statement::Lambda<1, Lambda1Segs, Lambda1Params>
+          >
+        >
+      >
+    >
+
+  >;
+
+using HipKernelLocForallPols =
+  camp::list<
+    RAJA::hip_exec<1024, true>
+  >;
+
+#endif  // RAJA_ENABLE_HIP
+
+//
+// Cartesian product of types used in parameterized tests
+//
+using @BACKEND@KernelLocTypes =
+  Test< camp::cartesian_product<IdxTypeList,
+                                ReduceDataTypeList,
+                                @BACKEND@ResourceList,
+                                @BACKEND@KernelLocForallPols,
+                                @BACKEND@KernelLocExecPols>>::Types;
+
+//
+// Instantiate parameterized test
+//
+INSTANTIATE_TYPED_TEST_SUITE_P(@BACKEND@,
+                               KernelParamReduceMultiLambdaTest,
+                               @BACKEND@KernelLocTypes);

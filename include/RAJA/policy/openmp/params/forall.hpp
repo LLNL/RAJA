@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-21, Lawrence Livermore National Security, LLC
+// Copyright (c) 2016-2025, Lawrence Livermore National Security, LLC
 // and RAJA project contributors. See the RAJA/LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,18 +33,26 @@ forall_impl(const ExecPol& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for reduction(combine : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -63,18 +71,26 @@ forall_impl(const ExecPol<ChunkSize>& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(static) reduction(combine : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(static) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -93,19 +109,26 @@ forall_impl(const ExecPol<ChunkSize>& p,
             Func&& loop_body,
             ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(static, ChunkSize) reduction(combine         \
-                                                               : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(static, ChunkSize) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -117,18 +140,26 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Runtime& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(runtime) reduction(combine : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(runtime) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -140,21 +171,26 @@ RAJA_INLINE void forall_impl_nowait(const ::RAJA::policy::omp::Auto& p,
                                     Func&& loop_body,
                                     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp parallel
   {
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
 #pragma omp for nowait reduction(combine : f_params)
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
-      RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
     }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -170,18 +206,26 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(dynamic) reduction(combine : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(dynamic) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -197,19 +241,26 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Dynamic<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(dynamic, ChunkSize) reduction(combine        \
-                                                                : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(dynamic, ChunkSize) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -225,18 +276,26 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(guided) reduction(combine : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(guided) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -252,19 +311,26 @@ RAJA_INLINE void forall_impl(const ::RAJA::policy::omp::Guided<ChunkSize>& p,
                              Func&& loop_body,
                              ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
-#pragma omp parallel for schedule(guided, ChunkSize) reduction(combine         \
-                                                               : f_params)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i)
+#pragma omp parallel
   {
-    RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
+#pragma omp for schedule(guided, ChunkSize) reduction(combine : f_params)
+    for (decltype(distance_it) i = 0; i < distance_it; ++i)
+    {
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
+    }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -281,21 +347,26 @@ RAJA_INLINE void forall_impl_nowait(
     Func&& loop_body,
     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp parallel
   {
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
 #pragma omp for schedule(static) nowait reduction(combine : f_params)
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
-      RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
     }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 //
@@ -312,21 +383,26 @@ RAJA_INLINE void forall_impl_nowait(
     Func&& loop_body,
     ForallParam&& f_params)
 {
-  using EXEC_POL = typename std::decay<decltype(p)>::type;
-  RAJA::expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+  using EXEC_POL = camp::decay<decltype(p)>;
+
+  RAJA::expt::ParamMultiplexer::parampack_init(p, f_params);
   RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp parallel
   {
+
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+
 #pragma omp for schedule(static, ChunkSize) nowait reduction(combine : f_params)
     for (decltype(distance_it) i = 0; i < distance_it; ++i)
     {
-      RAJA::expt::invoke_body(f_params, loop_body, begin_it[i]);
+      RAJA::expt::invoke_body(f_params, body.get_priv(), begin_it[i]);
     }
   }
 
-  RAJA::expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+  RAJA::expt::ParamMultiplexer::parampack_resolve(p, f_params);
 }
 
 }  //  namespace internal

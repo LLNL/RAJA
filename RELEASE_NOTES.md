@@ -20,6 +20,88 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2025.03.2 -- Release date 2025-05-14
+============================================
+
+This release contains bugfixes
+
+     * Build changes/improvements:
+       * Removed unused variables related to kernel naming
+       * Added missing host device annotations on missing param reducers
+       * CMAKE build option to allow for use of OpenMP 5.1 atomics for min/max operations. The option is on by default.
+       * Full backwards compatibility of kernel naming and lambda capture style reducers.
+       * Removed compiler warnings related to NVCC and loop unrolling
+
+
+Version 2025.03.1 -- Release date 2025-04-17
+============================================
+
+This release contains one new feature and a bugfix.
+
+Notable changes include:
+
+  * New features / API changes:
+    * Added initial support for Caliper to gather profiling data for kernels.
+      See user docs and examples for configuration instructions and examples
+      of usage.
+
+  * Build changes/improvements:
+    * None
+
+  * Bug fixes/improvements:
+    * Fix header file include issue when vectorization enabled in a HIP build.
+
+
+Version 2025.03.0 -- Release date 2025-03-17
+============================================
+
+This release contains new features, bug fixes, and updates to submodule
+dependencies.
+
+Notable changes include:
+
+  * New features / API changes:
+    * Added improved support for perfectly nested loops in RAJA::launch.
+    * Added helper methods to simplify the creation of RAJA View objects
+      with permutations of stride ordering. Examples and user docs have also
+      been added. 
+    * Added GPU policies for CUDA and HIP that do not check loop bounds when
+      they do not need to be checked in a kernel. This can help improve
+      performance by up to 5%. The new policies are documented in the RAJA
+      user guide and include `direct_unchecked` in their names.
+    * Refactored the new (experimental) RAJA reduction interface to have 
+      consistent min/max/loc operator semantics and added type safety to 
+      reduce erroneous usage. Changes are described in the RAJA User Guide.
+    * Added support for new RAJA reduction interface to RAJA::dynamic_forall 
+      and pulled dynamic_forall out of RAJA `expt` namespace.
+    * Added `RAJA_HIP_WAVESIZE` CMake option to set the wave size for HIP
+      builds. It defaults to 64 but can be set to 32, for example, to 
+      build RAJA to run on Radeon gaming cards.
+
+  * Build changes/improvements:
+     * Update BLT to v0.7.0 release.
+     * Update camp submodule to v2025.03.0 release.
+     * Update desul submodule to 6114dd25b54782678c555c0c1d2197f13cc8d2a0
+       commit.
+     * Added clang-format CI check (clang 14) that must pass before a PR can
+       be merged -- noted here so external contributors are aware.
+
+  * Bug fixes/improvements:
+    * Resolved undefined behavior related to constructing 
+      uniform_int_distribution with min > max. This was causing some Windows
+      tests to fail.
+    * Corrected call to wrong global function when using a fixed CUDA policy
+      and reductions in RAJA::launch kernel -- potential performance issue.
+    * Fixed memory leak in RAJA::launch OpenMP back-end.
+    * Added missing host-device decorations to some math utility functions.
+    * Fixed MSVC compilation failures with 64-bit intrinsics in x86 Windows 
+      builds.
+    * Fixed issue so that a kernel will no longer be launched when there is no
+      work for it to do; i.e., no active iteration space entries.
+    * Removed invalid C++ usage in implementation of RAJA::kernel `initLocalMem`
+      statement, which was causing large warning messages during compilation.
+
+
 Version 2024.07.0 -- Release date 2024-07-24
 ============================================
 

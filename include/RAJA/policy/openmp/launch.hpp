@@ -35,7 +35,6 @@ struct LaunchExecute<RAJA::omp_launch_t>
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& params,
-       const char*,
        BODY const& body,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -64,14 +63,13 @@ struct LaunchExecute<RAJA::omp_launch_t>
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& launch_params,
-       const char* RAJA_UNUSED_ARG(kernel_name),
        BODY const& body,
        ReduceParams& f_params)
   {
-
     using EXEC_POL = RAJA::omp_launch_t;
+    EXEC_POL pol {};
 
-    expt::ParamMultiplexer::init<EXEC_POL>(f_params);
+    expt::ParamMultiplexer::parampack_init(pol, f_params);
 
     // reducer object must be named f_params as expected by macro below
     RAJA_OMP_DECLARE_REDUCTION_COMBINE;
@@ -92,7 +90,7 @@ struct LaunchExecute<RAJA::omp_launch_t>
       ctx.shared_mem_ptr = nullptr;
     }
 
-    expt::ParamMultiplexer::resolve<EXEC_POL>(f_params);
+    expt::ParamMultiplexer::parampack_resolve(pol, f_params);
 
     return resources::EventProxy<resources::Resource>(res);
   }

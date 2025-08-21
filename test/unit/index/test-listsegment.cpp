@@ -26,7 +26,7 @@ TYPED_TEST_SUITE(ListSegmentUnitTest, UnitIndexTypes);
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests in this file. 
 //
-camp::resources::Resource host_res{camp::resources::Host()};
+camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
 
 TYPED_TEST(ListSegmentUnitTest, Constructors)

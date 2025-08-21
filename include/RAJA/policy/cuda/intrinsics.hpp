@@ -23,7 +23,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_CUDA_ACTIVE)
 
 #include <type_traits>
 
@@ -33,10 +33,55 @@
 #include "RAJA/util/SoAArray.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/policy/cuda/policy.hpp"
-
 namespace RAJA
 {
+
+namespace policy
+{
+
+namespace cuda
+{
+
+struct DeviceConstants
+{
+  RAJA::Index_type WARP_SIZE;
+  RAJA::Index_type MAX_BLOCK_SIZE;
+  RAJA::Index_type MAX_WARPS;
+  RAJA::Index_type
+      ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE;  // basically the cache line size of
+                                             // the cache level that handles
+                                             // atomics
+
+  constexpr DeviceConstants(RAJA::Index_type warp_size,
+                            RAJA::Index_type max_block_size,
+                            RAJA::Index_type atomic_cache_line_bytes) noexcept
+      : WARP_SIZE(warp_size),
+        MAX_BLOCK_SIZE(max_block_size),
+        MAX_WARPS(max_block_size / warp_size),
+        ATOMIC_DESTRUCTIVE_INTERFERENCE_SIZE(atomic_cache_line_bytes)
+  {}
+};
+
+//
+// Operations in the included files are parametrized using the following
+// values for CUDA warp size and max block size.
+//
+constexpr DeviceConstants device_constants(RAJA_CUDA_WARPSIZE,
+                                           1024,
+                                           32);  // V100
+static_assert(device_constants.WARP_SIZE >= device_constants.MAX_WARPS,
+              "RAJA Assumption Broken: device_constants.WARP_SIZE < "
+              "device_constants.MAX_WARPS");
+static_assert(device_constants.MAX_BLOCK_SIZE % device_constants.WARP_SIZE == 0,
+              "RAJA Assumption Broken: device_constants.MAX_BLOCK_SIZE not "
+              "a multiple of device_constants.WARP_SIZE");
+
+constexpr const size_t MIN_BLOCKS_PER_SM = 1;
+constexpr const size_t MAX_BLOCKS_PER_SM = 32;
+
+}  // end namespace cuda
+
+}  // end namespace policy
 
 namespace cuda
 {
@@ -102,7 +147,7 @@ struct AccessorDeviceScopeUseBlockFence
 
     for (size_t i = 0; i < u.array_size(); ++i)
     {
-      u.array[i] = atomicAdd(&ptr[i], integer_type(0));
+      u.array[i] = ::atomicAdd(&ptr[i], integer_type(0));
     }
 
     return u.get_value();
@@ -121,7 +166,7 @@ struct AccessorDeviceScopeUseBlockFence
 
     for (size_t i = 0; i < u.array_size(); ++i)
     {
-      atomicExch(&ptr[i], u.array[i]);
+      ::atomicExch(&ptr[i], u.array[i]);
     }
   }
 
