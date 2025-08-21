@@ -34,11 +34,44 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include "RAJA/util/Printing.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/for_each.hpp"
 
+#include "cub/util_type.cuh"
+
 namespace RAJA
 {
+
+namespace detail
+{
+
+template < >
+struct StreamInsertHelper<CUDA_DIM_T>
+{
+  CUDA_DIM_T const& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.x
+               << "," << m_val.y
+               << "," << m_val.z
+               << "}";
+  }
+};
+
+template < typename R >
+struct StreamInsertHelper<::cub::DoubleBuffer<R>>
+{
+  ::cub::DoubleBuffer<R> const& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
+  }
+};
+
+}  // namespace detail
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -57,10 +90,14 @@ namespace RAJA
                        __FILE__, __LINE__);                               \
   }
 
-inline void cudaAssert(cudaError_t code,
-                       const char* file,
-                       int line,
-                       bool abort = true)
+template < typename Tuple >
+RAJA_INLINE void cudaAssert(cudaError_t code,
+                            const char* func_name,
+                            const char* args_name,
+                            Tuple const& args,
+                            const char* file,
+                            int line,
+                            bool abort = true)
 {
   if (code != cudaSuccess)
   {
@@ -74,11 +111,11 @@ inline void cudaAssert(cudaError_t code,
     str << ")(";
     for_each_tuple(args, [&, first=true](auto const& arg) mutable {
       if (!first) {
-        str << " ";
+        str << ", ";
       } else {
         first = false;
       }
-      str << arg;
+      str << ::RAJA::detail::StreamInsertHelper{arg};
     });
     str << ") ";
     str << file;

@@ -33,11 +33,62 @@
 
 #include <hip/hip_runtime.h>
 
+#include "RAJA/util/Printing.hpp"
 #include "RAJA/util/macros.hpp"
 #include "RAJA/util/for_each.hpp"
 
+#if defined(__HIPCC__)
+#define ROCPRIM_HIP_API 1
+#include "rocprim/types.hpp"
+#elif defined(__CUDACC__)
+#include "cub/util_type.cuh"
+#endif
+
 namespace RAJA
 {
+
+namespace detail
+{
+
+template < >
+struct StreamInsertHelper<HIP_DIM_T>
+{
+  HIP_DIM_T const& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.x
+               << "," << m_val.y
+               << "," << m_val.z
+               << "}";
+  }
+};
+
+#if defined(__HIPCC__)
+template < typename R >
+struct StreamInsertHelper<::rocprim::double_buffer<R>>
+{
+  ::rocprim::double_buffer<R> const& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.current() << "," << m_val.alternate() << "}";
+  }
+};
+#elif defined(__CUDACC__)
+template < typename R >
+struct StreamInsertHelper<::cub::DoubleBuffer<R>>
+{
+  ::cub::DoubleBuffer<R> const& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
+  }
+};
+#endif
+
+}  // namespace detail
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -56,13 +107,14 @@ namespace RAJA
                       __FILE__, __LINE__);                                \
   }
 
-template < typename... Ts >
-RAJA_INLINE void hipAssert(const char* file,
-                      int line,
-                      bool abort,
-                      int code,
-                      std::pair<const char*, Ts> const& ...args
-                      )
+template < typename Tuple >
+RAJA_INLINE void hipAssert(hipError_t code,
+                           const char* func_name,
+                           const char* args_name,
+                           Tuple const& args,
+                           const char* file,
+                           int line,
+                           bool abort = true)
 {
   if (code != hipSuccess)
   {
@@ -76,11 +128,11 @@ RAJA_INLINE void hipAssert(const char* file,
     str << ")(";
     for_each_tuple(args, [&, first=true](auto const& arg) mutable {
       if (!first) {
-        str << " ";
+        str << ", ";
       } else {
         first = false;
       }
-      str << arg;
+      str << ::RAJA::detail::StreamInsertHelper{arg};
     });
     str << ") ";
     str << file;
