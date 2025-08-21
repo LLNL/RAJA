@@ -51,7 +51,21 @@ namespace detail
 {
 
 template < >
-struct StreamInsertHelper<HIP_DIM_T>
+struct StreamInsertHelper<HIP_DIM_T&>
+{
+  HIP_DIM_T& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.x
+               << "," << m_val.y
+               << "," << m_val.z
+               << "}";
+  }
+};
+///
+template < >
+struct StreamInsertHelper<HIP_DIM_T const&>
 {
   HIP_DIM_T const& m_val;
 
@@ -66,7 +80,18 @@ struct StreamInsertHelper<HIP_DIM_T>
 
 #if defined(__HIPCC__)
 template < typename R >
-struct StreamInsertHelper<::rocprim::double_buffer<R>>
+struct StreamInsertHelper<::rocprim::double_buffer<R>&>
+{
+  ::rocprim::double_buffer<R>& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.current() << "," << m_val.alternate() << "}";
+  }
+};
+///
+template < typename R >
+struct StreamInsertHelper<::rocprim::double_buffer<R> const&>
 {
   ::rocprim::double_buffer<R> const& m_val;
 
@@ -77,7 +102,18 @@ struct StreamInsertHelper<::rocprim::double_buffer<R>>
 };
 #elif defined(__CUDACC__)
 template < typename R >
-struct StreamInsertHelper<::cub::DoubleBuffer<R>>
+struct StreamInsertHelper<::cub::DoubleBuffer<R>&>
+{
+  ::cub::DoubleBuffer<R>& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
+  }
+};
+///
+template < typename R >
+struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 {
   ::cub::DoubleBuffer<R> const& m_val;
 
@@ -103,7 +139,7 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R>>
     ::RAJA::hipAssert(func(__VA_ARGS__),                                  \
                       RAJA_STRINGIFY(func),                               \
                       RAJA_STRINGIFY(__VA_ARGS__),                        \
-                      ::RAJA::ctie(__VA_ARGS__),                          \
+                      std::forward_as_tuple(__VA_ARGS__),                 \
                       __FILE__, __LINE__);                                \
   }
 
@@ -126,7 +162,7 @@ RAJA_INLINE void hipAssert(hipError_t code,
     str << "(";
     str << args_name;
     str << ")(";
-    for_each_tuple(args, [&, first=true](auto const& arg) mutable {
+    for_each_tuple(args, [&, first=true](auto&& arg) mutable {
       if (!first) {
         str << ", ";
       } else {

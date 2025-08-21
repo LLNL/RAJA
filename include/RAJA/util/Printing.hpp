@@ -24,19 +24,9 @@
 
 #include <ostream>
 #include <type_traits>
-#include <tuple>
 
 namespace RAJA
 {
-
-// helper to get tuple of const references
-// hopefully this extends the lifetimes of temporaries when the result of this
-// call is passed to a function
-template < typename... Ts >
-inline auto ctie(Ts const&... ts)
-{
-   return std::tuple<Ts const&...>(ts...);
-}
 
 namespace detail
 {
@@ -47,7 +37,9 @@ namespace detail
 template < typename T >
 struct StreamInsertHelper
 {
-  T const& m_val;
+  static_assert(std::is_lvalue_reference_v<T>);
+
+  T m_val;
 
   std::ostream& operator()(std::ostream& str) const
   {
@@ -57,7 +49,13 @@ struct StreamInsertHelper
 
 // deduction guide for StreamInsertHelper
 template<typename T>
-StreamInsertHelper(T val) -> StreamInsertHelper<std::remove_cv_t<std::remove_reference_t<T>>>;
+StreamInsertHelper(T& val) -> StreamInsertHelper<T&>;
+template<typename T>
+StreamInsertHelper(T const& val) -> StreamInsertHelper<T const&>;
+template<typename T>
+StreamInsertHelper(T&& val) -> StreamInsertHelper<T const&>;
+template<typename T>
+StreamInsertHelper(T const&& val) -> StreamInsertHelper<T const&>;
 
 // Allow printing of StreamInsertHelper using its call operator
 template < typename T >
