@@ -24,9 +24,19 @@
 
 #include <ostream>
 #include <type_traits>
+#include <tuple>
 
 namespace RAJA
 {
+
+// helper to get tuple of const references
+// hopefully this extends the lifetimes of temporaries when the result of this
+// call is passed to a function
+template < typename... Ts >
+inline auto ctie(Ts const&... ts)
+{
+   return std::tuple<Ts const&...>(ts...);
+}
 
 namespace detail
 {
