@@ -276,10 +276,18 @@ namespace RAJA {
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_CUDA_ACTIVE
+
+#if defined(RAJA_ENABLE_CLANG_CUDA)
+#define CUDA_DIM_T uint3
+#else
+#define CUDA_DIM_T dim3
+#endif
 #endif // RAJA_ENABLE_CUDA && __CUDACC__
 
 #if defined(RAJA_ENABLE_HIP) && defined(__HIPCC__)
 #define RAJA_HIP_ACTIVE
+
+#define HIP_DIM_T dim3
 
 #include <hip/hip_version.h>
 #if (HIP_VERSION_MAJOR > 5) || \
