@@ -47,7 +47,21 @@ namespace detail
 {
 
 template < >
-struct StreamInsertHelper<CUDA_DIM_T>
+struct StreamInsertHelper<CUDA_DIM_T&>
+{
+  CUDA_DIM_T& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.x
+               << "," << m_val.y
+               << "," << m_val.z
+               << "}";
+  }
+};
+///
+template < >
+struct StreamInsertHelper<CUDA_DIM_T const&>
 {
   CUDA_DIM_T const& m_val;
 
@@ -61,7 +75,18 @@ struct StreamInsertHelper<CUDA_DIM_T>
 };
 
 template < typename R >
-struct StreamInsertHelper<::cub::DoubleBuffer<R>>
+struct StreamInsertHelper<::cub::DoubleBuffer<R>&>
+{
+  ::cub::DoubleBuffer<R>& m_val;
+
+  std::ostream& operator()(std::ostream& str) const
+  {
+    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
+  }
+};
+///
+template < typename R >
+struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 {
   ::cub::DoubleBuffer<R> const& m_val;
 
@@ -86,7 +111,7 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R>>
     ::RAJA::cudaAssert(func(__VA_ARGS__),                                 \
                        RAJA_STRINGIFY(func),                              \
                        RAJA_STRINGIFY(__VA_ARGS__),                       \
-                       ::RAJA::ctie(__VA_ARGS__),                         \
+                       std::forward_as_tuple(__VA_ARGS__),                \
                        __FILE__, __LINE__);                               \
   }
 
@@ -109,7 +134,7 @@ RAJA_INLINE void cudaAssert(cudaError_t code,
     str << "(";
     str << args_name;
     str << ")(";
-    for_each_tuple(args, [&, first=true](auto const& arg) mutable {
+    for_each_tuple(args, [&, first=true](auto&& arg) mutable {
       if (!first) {
         str << ", ";
       } else {
