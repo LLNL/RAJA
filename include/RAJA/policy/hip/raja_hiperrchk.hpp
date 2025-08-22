@@ -114,7 +114,7 @@ struct StreamInsertHelper<::rocprim::double_buffer<R> const&>
 #define RAJA_INTERNAL_HIP_CHECK_API_CALL(func, ...)                       \
   do {                                                                    \
     hipError_t code_56792578 = func(__VA_ARGS__);                         \
-    if (code_56792578 != hipSuccess)                                      \
+    if (code_56792578 != hipSuccess) /* [[unlikely]] */                   \
     {                                                                     \
       static constexpr auto func_name_56792578 = RAJA_STRINGIFY(func);    \
       static constexpr auto arg_names_56792578 =                          \
