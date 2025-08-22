@@ -392,7 +392,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   nested_init<i_block_sz, j_block_sz, k_block_sz>
     <<<nblocks, nthreads_per_block>>>(a, c, N);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaGetLastError, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaGetLastError);
   RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 // _cuda_tensorinit_tiled_direct_end
 
