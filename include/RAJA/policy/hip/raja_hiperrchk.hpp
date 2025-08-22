@@ -112,13 +112,21 @@ struct StreamInsertHelper<::rocprim::double_buffer<R> const&>
 ///////////////////////////////////////////////////////////////////////
 ///
 #define RAJA_INTERNAL_HIP_CHECK_API_CALL(func, ...)                       \
-  {                                                                       \
-    ::RAJA::detail::hipAssert(func(__VA_ARGS__),                          \
-                      RAJA_STRINGIFY(func),                               \
-                      []{static constexpr auto arg_names = ::RAJA::detail::hip_api_arg_names(RAJA_STRINGIFY(func)); return arg_names; }(), \
-                      std::forward_as_tuple(__VA_ARGS__),                 \
-                      __FILE__, __LINE__);                                \
-  }
+  do {                                                                    \
+    hipError_t code_56792578 = func(__VA_ARGS__);                         \
+    if (code_56792578 != hipSuccess)                                      \
+    {                                                                     \
+      static constexpr auto func_name_56792578 = RAJA_STRINGIFY(func);    \
+      static constexpr auto arg_names_56792578 =                          \
+          ::RAJA::detail::hip_api_arg_names(func_name_56792578);          \
+      ::RAJA::detail::reportHipError(                                     \
+          code_56792578,                                                  \
+          func_name_56792578,                                             \
+          arg_names_56792578,                                             \
+          std::forward_as_tuple(__VA_ARGS__),                             \
+          __FILE__, __LINE__);                                            \
+    }                                                                     \
+  } while(0)
 
 // returns a space separated string of the arguments to the given function
 // returns an empty string if func is unknown
@@ -156,52 +164,49 @@ constexpr std::string_view hip_api_arg_names(std::string_view func)
 }
 
 template < typename Tuple >
-RAJA_INLINE void hipAssert(hipError_t code,
-                           std::string_view func_name,
-                           std::string_view args_name,
-                           Tuple const& args,
-                           std::string_view file,
-                           int line,
-                           bool abort = true)
+void reportHipError(hipError_t code,
+                    std::string_view func_name,
+                    std::string_view arg_names,
+                    Tuple const& args,
+                    std::string_view file,
+                    int line,
+                    bool abort = true)
 {
-  if (code != hipSuccess)
+  std::ostringstream str;
+  str << "HIP error: ";
+  str << hipGetErrorString(code);
+  str << " ";
+  str << func_name;
+  str << "(";
+  const auto args_end = arg_names.end();
+  ::RAJA::for_each_tuple(args, [&, first=true, args_current=arg_names.begin()](auto&& arg) mutable {
+    if (!first) {
+      str << ", ";
+    } else {
+      first = false;
+    }
+    if (args_current != args_end) {
+      auto args_current_end = std::find(args_current, args_end, ' ');
+      str << std::string_view{args_current, size_t(args_current_end-args_current)} << "=";
+      if (args_current_end != args_end) {
+        ++args_current_end; // skip space
+      }
+      args_current = args_current_end;
+    }
+    str << ::RAJA::detail::StreamInsertHelper{arg};
+  });
+  str << ") ";
+  str << file;
+  str << ":";
+  str << line;
+  auto msg{str.str()};
+  if (abort)
   {
-    std::ostringstream str;
-    str << "HIP error: ";
-    str << hipGetErrorString(code);
-    str << " ";
-    str << func_name;
-    str << "(";
-    const auto args_end = args_name.end();
-    ::RAJA::for_each_tuple(args, [&, first=true, args_current=args_name.begin()](auto&& arg) mutable {
-      if (!first) {
-        str << ", ";
-      } else {
-        first = false;
-      }
-      if (args_current != args_end) {
-        auto args_current_end = std::find(args_current, args_end, ' ');
-        str << std::string_view{args_current, size_t(args_current_end-args_current)} << "=";
-        if (args_current_end != args_end) {
-          ++args_current_end; // skip space
-        }
-        args_current = args_current_end;
-      }
-      str << ::RAJA::detail::StreamInsertHelper{arg};
-    });
-    str << ") ";
-    str << file;
-    str << ":";
-    str << line;
-    auto msg{str.str()};
-    if (abort)
-    {
-      throw std::runtime_error(msg);
-    }
-    else
-    {
-      std::cerr << msg;
-    }
+    throw std::runtime_error(msg);
+  }
+  else
+  {
+    std::cerr << msg;
   }
 }
 
