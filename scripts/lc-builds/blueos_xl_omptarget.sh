@@ -40,6 +40,8 @@ cmake \
   -DBLT_OPENMP_COMPILE_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
   -DBLT_OPENMP_LINK_FLAGS="-qoffload;-qsmp=omp;-qalias=noansi" \
   -DENABLE_BENCHMARKS=On \
+  -DENABLE_CLANGFORMAT=On \
+  -DCLANGFORMAT_EXECUTABLE=/usr/tce/packages/clang/clang-14.0.4/bin/clang-format \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..
