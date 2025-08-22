@@ -31,9 +31,11 @@ namespace RAJA
 namespace detail
 {
 
-// Printing helper class
-// specialize to customize printing of T or add printing
-// This is used to add printability to types defined outside of RAJA
+//! Printing helper class to add printability to types defined outside of RAJA.
+//
+//  Specialize to customize printing or add printing for a type. This avoids
+//  conflicts if an operator<< is later added for the type in question.
+//  Write specializations for non-const reference and const-reference.
 template < typename T >
 struct StreamInsertHelper
 {
