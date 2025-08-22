@@ -40,8 +40,6 @@
 #if defined(__HIPCC__)
 #define ROCPRIM_HIP_API 1
 #include "rocprim/types.hpp"
-#elif defined(__CUDACC__)
-#include "cub/util_type.cuh"
 #endif
 
 namespace RAJA
@@ -98,28 +96,6 @@ struct StreamInsertHelper<::rocprim::double_buffer<R> const&>
   std::ostream& operator()(std::ostream& str) const
   {
     return str << "{" << m_val.current() << "," << m_val.alternate() << "}";
-  }
-};
-#elif defined(__CUDACC__)
-template < typename R >
-struct StreamInsertHelper<::cub::DoubleBuffer<R>&>
-{
-  ::cub::DoubleBuffer<R>& m_val;
-
-  std::ostream& operator()(std::ostream& str) const
-  {
-    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
-  }
-};
-///
-template < typename R >
-struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
-{
-  ::cub::DoubleBuffer<R> const& m_val;
-
-  std::ostream& operator()(std::ostream& str) const
-  {
-    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
   }
 };
 #endif
