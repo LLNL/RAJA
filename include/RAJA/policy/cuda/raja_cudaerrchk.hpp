@@ -99,8 +99,6 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
   }
 };
 
-}  // namespace detail
-
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
@@ -109,11 +107,11 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define cudaErrchk(func, ...)                                             \
+#define RAJA_INTERNAL_CUDA_CHECK_API_CALL(func, ...)                      \
   {                                                                       \
-    ::RAJA::cudaAssert(func(__VA_ARGS__),                                 \
+    ::RAJA::detail::cudaAssert(func(__VA_ARGS__),                         \
                        RAJA_STRINGIFY(func),                              \
-                       []{static constexpr auto arg_names = ::RAJA::cuda_api_arg_names(RAJA_STRINGIFY(func)); return arg_names; }(), \
+                       []{static constexpr auto arg_names = ::RAJA::detail::cuda_api_arg_names(RAJA_STRINGIFY(func)); return arg_names; }(), \
                        std::forward_as_tuple(__VA_ARGS__),                \
                        __FILE__, __LINE__);                               \
   }
@@ -164,13 +162,13 @@ RAJA_INLINE void cudaAssert(cudaError_t code,
   if (code != cudaSuccess)
   {
     std::ostringstream str;
-    str << "CUDAassert: ";
+    str << "CUDA error: ";
     str << cudaGetErrorString(code);
     str << " ";
     str << func_name;
     str << "(";
     const auto args_end = args_name.end();
-    for_each_tuple(args, [&, first=true, args_current=args_name.begin()](auto&& arg) mutable {
+    ::RAJA::for_each_tuple(args, [&, first=true, args_current=args_name.begin()](auto&& arg) mutable {
       if (!first) {
         str << ", ";
       } else {
@@ -201,6 +199,8 @@ RAJA_INLINE void cudaAssert(cudaError_t code,
     }
   }
 }
+
+}  // namespace detail
 
 }  // namespace RAJA
 

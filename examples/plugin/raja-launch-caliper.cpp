@@ -119,11 +119,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using cuda_loop_policy   = RAJA::LoopPolicy<RAJA::cuda_global_thread_x>;
 
   a = 0; b = 0;
-  cudaErrchk(cudaMalloc, (void**)&a, N * sizeof(double));
-  cudaErrchk(cudaMalloc, (void**)&b, N * sizeof(double));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&a, N * sizeof(double));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&b, N * sizeof(double));
 
-  cudaErrchk(cudaMemcpy, a, a0, N * sizeof(double), cudaMemcpyHostToDevice);
-  cudaErrchk(cudaMemcpy, b, tb, N * sizeof(double), cudaMemcpyHostToDevice);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, a, a0, N * sizeof(double), cudaMemcpyHostToDevice);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, b, tb, N * sizeof(double), cudaMemcpyHostToDevice);
 
    RAJA::launch<cuda_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
@@ -137,10 +137,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     });
 
-  cudaErrchk(cudaMemcpy, ta, a, N * sizeof(double), cudaMemcpyDeviceToHost);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, ta, a, N * sizeof(double), cudaMemcpyDeviceToHost);
 
-  cudaErrchk(cudaFree, a);
-  cudaErrchk(cudaFree, b);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, a);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, b);
 
   a = ta;
   checkResult(a, aref, N);
@@ -159,11 +159,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   using hip_loop_policy   = RAJA::LoopPolicy<RAJA::hip_global_thread_x>;
 
   a = 0; b = 0;
-  hipErrchk(hipMalloc, (void**)&a, N * sizeof(double));
-  hipErrchk(hipMalloc, (void**)&b, N * sizeof(double));
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&a, N * sizeof(double));
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&b, N * sizeof(double));
 
-  hipErrchk(hipMemcpy, a, a0, N * sizeof(double), hipMemcpyHostToDevice);
-  hipErrchk(hipMemcpy, b, tb, N * sizeof(double), hipMemcpyHostToDevice);
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, a, a0, N * sizeof(double), hipMemcpyHostToDevice);
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, b, tb, N * sizeof(double), hipMemcpyHostToDevice);
 
    RAJA::launch<hip_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(Nteams), RAJA::Threads(Nthreads)),
@@ -177,10 +177,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
     });
 
-  hipErrchk(hipMemcpy, ta, a, N * sizeof(double), hipMemcpyDeviceToHost);
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, ta, a, N * sizeof(double), hipMemcpyDeviceToHost);
 
-  hipErrchk(hipFree, a);
-  hipErrchk(hipFree, b);
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, a);
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, b);
 
   a = ta;
   checkResult(a, aref, N);

@@ -39,7 +39,7 @@ namespace hip
 RAJA_INLINE
 void synchronize_impl(const hip_synchronize&)
 {
-  hipErrchk(hipDeviceSynchronize);
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
 }
 
 

@@ -55,8 +55,8 @@ inline void* get_cached_value_ptr(size_t nbytes)
   if (nbytes > cached_nbytes)
   {
     cached_nbytes = 0;
-    hipErrchk(hipHostFree, ptr);
-    hipErrchk(hipHostMalloc, &ptr, nbytes);
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipHostFree, ptr);
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipHostMalloc, &ptr, nbytes);
     cached_nbytes = nbytes;
   }
   return ptr;
@@ -84,8 +84,8 @@ inline auto get_value(Factory&& factory)
   auto func =
       reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
   void* args[] = {(void*)&ptr, (void*)&factory};
-  hipErrchk(hipLaunchKernel, func, 1, 1, args, 0, res.get_stream());
-  hipErrchk(hipStreamSynchronize, res.get_stream());
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipLaunchKernel, func, 1, 1, args, 0, res.get_stream());
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipStreamSynchronize, res.get_stream());
 
   return *ptr;
 }

@@ -116,49 +116,49 @@ GPU_TYPED_TEST_P( AtomicRefCUDABitwiseUnitTest, CUDABitwises )
 
   T * memaddr = nullptr;
   T * result = nullptr;
-  cudaErrchk(cudaMallocManaged, (void **)&memaddr, sizeof(T));
-  cudaErrchk(cudaMallocManaged, (void **)&result, sizeof(T));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&memaddr, sizeof(T));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&result, sizeof(T));
   memaddr[0] = (T)1;
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test and/or
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_and( (T)0 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_or( (T)1 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)0 );
   ASSERT_EQ( test1, (T)1 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = (test1 &= (T)0);} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( result[0], (T)0 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = (test1 |= (T)1);} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );
 
   // test xor
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_xor( (T)1 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)1 );
   ASSERT_EQ( test1, (T)0 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = (test1 ^= (T)1);} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result[0], (T)1 );
 
-  cudaErrchk(cudaDeviceSynchronize);
-  cudaErrchk(cudaFree, memaddr);
-  cudaErrchk(cudaFree, result);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, memaddr);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, result);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDABitwiseUnitTest,

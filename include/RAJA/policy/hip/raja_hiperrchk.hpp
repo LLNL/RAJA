@@ -103,8 +103,6 @@ struct StreamInsertHelper<::rocprim::double_buffer<R> const&>
 };
 #endif
 
-}  // namespace detail
-
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
@@ -113,11 +111,11 @@ struct StreamInsertHelper<::rocprim::double_buffer<R> const&>
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define hipErrchk(func, ...)                                              \
+#define RAJA_INTERNAL_HIP_CHECK_API_CALL(func, ...)                       \
   {                                                                       \
-    ::RAJA::hipAssert(func(__VA_ARGS__),                                  \
+    ::RAJA::detail::hipAssert(func(__VA_ARGS__),                          \
                       RAJA_STRINGIFY(func),                               \
-                      []{static constexpr auto arg_names = ::RAJA::hip_api_arg_names(RAJA_STRINGIFY(func)); return arg_names; }(), \
+                      []{static constexpr auto arg_names = ::RAJA::detail::hip_api_arg_names(RAJA_STRINGIFY(func)); return arg_names; }(), \
                       std::forward_as_tuple(__VA_ARGS__),                 \
                       __FILE__, __LINE__);                                \
   }
@@ -169,13 +167,13 @@ RAJA_INLINE void hipAssert(hipError_t code,
   if (code != hipSuccess)
   {
     std::ostringstream str;
-    str << "HIPassert: ";
+    str << "HIP error: ";
     str << hipGetErrorString(code);
     str << " ";
     str << func_name;
     str << "(";
     const auto args_end = args_name.end();
-    for_each_tuple(args, [&, first=true, args_current=args_name.begin()](auto&& arg) mutable {
+    ::RAJA::for_each_tuple(args, [&, first=true, args_current=args_name.begin()](auto&& arg) mutable {
       if (!first) {
         str << ", ";
       } else {
@@ -206,6 +204,8 @@ RAJA_INLINE void hipAssert(hipError_t code,
     }
   }
 }
+
+}  // namespace detail
 
 }  // namespace RAJA
 

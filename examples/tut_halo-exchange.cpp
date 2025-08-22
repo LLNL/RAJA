@@ -139,9 +139,9 @@ struct pinned_allocator
 
     value_type *ptr = nullptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocHost, (void **)&ptr, num*sizeof(value_type));
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocHost, (void **)&ptr, num*sizeof(value_type));
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostMalloc, (void **)&ptr, num*sizeof(value_type));
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipHostMalloc, (void **)&ptr, num*sizeof(value_type));
 #endif
 
     if (!ptr) {
@@ -154,9 +154,9 @@ struct pinned_allocator
   void deallocate(value_type* ptr, size_t) noexcept
   {
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFreeHost, ptr);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFreeHost, ptr);
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipHostFree, ptr);
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipHostFree, ptr);
 #endif
   }
 };
@@ -883,11 +883,11 @@ int main(int argc, char **argv)
     for (int l = 0; l < num_neighbors; ++l) {
       int pack_len = pack_index_list_lengths[l];
       cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      cudaErrchk(cudaMemcpy, cuda_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), cudaMemcpyDefault);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, cuda_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), cudaMemcpyDefault);
 
       int unpack_len = unpack_index_list_lengths[l];
       cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      cudaErrchk(cudaMemcpy, cuda_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), cudaMemcpyDefault);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, cuda_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), cudaMemcpyDefault);
     }
 
     std::swap(vars,               cuda_vars);
@@ -942,7 +942,7 @@ int main(int argc, char **argv)
           buffer += len;
         }
 
-        cudaErrchk(cudaDeviceSynchronize);
+        RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
         // send single message
       }
@@ -970,7 +970,7 @@ int main(int argc, char **argv)
         }
       }
 
-      cudaErrchk(cudaDeviceSynchronize);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
       // _halo_exchange_cuda_forall_unpacking_end
 
       }
@@ -993,7 +993,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, cuda_unpack_index_lists);
 
     for (int v = 0; v < num_vars; ++v) {
-      cudaErrchk(cudaMemcpy, vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault);
       memoryManager::deallocate_gpu(cuda_vars[v]);
     }
 
@@ -1031,11 +1031,11 @@ int main(int argc, char **argv)
     for (int l = 0; l < num_neighbors; ++l) {
       int pack_len = pack_index_list_lengths[l];
       cuda_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      cudaErrchk(cudaMemcpy, cuda_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), cudaMemcpyDefault);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, cuda_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), cudaMemcpyDefault);
 
       int unpack_len = unpack_index_list_lengths[l];
       cuda_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      cudaErrchk(cudaMemcpy, cuda_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), cudaMemcpyDefault);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, cuda_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), cudaMemcpyDefault);
     }
 
     std::swap(vars,               cuda_vars);
@@ -1119,7 +1119,7 @@ int main(int argc, char **argv)
 
       worksite site_pack = group_pack.run();
 
-      cudaErrchk(cudaDeviceSynchronize);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
       // send all messages
       // _halo_exchange_cuda_workgroup_packing_end
@@ -1150,7 +1150,7 @@ int main(int argc, char **argv)
 
       worksite site_unpack = group_unpack.run();
 
-      cudaErrchk(cudaDeviceSynchronize);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
       // _halo_exchange_cuda_workgroup_unpacking_end
 
       }
@@ -1173,7 +1173,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, cuda_unpack_index_lists);
 
     for (int v = 0; v < num_vars; ++v) {
-      cudaErrchk(cudaMemcpy, vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, vars[v], cuda_vars[v], var_size * sizeof(double), cudaMemcpyDefault);
       memoryManager::deallocate_gpu(cuda_vars[v]);
     }
 
@@ -1218,11 +1218,11 @@ int main(int argc, char **argv)
     for (int l = 0; l < num_neighbors; ++l) {
       int pack_len = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy, hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice);
 
       int unpack_len = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy, hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice);
     }
 
     std::swap(vars,               hip_vars);
@@ -1277,7 +1277,7 @@ int main(int argc, char **argv)
           buffer += len;
         }
 
-        hipErrchk(hipDeviceSynchronize);
+        RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
 
         // send single message
       }
@@ -1305,7 +1305,7 @@ int main(int argc, char **argv)
         }
       }
 
-      hipErrchk(hipDeviceSynchronize);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
       // _halo_exchange_hip_forall_unpacking_end
 
       }
@@ -1328,7 +1328,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
     for (int v = 0; v < num_vars; ++v) {
-      hipErrchk(hipMemcpy, vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost);
       memoryManager::deallocate_gpu(hip_vars[v]);
     }
 
@@ -1367,11 +1367,11 @@ int main(int argc, char **argv)
     for (int l = 0; l < num_neighbors; ++l) {
       int pack_len = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy, hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice);
 
       int unpack_len = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy, hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice);
     }
 
     std::swap(vars,               hip_vars);
@@ -1455,7 +1455,7 @@ int main(int argc, char **argv)
 
       worksite site_pack = group_pack.run();
 
-      hipErrchk(hipDeviceSynchronize);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
 
       // send all messages
       // _halo_exchange_hip_workgroup_packing_end
@@ -1486,7 +1486,7 @@ int main(int argc, char **argv)
 
       worksite site_unpack = group_unpack.run();
 
-      hipErrchk(hipDeviceSynchronize);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
       // _halo_exchange_hip_workgroup_unpacking_end
 
       }
@@ -1509,7 +1509,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
     for (int v = 0; v < num_vars; ++v) {
-      hipErrchk(hipMemcpy, vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost);
       memoryManager::deallocate_gpu(hip_vars[v]);
     }
 
@@ -1547,11 +1547,11 @@ int main(int argc, char **argv)
     for (int l = 0; l < num_neighbors; ++l) {
       int pack_len = pack_index_list_lengths[l];
       hip_pack_index_lists[l] = memoryManager::allocate_gpu<int>(pack_len);
-      hipErrchk(hipMemcpy, hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, hip_pack_index_lists[l], pack_index_lists[l], pack_len * sizeof(int), hipMemcpyHostToDevice);
 
       int unpack_len = unpack_index_list_lengths[l];
       hip_unpack_index_lists[l] = memoryManager::allocate_gpu<int>(unpack_len);
-      hipErrchk(hipMemcpy, hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, hip_unpack_index_lists[l], unpack_index_lists[l], unpack_len * sizeof(int), hipMemcpyHostToDevice);
     }
 
     std::swap(vars,               hip_vars);
@@ -1650,7 +1650,7 @@ int main(int argc, char **argv)
 
       worksite site_pack = group_pack.run();
 
-      hipErrchk(hipDeviceSynchronize);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
 
       // send all messages
 
@@ -1677,7 +1677,7 @@ int main(int argc, char **argv)
 
       worksite site_unpack = group_unpack.run();
 
-      hipErrchk(hipDeviceSynchronize);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
 
       }
       timer.stop();
@@ -1699,7 +1699,7 @@ int main(int argc, char **argv)
     std::swap(unpack_index_lists, hip_unpack_index_lists);
 
     for (int v = 0; v < num_vars; ++v) {
-      hipErrchk(hipMemcpy, vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, vars[v], hip_vars[v], var_size * sizeof(double), hipMemcpyDeviceToHost);
       memoryManager::deallocate_gpu(hip_vars[v]);
     }
 

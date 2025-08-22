@@ -32,7 +32,7 @@ T *allocate(RAJA::Index_type size)
 {
   T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(
       cudaMallocManaged, (void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal);
 #else
   ptr = new T[size];
@@ -45,7 +45,7 @@ void deallocate(T *&ptr)
 {
   if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaFree, ptr);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
 #else
     delete[] ptr;
 #endif
@@ -59,9 +59,9 @@ void deallocate(T *&ptr)
   {
     T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMalloc, (void **)&ptr, sizeof(T) * size);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void **)&ptr, sizeof(T) * size);
 #elif defined(RAJA_ENABLE_HIP)
-    hipErrchk(hipMalloc, (void **)&ptr, sizeof(T) * size);
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void **)&ptr, sizeof(T) * size);
 #endif
     return ptr;
   }
@@ -71,9 +71,9 @@ void deallocate(T *&ptr)
   {
     if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaFree, ptr);
+      RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
 #elif defined(RAJA_ENABLE_HIP)
-      hipErrchk(hipFree, ptr);
+      RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, ptr);
 #endif
       ptr = nullptr;
     }
