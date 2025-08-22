@@ -149,11 +149,11 @@ stable(resources::Hip hip_res,
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_keys, d_temp_storage, temp_storage_bytes,
                                        d_keys, len, begin_bit, end_bit,
                                        stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortKeys, d_temp_storage,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortKeys, d_temp_storage,
                                               temp_storage_bytes, d_keys, len,
                                               begin_bit, end_bit, stream);
 #endif
@@ -164,11 +164,11 @@ stable(resources::Hip hip_res,
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_keys, d_temp_storage, temp_storage_bytes,
                                        d_keys, len, begin_bit, end_bit,
                                        stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortKeys, d_temp_storage,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortKeys, d_temp_storage,
                                               temp_storage_bytes, d_keys, len,
                                               begin_bit, end_bit, stream);
 #endif
@@ -179,7 +179,7 @@ stable(resources::Hip hip_res,
   {
 
     // copy
-    hipErrchk(hipMemcpyAsync, begin, d_out, len * sizeof(R), hipMemcpyDefault,
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpyAsync, begin, d_out, len * sizeof(R), hipMemcpyDefault,
                              stream);
   }
 
@@ -227,11 +227,11 @@ stable(resources::Hip hip_res,
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys_desc, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_keys_desc, d_temp_storage, temp_storage_bytes,
                                             d_keys, len, begin_bit, end_bit,
                                             stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortKeysDescending,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortKeysDescending,
       d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
       stream);
 #endif
@@ -242,11 +242,11 @@ stable(resources::Hip hip_res,
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_keys_desc, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_keys_desc, d_temp_storage, temp_storage_bytes,
                                             d_keys, len, begin_bit, end_bit,
                                             stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortKeysDescending,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortKeysDescending,
       d_temp_storage, temp_storage_bytes, d_keys, len, begin_bit, end_bit,
       stream);
 #endif
@@ -257,7 +257,7 @@ stable(resources::Hip hip_res,
   {
 
     // copy
-    hipErrchk(hipMemcpyAsync, begin, d_out, len * sizeof(R), hipMemcpyDefault,
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpyAsync, begin, d_out, len * sizeof(R), hipMemcpyDefault,
                              stream);
   }
 
@@ -444,11 +444,11 @@ stable_pairs(
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_pairs, d_temp_storage, temp_storage_bytes,
                                         d_keys, d_vals, len, begin_bit, end_bit,
                                         stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortPairs,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortPairs,
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
       end_bit, stream);
 #endif
@@ -459,11 +459,11 @@ stable_pairs(
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_pairs, d_temp_storage, temp_storage_bytes,
                                         d_keys, d_vals, len, begin_bit, end_bit,
                                         stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortPairs,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortPairs,
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
       end_bit, stream);
 #endif
@@ -474,14 +474,14 @@ stable_pairs(
   {
 
     // copy keys
-    hipErrchk(hipMemcpyAsync, keys_begin, d_keys_out, len * sizeof(K),
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpyAsync, keys_begin, d_keys_out, len * sizeof(K),
                              hipMemcpyDefault, stream);
   }
   if (detail::get_current(d_vals) == d_vals_out)
   {
 
     // copy vals
-    hipErrchk(hipMemcpyAsync, vals_begin, d_vals_out, len * sizeof(V),
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpyAsync, vals_begin, d_vals_out, len * sizeof(V),
                              hipMemcpyDefault, stream);
   }
 
@@ -538,11 +538,11 @@ stable_pairs(
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs_desc, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_pairs_desc, d_temp_storage, temp_storage_bytes,
                                              d_keys, d_vals, len, begin_bit,
                                              end_bit, stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortPairsDescending,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortPairsDescending,
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
       end_bit, stream);
 #endif
@@ -553,11 +553,11 @@ stable_pairs(
 
   // Run
 #if defined(__HIPCC__)
-  hipErrchk(::rocprim::radix_sort_pairs_desc, d_temp_storage, temp_storage_bytes,
+  RAJA_INTERNAL_HIP_CHECK_API_CALL(::rocprim::radix_sort_pairs_desc, d_temp_storage, temp_storage_bytes,
                                              d_keys, d_vals, len, begin_bit,
                                              end_bit, stream);
 #elif defined(__CUDACC__)
-  cudaErrchk(::cub::DeviceRadixSort::SortPairsDescending,
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(::cub::DeviceRadixSort::SortPairsDescending,
       d_temp_storage, temp_storage_bytes, d_keys, d_vals, len, begin_bit,
       end_bit, stream);
 #endif
@@ -568,14 +568,14 @@ stable_pairs(
   {
 
     // copy keys
-    hipErrchk(hipMemcpyAsync, keys_begin, d_keys_out, len * sizeof(K),
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpyAsync, keys_begin, d_keys_out, len * sizeof(K),
                              hipMemcpyDefault, stream);
   }
   if (detail::get_current(d_vals) == d_vals_out)
   {
 
     // copy vals
-    hipErrchk(hipMemcpyAsync, vals_begin, d_vals_out, len * sizeof(V),
+    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpyAsync, vals_begin, d_vals_out, len * sizeof(V),
                              hipMemcpyDefault, stream);
   }
 

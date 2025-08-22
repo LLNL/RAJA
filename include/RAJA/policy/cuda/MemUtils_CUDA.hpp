@@ -50,9 +50,9 @@ RAJA_INLINE
 cudaDeviceProp get_device_prop()
 {
   int device;
-  cudaErrchk(cudaGetDevice, &device);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaGetDevice, &device);
   cudaDeviceProp prop;
-  cudaErrchk(cudaGetDeviceProperties, &prop, device);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaGetDeviceProperties, &prop, device);
   return prop;
 }
 
@@ -73,14 +73,14 @@ struct PinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    cudaErrchk(cudaHostAlloc, &ptr, nbytes, cudaHostAllocMapped);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaHostAlloc, &ptr, nbytes, cudaHostAllocMapped);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFreeHost, ptr);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFreeHost, ptr);
     return true;
   }
 };
@@ -93,14 +93,14 @@ struct DeviceAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    cudaErrchk(cudaMalloc, &ptr, nbytes);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, &ptr, nbytes);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFree, ptr);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
     return true;
   }
 };
@@ -115,16 +115,16 @@ struct DeviceZeroedAllocator
   {
     auto res = ::camp::resources::Cuda::get_default();
     void* ptr;
-    cudaErrchk(cudaMalloc, &ptr, nbytes);
-    cudaErrchk(cudaMemsetAsync, ptr, 0, nbytes, res.get_stream());
-    cudaErrchk(cudaStreamSynchronize, res.get_stream());
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, &ptr, nbytes);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemsetAsync, ptr, 0, nbytes, res.get_stream());
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaStreamSynchronize, res.get_stream());
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFree, ptr);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
     return true;
   }
 };
@@ -137,12 +137,12 @@ struct DevicePinnedAllocator
   void* malloc(size_t nbytes)
   {
     int device;
-    cudaErrchk(cudaGetDevice, &device);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaGetDevice, &device);
     void* ptr;
-    cudaErrchk(cudaMallocManaged, &ptr, nbytes, cudaMemAttachGlobal);
-    cudaErrchk(
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &ptr, nbytes, cudaMemAttachGlobal);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(
         cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetPreferredLocation, device);
-    cudaErrchk(cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetAccessedBy,
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetAccessedBy,
                              cudaCpuDeviceId);
 
     return ptr;
@@ -151,7 +151,7 @@ struct DevicePinnedAllocator
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    cudaErrchk(cudaFree, ptr);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
     return true;
   }
 };
@@ -217,7 +217,7 @@ void synchronize()
   }
   if (synchronize)
   {
-    cudaErrchk(cudaDeviceSynchronize);
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   }
 }
 
@@ -275,14 +275,14 @@ void launch(const void* func,
             ::RAJA::resources::Cuda res,
             bool async = true)
 {
-  cudaErrchk(
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(
       cudaLaunchKernel, func, gridDim, blockDim, args, shmem, res.get_stream());
   launch(res, async);
 }
 
 //! Check for errors
 RAJA_INLINE
-void peekAtLastError() { cudaErrchk(cudaPeekAtLastError); }
+void peekAtLastError() { RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaPeekAtLastError); }
 
 //! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
@@ -321,7 +321,7 @@ RAJA_INLINE
 size_t maxDynamicShmem()
 {
   cudaFuncAttributes func_attr;
-  cudaErrchk(cudaFuncGetAttributes, &func_attr, detail::tl_status.func);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFuncGetAttributes, &func_attr, detail::tl_status.func);
   return func_attr.maxDynamicSharedSizeBytes;
 }
 
@@ -431,7 +431,7 @@ cuda_occupancy_max_blocks_threads(const void* func,
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
-    cudaErrchk(cudaOccupancyMaxPotentialBlockSize,
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaOccupancyMaxPotentialBlockSize,
         &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
         func, func_dynamic_shmem_per_block);
   }
@@ -460,7 +460,7 @@ cuda_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
     data.func_threads_per_block       = func_threads_per_block;
 
-    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block);
   }
@@ -484,7 +484,7 @@ cuda_occupancy_max_blocks(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
     data.func_threads_per_block       = func_threads_per_block;
 
-    cudaErrchk(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
+    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block);
   }

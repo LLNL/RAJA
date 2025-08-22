@@ -284,14 +284,14 @@ private:
  *  void* malloc(size_t nbytes)
  *  {
  *    void* ptr;
- *    cudaErrchk(cudaMalloc, &ptr, nbytes);
+ *    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, &ptr, nbytes);
  *    return ptr;
  *  }
  *
  *  // returns true on success, false on failure
  *  bool free(void* ptr)
  *  {
- *    cudaErrchk(cudaFree, ptr);
+ *    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
  *    return true;
  *  }
  * };

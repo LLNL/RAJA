@@ -116,16 +116,16 @@ GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
 
   NumericType * memaddr = nullptr;
   NumericType * proxy = nullptr;
-  cudaErrchk(cudaMallocManaged, (void **)&proxy, sizeof(NumericType));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&proxy, sizeof(NumericType));
   proxy = memaddr;
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
   // explicit constructor with memory address
   RAJA::AtomicRef<NumericType, AtomicPolicy> test0( memaddr );
   RAJA::AtomicRef<NumericType, AtomicPolicy> test1( proxy );
 
   forone<test_cuda>( [=] __device__ () {test1.getPointer();} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( test0.getPointer(), nullptr );
   ASSERT_EQ( test1.getPointer(), nullptr );
 
@@ -133,11 +133,11 @@ GPU_TYPED_TEST_P( AtomicRefCUDAConstructorUnitTest, CUDAConstructors )
   RAJA::AtomicRef<NumericType, AtomicPolicy> const & reft1 = test1;
   RAJA::AtomicRef<NumericType, AtomicPolicy> reftest1( reft1 );
   forone<test_cuda>( [=] __device__ () {reftest1.getPointer();} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
   ASSERT_EQ( reftest1.getPointer(), nullptr );
 
-  cudaErrchk(cudaFree, proxy);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, proxy);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAConstructorUnitTest,

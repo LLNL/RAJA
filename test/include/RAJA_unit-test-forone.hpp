@@ -53,8 +53,8 @@ template < typename L >
 inline void forone(test_cuda, L&& run)
 {
    forone_cuda_global<<<1,1>>>(std::forward<L>(run));
-   cudaErrchk(cudaGetLastError);
-   cudaErrchk(cudaDeviceSynchronize);
+   RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaGetLastError);
+   RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 }
 
 #endif
@@ -72,8 +72,8 @@ template < typename L >
 inline void forone(test_hip, L&& run)
 {
    hipLaunchKernelGGL(forone_hip_global<camp::decay<L>>, dim3(1), dim3(1), 0, 0, std::forward<L>(run));
-   hipErrchk(hipGetLastError);
-   hipErrchk(hipDeviceSynchronize);
+   RAJA_INTERNAL_HIP_CHECK_API_CALL(hipGetLastError);
+   RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
 }
 
 #endif

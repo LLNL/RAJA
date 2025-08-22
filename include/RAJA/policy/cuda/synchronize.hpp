@@ -39,7 +39,7 @@ namespace cuda
 RAJA_INLINE
 void synchronize_impl(const cuda_synchronize&)
 {
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 }
 
 

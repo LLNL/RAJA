@@ -84,39 +84,39 @@ GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
 
   T * result = nullptr;
   T * memaddr = nullptr;
-  cudaErrchk(cudaMallocManaged, &result, sizeof(T));
-  cudaErrchk(cudaMallocManaged, &memaddr, sizeof(T));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &result, sizeof(T));
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &memaddr, sizeof(T));
   memaddr[0] = (T)91;
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test min
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_min( (T)87 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)87 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = test1.min( (T)83 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)83 );
 
   // test max
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_max( (T)87 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)87 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = test1.max( (T)91 );} );
-  cudaErrchk(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)91 );
 
-  cudaErrchk(cudaDeviceSynchronize);
-  cudaErrchk(cudaFree, result);
-  cudaErrchk(cudaFree, memaddr);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, result);
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, memaddr);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAMinMaxUnitTest,
