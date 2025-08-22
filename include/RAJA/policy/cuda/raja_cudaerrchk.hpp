@@ -109,6 +109,7 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 ///
 #define RAJA_INTERNAL_CUDA_CHECK_API_CALL(func, ...)                      \
   do {                                                                    \
+    /* Avoid shadowing by adding 56792578 to variable names */            \
     cudaError_t code_56792578 = func(__VA_ARGS__);                        \
     if (code_56792578 != cudaSuccess) /* [[unlikely]] */                  \
     {                                                                     \
@@ -124,9 +125,10 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
     }                                                                     \
   } while(0)
 
-// returns a space separated string of the arguments to the given function
-// returns an empty string if func is unknown
-// no leading or trailing spaces
+//! Get the argument names for the given function name.
+//
+//  Returns a space separated string of the arguments to the given function.
+//  Returns an empty string if func is unknown.
 constexpr std::string_view cuda_api_arg_names(std::string_view func)
 {
   using storage_type = std::pair<std::string_view, std::string_view>;
@@ -158,6 +160,13 @@ constexpr std::string_view cuda_api_arg_names(std::string_view func)
   return "";
 }
 
+//! Report cuda errors by throwing an exception or printing to cerr
+//
+//  This function generates an error message by getting a string for the given
+//  cuda error code, function, argument names, arguments, and source location
+//  information. Uses StreamInsertHelper to stringify the types in args.
+//
+//  This function throws an exception if abort is true otherwise prints to cerr.
 template < typename Tuple >
 void reportCudaError(cudaError_t code,
                      std::string_view func_name,
