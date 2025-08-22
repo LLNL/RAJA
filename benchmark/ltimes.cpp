@@ -1139,7 +1139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1149,7 +1149,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
@@ -1233,7 +1233,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   timer.start();
 
 
@@ -1265,7 +1265,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   }
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
   timer.stop();
   double t = timer.elapsed();
@@ -1369,7 +1369,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   timer.start();
 
   auto seg_g = RAJA::TypedRangeSegment<IG>(0, num_g);
@@ -1415,7 +1415,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   }
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
 
   timer.stop();
   double t = timer.elapsed();
@@ -1598,7 +1598,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize, );
+  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
