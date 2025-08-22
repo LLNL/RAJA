@@ -20,3 +20,5 @@ set(CMAKE_CUDA_FLAGS_RELWITHDEBINFO "-g -lineinfo -O3 ${HOST_OPT_FLAGS}" CACHE S
 set(RAJA_DATA_ALIGN 64 CACHE STRING "")
 
 set(RAJA_HOST_CONFIG_LOADED On CACHE BOOL "")
+
+set(BLT_CMAKE_IMPLICIT_LINK_DIRECTORIES_EXCLUDE "/lib;/lib64;/usr/lib;/usr/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64;/usr/tce/packages/gcc/gcc-4.9.3/lib64/gcc/powerpc64le-unknown-linux-gnu/4.9.3" CACHE STRING "")

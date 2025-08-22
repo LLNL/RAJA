@@ -232,22 +232,22 @@ of those jobs and other RAJA-specific jobs are defined in
 
 **Each shared job will be run as-is unless it is overridden** in the RAJA local
 jobs file for the corresponding machine. For example, a shared job for the LC
-ruby machine may appear in the RADIUSS Spack Configs file 
-``gitlab/radiuss-jobs/ruby.yml`` as::
+dane machine may appear in the RADIUSS Spack Configs file 
+``gitlab/radiuss-jobs/dane.yml`` as::
 
   gcc_8_1_0:
     variables:
-      SPEC: "${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
-    extends: .job_on_ruby
+      SPEC: "${PROJECT_DANE_VARIANTS} %gcc@8.1.0 ${PROJECT_DANE_DEPS}"
+    extends: .job_on_dane
 
-and then may be overridden in the ``RAJA/.gitlab/jobs/ruby.yml``
+and then may be overridden in the ``RAJA/.gitlab/jobs/dane.yml``
 file as::
 
   gcc_8_1_0:
     variables:
-      SPEC: " ${PROJECT_RUBY_VARIANTS} %gcc@8.1.0 ${PROJECT_RUBY_DEPS}"
-      RUBY_JOB_ALLOC: "--time=60 --nodes=1"
-    extends: .job_on_ruby
+      SPEC: " ${PROJECT_DANE_VARIANTS} %gcc@8.1.0 ${PROJECT_DANE_DEPS}"
+      DANE_JOB_ALLOC: "--time=60 --nodes=1"
+    extends: .job_on_dane
 
 In this example, the Spack build spec is the same, but the job is configured
 with a specific timeout limit and number of nodes appropriate for RAJA testing.
@@ -261,9 +261,9 @@ also defined in the ``RAJA/.gitlab/jobs/<MACHINE>.yml`` files.  For example::
   clang_10_0_1_gcc_8_3_1_desul_atomics:
     variables:
       SPEC: " ~shared +openmp +tests +desul %clang@10.0.1 cxxflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1 cflags=--gcc-toolchain=/usr/tce/packages/gcc/gcc-8.3.1"
-    extends: .job_on_ruby
+    extends: .job_on_dane
 
-defines a RAJA job with desul atomics enabled to be run on the ruby machine.
+defines a RAJA job with desul atomics enabled to be run on the dane machine.
 
 .. important:: Each base compiler configuration that is used in GitLab CI
    testing must have a Spack spec defined for it in the appropriate file for
