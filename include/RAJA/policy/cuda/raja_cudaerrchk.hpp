@@ -202,6 +202,48 @@ RAJA_INLINE void cudaAssert(cudaError_t code,
 
 }  // namespace detail
 
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// DEPRECATED
+/// Utility assert method used in CUDA operations to report CUDA
+/// error codes when encountered.
+///
+///////////////////////////////////////////////////////////////////////
+///
+#define cudaErrchk(ans)                                                        \
+  {                                                                            \
+    ::RAJA::cudaAssert((ans), __FILE__, __LINE__);                             \
+  }
+
+/// DEPRECATED
+inline void cudaAssert(cudaError_t code,
+                       const char* file,
+                       int line,
+                       bool abort = true)
+{
+  if (code != cudaSuccess)
+  {
+    if (abort)
+    {
+      std::string msg;
+      msg += "CUDAassert: ";
+      msg += cudaGetErrorString(code);
+      msg += " ";
+      msg += file;
+      msg += ":";
+      msg += std::to_string(line);
+      throw std::runtime_error(msg);
+    }
+    else
+    {
+      fprintf(stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file,
+              line);
+    }
+  }
+}
+
 }  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)

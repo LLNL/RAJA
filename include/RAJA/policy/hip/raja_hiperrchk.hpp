@@ -207,6 +207,48 @@ RAJA_INLINE void hipAssert(hipError_t code,
 
 }  // namespace detail
 
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// DEPRECATED
+/// Utility assert method used in HIP operations to report HIP
+/// error codes when encountered.
+///
+///////////////////////////////////////////////////////////////////////
+///
+#define hipErrchk(ans)                                                         \
+  {                                                                            \
+    ::RAJA::hipAssert((ans), __FILE__, __LINE__);                              \
+  }
+
+/// DEPRECATED
+inline void hipAssert(hipError_t code,
+                      const char* file,
+                      int line,
+                      bool abort = true)
+{
+  if (code != hipSuccess)
+  {
+    if (abort)
+    {
+      std::string msg;
+      msg += "HIPassert: ";
+      msg += hipGetErrorString(code);
+      msg += " ";
+      msg += file;
+      msg += ":";
+      msg += std::to_string(line);
+      throw std::runtime_error(msg);
+    }
+    else
+    {
+      fprintf(stderr, "HIPassert: %s %s %d\n", hipGetErrorString(code), file,
+              line);
+    }
+  }
+}
+
 }  // namespace RAJA
 
 #endif  // closing endif for if defined(RAJA_ENABLE_HIP)
