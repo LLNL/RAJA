@@ -26,7 +26,10 @@
 
 #include <iostream>
 #include <utility>
+#include <algorithm>
 #include <tuple>
+#include <array>
+#include <string_view>
 #include <string>
 #include <sstream>
 #include <stdexcept>
@@ -110,17 +113,51 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
   {                                                                       \
     ::RAJA::cudaAssert(func(__VA_ARGS__),                                 \
                        RAJA_STRINGIFY(func),                              \
-                       RAJA_STRINGIFY(__VA_ARGS__),                       \
+                       []{static constexpr auto arg_names = ::RAJA::cuda_api_arg_names(RAJA_STRINGIFY(func)); return arg_names; }(), \
                        std::forward_as_tuple(__VA_ARGS__),                \
                        __FILE__, __LINE__);                               \
   }
 
+// returns a space separated string of the arguments to the given function
+// returns an empty string if func is unknown
+// no leading or trailing spaces
+constexpr std::string_view cuda_api_arg_names(std::string_view func)
+{
+  using storage_type = std::pair<std::string_view, std::string_view>;
+  constexpr std::array<storage_type, 18> known_functions{{
+    storage_type{"cudaDeviceSynchronize",                         ""},
+    storage_type{"cudaGetDevice",                                 "device"},
+    storage_type{"cudaGetDeviceProperties",                       "prop device"},
+    storage_type{"cudaStreamSynchronize",                         "stream"},
+    storage_type{"cudaHostAlloc",                                 "pHost size flags"},
+    storage_type{"cudaHostFree",                                  "ptr"},
+    storage_type{"cudaMalloc",                                    "devPtr size"},
+    storage_type{"cudaFree",                                      "devPtr"},
+    storage_type{"cudaMemset",                                    "devPtr value count"},
+    storage_type{"cudaMemcpy",                                    "dst src count kind"},
+    storage_type{"cudaMemsetAsync",                               "devPtr value count stream"},
+    storage_type{"cudaMemcpyAsync",                               "dst src count kind stream"},
+    storage_type{"cudaLaunchKernel",                              "func gridDim blockDim args sharedMem stream"},
+    storage_type{"cudaPeekAtLastError",                           ""},
+    storage_type{"cudaGetLastError",                              ""},
+    storage_type{"cudaFuncGetAttributes",                         "attr func"},
+    storage_type{"cudaOccupancyMaxPotentialBlockSize",            "minGridSize blockSize func dynamicSMemSize blockSizeLimit"},
+    storage_type{"cudaOccupancyMaxActiveBlocksPerMultiprocessor", "numBlocks func blockSize dynamicSMemSize"}
+  }};
+  for (auto [api_name, api_args] : known_functions) {
+    if (func == api_name) {
+      return api_args;
+    }
+  }
+  return "";
+}
+
 template < typename Tuple >
 RAJA_INLINE void cudaAssert(cudaError_t code,
-                            const char* func_name,
-                            const char* args_name,
+                            std::string_view func_name,
+                            std::string_view args_name,
                             Tuple const& args,
-                            const char* file,
+                            std::string_view file,
                             int line,
                             bool abort = true)
 {
@@ -132,13 +169,20 @@ RAJA_INLINE void cudaAssert(cudaError_t code,
     str << " ";
     str << func_name;
     str << "(";
-    str << args_name;
-    str << ")(";
-    for_each_tuple(args, [&, first=true](auto&& arg) mutable {
+    const auto args_end = args_name.end();
+    for_each_tuple(args, [&, first=true, args_current=args_name.begin()](auto&& arg) mutable {
       if (!first) {
         str << ", ";
       } else {
         first = false;
+      }
+      if (args_current != args_end) {
+        auto args_current_end = std::find(args_current, args_end, ' ');
+        str << std::string_view{args_current, size_t(args_current_end-args_current)} << "=";
+        if (args_current_end != args_end) {
+          ++args_current_end; // skip space
+        }
+        args_current = args_current_end;
       }
       str << ::RAJA::detail::StreamInsertHelper{arg};
     });
