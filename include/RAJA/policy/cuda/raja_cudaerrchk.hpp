@@ -110,7 +110,7 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 #define RAJA_INTERNAL_CUDA_CHECK_API_CALL(func, ...)                      \
   do {                                                                    \
     cudaError_t code_56792578 = func(__VA_ARGS__);                        \
-    if (code_56792578 != cudaSuccess)                                     \
+    if (code_56792578 != cudaSuccess) /* [[unlikely]] */                  \
     {                                                                     \
       static constexpr auto func_name_56792578 = RAJA_STRINGIFY(func);    \
       static constexpr auto arg_names_56792578 =                          \
