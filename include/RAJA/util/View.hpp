@@ -163,7 +163,7 @@ struct MultiView
   nc_pointer_type data;
 
   RAJA_INLINE constexpr MultiView()
-      : layout(RAJA::Layout<1>),
+      : layout(RAJA::Layout<1>()),
         data(nullptr)
   {}
 
@@ -186,18 +186,20 @@ struct MultiView
   template<bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
       typename std::enable_if<IsConstView, NonConstView>::type const& rhs)
-      : layout(rhs.layout),
-        data(rhs.data)
+      : layout(rhs.get_layout()),
+        data(rhs.get_data())
   {}
 
   template<typename... Args>
-  RAJA_INLINE void set_layout(Args... dim_sizes) : layout(dim_sizes...) {}
+  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(Args... dim_sizes) { layout(dim_sizes...); }
 
-  RAJA_INLINE void set_layout(layout_type&& ly) : layout(ly) {}
+  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type&& ly) { layout(ly); }
 
-  RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
+  RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
-  RAJA_INLINE constexpr layout_type const& get_layout() const { return layout; }
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr layout_type const& get_layout() const { return layout; }
+
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr pointer_type const& get_data() const { return data; }
 
   template<size_t n_dims = layout_type::n_dims, typename IdxLin = Index_type>
   RAJA_INLINE RAJA::
