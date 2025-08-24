@@ -76,6 +76,10 @@ void callInitPlugins(const PluginOptions p)
   for (auto plugin = PluginRegistry::begin(); plugin != PluginRegistry::end();
        ++plugin)
   {
+
+    //If the Caliper library is found turn on internal variable
+    p.str.find("libcaliper_plugin") != std::string::npos ?
+      RAJA::expt::detail::RAJA_caliper_profile = true : RAJA::expt::detail::RAJA_caliper_profile;
     (*plugin).get()->init(p);
   }
 }

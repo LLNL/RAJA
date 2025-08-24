@@ -20,11 +20,6 @@ namespace expt
 namespace detail
 {
 
-// Internal variable to toggle Caliper profiling on and off
-// Users have access to a global function.
-// Function is defined later in this file.
-inline bool RAJA_caliper_profile = false;
-
 template<typename... Params>
 RAJA_HOST_DEVICE constexpr auto filter_reducers(camp::tuple<Params...>& params)
 {
@@ -620,13 +615,7 @@ RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params,
 
 //===========================================================================
 
-// Global function to toggle Caliper profiling on and off
-inline void SetRAJACaliperProfiling(bool enable)
-{
-  ::RAJA::expt::detail::RAJA_caliper_profile = enable;
-}
-
-}
+} //expt
 
 }  //  namespace RAJA
 
