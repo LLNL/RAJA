@@ -620,12 +620,12 @@ RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params,
 
 //===========================================================================
 
-}  //  namespace expt
-
 // Global function to toggle Caliper profiling on and off
 inline void SetRAJACaliperProfiling(bool enable)
 {
   ::RAJA::expt::detail::RAJA_caliper_profile = enable;
+}
+
 }
 
 }  //  namespace RAJA
