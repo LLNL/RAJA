@@ -40,6 +40,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n\nRAJA daxpy example...\n";
 
 //
+// Enable Caliper profiling for RAJA
+//
+  RAJA::SetRAJACaliperProfiling(true);
+  
+//
 // Define vector length
 //
   const int N = 1000000;

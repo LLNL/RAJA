@@ -10,14 +10,14 @@
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-  //RAJA::util::init_plugins("./lib/libtimer_plugin.so");
+  RAJA::util::init_plugins("./lib/libtimer_plugin.so");
   RAJA::util::init_plugins("./lib/libcaliper_plugin.so");  
 
 
   double *a = new double[10];
   for (int i = 0; i < 4; i++)
   {
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10), RAJA::Name("MyKernel"), [=](int i) {
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 10), RAJA::Name("My Kernel"), [=](int i) {
       a[i] = 0;
     });
   }
