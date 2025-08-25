@@ -169,6 +169,17 @@ raja_add_plugin_library(NAME caliper_plugin
                         SHARED TRUE
                         SOURCES src/plugins/caliper-plugin.cpp)
 
+# Link stdc++fs if needed
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+    target_link_libraries(caliper_plugin stdc++fs)
+  endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(FILESYSTEM_LIB stdc++fs)
+endif()
+
 # Install
 install(TARGETS caliper_plugin
   ARCHIVE DESTINATION lib
