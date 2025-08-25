@@ -151,6 +151,11 @@ endif ()
 set (raja_depends)
 
 if (RAJA_ENABLE_CALIPER)
+
+if (RAJA_ENABLE_CUDA)
+find_package(CUDAToolkit)
+endif()
+
 set (raja_depends
     ${raja_depends}
     caliper)
@@ -158,6 +163,30 @@ set (raja_depends
     NO_DEFAULT_PATH
     PATHS ${caliper_DIR}
   )
+
+# Create a plugin library
+raja_add_plugin_library(NAME caliper_plugin
+                        SHARED TRUE
+                        SOURCES src/plugins/caliper-plugin.cpp)
+
+# Link stdc++fs if needed
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0)
+    target_link_libraries(caliper_plugin stdc++fs)
+  endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(FILESYSTEM_LIB stdc++fs)
+endif()
+
+# Install
+install(TARGETS caliper_plugin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+  )
+
 endif()
 
 if (RAJA_ENABLE_OPENMP)
