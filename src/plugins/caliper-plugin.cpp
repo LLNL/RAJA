@@ -30,7 +30,6 @@ void CaliperPlugin::postLaunch(const RAJA::util::PluginContext& p) override
     CALI_MARK_END(p.kernel_name.c_str());
   }
 }
-};
 
 void linkCaliperPlugin() {}
 
