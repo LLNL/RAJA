@@ -5,32 +5,37 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/PluginStrategy.hpp"
+#include "RAJA/util/CaliperPlugin.hpp"
 
 #include <iostream>
 #include <caliper/cali.h>
 
-class CaliperPlugin : public RAJA::util::PluginStrategy
+namespace RAJA
 {
-public:
-  void preLaunch(const RAJA::util::PluginContext& p) override
-  {
-    if (!p.kernel_name.empty())
-    {
-      CALI_MARK_BEGIN(p.kernel_name.c_str());
-    }
-  }
+namespace util
+{
 
-  void postLaunch(const RAJA::util::PluginContext& p) override
+void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p) override
+{
+  if (!p.kernel_name.empty())
   {
-    if (!p.kernel_name.empty())
-    {
-      CALI_MARK_END(p.kernel_name.c_str());
-    }
+    CALI_MARK_BEGIN(p.kernel_name.c_str());
   }
+}
 
-private:
+void CaliperPlugin::postLaunch(const RAJA::util::PluginContext& p) override
+{
+  if (!p.kernel_name.empty())
+  {
+    CALI_MARK_END(p.kernel_name.c_str());
+  }
+}
 };
+
+void linkCaliperPlugin() {}
+
+}  // namespace util
+}  // namespace RAJA
 
 // Dynamically loading plugin.
 extern "C" RAJA::util::PluginStrategy* RAJAGetPlugin()
