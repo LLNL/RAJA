@@ -11,6 +11,7 @@
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
 #include <iostream>
+
 namespace RAJA
 {
 namespace util

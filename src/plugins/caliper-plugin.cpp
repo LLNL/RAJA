@@ -18,17 +18,19 @@ namespace util
 CaliperPlugin::CaliperPlugin()
 {
   const std::string varName = "RAJA_CALIPER";
-  const char* val = std::getenv(varName.c_str());
-  if (val == nullptr) {
+  const char* val           = std::getenv(varName.c_str());
+  if (val == nullptr)
+  {
     return;
   }
-  
+
   ::RAJA::expt::detail::RAJA_caliper_profile = true;
 }
 
 void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p)
 {
-  if (!p.kernel_name.empty() && ::RAJA::expt::detail::RAJA_caliper_profile == true)
+  if (!p.kernel_name.empty() &&
+      ::RAJA::expt::detail::RAJA_caliper_profile == true)
   {
     CALI_MARK_BEGIN(p.kernel_name.c_str());
   }
@@ -36,7 +38,8 @@ void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p)
 
 void CaliperPlugin::postLaunch(const RAJA::util::PluginContext& p)
 {
-  if (!p.kernel_name.empty() && ::RAJA::expt::detail::RAJA_caliper_profile == true)
+  if (!p.kernel_name.empty() &&
+      ::RAJA::expt::detail::RAJA_caliper_profile == true)
   {
     CALI_MARK_END(p.kernel_name.c_str());
   }
