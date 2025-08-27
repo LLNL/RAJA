@@ -410,12 +410,9 @@ std::string get_kernel_name_helper(
 template<typename... Args>
 std::string get_kernel_name(Args&&... args)
 {
-
-  //
-  // Empty strings do not get profiled in our Caliper plugin
-  //
-  return get_kernel_name_helper(camp::forward_as_tuple(std::forward<Args>(args)...),
-				std::make_index_sequence<sizeof...(Args)> {});
+  return get_kernel_name_helper(
+      camp::forward_as_tuple(std::forward<Args>(args)...),
+      std::make_index_sequence<sizeof...(Args)> {});
 }
 
 //===========================================================================
@@ -612,8 +609,7 @@ RAJA_HOST_DEVICE constexpr auto invoke_body(Params&& params,
 
 //===========================================================================
 
-} //expt
-
+}  //  namespace expt
 }  //  namespace RAJA
 
 #endif  //  FORALL_PARAM_HPP
