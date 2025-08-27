@@ -97,9 +97,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running RAJA sequential daxpy...\n";
    
-  std::memcpy( a, a0, N * sizeof(double) );  
+  std::memcpy( a, a0, N * sizeof(double) );
+  //::RAJA::expt::detail::RAJA_caliper_profile = 1;
+  std::cout<<" ::RAJA::expt::detail::RAJA_caliper_profile "<<
+    ::RAJA::expt::detail::RAJA_caliper_profile<<std::endl;
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), RAJA::Name("my kernel"), [=] (int i) {
     a[i] += b[i] * c;
   });
 

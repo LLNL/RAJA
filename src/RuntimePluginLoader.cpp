@@ -24,13 +24,20 @@ namespace RAJA
 namespace util
 {
 
+//TODO (08/27/25): Add a controller plugin class that enables plugins
+//based on environement variables this would be its own class
+//we would add in the linkCaliperPlugin() bit as well as the 
+// RAJA::util::PluginRegistry::add<RAJA::util::ControllerPlugin>
+
 RuntimePluginLoader::RuntimePluginLoader()
 {
+  //Have a collection of plugins, then do a string matching
   char* env = ::getenv("RAJA_PLUGINS");
   if (nullptr == env)
   {
     return;
   }
+
   initDirectory(std::string(env));
 }
 

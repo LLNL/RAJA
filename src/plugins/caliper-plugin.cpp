@@ -15,7 +15,20 @@ namespace RAJA
 namespace util
 {
 
-void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p) override
+void CaliperPlugin::init(const RAJA::util::PluginOptions& p)
+{
+  std::cout<<"init caliper plugin"<<std::endl;
+  const std::string varName = "RAJA_CALIPER";
+  const char* val = std::getenv(varName.c_str());
+  if (val == nullptr) {
+    return;
+  }
+  
+  ::RAJA::expt::detail::RAJA_caliper_profile = true;
+  return;
+}
+
+void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p)
 {
   if (!p.kernel_name.empty())
   {
@@ -23,7 +36,7 @@ void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p) override
   }
 }
 
-void CaliperPlugin::postLaunch(const RAJA::util::PluginContext& p) override
+void CaliperPlugin::postLaunch(const RAJA::util::PluginContext& p)
 {
   if (!p.kernel_name.empty())
   {
@@ -37,12 +50,12 @@ void linkCaliperPlugin() {}
 }  // namespace RAJA
 
 // Dynamically loading plugin.
-extern "C" RAJA::util::PluginStrategy* RAJAGetPlugin()
-{
-  return new CaliperPlugin;
-}
+//extern "C" RAJA::util::PluginStrategy* RAJAGetPlugin()
+//{
+//return new RAJA::util::CaliperPlugin;
+//}
 
 // Statically loading plugin.
-static RAJA::util::PluginRegistry::add<CaliperPlugin> P(
+static RAJA::util::PluginRegistry::add<RAJA::util::CaliperPlugin> P(
     "Caliper",
     "Enables Caliper Profiling");

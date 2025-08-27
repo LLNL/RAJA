@@ -145,6 +145,7 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
   set (raja_sources
     ${raja_sources}
     src/RuntimePluginLoader.cpp
+    src/plugins/caliper-plugin.cpp
     src/KokkosPluginLoader.cpp)
 endif ()
 
@@ -165,16 +166,16 @@ set (raja_depends
   )
 
 # Create a plugin library
-raja_add_plugin_library(NAME caliper_plugin
-                        SHARED TRUE
-                        SOURCES src/plugins/caliper-plugin.cpp)
+#raja_add_plugin_library(NAME caliper_plugin
+#                        SHARED TRUE
+#                        SOURCES src/plugins/caliper-plugin.cpp)
 
 # Install
-install(TARGETS caliper_plugin
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib
-  )
+#install(TARGETS caliper_plugin
+#  ARCHIVE DESTINATION lib
+#  LIBRARY DESTINATION lib
+#  RUNTIME DESTINATION lib
+#  )
 
 endif()
 

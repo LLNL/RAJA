@@ -42,7 +42,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Enable Caliper profiling for RAJA
 //
-  RAJA::SetRAJACaliperProfiling(true);
+  //RAJA::SetRAJACaliperProfiling(true);
   
 //
 // Define vector length
