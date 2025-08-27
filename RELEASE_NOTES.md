@@ -22,6 +22,22 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2025.09.0 -- Release date 2025-09-DD
+============================================
+
+This release contains .....
+
+Notable changes include:
+
+  * New features / API changes:
+
+  * Build changes/improvements:
+    * Updated to NVTX3 profiling library to support CUDA 12.9 and above (also supports back to CUDA 10)
+    * Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
+
+  * Bug fixes/improvements:
+
+
 Version 2025.03.2 -- Release date 2025-05-14
 ============================================
 
