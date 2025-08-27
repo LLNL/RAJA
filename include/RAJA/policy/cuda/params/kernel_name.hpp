@@ -6,7 +6,7 @@
 #include <cuda.h>
 
 #if defined(RAJA_ENABLE_NVTX)
-#include <nvToolsExt.h>
+#include <nvtx3/nvToolsExt.h>
 #endif
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
