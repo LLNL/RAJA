@@ -15,7 +15,7 @@ namespace RAJA
 namespace util
 {
 
-void CaliperPlugin::init(const RAJA::util::PluginOptions& p)
+CaliperPlugin::CaliperPlugin()
 {
   std::cout<<"init caliper plugin"<<std::endl;
   const std::string varName = "RAJA_CALIPER";
@@ -25,11 +25,11 @@ void CaliperPlugin::init(const RAJA::util::PluginOptions& p)
   }
   
   ::RAJA::expt::detail::RAJA_caliper_profile = true;
-  return;
 }
 
 void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p)
 {
+  std::cout<<"Calling prelaunch"<<std::endl;
   if (!p.kernel_name.empty())
   {
     CALI_MARK_BEGIN(p.kernel_name.c_str());

@@ -10,7 +10,7 @@
 
 #include "RAJA/util/PluginOptions.hpp"
 #include "RAJA/util/PluginStrategy.hpp"
-
+#include <iostream>
 namespace RAJA
 {
 namespace util
@@ -19,9 +19,9 @@ namespace util
 class CaliperPlugin : public ::RAJA::util::PluginStrategy
 {
 public:
-  CaliperPlugin() = default;
+  CaliperPlugin();
 
-  void init(const RAJA::util::PluginOptions& p) override;
+  //void init(const RAJA::util::PluginOptions& p) override;
 
   void preLaunch(const RAJA::util::PluginContext& p) override;
 
