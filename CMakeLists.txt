@@ -165,18 +165,6 @@ set (raja_depends
     PATHS ${caliper_DIR}
   )
 
-# Create a plugin library
-#raja_add_plugin_library(NAME caliper_plugin
-#                        SHARED TRUE
-#                        SOURCES src/plugins/caliper-plugin.cpp)
-
-# Install
-#install(TARGETS caliper_plugin
-#  ARCHIVE DESTINATION lib
-#  LIBRARY DESTINATION lib
-#  RUNTIME DESTINATION lib
-#  )
-
 endif()
 
 if (RAJA_ENABLE_OPENMP)
