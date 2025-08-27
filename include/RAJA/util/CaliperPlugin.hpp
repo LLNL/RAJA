@@ -21,8 +21,6 @@ class CaliperPlugin : public ::RAJA::util::PluginStrategy
 public:
   CaliperPlugin();
 
-  //void init(const RAJA::util::PluginOptions& p) override;
-
   void preLaunch(const RAJA::util::PluginContext& p) override;
 
   void postLaunch(const RAJA::util::PluginContext& p) override;

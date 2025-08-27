@@ -600,7 +600,8 @@ namespace expt {
     inline bool RAJA_caliper_profile = false;
   }
 
-  // Global function to toggle Caliper profiling on and off
+  // Experimental global function to toggle Caliper
+  // profiling on and off
   inline void SetRAJACaliperProfiling(bool enable)
   {
     ::RAJA::expt::detail::RAJA_caliper_profile = enable;

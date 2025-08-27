@@ -48,9 +48,6 @@ cmake \
   -DCMAKE_CUDA_COMPILER=/usr/tce/packages/cuda/cuda-${COMP_NVCC_VER}/bin/nvcc \
   -DCMAKE_CUDA_ARCHITECTURES=${COMP_ARCH} \
   -DENABLE_BENCHMARKS=On \
-  -DRAJA_ENABLE_CALIPER=ON \
-  -Dcaliper_DIR=/usr/WS1/vargas45/MARBL_CALIPER/Caliper/build/share/cmake/caliper \
-  -DRAJA_ENABLE_RUNTIME_PLUGINS=ON \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \
   ..

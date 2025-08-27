@@ -17,7 +17,6 @@ namespace util
 
 CaliperPlugin::CaliperPlugin()
 {
-  std::cout<<"init caliper plugin"<<std::endl;
   const std::string varName = "RAJA_CALIPER";
   const char* val = std::getenv(varName.c_str());
   if (val == nullptr) {
@@ -29,8 +28,7 @@ CaliperPlugin::CaliperPlugin()
 
 void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p)
 {
-  std::cout<<"Calling prelaunch"<<std::endl;
-  if (!p.kernel_name.empty())
+  if (!p.kernel_name.empty() && ::RAJA::expt::detail::RAJA_caliper_profile == true)
   {
     CALI_MARK_BEGIN(p.kernel_name.c_str());
   }
@@ -38,7 +36,7 @@ void CaliperPlugin::preLaunch(const RAJA::util::PluginContext& p)
 
 void CaliperPlugin::postLaunch(const RAJA::util::PluginContext& p)
 {
-  if (!p.kernel_name.empty())
+  if (!p.kernel_name.empty() && ::RAJA::expt::detail::RAJA_caliper_profile == true)
   {
     CALI_MARK_END(p.kernel_name.c_str());
   }
@@ -48,12 +46,6 @@ void linkCaliperPlugin() {}
 
 }  // namespace util
 }  // namespace RAJA
-
-// Dynamically loading plugin.
-//extern "C" RAJA::util::PluginStrategy* RAJAGetPlugin()
-//{
-//return new RAJA::util::CaliperPlugin;
-//}
 
 // Statically loading plugin.
 static RAJA::util::PluginRegistry::add<RAJA::util::CaliperPlugin> P(
