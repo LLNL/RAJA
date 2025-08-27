@@ -107,10 +107,13 @@ struct Teams
   constexpr Teams(int i, int j, int k) : value {i, j, k} {}
 };
 
+template<size_t DIM=3>
 struct Threads
 {
-  int value[3];
 
+  std::array<int, DIM> value;
+  // int value[DIM];
+#if 1
   RAJA_INLINE
 
   RAJA_HOST_DEVICE
@@ -130,35 +133,26 @@ struct Threads
 
   RAJA_HOST_DEVICE
   constexpr Threads(int i, int j, int k) : value {i, j, k} {}
+
+  //#else
+  template<typename... Args>
+  constexpr Threads(Args... args) : value {static_cast<int>(args)...} {};
+#endif
 };
 
-struct Lanes
-{
-  int value;
-
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  constexpr Lanes() : value(0) {}
-
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  constexpr Lanes(int i) : value(i) {}
-};
-
+template<size_t ThreadDIM = 3>
 struct LaunchParams
 {
 public:
   Teams teams;
-  Threads threads;
+  Threads<ThreadDIM> threads;
   size_t shared_mem_size;
 
   RAJA_INLINE
   LaunchParams() = default;
 
   LaunchParams(Teams in_teams,
-               Threads in_threads,
+               Threads<ThreadDIM> in_threads,
                size_t in_shared_mem_size = 0)
       : teams(in_teams),
         threads(in_threads),
@@ -170,10 +164,12 @@ private:
   RAJA_INLINE
   Teams apply(Teams const& a) { return (teams = a); }
 
+  /*
   RAJA_HOST_DEVICE
 
   RAJA_INLINE
   Threads apply(Threads const& a) { return (threads = a); }
+  */
 };
 
 class LaunchContext
@@ -184,6 +180,10 @@ public:
   size_t shared_mem_offset;
 
   void* shared_mem_ptr;
+
+  //hardcoded for now...
+  std::array<int, 6> thread_dim;
+  std::array<int, 6> thread_id;
 
 #if defined(RAJA_ENABLE_SYCL)
   mutable ::sycl::nd_item<3>* itm;
@@ -246,8 +246,8 @@ struct LaunchExecute;
 
 // Duplicate of code above on account that we need to support the case in which
 // a kernel_name is not given
-template<typename LAUNCH_POLICY, typename... ReduceParams>
-void launch(LaunchParams const& launch_params,
+template<typename LAUNCH_POLICY, size_t ThreadDIM = 3, typename... ReduceParams>
+void launch(LaunchParams<ThreadDIM> const& launch_params,
             ReduceParams&&... rest_of_launch_args)
 {
   // Get reducers
@@ -288,17 +288,19 @@ void launch(LaunchParams const& launch_params,
 //=================================================
 // Run time based policy launch
 //=================================================
-template<typename POLICY_LIST, typename BODY>
-void launch(ExecPlace place, LaunchParams const& params, BODY const& body)
+template<typename POLICY_LIST, size_t ThreadDIM = 3, typename BODY>
+void launch(ExecPlace place,
+            LaunchParams<ThreadDIM> const& params,
+            BODY const& body)
 {
   launch<POLICY_LIST>(place, params, body);
 }
 
 // Run-time API for new reducer interface with support of the case without a new
 // kernel name
-template<typename POLICY_LIST, typename... ReduceParams>
+template<typename POLICY_LIST, size_t ThreadDIM = 3, typename... ReduceParams>
 void launch(ExecPlace place,
-            const LaunchParams& launch_params,
+            LaunchParams<ThreadDIM> const& launch_params,
             ReduceParams&&... rest_of_launch_args)
 // BODY const &body)
 {
@@ -367,10 +369,10 @@ RAJA::resources::Resource Get_Host_Resource(T host_res, RAJA::ExecPlace device)
 
 // Duplicate of API above on account that we need to handle the case that a
 // kernel name is not provided
-template<typename POLICY_LIST, typename... ReduceParams>
+template<typename POLICY_LIST, size_t ThreadDIM = 3, typename... ReduceParams>
 resources::EventProxy<resources::Resource> launch(
     RAJA::resources::Resource res,
-    LaunchParams const& launch_params,
+    LaunchParams<ThreadDIM> const& launch_params,
     ReduceParams&&... rest_of_launch_args)
 {
 
