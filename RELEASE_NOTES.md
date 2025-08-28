@@ -16,6 +16,24 @@ Notable changes include:
   * New features / API changes:
 
   * Build changes/improvements:
+    * Updated to NVTX3 profiling library to support CUDA 12.9 and above (also supports back to CUDA 10)
+    * Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
+
+  * Bug fixes/improvements:
+
+
+Version 2025.09.0 -- Release date 2025-09-DD
+============================================
+
+This release contains .....
+
+Notable changes include:
+
+  * New features / API changes:
+
+  * Build changes/improvements:
+    * Updated to NVTX3 profiling library to support CUDA 12.9 and above (also supports back to CUDA 10)
+    * Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
 
   * Bug fixes/improvements:
 
@@ -28,7 +46,7 @@ This release contains bugfixes
      * Build changes/improvements:
        * Removed unused variables related to kernel naming
        * Added missing host device annotations on missing param reducers
-       * CMAKE build option to allow for use of OpenMP 5.1 atomics for min/max operations. The option is on by default.
+       * CMake build option to allow for use of OpenMP 5.1 atomics for min/max operations. The option is on by default.
        * Full backwards compatibility of kernel naming and lambda capture style reducers.
        * Removed compiler warnings related to NVCC and loop unrolling
 

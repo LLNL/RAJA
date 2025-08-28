@@ -42,18 +42,24 @@ if (RAJA_ENABLE_CUDA)
   endif()
 endif ()
 
-if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NV_TOOLS_EXT)
-  find_package(NvToolsExt)
-  if (NVTOOLSEXT_FOUND)
-    blt_import_library( NAME       nvtoolsext
-                        TREAT_INCLUDES_AS_SYSTEM ON
-                        INCLUDES   ${NVTOOLSEXT_INCLUDE_DIRS}
-                        LIBRARIES  ${NVTOOLSEXT_LIBRARY}
-                        EXPORTABLE ON
-                      )
-  else()
-    message(FATAL_ERROR "NvToolsExt not found, NVTOOLSEXT_DIR=${NVTOOLSEXT_DIR}.")
-  endif()
+if (RAJA_ENABLE_CUDA AND RAJA_ENABLE_NVTX)
+  # NVTX3 is included in the CUDA toolkit starting in CUDA 10.
+  find_package(CUDAToolkit 10 REQUIRED)
+
+  # TODO: Always use CUDA::nvtx3 when we require CMake 3.25 and above.
+  if (TARGET CUDA::nvtx3)
+    blt_import_library(NAME nvtx3
+                       DEPENDS_ON CUDA::nvtx3
+                       EXPORTABLE ON)
+  else ()
+    # The FindCUDAToolkit module in CMake 3.25 and above adds ${CMAKE_DL_LIBS}
+    # as a dependency to the CUDA::nvtx3 target, so we do the same.
+    blt_import_library(NAME nvtx3
+                       INCLUDES ${CUDAToolkit_INCLUDE_DIRS}
+                       TREAT_INCLUDES_AS_SYSTEM ON
+                       DEPENDS_ON ${CMAKE_DL_LIBS}
+                       EXPORTABLE ON)
+  endif ()
 endif ()
 
 if (RAJA_ENABLE_HIP)
@@ -93,7 +99,7 @@ if (RAJA_ENABLE_HIP AND RAJA_ENABLE_ROCTX)
 endif ()
 
 set(TPL_DEPS)
-blt_list_append(TO TPL_DEPS ELEMENTS nvtoolsext IF RAJA_ENABLE_NV_TOOLS_EXT)
+blt_list_append(TO TPL_DEPS ELEMENTS nvtx3 IF RAJA_ENABLE_NVTX)
 blt_list_append(TO TPL_DEPS ELEMENTS cub IF RAJA_ENABLE_EXTERNAL_CUB)
 blt_list_append(TO TPL_DEPS ELEMENTS rocPRIM IF RAJA_ENABLE_EXTERNAL_ROCPRIM)
 blt_list_append(TO TPL_DEPS ELEMENTS roctx IF RAJA_ENABLE_ROCTX)
