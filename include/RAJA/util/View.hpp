@@ -163,7 +163,7 @@ struct MultiView
   nc_pointer_type data;
 
   RAJA_INLINE constexpr MultiView()
-      : layout(RAJA::Layout<1>()),
+      : layout(layout_type()),
         data(nullptr)
   {}
 
@@ -189,9 +189,6 @@ struct MultiView
       : layout(rhs.get_layout()),
         data(rhs.get_data())
   {}
-
-  template<typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(Args... dim_sizes) { layout(dim_sizes...); }
 
   RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type&& ly) { layout(ly); }
 
