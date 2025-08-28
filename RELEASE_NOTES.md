@@ -16,8 +16,6 @@ Notable changes include:
   * New features / API changes:
 
   * Build changes/improvements:
-    * Updated to NVTX3 profiling library to support CUDA 12.9 and above (also supports back to CUDA 10)
-    * Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
 
   * Bug fixes/improvements:
 
