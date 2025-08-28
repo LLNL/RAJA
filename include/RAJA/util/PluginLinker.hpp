@@ -22,7 +22,9 @@ struct pluginLinker
   {
     (void)RAJA::util::linkRuntimePluginLoader();
     (void)RAJA::util::linkKokkosPluginLoader();
+#if defined(RAJA_ENABLE_CALIPER)
     (void)RAJA::util::linkCaliperPlugin();
+#endif
   }
 } pluginLinker;
 }  // namespace anonymous_RAJA

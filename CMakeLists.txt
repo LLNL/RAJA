@@ -145,8 +145,12 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
   set (raja_sources
     ${raja_sources}
     src/RuntimePluginLoader.cpp
-    src/plugins/caliper-plugin.cpp
     src/KokkosPluginLoader.cpp)
+
+if (RAJA_ENABLE_CALIPER)
+   list(APPEND raja_sources src/plugins/caliper-plugin.cpp)
+endif ()
+
 endif ()
 
 set (raja_depends)

@@ -12,6 +12,8 @@
 #include "RAJA/util/PluginStrategy.hpp"
 #include <iostream>
 
+#if defined(RAJA_ENABLE_CALIPER)
+
 namespace RAJA
 {
 namespace util
@@ -31,5 +33,7 @@ void linkCaliperPlugin();
 
 }  // end namespace util
 }  // end namespace RAJA
+
+#endif
 
 #endif
