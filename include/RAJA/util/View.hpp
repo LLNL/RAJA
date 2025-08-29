@@ -207,7 +207,7 @@ struct MultiView
     shift_layout.shift(shift);
 
     return RAJA::MultiView<ValueType, typename add_offset<layout_type>::type,
-                           P2Pidx>(data, shift_layout);
+                           P2Pidx>(pointer_type(data), shift_layout);
   }
 
   // Moving the position of the index into the array-of-pointers
