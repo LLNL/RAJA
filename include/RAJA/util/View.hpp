@@ -159,13 +159,10 @@ struct MultiView
   using NonConstView =
       MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
-  layout_type const layout;
-  nc_pointer_type data;
+  layout_type const layout = layout_type();
+  nc_pointer_type data = nullptr;
 
-  RAJA_INLINE constexpr MultiView()
-      : layout(layout_type()),
-        data(nullptr)
-  {}
+  RAJA_INLINE constexpr MultiView() = default;
 
   template<typename... Args>
   RAJA_INLINE constexpr MultiView(pointer_type data_ptr, Args... dim_sizes)
@@ -186,8 +183,8 @@ struct MultiView
   template<bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
       typename std::enable_if<IsConstView, NonConstView>::type const& rhs)
-      : layout(rhs.get_layout()),
-        data(rhs.get_data())
+      : layout(rhs.layout),
+        data(rhs.data)
   {}
 
   RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type const& ly) { layout = ly; }
