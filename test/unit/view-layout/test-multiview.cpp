@@ -40,8 +40,24 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   a1[0] = val;
   a2[0] = val;
 
+  TypeParam   b1[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  TypeParam   b2[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+  TypeParam const * data2[2];
+
+  data2[0] = b1;
+  data2[1] = b2;
+
+  b1[0] = val;
+  b2[0] = val;
+
   RAJA::MultiView<TypeParam, layout> view(data, layout(10));
   ASSERT_EQ( val, view(0,0) );
+
+  /*
+   * Should be able to construct a const MultiView from const array of arrays
+   */
+  RAJA::MultiView<TypeParam const, layout> view_from_const(data2, layout(10));
+  ASSERT_EQ( val, view_from_const(0,0) );
 
   /*
    * Should be able to construct an empty MultiView
