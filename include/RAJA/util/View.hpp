@@ -159,10 +159,10 @@ struct MultiView
   using NonConstView =
       MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
-  layout_type const layout = layout_type();
+  layout_type layout{};
   nc_pointer_type data = nullptr;
 
-  RAJA_INLINE constexpr MultiView() = default;
+  MultiView() = default;
 
   template<typename... Args>
   RAJA_INLINE constexpr MultiView(pointer_type data_ptr, Args... dim_sizes)
