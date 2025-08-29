@@ -192,9 +192,9 @@ struct MultiView
   template<bool IsConstPtr = std::is_const<pointer_type>::value>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  void set_data(typename std::enable_if<IsConstPtr, NonConstPointerType>::type data_ptr)
+  void set_data(typename std::enable_if_t<IsConstPtr, NonConstPointerType> data_ptr)
   {
-    data = data_ptr;  // This data_ptr should already be const.
+    data = data_ptr;  // This data_ptr should already be non-const.
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr) { data = nc_pointer_type(data_ptr); }
@@ -235,7 +235,7 @@ struct MultiView
     }
     auto idx = stripIndexType(
         removenth<LayoutType, P2Pidx>(layout, camp::forward_as_tuple(ar...)));
-    return data[pidx][idx];
+    return pointer_type(data)[pidx][idx];
   }
 };
 
