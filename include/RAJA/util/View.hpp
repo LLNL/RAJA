@@ -201,7 +201,7 @@ struct MultiView
       shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims == layout_type::n_dims,
-                  "Dimension mismatch in view shift");
+                  "Dimension mismatch in MultiView shift");
 
     typename add_offset<layout_type>::type shift_layout(layout);
     shift_layout.shift(shift);
