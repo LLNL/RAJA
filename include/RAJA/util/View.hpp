@@ -182,7 +182,7 @@ struct MultiView
 
   template<bool IsConstView = std::is_const<value_type>::value>
   RAJA_INLINE constexpr MultiView(
-      typename std::enable_if<IsConstView, NonConstView>::type const& rhs)
+      std::enable_if_t<IsConstView, NonConstView> const& rhs)
       : layout(rhs.layout),
         data(nc_pointer_type(rhs.data))
   {}
@@ -192,7 +192,7 @@ struct MultiView
   template<bool IsConstPtr = std::is_const<pointer_type>::value>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  void set_data(typename std::enable_if_t<IsConstPtr, NonConstPointerType> data_ptr)
+  void set_data(std::enable_if_t<IsConstPtr, NonConstPointerType> data_ptr)
   {
     data = data_ptr;  // This data_ptr should already be non-const.
   }
