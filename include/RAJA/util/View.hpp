@@ -189,6 +189,14 @@ struct MultiView
 
   RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type const& ly) { layout = ly; }
 
+  template<bool IsConstPtr = std::is_const<pointer_type>::value>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  void set_data(typename std::enable_if<IsConstPtr, NonConstPointerType>::type data_ptr)
+  {
+    data = data_ptr;  // This data_ptr should already be const.
+  }
+
   RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr) { data = nc_pointer_type(data_ptr); }
 
   RAJA_HOST_DEVICE RAJA_INLINE constexpr layout_type const& get_layout() const { return layout; }
