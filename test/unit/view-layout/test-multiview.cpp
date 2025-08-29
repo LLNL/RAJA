@@ -51,6 +51,14 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   ASSERT_EQ( 1, (view_empty.get_layout()).size() );
 
   /*
+   * Should be able to set data and layout in an empty MultiView
+   */
+  view_empty.set_layout(layout(10));
+  view_empty.set_data(data);
+  ASSERT_EQ( 10, (view_empty.get_layout()).size() );
+  ASSERT_EQ( val, view_empty(0,0) );
+
+  /*
    * Should be able to construct a non-const MultiView from a non-const MultiView
    */
   RAJA::MultiView<TypeParam, layout> view2(view);
