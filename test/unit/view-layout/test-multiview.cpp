@@ -60,6 +60,21 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   ASSERT_EQ( val, view_from_const(0,0) );
 
   /*
+   * Should be able to construct an empty const MultiView
+   */
+  RAJA::MultiView<TypeParam const, layout> view_from_const2;
+  ASSERT_EQ( nullptr, view_from_const2.get_data() );
+  ASSERT_EQ( 1, (view_from_const2.get_layout()).size() );
+
+  /*
+   * Should be able to set data and layout in an empty const MultiView
+   */
+  view_from_const2.set_layout(layout(10));
+  view_from_const2.set_data(data2);
+  ASSERT_EQ( 10, (view_from_const2.get_layout()).size() );
+  ASSERT_EQ( val, view_from_const2(0,0) );
+
+  /*
    * Should be able to construct an empty MultiView
    */
   RAJA::MultiView<TypeParam, layout> view_empty;
