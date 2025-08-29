@@ -17,7 +17,7 @@
  *
  *  This example repeats the RAJA daxpy example
  *  with Caliper annotations.
- *  For a sample run: CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
+ *  For a sample run: RAJA_CALIPER=1 CALI_CONFIG=runtime-report ./bin/raja-forall-caliper
  *
  *  Computes a += b*c, where a, b are vectors of doubles
  *  and c is a scalar double. It illustrates similarities between a
