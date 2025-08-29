@@ -190,7 +190,7 @@ struct MultiView
         data(rhs.get_data())
   {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type&& ly) { layout(ly); }
+  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type const& ly) { layout = ly; }
 
   RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
