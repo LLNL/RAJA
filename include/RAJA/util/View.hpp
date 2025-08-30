@@ -170,7 +170,7 @@ struct MultiView
         data(nc_pointer_type(data_ptr))
   {}
 
-  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type&& layout)
+  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type const & layout)
       : layout(layout),
         data(nc_pointer_type(data_ptr))
   {}
