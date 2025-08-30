@@ -714,7 +714,7 @@ public:
   RAJA_INLINE ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims == layout_type::n_dims,
-                  "Dimension mismatch in view shift");
+                  "Dimension mismatch in ViewBase shift");
 
     shifted_layout_type shift_layout(m_layout);
     shift_layout.shift(shift);
@@ -807,7 +807,7 @@ public:
   RAJA_INLINE ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims == layout_type::n_dims,
-                  "Dimension mismatch in view shift");
+                  "Dimension mismatch in TypedViewBase shift");
 
     shifted_layout_type shift_layout(Base::get_layout());
     shift_layout.shift(shift);
