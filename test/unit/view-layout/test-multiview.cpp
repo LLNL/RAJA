@@ -47,8 +47,8 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   data2[0] = b1;
   data2[1] = b2;
 
-  b1[0] = val;
-  b2[0] = val;
+  b1[0] = val + 1;
+  b2[0] = val + 1;
 
   RAJA::MultiView<TypeParam, layout> view(data, layout(10));
   ASSERT_EQ( val, view(0,0) );
@@ -57,7 +57,7 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
    * Should be able to construct a const MultiView from const array of arrays
    */
   RAJA::MultiView<TypeParam const, layout> view_from_const(data2, layout(10));
-  ASSERT_EQ( val, view_from_const(0,0) );
+  ASSERT_EQ( val + 1, view_from_const(0,0) );
 
   /*
    * Should be able to construct an empty const MultiView
@@ -72,6 +72,12 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   view_from_const2.set_layout(layout(10));
   view_from_const2.set_data(data2);
   ASSERT_EQ( 10, (view_from_const2.get_layout()).size() );
+  ASSERT_EQ( val + 1, view_from_const2(0,0) );
+
+  /*
+   * Should be able to set non-const data in a const MultiView
+   */
+  view_from_const2.set_data(data);
   ASSERT_EQ( val, view_from_const2(0,0) );
 
   /*
