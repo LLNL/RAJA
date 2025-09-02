@@ -57,9 +57,9 @@ class MultiPolicy
 public:
   MultiPolicy() = delete;  // No default construction
 
-  MultiPolicy(Selector s_in) : s(s_in), _policies({Policies {}...}) {}
+  MultiPolicy(Selector _s) : s(_s), _policies({Policies {}...}) {}
 
-  MultiPolicy(Selector s_in, Policies... policies) : s(s_in), _policies({policies...})
+  MultiPolicy(Selector _s, Policies... policies) : s(_s), _policies({policies...})
   {}
 
   MultiPolicy(const MultiPolicy& p) : s(p.s), _policies(p._policies) {}
