@@ -59,10 +59,15 @@ public:
 
   MultiPolicy(Selector s) : _selector(s), _policies({Policies {}...}) {}
 
-  MultiPolicy(Selector s, Policies... policies) : _selector(s), _policies({policies...})
+  MultiPolicy(Selector s, Policies... policies)
+      : _selector(s),
+        _policies({policies...})
   {}
 
-  MultiPolicy(const MultiPolicy& p) : _selector(p._selector), _policies(p._policies) {}
+  MultiPolicy(const MultiPolicy& p)
+      : _selector(p._selector),
+        _policies(p._policies)
+  {}
 
   template<typename Iterable, typename Body>
   int invoke(Iterable&& i, Body&& b)
