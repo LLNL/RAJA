@@ -159,7 +159,7 @@ struct MultiView
   using NonConstView =
       MultiView<nc_value_type, layout_type, P2Pidx, nc_pointer_type>;
 
-  layout_type layout{};
+  layout_type layout {};
   nc_pointer_type data = nullptr;
 
   MultiView() = default;
@@ -170,7 +170,8 @@ struct MultiView
         data(nc_pointer_type(data_ptr))
   {}
 
-  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type const & layout)
+  RAJA_INLINE constexpr MultiView(pointer_type data_ptr,
+                                  layout_type const& layout)
       : layout(layout),
         data(nc_pointer_type(data_ptr))
   {}
@@ -187,21 +188,32 @@ struct MultiView
         data(nc_pointer_type(rhs.data))
   {}
 
-  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type const& ly) { layout = ly; }
+  RAJA_HOST_DEVICE RAJA_INLINE void set_layout(layout_type const& ly)
+  {
+    layout = ly;
+  }
 
   template<bool IsConstValue = std::is_const<value_type>::value>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  void set_data(std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr)
+  RAJA_HOST_DEVICE RAJA_INLINE void set_data(
+      std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr)
   {
     data = data_ptr;  // This data_ptr should already be non-const.
   }
 
-  RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr) { data = nc_pointer_type(data_ptr); }
+  RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr)
+  {
+    data = nc_pointer_type(data_ptr);
+  }
 
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr layout_type const& get_layout() const { return layout; }
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr layout_type const& get_layout() const
+  {
+    return layout;
+  }
 
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr pointer_type get_data() const { return pointer_type(data); }
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr pointer_type get_data() const
+  {
+    return pointer_type(data);
+  }
 
   template<size_t n_dims = layout_type::n_dims, typename IdxLin = Index_type>
   RAJA_INLINE RAJA::
