@@ -170,10 +170,26 @@ struct MultiView
         data(nc_pointer_type(data_ptr))
   {}
 
-  RAJA_INLINE constexpr MultiView(pointer_type data_ptr,
-                                  layout_type const& layout)
-      : layout(layout),
+  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type const& ly)
+      : layout(ly),
         data(nc_pointer_type(data_ptr))
+  {}
+
+  template<typename... Args,
+           bool IsConstValue = std::is_const<value_type>::value>
+  RAJA_INLINE constexpr MultiView(
+      std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr,
+      Args... dim_sizes)
+      : layout(dim_sizes...),
+        data(data_ptr)
+  {}
+
+  template<bool IsConstValue = std::is_const<value_type>::value>
+  RAJA_INLINE constexpr MultiView(
+      std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr,
+      layout_type const& ly)
+      : layout(ly),
+        data(data_ptr)
   {}
 
   RAJA_INLINE constexpr MultiView(MultiView const&)  = default;
