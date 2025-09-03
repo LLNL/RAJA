@@ -175,22 +175,23 @@ struct MultiView
         data(nc_pointer_type(data_ptr))
   {}
 
-  template<typename... Args,
-           bool IsConstValue = std::is_const<value_type>::value>
-  RAJA_INLINE constexpr MultiView(
-      std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr,
-      Args... dim_sizes)
-      : layout(dim_sizes...),
-        data(data_ptr)
-  {}
-
-  template<bool IsConstValue = std::is_const<value_type>::value>
-  RAJA_INLINE constexpr MultiView(
-      std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr,
-      layout_type const& ly)
-      : layout(ly),
-        data(data_ptr)
-  {}
+  // TODO: Should be able to construct a const MultiView from non-const array of
+  // arrays. For now, this becomes an ambiguous call to constructor error.
+  // template<typename... Args,
+  //         bool IsConstValue = std::is_const<value_type>::value>
+  // RAJA_INLINE constexpr MultiView(
+  //    std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr,
+  //    Args... dim_sizes)
+  //    : layout(dim_sizes...),
+  //      data(nc_pointer_type(data_ptr))
+  //{}
+  // template<bool IsConstValue = std::is_const<value_type>::value>
+  // RAJA_INLINE constexpr MultiView(
+  //    std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr,
+  //    layout_type const& ly)
+  //    : layout(ly),
+  //      data(nc_pointer_type(data_ptr))
+  //{}
 
   RAJA_INLINE constexpr MultiView(MultiView const&)  = default;
   RAJA_INLINE constexpr MultiView(MultiView&&)       = default;
@@ -213,7 +214,8 @@ struct MultiView
   RAJA_HOST_DEVICE RAJA_INLINE void set_data(
       std::enable_if_t<IsConstValue, NonConstPointerType> data_ptr)
   {
-    data = data_ptr;  // This data_ptr should already be non-const.
+    data = nc_pointer_type(
+        data_ptr);  // This data_ptr should already be non-const.
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE void set_data(pointer_type data_ptr)

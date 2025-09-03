@@ -60,6 +60,12 @@ TYPED_TEST(MultiViewUnitTest, Constructors)
   ASSERT_EQ( val + 1, view_from_const(0,0) );
 
   /*
+   * TODO: Should be able to construct a const MultiView from non-const array of arrays. For now, this becomes an ambiguous call to constructor error.
+   */
+  //RAJA::MultiView<TypeParam const, layout> constview_from_nonconst(data, layout(10));
+  //ASSERT_EQ( val, constview_from_nonconst(0,0) );
+
+  /*
    * Should be able to construct an empty const MultiView
    */
   RAJA::MultiView<TypeParam const, layout> view_from_const2;
