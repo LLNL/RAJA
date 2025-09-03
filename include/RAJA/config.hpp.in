@@ -593,21 +593,6 @@ T * align_hint(T * x)
 #endif
 }
 
-// Internal variable to toggle Caliper profiling on and off
-// Users have access to a global function.
-namespace expt {
-  namespace detail {
-    inline bool RAJA_caliper_profile = false;
-  }
-
-  // Experimental global function to toggle Caliper
-  // profiling on and off
-  inline void SetRAJACaliperProfiling(bool enable)
-  {
-    ::RAJA::expt::detail::RAJA_caliper_profile = enable;
-  }
-}
-
 }  // closing brace for RAJA namespace
 
 
