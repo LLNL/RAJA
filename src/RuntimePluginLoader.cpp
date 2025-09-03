@@ -25,7 +25,7 @@ namespace util
 {
 
 // TODO (08/27/25): Add a controller plugin class that enables plugins
-// based on environement variables. This would be its own class
+// based on environment variables. This would be its own class
 //  we would add in the linkCaliperPlugin() bit as well as the
 //  RAJA::util::PluginRegistry::add<RAJA::util::ControllerPlugin> call
 
