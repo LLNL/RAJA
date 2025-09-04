@@ -52,11 +52,12 @@ struct TensorTestHelper<RAJA::expt::cuda_warp_register>
     template<typename BODY>
     static
     void exec(BODY const &body){
-      cudaDeviceSynchronize();
+      CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
       test_launcher<<<1,32>>>(body);
 
-      cudaDeviceSynchronize();
+      CAMP_CUDA_API_INVOKE_AND_CHECK(cudaGetLastError);
+      CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
     }
 
@@ -85,7 +86,7 @@ struct TensorTestHelper<RAJA::expt::hip_wave_register>
     template<typename BODY>
     static
     void exec(BODY const &body){
-      hipDeviceSynchronize();
+      CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
 
       static constexpr int warp_size = RAJA::policy::hip::device_constants.WARP_SIZE;
 
@@ -94,7 +95,7 @@ struct TensorTestHelper<RAJA::expt::hip_wave_register>
         body();
       });
 
-      hipDeviceSynchronize();
+      CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
 
     }
 

@@ -1656,7 +1656,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
-  cudaDeviceSynchronize();
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
@@ -2000,7 +2000,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
-  hipDeviceSynchronize();
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;

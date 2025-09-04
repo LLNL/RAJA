@@ -693,7 +693,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Launch CUDA kernel defined near the top of this file.
   matMultKernel<<<griddim, blockdim>>>(N, C, A, B);
 
-  cudaDeviceSynchronize();
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaGetLastError);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   checkResult<double>(Cview, N);
 
@@ -703,7 +704,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   sharedMatMultKernel<<<griddim, blockdim>>>(N, C, A, B);
 
-  cudaDeviceSynchronize();
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaGetLastError);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -730,7 +732,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Launch HIP kernel defined near the top of this file.
   hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
 
-  hipDeviceSynchronize();
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipGetLastError);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
 
   CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
@@ -744,7 +747,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Launch HIP kernel defined near the top of this file.
   hipLaunchKernelGGL((sharedMatMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
 
-  hipDeviceSynchronize();
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipGetLastError);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
 
   CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
