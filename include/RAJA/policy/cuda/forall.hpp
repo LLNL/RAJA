@@ -379,9 +379,9 @@ template<typename EXEC_POL,
                               (IterationGetter::block_size > 0),
                           size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forall_cuda_kernel(LOOP_BODY loop_body,
-                            const Iterator idx,
-                            IndexType length)
+    void forall_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                            const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                            const RAJA_CUDA_GRID_CONSTANT IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -405,9 +405,9 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size <= 0),
                           size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   const Iterator idx,
-                                   IndexType length)
+__global__ void forall_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                                   const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                                   const RAJA_CUDA_GRID_CONSTANT IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -432,9 +432,9 @@ template<typename EXEC_POL,
                               (IterationGetter::block_size > 0),
                           size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forallp_cuda_kernel(LOOP_BODY loop_body,
-                             const Iterator idx,
-                             IndexType length,
+    void forallp_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                             const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                             const RAJA_CUDA_GRID_CONSTANT IndexType length,
                              ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
@@ -461,9 +461,9 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size <= 0),
                           size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
-                                    const Iterator idx,
-                                    IndexType length,
+__global__ void forallp_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                                    const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                                    const RAJA_CUDA_GRID_CONSTANT IndexType length,
                                     ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
@@ -492,9 +492,9 @@ template<
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forall_cuda_kernel(LOOP_BODY loop_body,
-                            const Iterator idx,
-                            IndexType length)
+    void forall_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                            const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                            const RAJA_CUDA_GRID_CONSTANT IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -521,9 +521,9 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   const Iterator idx,
-                                   IndexType length)
+__global__ void forall_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                                   const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                                   const RAJA_CUDA_GRID_CONSTANT IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -552,9 +552,9 @@ template<
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, BlocksPerSM) __global__
-    void forallp_cuda_kernel(LOOP_BODY loop_body,
-                             const Iterator idx,
-                             IndexType length,
+    void forallp_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                             const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                             const RAJA_CUDA_GRID_CONSTANT IndexType length,
                              ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
@@ -584,9 +584,9 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_cuda_kernel(LOOP_BODY loop_body,
-                                    const Iterator idx,
-                                    IndexType length,
+__global__ void forallp_cuda_kernel(const RAJA_CUDA_GRID_CONSTANT LOOP_BODY loop_body,
+                                    const RAJA_CUDA_GRID_CONSTANT Iterator idx,
+                                    const RAJA_CUDA_GRID_CONSTANT IndexType length,
                                     ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
