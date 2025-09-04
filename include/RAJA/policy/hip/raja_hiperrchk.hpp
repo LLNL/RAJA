@@ -236,7 +236,7 @@ void reportHipError(hipError_t code,
     ::RAJA::hipAssert((ans), __FILE__, __LINE__);                              \
   }
 
-/// DEPRECATED
+[[deprecated]]
 inline void hipAssert(hipError_t code,
                       const char* file,
                       int line,

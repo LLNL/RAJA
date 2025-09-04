@@ -231,7 +231,7 @@ void reportCudaError(cudaError_t code,
     ::RAJA::cudaAssert((ans), __FILE__, __LINE__);                             \
   }
 
-/// DEPRECATED
+[[deprecated]]
 inline void cudaAssert(cudaError_t code,
                        const char* file,
                        int line,
