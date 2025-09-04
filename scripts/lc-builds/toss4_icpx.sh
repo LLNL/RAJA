@@ -57,3 +57,17 @@ cmake \
   "$@" \
   ..
 
+echo
+echo "***********************************************************************"
+echo
+echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
+echo
+if [[ ${COMP_VER} == 2024.2.1 ]]
+then
+echo "To successfully build and run all tests, you may need to run the"
+echo "command to make sure your environment is set up properly:"
+echo
+echo "  source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh"
+echo
+fi
+echo "***********************************************************************"
