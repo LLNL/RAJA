@@ -114,8 +114,6 @@ Communicate with Us
 The most effective way to communicate with the core RAJA development team
 is via our mailing list: **raja-dev@llnl.gov** 
 
-You are also welcome to join our [RAJA Google Group](https://groups.google.com/forum/#!forum/raja-users).
-
 If you have questions, find a bug, or have ideas about expanding the
 functionality or applicability of RAJA and are interested in contributing
 to its development, please do not hesitate to contact us. We are very
