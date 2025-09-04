@@ -158,8 +158,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *d_a = memoryManager::allocate_gpu<double>(N);
   double *d_b = memoryManager::allocate_gpu<double>(N);
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_a, a, N * sizeof(double), hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_b, b, N * sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_a, a, N * sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_b, b, N * sizeof(double), hipMemcpyHostToDevice);
 
   // _rajahip_dotprod_start
   RAJA::ReduceSum<RAJA::hip_reduce, double> hpdot(0.0);

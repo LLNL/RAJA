@@ -58,8 +58,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
   double *A, *B;
 #if defined(RAJA_ENABLE_CUDA)
   size_t Arr_sz = N_rows * N_cols;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &A,  sizeof(double) * Arr_sz);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &B, sizeof(double)  * Arr_sz);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &A,  sizeof(double) * Arr_sz);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &B, sizeof(double)  * Arr_sz);
 #else
   A  = new double[N_rows * N_cols];
   B  = new double[N_rows * N_cols];
@@ -116,8 +116,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
   }
 
 #if defined(RAJA_ENABLE_CUDA)
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, A);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, B);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, A);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, B);
 #else
   delete [] A;
   delete [] B;
@@ -253,10 +253,10 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 
   double *A, *At, *B, *Bt;
 #if defined(RAJA_ENABLE_CUDA)
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &A,  sizeof(double) * N_rows * N_cols);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &At, sizeof(double) * N_rows * N_cols);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &B,  sizeof(double) * N_rows * N_cols);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &Bt, sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &A,  sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &At, sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &B,  sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &Bt, sizeof(double) * N_rows * N_cols);
 #else
   A  = new double[N_rows * N_cols];
   At = new double[N_rows * N_cols];
@@ -323,10 +323,10 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, A);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, At);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, B);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, Bt);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, A);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, At);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, B);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, Bt);
 #else
   delete [] A;
   delete [] At;

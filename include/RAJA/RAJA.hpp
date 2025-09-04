@@ -32,7 +32,6 @@
 #include "RAJA/util/basic_mempool.hpp"
 #include "RAJA/util/camp_aliases.hpp"
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/Printing.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/math.hpp"
 #include "RAJA/util/plugins.hpp"

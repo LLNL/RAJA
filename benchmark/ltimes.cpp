@@ -1084,14 +1084,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
 
   //
@@ -1139,7 +1139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1149,7 +1149,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
@@ -1157,12 +1157,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
                           cudaMemcpyDeviceToHost);
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dL_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dpsi_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dphi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dL_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dpsi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1189,14 +1189,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
 
 
@@ -1233,7 +1233,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   timer.start();
 
 
@@ -1265,7 +1265,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   }
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   timer.stop();
   double t = timer.elapsed();
@@ -1274,12 +1274,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
                           cudaMemcpyDeviceToHost);
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dL_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dpsi_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dphi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dL_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dpsi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1312,14 +1312,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
 
 
@@ -1369,7 +1369,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   timer.start();
 
   auto seg_g = RAJA::TypedRangeSegment<IG>(0, num_g);
@@ -1415,7 +1415,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
 
   }
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   timer.stop();
   double t = timer.elapsed();
@@ -1424,12 +1424,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
                           cudaMemcpyDeviceToHost);
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dL_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dpsi_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dphi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dL_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dpsi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1455,14 +1455,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dL_data, L_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dL_data, L_data, L_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
                           cudaMemcpyHostToDevice);
 
 
@@ -1598,7 +1598,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1667,7 +1667,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(DEBUG_LTIMES)
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
                           cudaMemcpyDeviceToHost);
 
   // Reset data in Views to CPU data
@@ -1678,9 +1678,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dL_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dpsi_data);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, dphi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dL_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dpsi_data);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, dphi_data);
 }
 #endif
 
@@ -1696,14 +1696,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&dL_data, L_size * sizeof(double));
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, dL_data, L_data, L_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, (void**)&dL_data, L_size * sizeof(double));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, dL_data, L_data, L_size * sizeof(double),
                           hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
                           hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&dphi_data, phi_size * sizeof(double));
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
                           hipMemcpyHostToDevice);
 
   //
@@ -1751,7 +1751,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                                    RAJA::TypedRangeSegment<IZ>(0, num_z));
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize, );
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize, );
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -1761,19 +1761,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
   );
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize, );
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize, );
   timer.stop();
   double t = timer.elapsed();
   double gflop_rate = total_flops / t / 1.0e9;
   std::cout << "  RAJA HIP version of LTimes run time (sec.): "
             << timer.elapsed() <<", GFLOPS/sec: " << gflop_rate << std::endl;
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
                           hipMemcpyDeviceToHost);
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, dL_data);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, dpsi_data);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, dphi_data);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, dL_data);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, dpsi_data);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, dphi_data);
 
   // Reset data in Views to CPU data
   L.set_data(L_data);
@@ -1798,14 +1798,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* dpsi_data = nullptr;
   double* dphi_data = nullptr;
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&dL_data, L_size * sizeof(double));
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, dL_data, L_data, L_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, (void**)&dL_data, L_size * sizeof(double));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, dL_data, L_data, L_size * sizeof(double),
                           hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, (void**)&dpsi_data, psi_size * sizeof(double));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, dpsi_data, psi_data, psi_size * sizeof(double),
                           hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, (void**)&dphi_data, phi_size * sizeof(double));
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, (void**)&dphi_data, phi_size * sizeof(double));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, dphi_data, phi_data, phi_size * sizeof(double),
                           hipMemcpyHostToDevice);
 
 
@@ -1941,7 +1941,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   RAJA::Timer timer;
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize, );
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize, );
   timer.start();
 
   for (int iter = 0;iter < num_iter;++ iter)
@@ -2011,7 +2011,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 #if defined(DEBUG_LTIMES)
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, phi_data, dphi_data, phi_size * sizeof(double),
                           hipMemcpyDeviceToHost);
 
   // Reset data in Views to CPU data
@@ -2022,9 +2022,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #endif
 
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, dL_data);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, dpsi_data);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, dphi_data);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, dL_data);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, dpsi_data);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, dphi_data);
 }
 #endif
 

@@ -313,15 +313,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* d_out = memoryManager::allocate_gpu<int>(N);
   int* d_out_vals = memoryManager::allocate_gpu<int>(N);
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_out_vals, out_vals, N * sizeof(int), hipMemcpyHostToDevice);
 
   RAJA::sort_pairs<RAJA::hip_exec<HIP_BLOCK_SIZE>>(RAJA::make_span(d_out, N),
                                                    RAJA::make_span(d_out_vals, N),
                                                    RAJA::operators::less<int>{});
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, out_vals, d_out_vals, N * sizeof(int), hipMemcpyDeviceToHost);
 
   //checkUnstableSortResult<RAJA::operators::less<int>>(in, out, in_vals, out_vals, N);
   CHECK_UNSTABLE_SORT_PAIR_RESULT(OP_LESS);
@@ -334,7 +334,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::copy_n(in, N, out);
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
 
   // _sort_stable_hip_greater_start
   RAJA::stable_sort<RAJA::hip_exec<HIP_BLOCK_SIZE>>(
@@ -342,7 +342,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::operators::greater<int>{});
   // _sort_stable_hip_greater_end
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
 
   //checkStableSortResult<RAJA::operators::greater<int>>(in, out, N);
   CHECK_STABLE_SORT_RESULT(OP_GREATER);

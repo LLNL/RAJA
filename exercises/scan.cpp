@@ -301,7 +301,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int* d_in = memoryManager::allocate_gpu<int>(N);
   int* d_out = memoryManager::allocate_gpu<int>(N);
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
 
   ///
   /// TODO...
@@ -313,7 +313,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///                 of the file if you want to use it here.
   ///
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
 
   CHECK_INC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);
@@ -323,8 +323,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running HIP exclusive_scan (plus)...\n";
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_in, in, N * sizeof(int), hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_in, in, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_out, out, N * sizeof(int), hipMemcpyHostToDevice);
 
   ///
   /// TODO...
@@ -336,7 +336,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ///                 of the file if you want to use it here.
   ///
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, out, d_out, N * sizeof(int), hipMemcpyDeviceToHost);
 
   CHECK_EXC_SCAN_RESULTS(OP_PLUS_INT)
   printArray(out, N);

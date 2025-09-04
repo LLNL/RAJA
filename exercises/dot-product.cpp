@@ -159,8 +159,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   int *d_a = memoryManager::allocate_gpu<int>(N);
   int *d_b = memoryManager::allocate_gpu<int>(N);
 
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_a, a, N * sizeof(int), hipMemcpyHostToDevice);
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemcpy, d_b, b, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_a, a, N * sizeof(int), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_b, b, N * sizeof(int), hipMemcpyHostToDevice);
 
   ///
   /// TODO...

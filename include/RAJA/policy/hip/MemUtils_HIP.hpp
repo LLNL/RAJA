@@ -50,9 +50,9 @@ RAJA_INLINE
 hipDeviceProp_t get_device_prop()
 {
   int device;
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipGetDevice, &device);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipGetDevice, &device);
   hipDeviceProp_t prop;
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipGetDeviceProperties, &prop, device);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipGetDeviceProperties, &prop, device);
   return prop;
 }
 
@@ -73,7 +73,7 @@ struct PinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipHostMalloc, &ptr, nbytes,
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipHostMalloc, &ptr, nbytes,
                             hipHostMallocMapped | hipHostMallocNonCoherent);
     return ptr;
   }
@@ -81,7 +81,7 @@ struct PinnedAllocator
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipHostFree, ptr);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipHostFree, ptr);
     return true;
   }
 };
@@ -94,14 +94,14 @@ struct DeviceAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, &ptr, nbytes);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &ptr, nbytes);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, ptr);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, ptr);
     return true;
   }
 };
@@ -116,16 +116,16 @@ struct DeviceZeroedAllocator
   {
     auto res = ::camp::resources::Hip::get_default();
     void* ptr;
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, &ptr, nbytes);
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMemsetAsync, ptr, 0, nbytes, res.get_stream());
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipStreamSynchronize, res.get_stream());
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &ptr, nbytes);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipMemsetAsync, ptr, 0, nbytes, res.get_stream());
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipStreamSynchronize, res.get_stream());
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, ptr);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, ptr);
     return true;
   }
 };
@@ -138,14 +138,14 @@ struct DevicePinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipMalloc, &ptr, nbytes);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &ptr, nbytes);
     return ptr;
   }
 
   // returns true on success, throws a run time error exception on failure
   bool free(void* ptr)
   {
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFree, ptr);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, ptr);
     return true;
   }
 };
@@ -211,7 +211,7 @@ void synchronize()
   }
   if (synchronize)
   {
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipDeviceSynchronize);
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
   }
 }
 
@@ -269,14 +269,14 @@ void launch(const void* func,
             ::RAJA::resources::Hip res,
             bool async = true)
 {
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(
+  CAMP_HIP_API_INVOKE_AND_CHECK(
       hipLaunchKernel, func, gridDim, blockDim, args, shmem, res.get_stream());
   launch(res, async);
 }
 
 //! Check for errors
 RAJA_INLINE
-void peekAtLastError() { RAJA_INTERNAL_HIP_CHECK_API_CALL(hipPeekAtLastError); }
+void peekAtLastError() { CAMP_HIP_API_INVOKE_AND_CHECK(hipPeekAtLastError); }
 
 //! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
@@ -315,7 +315,7 @@ RAJA_INLINE
 size_t maxDynamicShmem()
 {
   hipFuncAttributes func_attr;
-  RAJA_INTERNAL_HIP_CHECK_API_CALL(hipFuncGetAttributes, &func_attr, detail::tl_status.func);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFuncGetAttributes, &func_attr, detail::tl_status.func);
   return func_attr.maxDynamicSharedSizeBytes;
 }
 
@@ -426,7 +426,7 @@ hip_occupancy_max_blocks_threads(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipOccupancyMaxPotentialBlockSize,
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipOccupancyMaxPotentialBlockSize,
         &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
         func, func_dynamic_shmem_per_block);
 #else
@@ -462,7 +462,7 @@ hip_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
     data.func_threads_per_block       = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipOccupancyMaxActiveBlocksPerMultiprocessor,
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block);
 #else
@@ -496,7 +496,7 @@ hip_occupancy_max_blocks(const void* func,
     data.func_threads_per_block       = func_threads_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    RAJA_INTERNAL_HIP_CHECK_API_CALL(hipOccupancyMaxActiveBlocksPerMultiprocessor,
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block);
 #else

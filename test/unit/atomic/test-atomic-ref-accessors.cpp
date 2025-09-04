@@ -84,44 +84,44 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAccessorUnitTest, CUDAAccessors )
 
   T * memaddr = nullptr;
   T * result = nullptr;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&memaddr, sizeof(T));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&result, sizeof(T));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, (void **)&memaddr, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, (void **)&result, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test store method with op()
   forone<test_cuda>( [=] __device__ () {test1.store( (T)19 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)19 );
 
   // test assignment operator
   forone<test_cuda>( [=] __device__ () {test1 = (T)23;} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)23 );
 
   // test load method
   forone<test_cuda>( [=] __device__ () {test1 = (T)29; result[0] = test1.load();} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)29 );
   ASSERT_EQ( test1, (T)29 );
 
   // test T()
   forone<test_cuda>( [=] __device__ () {test1 = (T)47; result[0] = test1;} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)47 );
   ASSERT_EQ( test1, (T)47 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = (test1 = (T)31);} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)31 );
   ASSERT_EQ( test1, (T)31 );
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, memaddr);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, result);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, memaddr);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, result);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAAccessorUnitTest,

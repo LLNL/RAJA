@@ -97,57 +97,57 @@ GPU_TYPED_TEST_P( AtomicRefCUDAAddSubUnitTest, CUDAAddSubs )
   T * memaddr = nullptr;
   T * result1 = nullptr;
   T * result2 = nullptr;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&memaddr, sizeof(T));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&result1, sizeof(T));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, (void **)&result2, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, (void **)&memaddr, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, (void **)&result1, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, (void **)&result2, sizeof(T));
   memaddr[0] = (T)0;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test inc ops
   forone<test_cuda>( [=] __device__ () {result1[0] = ++test1;} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result1[0], (T)1 );
   forone<test_cuda>( [=] __device__ () {result2[0] = test1++;} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)2 );
   ASSERT_EQ( result2[0], (T)1 );
 
   // test dec ops
   forone<test_cuda>( [=] __device__ () {result1[0] = --test1;} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result1[0], (T)1 );
   forone<test_cuda>( [=] __device__ () {result2[0] = test1--;} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)0 );
   ASSERT_EQ( result2[0], (T)1 );
 
   // test add/sub ops
   forone<test_cuda>( [=] __device__ () {result1[0] = (test1 += (T)23);} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)23 );
   ASSERT_EQ( result1[0], (T)23 );
   forone<test_cuda>( [=] __device__ () {result2[0] = (test1 -= (T)22);} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result2[0], (T)1 );
 
   // test add/sub methods
   forone<test_cuda>( [=] __device__ () {result1[0] = test1.fetch_add( (T)23 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)24 );
   ASSERT_EQ( result1[0], (T)1 );
   forone<test_cuda>( [=] __device__ () {result2[0] = test1.fetch_sub( (T)23 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( test1, (T)1 );
   ASSERT_EQ( result2[0], (T)24 );
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, memaddr);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, result1);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, result2);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, memaddr);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, result1);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, result2);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAAddSubUnitTest,

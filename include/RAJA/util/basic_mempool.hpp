@@ -284,14 +284,14 @@ private:
  *  void* malloc(size_t nbytes)
  *  {
  *    void* ptr;
- *    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMalloc, &ptr, nbytes);
+ *    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, &ptr, nbytes);
  *    return ptr;
  *  }
  *
  *  // returns true on success, false on failure
  *  bool free(void* ptr)
  *  {
- *    RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, ptr);
+ *    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, ptr);
  *    return true;
  *  }
  * };

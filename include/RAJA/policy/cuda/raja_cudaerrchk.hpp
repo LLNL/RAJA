@@ -37,16 +37,17 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/util/Printing.hpp"
+#include "camp/defines.hpp"
+#include "camp/helpers.hpp"
+
 #include "RAJA/util/macros.hpp"
-#include "RAJA/util/for_each.hpp"
 
 #include "cub/util_type.cuh"
 
-namespace RAJA
+namespace camp
 {
 
-namespace detail
+namespace experimental
 {
 
 template < >
@@ -95,127 +96,18 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 
   std::ostream& operator()(std::ostream& str) const
   {
-    return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
+    // Can't get current and alternate as they are non-const functions
+    return str << "{?,?}";
   }
 };
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Utility assert method used in CUDA operations to report CUDA
-/// error codes when encountered.
-///
-///////////////////////////////////////////////////////////////////////
-///
-#define RAJA_INTERNAL_CUDA_CHECK_API_CALL(func, ...)                      \
-  do {                                                                    \
-    /* Avoid shadowing by adding 56792578 to variable names */            \
-    cudaError_t code_56792578 = func(__VA_ARGS__);                        \
-    if (code_56792578 != cudaSuccess) /* [[unlikely]] */                  \
-    {                                                                     \
-      static constexpr auto func_name_56792578 = RAJA_STRINGIFY(func);    \
-      static constexpr auto arg_names_56792578 =                          \
-          ::RAJA::detail::cuda_api_arg_names(func_name_56792578);         \
-      ::RAJA::detail::reportCudaError(                                    \
-          code_56792578,                                                  \
-          func_name_56792578,                                             \
-          arg_names_56792578,                                             \
-          std::forward_as_tuple(__VA_ARGS__),                             \
-          __FILE__, __LINE__);                                            \
-    }                                                                     \
-  } while(0)
+}  // namespace experimental
 
-//! Get the argument names for the given function name.
-//
-//  Returns a space separated string of the arguments to the given function.
-//  Returns an empty string if func is unknown.
-constexpr std::string_view cuda_api_arg_names(std::string_view func)
+}  // namespace camp
+
+
+namespace RAJA
 {
-  using storage_type = std::pair<std::string_view, std::string_view>;
-  constexpr std::array<storage_type, 18> known_functions{{
-    storage_type{"cudaDeviceSynchronize",                         ""},
-    storage_type{"cudaGetDevice",                                 "device"},
-    storage_type{"cudaGetDeviceProperties",                       "prop device"},
-    storage_type{"cudaStreamSynchronize",                         "stream"},
-    storage_type{"cudaHostAlloc",                                 "pHost size flags"},
-    storage_type{"cudaHostFree",                                  "ptr"},
-    storage_type{"cudaMalloc",                                    "devPtr size"},
-    storage_type{"cudaFree",                                      "devPtr"},
-    storage_type{"cudaMemset",                                    "devPtr value count"},
-    storage_type{"cudaMemcpy",                                    "dst src count kind"},
-    storage_type{"cudaMemsetAsync",                               "devPtr value count stream"},
-    storage_type{"cudaMemcpyAsync",                               "dst src count kind stream"},
-    storage_type{"cudaLaunchKernel",                              "func gridDim blockDim args sharedMem stream"},
-    storage_type{"cudaPeekAtLastError",                           ""},
-    storage_type{"cudaGetLastError",                              ""},
-    storage_type{"cudaFuncGetAttributes",                         "attr func"},
-    storage_type{"cudaOccupancyMaxPotentialBlockSize",            "minGridSize blockSize func dynamicSMemSize blockSizeLimit"},
-    storage_type{"cudaOccupancyMaxActiveBlocksPerMultiprocessor", "numBlocks func blockSize dynamicSMemSize"}
-  }};
-  for (auto [api_name, api_args] : known_functions) {
-    if (func == api_name) {
-      return api_args;
-    }
-  }
-  return "";
-}
-
-//! Report cuda errors by throwing an exception or printing to cerr
-//
-//  This function generates an error message by getting a string for the given
-//  cuda error code, function, argument names, arguments, and source location
-//  information. Uses StreamInsertHelper to stringify the types in args.
-//
-//  This function throws an exception if abort is true otherwise prints to cerr.
-template < typename Tuple >
-void reportCudaError(cudaError_t code,
-                     std::string_view func_name,
-                     std::string_view arg_names,
-                     Tuple const& args,
-                     std::string_view file,
-                     int line,
-                     bool abort = true)
-{
-  std::ostringstream str;
-  str << "CUDA error: ";
-  str << cudaGetErrorString(code);
-  str << " ";
-  str << func_name;
-  str << "(";
-  const auto args_end = arg_names.end();
-  ::RAJA::for_each_tuple(args, [&, first=true, args_current=arg_names.begin()](auto&& arg) mutable {
-    if (!first) {
-      str << ", ";
-    } else {
-      first = false;
-    }
-    if (args_current != args_end) {
-      auto args_current_end = std::find(args_current, args_end, ' ');
-      str << std::string_view{args_current, size_t(args_current_end-args_current)} << "=";
-      if (args_current_end != args_end) {
-        ++args_current_end; // skip space
-      }
-      args_current = args_current_end;
-    }
-    str << ::RAJA::detail::StreamInsertHelper{arg};
-  });
-  str << ") ";
-  str << file;
-  str << ":";
-  str << line;
-  auto msg{str.str()};
-  if (abort)
-  {
-    throw std::runtime_error(msg);
-  }
-  else
-  {
-    std::cerr << msg;
-  }
-}
-
-}  // namespace detail
-
 
 ///
 ///////////////////////////////////////////////////////////////////////

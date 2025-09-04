@@ -84,39 +84,39 @@ GPU_TYPED_TEST_P( AtomicRefCUDAMinMaxUnitTest, CUDAMinMaxs )
 
   T * result = nullptr;
   T * memaddr = nullptr;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &result, sizeof(T));
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaMallocManaged, &memaddr, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &result, sizeof(T));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &memaddr, sizeof(T));
   memaddr[0] = (T)91;
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   // explicit constructor with memory address
   RAJA::AtomicRef<T, AtomicPolicy> test1( memaddr );
 
   // test min
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_min( (T)87 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)87 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = test1.min( (T)83 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)83 );
 
   // test max
   forone<test_cuda>( [=] __device__ () {result[0] = test1.fetch_max( (T)87 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)83 );
   ASSERT_EQ( test1, (T)87 );
 
   forone<test_cuda>( [=] __device__ () {result[0] = test1.max( (T)91 );} );
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
   ASSERT_EQ( result[0], (T)91 );
   ASSERT_EQ( test1, (T)91 );
 
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaDeviceSynchronize);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, result);
-  RAJA_INTERNAL_CUDA_CHECK_API_CALL(cudaFree, memaddr);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, result);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, memaddr);
 }
 
 REGISTER_TYPED_TEST_SUITE_P( AtomicRefCUDAMinMaxUnitTest,
