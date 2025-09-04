@@ -35,12 +35,7 @@ module load cmake/3.23.1
 # times at a potential cost of slower 'forall' execution.
 ##
 
-if [[ ${COMP_VER} == 2024.2.1 ]]
-then
-  source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh
-else
-  source /usr/tce/packages/intel/intel-${COMP_VER}/setvars.sh
-fi
+source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -49,6 +44,8 @@ cmake \
   -DBLT_CXX_STD=c++17 \
   -C ../host-configs/lc-builds/toss4/icpx_X.cmake \
   -DRAJA_ENABLE_FORCEINLINE_RECURSIVE=Off \
+  -DENABLE_CLANGFORMAT=On \
+  -DCLANGFORMAT_EXECUTABLE=/usr/tce/packages/clang/clang-14.0.6/bin/clang-format \
   -DENABLE_OPENMP=On \
   -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
