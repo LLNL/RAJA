@@ -35,7 +35,12 @@ module load cmake/3.23.1
 # times at a potential cost of slower 'forall' execution.
 ##
 
-source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh
+if [[ ${COMP_VER} == 2024.2.1 ]]
+then
+  source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh
+else
+  source /usr/tce/packages/intel/intel-${COMP_VER}/setvars.sh
+fi
 
 cmake \
   -DCMAKE_BUILD_TYPE=Release \
@@ -52,19 +57,3 @@ cmake \
   "$@" \
   ..
 
-if [[ ${COMP_VER} == 2024.2.1 ]]
-then
-
-echo
-echo "***********************************************************************"
-echo
-echo "cd into directory build_${BUILD_SUFFIX} and run make to build RAJA"
-echo
-echo "To successfully build and run all tests, you may need to run the"
-echo "command to make sure your environment is set up properly:"
-echo
-echo "  source /collab/usr/global/tools/intel/toss_4_x86_64_ib/oneapi-2024.2.1/setvars.sh"
-echo
-echo "***********************************************************************"
-
-fi
