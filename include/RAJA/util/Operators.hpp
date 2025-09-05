@@ -664,7 +664,8 @@ struct greater_equal : public detail::comparison_function<Arg1, Arg2>
     return lhs >= rhs;
   }
 
-  friend inline std::ostream& operator<<(std::ostream& str, greater_equal const&)
+  friend inline std::ostream& operator<<(std::ostream& str,
+                                         greater_equal const&)
   {
     return str << "RAJA::operators::greater_equal{}";
   }

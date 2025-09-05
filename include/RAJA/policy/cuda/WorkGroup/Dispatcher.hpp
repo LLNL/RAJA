@@ -84,7 +84,8 @@ inline auto get_value(Factory&& factory)
   auto func =
       reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
   void* args[] = {(void*)&ptr, (void*)&factory};
-  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaLaunchKernel, func, 1, 1, args, 0, res.get_stream());
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaLaunchKernel, func, 1, 1, args, 0,
+                                 res.get_stream());
   CAMP_CUDA_API_INVOKE_AND_CHECK(cudaStreamSynchronize, res.get_stream());
 
   return *ptr;

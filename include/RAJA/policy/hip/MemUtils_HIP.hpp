@@ -74,7 +74,8 @@ struct PinnedAllocator
   {
     void* ptr;
     CAMP_HIP_API_INVOKE_AND_CHECK(hipHostMalloc, &ptr, nbytes,
-                            hipHostMallocMapped | hipHostMallocNonCoherent);
+                                  hipHostMallocMapped |
+                                      hipHostMallocNonCoherent);
     return ptr;
   }
 
@@ -117,7 +118,8 @@ struct DeviceZeroedAllocator
     auto res = ::camp::resources::Hip::get_default();
     void* ptr;
     CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &ptr, nbytes);
-    CAMP_HIP_API_INVOKE_AND_CHECK(hipMemsetAsync, ptr, 0, nbytes, res.get_stream());
+    CAMP_HIP_API_INVOKE_AND_CHECK(hipMemsetAsync, ptr, 0, nbytes,
+                                  res.get_stream());
     CAMP_HIP_API_INVOKE_AND_CHECK(hipStreamSynchronize, res.get_stream());
     return ptr;
   }
@@ -269,8 +271,8 @@ void launch(const void* func,
             ::RAJA::resources::Hip res,
             bool async = true)
 {
-  CAMP_HIP_API_INVOKE_AND_CHECK(
-      hipLaunchKernel, func, gridDim, blockDim, args, shmem, res.get_stream());
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipLaunchKernel, func, gridDim, blockDim, args,
+                                shmem, res.get_stream());
   launch(res, async);
 }
 
@@ -315,7 +317,8 @@ RAJA_INLINE
 size_t maxDynamicShmem()
 {
   hipFuncAttributes func_attr;
-  CAMP_HIP_API_INVOKE_AND_CHECK(hipFuncGetAttributes, &func_attr, detail::tl_status.func);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFuncGetAttributes, &func_attr,
+                                detail::tl_status.func);
   return func_attr.maxDynamicSharedSizeBytes;
 }
 
@@ -426,9 +429,9 @@ hip_occupancy_max_blocks_threads(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
-    CAMP_HIP_API_INVOKE_AND_CHECK(hipOccupancyMaxPotentialBlockSize,
-        &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
-        func, func_dynamic_shmem_per_block);
+    CAMP_HIP_API_INVOKE_AND_CHECK(
+        hipOccupancyMaxPotentialBlockSize, &data.func_max_blocks_per_device,
+        &data.func_max_threads_per_block, func, func_dynamic_shmem_per_block);
 #else
     RAJA_UNUSED_VAR(func);
     hipDeviceProp_t& prop           = hip::device_prop();
@@ -463,8 +466,9 @@ hip_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     CAMP_HIP_API_INVOKE_AND_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor,
-        &data.func_max_blocks_per_sm, func, func_threads_per_block,
-        func_dynamic_shmem_per_block);
+                                  &data.func_max_blocks_per_sm, func,
+                                  func_threads_per_block,
+                                  func_dynamic_shmem_per_block);
 #else
     RAJA_UNUSED_VAR(func);
     data.func_max_blocks_per_sm =
@@ -497,8 +501,9 @@ hip_occupancy_max_blocks(const void* func,
 
 #ifdef RAJA_ENABLE_HIP_OCCUPANCY_CALCULATOR
     CAMP_HIP_API_INVOKE_AND_CHECK(hipOccupancyMaxActiveBlocksPerMultiprocessor,
-        &data.func_max_blocks_per_sm, func, func_threads_per_block,
-        func_dynamic_shmem_per_block);
+                                  &data.func_max_blocks_per_sm, func,
+                                  func_threads_per_block,
+                                  func_dynamic_shmem_per_block);
 #else
     RAJA_UNUSED_VAR(func);
     data.func_max_blocks_per_sm =

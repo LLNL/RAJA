@@ -68,12 +68,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive_inplace(
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      begin, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, begin, len,
+                                binary_op, stream);
 #elif defined(__CUDACC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::InclusiveScan, d_temp_storage, temp_storage_bytes,
-                                             begin, begin, binary_op, len,
-                                             stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::InclusiveScan,
+                                d_temp_storage, temp_storage_bytes, begin,
+                                begin, binary_op, len, stream);
 #endif
 
   // Allocate temporary storage
@@ -82,12 +83,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive_inplace(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      begin, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, begin, len,
+                                binary_op, stream);
 #elif defined(__CUDACC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::InclusiveScan, d_temp_storage, temp_storage_bytes,
-                                             begin, begin, binary_op, len,
-                                             stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::InclusiveScan,
+                                d_temp_storage, temp_storage_bytes, begin,
+                                begin, binary_op, len, stream);
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
@@ -124,12 +126,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive_inplace(
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      begin, init, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, begin, init, len,
+                                binary_op, stream);
 #elif defined(__CUDACC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan, d_temp_storage, temp_storage_bytes,
-                                             begin, begin, binary_op, init, len,
-                                             stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan,
+                                d_temp_storage, temp_storage_bytes, begin,
+                                begin, binary_op, init, len, stream);
 #endif
   // Allocate temporary storage
   d_temp_storage =
@@ -137,12 +140,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive_inplace(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      begin, init, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, begin, init, len,
+                                binary_op, stream);
 #elif defined(__CUDACC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan, d_temp_storage, temp_storage_bytes,
-                                             begin, begin, binary_op, init, len,
-                                             stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan,
+                                d_temp_storage, temp_storage_bytes, begin,
+                                begin, binary_op, init, len, stream);
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
@@ -179,11 +183,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive(
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      out, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, out, len, binary_op,
+                                stream);
 #elif defined(__CUDACC__)
   CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::InclusiveScan,
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream);
+                                d_temp_storage, temp_storage_bytes, begin, out,
+                                binary_op, len, stream);
 #endif
   // Allocate temporary storage
   d_temp_storage =
@@ -191,11 +197,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> inclusive(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      out, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::inclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, out, len, binary_op,
+                                stream);
 #elif defined(__CUDACC__)
   CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::InclusiveScan,
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream);
+                                d_temp_storage, temp_storage_bytes, begin, out,
+                                binary_op, len, stream);
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);
@@ -234,12 +242,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive(
   void* d_temp_storage      = nullptr;
   size_t temp_storage_bytes = 0;
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      out, init, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, out, init, len,
+                                binary_op, stream);
 #elif defined(__CUDACC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan, d_temp_storage, temp_storage_bytes,
-                                             begin, out, binary_op, init, len,
-                                             stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan,
+                                d_temp_storage, temp_storage_bytes, begin, out,
+                                binary_op, init, len, stream);
 #endif
   // Allocate temporary storage
   d_temp_storage =
@@ -247,12 +256,13 @@ RAJA_INLINE resources::EventProxy<resources::Hip> exclusive(
           temp_storage_bytes);
   // Run
 #if defined(__HIPCC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage, temp_storage_bytes, begin,
-                                      out, init, len, binary_op, stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::rocprim::exclusive_scan, d_temp_storage,
+                                temp_storage_bytes, begin, out, init, len,
+                                binary_op, stream);
 #elif defined(__CUDACC__)
-  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan, d_temp_storage, temp_storage_bytes,
-                                             begin, out, binary_op, init, len,
-                                             stream);
+  CAMP_HIP_API_INVOKE_AND_CHECK(::cub::DeviceScan::ExclusiveScan,
+                                d_temp_storage, temp_storage_bytes, begin, out,
+                                binary_op, init, len, stream);
 #endif
   // Free temporary storage
   hip::device_mempool_type::getInstance().free(d_temp_storage);

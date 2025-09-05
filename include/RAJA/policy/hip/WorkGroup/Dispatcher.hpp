@@ -84,7 +84,8 @@ inline auto get_value(Factory&& factory)
   auto func =
       reinterpret_cast<const void*>(&get_value_global<std::decay_t<Factory>>);
   void* args[] = {(void*)&ptr, (void*)&factory};
-  CAMP_HIP_API_INVOKE_AND_CHECK(hipLaunchKernel, func, 1, 1, args, 0, res.get_stream());
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipLaunchKernel, func, 1, 1, args, 0,
+                                res.get_stream());
   CAMP_HIP_API_INVOKE_AND_CHECK(hipStreamSynchronize, res.get_stream());
 
   return *ptr;

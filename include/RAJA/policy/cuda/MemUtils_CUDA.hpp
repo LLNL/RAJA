@@ -73,7 +73,8 @@ struct PinnedAllocator
   void* malloc(size_t nbytes)
   {
     void* ptr;
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaHostAlloc, &ptr, nbytes, cudaHostAllocMapped);
+    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaHostAlloc, &ptr, nbytes,
+                                   cudaHostAllocMapped);
     return ptr;
   }
 
@@ -116,7 +117,8 @@ struct DeviceZeroedAllocator
     auto res = ::camp::resources::Cuda::get_default();
     void* ptr;
     CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMalloc, &ptr, nbytes);
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemsetAsync, ptr, 0, nbytes, res.get_stream());
+    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemsetAsync, ptr, 0, nbytes,
+                                   res.get_stream());
     CAMP_CUDA_API_INVOKE_AND_CHECK(cudaStreamSynchronize, res.get_stream());
     return ptr;
   }
@@ -139,11 +141,12 @@ struct DevicePinnedAllocator
     int device;
     CAMP_CUDA_API_INVOKE_AND_CHECK(cudaGetDevice, &device);
     void* ptr;
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &ptr, nbytes, cudaMemAttachGlobal);
-    CAMP_CUDA_API_INVOKE_AND_CHECK(
-        cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetPreferredLocation, device);
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemAdvise, ptr, nbytes, cudaMemAdviseSetAccessedBy,
-                             cudaCpuDeviceId);
+    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &ptr, nbytes,
+                                   cudaMemAttachGlobal);
+    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemAdvise, ptr, nbytes,
+                                   cudaMemAdviseSetPreferredLocation, device);
+    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMemAdvise, ptr, nbytes,
+                                   cudaMemAdviseSetAccessedBy, cudaCpuDeviceId);
 
     return ptr;
   }
@@ -275,8 +278,8 @@ void launch(const void* func,
             ::RAJA::resources::Cuda res,
             bool async = true)
 {
-  CAMP_CUDA_API_INVOKE_AND_CHECK(
-      cudaLaunchKernel, func, gridDim, blockDim, args, shmem, res.get_stream());
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaLaunchKernel, func, gridDim, blockDim,
+                                 args, shmem, res.get_stream());
   launch(res, async);
 }
 
@@ -321,7 +324,8 @@ RAJA_INLINE
 size_t maxDynamicShmem()
 {
   cudaFuncAttributes func_attr;
-  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFuncGetAttributes, &func_attr, detail::tl_status.func);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFuncGetAttributes, &func_attr,
+                                 detail::tl_status.func);
   return func_attr.maxDynamicSharedSizeBytes;
 }
 
@@ -431,9 +435,9 @@ cuda_occupancy_max_blocks_threads(const void* func,
 
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
 
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaOccupancyMaxPotentialBlockSize,
-        &data.func_max_blocks_per_device, &data.func_max_threads_per_block,
-        func, func_dynamic_shmem_per_block);
+    CAMP_CUDA_API_INVOKE_AND_CHECK(
+        cudaOccupancyMaxPotentialBlockSize, &data.func_max_blocks_per_device,
+        &data.func_max_threads_per_block, func, func_dynamic_shmem_per_block);
   }
 
   return data;
@@ -460,7 +464,8 @@ cuda_occupancy_max_blocks(const void* func, size_t func_dynamic_shmem_per_block)
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
     data.func_threads_per_block       = func_threads_per_block;
 
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
+    CAMP_CUDA_API_INVOKE_AND_CHECK(
+        cudaOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block);
   }
@@ -484,7 +489,8 @@ cuda_occupancy_max_blocks(const void* func,
     data.func_dynamic_shmem_per_block = func_dynamic_shmem_per_block;
     data.func_threads_per_block       = func_threads_per_block;
 
-    CAMP_CUDA_API_INVOKE_AND_CHECK(cudaOccupancyMaxActiveBlocksPerMultiprocessor,
+    CAMP_CUDA_API_INVOKE_AND_CHECK(
+        cudaOccupancyMaxActiveBlocksPerMultiprocessor,
         &data.func_max_blocks_per_sm, func, func_threads_per_block,
         func_dynamic_shmem_per_block);
   }

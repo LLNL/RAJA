@@ -50,35 +50,30 @@ namespace camp
 namespace experimental
 {
 
-template < >
+template<>
 struct StreamInsertHelper<CUDA_DIM_T&>
 {
   CUDA_DIM_T& m_val;
 
   std::ostream& operator()(std::ostream& str) const
   {
-    return str << "{" << m_val.x
-               << "," << m_val.y
-               << "," << m_val.z
-               << "}";
+    return str << "{" << m_val.x << "," << m_val.y << "," << m_val.z << "}";
   }
 };
+
 ///
-template < >
+template<>
 struct StreamInsertHelper<CUDA_DIM_T const&>
 {
   CUDA_DIM_T const& m_val;
 
   std::ostream& operator()(std::ostream& str) const
   {
-    return str << "{" << m_val.x
-               << "," << m_val.y
-               << "," << m_val.z
-               << "}";
+    return str << "{" << m_val.x << "," << m_val.y << "," << m_val.z << "}";
   }
 };
 
-template < typename R >
+template<typename R>
 struct StreamInsertHelper<::cub::DoubleBuffer<R>&>
 {
   ::cub::DoubleBuffer<R>& m_val;
@@ -88,8 +83,9 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R>&>
     return str << "{" << m_val.Current() << "," << m_val.Alternate() << "}";
   }
 };
+
 ///
-template < typename R >
+template<typename R>
 struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 {
   ::cub::DoubleBuffer<R> const& m_val;
@@ -104,7 +100,6 @@ struct StreamInsertHelper<::cub::DoubleBuffer<R> const&>
 }  // namespace experimental
 
 }  // namespace camp
-
 
 namespace RAJA
 {
@@ -123,11 +118,10 @@ namespace RAJA
     ::RAJA::cudaAssert((ans), __FILE__, __LINE__);                             \
   }
 
-[[deprecated]]
-inline void cudaAssert(cudaError_t code,
-                       const char* file,
-                       int line,
-                       bool abort = true)
+[[deprecated]] inline void cudaAssert(cudaError_t code,
+                                      const char* file,
+                                      int line,
+                                      bool abort = true)
 {
   if (code != cudaSuccess)
   {
