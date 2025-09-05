@@ -42,6 +42,7 @@
 #include "RAJA/util/macros.hpp"
 
 #if defined(__HIPCC__)
+// Tell rocprim to provide its HIP API
 #define ROCPRIM_HIP_API 1
 #include "rocprim/types.hpp"
 #endif

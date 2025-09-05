@@ -27,6 +27,7 @@
 #include <type_traits>
 
 #if defined(__HIPCC__)
+// Tell rocprim to provide its HIP API
 #define ROCPRIM_HIP_API 1
 #include "rocprim/device/device_transform.hpp"
 #include "rocprim/device/device_radix_sort.hpp"
