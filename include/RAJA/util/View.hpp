@@ -168,8 +168,8 @@ struct MultiView
         data(data_ptr)
   {}
 
-  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type&& layout)
-      : layout(layout),
+  RAJA_INLINE constexpr MultiView(pointer_type data_ptr, layout_type&& ly)
+      : layout(ly),
         data(data_ptr)
   {}
 
