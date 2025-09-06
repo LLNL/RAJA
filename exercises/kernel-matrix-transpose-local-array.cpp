@@ -390,15 +390,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      RAJA::TypedRangeSegment<int>(0, N_r)),
     RAJA::make_tuple((int)0, (int)0, Tile_Array),
 
-    [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=](int col, int row, int tx, int ty, TILE_MEM &_Tile_Array) {
 
-      Tile_Array(ty, tx) = Aview(row, col);
+      _Tile_Array(ty, tx) = Aview(row, col);
 
     },
 
-    [=](int col, int row, int tx, int ty, TILE_MEM &Tile_Array) {
+    [=](int col, int row, int tx, int ty, TILE_MEM &_Tile_Array) {
 
-      Atview(col, row) = Tile_Array(ty, tx);
+      Atview(col, row) = _Tile_Array(ty, tx);
 
     }
   );
