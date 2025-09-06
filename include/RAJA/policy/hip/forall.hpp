@@ -379,9 +379,9 @@ template<typename EXEC_POL,
                               (IterationGetter::block_size > 0),
                           size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forall_hip_kernel(LOOP_BODY loop_body,
+    void forall_hip_kernel(const LOOP_BODY loop_body,
                            const Iterator idx,
-                           IndexType length)
+                           const IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -404,9 +404,9 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size <= 0),
                           size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_hip_kernel(LOOP_BODY loop_body,
+__global__ void forall_hip_kernel(const LOOP_BODY loop_body,
                                   const Iterator idx,
-                                  IndexType length)
+                                  const IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -430,9 +430,9 @@ template<typename EXEC_POL,
                               (IterationGetter::block_size > 0),
                           size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forallp_hip_kernel(LOOP_BODY loop_body,
+    void forallp_hip_kernel(const LOOP_BODY loop_body,
                             const Iterator idx,
-                            IndexType length,
+                            const IndexType length,
                             ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
@@ -458,9 +458,9 @@ template<typename EXEC_POL,
                                           IterationMapping>::value &&
                               (IterationGetter::block_size <= 0),
                           size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_hip_kernel(LOOP_BODY loop_body,
+__global__ void forallp_hip_kernel(const LOOP_BODY loop_body,
                                    const Iterator idx,
-                                   IndexType length,
+                                   const IndexType length,
                                    ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
@@ -488,9 +488,9 @@ template<
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forall_hip_kernel(LOOP_BODY loop_body,
+    void forall_hip_kernel(const LOOP_BODY loop_body,
                            const Iterator idx,
-                           IndexType length)
+                           const IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -516,9 +516,9 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forall_hip_kernel(LOOP_BODY loop_body,
+__global__ void forall_hip_kernel(const LOOP_BODY loop_body,
                                   const Iterator idx,
-                                  IndexType length)
+                                  const IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -546,9 +546,9 @@ template<
                          (IterationGetter::block_size > 0),
                      size_t> BlockSize = IterationGetter::block_size>
 __launch_bounds__(BlockSize, 1) __global__
-    void forallp_hip_kernel(LOOP_BODY loop_body,
+    void forallp_hip_kernel(const LOOP_BODY loop_body,
                             const Iterator idx,
-                            IndexType length,
+                            const IndexType length,
                             ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
@@ -577,9 +577,9 @@ template<
                                          IterationMapping>::value &&
                          (IterationGetter::block_size <= 0),
                      size_t> RAJA_UNUSED_ARG(BlockSize) = 0>
-__global__ void forallp_hip_kernel(LOOP_BODY loop_body,
+__global__ void forallp_hip_kernel(const LOOP_BODY loop_body,
                                    const Iterator idx,
-                                   IndexType length,
+                                   const IndexType length,
                                    ForallParam f_params)
 {
   using RAJA::internal::thread_privatize;
