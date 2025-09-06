@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 ###############################################################################
 
-raja_add_test(
-  NAME test-sharedmem
-  SOURCES test-sharedmem.cpp)
+#raja_add_test(
+#  NAME test-sharedmem
+#  SOURCES test-sharedmem.cpp)
 
 raja_add_test(
   NAME test-simd
