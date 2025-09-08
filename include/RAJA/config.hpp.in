@@ -276,8 +276,8 @@ namespace RAJA {
 
 #if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 #define RAJA_CUDA_ACTIVE
-#if (__CUDACC_VER_MAJOR__ > 11) || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ >= 7)
-// only supported on sm_70 and above
+#if ( (__CUDACC_VER_MAJOR__ > 11) || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ >= 7) ) && !defined(RAJA_ENABLE_CLANG_CUDA)
+// only supported by nvcc on sm_70 and above
 #define RAJA_CUDA_GRID_CONSTANT __grid_constant__
 #else
 #define RAJA_CUDA_GRID_CONSTANT
