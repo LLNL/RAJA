@@ -25,8 +25,8 @@ param_init(EXEC_POL const&,
            RAJA::detail::Name& kn,
            const RAJA::hip::detail::hipInfo&)
 {
-#if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
-  if (kn.name != nullptr)
+#if defined(RAJA_ENABLE_ROCTX)
+  if (kn.name != nullptr && expt::detail::RAJA_caliper_profile == false)
   {
     roctxRangePush(kn.name);
   }
@@ -49,8 +49,8 @@ param_resolve(EXEC_POL const&,
               RAJA::detail::Name& kn,
               const RAJA::hip::detail::hipInfo&)
 {
-#if defined(RAJA_ENABLE_ROCTX) && !defined(RAJA_ENABLE_CALIPER)
-  if (kn.name != nullptr)
+#if defined(RAJA_ENABLE_ROCTX)
+  if (kn.name != nullptr && expt::detail::RAJA_caliper_profile == false)
   {
     roctxRangePop();
   }

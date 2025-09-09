@@ -29,7 +29,7 @@ namespace RAJA
 {
 
 template<typename BODY>
-__global__ void launch_global_fcn(BODY body_in)
+__global__ void launch_global_fcn(const RAJA_CUDA_GRID_CONSTANT BODY body_in)
 {
   LaunchContext ctx;
 
@@ -45,7 +45,8 @@ __global__ void launch_global_fcn(BODY body_in)
 }
 
 template<typename BODY, typename ReduceParams>
-__global__ void launch_new_reduce_global_fcn(BODY body_in,
+__global__ void launch_new_reduce_global_fcn(const RAJA_CUDA_GRID_CONSTANT BODY
+                                                 body_in,
                                              ReduceParams reduce_params)
 {
   LaunchContext ctx;
@@ -215,7 +216,7 @@ struct LaunchExecute<
 
 template<typename BODY, int num_threads, size_t BLOCKS_PER_SM>
 __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
-    void launch_global_fcn_fixed(BODY body_in)
+    void launch_global_fcn_fixed(const RAJA_CUDA_GRID_CONSTANT BODY body_in)
 {
   LaunchContext ctx;
 
@@ -235,7 +236,8 @@ template<typename BODY,
          size_t BLOCKS_PER_SM,
          typename ReduceParams>
 __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
-    void launch_new_reduce_global_fcn_fixed(BODY body_in,
+    void launch_new_reduce_global_fcn_fixed(const RAJA_CUDA_GRID_CONSTANT BODY
+                                                body_in,
                                             ReduceParams reduce_params)
 {
   LaunchContext ctx;

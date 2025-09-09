@@ -137,11 +137,17 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
     ${raja_sources}
     src/RuntimePluginLoader.cpp
     src/KokkosPluginLoader.cpp)
+
+if (RAJA_ENABLE_CALIPER)
+   list(APPEND raja_sources src/plugins/caliper-plugin.cpp)
+endif ()
+
 endif ()
 
 set (raja_depends)
 
 if (RAJA_ENABLE_CALIPER)
+
 set (raja_depends
     ${raja_depends}
     caliper)
@@ -149,6 +155,7 @@ set (raja_depends
     NO_DEFAULT_PATH
     PATHS ${caliper_DIR}
   )
+
 endif()
 
 if (RAJA_ENABLE_OPENMP)
