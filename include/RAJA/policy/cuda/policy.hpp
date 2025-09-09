@@ -39,7 +39,7 @@
 namespace RAJA
 {
 
-using cuda_dim_t = CUDA_DIM_T;
+using cuda_dim_t = RAJA_CUDA_DIM_T;
 
 using cuda_dim_member_t = camp::decay<decltype(std::declval<cuda_dim_t>().x)>;
 

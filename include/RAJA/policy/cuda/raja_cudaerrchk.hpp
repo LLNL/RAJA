@@ -51,9 +51,9 @@ namespace experimental
 {
 
 template<>
-struct StreamInsertHelper<CUDA_DIM_T&>
+struct StreamInsertHelper<RAJA_CUDA_DIM_T&>
 {
-  CUDA_DIM_T& m_val;
+  RAJA_CUDA_DIM_T& m_val;
 
   std::ostream& operator()(std::ostream& str) const
   {
@@ -63,9 +63,9 @@ struct StreamInsertHelper<CUDA_DIM_T&>
 
 ///
 template<>
-struct StreamInsertHelper<CUDA_DIM_T const&>
+struct StreamInsertHelper<RAJA_CUDA_DIM_T const&>
 {
-  CUDA_DIM_T const& m_val;
+  RAJA_CUDA_DIM_T const& m_val;
 
   std::ostream& operator()(std::ostream& str) const
   {
