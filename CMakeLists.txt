@@ -106,24 +106,8 @@ include(cmake/SetupBasics.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
 
-# Set CUDA compute architecture
+# Add workaround flags to host compiler if necessary
 if (RAJA_ENABLE_CUDA)
-  if (DEFINED CMAKE_CUDA_ARCHITECTURES AND NOT "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL "")
-    foreach (arch IN LISTS CMAKE_CUDA_ARCHITECTURES)
-      if (arch LESS 35)
-        message(FATAL_ERROR
-          "RAJA requires minimum CUDA compute architecture of 35, but got ${arch}")
-      endif ()
-    endforeach ()
-  else ()
-    message(STATUS
-      "CUDA compute architecture set to RAJA default 35 since it was not specified")
-    set(CMAKE_CUDA_ARCHITECTURES "35" CACHE STRING
-      "Set CMAKE_CUDA_ARCHITECTURES to RAJA minimum supported" FORCE)
-  endif ()
-
-  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}")
-
   if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
       set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
