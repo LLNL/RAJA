@@ -28,24 +28,39 @@ This release contains .....
 Notable changes include:
 
   * New features / API changes:
+    * The RAJA::expt::Reduce interface now works with RAJA::kernel. There is
+      an example of this usage in the RAJA/examples/kernel-reduction.cpp file.
+    * Builtin atomics for unisigned fixed width integer types that support 
+      Windows builds have been added.
 
   * Build changes/improvements:
-    * Updated to NVTX3 profiling library to support CUDA 12.9 and above (also supports back to CUDA 10)
+    * **RAJA now requires C++17 as the minimum C++ standard.**
+    * Updated to NVTX3 profiling library to support CUDA 12.9 and above
+      (also supports back to CUDA 10)
     * Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
+    * Updated desul submodule to 6114dd25b54782678c555c0c1d2197f13cc8d2a0
+      commit.
+    * The CUB and rocPRIM submodules in RAJA have been removed. Moving forward,
+      the versions of these that are deployed with the CUDA and ROCm compiler
+      stacks will be used.
 
   * Bug fixes/improvements:
+    * Race conditions, due to inconsistent usage of Camp resources (CUDA/HIP
+      streams), in RAJA tests have been fixed. 
 
 
 Version 2025.03.2 -- Release date 2025-05-14
 ============================================
 
-This release contains bugfixes
+This release contains several improvements
 
      * Build changes/improvements:
        * Removed unused variables related to kernel naming
        * Added missing host device annotations on missing param reducers
-       * CMake build option to allow for use of OpenMP 5.1 atomics for min/max operations. The option is on by default.
-       * Full backwards compatibility of kernel naming and lambda capture style reducers.
+       * CMake build option to allow for use of OpenMP 5.1 atomics for min/max
+         operations. The option is on by default.
+       * Full backwards compatibility of kernel naming and lambda capture
+         style reducers.
        * Removed compiler warnings related to NVCC and loop unrolling
 
 
