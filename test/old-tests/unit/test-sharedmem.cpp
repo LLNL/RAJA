@@ -58,8 +58,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
   double *A, *B;
 #if defined(RAJA_ENABLE_CUDA)
   size_t Arr_sz = N_rows * N_cols;
-  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * Arr_sz));
-  cudaErrchk(cudaMallocManaged(&B, sizeof(double)  * Arr_sz));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &A,  sizeof(double) * Arr_sz);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &B, sizeof(double)  * Arr_sz);
 #else
   A  = new double[N_rows * N_cols];
   B  = new double[N_rows * N_cols];
@@ -116,8 +116,8 @@ GPU_TYPED_TEST_P(TypedLocalMem, Basic)
   }
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(A));
-  cudaErrchk(cudaFree(B));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, A);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, B);
 #else
   delete [] A;
   delete [] B;
@@ -153,8 +153,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
   double *A, *B;
   double *d_A, *d_B;
   size_t Arr_sz = N_rows * N_cols;
-  hipMalloc(&d_A, sizeof(double) * Arr_sz);
-  hipMalloc(&d_B, sizeof(double) * Arr_sz);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &d_A, sizeof(double) * Arr_sz);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &d_B, sizeof(double) * Arr_sz);
   A  = new double[N_rows * N_cols];
   B  = new double[N_rows * N_cols];
 
@@ -169,7 +169,7 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
     }
   }
 
-  hipMemcpy(d_A, A, Arr_sz*sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_A, A, Arr_sz*sizeof(double), hipMemcpyHostToDevice);
 
   using SharedTile = TypedLocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>, TY, TX>;
   SharedTile myTile, myTile2;
@@ -205,7 +205,7 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
 
   });
 
-  hipMemcpy(B, d_B, Arr_sz*sizeof(double), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, B, d_B, Arr_sz*sizeof(double), hipMemcpyDeviceToHost);
 
   //Check result
   for (int row = 0; row < N_rows; ++row) {
@@ -214,8 +214,8 @@ GPU_TYPED_TEST_P(TypedLocalMem_gpu, Basic)
     }
   }
 
-  hipFree(d_A);
-  hipFree(d_B);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, d_A);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, d_B);
   delete [] A;
   delete [] B;
 }
@@ -253,10 +253,10 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 
   double *A, *At, *B, *Bt;
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaMallocManaged(&A,  sizeof(double) * N_rows * N_cols));
-  cudaErrchk(cudaMallocManaged(&At, sizeof(double) * N_rows * N_cols));
-  cudaErrchk(cudaMallocManaged(&B,  sizeof(double) * N_rows * N_cols));
-  cudaErrchk(cudaMallocManaged(&Bt, sizeof(double) * N_rows * N_cols));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &A,  sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &At, sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &B,  sizeof(double) * N_rows * N_cols);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaMallocManaged, &Bt, sizeof(double) * N_rows * N_cols);
 #else
   A  = new double[N_rows * N_cols];
   At = new double[N_rows * N_cols];
@@ -323,10 +323,10 @@ GPU_TYPED_TEST_P(MatTranspose, Basic)
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaFree(A));
-  cudaErrchk(cudaFree(At));
-  cudaErrchk(cudaFree(B));
-  cudaErrchk(cudaFree(Bt));
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, A);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, At);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, B);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaFree, Bt);
 #else
   delete [] A;
   delete [] At;
@@ -365,10 +365,10 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
 
   double *A, *At, *B, *Bt;
   double *d_A, *d_At, *d_B, *d_Bt;
-  hipMalloc(&d_A,  sizeof(double) * N_rows * N_cols);
-  hipMalloc(&d_At, sizeof(double) * N_rows * N_cols);
-  hipMalloc(&d_B,  sizeof(double) * N_rows * N_cols);
-  hipMalloc(&d_Bt, sizeof(double) * N_rows * N_cols);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &d_A,  sizeof(double) * N_rows * N_cols);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &d_At, sizeof(double) * N_rows * N_cols);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &d_B,  sizeof(double) * N_rows * N_cols);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMalloc, &d_Bt, sizeof(double) * N_rows * N_cols);
   A  = new double[N_rows * N_cols];
   At = new double[N_rows * N_cols];
   B  = new double[N_rows * N_cols];
@@ -394,8 +394,8 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
     }
   }
 
-  hipMemcpy(d_A, A, N_rows * N_cols * sizeof(double), hipMemcpyHostToDevice);
-  hipMemcpy(d_B, B, N_rows * N_cols * sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_A, A, N_rows * N_cols * sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_B, B, N_rows * N_cols * sizeof(double), hipMemcpyHostToDevice);
 
 
   using SharedTile = LocalArray<double, RAJA::PERM_IJ, RAJA::SizeList<TILE_DIM,TILE_DIM>>;
@@ -432,8 +432,8 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
 
   });
 
-  hipMemcpy(At, d_At, N_rows * N_cols * sizeof(double), hipMemcpyDeviceToHost);
-  hipMemcpy(Bt, d_Bt, N_rows * N_cols * sizeof(double), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, At, d_At, N_rows * N_cols * sizeof(double), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, Bt, d_Bt, N_rows * N_cols * sizeof(double), hipMemcpyDeviceToHost);
 
   //Check result
   for (int row = 0; row < N_rows; ++row) {
@@ -444,10 +444,10 @@ GPU_TYPED_TEST_P(MatTranspose_gpu, Basic)
   }
 
 
-  hipFree(d_A);
-  hipFree(d_At);
-  hipFree(d_B);
-  hipFree(d_Bt);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, d_A);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, d_At);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, d_B);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipFree, d_Bt);
   delete [] A;
   delete [] At;
   delete [] B;
