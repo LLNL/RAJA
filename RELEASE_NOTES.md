@@ -50,7 +50,7 @@ Notable changes include:
     * Added an experimental feature to support printing of arguments to GPU
       API functions on error. This capability will continue to improve and
       mature. Hopefully, it will help RAJA users understand what went wrong
-      when a GPU kernel fails. This capability is currently support for RAJA
+      when a GPU kernel fails. This capability is currently supported for RAJA
       CUDA and HIP back-ends.
 
   * Build changes/improvements:
