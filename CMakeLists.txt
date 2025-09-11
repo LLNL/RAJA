@@ -255,6 +255,12 @@ camp source repository")
         ${camp_DIR}/lib/cmake/camp
       )
       message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      set(RAJA_campver_parts)
+      list(APPEND RAJA_campver_parts "${camp_VERSION_MAJOR}")
+      list(APPEND RAJA_campver_parts "${camp_VERSION_MINOR}")
+      list(APPEND RAJA_campver_parts "${camp_VERSION_PATCH}")
+      list(JOIN RAJA_campver_parts "." RAJA_campver)
+      message(STATUS "Using external camp version: ${RAJA_campver}")
     else ()
       message(STATUS "Using RAJA CAMP submodule.")
       # propagate setting for sycl since there's no common enable to use
