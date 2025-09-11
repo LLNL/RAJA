@@ -59,7 +59,7 @@ Notable changes include:
     * Updated Camp submodule to v2025.09.2 release.
     * Updated to NVTX3 profiling library to support CUDA 12.9 and above
       (also supports back to CUDA 10)
-    * Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
+    * [BREAKING CHANGE] Renamed CMake option `RAJA_ENABLE_NV_TOOLS_EXT` to `RAJA_ENABLE_NVTX`
     * Updated desul submodule to 6114dd25b54782678c555c0c1d2197f13cc8d2a0
       commit.
     * The CUB and rocPRIM submodules in RAJA have been removed. Moving forward,
