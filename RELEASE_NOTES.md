@@ -72,8 +72,8 @@ Notable changes include:
       CUDA 11 as the minimum CUDA version.
 
   * Bug fixes/improvements:
-    * Race conditions, due to inconsistent usage of Camp resources (CUDA/HIP
-      streams), in RAJA tests have been fixed.
+    * Race conditions due to inconsistent usage of Camp resources (CUDA/HIP
+      streams) in RAJA tests have been fixed.
     * Resolved a bunch of shadow variable warnings reported by some users.
 
 
