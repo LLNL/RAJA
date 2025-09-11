@@ -34,8 +34,8 @@ Notable changes include:
       Windows builds have been added.
     * Added a global function to turn on/off Caliper profiling, when enabled.
     * Added some quality-of-life improvements to RAJA MultiView construct, 
-      such as the ability to construct and set a MultiView with const data
-      and new accessors to data and layout.
+      such as the ability to construct and set a MultiView with const data,
+      the ability to construct an empty MultiView, and new accessors to data and layout.
     * Added `size` methods to the RAJA IndexLayout construct. These can be
       used to check the size of the layout or to determine whether the size
       is non-zero. All the size methods directly call the base Layout
