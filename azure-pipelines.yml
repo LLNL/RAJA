@@ -50,7 +50,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   variables:
     DOCKER_BUILDKIT: '1'
-    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=14'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_DEVELOPER_BENCHMARKS=On -DENABLE_DEVELOPER_DEFAULTS=On -DCMAKE_CXX_STANDARD=17'
   steps:
   - checkout: self
     clean: boolean
@@ -68,7 +68,7 @@ jobs:
   pool:
     vmImage: 'macOS-latest'
   variables:
-    CMAKE_EXTRA_FLAGS: '-DENABLE_OPENMP=Off'
+    CMAKE_EXTRA_FLAGS: '-DENABLE_OPENMP=Off -DCMAKE_CXX_STANDARD=17'
   steps:
   - checkout: self
     clean: boolean
