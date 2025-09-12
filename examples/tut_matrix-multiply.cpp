@@ -10,8 +10,6 @@
 #include <cstring>
 #include <cmath>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
 
 /*
@@ -108,9 +106,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Allocate and initialize matrix data.
 //
-  double *A = memoryManager::allocate<double>(N * N);
-  double *B = memoryManager::allocate<double>(N * N);
-  double *C = memoryManager::allocate<double>(N * N);
+  RAJA::resources::Host host_res;
+  double *A = host_res.allocate<double>(N * N);
+  double *B = host_res.allocate<double>(N * N);
+  double *C = host_res.allocate<double>(N * N);
 
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
@@ -502,18 +501,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //----------------------------------------------------------------------------//
 
 #if defined(RAJA_ENABLE_HIP)
-
-  double *d_A = memoryManager::allocate_gpu<double>(N * N);
-  double *d_B = memoryManager::allocate_gpu<double>(N * N);
-  double *d_C = memoryManager::allocate_gpu<double>(N * N);
+  using ResourceType = RAJA::resources::Hip;
+  ResourceType res;
+  double *d_A = res.allocate<double>(N * N);
+  double *d_B = res.allocate<double>(N * N);
+  double *d_C = res.allocate<double>(N * N);
 
   std::cout << "\n Running HIP mat-mult (RAJA-nested - POL4)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
 
-  hipErrchk(hipMemcpy( d_A, A, N * N * sizeof(double), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_B, B, N * N * sizeof(double), hipMemcpyHostToDevice ));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_A, A, N * N * sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_B, B, N * N * sizeof(double), hipMemcpyHostToDevice);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice);
 
   RAJA::View<double, RAJA::Layout<DIM>> d_Aview(d_A, N, N);
   RAJA::View<double, RAJA::Layout<DIM>> d_Bview(d_B, N, N);
@@ -551,7 +551,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     d_Cview(row, col) = dot;
 
   });
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -561,7 +561,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running HIP tiled mat-mult (RAJA-POL5)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice);
 
   //
   // This policy collapses the col and row loops into a single HIP kernel
@@ -600,7 +600,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     d_Cview(row, col) = dot;
 
   });
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 #endif // if RAJA_ENABLE_HIP
@@ -1077,7 +1077,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Launch CUDA kernel defined near the top of this file.
   matMultKernel<<<griddim, blockdim>>>(N, C, A, B);
 
-  cudaDeviceSynchronize();
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaGetLastError);
+  CAMP_CUDA_API_INVOKE_AND_CHECK(cudaDeviceSynchronize);
 
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
@@ -1091,7 +1092,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running HIP mat-mult with multiple lambdas (RAJA-POL8)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice);
 
   // _matmult_3lambdakernel_hip_start
   using EXEC_POL8 =
@@ -1133,7 +1134,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -1143,7 +1144,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running HIP mat-mult with multiple lambdas - lambda args in statements (RAJA-POL9)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice);
 
   // _matmult_3lambdakernel_hiptiled_start
   using EXEC_POL9b =
@@ -1190,7 +1191,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   );
 
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
@@ -1199,7 +1200,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running HIP tiled mat-mult (no RAJA)...\n";
 
   std::memset(C, 0, N*N * sizeof(double));
-  hipErrchk(hipMemcpy( d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, d_C, C, N * N * sizeof(double), hipMemcpyHostToDevice);
 
   // Define thread block dimensions
   dim3 blockdim(HIP_BLOCK_SIZE, HIP_BLOCK_SIZE);
@@ -1212,15 +1213,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // Launch HIP kernel defined near the top of this file.
   hipLaunchKernelGGL((matMultKernel), dim3(griddim), dim3(blockdim), 0, 0, N, d_C, d_A, d_B);
 
-  hipDeviceSynchronize();
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipGetLastError);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
 
-  hipErrchk(hipMemcpy( C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost ));
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, C, d_C, N * N * sizeof(double), hipMemcpyDeviceToHost);
   checkResult<double>(Cview, N);
 //printResult<double>(Cview, N);
 
-  memoryManager::deallocate_gpu(d_A);
-  memoryManager::deallocate_gpu(d_B);
-  memoryManager::deallocate_gpu(d_C);
+  res.deallocate(d_A);
+  res.deallocate(d_B);
+  res.deallocate(d_C);
 #endif // if RAJA_ENABLE_HIP
 
 //----------------------------------------------------------------------------//
@@ -1228,9 +1230,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // Clean up.
 //
-  memoryManager::deallocate(A);
-  memoryManager::deallocate(B);
-  memoryManager::deallocate(C);
+  host_res.deallocate(A);
+  host_res.deallocate(B);
+  host_res.deallocate(C);
 
   std::cout << "\n DONE!...\n";
 

@@ -18,7 +18,7 @@ void allocScanTestData(int N,
                        T** work_in, T** work_out,
                        T** host_in, T** host_out)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   *work_in  = work_res.allocate<T>(N);
   *work_out = work_res.allocate<T>(N);
@@ -32,7 +32,7 @@ void deallocScanTestData(camp::resources::Resource work_res,
                          T* work_in, T* work_out,
                          T* host_in, T* host_out)
 {
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   work_res.deallocate(work_in);
   work_res.deallocate(work_out);

@@ -43,13 +43,16 @@ cmake \
   -DCMAKE_CXX_COMPILER=/usr/tce/packages/clang/clang-${COMP_CLANG_VER}/bin/clang++ \
   -DCMAKE_C_COMPILER=/usr/tce/packages/clang/clang-${COMP_CLANG_VER}/bin/clang \
   -DCUDA_TOOLKIT_ROOT_DIR=/usr/tce/packages/cuda/cuda-${TOOLKIT_CUDA_VER} \
-  -DBLT_CXX_STD=c++14 \
+  -DBLT_CXX_STD=c++17 \
   -C ../host-configs/lc-builds/blueos/clangcuda_X.cmake \
   -DENABLE_OPENMP=Off \
   -DENABLE_CLANG_CUDA=On \
+  -DENABLE_CLANGFORMAT=On \
+  -DCLANGFORMAT_EXECUTABLE=/usr/tce/packages/clang/clang-14.0.4/bin/clang-format \
   -DBLT_CLANG_CUDA_ARCH=${CUDA_ARCH} \
   -DENABLE_CUDA=On \
   -DCUDA_ARCH=${CUDA_ARCH} \
+  -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCH} \
   -DENABLE_BENCHMARKS=On \
   -DCMAKE_INSTALL_PREFIX=../install_${BUILD_SUFFIX} \
   "$@" \

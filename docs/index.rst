@@ -47,7 +47,7 @@ reductions, scans, atomic operations, sorts, data layouts, views, and loop
 iteration spaces, as well as compile-time loop transformations. Features
 are continually growing as new use cases arise due to expanding user adoption.
 
-RAJA uses standard C++14 -- C++ is the programming language model of choice
+RAJA uses standard C++17 -- C++ is the programming language model of choice
 for many HPC applications. RAJA requirements and design are rooted in a 
 decades of developer experience working on production mesh-based 
 multiphysics applications. An important RAJA requirement is that
@@ -110,8 +110,6 @@ to RAJA development, please do not hesitate to contact us. We are always
 interested in improving RAJA and exploring new ways to use it. 
 
 The best way to communicate with us is via our email list: ``raja-dev@llnl.gov``
-
-You are also welcome to join our `Google Group <https://groups.google.com/forum/#!forum/raja-users>`_
 
 A brief description of how to start a contribution to RAJA can be found in
 :ref:`contributing-label`.

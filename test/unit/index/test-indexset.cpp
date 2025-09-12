@@ -17,7 +17,7 @@
 // Resource object used to construct list segment objects with indices
 // living in host (CPU) memory. Used in all tests.
 //
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
 
 TEST(IndexSetUnitTest, Empty)
@@ -186,8 +186,8 @@ TEST(IndexSetUnitTest, ConditionalEvenIndices)
   ref_even_indices.push_back(16);
 
   RAJA::RAJAVec<int> even_indices;
-  getIndicesConditional(even_indices, iset, [] (int idx) {
-    return !(idx % 2);
+  getIndicesConditional(even_indices, iset, [] (int i) {
+    return !(i % 2);
   });
 
   EXPECT_EQ(even_indices.size(), ref_even_indices.size());

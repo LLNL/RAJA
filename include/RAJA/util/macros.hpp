@@ -118,20 +118,6 @@ template<typename... T>
 RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept
 {}
 
-/*!
- * \def RAJA_STRINGIFY_HELPER(x)
- *
- * Helper for RAJA_STRINGIFY_MACRO
- */
-#define RAJA_STRINGIFY_HELPER(x) #x
-
-/*!
- * \def RAJA_STRINGIFY_MACRO(x)
- *
- * Used in static_assert macros to print values of defines
- */
-#define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
-
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor)                             \
   (((dividend) + (divisor)-1) / (divisor))
 
@@ -145,6 +131,11 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept
   _Pragma(" omp declare reduction( combine \
         : typename std::remove_reference<decltype(f_params)>::type \
         : RAJA::expt::ParamMultiplexer::parampack_combine(EXEC_POL{}, omp_out, omp_in) ) ")  // initializer(omp_priv = omp_in) ")
+
+#define RAJA_OMP_DECLARE_TUPLE_REDUCTION_COMBINE                               \
+  _Pragma(" omp declare reduction( combine \
+    : typename std::remove_reference<decltype(reducers_tuple)>::type  \
+    : RAJA::expt::detail::combine_params<EXEC_POL>(omp_out, omp_in) ) ")
 #endif
 
 

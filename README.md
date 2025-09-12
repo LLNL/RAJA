@@ -25,7 +25,7 @@ and programming model portability for HPC applications. RAJA has two main goals:
 
 RAJA offers portable, parallel loop execution by providing building blocks 
 that extend the generally-accepted parallel for idiom. RAJA relies on standard 
-C++14 features.
+C++17 features.
 
 RAJA's design is rooted in decades of experience working on 
 production mesh-based multiphysics applications. Based on the diversity of
@@ -56,7 +56,7 @@ To clone the repo, use the command:
     git clone --recursive https://github.com/llnl/raja.git
 
 Then, you can build RAJA like any other CMake project, provided you have a C++
-compiler that supports the C++14 standard. The simplest way to build the code,
+compiler that supports the C++17 standard. The simplest way to build the code,
 using your system default compiler, is to run the following sequence of 
 commands in the top-level RAJA directory (in-source builds are not allowed!):
 
@@ -113,8 +113,6 @@ Communicate with Us
 
 The most effective way to communicate with the core RAJA development team
 is via our mailing list: **raja-dev@llnl.gov** 
-
-You are also welcome to join our [RAJA Google Group](https://groups.google.com/forum/#!forum/raja-users).
 
 If you have questions, find a bug, or have ideas about expanding the
 functionality or applicability of RAJA and are interested in contributing

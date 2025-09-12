@@ -102,7 +102,7 @@ template  < typename ReducePolicy,
 typename  std::enable_if< // Host policy does nothing.
             std::is_base_of<RunOnHost, ForOnePol>::value
           >::type
-exec_dispatcher( NumericType * RAJA_UNUSED_ARG(initVal) )
+exec_dispatcher( NumericType * RAJA_UNUSED_ARG(workVal) )
 {
   // Do nothing for host policies.
 }
@@ -114,11 +114,11 @@ template  < typename ReducePolicy,
 typename  std::enable_if< // GPU policy fiddles with value.
             std::is_base_of<RunOnDevice, ForOnePol>::value
           >::type
-exec_dispatcher( NumericType * initVal )
+exec_dispatcher( NumericType * workVal )
 {
   forone<ForOnePol>( [=] __device__ () {
-                        initVal[0] += 1;
-                        initVal[0] -= 1;
+                        workVal[0] += 1;
+                        workVal[0] -= 1;
                  });
 }
 #endif
@@ -130,7 +130,7 @@ template <typename ReducePolicy,
 void testInitReducerConstructor()
 {
   camp::resources::Resource work_res{WORKING_RES::get_default()};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
 
   NumericType * theVal = nullptr;
   NumericType * workVal = nullptr;
@@ -141,15 +141,8 @@ void testInitReducerConstructor()
   theVal = host_res.allocate<NumericType>(1);
 
   work_res.memcpy( workVal, &initVal, sizeof(initVal) );
+  work_res.wait();
   theVal[0] = (NumericType)10;
-
-  #if defined(RAJA_ENABLE_CUDA)
-  cudaErrchk(cudaDeviceSynchronize());
-  #endif
-
-  #if defined(RAJA_ENABLE_HIP)
-  hipErrchk(hipDeviceSynchronize());
-  #endif
 
   RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(initVal);
   RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(initVal);
@@ -169,6 +162,7 @@ void testInitReducerConstructor()
                   ( workVal );
 
   work_res.memcpy( &initVal, workVal, sizeof(initVal) );
+  work_res.wait();
 
   theVal[0] = initVal;
 

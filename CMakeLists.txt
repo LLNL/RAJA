@@ -15,8 +15,8 @@ include(CMakeDependentOption)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 2025)
-set(RAJA_VERSION_MINOR 03)
-set(RAJA_VERSION_PATCHLEVEL 2)
+set(RAJA_VERSION_MINOR 09)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 if (RAJA_LOADED AND (NOT RAJA_LOADED STREQUAL "${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}"))
   message(FATAL_ERROR "You are mixing RAJA versions. Loaded is ${RAJA_LOADED}, expected ${RAJA_VERSION_MAJOR}.${RAJA_VERSION_MINOR}.${RAJA_VERSION_PATCHLEVEL}")
@@ -57,32 +57,25 @@ if(NOT DEFINED BLT_CXX_STD)
   elseif("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
     set(BLT_CXX_STD c++17 CACHE STRING "Version of C++ standard")
     message("Using C++ standard: ${BLT_CXX_STD}")
-  elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
-    set(BLT_CXX_STD c++14 CACHE STRING "Version of C++ standard")
-    message("Using C++ standard: ${BLT_CXX_STD}")
   elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
-    set(BLT_CXX_STD c++14 CACHE STRING "Version of C++ standard")
+    set(BLT_CXX_STD c++17 CACHE STRING "Version of C++ standard")
     message("Using C++ standard: ${BLT_CXX_STD}")
   else() #cmake has no idea what to do, do it ourselves...
-    foreach(flag_var "c++17" "c++14" "c++11")
-      CHECK_CXX_COMPILER_FLAG("-std=${flag_var}" COMPILER_SUPPORTS_${flag_var})
-      if(COMPILER_SUPPORTS_${flag_var})
-        set(BLT_CXX_STD ${flag_var} CACHE STRING "Version of C++ standard")
-        message("Using C++ standard: ${BLT_CXX_STD}")
-        break()
-      endif()
-    endforeach(flag_var)
+    set(flag_var "c++17")
+    CHECK_CXX_COMPILER_FLAG("-std=${flag_var}" COMPILER_SUPPORTS_${flag_var})
+    if(COMPILER_SUPPORTS_${flag_var})
+      set(BLT_CXX_STD ${flag_var} CACHE STRING "Version of C++ standard")
+      message("Using C++ standard: ${BLT_CXX_STD}")
+    endif()
+    unset(flag_var)
   endif()
 else() #check BLT_CXX_STD is high enough by disallowing the only invalid option
-  if("${BLT_CXX_STD}" STREQUAL "c++98")
-    message(FATAL_ERROR "RAJA requires minimum C++ standard of c++11")
+  if(("${BLT_CXX_STD}" STREQUAL "c++98") OR
+     ("${BLT_CXX_STD}" STREQUAL "c++11") OR
+     ("${BLT_CXX_STD}" STREQUAL "c++14"))
+    message(FATAL_ERROR "RAJA requires minimum C++ standard of c++17")
   endif()
 endif(NOT DEFINED BLT_CXX_STD)
-if (RAJA_ENABLE_DESUL_ATOMICS)
-  if("${BLT_CXX_STD}" STREQUAL "c++11")
-    message(FATAL_ERROR "RAJA_ENABLE_DESUL_ATOMICS requires minimum C++ standard of c++14")
-  endif()
-endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -113,23 +106,14 @@ include(cmake/SetupBasics.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
 
+# Add workaround flags to host compiler if necessary
 if (RAJA_ENABLE_CUDA)
-  if (DEFINED CMAKE_CUDA_ARCHITECTURES)
-    if ("${CMAKE_CUDA_ARCHITECTURES}" STRLESS "35")
-      message( FATAL_ERROR "RAJA requires minimum CUDA compute architecture of 35")
-    endif()
-  else()
-    message(STATUS "CUDA compute architecture set to RAJA default 35 since it was not specified")
-    set(CMAKE_CUDA_ARCHITECTURES "35" CACHE STRING "Set CMAKE_CUDA_ARCHITECTURES to RAJA minimum supported" FORCE)
-  endif()
-  message(STATUS "CMAKE_CUDA_ARCHITECTURES set to ${CMAKE_CUDA_ARCHITECTURES}")
-  if ( (CMAKE_CXX_COMPILER_ID MATCHES GNU) AND (CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le) )
+  if (CMAKE_CXX_COMPILER_ID MATCHES GNU AND CMAKE_SYSTEM_PROCESSOR MATCHES ppc64le)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-      set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
+      set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -mno-float128")
     endif ()
   endif ()
-endif()
-
+endif ()
 
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
@@ -153,11 +137,17 @@ if (RAJA_ENABLE_RUNTIME_PLUGINS)
     ${raja_sources}
     src/RuntimePluginLoader.cpp
     src/KokkosPluginLoader.cpp)
+
+if (RAJA_ENABLE_CALIPER)
+   list(APPEND raja_sources src/plugins/caliper-plugin.cpp)
+endif ()
+
 endif ()
 
 set (raja_depends)
 
 if (RAJA_ENABLE_CALIPER)
+
 set (raja_depends
     ${raja_depends}
     caliper)
@@ -165,6 +155,7 @@ set (raja_depends
     NO_DEFAULT_PATH
     PATHS ${caliper_DIR}
   )
+
 endif()
 
 if (RAJA_ENABLE_OPENMP)
@@ -195,10 +186,10 @@ if (RAJA_ENABLE_CUDA)
   set(raja_depends
     ${raja_depends}
     cuda)
-  if(RAJA_ENABLE_NV_TOOLS_EXT)
+  if(RAJA_ENABLE_NVTX)
     set(raja_depends
       ${raja_depends}
-      nvtoolsext)
+      nvtx3)
   endif ()
 endif ()
 

@@ -16,9 +16,9 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   RAJA::TypedRangeStrideSegment<INDEX_TYPE> r1(RAJA::stripIndexType(first), RAJA::stripIndexType(last), stride);
   INDEX_TYPE N = INDEX_TYPE(r1.size());
 
-  WORKING_RES working_res;
+  WORKING_RES working_res{WORKING_RES::get_default()};
   camp::resources::Resource erased_working_res{working_res};
-  camp::resources::Resource host_res{camp::resources::Host()};
+  camp::resources::Resource host_res{camp::resources::Host::get_default()};
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
@@ -33,12 +33,13 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
     test_array[RAJA::stripIndexType(i)] = INDEX_TYPE(0);
   }
 
-  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N)); 
+  working_res.memcpy(working_array, test_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.wait();
 
-  INDEX_TYPE idx = first;
+  INDEX_TYPE index = first;
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; ++i) {
-    test_array[ RAJA::stripIndexType((idx-first)/stride) ] = idx;
-    idx += stride; 
+    test_array[ RAJA::stripIndexType((index-first)/stride) ] = index;
+    index += stride; 
   }
 
   RAJA::forall<EXEC_POLICY>(working_res, r1, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
@@ -46,6 +47,7 @@ void ForallResourceRangeStrideSegmentTestImpl(INDEX_TYPE first, INDEX_TYPE last,
   });
 
   working_res.memcpy(check_array, working_array, sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
+  working_res.wait();
 
   for (INDEX_TYPE i = INDEX_TYPE(0); i < N; i++) {
     ASSERT_EQ(test_array[RAJA::stripIndexType(i)], check_array[RAJA::stripIndexType(i)]);
