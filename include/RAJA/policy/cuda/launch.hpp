@@ -43,7 +43,7 @@ __global__ void launch_new_reduce_global_fcn(const RAJA_CUDA_GRID_CONSTANT BODY
   extern __shared__ char raja_shmem_ptr[];
   ctx.shared_mem_ptr = raja_shmem_ptr;
   constexpr bool has_reducers =
-      !RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
+      !RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>::value;
   if constexpr (has_reducers)
   {
     RAJA::expt::invoke_body(reduce_params, body, ctx);
@@ -79,7 +79,7 @@ struct LaunchExecute<
         async, named_usage::unspecified, named_usage::unspecified>;
     EXEC_POL pol {};
     constexpr bool has_reducers =
-        !RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
+        !RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>::value;
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn<BODY, camp::decay<ReduceParams>>);
 
@@ -149,23 +149,6 @@ struct LaunchExecute<
   }
 };
 
-template<typename BODY, int num_threads, size_t BLOCKS_PER_SM>
-__launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
-    void launch_global_fcn_fixed(const RAJA_CUDA_GRID_CONSTANT BODY body_in)
-{
-  LaunchContext ctx;
-
-  using RAJA::internal::thread_privatize;
-  auto privatizer = thread_privatize(body_in);
-  auto& body      = privatizer.get_priv();
-
-  // Set pointer to shared memory
-  extern __shared__ char raja_shmem_ptr[];
-  ctx.shared_mem_ptr = raja_shmem_ptr;
-
-  body(ctx);
-}
-
 template<typename BODY,
          int num_threads,
          size_t BLOCKS_PER_SM,
@@ -181,7 +164,7 @@ __launch_bounds__(num_threads, BLOCKS_PER_SM) __global__
   auto privatizer = thread_privatize(body_in);
   auto& body      = privatizer.get_priv();
   constexpr bool has_reducers =
-      !RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
+      !RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>::value;
   // Set pointer to shared memory
   extern __shared__ char raja_shmem_ptr[];
   ctx.shared_mem_ptr = raja_shmem_ptr;
@@ -220,7 +203,7 @@ struct LaunchExecute<
         async, named_usage::unspecified, named_usage::unspecified>;
     EXEC_POL pol {};
     constexpr bool has_reducers =
-        !RAJA::expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
+        !RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>::value;
 
     auto func = reinterpret_cast<const void*>(
         &launch_new_reduce_global_fcn_fixed<BODY, nthreads, BLOCKS_PER_SM,
