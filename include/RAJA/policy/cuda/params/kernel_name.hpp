@@ -35,6 +35,7 @@ param_init(EXEC_POL const&,
 #if defined(RAJA_ENABLE_CALIPER)
       && RAJA::util::RAJA_caliper_profile == false
 #endif
+  )
   {
     nvtxRangePush(kn.name);
   }
@@ -62,6 +63,7 @@ param_resolve(EXEC_POL const&,
 #if defined(RAJA_ENABLE_CALIPER)
       && RAJA::util::RAJA_caliper_profile == false
 #endif
+  )
   {
     nvtxRangePop();
   }
