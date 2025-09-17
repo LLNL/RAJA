@@ -34,7 +34,7 @@ gcc_8_3_1_omptask:
 gcc_8_3_1_cuda_11_7_0_ats_disabled:
   extends: .job_on_lassen
   variables:
-    SPEC: " ~shared +openmp +tests +cuda %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
+    SPEC: " ~shared +openmp +tests +cuda cuda_arch=70 %gcc@=8.3.1 ^cuda@11.7.0+allow-unsupported-compilers ${PROJECT_LASSEN_DEPS}"
     MODULE_LIST: "cuda/11.7.0"
     LASSEN_JOB_ALLOC: "1 --atsdisable -W 45 -q pci"
 
@@ -44,25 +44,25 @@ gcc_8_3_1_cuda_11_7_0_ats_disabled:
 
 clang_13_0_1_libcpp:
   variables:
-    SPEC: " ~shared +openmp +tests %clang@=13.0.1 cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\""
+    SPEC: " ~shared +openmp +tests cflags==\"-DGTEST_HAS_CXXABI_H_=0\" cxxflags==\"-stdlib=libc++ -DGTEST_HAS_CXXABI_H_=0\" %clang@=13.0.1"
   extends: .job_on_lassen
 
 #clang_14_0_5_asan:
 #  variables:
-#    SPEC: " ~shared +openmp +tests %clang@=14.0.5 cxxflags==\"-fsanitize=address\" "
+#    SPEC: " ~shared +openmp +tests cxxflags==\"-fsanitize=address\" %clang@=14.0.5 "
 #    ASAN_OPTIONS: "detect_leaks=1"
 #    LSAN_OPTIONS: "suppressions=${CI_PROJECT_DIR}/suppressions.asan"
 #  extends: .job_on_lassen
 
 gcc_8_3_1_cuda_11_7_desul_atomics:
   variables:
-    SPEC: " ~shared +openmp +tests +cuda +desul %gcc@=8.3.1 cuda_arch=70 ^cuda@11.7.0+allow-unsupported-compilers"
+    SPEC: " ~shared +openmp +tests +cuda +desul cuda_arch=70 %gcc@=8.3.1 ^cuda@11.7.0+allow-unsupported-compilers"
     MODULE_LIST: "cuda/11.7.0"
   extends: .job_on_lassen
 
 clang_16_0_6_omptarget:
   variables:
-    SPEC: " ~shared +openmp +omptarget +tests %clang@=16.0.6.cuda.11.8.0.gcc.11.2.1"
+    SPEC: " ~shared +openmp +omptarget +tests %clang16"
     LASSEN_JOB_ALLOC: "1 -W 60 -q pci"
   extends: .job_on_lassen
 
