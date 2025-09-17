@@ -73,13 +73,13 @@ struct LaunchExecute<
                                                named_usage::unspecified>>
 {
 
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -89,6 +89,14 @@ struct LaunchExecute<
 
     resources::Cuda cuda_res = res.get<RAJA::resources::Cuda>();
 
+
+    if (params.threads.value.size() > 3)
+    {
+      std::cout << "threads container is larger than 3 : "
+                << params.threads.value.size() << std::endl;
+    }
+
+
     //
     // Compute the number of blocks and threads
     //
@@ -97,10 +105,32 @@ struct LaunchExecute<
                          static_cast<cuda_dim_member_t>(params.teams.value[1]),
                          static_cast<cuda_dim_member_t>(params.teams.value[2])};
 
+    cuda_dim_t blockSize;
+
+    if (params.threads.value.size() < 4)
+    {
+      blockSize =
+          cuda_dim_t {static_cast<cuda_dim_member_t>(params.threads.value[0]),
+                      static_cast<cuda_dim_member_t>(params.threads.value[1]),
+                      static_cast<cuda_dim_member_t>(params.threads.value[2])};
+    }
+    else
+    {
+
+      int total_threads = detail::multiplyArray(params.threads.value);
+      std::cout << "Total threads" << std::endl;
+      blockSize = cuda_dim_t {static_cast<cuda_dim_member_t>(
+                                  detail::multiplyArray(params.threads.value)),
+                              static_cast<cuda_dim_member_t>(1),
+                              static_cast<cuda_dim_member_t>(1)};
+    }
+
+    /*
     cuda_dim_t blockSize {
         static_cast<cuda_dim_member_t>(params.threads.value[0]),
         static_cast<cuda_dim_member_t>(params.threads.value[1]),
         static_cast<cuda_dim_member_t>(params.threads.value[2])};
+    */
 
     // Only launch kernel if we have something to iterate over
     constexpr cuda_dim_member_t zero = 0;
@@ -130,19 +160,23 @@ struct LaunchExecute<
 
       RAJA_FT_END;
     }
+    else
+    {
+      std::cout << "did not launch kernel " << std::endl;
+    }
 
     return resources::EventProxy<resources::Resource>(res);
   }
 
   // Version with explicit reduction parameters..
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -262,13 +296,13 @@ struct LaunchExecute<
     RAJA::policy::cuda::cuda_launch_explicit_t<async, nthreads, BLOCKS_PER_SM>>
 {
 
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -325,14 +359,14 @@ struct LaunchExecute<
   }
 
   // Version with explicit reduction parameters..
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {

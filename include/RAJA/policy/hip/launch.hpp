@@ -28,10 +28,60 @@
 namespace RAJA
 {
 
+// internal helper function
+namespace detail
+{
+
+template<typename T, size_t... I>
+constexpr T multiply_impl(const std::array<T, sizeof...(I)>& arr,
+                          std::index_sequence<I...>)
+{
+  return (arr[I] * ...);
+}
+
+template<typename T, size_t N>
+constexpr T multiplyArray(const std::array<T, N>& arr)
+{
+  return multiply_impl(arr, std::make_index_sequence<N> {});
+}
+
+}  // namespace detail
+
 template<typename BODY>
 __global__ void launch_global_fcn(const BODY body_in)
 {
   LaunchContext ctx;
+
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(body_in);
+  auto& body      = privatizer.get_priv();
+
+  // Set pointer to shared memory
+  extern __shared__ char raja_shmem_ptr[];
+  ctx.shared_mem_ptr = raja_shmem_ptr;
+
+  body(ctx);
+}
+
+template<typename BODY>
+__global__ void launch_global_fcn_ctx(BODY body_in, LaunchContext ctx)
+{
+  //LaunchContext ctx;
+
+  //unravel index
+  int tid = threadIdx.x;
+  for (int d = ctx.thread_dim.size()-1; d >= 0; --d) {
+    ctx.thread_id[d] = tid % ctx.thread_dim[d];
+    tid /= ctx.thread_dim[d];
+  }
+
+  /*
+  if(threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0){
+    for(int i=0; i<ctx.threads.size(); ++i) {
+      printf("ctx.threads[i] = %d \n", ctx.threads[i]);
+    }
+  }
+  */
 
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(body_in);
@@ -70,21 +120,28 @@ struct LaunchExecute<
     RAJA::policy::hip::hip_launch_t<async, named_usage::unspecified>>
 {
 
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
     using BODY = camp::decay<BODY_IN>;
 
-    auto func = reinterpret_cast<const void*>(&launch_global_fcn<BODY>);
+    auto func = reinterpret_cast<const void*>(&launch_global_fcn_ctx<BODY>);
 
     resources::Hip hip_res = res.get<RAJA::resources::Hip>();
+
+    if (params.threads.value.size() > 3)
+    {
+      std::cout << "threads container is larger than 3 : "
+                << params.threads.value.size() << std::endl;
+    }
+
 
     //
     // Compute the number of blocks and threads
@@ -94,10 +151,33 @@ struct LaunchExecute<
                         static_cast<hip_dim_member_t>(params.teams.value[1]),
                         static_cast<hip_dim_member_t>(params.teams.value[2])};
 
+    /*
     hip_dim_t blockSize {
         static_cast<hip_dim_member_t>(params.threads.value[0]),
         static_cast<hip_dim_member_t>(params.threads.value[1]),
         static_cast<hip_dim_member_t>(params.threads.value[2])};
+    */
+
+    hip_dim_t blockSize;
+
+    if (params.threads.value.size() < 4)
+    {
+      blockSize =
+          hip_dim_t {static_cast<hip_dim_member_t>(params.threads.value[0]),
+                      static_cast<hip_dim_member_t>(params.threads.value[1]),
+                      static_cast<hip_dim_member_t>(params.threads.value[2])};
+    }
+    else
+    {
+
+      int total_threads = detail::multiplyArray(params.threads.value);
+      std::cout << "Total threads" << std::endl;
+      blockSize = hip_dim_t {static_cast<hip_dim_member_t>(
+                                  detail::multiplyArray(params.threads.value)),
+                              static_cast<hip_dim_member_t>(1),
+                              static_cast<hip_dim_member_t>(1)};
+    }
+
 
     // Only launch kernel if we have something to iterate over
     constexpr hip_dim_member_t zero = 0;
@@ -109,7 +189,7 @@ struct LaunchExecute<
 
       {
         size_t shared_mem_size = params.shared_mem_size;
-
+        std::cout << "launching kernel " << std::endl;
         //
         // Privatize the loop_body, using make_launch_body to setup reductions
         //
@@ -117,29 +197,38 @@ struct LaunchExecute<
                                                 shared_mem_size, hip_res,
                                                 std::forward<BODY_IN>(body_in));
 
+        //Copy threads over
+        LaunchContext ctx;
+        ctx.thread_dim = params.threads.value;
+
         //
         // Launch the kernel
         //
-        void* args[] = {(void*)&body};
+        void* args[] = {(void*)&body, (void*)&ctx};
         RAJA::hip::launch(func, gridSize, blockSize, args, shared_mem_size,
                           hip_res, async);
       }
 
       RAJA_FT_END;
     }
+    else
+    {
+
+      std::cout << "did not launch kernel " << std::endl;
+    }
 
     return resources::EventProxy<resources::Resource>(res);
   }
 
   // Version with explicit reduction parameters..
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -255,13 +344,13 @@ template<bool async, int nthreads>
 struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
 {
 
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -318,14 +407,14 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
   }
 
   // Version with explicit reduction parameters..
-  template<typename BODY_IN, typename ReduceParams>
+  template<size_t ThreadDIM = 3, typename BODY_IN, typename ReduceParams>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams& launch_reducers)
   {
@@ -400,6 +489,30 @@ struct LaunchExecute<RAJA::policy::hip::hip_launch_t<async, nthreads>>
     return resources::EventProxy<resources::Resource>(res);
   }
 };
+
+
+/*
+  Arbitrary dimension thread indexing
+*/
+template<size_t dim>
+struct hip_loop_dim_exec;
+
+template<typename SEGMENT, size_t DIM>
+struct LoopExecute<hip_loop_dim_exec<DIM>, SEGMENT>
+{
+
+  template<typename BODY>
+  static RAJA_INLINE RAJA_DEVICE void exec(
+      LaunchContext const &ctx,
+      SEGMENT const& segment,
+      BODY const& body)
+  {
+    const int i = ctx.thread_id[DIM];
+
+    body(*(segment.begin() + i));
+  }
+};
+
 
 /*
    HIP generic loop implementations

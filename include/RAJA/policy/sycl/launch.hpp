@@ -33,7 +33,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 {
 
   // If the launch lambda is trivially copyable
-  template<typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -42,7 +43,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -102,7 +103,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
 
   // If the launch lambda is trivially copyable and we have explcit reduction
   // parameters
-  template<typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -112,7 +114,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
@@ -194,7 +196,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
   }
 
   // If the launch lambda is not trivially copyable
-  template<typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<!std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -203,7 +206,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
       RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& params,
+       const LaunchParams<ThreadDIM>& params,
        BODY_IN&& body_in,
        ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
   {
@@ -269,7 +272,8 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
   }
 
   // If the launch lambda is not trivially copyable
-  template<typename BODY_IN,
+  template<size_t ThreadDIM = 3,
+           typename BODY_IN,
            typename ReduceParams,
            typename std::enable_if<!std::is_trivially_copyable<BODY_IN> {},
                                    bool>::type = true>
@@ -279,7 +283,7 @@ struct LaunchExecute<RAJA::sycl_launch_t<async, 0>>
       concepts::negate<
           RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
   exec(RAJA::resources::Resource res,
-       const LaunchParams& launch_params,
+       const LaunchParams<ThreadDIM>& launch_params,
        BODY_IN&& body_in,
        ReduceParams launch_reducers)
   {
