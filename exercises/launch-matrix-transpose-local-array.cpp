@@ -145,18 +145,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //
       // (2) Inner loops to write array data into output array tile
       //
-      //     Note: loop order is swapped from above so that output matrix
-      //           data access is stride-1.
       //
       for (int tx = 0; tx < TILE_DIM; ++tx) {
         for (int ty = 0; ty < TILE_DIM; ++ty) {
 
-          int col = bx * TILE_DIM + tx;  // Matrix column index
-          int row = by * TILE_DIM + ty;  // Matrix row index
+          // Tranpose tile offset
+          int col = by * TILE_DIM + tx;  // Matrix column index
+          int row = bx * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c) {
-            Atview(col, row) = Tile[ty][tx];
+          if (row < N_c && col < N_r) {
+            Atview(row, col) = Tile[tx][ty];
           }
         }
       }
@@ -195,10 +194,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           /// input matrix into the RAJA_TEAM_SHARED memory array
           ///
 
-          RAJA::loop_icount<loop_pol_1>(ctx, col_tile, [&] (int col, int tx) {
-            RAJA::loop_icount<loop_pol_1>(ctx, row_tile, [&] (int row, int ty) {
+          RAJA::loop_icount<loop_pol_1>(ctx, col_tile, [&] (int row, int ty) {
+            RAJA::loop_icount<loop_pol_1>(ctx, row_tile, [&] (int col, int tx) {
 
-              Atview(col, row) = Tile_Array[ty][tx];
+              Atview(row, col) = Tile_Array[tx][ty];
 
             });
           });
@@ -244,18 +243,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
-            RAJA::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
-              RAJA::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
+          RAJA::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
+            RAJA::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
 
-                Tile_Array[ty][tx] = Aview(row, col);
+              Tile_Array[ty][tx] = Aview(row, col);
 
               });
             });
 
-            RAJA::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int col, int tx) {
-              RAJA::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int row, int ty) {
+          RAJA::loop_icount<loop_pol_2>(ctx, col_tile, [&] (int row, int ty) {
+            RAJA::loop_icount<loop_pol_2>(ctx, row_tile, [&] (int col, int tx) {
 
-                Atview(col, row) = Tile_Array[ty][tx];
+              Atview(row, col) = Tile_Array[tx][ty];
 
                 });
               });
@@ -307,10 +306,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
           });
 
-          RAJA::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-            RAJA::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
+          ctx.teamSync();
 
-              Atview(col, row) = Tile_Array[ty][tx];
+          RAJA::loop_icount<cuda_threads_y>(ctx, col_tile, [&] (int row, int ty) {
+            RAJA::loop_icount<cuda_threads_x>(ctx, row_tile, [&] (int col, int tx) {
+
+              Atview(row, col) = Tile_Array[tx][ty];
 
             });
           });
@@ -379,10 +380,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
           });
 
-          RAJA::loop_icount<hip_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-            RAJA::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
+          ctx.teamSync();
 
-              d_Atview(col, row) = Tile_Array[ty][tx];
+          RAJA::loop_icount<hip_threads_y>(ctx, col_tile, [&] (int row, int ty) {
+            RAJA::loop_icount<hip_threads_x>(ctx, row_tile, [&] (int col, int tx) {
+
+              d_Atview(row, col) = Tile_Array[tx][ty];
 
             });
           });
