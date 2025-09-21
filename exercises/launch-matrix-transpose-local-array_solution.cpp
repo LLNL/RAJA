@@ -308,6 +308,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
           });
 
+          ctx.teamSync();
+
           RAJA::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
             RAJA::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
 
@@ -381,6 +383,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
             });
           });
+
+          ctx.teamSync();
 
           RAJA::loop_icount<hip_threads_x>(ctx, col_tile, [&] (int col, int tx) {
             RAJA::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {

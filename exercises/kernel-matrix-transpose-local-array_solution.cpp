@@ -431,10 +431,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct,
                                             RAJA::statement::Lambda<1>
               >
-            >,
-            // Synchronize threads to ensure all reads
-            // from the local array are complete
-            RAJA::statement::CudaSyncThreads
+            >
           >
         >
       >
@@ -526,10 +523,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct,
                                             RAJA::statement::Lambda<1>
               >
-            >,
-            // Synchronize threads to ensure all reads
-            // from the local array are complete
-            RAJA::statement::HipSyncThreads
+            >
           >
         >
       >
