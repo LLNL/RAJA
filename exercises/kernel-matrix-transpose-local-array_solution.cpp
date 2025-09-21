@@ -399,8 +399,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //      These loops iterate over the number of
       //      tiles needed to carry out the transpose
       //
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_direct_unchecked,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_direct_unchecked,
           // This statement will initalize local array memory inside a
           // kernel. The cpu_tile_mem policy specifies that memory should be
           // allocated on the stack. The entries in the RAJA::ParamList
@@ -494,8 +494,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //      These loops iterate over the number of
       //      tiles needed to carry out the transpose
       //
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_direct_unchecked,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_direct_unchecked,
           // This statement will initalize local array memory inside a
           // kernel. The cpu_tile_mem policy specifies that memory should be
           // allocated on the stack. The entries in the RAJA::ParamList

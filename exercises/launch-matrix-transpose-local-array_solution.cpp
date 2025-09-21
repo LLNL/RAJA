@@ -278,8 +278,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
   const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
-  using cuda_teams_y = RAJA::LoopPolicy<RAJA::cuda_block_y_direct>;
-  using cuda_teams_x = RAJA::LoopPolicy<RAJA::cuda_block_x_direct>;
+  using cuda_teams_y = RAJA::LoopPolicy<RAJA::cuda_block_y_direct_unchecked>;
+  using cuda_teams_x = RAJA::LoopPolicy<RAJA::cuda_block_x_direct_unchecked>;
 
   using cuda_threads_y = RAJA::LoopPolicy<RAJA::cuda_thread_y_direct>;
   using cuda_threads_x = RAJA::LoopPolicy<RAJA::cuda_thread_x_direct>;
@@ -352,8 +352,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   const int n_blocks_c = RAJA_DIVIDE_CEILING_INT(N_c, c_block_sz);
   const int n_blocks_r = RAJA_DIVIDE_CEILING_INT(N_r, r_block_sz);
 
-  using hip_teams_y = RAJA::LoopPolicy<RAJA::hip_block_y_direct>;
-  using hip_teams_x = RAJA::LoopPolicy<RAJA::hip_block_x_direct>;
+  using hip_teams_y = RAJA::LoopPolicy<RAJA::hip_block_y_direct_unchecked>;
+  using hip_teams_x = RAJA::LoopPolicy<RAJA::hip_block_x_direct_unchecked>;
 
   using hip_threads_y = RAJA::LoopPolicy<RAJA::hip_thread_y_direct>;
   using hip_threads_x = RAJA::LoopPolicy<RAJA::hip_thread_x_direct>;
