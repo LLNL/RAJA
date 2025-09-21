@@ -182,9 +182,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::LaunchParams(), //LaunchParams may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
+        [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<loop_pol_1>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
+          [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
@@ -232,9 +234,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::LaunchParams(), //LaunchParams may be empty when only running on the cpu
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::tile<omp_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<omp_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
+        [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::tile<loop_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<loop_pol_2>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
+          [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
@@ -285,12 +289,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<cuda_launch_policy>(
     RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
-                     RAJA::Threads(c_block_sz, r_block_sz)),
+                       RAJA::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::tile<cuda_teams_y>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<cuda_teams_y>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
+        [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::tile<cuda_teams_x>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<cuda_teams_x>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
+          [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
@@ -302,16 +308,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             });
           });
 
-         RAJA::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-           RAJA::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
+          RAJA::loop_icount<cuda_threads_x>(ctx, col_tile, [&] (int col, int tx) {
+            RAJA::loop_icount<cuda_threads_y>(ctx, row_tile, [&] (int row, int ty) {
 
-             Atview(col, row) = Tile_Array[ty][tx];
+              Atview(col, row) = Tile_Array[ty][tx];
 
-           });
-         });
+            });
+          });
 
-       });
-     });
+        });
+      });
 
    });
 
@@ -357,12 +363,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   RAJA::launch<hip_launch_policy>
      (RAJA::LaunchParams(RAJA::Teams(n_blocks_c, n_blocks_r),
-                     RAJA::Threads(c_block_sz, r_block_sz)),
+                         RAJA::Threads(c_block_sz, r_block_sz)),
     [=] RAJA_HOST_DEVICE (RAJA::LaunchContext ctx) {
 
-      RAJA::tile<hip_teams_y>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r), [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
+      RAJA::tile<hip_teams_y>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_r),
+        [&] (RAJA::TypedRangeSegment<int> const &row_tile) {
 
-        RAJA::tile<hip_teams_x>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c), [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
+        RAJA::tile<hip_teams_x>(ctx, TILE_DIM, RAJA::TypedRangeSegment<int>(0, N_c),
+          [&] (RAJA::TypedRangeSegment<int> const &col_tile) {
 
           RAJA_TEAM_SHARED double Tile_Array[TILE_DIM][TILE_DIM];
 
@@ -375,15 +383,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           });
 
           RAJA::loop_icount<hip_threads_x>(ctx, col_tile, [&] (int col, int tx) {
-           RAJA::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
+            RAJA::loop_icount<hip_threads_y>(ctx, row_tile, [&] (int row, int ty) {
 
-             d_Atview(col, row) = Tile_Array[ty][tx];
+              d_Atview(col, row) = Tile_Array[ty][tx];
 
-           });
-         });
+            });
+          });
 
-       });
-     });
+        });
+      });
 
    });
 
