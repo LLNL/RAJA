@@ -154,7 +154,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           int row_t = bx * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_c && col < N_r) {
+          if (row_t < N_c && col_t < N_r) {
             Atview(row_t, col_t) = Tile[tx][ty];
           }
         }
