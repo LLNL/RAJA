@@ -25,6 +25,8 @@ BUILD_SUFFIX=corona-sycl
 RAJA_HOSTCONFIG=../host-configs/lc-builds/toss4/corona_sycl.cmake
 
 echo
+echo "Path to SYCL compiler is: ${SYCL_PATH}"
+echo
 echo "Creating build directory build_${BUILD_SUFFIX} and generating configuration in it"
 echo "Configuration extra arguments:"
 echo "   $@"
@@ -63,12 +65,14 @@ cmake \
 echo
 echo "***********************************************************************"
 echo
-echo "cd into directory build_${BUILD_SUFFIX}_${USER} and run make to build RAJA"
+echo "cd into directory build_${BUILD_SUFFIX}_${USER} to build RAJA,"
+echo "run RAJA tests, etc."
 echo
-echo "To run RAJA tests, exercises, etc. with the build, please do the following:"
+echo "Before attempting to build RAJA and/or run any RAJA-based executable,"
+echo "please do the following:"
 echo
-echo "   1) Load the ROCm module version matching the version in the compiler path"
-echo "      you passed to this script."
+echo "   1) Make sure you have loaded the ROCm module version that matches the"
+echo "      version in the compiler path you passed to this script."
 echo
 echo "   2) Prefix the LD_LIBRARY_PATH environment variable with "
 echo "        ${SYCL_PATH}/lib:${SYCL_PATH}/lib64"
