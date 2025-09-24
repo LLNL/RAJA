@@ -171,25 +171,28 @@ annotate the job for this. For example:
    ``RAJA/.gitlab/jobs/<MACHINE>.yml`` file where the job is overridden.
 
 
-Building the Intel clang + SYCL HIP compiler for use in CI
-----------------------------------------------------------
+Testing the RAJA SYCL Back-end
+-------------------------------
 
-To run CI tests for the RAJA SYCL back-end on GitLab, we use the corona 
-system and a custom Intel Clang compiler that we build ourselves to support
-SYCL for AMD GPUs. This compiler lives in the ``/usr/workspace/raja-dev/``
-folder so that it can be accessed by the service user account that we use to
-run our GitLab CI. Since the Intel compiler does not
-do releases in the typical sense (they simply update their repo *every night*), 
-it may become necessary to periodically build a new version of the compiler to 
-ensure that we are using the most up-to-date version available. The steps for 
-building, installing, and running are shown here.
+To test the RAJA SYCL back-end, we use the LC corona system and a version of
+the Intel Clang compiler that we build to support SYCL for AMD GPUs. The
+compiler is installed in the ``/usr/workspace/raja-dev/`` folder on the CZ 
+network. It can be accessed by the RAJA service user account that we use
+to run our GitLab CI and by anyone in the `raja-dev` group for development
+work and manual testing. The developers of this compiler do not do releases
+in a conventional sense; they push a new 'release' of the compiler every night
+to the `Intel LLVM GitHub project releases <https://github.com/intel/llvm/releases>`_. We periodically build a new version of the compiler so that we are
+using reasonably up-to-date compiler features and/or to update to a new version
+of ROCm. The steps for building, installing, and using the compiler are
+described in this section.
 
 Building the Compiler
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. important:: Because Intel updates their compiler repo daily, it is possible
-   that the head of the SYCL branch will fail to build. In the event that it
-   does not build, try checking out an earlier commit. On the Intel/LLVM GitHub
+.. important:: Since Intel updates the compiler repo daily, it is not clear
+   which 'release' are considered stable or will work. It is possible that the 
+   head of the SYCL branch will fail to configure or build. If this is the case,
+   try checking out an earlier commit. On the Intel/LLVM GitHub
    page, one can see which of their commits builds by checking the status
    badge next to each commit. Look for a commit that passes. 
 
@@ -199,46 +202,47 @@ Building the Compiler
 
 #. Load the module of the version of ROCm that you want to use. For example::
 
-    module load rocm/5.7.1 
+    module load rocm/6.3.1 
 
-#. Clone the SYCL branch of Intel's LLVM compiler::
+#. Clone the SYCL branch of Intel's LLVM compiler into a local directory::
 
     git clone https://github.com/intel/llvm -b sycl
+   
+   If the commit that you are on in the compiler sycl branch does not build,
+   run ``git checkout <git sha>`` to checkout a new commit to try.
 
-#. cd into the LLVM folder:: 
+#. cd into the LLVM folder::
     
     cd llvm
 
-   In the event that the head of the sycl branch does not build, run
-   ``git checkout <git sha>`` to checkout a version that does build.
-
 #. Build the compiler. 
 
-   Note that in this example, we are using rocm5.7.1, but one can change the
-   version they wish to use simply by changing the paths in the configure step
+   Note that in this example, we are using rocm6.3.1. To use a different version
+   of ROCm, replace all instances of '6.3.1' in the command below with the 
+   desired version number.
 
-   a. Configure
+   a. Configure the compiler build
 
      .. code-block:: bash 
 
-        srun -n1 /usr/bin/python3 buildbot/configure.py --hip -o buildrocm5.7.1 \
+        srun -n1 /usr/bin/python3 buildbot/configure.py --hip -o buildrocm6.3.1 \
         --cmake-gen "Unix Makefiles" \
-        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
-        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_INCLUDE_DIR=/opt/rocm-5.7.1/include \
-        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_LIB_DIR=/opt/rocm-5.7.1/lib \
-        --cmake-opt=-DSYCL_BUILD_PI_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
-        --cmake-opt=-DSYCL_BUILD_PI_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
-        --cmake-opt=-DSYCL_BUILD_PI_HIP_LIB_DIR=/opt/rocm-5.7.1/lib \
-        --cmake-opt=-DUR_HIP_ROCM_DIR=/opt/rocm-5.7.1 \
-        --cmake-opt=-DUR_HIP_INCLUDE_DIR=/opt/rocm-5.7.1/include \
-        --cmake-opt=-DUR_HIP_HSA_INCLUDE_DIR=/opt/rocm-5.7.1/hsa/include/hsa \
-        --cmake-opt=-DUR_HIP_LIB_DIR=/opt/rocm-5.7.1/lib
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_DIR=/opt/rocm-6.3.1 \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_INCLUDE_DIR=/opt/rocm-6.3.1/include \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_ROCM_LIB_DIR=/opt/rocm-6.3.1/lib \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_INCLUDE_DIR=/opt/rocm-6.3.1/include \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_HSA_INCLUDE_DIR=/opt/rocm-6.3.1/hsa/include/hsa \
+        --cmake-opt=-DSYCL_BUILD_PI_HIP_LIB_DIR=/opt/rocm-6.3.1/lib \
+        --cmake-opt=-DUR_HIP_ROCM_DIR=/opt/rocm-6.3.1 \
+        --cmake-opt=-DUR_HIP_INCLUDE_DIR=/opt/rocm-6.3.1/include \
+        --cmake-opt=-DUR_HIP_HSA_INCLUDE_DIR=/opt/rocm-6.3.1/hsa/include/hsa \
+        --cmake-opt=-DUR_HIP_LIB_DIR=/opt/rocm-6.3.1/lib
 
-   b. Build
+   b. Build the compiler
 
      .. code-block:: bash
 
-      srun -n1 /usr/bin/python3 buildbot/compile.py -o buildrocm5.7.1
+      srun -n1 /usr/bin/python3 buildbot/compile.py -o buildrocm6.3.1
 
 #. Test the compiler
 
@@ -246,7 +250,7 @@ Building the Compiler
 
 #. Install
 
-  a. The build step will install the compiler in the folder ``buildrocm<version>/install``. Copy this folder to the ``/usr/workspace/raja-dev/`` directory using the naming scheme ``clang_sycl_<git sha>_hip_gcc<version>_rocm<version>``
+  a. The build step will install the compiler in the folder ``buildrocm<version>/install``. Copy this folder to the ``/usr/workspace/raja-dev/`` directory using the naming scheme ``clang_sycl_<git sha>_hip_gcc<version>_rocm<version>``. You will see other installed versions of the compiler in the ``/usr/workspace/raja-dev/`` directory. Please follow the conventions for those directory names.
 
   #. Set the permissions of the folder, and everything in it to 750::
 
@@ -260,21 +264,21 @@ Building the Compiler
 Using the compiler
 ^^^^^^^^^^^^^^^^^^
 
-#. Load the version of rocm that you used when building the compiler, for example::
+#. Load the ROCm module that corresponds to the version of ROCm used by the compiler; for example::
 
-    module load rocm/5.7.1
+    module load rocm/6.3.1
 
-#. Navigate to the root of your local RAJA checkout space::
+#. Navigate to the top-level directory in your local RAJA checkout space::
 
     cd /path/to/raja
 
-#. Run the test config script::
+#. Run the test config script passing the compiler install path as a command line argument, such as::
 
-    ./scripts/lc-builds/corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1
+    ./scripts/lc-builds/corona_sycl.sh /usr/workspace/raja-dev/clang_sycl_e42590ef4b94_hip_gcc10.3.1_rocm6.3.1
 
-   Note that at the time of writing, the newest compiler we had built was at ``clang_sycl_2f03ef85fee5_hip_gcc10.3.1_rocm5.7.1``
+.. important:: When the script prints information about setting your ``LD_LIBRARY_PATH`` environment variable. This is required to properly build and run all RAJA tests, examples, etc. **So please follow those instructions before attempting to build RAJA.**
 
-#. cd into the generated build directory::
+#. cd into the generated build directory created by the build script::
 
     cd {build directory}
 
