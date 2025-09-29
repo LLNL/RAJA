@@ -38,26 +38,22 @@ struct LaunchExecute<RAJA::omp_launch_t>
        BODY const& body,
        ReduceParams& f_params)
   {
+    using RAJA::internal::thread_privatize;
     constexpr bool has_reducers =
         !RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>::value;
     using EXEC_POL = RAJA::omp_launch_t;
     EXEC_POL pol {};
-    auto parallel_section = [&]() {
+    using BodyType = decltype(thread_privatize(body));
+    using FunctionType =
+        std::function<void(ReduceParams&, BodyType&, LaunchContext&)>;
+    auto parallel_section = [&](ReduceParams& f_params, FunctionType func) {
       LaunchContext ctx;
-
-      using RAJA::internal::thread_privatize;
       auto loop_body = thread_privatize(body);
 
       ctx.shared_mem_ptr = (char*)malloc(launch_params.shared_mem_size);
 
-      if constexpr (has_reducers)
-      {
-        expt::invoke_body(f_params, loop_body.get_priv(), ctx);
-      }
-      else
-      {
-        loop_body.get_priv()(ctx);
-      }
+      func(f_params, loop_body, ctx);
+
       free(ctx.shared_mem_ptr);
       ctx.shared_mem_ptr = nullptr;
     };
@@ -69,18 +65,26 @@ struct LaunchExecute<RAJA::omp_launch_t>
     }
 
     // reducer object must be named f_params as expected by macro below
-    RAJA_OMP_DECLARE_REDUCTION_COMBINE;
     if constexpr (has_reducers)
     {
+      RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 #pragma omp parallel reduction(combine : f_params)
       {
-        parallel_section();
+        auto parallel_kernel = [&](ReduceParams& f_params, BodyType& body,
+                                   LaunchContext& ctx) {
+          expt::invoke_body(f_params, body.get_priv(), ctx);
+        };
+        parallel_section(f_params, parallel_kernel);
       }
     }
     else
     {
       RAJA::region<RAJA::omp_parallel_region>([&]() {
-        parallel_section();
+        auto parallel_kernel = [&](ReduceParams&, BodyType& body,
+                                   LaunchContext& ctx) {
+          body.get_priv()(ctx);
+        };
+        parallel_section(f_params, parallel_kernel);
       });
     }
     // Resolve reducers if present
