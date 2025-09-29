@@ -62,7 +62,7 @@ gcc_8_3_1_cuda_11_7_desul_atomics:
 
 clang_16_0_6_omptarget:
   variables:
-    SPEC: " ~shared +openmp +omptarget +tests %clang16"
+    SPEC: " ~shared +openmp +omptarget +tests %clang-16"
     LASSEN_JOB_ALLOC: "1 -W 60 -q pci"
   extends: .job_on_lassen
 
