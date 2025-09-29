@@ -70,6 +70,9 @@ struct LaunchExecute<RAJA::omp_launch_t>
       RAJA_OMP_DECLARE_REDUCTION_COMBINE;
 #pragma omp parallel reduction(combine : f_params)
       {
+        // This "extra lambda" has to be declared within the scope of the OpenMP
+        // pragma so that the reduction parameter pack it operates on is the
+        // version tracked by the combine OpenMP syntax
         auto parallel_kernel = [&](ReduceParams& f_params, BodyType& body,
                                    LaunchContext& ctx) {
           expt::invoke_body(f_params, body.get_priv(), ctx);
