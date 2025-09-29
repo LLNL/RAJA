@@ -28,55 +28,21 @@ template<>
 struct LaunchExecute<RAJA::omp_launch_t>
 {
 
-  template<typename BODY, typename ReduceParams>
-  static concepts::enable_if_t<
-      resources::EventProxy<resources::Resource>,
-      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
-      RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>
-  exec(RAJA::resources::Resource res,
-       LaunchParams const& params,
-       BODY const& body,
-       ReduceParams& RAJA_UNUSED_ARG(launch_reducers))
-  {
-    RAJA::region<RAJA::omp_parallel_region>([&]() {
-      LaunchContext ctx;
-
-      using RAJA::internal::thread_privatize;
-      auto loop_body = thread_privatize(body);
-
-      ctx.shared_mem_ptr = (char*)malloc(params.shared_mem_size);
-
-      loop_body.get_priv()(ctx);
-
-      free(ctx.shared_mem_ptr);
-      ctx.shared_mem_ptr = nullptr;
-    });
-
-    return resources::EventProxy<resources::Resource>(res);
-  }
 
   template<typename ReduceParams, typename BODY>
   static concepts::enable_if_t<
       resources::EventProxy<resources::Resource>,
-      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>,
-      concepts::negate<
-          RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>>>
+      RAJA::expt::type_traits::is_ForallParamPack<ReduceParams>>
   exec(RAJA::resources::Resource res,
        LaunchParams const& launch_params,
        BODY const& body,
        ReduceParams& f_params)
   {
+    constexpr bool has_reducers =
+        !RAJA::expt::type_traits::is_ForallParamPack_empty<ReduceParams>::value;
     using EXEC_POL = RAJA::omp_launch_t;
     EXEC_POL pol {};
-
-    expt::ParamMultiplexer::parampack_init(pol, f_params);
-
-    // reducer object must be named f_params as expected by macro below
-    RAJA_OMP_DECLARE_REDUCTION_COMBINE;
-
-#pragma omp parallel reduction(combine : f_params)
-    {
-
+    auto parallel_section = [&]() {
       LaunchContext ctx;
 
       using RAJA::internal::thread_privatize;
@@ -84,13 +50,44 @@ struct LaunchExecute<RAJA::omp_launch_t>
 
       ctx.shared_mem_ptr = (char*)malloc(launch_params.shared_mem_size);
 
-      expt::invoke_body(f_params, loop_body.get_priv(), ctx);
-
+      if constexpr (has_reducers)
+      {
+        expt::invoke_body(f_params, loop_body.get_priv(), ctx);
+      }
+      else
+      {
+        loop_body.get_priv()(ctx);
+      }
       free(ctx.shared_mem_ptr);
       ctx.shared_mem_ptr = nullptr;
+    };
+
+    // Init reducers if present
+    if constexpr (has_reducers)
+    {
+      expt::ParamMultiplexer::parampack_init(pol, f_params);
     }
 
-    expt::ParamMultiplexer::parampack_resolve(pol, f_params);
+    // reducer object must be named f_params as expected by macro below
+    RAJA_OMP_DECLARE_REDUCTION_COMBINE;
+    if constexpr (has_reducers)
+    {
+#pragma omp parallel reduction(combine : f_params)
+      {
+        parallel_section();
+      }
+    }
+    else
+    {
+      RAJA::region<RAJA::omp_parallel_region>([&]() {
+        parallel_section();
+      });
+    }
+    // Resolve reducers if present
+    if constexpr (has_reducers)
+    {
+      expt::ParamMultiplexer::parampack_resolve(pol, f_params);
+    }
 
     return resources::EventProxy<resources::Resource>(res);
   }
