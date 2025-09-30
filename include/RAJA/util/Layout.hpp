@@ -77,9 +77,9 @@ public:
   using IndexLinear = IdxLin;
   using IndexRange  = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
-  static constexpr size_t n_dims = sizeof...(RangeInts);
-  static constexpr IdxLin limit  = RAJA::operators::limits<IdxLin>::max();
-  static constexpr ptrdiff_t stride_one_dim = StrideOneDim;
+  static inline constexpr size_t n_dims = sizeof...(RangeInts);
+  static inline constexpr IdxLin limit  = RAJA::operators::limits<IdxLin>::max();
+  static inline constexpr ptrdiff_t stride_one_dim = StrideOneDim;
 
   IdxLin sizes[n_dims]       = {0};
   IdxLin strides[n_dims]     = {0};
@@ -267,12 +267,6 @@ public:
   }
 };
 
-template<camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
-constexpr size_t
-    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::n_dims;
-template<camp::idx_t... RangeInts, typename IdxLin, ptrdiff_t StrideOneDim>
-constexpr IdxLin
-    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::limit;
 }  // namespace detail
 
 /*!

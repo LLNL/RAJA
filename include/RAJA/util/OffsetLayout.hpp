@@ -49,9 +49,9 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   using Base        = RAJA::detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
-  static constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
+  static inline constexpr camp::idx_t stride_one_dim = Base::stride_one_dim;
 
-  static constexpr size_t n_dims = sizeof...(RangeInts);
+  static inline constexpr size_t n_dims = sizeof...(RangeInts);
   IdxLin offsets[n_dims]         = {0};  // If not specified set to zero
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(
