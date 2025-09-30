@@ -54,7 +54,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
   static constexpr size_t n_dims = sizeof...(RangeInts);
   IdxLin offsets[n_dims]         = {0};  // If not specified set to zero
 
-  constexpr RAJA_INLINE OffsetLayout_impl(
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(
       std::array<IdxLin, sizeof...(RangeInts)> begin,
       std::array<IdxLin, sizeof...(RangeInts)> end)
       : base_ {(end[RangeInts] - begin[RangeInts])...},
@@ -66,7 +66,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
         offsets {c.offsets[RangeInts]...}
   {}
 
-  void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE void shift(std::array<IdxLin, sizeof...(RangeInts)> shift)
   {
     for (size_t i = 0; i < n_dims; ++i)
       offsets[i] += shift[i];
@@ -116,7 +116,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin>
     camp::sink((indices = (offsets[RangeInts] + indices))...);
   }
 
-  static RAJA_INLINE OffsetLayout_impl<IndexRange, IdxLin>
+  static constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl<IndexRange, IdxLin>
   from_layout_and_offsets(
       const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
@@ -202,7 +202,7 @@ struct TypedOffsetLayout<IdxLin, camp::tuple<DimTypes...>>
   using OffsetLayout<sizeof...(DimTypes), StrippedIdxLin>::OffsetLayout;
 #endif
 
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE RAJA_BOUNDS_CHECK_constexpr IdxLin operator()(
       DimTypes... indices) const
   {
     return IdxLin(Base::operator()(stripIndexType(indices)...));
@@ -230,7 +230,7 @@ private:
 };
 
 template<size_t n_dims, typename IdxLin = Index_type>
-auto make_offset_layout(const std::array<IdxLin, n_dims>& begin,
+RAJA_INLINE RAJA_HOST_DEVICE constexpr auto make_offset_layout(const std::array<IdxLin, n_dims>& begin,
                         const std::array<IdxLin, n_dims>& end)
     -> OffsetLayout<n_dims, IdxLin>
 {
@@ -238,7 +238,7 @@ auto make_offset_layout(const std::array<IdxLin, n_dims>& begin,
 }
 
 template<size_t Rank, typename IdxLin = Index_type>
-auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& begin,
+RAJA_INLINE RAJA_HOST_DEVICE constexpr auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& begin,
                                  const std::array<IdxLin, Rank>& end,
                                  const std::array<IdxLin, Rank>& permutation)
     -> decltype(make_offset_layout<Rank, IdxLin>(begin, end))

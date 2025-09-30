@@ -61,6 +61,7 @@ namespace RAJA
  *
  */
 template<size_t Rank, typename IdxLin = Index_type>
+constexpr RAJA_INLINE RAJA_HOST_DEVICE
 auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
                           std::array<camp::idx_t, Rank> permutation)
     -> Layout<Rank, IdxLin>

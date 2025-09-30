@@ -208,10 +208,7 @@ struct ViewReturnHelper<camp::idx_seq<>,
 {
   using return_type = ElementType&;
 
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  static constexpr return_type make_return(LayoutType const& layout,
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr return_type make_return(LayoutType const& layout,
                                            PointerType const& data,
                                            Args const&... args)
   {
@@ -268,10 +265,7 @@ struct ViewReturnHelper<camp::idx_seq<VecHead, VecSeq...>,
   using return_type =
       internal::expt::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  static constexpr return_type make_return(LayoutType const& layout,
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr return_type make_return(LayoutType const& layout,
                                            PointerType const& data,
                                            Args const&... args)
   {
@@ -386,10 +380,7 @@ struct ViewReturnHelper<
       internal::expt::ET::TensorLoadStore<tensor_reg_type, ref_type>;
 
 
-  RAJA_INLINE
-
-  RAJA_HOST_DEVICE
-  static constexpr return_type make_return(
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr return_type make_return(
       LayoutType const& layout,
       PointerType const& data,
       RAJA::expt::StaticTensorIndex<INDEX_TYPES> const&... args)
@@ -610,16 +601,12 @@ public:
   RAJA_INLINE
   constexpr ViewBase() {};
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE ViewBase(ViewBase const& c)
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr ViewBase(ViewBase const& c)
       : m_layout(c.m_layout),
         m_data(c.m_data)
   {}
 
-  RAJA_HOST_DEVICE
-
-  RAJA_INLINE
-  ViewBase& operator=(ViewBase const& c)
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr ViewBase& operator=(ViewBase const& c)
   {
     m_layout = c.m_layout;
     m_data   = c.m_data;
@@ -628,8 +615,8 @@ public:
   constexpr ViewBase()                             = default;
   RAJA_INLINE constexpr ViewBase(ViewBase const&)  = default;
   RAJA_INLINE constexpr ViewBase(ViewBase&&)       = default;
-  RAJA_INLINE ViewBase& operator=(ViewBase const&) = default;
-  RAJA_INLINE ViewBase& operator=(ViewBase&&)      = default;
+  RAJA_INLINE constexpr ViewBase& operator=(ViewBase const&) = default;
+  RAJA_INLINE constexpr ViewBase& operator=(ViewBase&&)      = default;
 
 #endif
 
@@ -655,23 +642,13 @@ public:
         m_layout(rhs.get_layout())
   {}
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE void set_data(PointerType data_ptr) { m_data = data_ptr; }
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr void set_data(PointerType data_ptr) { m_data = data_ptr; }
 
-  RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr pointer_type const& get_data() const { return m_data; }
 
-  RAJA_INLINE
-  constexpr pointer_type const& get_data() const { return m_data; }
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr layout_type const& get_layout() const { return m_layout; }
 
-  RAJA_HOST_DEVICE
-
-  RAJA_INLINE
-  constexpr layout_type const& get_layout() const { return m_layout; }
-
-  RAJA_HOST_DEVICE
-
-  RAJA_INLINE
-  constexpr linear_index_type size() const { return m_layout.size(); }
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr linear_index_type size() const { return m_layout.size(); }
 
   template<camp::idx_t DIM>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr linear_index_type get_dim_size() const
@@ -709,9 +686,10 @@ public:
         m_layout, m_data, args...);
   }
 
+  // why doesn't this return a shifted copy instead of shifting this view?
   template<size_t n_dims   = layout_type::n_dims,
            typename IdxLin = linear_index_type>
-  RAJA_INLINE ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims == layout_type::n_dims,
                   "Dimension mismatch in ViewBase shift");
@@ -802,9 +780,10 @@ public:
         match_typed_view_arg<IndexTypes>(args)...);
   }
 
+  // why doesn't this return a shifted copy instead of shifting this view?
   template<size_t n_dims   = sizeof...(IndexTypes),
            typename IdxLin = linear_index_type>
-  RAJA_INLINE ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr ShiftedView shift(const std::array<IdxLin, n_dims>& shift)
   {
     static_assert(n_dims == layout_type::n_dims,
                   "Dimension mismatch in TypedViewBase shift");

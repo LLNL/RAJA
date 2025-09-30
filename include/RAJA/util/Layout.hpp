@@ -90,11 +90,11 @@ public:
   /*!
    * Default constructor with zero sizes and strides.
    */
-  constexpr RAJA_INLINE LayoutBase_impl()                        = default;
-  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl const&)  = default;
-  constexpr RAJA_INLINE LayoutBase_impl(LayoutBase_impl&&)       = default;
-  RAJA_INLINE LayoutBase_impl& operator=(LayoutBase_impl const&) = default;
-  RAJA_INLINE LayoutBase_impl& operator=(LayoutBase_impl&&)      = default;
+  RAJA_INLINE constexpr LayoutBase_impl()                        = default;
+  RAJA_INLINE constexpr LayoutBase_impl(LayoutBase_impl const&)  = default;
+  RAJA_INLINE constexpr LayoutBase_impl(LayoutBase_impl&&)       = default;
+  RAJA_INLINE constexpr LayoutBase_impl& operator=(LayoutBase_impl const&) = default;
+  RAJA_INLINE constexpr LayoutBase_impl& operator=(LayoutBase_impl&&)      = default;
 
   /*!
    * Construct a layout given the size of each dimension.
@@ -116,7 +116,7 @@ public:
    *  Templated copy ctor from simillar layout.
    */
   template<typename CIdxLin, ptrdiff_t CStrideOneDim>
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr
   LayoutBase_impl(const LayoutBase_impl<camp::idx_seq<RangeInts...>,
                                         CIdxLin,
                                         CStrideOneDim>& rhs)
@@ -400,7 +400,7 @@ private:
  *
  */
 template<ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
-RAJA_INLINE Layout<n_dims, IdxLin, s1_dim> make_stride_one(
+RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout<n_dims, IdxLin, s1_dim> make_stride_one(
     Layout<n_dims, IdxLin> const& l)
 {
   return Layout<n_dims, IdxLin, s1_dim>(l);
@@ -411,7 +411,7 @@ RAJA_INLINE Layout<n_dims, IdxLin, s1_dim> make_stride_one(
  *
  */
 template<ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
-RAJA_INLINE TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
+RAJA_INLINE RAJA_HOST_DEVICE constexpr TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
     TypedLayout<IdxLin, IdxTuple> const& l)
 {
   // strip l to it's base-class type
