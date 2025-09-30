@@ -1026,7 +1026,8 @@ struct ScopedAssignment
   ScopedAssignment& operator=(ScopedAssignment const&) = delete;
   ScopedAssignment& operator=(ScopedAssignment&&)      = delete;
 
-  constexpr ~ScopedAssignment() { m_ref_to_val = std::move(m_prev_val); }
+  // constexpr in c++20
+  ~ScopedAssignment() { m_ref_to_val = std::move(m_prev_val); }
 
 private:
   T& m_ref_to_val;
