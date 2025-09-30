@@ -20,6 +20,16 @@ Notable changes include:
   * Bug fixes/improvements:
 
 
+Version 2025.09.1 -- Release date 2025-10-01
+============================================
+
+This release contains a bugfix and a submodule update
+
+Notable changes include:
+  * CAMP submodule was updated to point at the patch release v2025.09.2
+  * A build conflict with Caliper and ROCTX/NVTX has been fixed
+
+
 Version 2025.09.0 -- Release date 2025-09-12
 ============================================
 
