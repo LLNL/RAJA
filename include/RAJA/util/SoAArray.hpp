@@ -43,7 +43,10 @@ class SoAArray
 public:
   constexpr RAJA_HOST_DEVICE value_type get(size_t i) const { return mem[i]; }
 
-  constexpr RAJA_HOST_DEVICE void set(size_t i, value_type val) { mem[i] = val; }
+  constexpr RAJA_HOST_DEVICE void set(size_t i, value_type val)
+  {
+    mem[i] = val;
+  }
 
 private:
   value_type mem[size];

@@ -431,7 +431,10 @@ public:
   ///  Operator that enables implicit conversion from RestrictRealPtr to
   ///  RestrictRealConstPtr.
   ///
-  constexpr operator ConstRestrictRealPtr() { return ConstRestrictRealPtr(dptr); }
+  constexpr operator ConstRestrictRealPtr()
+  {
+    return ConstRestrictRealPtr(dptr);
+  }
 
   ///
   /// Bracket operator.
@@ -674,7 +677,10 @@ public:
 
 #elif defined(RAJA_COMPILER_CLANG)
   ///
-  constexpr Real_type& operator[](Index_type i) { return ((TDRAReal_ptr)dptr)[i]; }
+  constexpr Real_type& operator[](Index_type i)
+  {
+    return ((TDRAReal_ptr)dptr)[i];
+  }
 
   ///
   const Real_type& operator[](Index_type i) const
@@ -753,7 +759,10 @@ public:
   ///
   /// + operator for pointer arithmetic.
   ///
-  constexpr const Complex_type* operator+(Index_type i) const { return dptr + i; }
+  constexpr const Complex_type* operator+(Index_type i) const
+  {
+    return dptr + i;
+  }
 
 private:
   const Complex_type* dptr;
@@ -814,7 +823,10 @@ public:
   ///  Operator that enables implicit conversion from RestrictComplexPtr to
   ///  RestrictComplexConstPtr.
   ///
-  constexpr operator ConstRestrictComplexPtr() { return ConstRestrictComplexPtr(dptr); }
+  constexpr operator ConstRestrictComplexPtr()
+  {
+    return ConstRestrictComplexPtr(dptr);
+  }
 
   ///
   ///  (Non-const) bracket operator.
@@ -840,7 +852,10 @@ public:
   ///
   /// + operator for const pointer arithmetic.
   ///
-  constexpr const Complex_type* operator+(Index_type i) const { return dptr + i; }
+  constexpr const Complex_type* operator+(Index_type i) const
+  {
+    return dptr + i;
+  }
 
 private:
   Complex_type* dptr;
@@ -926,7 +941,9 @@ struct DefaultAccessor
   }
 
   template<typename T>
-  static RAJA_HOST_DEVICE RAJA_INLINE constexpr void set(T* ptr, size_t i, T val)
+  static RAJA_HOST_DEVICE RAJA_INLINE constexpr void set(T* ptr,
+                                                         size_t i,
+                                                         T val)
   {
     ptr[i] = val;
   }

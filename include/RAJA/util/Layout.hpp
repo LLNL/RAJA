@@ -78,7 +78,7 @@ public:
   using IndexRange  = camp::make_idx_seq_t<sizeof...(RangeInts)>;
 
   static inline constexpr size_t n_dims = sizeof...(RangeInts);
-  static inline constexpr IdxLin limit  = RAJA::operators::limits<IdxLin>::max();
+  static inline constexpr IdxLin limit = RAJA::operators::limits<IdxLin>::max();
   static inline constexpr ptrdiff_t stride_one_dim = StrideOneDim;
 
   IdxLin sizes[n_dims]       = {0};
@@ -90,11 +90,12 @@ public:
   /*!
    * Default constructor with zero sizes and strides.
    */
-  RAJA_INLINE constexpr LayoutBase_impl()                        = default;
-  RAJA_INLINE constexpr LayoutBase_impl(LayoutBase_impl const&)  = default;
-  RAJA_INLINE constexpr LayoutBase_impl(LayoutBase_impl&&)       = default;
-  RAJA_INLINE constexpr LayoutBase_impl& operator=(LayoutBase_impl const&) = default;
-  RAJA_INLINE constexpr LayoutBase_impl& operator=(LayoutBase_impl&&)      = default;
+  RAJA_INLINE constexpr LayoutBase_impl()                       = default;
+  RAJA_INLINE constexpr LayoutBase_impl(LayoutBase_impl const&) = default;
+  RAJA_INLINE constexpr LayoutBase_impl(LayoutBase_impl&&)      = default;
+  RAJA_INLINE constexpr LayoutBase_impl& operator=(LayoutBase_impl const&) =
+      default;
+  RAJA_INLINE constexpr LayoutBase_impl& operator=(LayoutBase_impl&&) = default;
 
   /*!
    * Construct a layout given the size of each dimension.
@@ -116,10 +117,10 @@ public:
    *  Templated copy ctor from simillar layout.
    */
   template<typename CIdxLin, ptrdiff_t CStrideOneDim>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr
-  LayoutBase_impl(const LayoutBase_impl<camp::idx_seq<RangeInts...>,
-                                        CIdxLin,
-                                        CStrideOneDim>& rhs)
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl(
+      const LayoutBase_impl<camp::idx_seq<RangeInts...>,
+                            CIdxLin,
+                            CStrideOneDim>& rhs)
       : sizes {static_cast<IdxLin>(rhs.sizes[RangeInts])...},
         strides {static_cast<IdxLin>(rhs.strides[RangeInts])...},
         inv_strides {static_cast<IdxLin>(rhs.inv_strides[RangeInts])...},
@@ -394,8 +395,8 @@ private:
  *
  */
 template<ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout<n_dims, IdxLin, s1_dim> make_stride_one(
-    Layout<n_dims, IdxLin> const& l)
+RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout<n_dims, IdxLin, s1_dim>
+make_stride_one(Layout<n_dims, IdxLin> const& l)
 {
   return Layout<n_dims, IdxLin, s1_dim>(l);
 }
@@ -405,8 +406,8 @@ RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout<n_dims, IdxLin, s1_dim> make_strid
  *
  */
 template<ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
-RAJA_INLINE RAJA_HOST_DEVICE constexpr TypedLayout<IdxLin, IdxTuple, s1_dim> make_stride_one(
-    TypedLayout<IdxLin, IdxTuple> const& l)
+RAJA_INLINE RAJA_HOST_DEVICE constexpr TypedLayout<IdxLin, IdxTuple, s1_dim>
+make_stride_one(TypedLayout<IdxLin, IdxTuple> const& l)
 {
   // strip l to it's base-class type
   using Base    = typename TypedLayout<IdxLin, IdxTuple>::Base;
