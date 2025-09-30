@@ -126,6 +126,11 @@
 #include "RAJA/util/Span.hpp"
 
 //
+// Message handler to pass messages between host and device
+//
+#include "RAJA/util/messages.hpp"
+
+//
 // zip iterator to iterator over sequences simultaneously
 //
 #include "RAJA/util/zip.hpp"
