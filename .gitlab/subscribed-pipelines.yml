@@ -26,7 +26,7 @@
 
 ###
 # Trigger a build-and-test pipeline for a machine.
-# Comment the jobs for machines you don’t need.
+# Comment the jobs for machines you do not need.
 ###
 
 # One job to generate the job list for all the subpipelines
@@ -38,14 +38,12 @@ generate-job-lists:
     LOCAL_JOBS_PATH: ".gitlab/jobs"
   script:
     - cat ${RADIUSS_JOBS_PATH}/dane.yml ${LOCAL_JOBS_PATH}/dane.yml > dane-jobs.yml
-    - cat ${RADIUSS_JOBS_PATH}/lassen.yml ${LOCAL_JOBS_PATH}/lassen.yml > lassen-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/corona.yml ${LOCAL_JOBS_PATH}/corona.yml > corona-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/tioga.yml ${LOCAL_JOBS_PATH}/tioga.yml > tioga-jobs.yml
     - cat ${RADIUSS_JOBS_PATH}/tuolumne.yml ${LOCAL_JOBS_PATH}/tuolumne.yml > tuolumne-jobs.yml
   artifacts:
     paths:
       - dane-jobs.yml
-      - lassen-jobs.yml
       - corona-jobs.yml
       - tioga-jobs.yml
       - tuolumne-jobs.yml
@@ -96,16 +94,4 @@ tuolumne-build-and-test:
   variables:
     CI_MACHINE: "tuolumne"
   needs: [tuolumne-up-check, generate-job-lists]
-  extends: [.build-and-test]
-
-# LASSEN
-lassen-up-check:
-  variables:
-    CI_MACHINE: "lassen"
-  extends: [.machine-check]
-
-lassen-build-and-test:
-  variables:
-    CI_MACHINE: "lassen"
-  needs: [lassen-up-check, generate-job-lists]
   extends: [.build-and-test]

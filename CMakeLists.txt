@@ -254,7 +254,7 @@ camp source repository")
         PATHS ${camp_DIR}
         ${camp_DIR}/lib/cmake/camp
       )
-      message(STATUS "Using installed CAMP from:  ${camp_INSTALL_PREFIX}")
+      message(STATUS "Using CAMP version ${camp_VERSION} installed at: ${camp_INSTALL_PREFIX}")
     else ()
       message(STATUS "Using RAJA CAMP submodule.")
       # propagate setting for sycl since there's no common enable to use
