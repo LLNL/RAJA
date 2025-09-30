@@ -39,7 +39,7 @@ namespace detail
 // runtime loop applying func to each element in the range in order
 RAJA_SUPPRESS_HD_WARN
 template<typename Iter, typename UnaryFunc>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each(Iter begin,
+constexpr RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each(Iter begin,
                                                 Iter end,
                                                 UnaryFunc func)
 {
@@ -54,7 +54,7 @@ RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each(Iter begin,
 // compile time expansion applying func to a each type in the list in order
 RAJA_SUPPRESS_HD_WARN
 template<typename UnaryFunc, typename... Ts>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const&,
+constexpr RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const&,
                                                      UnaryFunc func)
 {
   // braced init lists are evaluated in order
@@ -67,7 +67,7 @@ RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const&,
 // compile time expansion applying func to a each type in the tuple in order
 RAJA_SUPPRESS_HD_WARN
 template<typename Tuple, typename UnaryFunc, camp::idx_t... Is>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t,
+constexpr RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t,
                                                       UnaryFunc func,
                                                       camp::idx_seq<Is...>)
 {
@@ -88,7 +88,7 @@ RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t,
 */
 RAJA_SUPPRESS_HD_WARN
 template<typename Container, typename UnaryFunc>
-RAJA_HOST_DEVICE RAJA_INLINE
+constexpr RAJA_HOST_DEVICE RAJA_INLINE
     concepts::enable_if_t<UnaryFunc, type_traits::is_range<Container>>
     for_each(Container&& c, UnaryFunc func)
 {
@@ -104,7 +104,7 @@ RAJA_HOST_DEVICE RAJA_INLINE
 */
 RAJA_SUPPRESS_HD_WARN
 template<typename UnaryFunc, typename... Ts>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const& c,
+constexpr RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const& c,
                                                      UnaryFunc func)
 {
   return detail::for_each_type(c, std::move(func));
@@ -116,7 +116,7 @@ RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_type(camp::list<Ts...> const& c,
 */
 RAJA_SUPPRESS_HD_WARN
 template<typename Tuple, typename UnaryFunc>
-RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func)
+constexpr RAJA_HOST_DEVICE RAJA_INLINE UnaryFunc for_each_tuple(Tuple&& t, UnaryFunc func)
 {
   return detail::for_each_tuple(
       std::forward<Tuple>(t), std::move(func),
