@@ -381,7 +381,7 @@ struct PermutedViewHelper<layout_right>
 };
 
 template<std::size_t... idx>
-constexpr RAJA_HOST_DEVICE RAJA_INLINE constexpr auto make_reverse_array(std::index_sequence<idx...>)
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto make_reverse_array(std::index_sequence<idx...>)
 {
   return std::array<RAJA::idx_t, sizeof...(idx)> {sizeof...(idx) - 1U - idx...};
 }
