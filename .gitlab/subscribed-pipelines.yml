@@ -70,6 +70,28 @@ dane-build-and-test:
       when: never
     - when: on_success
 
+# MATRIX
+matrix-up-check:
+  variables:
+    CI_MACHINE: "matrix"
+  extends: [.machine-check]
+  rules:
+    # Runs except if we explicitly deactivate matrix by variable.
+    - if: '$ON_MATRIX == "OFF"'
+      when: never
+    - when: on_success
+
+matrix-build-and-test:
+  variables:
+    CI_MACHINE: "matrix"
+  needs: [matrix-up-check]
+  extends: [.build-and-test]
+  rules:
+    # Runs except if we explicitly deactivate matrix by variable.
+    - if: '$ON_MATRIX == "OFF"'
+      when: never
+    - when: on_success
+
 # CORONA
 corona-up-check:
   variables:
