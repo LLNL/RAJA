@@ -253,7 +253,7 @@ struct CompareFirst
 {
   RAJA_HOST_DEVICE inline CompareFirst(Compare comp_) : comp(comp_) {}
 
-  RAJA_HOST_DEVICE inline bool operator()(T const& lhs, T const& rhs)
+  RAJA_HOST_DEVICE inline bool operator()(T const& lhs, T const& rhs) const
   {
     return comp(RAJA::get<0>(lhs), RAJA::get<0>(rhs));
   }
