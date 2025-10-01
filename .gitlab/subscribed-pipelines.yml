@@ -86,7 +86,7 @@ matrix-up-check:
 matrix-build-and-test:
   variables:
     CI_MACHINE: "matrix"
-  needs: [matrix-up-check]
+  needs: [matrix-up-check, generate-job-lists]
   extends: [.build-and-test]
   rules:
     # Runs except if we explicitly deactivate matrix by variable.
