@@ -59,10 +59,7 @@ struct LaunchExecute<RAJA::omp_launch_t>
     };
 
     // Init reducers if present
-    if constexpr (has_reducers)
-    {
-      expt::ParamMultiplexer::parampack_init(pol, f_params);
-    }
+    expt::ParamMultiplexer::parampack_init(pol, f_params);
 
     // reducer object must be named f_params as expected by macro below
     if constexpr (has_reducers)
@@ -91,10 +88,7 @@ struct LaunchExecute<RAJA::omp_launch_t>
       });
     }
     // Resolve reducers if present
-    if constexpr (has_reducers)
-    {
-      expt::ParamMultiplexer::parampack_resolve(pol, f_params);
-    }
+    expt::ParamMultiplexer::parampack_resolve(pol, f_params);
 
     return resources::EventProxy<resources::Resource>(res);
   }

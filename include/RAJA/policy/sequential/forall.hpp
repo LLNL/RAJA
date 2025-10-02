@@ -67,10 +67,7 @@ forall_impl(resources::Host host_res,
 {
   constexpr bool has_reducers =
       !expt::type_traits::is_ForallParamPack_empty<ForallParam>::value;
-  if constexpr (has_reducers)
-  {
-    expt::ParamMultiplexer::parampack_init(pol, f_params);
-  }
+  expt::ParamMultiplexer::parampack_init(pol, f_params);
 
   RAJA_EXTRACT_BED_IT(iter);
 
@@ -86,10 +83,8 @@ forall_impl(resources::Host host_res,
     }
   }
 
-  if constexpr (has_reducers)
-  {
-    expt::ParamMultiplexer::parampack_resolve(pol, f_params);
-  }
+
+  expt::ParamMultiplexer::parampack_resolve(pol, f_params);
 
   return resources::EventProxy<resources::Host>(host_res);
 }
