@@ -154,12 +154,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       for (int tx = 0; tx < TILE_DIM; ++tx) {
         for (int ty = 0; ty < TILE_DIM; ++ty) {
 
-          int col = bx * TILE_DIM + tx;  // Matrix column index
-          int row = by * TILE_DIM + ty;  // Matrix row index
+          // Tranpose tile offset
+          int col_t = by * TILE_DIM + tx;  // Matrix column index
+          int row_t = bx * TILE_DIM + ty;  // Matrix row index
 
           // Bounds check
-          if (row < N_r && col < N_c) {
-            Atview(col, row) = Tile[ty][tx];
+          if (row_t < N_c && col_t < N_r) {
+            Atview(row_t, col_t) = Tile[tx][ty];
           }
         }
       }
@@ -399,8 +400,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //      These loops iterate over the number of
       //      tiles needed to carry out the transpose
       //
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_y_direct_unchecked,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::cuda_block_x_direct_unchecked,
           // This statement will initalize local array memory inside a
           // kernel. The cpu_tile_mem policy specifies that memory should be
           // allocated on the stack. The entries in the RAJA::ParamList
@@ -431,10 +432,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::cuda_thread_x_direct,
                                             RAJA::statement::Lambda<1>
               >
-            >,
-            // Synchronize threads to ensure all reads
-            // from the local array are complete
-            RAJA::statement::CudaSyncThreads
+            >
           >
         >
       >
@@ -494,8 +492,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       //      These loops iterate over the number of
       //      tiles needed to carry out the transpose
       //
-      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_loop,
+      RAJA::statement::Tile<1, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_y_direct_unchecked,
+        RAJA::statement::Tile<0, RAJA::tile_fixed<TILE_DIM>, RAJA::hip_block_x_direct_unchecked,
           // This statement will initalize local array memory inside a
           // kernel. The cpu_tile_mem policy specifies that memory should be
           // allocated on the stack. The entries in the RAJA::ParamList
@@ -526,10 +524,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
               RAJA::statement::ForICount<1, RAJA::statement::Param<0>, RAJA::hip_thread_x_direct,
                                             RAJA::statement::Lambda<1>
               >
-            >,
-            // Synchronize threads to ensure all reads
-            // from the local array are complete
-            RAJA::statement::HipSyncThreads
+            >
           >
         >
       >
@@ -556,6 +551,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   );
 
   CAMP_HIP_API_INVOKE_AND_CHECK(hipMemcpy, At, d_At, N_r * N_c * sizeof(int), hipMemcpyDeviceToHost);
+  CAMP_HIP_API_INVOKE_AND_CHECK(hipDeviceSynchronize);
   checkResult<int>(Atview, N_c, N_r);
   // printResult<int>(Atview, N_c, N_r);
 #endif
