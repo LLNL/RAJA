@@ -6,9 +6,9 @@
 ###############################################################################
 
 ##
-## Note that we build with 'make -j 16' on GitHub Actions and
-## with 'make -j 6' on Azure. This is reflected in the 'make' commands below.
-## This seems to work best for throughput.
+## Note that we build with 'make -j 16' for newer targets and 'make -j 6' 
+## for older targets on GitHub Actions. This is reflected in the 'make' 
+## commands below. This seems to work best for throughput.
 ##
 
 FROM ghcr.io/llnl/radiuss:gcc-11-ubuntu-22.04 AS gcc11
