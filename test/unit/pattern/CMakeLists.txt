@@ -14,3 +14,7 @@ raja_add_test(
 raja_add_test(
   NAME test-launch-teams-threads-order
   SOURCES test-launch-teams-threads-order.cpp)
+
+raja_add_test(
+  NAME test-params-valloc
+  SOURCES test-params-valloc.cpp)

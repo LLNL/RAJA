@@ -58,7 +58,9 @@ struct ValLoc
   RAJA_HOST_DEVICE void setLoc(IndexType inindex) { loc = inindex; }
 
   value_type val;
-  index_type loc = -1;
+  // Construct explicitly so that strongly typed indices, whose constructor
+  // from the underlying integer is explicit, can be used here as well.
+  index_type loc = index_type(-1);
 };
 
 template<typename T, template<typename, typename, typename> class Op>
