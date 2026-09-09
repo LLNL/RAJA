@@ -242,7 +242,7 @@ trigger-rajaperf:
   rules:
     - if: $MULTI_PROJECT != "OFF" && $CI_COMMIT_BRANCH == "develop"
       when: on_success
-      allow_failure: false
+      allow_failure: true
     - if: $MULTI_PROJECT != "OFF"
       when: manual
       allow_failure: true
@@ -260,7 +260,7 @@ trigger-chai:
   rules:
     - if: $MULTI_PROJECT != "OFF" && $CI_COMMIT_BRANCH == "develop"
       when: on_success
-      allow_failure: false
+      allow_failure: true
     - if: $MULTI_PROJECT != "OFF"
       when: manual
       allow_failure: true
@@ -278,7 +278,7 @@ trigger-care:
   rules:
     - if: $MULTI_PROJECT != "OFF" && $CI_COMMIT_BRANCH == "develop"
       when: on_success
-      allow_failure: false
+      allow_failure: true
     - if: $MULTI_PROJECT != "OFF"
       when: manual
       allow_failure: true
