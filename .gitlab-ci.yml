@@ -250,7 +250,7 @@ trigger-rajaperf:
   inherit:
     variables: false
   variables:
-    UPDATE_RAJA: ${CI_COMMIT_SHA}
+    RAJA_REFERENCE: ${CI_COMMIT_SHA}
   trigger:
     project: radiuss/multi-project/rajaperf-trigger
     branch: develop
@@ -268,7 +268,7 @@ trigger-chai:
   inherit:
     variables: false
   variables:
-    UPDATE_RAJA: ${CI_COMMIT_SHA}
+    RAJA_REFERENCE: ${CI_COMMIT_SHA}
   trigger:
     project: radiuss/multi-project/chai-trigger
     branch: develop
@@ -286,7 +286,7 @@ trigger-care:
   inherit:
     variables: false
   variables:
-    UPDATE_RAJA: ${CI_COMMIT_SHA}
+    RAJA_REFERENCE: ${CI_COMMIT_SHA}
   trigger:
     project: radiuss/multi-project/care-trigger
     branch: develop
