@@ -78,7 +78,7 @@ jobs:
           generator: 'Visual Studio 17 2022'     # force VS generator so MSVC is used instead of NMake
           options:
             ENABLE_WARNINGS_AS_ERRORS=Off
-            BLT_CXX_STD="c++20"
+            BLT_CXX_STD=c++20
             CMAKE_CXX_STANDARD=20
             CMAKE_BUILD_TYPE=Release
             ${{ matrix.shared.args }}
