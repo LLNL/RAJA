@@ -40,21 +40,27 @@ variables:
   GIT_SUBMODULE_STRATEGY: normal
   GIT_SUBMODULE_DEPTH: 1
   GIT_SUBMODULE_UPDATE_FLAGS: --jobs 3
-  GIT_SUBMODULE_PATHS: tpl/desul scripts/radiuss-spack-configs scripts/uberenv
+  GIT_SUBMODULE_PATHS: tpl/desul scripts/radiuss-spack-configs
 
 # PROJECT VARIABLES
-# This sha fixes the version of camp used in gitlab CI by RAJA
+# This SHA fixes the CAMP version used when refreshing maintained host-configs.
+# The matching conditional spec fragment is declared in .rad-bat.json. If this
+# variable is unset or empty, rad-bat adds no CAMP constraint and Spack chooses
+# the version. Ordinary CI uses the paths frozen in the maintained host-configs.
   CAMP_REFERENCE: "b4edd077937245c120e25e6080be8caee5926347"
 
 # SHARED_CI CONFIGURATION
 # Required information about GitHub repository
   GITHUB_PROJECT_NAME: "RAJA"
   GITHUB_PROJECT_ORG: "LLNL"
+# Project-wide default. Override with RAD_BAT_MODE=spack in a manually started
+# pipeline to regenerate every maintained host-config.
+  RAD_BAT_MODE: "host-config"
 # Set the build-and-test command.
 # Nested variables are allowed and useful to customize the job command. We
 # prevent variable expansion so that you can define them at job level.
   JOB_CMD:
-    value: "./scripts/gitlab/build_and_test.sh"
+    value: "./scripts/radiuss-spack-configs/bin/rad-bat"
     expand: false
 
 ###############################################################################
@@ -136,9 +142,13 @@ dane-up-check:
 dane-build-and-test:
   extends: [.dane, .build-and-test]
   needs: [dane-up-check, generate-job-lists]
+  variables:
+    RAD_BAT_JOBS: "28"
   trigger:
+    forward:
+      pipeline_variables: true
     include:
-      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/dane-pipeline@2026.6.0
+      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/dane-pipeline@woptim/rad-bat-module-loading
         inputs:
           job_cmd: $JOB_CMD
           shared_alloc: $DANE_SHARED_ALLOC
@@ -158,9 +168,13 @@ matrix-up-check:
 matrix-build-and-test:
   extends: [.matrix, .build-and-test]
   needs: [matrix-up-check, generate-job-lists]
+  variables:
+    RAD_BAT_JOBS: "28"
   trigger:
+    forward:
+      pipeline_variables: true
     include:
-      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/matrix-pipeline@2026.6.0
+      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/matrix-pipeline@woptim/rad-bat-module-loading
         inputs:
           job_cmd: $JOB_CMD
           shared_alloc: $MATRIX_SHARED_ALLOC
@@ -180,9 +194,13 @@ corona-up-check:
 corona-build-and-test:
   extends: [.corona, .build-and-test]
   needs: [corona-up-check, generate-job-lists]
+  variables:
+    RAD_BAT_JOBS: "32"
   trigger:
+    forward:
+      pipeline_variables: true
     include:
-      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/corona-pipeline@2026.6.0
+      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/corona-pipeline@woptim/rad-bat-module-loading
         inputs:
           job_cmd: $JOB_CMD
           shared_alloc: $CORONA_SHARED_ALLOC
@@ -202,9 +220,13 @@ tioga-up-check:
 tioga-build-and-test:
   extends: [.tioga, .build-and-test]
   needs: [tioga-up-check, generate-job-lists]
+  variables:
+    RAD_BAT_JOBS: "32"
   trigger:
+    forward:
+      pipeline_variables: true
     include:
-      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/tioga-pipeline@2026.6.0
+      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/tioga-pipeline@woptim/rad-bat-module-loading
         inputs:
           job_cmd: $JOB_CMD
           shared_alloc: $TIOGA_SHARED_ALLOC
@@ -224,9 +246,13 @@ tuolumne-up-check:
 tuolumne-build-and-test:
   extends: [.tuolumne, .build-and-test]
   needs: [tuolumne-up-check, generate-job-lists]
+  variables:
+    RAD_BAT_JOBS: "48"
   trigger:
+    forward:
+      pipeline_variables: true
     include:
-      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/tuolumne-pipeline@2026.6.0
+      - component: $CI_SERVER_FQDN/radiuss/radiuss-shared-ci/tuolumne-pipeline@woptim/rad-bat-module-loading
         inputs:
           job_cmd: $JOB_CMD
           shared_alloc: $TUOLUMNE_SHARED_ALLOC
