@@ -70,9 +70,11 @@ void ForallResourceIcountIndexSetTestImpl()
     test_view(ticount++) = is_indices[i];
   }
 
+  using icount_type = RAJA::strip_index_type_t<INDEX_TYPE>;
+
   RAJA::forall_Icount<EXEC_POLICY>(working_res, iset,
-    [=] RAJA_HOST_DEVICE(auto icount, INDEX_TYPE idx) {
-    work_view(INDEX_TYPE(icount)) = idx;
+    [=] RAJA_HOST_DEVICE(icount_type icount, INDEX_TYPE idx) {
+    work_view(INDEX_TYPE{icount}) = idx;
   });
 
   working_res.memcpy(check_array, working_array,

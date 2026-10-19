@@ -25,13 +25,13 @@ void ForallIcountIndexSetViewTestImpl()
   using RangeStrideSegType = RAJA::TypedRangeStrideSegment<INDEX_TYPE>;
   using ListSegType        = RAJA::TypedListSegment<INDEX_TYPE>;
 
-  using IndexSetType = 
-   RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >; 
+  using IndexSetType =
+   RAJA::TypedIndexSet< RangeSegType, RangeStrideSegType, ListSegType >;
 
   camp::resources::Resource working_res{WORKING_RES::get_default()};
 
   IndexSetType iset;
-  std::vector<INDEX_TYPE> is_indices; 
+  std::vector<INDEX_TYPE> is_indices;
   buildIndexSet<INDEX_TYPE, RangeSegType, RangeStrideSegType, ListSegType>(
     iset, is_indices, working_res);
 
@@ -42,7 +42,7 @@ void ForallIcountIndexSetViewTestImpl()
 
   //
   // Allocate and initialize arrays used in testing
-  //  
+  //
   INDEX_TYPE* working_array;
   INDEX_TYPE* check_array;
   INDEX_TYPE* test_array;
@@ -71,15 +71,17 @@ void ForallIcountIndexSetViewTestImpl()
     test_view(ticount++) = is_indices[i];
   }
 
+  using icount_type = RAJA::strip_index_type_t<INDEX_TYPE>;
+
   RAJA::forall_Icount<EXEC_POLICY>(iset,
-    [=] RAJA_HOST_DEVICE(auto icount, INDEX_TYPE idx) {
-    work_view( INDEX_TYPE(icount) ) = idx;
+    [=] RAJA_HOST_DEVICE(icount_type icount, INDEX_TYPE idx) {
+    work_view( INDEX_TYPE{icount} ) = idx;
   });
 
   working_res.memcpy(check_array, working_array,
                      sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
-  // 
+  //
   for (INDEX_TYPE i {0}; i < N; i++) {
     ASSERT_EQ(test_view(i), check_view(i));
   }
