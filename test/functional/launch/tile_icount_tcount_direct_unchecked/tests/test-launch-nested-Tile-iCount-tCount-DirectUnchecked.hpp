@@ -56,15 +56,6 @@ void LaunchNestedTileDirectUncheckedTestImpl(INDEX_TYPE M)
     working_res.memset(working_iloop_array, 0, sizeof(INDEX_TYPE) * data_len);
   }
 
-  using layout_type =
-      RAJA::TypedLayout<INDEX_TYPE, camp::tuple<INDEX_TYPE>>;
-  using view_type = RAJA::View< INDEX_TYPE, layout_type >;
-
-  view_type work_ttile_view(working_ttile_array, N);
-  view_type work_iloop_view(working_iloop_array, N);
-  view_type check_ttile_view(check_ttile_array, N);
-  view_type check_iloop_view(check_iloop_array, N);
-
   RAJA::launch<LAUNCH_POLICY>(
     RAJA::LaunchParams(RAJA::Teams(blocks_x), RAJA::Threads(threads_x)), [=] RAJA_HOST_DEVICE(RAJA::LaunchContext ctx) {
 
@@ -73,8 +64,8 @@ void LaunchNestedTileDirectUncheckedTestImpl(INDEX_TYPE M)
           RAJA::loop_icount<THREAD_X_POLICY>(
             ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
 
-              work_ttile_view(tx) = bx;
-              work_iloop_view(tx) = ix;
+              working_ttile_array[RAJA::stripIndexType(tx)] = bx;
+              working_iloop_array[RAJA::stripIndexType(tx)] = ix;
 
             }
           );
@@ -93,8 +84,8 @@ void LaunchNestedTileDirectUncheckedTestImpl(INDEX_TYPE M)
   for (INDEX_TYPE bx {0}; bx < blocks_x_idx; ++bx) {
     for (INDEX_TYPE tx {0}; tx < threads_x_idx; ++tx) {
 
-      ASSERT_EQ(check_ttile_view(idx), bx);
-      ASSERT_EQ(check_iloop_view(idx), tx);
+      ASSERT_EQ(check_ttile_array[RAJA::stripIndexType(idx)], bx);
+      ASSERT_EQ(check_iloop_array[RAJA::stripIndexType(idx)], tx);
 
       idx++;
     }

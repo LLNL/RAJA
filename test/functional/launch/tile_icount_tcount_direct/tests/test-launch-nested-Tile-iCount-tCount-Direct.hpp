@@ -60,20 +60,6 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
   working_res.memset(working_ttile_array, 0, sizeof(INDEX_TYPE) * data_len);
   working_res.memset(working_iloop_array, 0, sizeof(INDEX_TYPE) * data_len);
 
-  INDEX_TYPE view_len = N;
-  if (RAJA::stripIndexType(view_len) == 0) {
-    view_len = INDEX_TYPE(1);
-  }
-
-  using layout_type =
-      RAJA::TypedLayout<INDEX_TYPE, camp::tuple<INDEX_TYPE>>;
-  using view_type = RAJA::View< INDEX_TYPE, layout_type >;
-
-  view_type work_ttile_view(working_ttile_array, view_len);
-  view_type work_iloop_view(working_iloop_array, view_len);
-  view_type check_ttile_view(check_ttile_array, view_len);
-  view_type check_iloop_view(check_iloop_array, view_len);
-
   if ( RAJA::stripIndexType(N) > 0 ) {
 
     RAJA::launch<LAUNCH_POLICY>(
@@ -84,8 +70,8 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
             RAJA::loop_icount<THREAD_X_POLICY>(
               ctx, x_tile, [&](INDEX_TYPE tx, INDEX_TYPE ix) {
 
-                work_ttile_view(tx) += bx;
-                work_iloop_view(tx) += ix;
+                working_ttile_array[RAJA::stripIndexType(tx)] += bx;
+                working_iloop_array[RAJA::stripIndexType(tx)] += ix;
 
               }
             );
@@ -104,8 +90,8 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
             RAJA::loop_icount<THREAD_X_POLICY>(
               ctx, x_tile, [&](INDEX_TYPE RAJA_UNUSED_ARG(tx), INDEX_TYPE RAJA_UNUSED_ARG (ix)) {
 
-                work_ttile_view(INDEX_TYPE(0))++;
-                work_iloop_view(INDEX_TYPE(0))++;
+                working_ttile_array[0]++;
+                working_iloop_array[0]++;
 
               }
             );
@@ -127,8 +113,8 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
 
         if(idx >= N1) break;
 
-        ASSERT_EQ(check_ttile_view(idx), bx);
-        ASSERT_EQ(check_iloop_view(idx), tx);
+        ASSERT_EQ(check_ttile_array[RAJA::stripIndexType(idx)], bx);
+        ASSERT_EQ(check_iloop_array[RAJA::stripIndexType(idx)], tx);
 
         idx++;
       }
@@ -136,8 +122,8 @@ void LaunchNestedTileDirectTestImpl(INDEX_TYPE M)
     
   } else {
     
-    ASSERT_EQ(check_ttile_view(INDEX_TYPE(0)), check_ttile_view(INDEX_TYPE(0)));
-    ASSERT_EQ(check_iloop_view(INDEX_TYPE(0)), check_iloop_view(INDEX_TYPE(0)));
+    ASSERT_EQ(check_ttile_array[0], check_ttile_array[0]);
+    ASSERT_EQ(check_iloop_array[0], check_iloop_array[0]);
     
   }
 

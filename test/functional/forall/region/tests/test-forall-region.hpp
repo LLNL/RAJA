@@ -45,21 +45,14 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
   working_res.memset(working_array, 0,
                      sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
-  using layout_type =
-      RAJA::TypedLayout<INDEX_TYPE, camp::tuple<INDEX_TYPE>>;
-  using view_type = RAJA::View< INDEX_TYPE, layout_type >;
-
-  view_type work_view(working_array, N);
-  view_type check_view(check_array, N);
-
   RAJA::region<REG_POLICY>([=]() {
 
     RAJA::forall<EXEC_POLICY>(rseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      work_view(idx - first) += 1;
+      working_array[RAJA::stripIndexType(idx - first)] += 1;
     });
 
     RAJA::forall<EXEC_POLICY>(lseg, [=] RAJA_HOST_DEVICE(INDEX_TYPE idx) {
-      work_view(idx - first) += 2;
+      working_array[RAJA::stripIndexType(idx - first)] += 2;
     });
 
   });
@@ -69,7 +62,7 @@ void ForallRegionTestImpl(INDEX_TYPE first, INDEX_TYPE last)
                      sizeof(INDEX_TYPE) * RAJA::stripIndexType(N));
 
   for (INDEX_TYPE i {0}; i < N; i++) {
-    ASSERT_EQ(check_view(i), 3);
+    ASSERT_EQ(check_array[RAJA::stripIndexType(i)], 3);
   }
 
   deallocateForallTestData<INDEX_TYPE>(working_res,

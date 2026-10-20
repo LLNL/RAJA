@@ -17,6 +17,9 @@ void KernelParamReduceMultiLambda(const INDEX_TYPE xdim_t, const INDEX_TYPE ydim
 
   camp::resources::Resource work_res{WORKING_RES::get_default()};
 
+  DATA_TYPE ** workarr2D;
+  DATA_TYPE ** checkarr2D;
+  DATA_TYPE ** testarr2D;
   DATA_TYPE * work_array;
   DATA_TYPE * check_array;
   DATA_TYPE * test_array;
@@ -31,24 +34,40 @@ void KernelParamReduceMultiLambda(const INDEX_TYPE xdim_t, const INDEX_TYPE ydim
                                       &test_array
                                     );
 
-  using LayoutType =
-      RAJA::TypedLayout<INDEX_TYPE, camp::tuple<INDEX_TYPE, INDEX_TYPE>>;
-  using ViewType = RAJA::View<DATA_TYPE, LayoutType>;
-  ViewType WorkView(work_array, ydim_t, xdim_t);
-  ViewType CheckView(check_array, ydim_t, xdim_t);
+  allocateForallTestData<DATA_TYPE *> ( ydim_t,
+                                        work_res,
+                                        &workarr2D,
+                                        &checkarr2D,
+                                        &testarr2D
+                                      );
+
+  RAJA::TypedRangeSegment<INDEX_TYPE> seg(INDEX_TYPE(0), ydim_t);
+  RAJA::forall<FORALL_POLICY>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
+  {
+    workarr2D[RAJA::stripIndexType(zz)] =
+        work_array + RAJA::stripIndexType(zz * ydim_t);
+  });
+
+  RAJA::forall<RAJA::seq_exec>(seg, [=] RAJA_HOST_DEVICE (INDEX_TYPE zz)
+  {
+    checkarr2D[RAJA::stripIndexType(zz)] =
+        check_array + RAJA::stripIndexType(zz * ydim_t);
+  });
 
   // initializing  values
   for (INDEX_TYPE row(0); row < ydim_t; ++row)
   {
     for ( raw_index_type col = 0; col < RAJA::stripIndexType(xdim_t); ++col )
     {
-      CheckView(row, INDEX_TYPE(col)) =
+      checkarr2D[RAJA::stripIndexType(row)][col] =
           (RAJA::stripIndexType(row) * RAJA::stripIndexType(xdim_t) + col) % 100 + 1;
     }
     // Make a unique min
-    CheckView(ydim_t - INDEX_TYPE(1), xdim_t - INDEX_TYPE(1)) = 0;
+    checkarr2D[RAJA::stripIndexType(ydim_t - INDEX_TYPE(1))]
+              [RAJA::stripIndexType(xdim_t - INDEX_TYPE(1))] = 0;
     // Make a unique max
-    CheckView(ydim_t / INDEX_TYPE(2), xdim_t / INDEX_TYPE(2)) = 101;
+    checkarr2D[RAJA::stripIndexType(ydim_t / INDEX_TYPE(2))]
+              [RAJA::stripIndexType(xdim_t / INDEX_TYPE(2))] = 101;
   }
 
   work_res.memcpy(work_array, check_array, sizeof(DATA_TYPE) * RAJA::stripIndexType(array_length));
@@ -97,10 +116,12 @@ void KernelParamReduceMultiLambda(const INDEX_TYPE xdim_t, const INDEX_TYPE ydim
                             VALOP_DATA_TYPE_MIN &_min,
                             VALOP_DATA_TYPE_MAX &_max,
                             VALOP_DATA_TYPE_SUM &_mutual_sum) {
-        _sum += WorkView(r, c);
-        _mutual_sum += WorkView(r, c);
-        _min.min(WorkView(r, c));
-        _max.max(WorkView(r, c));
+        auto index = RAJA::stripIndexType(r);
+        auto col = RAJA::stripIndexType(c);
+        _sum += workarr2D[index][col];
+        _mutual_sum += workarr2D[index][col];
+        _min.min(workarr2D[index][col]);
+        _max.max(workarr2D[index][col]);
       },
       [=] RAJA_HOST_DEVICE (INDEX_TYPE c,
                             INDEX_TYPE r,
@@ -109,10 +130,12 @@ void KernelParamReduceMultiLambda(const INDEX_TYPE xdim_t, const INDEX_TYPE ydim
                             VALOP_DATA_TYPE_MAX &_max,
                             double,
                             VALOP_DATA_TYPE_SUM &_mutual_sum) {
-        _sum += WorkView(r, c);
-        _mutual_sum += WorkView(r, c);
-        _min.min(WorkView(r, c));
-        _max.max(WorkView(r, c));
+        auto index = RAJA::stripIndexType(r);
+        auto col = RAJA::stripIndexType(c);
+        _sum += workarr2D[index][col];
+        _mutual_sum += workarr2D[index][col];
+        _min.min(workarr2D[index][col]);
+        _max.max(workarr2D[index][col]);
       }
     );
 
@@ -130,10 +153,10 @@ void KernelParamReduceMultiLambda(const INDEX_TYPE xdim_t, const INDEX_TYPE ydim
     ) {
     for (raw_index_type c = 0; c < RAJA::stripIndexType(xdim_t); ++c)
     {
-      auto c_idx = INDEX_TYPE(c);
-      _sum += CheckView(r, c_idx);
-      _min.min(CheckView(r, c_idx));
-      _max.max(CheckView(r, c_idx));
+      auto index = RAJA::stripIndexType(r);
+      _sum += checkarr2D[index][c];
+      _min.min(checkarr2D[index][c]);
+      _max.max(checkarr2D[index][c]);
     }
   });
 
@@ -157,6 +180,12 @@ void KernelParamReduceMultiLambda(const INDEX_TYPE xdim_t, const INDEX_TYPE ydim
                                         check_array,
                                         test_array
                                       );
+
+  deallocateForallTestData<DATA_TYPE *> ( work_res,
+                                          workarr2D,
+                                          checkarr2D,
+                                          testarr2D
+                                        );
 }
 
 
